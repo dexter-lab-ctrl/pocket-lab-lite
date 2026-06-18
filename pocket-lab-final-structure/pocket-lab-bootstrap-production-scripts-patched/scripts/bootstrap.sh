@@ -15,6 +15,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 BOOTSTRAP_VERSION="2026-06-02-fastapi-nats-enterprise"
 BOOTSTRAP_DRY_RUN="${POCKETLAB_BOOTSTRAP_DRY_RUN:-0}"
+BOOTSTRAP_PROFILE="$(normalize_profile "${POCKETLAB_PROFILE:-full}")"
 FORCE_STAGE="0"
 FORCE_ALL="0"
 TARGET_STAGE=""
@@ -29,16 +30,16 @@ CURRENT_STAGE_NAME=""
 BOOTSTRAP_STAGES=(
   "1|install_termux_packages|install-termux-packages.sh|Install Termux packages, base CLI tools, Node, PM2, MariaDB, Gitea, Caddy, and build dependencies"
   "2|install_proot_ubuntu|install-proot-ubuntu.sh|Install and prepare the proot Ubuntu compatibility layer"
-  "3|install_binaries|install-binaries.sh|Install Vault, act_runner, Python runtime packages, NATS tooling, and observability binaries"
+  "3|install_binaries|install-binaries.sh|Install Vault, act_runner, Python runtime packages, NATS tooling, and profile-selected optional binaries"
   "4|init_vault|init-vault.sh|Start and initialize Vault, unseal it, enable engines, and seed initial platform secrets"
   "5|init_mariadb|init-mariadb.sh|Initialize MariaDB, create Pocket Lab service users, and register Vault database integration"
   "6|start_gitea|start-gitea.sh|Start Gitea and act_runner, create the admin user, and prepare GitOps repositories"
   "7|seed_gitops_repo|seed-gitops-repo.sh|Seed or refresh the GitOps/IaC repository in local Gitea"
   "8|install_tailscale|install-tailscale.sh|Install or prepare Tailscale connectivity for fleet access"
   "9|install_pwa_ui|install-pwa-ui.sh|Install the production React/Vite PWA assets"
-  "10|start_dashboard|start-dashboard.sh|Start enterprise NATS/JetStream, FastAPI, worker, node agent, Caddy, and observability services"
+  "10|start_dashboard|start-dashboard.sh|Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and profile-selected services"
   "11|install_fleet_agent|install-fleet-agent.sh|Install the local NATS-backed fleet agent wrapper using generated NATS credentials"
-  "12|smoke_test|smoke-test.sh|Run Day-0 smoke tests against Vault, Gitea, FastAPI, NATS, workflows, telemetry, and MariaDB"
+  "12|smoke_test|smoke-test.sh|Run Day-0 smoke tests against Vault, Gitea, FastAPI, NATS, workflows, telemetry, MariaDB, and profile health"
 )
 
 usage() {
@@ -53,6 +54,8 @@ Options:
   --force-stage      Clear the selected stage marker before running it.
   --force-all        Clear all bootstrap stage markers before running.
   --dry-run          Validate and print the execution plan without running stage scripts.
+  --profile NAME     Runtime profile to use: full or lite.
+  --lite             Shortcut for --profile lite.
   --list             Print the Day-0 stage plan and exit.
   -h, --help         Show this help text.
 
@@ -60,10 +63,14 @@ Environment:
   POCKETLAB_BOOTSTRAP_DRY_RUN=1      Same as --dry-run.
   POCKET_LAB_ALLOW_NON_TERMUX=1      Allows non-Termux syntax/test harness execution.
   POCKET_LAB_NO_NETWORK=1            Blocks downloads inside stage scripts.
+  POCKETLAB_PROFILE=lite             Starts the low-resource Lite bootstrap profile.
+  POCKETLAB_LITE_ENABLE_PROOT=1      Allows PRoot Ubuntu setup in Lite profile.
 
 Examples:
   ./bootstrap.sh
   ./bootstrap.sh --dry-run
+  ./bootstrap.sh --profile lite
+  ./bootstrap.sh --lite
   ./bootstrap.sh --from-stage start_dashboard
   ./bootstrap.sh --stage init_vault --force-stage
 EOF_USAGE
@@ -86,11 +93,23 @@ legacy_stage_marker_key() {
   printf 'bootstrap_stage_%d' "$index"
 }
 
+stage_should_skip() {
+  local index="$1" id="$2"
+  case "$id" in
+    install_proot_ubuntu)
+      [[ "$BOOTSTRAP_PROFILE" == "lite" && "${POCKETLAB_LITE_ENABLE_PROOT:-0}" != "1" ]]
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 stage_is_done() {
   local index="$1" id="$2" key legacy_key
   key="$(stage_marker_key "$index" "$id")"
   legacy_key="$(legacy_stage_marker_key "$index")"
-  is_done "$key" || is_done "$legacy_key"
+  is_done "$key" || is_done "$legacy_key" || stage_should_skip "$index" "$id"
 }
 
 stage_mark_done() {
@@ -136,7 +155,7 @@ print_plan() {
   for record in "${BOOTSTRAP_STAGES[@]}"; do
     IFS='|' read -r index id script description <<< "$record"
     marker="$(stage_marker_key "$index" "$id")"
-    if stage_is_done "$index" "$id"; then state="done"; else state="pending"; fi
+    if stage_should_skip "$index" "$id"; then state="skipped"; elif stage_is_done "$index" "$id"; then state="done"; else state="pending"; fi
     printf '%2s. %-24s %-28s [%s]\n    %s\n    marker: %s\n' "$index" "$id" "$script" "$state" "$description" "$marker"
   done
 }
@@ -199,6 +218,11 @@ run_stage_by_index() {
   CURRENT_STAGE_NAME="$script"
   marker="$(stage_marker_key "$index" "$id")"
   script_path="$SCRIPT_DIR/$script"
+
+  if stage_should_skip "$index" "$id"; then
+    log INFO "Lite profile: skipping stage $index/$id. Set POCKETLAB_LITE_ENABLE_PROOT=1 to enable it."
+    return 0
+  fi
 
   if stage_is_done "$index" "$id" && [[ "$FORCE_STAGE" != "1" && "$FORCE_ALL" != "1" ]]; then
     log INFO "Stage $index/$id already completed; skipping. Marker: $marker"
@@ -265,6 +289,19 @@ parse_args() {
         BOOTSTRAP_DRY_RUN="1"
         shift
         ;;
+      --profile)
+        [[ $# -ge 2 ]] || die "--profile requires a profile name: full or lite"
+        BOOTSTRAP_PROFILE="$(normalize_profile "$2")"
+        shift 2
+        ;;
+      --profile=*)
+        BOOTSTRAP_PROFILE="$(normalize_profile "${1#--profile=}")"
+        shift
+        ;;
+      --lite)
+        BOOTSTRAP_PROFILE="lite"
+        shift
+        ;;
       --list)
         LIST_ONLY="1"
         shift
@@ -278,6 +315,16 @@ parse_args() {
         ;;
     esac
   done
+
+  case "$BOOTSTRAP_PROFILE" in
+    full|lite) ;;
+    *) die "Unsupported bootstrap profile: $BOOTSTRAP_PROFILE. Use full or lite." ;;
+  esac
+
+  export POCKETLAB_PROFILE="$BOOTSTRAP_PROFILE"
+  if [[ "$BOOTSTRAP_PROFILE" == "lite" ]]; then
+    export POCKETLAB_LITE=1
+  fi
 
   if [[ -n "$TARGET_STAGE" && -n "$FROM_STAGE" ]]; then
     die "Use either --stage or --from-stage, not both"
@@ -306,6 +353,7 @@ main() {
 
   log INFO "Starting Pocket Lab Day-0 bootstrap dispatcher version $BOOTSTRAP_VERSION"
   log INFO "Mode: $([[ "$BOOTSTRAP_DRY_RUN" == "1" ]] && printf 'dry-run' || printf 'execute')"
+  log INFO "Profile: $BOOTSTRAP_PROFILE"
 
   local start_index end_index i selector_index total
   total="$(stage_count)"

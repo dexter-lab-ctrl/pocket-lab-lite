@@ -44,6 +44,20 @@ LOCK_FD=200
 
 NO_NETWORK="${POCKET_LAB_NO_NETWORK:-0}"
 ALLOW_NON_TERMUX="${POCKET_LAB_ALLOW_NON_TERMUX:-0}"
+export POCKETLAB_PROFILE="${POCKETLAB_PROFILE:-full}"
+export POCKETLAB_LITE="${POCKETLAB_LITE:-0}"
+
+normalize_profile() {
+  case "${1:-full}" in
+    lite|Lite|LITE) printf 'lite' ;;
+    full|Full|FULL|enterprise|Enterprise|ENTERPRISE) printf 'full' ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
+is_lite_profile() {
+  [[ "$(normalize_profile "${POCKETLAB_PROFILE:-full}")" == "lite" || "${POCKETLAB_LITE:-0}" == "1" ]]
+}
 
 handle_err() {
   local rc=$? line=${BASH_LINENO[0]:-unknown} cmd=${BASH_COMMAND:-unknown}
