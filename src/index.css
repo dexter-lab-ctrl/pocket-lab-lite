@@ -2053,3 +2053,2298 @@ textarea {
 .mobile-more-sheet .mobile-more-group:last-child {
   margin-bottom: 0.5rem;
 }
+
+
+/* Pocket Lab Lite Daylight Theme + Motion System */
+.theme-pocket-lite-daylight {
+  --lite-bg: #f7fbff;
+  --lite-bg-2: #eef7ff;
+  --lite-surface: rgba(255, 255, 255, 0.84);
+  --lite-surface-strong: rgba(255, 255, 255, 0.94);
+  --lite-ink: #0f172a;
+  --lite-muted: #475569;
+  --lite-soft: #64748b;
+  --lite-line: rgba(99, 102, 241, 0.16);
+  --lite-line-strong: rgba(37, 99, 235, 0.24);
+  --lite-blue: #2563eb;
+  --lite-cyan: #0891b2;
+  --lite-indigo: #4f46e5;
+  --lite-green: #059669;
+  --lite-amber: #d97706;
+  --lite-rose: #e11d48;
+  --lite-shadow: 0 22px 60px rgba(15, 23, 42, 0.11);
+  --lite-shadow-soft: 0 12px 36px rgba(15, 23, 42, 0.08);
+  min-height: 100vh;
+  color: var(--lite-ink);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(125, 211, 252, 0.42), transparent 34rem),
+    radial-gradient(circle at 82% 12%, rgba(196, 181, 253, 0.34), transparent 31rem),
+    radial-gradient(circle at 64% 78%, rgba(167, 243, 208, 0.30), transparent 28rem),
+    linear-gradient(135deg, #f8fbff 0%, #eef7ff 46%, #fbfdff 100%);
+}
+
+.theme-pocket-lite-daylight .pocket-app-backdrop {
+  background:
+    linear-gradient(115deg, rgba(255,255,255,0.18), rgba(255,255,255,0)),
+    radial-gradient(circle at 18% 18%, rgba(59, 130, 246, 0.16), transparent 28rem),
+    radial-gradient(circle at 90% 8%, rgba(14, 165, 233, 0.13), transparent 22rem) !important;
+}
+
+.theme-pocket-lite-daylight header,
+.theme-pocket-lite-daylight [class*="bg-slate-950/70"],
+.theme-pocket-lite-daylight [class*="bg-slate-950/95"],
+.theme-pocket-lite-daylight [class*="bg-slate-900/65"] {
+  background: rgba(255, 255, 255, 0.84) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(22px) saturate(1.25);
+}
+
+.theme-pocket-lite-daylight .pocket-card,
+.theme-pocket-lite-daylight .pocket-state-surface,
+.theme-pocket-lite-daylight main [class*="rounded-3xl"][class*="border"],
+.theme-pocket-lite-daylight main [class*="rounded-[2rem]"][class*="border"] {
+  background: var(--lite-surface) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  box-shadow: var(--lite-shadow-soft) !important;
+  color: var(--lite-ink) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-card {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  animation: lite-card-rise 420ms ease both;
+}
+
+.theme-pocket-lite-daylight .pocket-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.10), transparent 34%, rgba(14, 165, 233, 0.07));
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--lite-line-strong) !important;
+  box-shadow: var(--lite-shadow) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-card:hover::before {
+  opacity: 1;
+}
+
+.theme-pocket-lite-daylight .text-white,
+.theme-pocket-lite-daylight .text-slate-50,
+.theme-pocket-lite-daylight .text-slate-100,
+.theme-pocket-lite-daylight .text-slate-200 {
+  color: var(--lite-ink) !important;
+}
+
+.theme-pocket-lite-daylight .text-slate-300,
+.theme-pocket-lite-daylight .text-slate-400,
+.theme-pocket-lite-daylight .text-slate-500 {
+  color: var(--lite-muted) !important;
+}
+
+.theme-pocket-lite-daylight .text-indigo-200,
+.theme-pocket-lite-daylight .text-cyan-200,
+.theme-pocket-lite-daylight .text-emerald-200 {
+  color: var(--lite-blue) !important;
+}
+
+.theme-pocket-lite-daylight [class*="border-white/10"],
+.theme-pocket-lite-daylight [class*="border-slate-300/20"] {
+  border-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+.theme-pocket-lite-daylight [class*="bg-white/5"],
+.theme-pocket-lite-daylight [class*="bg-white/10"] {
+  background: rgba(255, 255, 255, 0.64) !important;
+}
+
+.theme-pocket-lite-daylight [class*="bg-indigo-500/15"],
+.theme-pocket-lite-daylight [class*="bg-cyan-500/10"] {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.10), rgba(14, 165, 233, 0.08)) !important;
+  border-color: rgba(37, 99, 235, 0.16) !important;
+}
+
+.theme-pocket-lite-daylight [class*="bg-amber-500/10"] {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.11), rgba(251, 191, 36, 0.08)) !important;
+  border-color: rgba(217, 119, 6, 0.20) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.15);
+  transform: translateZ(0);
+  transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-button::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.46) 42%, transparent 70%);
+  transform: translateX(-120%);
+}
+
+.theme-pocket-lite-daylight .pocket-button:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.20);
+}
+
+.theme-pocket-lite-daylight .pocket-button:hover::after {
+  animation: lite-button-sheen 700ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-button:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.theme-pocket-lite-daylight .pocket-button-primary,
+.theme-pocket-lite-daylight .pocket-button-success {
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  border-color: rgba(37, 99, 235, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button-secondary {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(37, 99, 235, 0.18) !important;
+  color: #1e3a8a !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button-danger {
+  background: linear-gradient(135deg, #e11d48, #f97316) !important;
+  color: #ffffff !important;
+}
+
+.theme-pocket-lite-daylight .pocket-input {
+  background: rgba(255, 255, 255, 0.86) !important;
+  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  color: var(--lite-ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-input:focus {
+  border-color: rgba(37, 99, 235, 0.48) !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.13), inset 0 1px 0 rgba(255,255,255,0.88);
+  transform: translateY(-1px);
+}
+
+.theme-pocket-lite-daylight .pocket-badge {
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: var(--lite-ink) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+}
+
+.theme-pocket-lite-daylight .pocket-badge-success {
+  color: #065f46 !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(236, 253, 245, 0.92)) !important;
+  animation: lite-status-breathe 2.8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .pocket-badge-warning {
+  color: #92400e !important;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(255, 251, 235, 0.94)) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-badge-danger {
+  color: #9f1239 !important;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.18), rgba(255, 241, 242, 0.94)) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-badge-info,
+.theme-pocket-lite-daylight .pocket-badge-neutral {
+  color: #1e3a8a !important;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(239, 246, 255, 0.94)) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-side-rail {
+  background: rgba(255, 255, 255, 0.76) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.10) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-side-button,
+.theme-pocket-lite-daylight .pocket-nav-button,
+.theme-pocket-lite-daylight .mobile-more-item {
+  color: var(--lite-muted) !important;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-side-button-active,
+.theme-pocket-lite-daylight .pocket-nav-button-active,
+.theme-pocket-lite-daylight .mobile-more-item:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(14, 165, 233, 0.12)) !important;
+  color: var(--lite-blue) !important;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.14) !important;
+}
+
+.theme-pocket-lite-daylight .nav-active-rail-item:hover .nav-active-rail-icon,
+.theme-pocket-lite-daylight .pocket-side-button-active .nav-active-rail-icon,
+.theme-pocket-lite-daylight .pocket-nav-button-active .nav-active-rail-icon {
+  animation: lite-nav-orbit 700ms ease;
+}
+
+.theme-pocket-lite-daylight .pocket-nav-dock {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  box-shadow: 0 -14px 40px rgba(15, 23, 42, 0.10) !important;
+}
+
+.theme-pocket-lite-daylight .mobile-more-backdrop {
+  background: rgba(15, 23, 42, 0.24) !important;
+  backdrop-filter: blur(10px);
+}
+
+.theme-pocket-lite-daylight .mobile-more-sheet {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: var(--lite-ink) !important;
+  box-shadow: 0 -20px 70px rgba(15, 23, 42, 0.18) !important;
+}
+
+.theme-pocket-lite-daylight .mobile-more-sheet-open {
+  animation: lite-sheet-rise 280ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+.theme-pocket-lite-daylight .pocket-main {
+  animation: lite-page-settle 300ms ease both;
+}
+
+.theme-pocket-lite-daylight .pocket-main > * {
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .pocket-main > *:nth-child(2) { animation-delay: 40ms; }
+.theme-pocket-lite-daylight .pocket-main > *:nth-child(3) { animation-delay: 80ms; }
+.theme-pocket-lite-daylight .pocket-main > *:nth-child(4) { animation-delay: 120ms; }
+
+.theme-pocket-lite-daylight .pocket-state-surface {
+  animation: lite-notice-in 260ms ease both;
+}
+
+.theme-pocket-lite-daylight main [class*="text-2xl"][class*="font-black"] {
+  animation: lite-count-pop 360ms ease both;
+}
+
+.theme-pocket-lite-daylight [role="status"] {
+  animation: lite-notice-in 280ms ease both;
+}
+
+@keyframes lite-page-settle {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lite-soft-rise {
+  from { opacity: 0; transform: translateY(10px) scale(.992); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lite-card-rise {
+  from { opacity: 0; transform: translateY(12px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lite-button-sheen {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+
+@keyframes lite-status-breathe {
+  0%, 100% { box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07), 0 0 0 0 rgba(16, 185, 129, 0.18); }
+  50% { box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07), 0 0 0 6px rgba(16, 185, 129, 0.05); }
+}
+
+@keyframes lite-nav-orbit {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  45% { transform: translateY(-2px) rotate(-5deg) scale(1.06); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes lite-sheet-rise {
+  from { transform: translateY(18px); opacity: 0.82; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes lite-notice-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lite-count-pop {
+  from { opacity: 0; transform: translateY(5px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight,
+  .theme-pocket-lite-daylight *,
+  .theme-pocket-lite-daylight *::before,
+  .theme-pocket-lite-daylight *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Pocket Lab Lite restore card contrast fix */
+.theme-pocket-lite-daylight [class*="border-amber-300/20"][class*="bg-amber-500/10"] {
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.96), rgba(254, 243, 199, 0.88)) !important;
+  border-color: rgba(217, 119, 6, 0.34) !important;
+  box-shadow: 0 18px 44px rgba(146, 64, 14, 0.12) !important;
+}
+
+.theme-pocket-lite-daylight [class*="border-amber-300/20"][class*="bg-amber-500/10"] h2 {
+  color: #111827 !important;
+}
+
+.theme-pocket-lite-daylight [class*="border-amber-300/20"][class*="bg-amber-500/10"] p,
+.theme-pocket-lite-daylight [class*="border-amber-300/20"][class*="bg-amber-500/10"] label,
+.theme-pocket-lite-daylight .text-amber-100,
+.theme-pocket-lite-daylight .text-amber-50 {
+  color: #78350f !important;
+}
+
+.theme-pocket-lite-daylight [class*="border-amber-300/20"][class*="bg-amber-500/10"] input[type="checkbox"] {
+  accent-color: #d97706;
+}
+
+/* Pocket Lab Lite nav active icon visibility fix */
+.theme-pocket-lite-daylight .pocket-side-button-active,
+.theme-pocket-lite-daylight .pocket-nav-button-active {
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.96), rgba(207, 250, 254, 0.9)) !important;
+  border: 1px solid rgba(37, 99, 235, 0.28) !important;
+  color: #1d4ed8 !important;
+  box-shadow:
+    0 10px 26px rgba(37, 99, 235, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-side-button-active svg,
+.theme-pocket-lite-daylight .pocket-nav-button-active svg,
+.theme-pocket-lite-daylight .pocket-side-button-active .nav-active-rail-icon,
+.theme-pocket-lite-daylight .pocket-nav-button-active .nav-active-rail-icon {
+  color: #1d4ed8 !important;
+  stroke: #1d4ed8 !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.85));
+  position: relative;
+  z-index: 3;
+}
+
+.theme-pocket-lite-daylight .pocket-side-button svg,
+.theme-pocket-lite-daylight .pocket-nav-button svg {
+  opacity: 1 !important;
+  position: relative;
+  z-index: 2;
+}
+
+.theme-pocket-lite-daylight .pocket-side-button-active::before,
+.theme-pocket-lite-daylight .pocket-nav-button-active::before,
+.theme-pocket-lite-daylight .pocket-side-button-active::after,
+.theme-pocket-lite-daylight .pocket-nav-button-active::after {
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .pocket-side-button:not(.pocket-side-button-active) svg,
+.theme-pocket-lite-daylight .pocket-nav-button:not(.pocket-nav-button-active) svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+
+/* Pocket Lab Lite Home screen polish */
+.theme-pocket-lite-daylight .lite-home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.55fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(37, 99, 235, 0.14), transparent 22rem),
+    radial-gradient(circle at 82% 22%, rgba(14, 165, 233, 0.14), transparent 20rem),
+    linear-gradient(135deg, rgba(255,255,255,0.96), rgba(239,246,255,0.92));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-home-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -4rem -7rem auto;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.34), transparent 68%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-home-hero-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  border-radius: 999px;
+  background: rgba(236, 253, 245, 0.86);
+  color: #065f46;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-ready-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.13);
+  animation: lite-status-breathe 2.8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-home-hero h2 {
+  max-width: 46rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-hero p {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-readiness-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.45rem;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-home-card-label,
+.theme-pocket-lite-daylight .lite-home-stat-card span,
+.theme-pocket-lite-daylight .lite-home-device-metric span {
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-home-readiness-card strong {
+  color: #0f172a;
+  font-size: 4rem;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-readiness-card > span {
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-stat-card,
+.theme-pocket-lite-daylight .lite-home-device-metric {
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+}
+
+.theme-pocket-lite-daylight .lite-home-stat-card strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: #0f172a;
+  font-size: 2.25rem;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-stat-card p {
+  margin-top: 0.45rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-home-device-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-device-metric strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-service-card {
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-home-service-card:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.theme-pocket-lite-daylight .lite-home-service-card:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+@keyframes lite-home-orb {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate3d(-1rem, -0.8rem, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-home-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-readiness-card {
+    min-height: auto;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Pocket Lab Lite App Catalog polish */
+.theme-pocket-lite-daylight .lite-catalog-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.13), transparent 24rem),
+    radial-gradient(circle at 88% 18%, rgba(34, 211, 238, 0.16), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,0.96), rgba(240,249,255,0.92));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-hero::after {
+  content: "";
+  position: absolute;
+  right: -5rem;
+  bottom: -6rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.28), transparent 70%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-hero h2 {
+  max-width: 44rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-hero p {
+  max-width: 40rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-counts {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-counts > div {
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 14px 34px rgba(15, 23, 42, 0.07);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-counts span {
+  display: block;
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-counts strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: #0f172a;
+  font-size: 2.4rem;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-toolbar p {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #2563eb;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-search-wrap:focus-within {
+  border-color: rgba(37, 99, 235, 0.42);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  transform: translateY(-1px);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-search {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-search::placeholder {
+  color: #94a3b8;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card {
+  display: flex;
+  min-height: 17rem;
+  flex-direction: column;
+  justify-content: space-between;
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.92), rgba(207, 250, 254, 0.82));
+  color: #2563eb;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card h2 {
+  margin-top: 1rem;
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card p {
+  margin-top: 0.65rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-meta {
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-meta span {
+  display: inline-flex;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.88);
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-actions {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+  .theme-pocket-lite-daylight .lite-catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .theme-pocket-lite-daylight .lite-catalog-hero,
+  .theme-pocket-lite-daylight .lite-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-toolbar p {
+    padding-left: 0.3rem;
+  }
+}
+
+/* Pocket Lab Lite Identity & Access polish */
+.theme-pocket-lite-daylight .lite-identity-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.7fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(99, 102, 241, 0.14), transparent 24rem),
+    radial-gradient(circle at 86% 18%, rgba(45, 212, 191, 0.15), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,0.96), rgba(238,242,255,0.92));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-identity-hero::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.28), transparent 70%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-identity-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-hero h2 {
+  max-width: 46rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-identity-hero p {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-identity-status-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.6rem;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-identity-icon,
+.theme-pocket-lite-daylight .lite-identity-mini-icon {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  background: linear-gradient(135deg, rgba(224, 231, 255, 0.92), rgba(204, 251, 241, 0.76));
+  color: #4f46e5;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+}
+
+.theme-pocket-lite-daylight .lite-identity-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1.2rem;
+  animation: lite-identity-fingerprint 3.2s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-identity-mini-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-status-card span,
+.theme-pocket-lite-daylight .lite-identity-field-label {
+  color: #4f46e5;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-identity-status-card strong {
+  color: #0f172a;
+  font-size: 2.75rem;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-identity-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-card {
+  min-height: 22rem;
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-identity-action-card {
+  animation-delay: 55ms;
+}
+
+.theme-pocket-lite-daylight .lite-identity-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-card h2 {
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-identity-card p {
+  margin-top: 0.7rem;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
+.theme-pocket-lite-daylight .lite-identity-checklist {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-checklist > div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.theme-pocket-lite-daylight .lite-check-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.10);
+}
+
+.theme-pocket-lite-daylight .lite-identity-soft-badge {
+  display: inline-flex;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  border-radius: 999px;
+  background: rgba(238, 242, 255, 0.86);
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-identity-field-label {
+  display: block;
+  margin-top: 1.25rem;
+  margin-bottom: 0.55rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-select {
+  width: 100%;
+  appearance: none;
+  cursor: pointer;
+}
+
+.theme-pocket-lite-daylight .lite-identity-safe-note {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 1.1rem;
+  background: rgba(239, 246, 255, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-identity-safe-note strong {
+  color: #1e3a8a;
+  font-size: 0.9rem;
+}
+
+.theme-pocket-lite-daylight .lite-identity-safe-note span {
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+@keyframes lite-identity-fingerprint {
+  0%, 100% {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 0 rgba(79, 70, 229, 0.12);
+  }
+  50% {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 8px rgba(79, 70, 229, 0.05);
+  }
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-identity-hero,
+  .theme-pocket-lite-daylight .lite-identity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-identity-status-card {
+    min-height: auto;
+  }
+}
+
+/* Pocket Lab Lite Security screen polish */
+.theme-pocket-lite-daylight .lite-security-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.7fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(16, 185, 129, 0.14), transparent 24rem),
+    radial-gradient(circle at 88% 18%, rgba(59, 130, 246, 0.12), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,0.97), rgba(236,253,245,0.9));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-security-hero::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.28), transparent 70%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-security-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-hero h2 {
+  max-width: 46rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-hero p {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-security-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.65rem;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring {
+  width: 6.5rem;
+  height: 6.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background:
+    conic-gradient(#10b981 var(--score), rgba(226, 232, 240, 0.95) 0),
+    linear-gradient(135deg, #ffffff, #f8fafc);
+  box-shadow: 0 14px 34px rgba(16, 185, 129, 0.18);
+  position: relative;
+  animation: lite-security-score-in 520ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0.55rem;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring span {
+  position: relative;
+  z-index: 1;
+  color: #065f46;
+  font-size: 2rem;
+  font-weight: 950;
+  letter-spacing: -0.06em;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-card strong {
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-card p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-security-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-card {
+  min-height: 22rem;
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-security-guide-card {
+  animation-delay: 55ms;
+}
+
+.theme-pocket-lite-daylight .lite-security-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.92), rgba(219, 234, 254, 0.72));
+  color: #059669;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+}
+
+.theme-pocket-lite-daylight .lite-security-card h2 {
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-security-card p {
+  margin-top: 0.7rem;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
+.theme-pocket-lite-daylight .lite-security-summary-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-summary-list > div {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-security-summary-list strong {
+  color: #0f172a;
+  font-size: 1.3rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-summary-list p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.theme-pocket-lite-daylight .lite-security-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.10);
+}
+
+.theme-pocket-lite-daylight .lite-security-dot-warning {
+  background: #f59e0b;
+  box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-security-soft-badge {
+  display: inline-flex;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 999px;
+  background: rgba(236, 253, 245, 0.86);
+  color: #047857;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-steps > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-security-steps span {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.18);
+}
+
+.theme-pocket-lite-daylight .lite-security-steps p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.93rem;
+  font-weight: 800;
+}
+
+@keyframes lite-security-score-in {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-security-hero,
+  .theme-pocket-lite-daylight .lite-security-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-score-card {
+    min-height: auto;
+  }
+}
+
+/* Pocket Lab Lite Devices screen polish */
+.theme-pocket-lite-daylight .lite-devices-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.7fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.15), transparent 24rem),
+    radial-gradient(circle at 88% 18%, rgba(99, 102, 241, 0.12), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,0.97), rgba(240,249,255,0.92));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-devices-hero::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.28), transparent 70%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-devices-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-hero h2 {
+  max-width: 46rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-devices-hero p {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-devices-count-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.55rem;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-devices-orbit {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, rgba(207, 250, 254, 0.92), rgba(219, 234, 254, 0.76));
+  color: #0891b2;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+  animation: lite-devices-orbit 3.4s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-devices-count-card span,
+.theme-pocket-lite-daylight .lite-devices-field-label,
+.theme-pocket-lite-daylight .lite-devices-section-title p {
+  color: #0891b2;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-devices-count-card strong {
+  color: #0f172a;
+  font-size: 4rem;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-devices-count-card p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-layout {
+  display: grid;
+  grid-template-columns: minmax(290px, 0.55fr) minmax(0, 1.25fr);
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-add-card,
+.theme-pocket-lite-daylight .lite-device-card {
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-devices-card-head,
+.theme-pocket-lite-daylight .lite-device-card-top,
+.theme-pocket-lite-daylight .lite-devices-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-section-title {
+  margin-bottom: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-section-title h2 {
+  margin-top: 0.15rem;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-devices-section-title > span {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-devices-mini-icon,
+.theme-pocket-lite-daylight .lite-device-icon {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  background: linear-gradient(135deg, rgba(207, 250, 254, 0.92), rgba(219, 234, 254, 0.72));
+  color: #0891b2;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+}
+
+.theme-pocket-lite-daylight .lite-devices-mini-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-icon {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1.1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-pulse {
+  position: absolute;
+  right: 0.4rem;
+  top: 0.4rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.13);
+  animation: lite-status-breathe 2.8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-device-pulse-muted {
+  background: #94a3b8;
+  box-shadow: 0 0 0 5px rgba(148, 163, 184, 0.12);
+  animation: none;
+}
+
+.theme-pocket-lite-daylight .lite-devices-soft-badge {
+  display: inline-flex;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 999px;
+  background: rgba(240, 249, 255, 0.88);
+  color: #0369a1;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-devices-add-card h2,
+.theme-pocket-lite-daylight .lite-device-card h2 {
+  margin-top: 1rem;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-devices-add-card p {
+  margin-top: 0.7rem;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
+.theme-pocket-lite-daylight .lite-devices-field-label {
+  display: block;
+  margin-top: 1.25rem;
+  margin-bottom: 0.55rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-input {
+  width: 100%;
+}
+
+.theme-pocket-lite-daylight .lite-devices-safe-note {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(14, 165, 233, 0.16);
+  border-radius: 1.1rem;
+  background: rgba(240, 249, 255, 0.84);
+}
+
+.theme-pocket-lite-daylight .lite-devices-safe-note strong {
+  color: #075985;
+  font-size: 0.9rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-safe-note span {
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-devices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-card:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.theme-pocket-lite-daylight .lite-device-card:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.theme-pocket-lite-daylight .lite-device-details {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-details > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-device-details span {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 850;
+}
+
+.theme-pocket-lite-daylight .lite-device-details strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 950;
+  text-align: right;
+}
+
+@keyframes lite-devices-orbit {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 0 rgba(14, 165, 233, 0.12);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-3deg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 8px rgba(14, 165, 233, 0.05);
+  }
+}
+
+@media (max-width: 1100px) {
+  .theme-pocket-lite-daylight .lite-devices-layout,
+  .theme-pocket-lite-daylight .lite-devices-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-devices-count-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .theme-pocket-lite-daylight .lite-devices-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-details > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-details strong {
+    text-align: left;
+  }
+}
+
+/* Pocket Lab Lite Rules screen polish */
+.theme-pocket-lite-daylight .lite-rules-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.7fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(99, 102, 241, 0.14), transparent 24rem),
+    radial-gradient(circle at 88% 18%, rgba(16, 185, 129, 0.13), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,0.97), rgba(238,242,255,0.92));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-rules-hero::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.26), transparent 70%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-rules-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-hero h2 {
+  max-width: 46rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-rules-hero p {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-rules-status-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.55rem;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-rules-icon,
+.theme-pocket-lite-daylight .lite-rules-mini-icon {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: linear-gradient(135deg, rgba(224, 231, 255, 0.92), rgba(209, 250, 229, 0.74));
+  color: #4f46e5;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+}
+
+.theme-pocket-lite-daylight .lite-rules-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1.2rem;
+  animation: lite-rules-shield 3.2s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-rules-mini-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-status-card span {
+  color: #4f46e5;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-rules-status-card strong {
+  color: #0f172a;
+  font-size: 4rem;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-rules-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-card {
+  min-height: 22rem;
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-rules-guide-card {
+  animation-delay: 55ms;
+}
+
+.theme-pocket-lite-daylight .lite-rules-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-card h2 {
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-rules-card p {
+  margin-top: 0.7rem;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
+.theme-pocket-lite-daylight .lite-rules-soft-badge {
+  display: inline-flex;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 999px;
+  background: rgba(238, 242, 255, 0.86);
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.25rem;
+  background: rgba(248, 250, 252, 0.86);
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(99, 102, 241, 0.28);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle-track {
+  position: relative;
+  width: 3.5rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+  box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.14);
+  transition: background 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle-thumb {
+  position: absolute;
+  left: 0.25rem;
+  top: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.18);
+  transition: transform 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle-on {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(236, 253, 245, 0.88);
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle-on .lite-rules-toggle-track {
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle-on .lite-rules-toggle-thumb {
+  transform: translateX(1.5rem);
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-rules-toggle small {
+  display: block;
+  margin-top: 0.2rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-rules-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-rules-list > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-rules-list span {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6366f1, #06b6d4);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(99, 102, 241, 0.18);
+}
+
+.theme-pocket-lite-daylight .lite-rules-list p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.93rem;
+  font-weight: 800;
+}
+
+@keyframes lite-rules-shield {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 0 rgba(99, 102, 241, 0.12);
+  }
+  50% {
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 8px rgba(99, 102, 241, 0.05);
+  }
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-rules-hero,
+  .theme-pocket-lite-daylight .lite-rules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-rules-status-card {
+    min-height: auto;
+  }
+}
+
+/* Pocket Lab Lite Recovery screen polish */
+.theme-pocket-lite-daylight .lite-recovery-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.7fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(14, 165, 233, 0.14), transparent 24rem),
+    radial-gradient(circle at 88% 18%, rgba(251, 191, 36, 0.14), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,0.97), rgba(240,249,255,0.92));
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-hero::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -7rem;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.25), transparent 70%);
+  pointer-events: none;
+  animation: lite-home-orb 8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-hero h2 {
+  max-width: 46rem;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-hero p {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-status-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.55rem;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 18px 46px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-icon,
+.theme-pocket-lite-daylight .lite-recovery-mini-icon {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  background: linear-gradient(135deg, rgba(207, 250, 254, 0.92), rgba(219, 234, 254, 0.72));
+  color: #0891b2;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1.2rem;
+  animation: lite-recovery-save 3.2s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-mini-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-mini-icon-warning {
+  border-color: rgba(217, 119, 6, 0.24);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.92), rgba(255, 247, 237, 0.82));
+  color: #d97706;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-status-card span {
+  color: #0891b2;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-status-card strong {
+  color: #0f172a;
+  font-size: 3.2rem;
+  line-height: 0.95;
+  letter-spacing: -0.08em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-card {
+  min-height: 24rem;
+  animation: lite-soft-rise 360ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-restore-card {
+  border-color: rgba(217, 119, 6, 0.24) !important;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(251, 191, 36, 0.12), transparent 14rem),
+    rgba(255, 255, 255, 0.88) !important;
+  animation-delay: 55ms;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-card h2 {
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-card p {
+  margin-top: 0.7rem;
+  color: #475569;
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-checklist {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-checklist > div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #10b981;
+  box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.10);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-warning-badge {
+  display: inline-flex;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(217, 119, 6, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 251, 235, 0.92);
+  color: #92400e;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(217, 119, 6, 0.22);
+  border-radius: 1.25rem;
+  background: rgba(255, 251, 235, 0.88);
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm:hover {
+  transform: translateY(-1px);
+  border-color: rgba(217, 119, 6, 0.34);
+  box-shadow: 0 14px 34px rgba(146, 64, 14, 0.10);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm-box {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(217, 119, 6, 0.34);
+  border-radius: 0.7rem;
+  background: #ffffff;
+  color: #ffffff;
+  font-weight: 950;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm-on {
+  border-color: rgba(16, 185, 129, 0.34);
+  background: rgba(236, 253, 245, 0.88);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm-on .lite-recovery-confirm-box {
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  border-color: rgba(16, 185, 129, 0.34);
+  color: #ffffff;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confirm small {
+  display: block;
+  margin-top: 0.2rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-warning-note {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(217, 119, 6, 0.20);
+  border-radius: 1.1rem;
+  background: rgba(255, 251, 235, 0.9);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-warning-note strong {
+  color: #92400e;
+  font-size: 0.9rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-warning-note span {
+  color: #78350f;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+@keyframes lite-recovery-save {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 0 rgba(14, 165, 233, 0.12);
+  }
+  50% {
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.82), 0 0 0 8px rgba(14, 165, 233, 0.05);
+  }
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-recovery-hero,
+  .theme-pocket-lite-daylight .lite-recovery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-status-card {
+    min-height: auto;
+  }
+}

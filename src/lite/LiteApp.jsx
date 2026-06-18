@@ -35,6 +35,53 @@ function serviceTone(status) {
   return value || 'unknown';
 }
 
+function normalizeBackendState(status) {
+  const value = String(status || 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
+
+  if (['healthy', 'ready', 'online', 'success', 'succeeded', 'auto_approved'].includes(value)) {
+    return 'ready';
+  }
+
+  if (['degraded', 'warning', 'needs_attention', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused'].includes(value)) {
+    return 'review';
+  }
+
+  if (['unhealthy', 'failed', 'failure', 'error', 'blocked', 'unavailable'].includes(value)) {
+    return 'danger';
+  }
+
+  return 'checking';
+}
+
+function backendBadgeStatus(status) {
+  const state = normalizeBackendState(status);
+  if (state === 'ready') return 'healthy';
+  if (state === 'review') return 'degraded';
+  if (state === 'danger') return 'unhealthy';
+  return 'unknown';
+}
+
+function backendLabel(status, labels = {}) {
+  const state = normalizeBackendState(status);
+  const defaults = {
+    ready: 'Ready',
+    review: 'Review recommended',
+    danger: 'Needs attention',
+    checking: 'Checking',
+  };
+  return labels[state] || defaults[state];
+}
+
+function backendHeroTitle(status, labels = {}) {
+  return backendLabel(status, {
+    ready: labels.ready || 'Everything looks good',
+    review: labels.review || 'Review recommended',
+    danger: labels.danger || 'Needs attention',
+    checking: labels.checking || 'Checking status',
+  });
+}
+
+
 function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
     <div className="mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
@@ -88,80 +135,183 @@ function LoadingCard({ label = 'Loading Pocket Lab Lite...' }) {
   );
 }
 
+function friendlyOverallLabel(overall) {
+  return backendLabel(overall, {
+    ready: 'Everything looks good',
+    review: 'A few things need attention',
+    danger: 'Needs attention',
+    checking: 'Checking your setup',
+  });
+}
+
 function HomeScreen({ status, loading, error, refresh, onNavigate }) {
   const primaryServices = useMemo(() => status.services?.slice(0, 6) || [], [status.services]);
   const stats = status.summary || {};
+  const readyServices = primaryServices.filter((service) => serviceTone(service.status) === 'healthy').length;
+  const totalServices = primaryServices.length || 0;
+
   return (
     <>
       <PageHeader
-        title="Home"
-        description="A simple overview of this Pocket Lab Lite device, what needs attention, and the safest next actions."
+        eyebrow="Home"
+        title={backendHeroTitle(status.overall, { ready: 'Your Pocket Lab is ready', review: 'Your Pocket Lab needs review', danger: 'Your Pocket Lab needs attention', checking: 'Checking your Pocket Lab' })}
+        description="A calm overview of your apps, devices, safety, and backups. Start common tasks from here without digging through settings."
         actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
       />
-      {error ? <StateSurface tone="degraded" title="Pocket Lab Lite is not reachable" description={error} className="mb-5" /> : null}
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
-        <GlassCard>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Device status</p>
-              <h2 className="mt-2 text-2xl font-black text-white">{status.device?.name || 'pocket-lab'}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">Mode: Lite · Resource profile: {status.device?.resource_profile || 'low-power'}</p>
-            </div>
-            <StatusBadge status={status.overall}>{status.overall === 'healthy' ? 'Ready' : 'Needs attention'}</StatusBadge>
+
+      {error ? (
+        <StateSurface
+          tone="degraded"
+          title="Pocket Lab needs a moment"
+          description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      <section className="lite-home-hero">
+        <div className="lite-home-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            {friendlyOverallLabel(status.overall)}
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-2xl font-black text-white">{stats.apps_available ?? 0}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Apps available</p>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-2xl font-black text-white">{stats.devices_known ?? 0}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Devices known</p>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-              <p className="text-2xl font-black text-white">{stats.security_findings ?? 0}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Items to review</p>
-            </div>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <LiteButton onClick={() => onNavigate('catalog')}>Install App</LiteButton>
+          <h2>Manage your private apps and devices from one simple place.</h2>
+          <p>
+            Pocket Lab Lite keeps the essentials close: apps, access, safety checks,
+            devices, rules, and recovery.
+          </p>
+          <div className="lite-home-actions">
+            <LiteButton onClick={() => onNavigate('catalog')}>Browse Apps</LiteButton>
             <LiteButton onClick={() => onNavigate('devices')} tone="secondary">Add Device</LiteButton>
-            <LiteButton onClick={() => onNavigate('security')} tone="secondary">Run Safety Check</LiteButton>
-            <LiteButton onClick={() => onNavigate('recovery')} tone="secondary">Backup Now</LiteButton>
+            <LiteButton onClick={() => onNavigate('security')} tone="secondary">Safety Check</LiteButton>
+            <LiteButton onClick={() => onNavigate('recovery')} tone="secondary">Backup</LiteButton>
           </div>
-        </GlassCard>
+        </div>
+
+        <div className="lite-home-readiness-card">
+          <p className="lite-home-card-label">Today’s status</p>
+          <strong>{readyServices}/{totalServices || '—'}</strong>
+          <span>key areas ready</span>
+          <StatusBadge status={status.overall}>
+            {status.overall === 'healthy' ? 'Ready' : 'Needs attention'}
+          </StatusBadge>
+        </div>
+      </section>
+
+      <div className="lite-home-stats">
+        <div className="lite-home-stat-card">
+          <span>Apps</span>
+          <strong>{stats.apps_available ?? 0}</strong>
+          <p>available to install or manage</p>
+        </div>
+        <div className="lite-home-stat-card">
+          <span>Devices</span>
+          <strong>{stats.devices_known ?? 0}</strong>
+          <p>known to this Pocket Lab</p>
+        </div>
+        <div className="lite-home-stat-card">
+          <span>Safety</span>
+          <strong>{stats.security_findings ?? 0}</strong>
+          <p>items that need review</p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <GlassCard>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Telemetry</p>
-          <div className="mt-4 grid gap-3 text-sm text-slate-300">
-            <div className="flex justify-between gap-3"><span>CPU usage</span><strong className="text-white">{status.telemetry?.cpu_usage_percent ?? '—'}%</strong></div>
-            <div className="flex justify-between gap-3"><span>CPU temperature</span><strong className="text-white">{status.telemetry?.cpu_temp_c ?? '—'}°C</strong></div>
-            <div className="flex justify-between gap-3"><span>Free space</span><strong className="text-white">{status.telemetry?.free_space_mb ?? '—'} MB</strong></div>
-            <div className="flex justify-between gap-3"><span>Memory used</span><strong className="text-white">{status.telemetry?.memory_usage_mb ?? '—'} MB</strong></div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">This device</p>
+              <h2 className="mt-2 text-2xl font-black text-white">{status.device?.name || 'Pocket Lab'}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                Set up for a small, private environment with the essentials enabled.
+              </p>
+            </div>
+            <StatusBadge status={status.overall}>
+              {status.overall === 'healthy' ? 'Ready' : 'Needs attention'}
+            </StatusBadge>
           </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="lite-home-device-metric">
+              <span>Device load</span>
+              <strong>{status.telemetry?.cpu_usage_percent ?? '—'}%</strong>
+            </div>
+            <div className="lite-home-device-metric">
+              <span>Device warmth</span>
+              <strong>{status.telemetry?.cpu_temp_c ?? '—'}°C</strong>
+            </div>
+            <div className="lite-home-device-metric">
+              <span>Storage available</span>
+              <strong>{status.telemetry?.free_space_mb ?? '—'} MB</strong>
+            </div>
+            <div className="lite-home-device-metric">
+              <span>Memory in use</span>
+              <strong>{status.telemetry?.memory_usage_mb ?? '—'} MB</strong>
+            </div>
+          </div>
+
           <p className="mt-4 text-xs text-slate-500">Last checked: {formatLiteTime(status.checked_at)}</p>
         </GlassCard>
+
+        <GlassCard>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Needs attention</p>
+          <h2 className="mt-2 text-2xl font-black text-white">
+            {(stats.security_findings ?? 0) === 0 ? 'Nothing urgent right now' : 'Review recommended'}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Pocket Lab will highlight problems here when apps, devices, safety checks,
+            or backups need your attention.
+          </p>
+          <div className="mt-5">
+            <LiteButton onClick={() => onNavigate('security')} tone="secondary">Review Safety</LiteButton>
+          </div>
+        </GlassCard>
       </div>
-      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {loading ? <LoadingCard /> : primaryServices.map((service) => (
-          <GlassCard key={service.name}>
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-base font-black text-white">{service.name}</h3>
-              <StatusBadge status={serviceTone(service.status)} />
-            </div>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{service.summary}</p>
-          </GlassCard>
-        ))}
-      </div>
+
+      <section className="mt-4">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Key areas</p>
+            <h2 className="text-xl font-black text-white">What is ready</h2>
+          </div>
+          {loading ? <span className="text-sm text-slate-400">Checking...</span> : null}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {loading ? <LoadingCard /> : primaryServices.map((service) => (
+            <GlassCard key={service.name} className="lite-home-service-card">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-base font-black text-white">{service.name}</h3>
+                <StatusBadge status={serviceTone(service.status)}>
+                  {serviceTone(service.status) === 'healthy' ? 'Ready' : 'Check'}
+                </StatusBadge>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-300">{service.summary}</p>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
     </>
   );
 }
 
 function CatalogScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
+  const [query, setQuery] = useState('');
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const items = data?.items || [];
+
+  const filteredItems = useMemo(() => {
+    const value = query.trim().toLowerCase();
+    if (!value) return items;
+    return items.filter((item) => {
+      return `${item.name || ''} ${item.summary || ''}`.toLowerCase().includes(value);
+    });
+  }, [items, query]);
+
+  const installedCount = items.filter((item) => item.installed).length;
+  const attentionCount = items.filter((item) => String(item.status || '').toLowerCase().includes('attention')).length;
 
   async function install(item) {
     setBusyId(item.id);
@@ -179,24 +329,111 @@ function CatalogScreen() {
 
   return (
     <>
-      <PageHeader title="App Catalog" description="Install and manage simple app/service packages without showing backend package details." actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>} />
-      {error ? <StateSurface tone="degraded" title="Catalog unavailable" description={error} className="mb-5" /> : null}
-      {loading ? <LoadingCard label="Loading app catalog..." /> : null}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {items.map((item) => (
-          <GlassCard key={item.id}>
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-black text-white">{item.name}</h2>
-              <StatusBadge status={item.installed ? 'healthy' : 'ready'}>{item.installed ? 'Installed' : 'Available'}</StatusBadge>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{item.summary}</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <LiteButton onClick={() => install(item)} disabled={busyId === item.id}>{busyId === item.id ? 'Starting...' : 'Install'}</LiteButton>
-            </div>
-          </GlassCard>
-        ))}
+      <PageHeader
+        eyebrow="Apps"
+        title="App Catalog"
+        description="Choose useful apps for this Pocket Lab. Installed apps stay easy to see, and new installs are prepared safely for you."
+        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+      />
+
+      <section className="lite-catalog-hero">
+        <div className="lite-catalog-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            Ready to browse
+          </div>
+          <h2>Pick what you want this device to run.</h2>
+          <p>
+            Start with the essentials, add services when you need them, and keep the experience focused on what matters.
+          </p>
+        </div>
+
+        <div className="lite-catalog-counts">
+          <div>
+            <span>Available</span>
+            <strong>{items.length}</strong>
+          </div>
+          <div>
+            <span>Installed</span>
+            <strong>{installedCount}</strong>
+          </div>
+          <div>
+            <span>Review</span>
+            <strong>{attentionCount}</strong>
+          </div>
+        </div>
+      </section>
+
+      <div className="lite-catalog-toolbar">
+        <div className="lite-catalog-search-wrap">
+          <LayoutGrid className="h-5 w-5" />
+          <input
+            className="lite-catalog-search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search apps"
+            aria-label="Search apps"
+          />
+        </div>
+        <p>{filteredItems.length} shown</p>
       </div>
-      {!loading && items.length === 0 ? <StateSurface tone="empty" title="No apps yet" description="Refresh the catalog after bootstrap or add app metadata to the catalog source." /> : null}
+
+      {error ? (
+        <StateSurface
+          tone="degraded"
+          title="Catalog needs a moment"
+          description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      {loading ? <LoadingCard label="Loading apps..." /> : null}
+
+      <div className="lite-catalog-grid">
+        {filteredItems.map((item) => {
+          const installed = Boolean(item.installed);
+          const needsAttention = String(item.status || '').toLowerCase().includes('attention');
+
+          return (
+            <GlassCard key={item.id} className="lite-catalog-card">
+              <div className="lite-catalog-card-top">
+                <div className="lite-catalog-icon">
+                  <LayoutGrid className="h-5 w-5" />
+                </div>
+                <StatusBadge status={needsAttention ? 'degraded' : installed ? 'healthy' : 'ready'}>
+                  {needsAttention ? 'Check' : installed ? 'Installed' : 'Available'}
+                </StatusBadge>
+              </div>
+
+              <h2>{item.name}</h2>
+              <p>{item.summary}</p>
+
+              <div className="lite-catalog-meta">
+                <span>{installed ? 'Already on this device' : 'Ready when you are'}</span>
+              </div>
+
+              <div className="lite-catalog-actions">
+                <LiteButton
+                  onClick={() => install(item)}
+                  disabled={busyId === item.id || installed}
+                  tone={installed ? 'secondary' : 'primary'}
+                >
+                  {busyId === item.id ? 'Starting...' : installed ? 'Installed' : 'Install'}
+                </LiteButton>
+              </div>
+            </GlassCard>
+          );
+        })}
+      </div>
+
+      {!loading && filteredItems.length === 0 ? (
+        <StateSurface
+          tone="empty"
+          title={query ? 'No matching apps' : 'No apps yet'}
+          description={query ? 'Try a different search term.' : 'Refresh the catalog after setup or add app entries to your catalog source.'}
+        />
+      ) : null}
+
       <ResultNotice result={result} error={actionError} />
     </>
   );
@@ -225,27 +462,145 @@ function IdentityScreen() {
 
   return (
     <>
-      <PageHeader title="Identity & Access" description="Manage passwords and access readiness without exposing raw Vault paths, tokens, or policies." actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>} />
-      <GlassCard>
-        {loading ? <p className="text-sm text-slate-400">Checking access readiness...</p> : null}
-        {error ? <StateSurface tone="degraded" title="Access summary unavailable" description={error} /> : null}
-        {data ? (
-          <>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Passwords & Access</p>
-                <h2 className="mt-2 text-2xl font-black text-white">Access is protected</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{data.summary}</p>
-              </div>
-              <StatusBadge status={data.status} />
+      <PageHeader
+        eyebrow="Access"
+        title="Identity & Access"
+        description="Keep passwords and local access in a safe state. Change access only when you need to, with a clear record of the request."
+        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+      />
+
+      <section className="lite-identity-hero">
+        <div className="lite-identity-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            {backendLabel(data?.status, {
+              ready: 'Access protected',
+              review: 'Access needs review',
+              danger: 'Access needs attention',
+              checking: 'Checking access',
+            })}
+          </div>
+          <h2>{backendHeroTitle(data?.status, {
+            ready: 'Your passwords and access are kept in one safe place.',
+            review: 'Access protection may need your review.',
+            danger: 'Access needs attention.',
+            checking: 'Checking access protection.',
+          })}</h2>
+          <p>
+            Review access readiness, change a password safely, and keep your Pocket Lab protected without handling sensitive details yourself.
+          </p>
+        </div>
+
+        <div className="lite-identity-status-card">
+          <div className="lite-identity-icon">
+            <Fingerprint className="h-7 w-7" />
+          </div>
+          <span>Current state</span>
+          <strong>{backendLabel(data?.status, {
+            ready: 'Protected',
+            review: 'Review',
+            danger: 'Attention',
+            checking: 'Checking',
+          })}</strong>
+          <StatusBadge status={backendBadgeStatus(data?.status)}>
+            {backendLabel(data?.status, {
+              ready: 'Ready',
+              review: 'Review',
+              danger: 'Attention',
+              checking: 'Checking',
+            })}
+          </StatusBadge>
+        </div>
+      </section>
+
+      {loading ? <LoadingCard label="Checking access..." /> : null}
+
+      {error ? (
+        <StateSurface
+          tone="degraded"
+          title="Access summary needs a moment"
+          description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      <div className="lite-identity-grid">
+        <GlassCard className="lite-identity-card">
+          <div className="lite-identity-card-head">
+            <div className="lite-identity-mini-icon">
+              <ShieldCheck className="h-5 w-5" />
             </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
-              <input className="pocket-input" value={target} onChange={(event) => setTarget(event.target.value)} aria-label="Password or access target" />
-              <LiteButton onClick={rotate} disabled={busy}>{busy ? 'Changing...' : 'Change Password'}</LiteButton>
+            <StatusBadge status={backendBadgeStatus(data?.status)}>
+              {backendLabel(data?.status, {
+                ready: 'Ready',
+                review: 'Review',
+                danger: 'Attention',
+                checking: 'Checking',
+              })}
+            </StatusBadge>
+          </div>
+
+          <h2>Access readiness</h2>
+          <p>
+            {data?.summary || 'Pocket Lab is checking whether access protection is ready.'}
+          </p>
+
+          <div className="lite-identity-checklist">
+            <div>
+              <span className="lite-check-dot" />
+              Password changes are requested safely
             </div>
-          </>
-        ) : null}
-      </GlassCard>
+            <div>
+              <span className="lite-check-dot" />
+              Sensitive values stay hidden
+            </div>
+            <div>
+              <span className="lite-check-dot" />
+              Changes are recorded for review
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="lite-identity-card lite-identity-action-card">
+          <div className="lite-identity-card-head">
+            <div className="lite-identity-mini-icon">
+              <Fingerprint className="h-5 w-5" />
+            </div>
+            <span className="lite-identity-soft-badge">Safe change</span>
+          </div>
+
+          <h2>Change a password</h2>
+          <p>
+            Choose what you want to update. Pocket Lab will prepare the change and keep the sensitive value hidden.
+          </p>
+
+          <label className="lite-identity-field-label" htmlFor="identity-target">
+            What should be updated?
+          </label>
+          <select
+            id="identity-target"
+            className="pocket-input lite-identity-select"
+            value={target}
+            onChange={(event) => setTarget(event.target.value)}
+          >
+            <option value="local-admin">Main admin access</option>
+            <option value="app-access">App access password</option>
+            <option value="device-access">Device access password</option>
+          </select>
+
+          <div className="lite-identity-safe-note">
+            <strong>Before it runs</strong>
+            <span>You will see a clear request result. The password itself will not be shown here.</span>
+          </div>
+
+          <div className="mt-5">
+            <LiteButton onClick={rotate} disabled={busy}>
+              {busy ? 'Preparing...' : 'Change Password'}
+            </LiteButton>
+          </div>
+        </GlassCard>
+      </div>
+
       <ResultNotice result={result} error={actionError} />
     </>
   );
@@ -256,6 +611,19 @@ function SecurityScreen() {
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+
+  const findings = Number(data?.findings_count ?? 0);
+  const checks = Number(data?.checks_count ?? 0);
+  const safetyStatus = data?.status || (findings === 0 ? 'healthy' : 'degraded');
+  const safetyState = normalizeBackendState(safetyStatus);
+  const safetyIsReady = safetyState === 'ready' && findings === 0;
+  const safetyLabel = backendLabel(safetyStatus, {
+    ready: findings === 0 ? 'Looks safe' : 'Review recommended',
+    review: 'Review recommended',
+    danger: 'Needs attention',
+    checking: 'Checking safety',
+  });
+  const safetyScore = safetyIsReady ? 100 : Math.max(55, 100 - Math.max(findings, 1) * 12);
 
   async function scan() {
     setBusy(true);
@@ -273,21 +641,135 @@ function SecurityScreen() {
 
   return (
     <>
-      <PageHeader title="Security" description="Run lightweight local safety checks and review simple findings." actions={<LiteButton onClick={scan} disabled={busy}>{busy ? 'Checking...' : 'Run Safety Check'}</LiteButton>} />
-      <GlassCard>
-        {loading ? <p className="text-sm text-slate-400">Loading safety summary...</p> : null}
-        {error ? <StateSurface tone="degraded" title="Safety summary unavailable" description={error} /> : null}
-        {data ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-200">Safety Center</p>
-              <h2 className="mt-2 text-2xl font-black text-white">{data.findings_count ? 'Review recommended fixes' : 'No critical issues'}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{data.summary}</p>
-            </div>
-            <StatusBadge status={data.status === 'needs_attention' ? 'degraded' : data.status} />
+      <PageHeader
+        eyebrow="Safety"
+        title="Security"
+        description="Check whether your Pocket Lab needs attention. The results are summarized clearly so you know what to do next."
+        actions={<LiteButton onClick={scan} disabled={busy}>{busy ? 'Checking...' : 'Run Safety Check'}</LiteButton>}
+      />
+
+      <section className="lite-security-hero">
+        <div className="lite-security-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            {safetyLabel}
           </div>
-        ) : null}
-      </GlassCard>
+          <h2>{backendHeroTitle(safetyStatus, {
+            ready: safetyIsReady ? 'No urgent safety issues found.' : 'A few items may need your review.',
+            review: 'A few items may need your review.',
+            danger: 'Safety needs attention.',
+            checking: 'Checking your safety status.',
+          })}</h2>
+          <p>
+            Run a quick safety check anytime. Pocket Lab keeps the result simple and helps you focus on what matters.
+          </p>
+          <div className="lite-security-actions">
+            <LiteButton onClick={scan} disabled={busy}>{busy ? 'Checking...' : 'Run Safety Check'}</LiteButton>
+            <LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>
+          </div>
+        </div>
+
+        <div className="lite-security-score-card">
+          <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}>
+            <span>{safetyScore}</span>
+          </div>
+          <strong>Safety score</strong>
+          <p>{backendLabel(safetyStatus, {
+            ready: safetyIsReady ? 'Everything important looks okay.' : 'Review the recommended items.',
+            review: 'Review the recommended items.',
+            danger: 'Take a look before making more changes.',
+            checking: 'Pocket Lab is checking the current result.',
+          })}</p>
+          <StatusBadge status={backendBadgeStatus(safetyStatus)}>
+            {backendLabel(safetyStatus, {
+              ready: safetyIsReady ? 'Ready' : 'Review',
+              review: 'Review',
+              danger: 'Attention',
+              checking: 'Checking',
+            })}
+          </StatusBadge>
+        </div>
+      </section>
+
+      {loading ? <LoadingCard label="Loading safety summary..." /> : null}
+
+      {error ? (
+        <StateSurface
+          tone="degraded"
+          title="Safety summary needs a moment"
+          description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      <div className="lite-security-grid">
+        <GlassCard className="lite-security-card">
+          <div className="lite-security-card-head">
+            <div className="lite-security-icon">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <StatusBadge status={backendBadgeStatus(safetyStatus)}>
+              {backendLabel(safetyStatus, {
+                ready: safetyIsReady ? 'Ready' : 'Review',
+                review: 'Review',
+                danger: 'Attention',
+                checking: 'Checking',
+              })}
+            </StatusBadge>
+          </div>
+
+          <h2>{backendHeroTitle(safetyStatus, {
+            ready: safetyIsReady ? 'No critical issues' : 'Review recommended',
+            review: 'Review recommended',
+            danger: 'Needs attention',
+            checking: 'Checking safety',
+          })}</h2>
+          <p>{data?.summary || 'Pocket Lab is checking the current safety state.'}</p>
+
+          <div className="lite-security-summary-list">
+            <div>
+              <span className="lite-security-dot" />
+              <strong>{checks || '—'}</strong>
+              <p>checks reviewed</p>
+            </div>
+            <div>
+              <span className={findings === 0 ? 'lite-security-dot' : 'lite-security-dot lite-security-dot-warning'} />
+              <strong>{findings}</strong>
+              <p>items to review</p>
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="lite-security-card lite-security-guide-card">
+          <div className="lite-security-card-head">
+            <div className="lite-security-icon">
+              <FileCheck className="h-5 w-5" />
+            </div>
+            <span className="lite-security-soft-badge">Simple guidance</span>
+          </div>
+
+          <h2>What happens during a check?</h2>
+          <p>
+            Pocket Lab reviews the local setup and reports only the outcome you need to act on.
+          </p>
+
+          <div className="lite-security-steps">
+            <div>
+              <span>1</span>
+              <p>Check local readiness</p>
+            </div>
+            <div>
+              <span>2</span>
+              <p>Summarize what changed</p>
+            </div>
+            <div>
+              <span>3</span>
+              <p>Show clear next steps</p>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+
       <ResultNotice result={result} error={actionError} />
     </>
   );
@@ -300,6 +782,7 @@ function DevicesScreen() {
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
   const devices = data?.devices || [];
+  const onlineDevices = devices.filter((device) => String(device.status || '').toLowerCase() === 'online').length;
 
   async function addDevice() {
     setBusy(true);
@@ -317,28 +800,141 @@ function DevicesScreen() {
 
   return (
     <>
-      <PageHeader title="Devices" description="Show this device and connected devices with simple online/offline status." />
-      <GlassCard className="mb-4">
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-          <input className="pocket-input" value={hostname} onChange={(event) => setHostname(event.target.value)} placeholder="Optional device name" aria-label="Device name" />
-          <LiteButton onClick={addDevice} disabled={busy}>{busy ? 'Creating invite...' : 'Add Device'}</LiteButton>
+      <PageHeader
+        eyebrow="Devices"
+        title="My Devices"
+        description="See this device and any others connected to your Pocket Lab. Add a new device when you are ready to expand."
+        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+      />
+
+      <section className="lite-devices-hero">
+        <div className="lite-devices-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            {onlineDevices > 0 ? 'Devices online' : 'Ready to add devices'}
+          </div>
+          <h2>Keep your devices easy to find and easy to trust.</h2>
+          <p>
+            Check which devices are available, when they were last seen, and add another device without handling setup details manually.
+          </p>
         </div>
-      </GlassCard>
-      {error ? <StateSurface tone="degraded" title="Device list unavailable" description={error} className="mb-4" /> : null}
-      {loading ? <LoadingCard label="Loading devices..." /> : null}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {devices.map((device) => (
-          <GlassCard key={device.id || device.name}>
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-black text-white">{device.name}</h2>
-              <StatusBadge status={device.status} />
+
+        <div className="lite-devices-count-card">
+          <div className="lite-devices-orbit">
+            <Network className="h-7 w-7" />
+          </div>
+          <span>Connected now</span>
+          <strong>{onlineDevices}</strong>
+          <p>{devices.length} total device{devices.length === 1 ? '' : 's'} known</p>
+        </div>
+      </section>
+
+      <div className="lite-devices-layout">
+        <GlassCard className="lite-devices-add-card">
+          <div className="lite-devices-card-head">
+            <div className="lite-devices-mini-icon">
+              <Network className="h-5 w-5" />
             </div>
-            <p className="mt-3 text-sm text-slate-300">Last seen: {formatLiteTime(device.last_seen)}</p>
-            <p className="mt-2 text-sm text-slate-400">Remote access {device.remote_access ? 'ready' : 'not configured yet'}</p>
-          </GlassCard>
-        ))}
+            <span className="lite-devices-soft-badge">Add safely</span>
+          </div>
+
+          <h2>Add a device</h2>
+          <p>
+            Create a simple invite for another phone, tablet, or small server you want to connect.
+          </p>
+
+          <label className="lite-devices-field-label" htmlFor="device-name">
+            Device name
+          </label>
+          <input
+            id="device-name"
+            className="pocket-input lite-devices-input"
+            value={hostname}
+            onChange={(event) => setHostname(event.target.value)}
+            placeholder="Optional, for example: Kitchen tablet"
+            aria-label="Device name"
+          />
+
+          <div className="lite-devices-safe-note">
+            <strong>What happens next</strong>
+            <span>Pocket Lab prepares an invite. You stay in control before anything joins.</span>
+          </div>
+
+          <div className="mt-5">
+            <LiteButton onClick={addDevice} disabled={busy}>
+              {busy ? 'Preparing invite...' : 'Add Device'}
+            </LiteButton>
+          </div>
+        </GlassCard>
+
+        <section className="lite-devices-list-area">
+          <div className="lite-devices-section-title">
+            <div>
+              <p>Device list</p>
+              <h2>Available devices</h2>
+            </div>
+            <span>{devices.length} shown</span>
+          </div>
+
+          {error ? (
+            <StateSurface
+              tone="degraded"
+              title="Device list needs a moment"
+              description={error}
+              className="mb-4"
+            />
+          ) : null}
+
+          {loading ? <LoadingCard label="Loading devices..." /> : null}
+
+          <div className="lite-devices-grid">
+            {devices.map((device) => {
+              const online = normalizeBackendState(device.status) === 'ready';
+
+              return (
+                <GlassCard key={device.id || device.name} className="lite-device-card">
+                  <div className="lite-device-card-top">
+                    <div className="lite-device-icon">
+                      <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
+                      <Network className="h-5 w-5" />
+                    </div>
+                    <StatusBadge status={backendBadgeStatus(device.status)}>
+                      {backendLabel(device.status, {
+                        ready: 'Online',
+                        review: 'Review',
+                        danger: 'Offline',
+                        checking: 'Checking',
+                      })}
+                    </StatusBadge>
+                  </div>
+
+                  <h2>{device.name || 'Unnamed device'}</h2>
+
+                  <div className="lite-device-details">
+                    <div>
+                      <span>Last seen</span>
+                      <strong>{formatLiteTime(device.last_seen)}</strong>
+                    </div>
+                    <div>
+                      <span>Connection</span>
+                      <strong>{device.remote_access ? 'Ready' : 'Not set up yet'}</strong>
+                    </div>
+                  </div>
+                </GlassCard>
+              );
+            })}
+          </div>
+
+          {!loading && devices.length === 0 ? (
+            <StateSurface
+              tone="empty"
+              title="No devices yet"
+              description="Add a device to create your first invite."
+            />
+          ) : null}
+        </section>
       </div>
-      {!loading && devices.length === 0 ? <StateSurface tone="empty" title="No devices yet" description="Add a device to create an invite through the control plane." /> : null}
+
       <ResultNotice result={result} error={actionError} />
     </>
   );
@@ -354,6 +950,8 @@ function RulesScreen() {
   React.useEffect(() => {
     if (data) setEnabled(Boolean(data.protection_enabled));
   }, [data]);
+
+  const rulesStatus = data ? (enabled ? 'healthy' : 'degraded') : 'unknown';
 
   async function apply() {
     setBusy(true);
@@ -371,28 +969,131 @@ function RulesScreen() {
 
   return (
     <>
-      <PageHeader title="Rules" description="Show whether basic safety rules are enabled without exposing policy internals." />
-      <GlassCard>
-        {loading ? <p className="text-sm text-slate-400">Loading rules...</p> : null}
-        {error ? <StateSurface tone="degraded" title="Rules unavailable" description={error} /> : null}
-        {data ? (
-          <>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Protection</p>
-                <h2 className="mt-2 text-2xl font-black text-white">{data.protection_enabled ? 'Protection enabled' : 'Rules available'}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{data.summary}</p>
-              </div>
-              <StatusBadge status={data.status === 'needs_attention' ? 'degraded' : data.status} />
+      <PageHeader
+        eyebrow="Rules"
+        title="Safety Rules"
+        description="Choose how careful Pocket Lab should be before making changes. Keep protection on for everyday use."
+        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+      />
+
+      <section className="lite-rules-hero">
+        <div className="lite-rules-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            {backendLabel(rulesStatus, {
+              ready: 'Protection on',
+              review: 'Ready to enable',
+              danger: 'Needs attention',
+              checking: 'Checking rules',
+            })}
+          </div>
+          <h2>Simple rules help prevent unwanted changes.</h2>
+          <p>
+            Pocket Lab can pause sensitive actions, ask for confirmation, and keep a clear record of important changes.
+          </p>
+        </div>
+
+        <div className="lite-rules-status-card">
+          <div className="lite-rules-icon">
+            <FileCheck className="h-7 w-7" />
+          </div>
+          <span>Protection</span>
+          <strong>{enabled ? 'On' : 'Off'}</strong>
+          <StatusBadge status={backendBadgeStatus(rulesStatus)}>
+            {backendLabel(rulesStatus, {
+              ready: 'Enabled',
+              review: 'Review',
+              danger: 'Attention',
+              checking: 'Checking',
+            })}
+          </StatusBadge>
+        </div>
+      </section>
+
+      {loading ? <LoadingCard label="Loading rules..." /> : null}
+
+      {error ? (
+        <StateSurface
+          tone="degraded"
+          title="Rules need a moment"
+          description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      <div className="lite-rules-grid">
+        <GlassCard className="lite-rules-card lite-rules-toggle-card">
+          <div className="lite-rules-card-head">
+            <div className="lite-rules-mini-icon">
+              <ShieldCheck className="h-5 w-5" />
             </div>
-            <label className="mt-5 flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />
-              Protection enabled
-            </label>
-            <div className="mt-4"><LiteButton onClick={apply} disabled={busy}>{busy ? 'Applying...' : 'Apply Rules'}</LiteButton></div>
-          </>
-        ) : null}
-      </GlassCard>
+            <StatusBadge status={backendBadgeStatus(rulesStatus)}>
+              {backendLabel(rulesStatus, {
+                ready: 'Protected',
+                review: 'Not enabled',
+                danger: 'Attention',
+                checking: 'Checking',
+              })}
+            </StatusBadge>
+          </div>
+
+          <h2>Protection mode</h2>
+          <p>
+            {data?.summary || 'Pocket Lab is checking whether protection is enabled.'}
+          </p>
+
+          <button
+            type="button"
+            className={`lite-rules-toggle ${enabled ? 'lite-rules-toggle-on' : ''}`}
+            onClick={() => setEnabled((value) => !value)}
+            aria-pressed={enabled}
+          >
+            <span className="lite-rules-toggle-track">
+              <span className="lite-rules-toggle-thumb" />
+            </span>
+            <span>
+              <strong>{enabled ? 'Protection is on' : 'Protection is off'}</strong>
+              <small>{enabled ? 'Recommended for everyday use' : 'Turn on to add an extra safety step'}</small>
+            </span>
+          </button>
+
+          <div className="mt-5">
+            <LiteButton onClick={apply} disabled={busy}>
+              {busy ? 'Saving...' : 'Save Rules'}
+            </LiteButton>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="lite-rules-card lite-rules-guide-card">
+          <div className="lite-rules-card-head">
+            <div className="lite-rules-mini-icon">
+              <FileCheck className="h-5 w-5" />
+            </div>
+            <span className="lite-rules-soft-badge">Recommended</span>
+          </div>
+
+          <h2>What these rules do</h2>
+          <p>
+            Rules keep important actions intentional without making the app hard to use.
+          </p>
+
+          <div className="lite-rules-list">
+            <div>
+              <span>1</span>
+              <p>Ask before sensitive changes</p>
+            </div>
+            <div>
+              <span>2</span>
+              <p>Keep a clear record</p>
+            </div>
+            <div>
+              <span>3</span>
+              <p>Let safe everyday actions stay simple</p>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+
       <ResultNotice result={result} error={actionError} />
     </>
   );
@@ -409,6 +1110,7 @@ function RecoveryScreen() {
   async function backup() {
     setBusy('backup');
     setBackupResult(null);
+    setRestoreResult(null);
     setActionError(null);
     try {
       setBackupResult(await liteApi.backupNow({ include_event_journal: true }));
@@ -423,6 +1125,7 @@ function RecoveryScreen() {
   async function restore() {
     setBusy('restore');
     setRestoreResult(null);
+    setBackupResult(null);
     setActionError(null);
     try {
       setRestoreResult(await liteApi.restoreBackup({ backup_ref: 'latest', confirm: confirmRestore }));
@@ -436,30 +1139,162 @@ function RecoveryScreen() {
 
   return (
     <>
-      <PageHeader title="Recovery" description="Create backups and restore only after clear confirmation." actions={<LiteButton onClick={backup} disabled={busy === 'backup'}>{busy === 'backup' ? 'Starting...' : 'Backup Now'}</LiteButton>} />
-      <GlassCard>
-        {loading ? <p className="text-sm text-slate-400">Loading recovery summary...</p> : null}
-        {error ? <StateSurface tone="degraded" title="Recovery summary unavailable" description={error} /> : null}
-        {data ? (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Backup & Restore</p>
-              <h2 className="mt-2 text-2xl font-black text-white">Recovery ready</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{data.summary}</p>
-            </div>
-            <StatusBadge status={data.status} />
+      <PageHeader
+        eyebrow="Recovery"
+        title="Backup & Restore"
+        description="Create a safety copy before changes and restore only when you clearly choose to continue."
+        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+      />
+
+      <section className="lite-recovery-hero">
+        <div className="lite-recovery-hero-copy">
+          <div className="lite-home-pill">
+            <span className="lite-ready-dot" />
+            {backendLabel(data?.status, {
+              ready: 'Recovery ready',
+              review: 'Recovery needs review',
+              danger: 'Recovery needs attention',
+              checking: 'Checking recovery',
+            })}
           </div>
-        ) : null}
-      </GlassCard>
-      <GlassCard className="mt-4 border-amber-300/20 bg-amber-500/10">
-        <h2 className="text-lg font-black text-white">Restore</h2>
-        <p className="mt-2 text-sm leading-6 text-amber-100">Restore can change local state. Confirm before continuing.</p>
-        <label className="mt-4 flex items-center gap-3 text-sm text-amber-50">
-          <input type="checkbox" checked={confirmRestore} onChange={(event) => setConfirmRestore(event.target.checked)} />
-          I understand restore can change this device.
-        </label>
-        <div className="mt-4"><LiteButton onClick={restore} disabled={busy === 'restore'} tone="danger">{busy === 'restore' ? 'Starting restore...' : 'Restore Latest'}</LiteButton></div>
-      </GlassCard>
+          <h2>{backendHeroTitle(data?.status, {
+            ready: 'Keep a safe way back.',
+            review: 'Review your recovery setup.',
+            danger: 'Recovery needs attention.',
+            checking: 'Checking recovery readiness.',
+          })}</h2>
+          <p>
+            Back up your Pocket Lab before important changes. Restore is intentionally protected so it cannot happen by accident.
+          </p>
+          <div className="lite-recovery-actions">
+            <LiteButton onClick={backup} disabled={busy === 'backup'}>
+              {busy === 'backup' ? 'Starting backup...' : 'Backup Now'}
+            </LiteButton>
+            <LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>
+          </div>
+        </div>
+
+        <div className="lite-recovery-status-card">
+          <div className="lite-recovery-icon">
+            <Database className="h-7 w-7" />
+          </div>
+          <span>Recovery state</span>
+          <strong>{backendLabel(data?.status, {
+            ready: 'Ready',
+            review: 'Review',
+            danger: 'Attention',
+            checking: 'Checking',
+          })}</strong>
+          <StatusBadge status={backendBadgeStatus(data?.status)}>
+            {backendLabel(data?.status, {
+              ready: 'Ready',
+              review: 'Review',
+              danger: 'Attention',
+              checking: 'Checking',
+            })}
+          </StatusBadge>
+        </div>
+      </section>
+
+      {loading ? <LoadingCard label="Loading recovery..." /> : null}
+
+      {error ? (
+        <StateSurface
+          tone="degraded"
+          title="Recovery needs a moment"
+          description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      <div className="lite-recovery-grid">
+        <GlassCard className="lite-recovery-card lite-recovery-backup-card">
+          <div className="lite-recovery-card-head">
+            <div className="lite-recovery-mini-icon">
+              <Database className="h-5 w-5" />
+            </div>
+            <StatusBadge status={backendBadgeStatus(data?.status)}>
+              {backendLabel(data?.status, {
+                ready: 'Ready',
+                review: 'Review',
+                danger: 'Attention',
+                checking: 'Checking',
+              })}
+            </StatusBadge>
+          </div>
+
+          <h2>Backup</h2>
+          <p>
+            {data?.summary || 'Pocket Lab is checking whether backup and restore are ready.'}
+          </p>
+
+          <div className="lite-recovery-checklist">
+            <div>
+              <span className="lite-recovery-dot" />
+              Save a recovery point before important changes
+            </div>
+            <div>
+              <span className="lite-recovery-dot" />
+              Keep restore separate from everyday actions
+            </div>
+            <div>
+              <span className="lite-recovery-dot" />
+              Show a clear result after every request
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <LiteButton onClick={backup} disabled={busy === 'backup'}>
+              {busy === 'backup' ? 'Starting backup...' : 'Backup Now'}
+            </LiteButton>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="lite-recovery-card lite-recovery-restore-card">
+          <div className="lite-recovery-card-head">
+            <div className="lite-recovery-mini-icon lite-recovery-mini-icon-warning">
+              <FileCheck className="h-5 w-5" />
+            </div>
+            <span className="lite-recovery-warning-badge">Confirm first</span>
+          </div>
+
+          <h2>Restore</h2>
+          <p>
+            Restore can replace the current setup with the latest saved backup. Use it only when you are sure.
+          </p>
+
+          <button
+            type="button"
+            className={`lite-recovery-confirm ${confirmRestore ? 'lite-recovery-confirm-on' : ''}`}
+            onClick={() => setConfirmRestore((value) => !value)}
+            aria-pressed={confirmRestore}
+          >
+            <span className="lite-recovery-confirm-box">
+              {confirmRestore ? '✓' : ''}
+            </span>
+            <span>
+              <strong>I understand what restore does</strong>
+              <small>{confirmRestore ? 'Restore is now unlocked.' : 'Turn this on before restoring.'}</small>
+            </span>
+          </button>
+
+          <div className="lite-recovery-warning-note">
+            <strong>Restore is protected</strong>
+            <span>You must confirm before Pocket Lab starts a restore request.</span>
+          </div>
+
+          <div className="mt-5">
+            <LiteButton
+              onClick={restore}
+              disabled={busy === 'restore' || !confirmRestore}
+              tone="danger"
+            >
+              {busy === 'restore' ? 'Starting restore...' : 'Restore Latest'}
+            </LiteButton>
+          </div>
+        </GlassCard>
+      </div>
+
       <ResultNotice result={backupResult || restoreResult} error={actionError} />
     </>
   );
@@ -470,7 +1305,6 @@ export default function LiteApp() {
   const [menuOpen, setMenuOpen] = useState(false);
   const online = useOnlineStatus();
   const { status, loading, error, refresh } = useLiteStatus();
-  const activeItem = NAV_ITEMS.find((item) => item.id === active) || NAV_ITEMS[0];
 
   const content = {
     home: <HomeScreen status={status} loading={loading} error={error} refresh={refresh} onNavigate={setActive} />,
@@ -483,7 +1317,7 @@ export default function LiteApp() {
   }[active];
 
   return (
-    <div className="pocket-app-shell theme-control-plane-graphite theme-midnight-saas-simple">
+    <div className="pocket-app-shell theme-pocket-lite-daylight lite-motion-system">
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
 
@@ -505,7 +1339,7 @@ export default function LiteApp() {
             <div className="rounded-2xl border border-indigo-300/25 bg-indigo-500/15 p-2 text-indigo-100"><Download className="h-5 w-5" /></div>
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Pocket Lab Lite</p>
-              <p className="text-sm text-slate-400">Low-power local control plane</p>
+              <p className="text-sm text-slate-400">Simple self-hosted workspace</p>
             </div>
           </div>
           <div className="hidden items-center gap-2 md:flex">
@@ -564,9 +1398,6 @@ export default function LiteApp() {
       </aside>
 
       <main id="pocket-lite-main" key={active} className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
-        <div className="mb-4 rounded-3xl border border-cyan-300/15 bg-cyan-500/10 p-4 text-sm text-cyan-50">
-          <strong>{activeItem.label}</strong> · Simple appliance view. Actions are sent through the local control plane with safety checks.
-        </div>
         {content}
       </main>
     </div>
