@@ -5,12 +5,13 @@ on:
     branches:
       - main
     tags:
+      - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9].*'
       - 'lite-*'
       - 'v*'
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag to publish, for example lite-20260618-201317. Leave empty on manual runs to auto-generate a date-based Lite tag.'
+        description: 'Release tag to publish, for example 2026.06.18.1. Leave empty on manual runs to auto-generate the next date-based release tag.'
         required: false
         type: string
       prerelease:
@@ -86,7 +87,10 @@ jobs:
           elif [[ -n "${DISPATCH_RELEASE_TAG:-}" ]]; then
             echo "tag=${DISPATCH_RELEASE_TAG}" >> "$GITHUB_OUTPUT"
           elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-            echo "tag=lite-$(date -u '+%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+            today="$(date -u '+%Y.%m.%d')"
+            latest="$(git tag -l "${today}.*" | awk -F. '{print $4}' | sort -n | tail -1)"
+            next="$(( ${latest:-0} + 1 ))"
+            echo "tag=${today}.${next}" >> "$GITHUB_OUTPUT"
           else
             echo "tag=" >> "$GITHUB_OUTPUT"
           fi
