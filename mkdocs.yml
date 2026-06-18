@@ -44,3 +44,5 @@ nav:
       - Lite Security Model: security/lite-security-model.md
   - Recovery:
       - Backup and Restore: recovery/backup-restore.md
+  - Validation:
+      - Lite Validation: validation/lite-validation.md

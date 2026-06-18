@@ -34,3 +34,10 @@ Pocket Lab Lite is designed to be:
 - Devices
 - Rules
 - Recovery
+
+## Validate the Lite build
+
+Use the Lite validation guide to check bootstrap profile behavior, API endpoints, frontend build, and docs before merging changes.
+
+- [Lite Validation](validation/lite-validation.md)
+

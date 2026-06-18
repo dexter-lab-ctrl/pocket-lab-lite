@@ -606,3 +606,24 @@ tasks:
     cmds:
       - task docs:ui:check
       - task docs:ui:screenshots:check
+
+  lite:bootstrap:check:
+    desc: Validate Lite bootstrap profile selection and dry-run behavior
+    cmds:
+      - bash scripts/dev/check-lite-bootstrap.sh
+
+  lite:api:check:
+    desc: Validate FastAPI Lite API endpoints with the test client
+    cmds:
+      - bash scripts/dev/check-lite-api.sh
+
+  lite:docs:check:
+    desc: Validate Pocket Lab Lite documentation
+    cmds:
+      - mkdocs build --strict
+
+  lite:check:
+    desc: Run Pocket Lab Lite bootstrap, API, frontend, and docs validation
+    cmds:
+      - bash scripts/dev/check-lite.sh
+
