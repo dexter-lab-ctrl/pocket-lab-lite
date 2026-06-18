@@ -4348,3 +4348,110 @@ textarea {
     min-height: auto;
   }
 }
+
+/* Pocket Lab Lite device invite link flow */
+.theme-pocket-lite-daylight .lite-role-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+}
+
+.theme-pocket-lite-daylight .lite-role-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 1.1rem;
+  background: rgba(248, 250, 252, 0.78);
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-role-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(14, 165, 233, 0.38);
+  background: rgba(240, 249, 255, 0.92);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-role-card strong {
+  color: #0f172a;
+  font-size: 0.96rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-role-card span {
+  color: #475569;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-role-card-selected {
+  border-color: rgba(14, 165, 233, 0.62);
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.96), rgba(238, 242, 255, 0.94));
+  box-shadow: 0 18px 44px rgba(14, 165, 233, 0.14);
+}
+
+.theme-pocket-lite-daylight .lite-invite-card {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(16, 185, 129, 0.26);
+  border-radius: 1.3rem;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.14), transparent 18rem),
+    rgba(240, 253, 250, 0.86);
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.76);
+  animation: lite-soft-rise 260ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-invite-card-header,
+.theme-pocket-lite-daylight .lite-invite-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-invite-card-header > div,
+.theme-pocket-lite-daylight .lite-invite-card-body > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.theme-pocket-lite-daylight .lite-invite-card span,
+.theme-pocket-lite-daylight .lite-invite-card-body span {
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-invite-card strong {
+  color: #0f172a;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-invite-card p,
+.theme-pocket-lite-daylight .lite-invite-muted {
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 740px) {
+  .theme-pocket-lite-daylight .lite-role-selector,
+  .theme-pocket-lite-daylight .lite-invite-card-body {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .theme-pocket-lite-daylight .lite-invite-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

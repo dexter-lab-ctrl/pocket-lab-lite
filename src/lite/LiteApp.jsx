@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   Activity,
+  Copy,
   Database,
   Download,
   FileCheck,
@@ -16,6 +17,54 @@ import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
 import { actionReference, formatLiteTime, liteApi } from '../lib/liteApi.js';
+
+
+const DEVICE_ROLE_OPTIONS = [
+  {
+    value: 'compute',
+    label: 'App Host',
+    description: 'Runs apps and services for your Pocket Lab.',
+  },
+  {
+    value: 'storage',
+    label: 'Storage Node',
+    description: 'Stores backups, files, or app data.',
+  },
+];
+
+function roleLabel(value) {
+  return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
+}
+
+function deviceStatusLabel(status) {
+  const value = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (['pending', 'invited', 'invite_sent'].includes(value)) return 'Invite sent';
+  return backendLabel(status, {
+    ready: 'Online',
+    review: 'Review',
+    danger: 'Offline',
+    checking: 'Checking',
+  });
+}
+
+async function copyTextToClipboard(text) {
+  if (!text) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_error) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return copied;
+  }
+}
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: Activity },
@@ -42,7 +91,7 @@ function normalizeBackendState(status) {
     return 'ready';
   }
 
-  if (['degraded', 'warning', 'needs_attention', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused'].includes(value)) {
+  if (['degraded', 'warning', 'needs_attention', 'pending', 'invited', 'invite_sent', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused'].includes(value)) {
     return 'review';
   }
 
@@ -778,24 +827,48 @@ function SecurityScreen() {
 function DevicesScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.fleet, []);
   const [hostname, setHostname] = useState('');
+  const [selectedRole, setSelectedRole] = useState('compute');
   const [result, setResult] = useState(null);
+  const [invite, setInvite] = useState(null);
+  const [copied, setCopied] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
   const devices = data?.devices || [];
-  const onlineDevices = devices.filter((device) => String(device.status || '').toLowerCase() === 'online').length;
+  const latestInvite = invite || data?.latest_invite || null;
+  const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
+  const selectedRoleLabel = roleLabel(selectedRole);
 
   async function addDevice() {
     setBusy(true);
-    setResult(null);
+    setResult({ status: 'queued', summary: 'Preparing invite...' });
+    setInvite(null);
+    setCopied(false);
     setActionError(null);
     try {
-      setResult(await liteApi.addDevice({ role: 'compute', hostname: hostname || undefined }));
+      const payload = await liteApi.addDevice({ role: selectedRole, hostname: hostname || undefined });
+      setResult(payload);
+      if (payload?.status === 'invite_ready' && payload?.invite) {
+        setInvite(payload.invite);
+      } else if (payload?.status === 'queued') {
+        window.setTimeout(() => refresh(), 1800);
+      }
       refresh();
     } catch (err) {
+      setResult(null);
       setActionError(err.message);
     } finally {
       setBusy(false);
     }
+  }
+
+  async function copyInvite() {
+    const copyValue = latestInvite?.copy_text || latestInvite?.url;
+    const didCopy = await copyTextToClipboard(copyValue);
+    if (didCopy) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    }
+    refresh();
   }
 
   return (
@@ -855,9 +928,26 @@ function DevicesScreen() {
             aria-label="Device name"
           />
 
+          <div className="lite-devices-field-label">Select a role</div>
+          <div className="lite-role-selector" role="radiogroup" aria-label="Device role">
+            {DEVICE_ROLE_OPTIONS.map((role) => (
+              <button
+                key={role.value}
+                type="button"
+                className={`lite-role-card ${selectedRole === role.value ? 'lite-role-card-selected' : ''}`}
+                onClick={() => setSelectedRole(role.value)}
+                role="radio"
+                aria-checked={selectedRole === role.value}
+              >
+                <strong>{role.label}</strong>
+                <span>{role.description}</span>
+              </button>
+            ))}
+          </div>
+
           <div className="lite-devices-safe-note">
             <strong>What happens next</strong>
-            <span>Pocket Lab prepares an invite. You stay in control before anything joins.</span>
+            <span>Pocket Lab prepares an invite. Open it on the new device while it is connected to the same Pocket Lab private network.</span>
           </div>
 
           <div className="mt-5">
@@ -865,6 +955,48 @@ function DevicesScreen() {
               {busy ? 'Preparing invite...' : 'Add Device'}
             </LiteButton>
           </div>
+
+          {result?.status === 'queued' && !latestInvite ? (
+            <StateSurface
+              tone="empty"
+              title="Preparing invite..."
+              description="Pocket Lab is getting the invite ready. The device list will refresh automatically."
+              className="mt-4"
+            />
+          ) : null}
+
+          {latestInvite ? (
+            <div className="lite-invite-card" aria-live="polite">
+              <div className="lite-invite-card-header">
+                <div>
+                  <span>Invite ready</span>
+                  <strong>{latestInvite.hostname || hostname || 'New device'}</strong>
+                </div>
+                <StatusBadge status="healthy">Ready</StatusBadge>
+              </div>
+
+              <div className="lite-invite-card-body">
+                <div>
+                  <span>Role</span>
+                  <strong>{latestInvite.role_label || selectedRoleLabel}</strong>
+                </div>
+                <div>
+                  <span>Expires at</span>
+                  <strong>{formatLiteTime(latestInvite.expires_at)}</strong>
+                </div>
+              </div>
+
+              <p>{latestInvite.instructions || 'Open this invite on the new device while it is connected to the same Pocket Lab private network.'}</p>
+
+              {latestInvite.url || latestInvite.copy_text ? (
+                <LiteButton onClick={copyInvite} tone="secondary">
+                  <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy Invite Link'}
+                </LiteButton>
+              ) : (
+                <span className="lite-invite-muted">Invite link was created earlier. Create a new invite if you need to copy it again.</span>
+              )}
+            </div>
+          ) : null}
         </GlassCard>
 
         <section className="lite-devices-list-area">
@@ -899,12 +1031,7 @@ function DevicesScreen() {
                       <Network className="h-5 w-5" />
                     </div>
                     <StatusBadge status={backendBadgeStatus(device.status)}>
-                      {backendLabel(device.status, {
-                        ready: 'Online',
-                        review: 'Review',
-                        danger: 'Offline',
-                        checking: 'Checking',
-                      })}
+                      {deviceStatusLabel(device.status)}
                     </StatusBadge>
                   </div>
 
@@ -912,12 +1039,16 @@ function DevicesScreen() {
 
                   <div className="lite-device-details">
                     <div>
+                      <span>Role</span>
+                      <strong>{device.role_label || roleLabel(device.role)}</strong>
+                    </div>
+                    <div>
                       <span>Last seen</span>
                       <strong>{formatLiteTime(device.last_seen)}</strong>
                     </div>
                     <div>
                       <span>Connection</span>
-                      <strong>{device.remote_access ? 'Ready' : 'Not set up yet'}</strong>
+                      <strong>{device.remote_access ? 'Ready' : (['pending', 'invited'].includes(String(device.status || '').toLowerCase()) ? 'Waiting' : 'Not set up yet')}</strong>
                     </div>
                   </div>
                 </GlassCard>
@@ -935,7 +1066,7 @@ function DevicesScreen() {
         </section>
       </div>
 
-      <ResultNotice result={result} error={actionError} />
+      <ResultNotice result={latestInvite ? null : result} error={actionError} />
     </>
   );
 }

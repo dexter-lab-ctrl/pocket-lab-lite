@@ -7,7 +7,7 @@ from .. import deps
 from ..services.action_queue import submit_domain_command
 from ..services.live_status import LIVE_STATUS
 from ..services.nats_bus import BUS
-from ..services import fleet_registry
+from ..services import fleet_registry, lite_invites
 
 router = APIRouter(tags=["fleet"])
 
@@ -237,6 +237,13 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
     token = (token or "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Missing token")
+    try:
+        invite = lite_invites.validate_invite_token(token, role=role)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if invite is None:
+        raise HTTPException(status_code=403, detail="Invite token is invalid or expired")
+    role = invite.get("role") or role
     nats_url = BUS.servers[0] if BUS.servers else "nats://127.0.0.1:4222"
     nats_user = os.environ.get(
         "POCKETLAB_AGENT_NATS_USER",
