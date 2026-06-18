@@ -17,6 +17,7 @@ from .routers import (
     fleet,
     gitops,
     health,
+    lite,
     observability,
     operations,
     release,
@@ -92,6 +93,7 @@ app.add_middleware(
 
 for router in (
     health.router,
+    lite.router,
     observability.router,
     telemetry.router,
     catalog.router,
@@ -132,4 +134,5 @@ def api_index() -> dict:
         "reliability": "/api/reliability/status",
         "workflows": "/api/workflows/status",
         "observability_status": "/api/observability/status",
+        "lite_status": "/api/lite/status",
     }
