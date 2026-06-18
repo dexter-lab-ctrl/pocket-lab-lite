@@ -1,0 +1,2047 @@
+{
+  "configuration" : { },
+  "description" : "Edge-first self-hosted control plane for apps, fleet, GitOps, drift, releases, security, telemetry, and disaster recovery.",
+  "documentation" : {
+    "sections" : [ {
+      "content" : "# Pocket Lab Architecture Context\n\nPocket Lab is an edge-first self-hosted control plane for app deployment, GitOps, fleet management, drift detection, security posture, NOC telemetry, release orchestration, and disaster recovery.\n\nIt is designed around a modern control-plane pattern:\n\n```text\nUI → FastAPI → NATS / JetStream → Worker → Events → UI\n```\n\nThe system intentionally avoids legacy shell-command compatibility paths for control-plane writes. Typed operations, NATS subjects, generated API contracts, and event-sourced workflow state form the main architectural backbone.\n\n![](embed:system-context)\n",
+      "filename" : "01-context.md",
+      "format" : "Markdown",
+      "order" : 1,
+      "title" : ""
+    }, {
+      "content" : "# Container Architecture\n\nPocket Lab's primary containers are:\n\n- React / Vite PWA\n- FastAPI Control API\n- NATS / JetStream\n- Pocket Lab Worker\n- Event Journal / Workflow Store\n- Typed Operations Catalog\n- MkDocs Documentation Portal\n- Domain services for Catalog, GitOps, Drift, Fleet, Vault, Security, Telemetry, Release, and Disaster Recovery\n\n![](embed:container-view)\n",
+      "filename" : "02-containers.md",
+      "format" : "Markdown",
+      "order" : 2,
+      "title" : ""
+    }, {
+      "content" : "# Event Driven Runtime\n\nThe runtime uses NATS and JetStream as the durable command and event backbone.\n\nFastAPI publishes typed commands, workers consume them, and events are emitted for:\n\n- UI state\n- operation logs\n- workflow recovery\n- retry handling\n- auditability\n- dead-letter analysis\n\n![](embed:event-driven-runtime)\n\n![](embed:typed-operation-flow)\n",
+      "filename" : "03-event-driven-runtime.md",
+      "format" : "Markdown",
+      "order" : 3,
+      "title" : ""
+    }, {
+      "content" : "# Deployment Architecture\n\nPocket Lab has two primary deployment contexts:\n\n1. Android / Termux edge device.\n2. Ubuntu developer workstation.\n\nThe Android / Termux target is the key production-like edge deployment path. The Ubuntu dev environment supports deterministic validation, test gates, and release dry-runs.\n\n![](embed:android-termux-deployment)\n\n![](embed:developer-workstation-deployment)\n",
+      "filename" : "04-deployment.md",
+      "format" : "Markdown",
+      "order" : 4,
+      "title" : ""
+    }, {
+      "content" : "# Enterprise Security Review Views\n\nTier 5B adds dedicated Structurizr views for security and operations review.\n\nThese views make the most sensitive runtime boundaries explicit:\n\n- Security, policy, Vault/OpenBao, and OPA relationships.\n- NATS command and event boundaries.\n- Audit evidence and DLQ paths.\n\n## Security / Policy / Vault / OPA Relationships\n\n![](embed:security-review)\n\n## NATS Command and Event Boundaries\n\n![](embed:nats-command-event-boundaries)\n\n## Audit and DLQ Paths\n\n![](embed:audit-and-dlq-paths)\n",
+      "filename" : "05-security-review-views.md",
+      "format" : "Markdown",
+      "order" : 5,
+      "title" : ""
+    }, {
+      "content" : "# Operations Governance\n\nPocket Lab governance is centered on typed operations.\n\nEvery important UI write action should map to:\n\n- a typed operation\n- a FastAPI endpoint\n- a NATS command subject\n- success and failure events\n- audit records where applicable\n- generated documentation\n\nThe generated operations catalog under `operations/*.yaml` acts as the Backstage-style source of truth for operation metadata.\n",
+      "filename" : "06-operations-governance.md",
+      "format" : "Markdown",
+      "order" : 6,
+      "title" : ""
+    } ]
+  },
+  "id" : 1,
+  "lastModifiedDate" : "2026-06-09T17:06:22Z",
+  "model" : {
+    "deploymentNodes" : [ {
+      "containerInstances" : [ {
+        "containerId" : "9",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "79",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "8f458541-86bf-4eaf-a4a6-1bb8d6e1da1c"
+        },
+        "relationships" : [ {
+          "description" : "Calls REST API and WebSocket event stream",
+          "destinationId" : "80",
+          "id" : "82",
+          "linkedRelationshipId" : "29",
+          "sourceId" : "79",
+          "technology" : "HTTP/WebSocket"
+        }, {
+          "description" : "Reads generated documentation",
+          "destinationId" : "98",
+          "id" : "99",
+          "linkedRelationshipId" : "40",
+          "sourceId" : "79"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "10",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "80",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "00582a1f-b923-4e78-b45d-607dfef45142"
+        },
+        "relationships" : [ {
+          "description" : "Streams operation events and live status updates",
+          "destinationId" : "79",
+          "id" : "81",
+          "linkedRelationshipId" : "30",
+          "sourceId" : "80",
+          "technology" : "WebSocket / HTTP"
+        }, {
+          "description" : "Publishes typed commands and events",
+          "destinationId" : "83",
+          "id" : "84",
+          "linkedRelationshipId" : "31",
+          "sourceId" : "80",
+          "technology" : "NATS"
+        }, {
+          "description" : "Reads operation status, events, and workflow state",
+          "destinationId" : "88",
+          "id" : "89",
+          "linkedRelationshipId" : "38",
+          "sourceId" : "80"
+        }, {
+          "description" : "Reads audit evidence for reviews and operator status",
+          "destinationId" : "91",
+          "id" : "92",
+          "linkedRelationshipId" : "39",
+          "sourceId" : "80"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "11",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "83",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "eea67144-ec17-4ba2-a3d8-edddf78e9cae"
+        },
+        "relationships" : [ {
+          "description" : "Delivers durable commands to the worker",
+          "destinationId" : "85",
+          "id" : "87",
+          "linkedRelationshipId" : "33",
+          "sourceId" : "83",
+          "technology" : "NATS / JetStream"
+        }, {
+          "description" : "Routes retry-exhausted messages to dead-letter subjects",
+          "destinationId" : "94",
+          "id" : "95",
+          "linkedRelationshipId" : "36",
+          "sourceId" : "83",
+          "technology" : "JetStream DLQ"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "12",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "85",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "ac8c299b-692f-46d3-8e35-ac7adb6acdbb"
+        },
+        "relationships" : [ {
+          "description" : "Consumes commands and publishes events/audit/DLQ",
+          "destinationId" : "83",
+          "id" : "86",
+          "linkedRelationshipId" : "32",
+          "sourceId" : "85",
+          "technology" : "NATS"
+        }, {
+          "description" : "Records operation lifecycle and workflow state",
+          "destinationId" : "88",
+          "id" : "90",
+          "linkedRelationshipId" : "34",
+          "sourceId" : "85"
+        }, {
+          "description" : "Writes auditable operation, policy, vault, release, and recovery evidence",
+          "destinationId" : "91",
+          "id" : "93",
+          "linkedRelationshipId" : "35",
+          "sourceId" : "85"
+        }, {
+          "description" : "Publishes failure outcomes when commands cannot be recovered",
+          "destinationId" : "94",
+          "id" : "96",
+          "linkedRelationshipId" : "58",
+          "sourceId" : "85",
+          "technology" : "NATS / JetStream"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "13",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "88",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "c6d5f6b4-5ce9-4630-a250-59208b5c9739"
+        },
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "14",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "91",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "26c66dcc-1bed-4897-ac42-b14538fbd6be"
+        },
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "15",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "94",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "e88c6fb0-35b6-48c7-80e8-b899382be946"
+        },
+        "relationships" : [ {
+          "description" : "Preserves failed command/event evidence for audit and recovery",
+          "destinationId" : "91",
+          "id" : "97",
+          "linkedRelationshipId" : "37",
+          "sourceId" : "94"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "17",
+        "environment" : "Android / Termux Edge Device",
+        "id" : "98",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "5c978359-3cdb-44d5-b824-658d8cb67704"
+        },
+        "relationships" : [ {
+          "description" : "Documents OpenAPI contract",
+          "destinationId" : "80",
+          "id" : "100",
+          "linkedRelationshipId" : "42",
+          "sourceId" : "98"
+        }, {
+          "description" : "Documents AsyncAPI event contract",
+          "destinationId" : "83",
+          "id" : "101",
+          "linkedRelationshipId" : "43",
+          "sourceId" : "98"
+        } ],
+        "tags" : "Container Instance"
+      } ],
+      "description" : "Android ARM64 local runtime",
+      "environment" : "Android / Termux Edge Device",
+      "id" : "78",
+      "instances" : "1",
+      "name" : "Termux / proot Linux environment",
+      "properties" : {
+        "structurizr.dsl.identifier" : "710e9ec6-ed6e-4d2c-8a90-bd1beaac8b80"
+      },
+      "tags" : "Element,Deployment Node"
+    }, {
+      "containerInstances" : [ {
+        "containerId" : "9",
+        "environment" : "Developer Workstation",
+        "id" : "103",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "055973ba-e5c2-4180-b080-a8021e361a50"
+        },
+        "relationships" : [ {
+          "description" : "Calls REST API and WebSocket event stream",
+          "destinationId" : "104",
+          "id" : "106",
+          "linkedRelationshipId" : "29",
+          "sourceId" : "103",
+          "technology" : "HTTP/WebSocket"
+        }, {
+          "description" : "Reads generated documentation",
+          "destinationId" : "122",
+          "id" : "123",
+          "linkedRelationshipId" : "40",
+          "sourceId" : "103"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "10",
+        "environment" : "Developer Workstation",
+        "id" : "104",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "4bd020bf-c824-473a-92f6-7f237616ac41"
+        },
+        "relationships" : [ {
+          "description" : "Streams operation events and live status updates",
+          "destinationId" : "103",
+          "id" : "105",
+          "linkedRelationshipId" : "30",
+          "sourceId" : "104",
+          "technology" : "WebSocket / HTTP"
+        }, {
+          "description" : "Publishes typed commands and events",
+          "destinationId" : "107",
+          "id" : "108",
+          "linkedRelationshipId" : "31",
+          "sourceId" : "104",
+          "technology" : "NATS"
+        }, {
+          "description" : "Reads operation status, events, and workflow state",
+          "destinationId" : "112",
+          "id" : "113",
+          "linkedRelationshipId" : "38",
+          "sourceId" : "104"
+        }, {
+          "description" : "Reads audit evidence for reviews and operator status",
+          "destinationId" : "115",
+          "id" : "116",
+          "linkedRelationshipId" : "39",
+          "sourceId" : "104"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "11",
+        "environment" : "Developer Workstation",
+        "id" : "107",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "103440b1-5bd1-4b09-922a-5d0345ed4656"
+        },
+        "relationships" : [ {
+          "description" : "Delivers durable commands to the worker",
+          "destinationId" : "109",
+          "id" : "111",
+          "linkedRelationshipId" : "33",
+          "sourceId" : "107",
+          "technology" : "NATS / JetStream"
+        }, {
+          "description" : "Routes retry-exhausted messages to dead-letter subjects",
+          "destinationId" : "118",
+          "id" : "119",
+          "linkedRelationshipId" : "36",
+          "sourceId" : "107",
+          "technology" : "JetStream DLQ"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "12",
+        "environment" : "Developer Workstation",
+        "id" : "109",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "7a3338c8-07e3-4288-9284-f96e13d3a608"
+        },
+        "relationships" : [ {
+          "description" : "Consumes commands and publishes events/audit/DLQ",
+          "destinationId" : "107",
+          "id" : "110",
+          "linkedRelationshipId" : "32",
+          "sourceId" : "109",
+          "technology" : "NATS"
+        }, {
+          "description" : "Records operation lifecycle and workflow state",
+          "destinationId" : "112",
+          "id" : "114",
+          "linkedRelationshipId" : "34",
+          "sourceId" : "109"
+        }, {
+          "description" : "Writes auditable operation, policy, vault, release, and recovery evidence",
+          "destinationId" : "115",
+          "id" : "117",
+          "linkedRelationshipId" : "35",
+          "sourceId" : "109"
+        }, {
+          "description" : "Publishes failure outcomes when commands cannot be recovered",
+          "destinationId" : "118",
+          "id" : "120",
+          "linkedRelationshipId" : "58",
+          "sourceId" : "109",
+          "technology" : "NATS / JetStream"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "13",
+        "environment" : "Developer Workstation",
+        "id" : "112",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "800b30a0-458a-49e3-b5c1-2700b0c77d7e"
+        },
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "14",
+        "environment" : "Developer Workstation",
+        "id" : "115",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "4a4f746e-955c-487d-bab4-eb129044929f"
+        },
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "15",
+        "environment" : "Developer Workstation",
+        "id" : "118",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "58723c7a-b4cc-468f-9005-a44e0987922e"
+        },
+        "relationships" : [ {
+          "description" : "Preserves failed command/event evidence for audit and recovery",
+          "destinationId" : "115",
+          "id" : "121",
+          "linkedRelationshipId" : "37",
+          "sourceId" : "118"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "17",
+        "environment" : "Developer Workstation",
+        "id" : "122",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "3bee6b4f-2517-4ebf-b063-dd777b37c620"
+        },
+        "relationships" : [ {
+          "description" : "Documents OpenAPI contract",
+          "destinationId" : "104",
+          "id" : "124",
+          "linkedRelationshipId" : "42",
+          "sourceId" : "122"
+        }, {
+          "description" : "Documents AsyncAPI event contract",
+          "destinationId" : "107",
+          "id" : "125",
+          "linkedRelationshipId" : "43",
+          "sourceId" : "122"
+        } ],
+        "tags" : "Container Instance"
+      } ],
+      "description" : "Local deterministic stack",
+      "environment" : "Developer Workstation",
+      "id" : "102",
+      "instances" : "1",
+      "name" : "Ubuntu Dev Environment",
+      "properties" : {
+        "structurizr.dsl.identifier" : "19f030d7-8040-4b65-b28f-b0fd97d130f4"
+      },
+      "tags" : "Element,Deployment Node"
+    } ],
+    "people" : [ {
+      "description" : "Uses Pocket Lab to install apps, manage devices, monitor health, run GitOps, rotate secrets, and apply releases.",
+      "id" : "1",
+      "name" : "Operator / Home Lab Admin",
+      "properties" : {
+        "structurizr.dsl.identifier" : "user"
+      },
+      "relationships" : [ {
+        "description" : "Uses",
+        "destinationId" : "9",
+        "id" : "27",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Uses",
+        "destinationId" : "8",
+        "id" : "28",
+        "linkedRelationshipId" : "27",
+        "sourceId" : "1"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "Source repository for Pocket Lab code, docs, releases, and GitOps state.",
+      "documentation" : { },
+      "id" : "2",
+      "name" : "GitHub Repository",
+      "properties" : {
+        "structurizr.dsl.identifier" : "github"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Private mesh connectivity for fleet nodes and remote access.",
+      "documentation" : { },
+      "id" : "3",
+      "name" : "Tailscale / Mesh Network",
+      "properties" : {
+        "structurizr.dsl.identifier" : "tailscale"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Secrets, leases, and secret rotation backend.",
+      "documentation" : { },
+      "id" : "4",
+      "name" : "Vault / OpenBao Runtime",
+      "properties" : {
+        "structurizr.dsl.identifier" : "vaultExternal"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Policy decision point for guardrails and security checks.",
+      "documentation" : { },
+      "id" : "5",
+      "name" : "OPA Runtime",
+      "properties" : {
+        "structurizr.dsl.identifier" : "opaExternal"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Health probing and status aggregation.",
+      "documentation" : { },
+      "id" : "6",
+      "name" : "Gatus Health Engine",
+      "properties" : {
+        "structurizr.dsl.identifier" : "gatusExternal"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Local or remote backup destination for manifests, state snapshots, and restore material.",
+      "documentation" : { },
+      "id" : "7",
+      "name" : "Backup Storage",
+      "properties" : {
+        "structurizr.dsl.identifier" : "backupStore"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "containers" : [ {
+        "description" : "Operator UI with Professional and Simple Experience modes.",
+        "documentation" : { },
+        "id" : "9",
+        "name" : "React / Vite PWA",
+        "properties" : {
+          "structurizr.dsl.identifier" : "pwa"
+        },
+        "relationships" : [ {
+          "description" : "Calls REST API and WebSocket event stream",
+          "destinationId" : "10",
+          "id" : "29",
+          "sourceId" : "9",
+          "tags" : "Relationship",
+          "technology" : "HTTP/WebSocket"
+        }, {
+          "description" : "Reads generated documentation",
+          "destinationId" : "17",
+          "id" : "40",
+          "sourceId" : "9",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "React, Vite, Playwright-tested PWA"
+      }, {
+        "description" : "HTTP API, WebSocket event stream, OpenAPI contract, typed operation submission, release endpoints, health endpoints.",
+        "documentation" : { },
+        "id" : "10",
+        "name" : "FastAPI Control API",
+        "properties" : {
+          "structurizr.dsl.identifier" : "api"
+        },
+        "relationships" : [ {
+          "description" : "Streams operation events and live status updates",
+          "destinationId" : "9",
+          "id" : "30",
+          "sourceId" : "10",
+          "tags" : "Relationship",
+          "technology" : "WebSocket / HTTP"
+        }, {
+          "description" : "Publishes typed commands and events",
+          "destinationId" : "11",
+          "id" : "31",
+          "sourceId" : "10",
+          "tags" : "Relationship",
+          "technology" : "NATS"
+        }, {
+          "description" : "Reads operation status, events, and workflow state",
+          "destinationId" : "13",
+          "id" : "38",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Reads audit evidence for reviews and operator status",
+          "destinationId" : "14",
+          "id" : "39",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Validates typed operation metadata",
+          "destinationId" : "16",
+          "id" : "44",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Starts release check/apply",
+          "destinationId" : "25",
+          "id" : "45",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Starts drift workflows",
+          "destinationId" : "20",
+          "id" : "46",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Starts fleet onboarding",
+          "destinationId" : "21",
+          "id" : "47",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Starts secret operations",
+          "destinationId" : "22",
+          "id" : "48",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Starts security operations",
+          "destinationId" : "23",
+          "id" : "49",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Reads telemetry and live status",
+          "destinationId" : "24",
+          "id" : "50",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Refreshes catalog and starts deploy workflows",
+          "destinationId" : "19",
+          "id" : "51",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Starts backup/verify/restore workflows",
+          "destinationId" : "26",
+          "id" : "52",
+          "sourceId" : "10",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Requests policy decisions before sensitive control-plane actions",
+          "destinationId" : "5",
+          "id" : "71",
+          "sourceId" : "10",
+          "tags" : "Relationship",
+          "technology" : "OPA query"
+        }, {
+          "description" : "Coordinates secret operations through the vault adapter",
+          "destinationId" : "4",
+          "id" : "72",
+          "sourceId" : "10",
+          "tags" : "Relationship",
+          "technology" : "Vault/OpenBao API"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python, FastAPI"
+      }, {
+        "description" : "Durable command, event, audit, telemetry, and DLQ streams.",
+        "documentation" : { },
+        "id" : "11",
+        "name" : "NATS / JetStream",
+        "properties" : {
+          "structurizr.dsl.identifier" : "nats"
+        },
+        "relationships" : [ {
+          "description" : "Delivers durable commands to the worker",
+          "destinationId" : "12",
+          "id" : "33",
+          "sourceId" : "11",
+          "tags" : "Relationship",
+          "technology" : "NATS / JetStream"
+        }, {
+          "description" : "Routes retry-exhausted messages to dead-letter subjects",
+          "destinationId" : "15",
+          "id" : "36",
+          "sourceId" : "11",
+          "tags" : "Relationship",
+          "technology" : "JetStream DLQ"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "NATS, JetStream"
+      }, {
+        "description" : "Consumes typed commands, executes domain handlers, emits lifecycle events, writes audit records.",
+        "documentation" : { },
+        "id" : "12",
+        "name" : "Pocket Lab Worker",
+        "properties" : {
+          "structurizr.dsl.identifier" : "worker"
+        },
+        "relationships" : [ {
+          "description" : "Consumes commands and publishes events/audit/DLQ",
+          "destinationId" : "11",
+          "id" : "32",
+          "sourceId" : "12",
+          "tags" : "Relationship",
+          "technology" : "NATS"
+        }, {
+          "description" : "Records operation lifecycle and workflow state",
+          "destinationId" : "13",
+          "id" : "34",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Writes auditable operation, policy, vault, release, and recovery evidence",
+          "destinationId" : "14",
+          "id" : "35",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Executes release workflow stages",
+          "destinationId" : "25",
+          "id" : "53",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Executes drift domain commands",
+          "destinationId" : "20",
+          "id" : "54",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Executes fleet domain commands",
+          "destinationId" : "21",
+          "id" : "55",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Executes secret rotation/dynamic lease commands",
+          "destinationId" : "22",
+          "id" : "56",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Executes security scans and OPA configuration",
+          "destinationId" : "23",
+          "id" : "57",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Publishes failure outcomes when commands cannot be recovered",
+          "destinationId" : "15",
+          "id" : "58",
+          "sourceId" : "12",
+          "tags" : "Relationship",
+          "technology" : "NATS / JetStream"
+        }, {
+          "description" : "Executes catalog refresh and blueprint deployment",
+          "destinationId" : "19",
+          "id" : "59",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Executes backup and restore workflows",
+          "destinationId" : "26",
+          "id" : "60",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Publishes health and telemetry events",
+          "destinationId" : "24",
+          "id" : "61",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Uses secret leases during execution when required",
+          "destinationId" : "4",
+          "id" : "73",
+          "sourceId" : "12",
+          "tags" : "Relationship",
+          "technology" : "Vault/OpenBao API"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python worker"
+      }, {
+        "description" : "Stores operation lifecycle, recovery state, workflow snapshots, and event-sourced workflow history.",
+        "documentation" : { },
+        "id" : "13",
+        "name" : "Event Journal / Workflow Store",
+        "properties" : {
+          "structurizr.dsl.identifier" : "eventStore"
+        },
+        "tags" : "Element,Container",
+        "technology" : "SQLite / JSON journal"
+      }, {
+        "description" : "Stores auditable security, release, vault, policy, and DLQ evidence for review and recovery.",
+        "documentation" : { },
+        "id" : "14",
+        "name" : "Audit Trail / Evidence Store",
+        "properties" : {
+          "structurizr.dsl.identifier" : "auditTrail"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Append-only JSON / SQLite evidence"
+      }, {
+        "description" : "Represents JetStream retry exhaustion and dead-letter subjects for failed commands and events.",
+        "documentation" : { },
+        "id" : "15",
+        "name" : "DLQ / Retry Subjects",
+        "properties" : {
+          "structurizr.dsl.identifier" : "dlqSubjects"
+        },
+        "relationships" : [ {
+          "description" : "Preserves failed command/event evidence for audit and recovery",
+          "destinationId" : "14",
+          "id" : "37",
+          "sourceId" : "15",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "NATS JetStream DLQ subjects"
+      }, {
+        "description" : "Backstage-style operation metadata source and generated typed operation catalog.",
+        "documentation" : { },
+        "id" : "16",
+        "name" : "Typed Operations Catalog",
+        "properties" : {
+          "structurizr.dsl.identifier" : "operationRegistry"
+        },
+        "tags" : "Element,Container",
+        "technology" : "operations/*.yaml, JSON contract"
+      }, {
+        "description" : "Generated documentation for OpenAPI, AsyncAPI, Typed Operations, Structurizr, runbooks, architecture, and readiness.",
+        "documentation" : { },
+        "id" : "17",
+        "name" : "MkDocs Documentation Portal",
+        "properties" : {
+          "structurizr.dsl.identifier" : "docsPortal"
+        },
+        "relationships" : [ {
+          "description" : "Documents typed operations",
+          "destinationId" : "16",
+          "id" : "41",
+          "sourceId" : "17",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Documents OpenAPI contract",
+          "destinationId" : "10",
+          "id" : "42",
+          "sourceId" : "17",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Documents AsyncAPI event contract",
+          "destinationId" : "11",
+          "id" : "43",
+          "sourceId" : "17",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "MkDocs Material"
+      }, {
+        "description" : "Pulls and validates desired state using typed operations and Git abstraction.",
+        "documentation" : { },
+        "id" : "18",
+        "name" : "GitOps / Source Adapter",
+        "properties" : {
+          "structurizr.dsl.identifier" : "gitops"
+        },
+        "relationships" : [ {
+          "description" : "Reads desired state and release source",
+          "destinationId" : "2",
+          "id" : "62",
+          "sourceId" : "18",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Dulwich / Git abstraction"
+      }, {
+        "description" : "App catalog refresh, blueprint deploy, package metadata, app source modes.",
+        "documentation" : { },
+        "id" : "19",
+        "name" : "Blueprint / App Catalog Engine",
+        "properties" : {
+          "structurizr.dsl.identifier" : "blueprint"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Catalog metadata, ORAS/go-getter concepts"
+      }, {
+        "description" : "Scans desired vs actual state and manages preview, approve, apply, ignore workflows.",
+        "documentation" : { },
+        "id" : "20",
+        "name" : "Drift Engine",
+        "properties" : {
+          "structurizr.dsl.identifier" : "drift"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Python domain service"
+      }, {
+        "description" : "Fleet join, node health, telemetry, heartbeat, and mesh onboarding workflows.",
+        "documentation" : { },
+        "id" : "21",
+        "name" : "Fleet Agent Control",
+        "properties" : {
+          "structurizr.dsl.identifier" : "fleet"
+        },
+        "relationships" : [ {
+          "description" : "Uses mesh connectivity and join material",
+          "destinationId" : "3",
+          "id" : "65",
+          "sourceId" : "21",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "NATS-backed fleet workflow"
+      }, {
+        "description" : "Secret rotation and dynamic secret lease workflows.",
+        "documentation" : { },
+        "id" : "22",
+        "name" : "Identity Vault Adapter",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vault"
+        },
+        "relationships" : [ {
+          "description" : "Rotates and reads dynamic secrets",
+          "destinationId" : "4",
+          "id" : "67",
+          "sourceId" : "22",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Vault/OpenBao client"
+      }, {
+        "description" : "Security scans, OPA configuration, policy checks, secret redaction validation.",
+        "documentation" : { },
+        "id" : "23",
+        "name" : "Security / Policy Guardrails",
+        "properties" : {
+          "structurizr.dsl.identifier" : "security"
+        },
+        "relationships" : [ {
+          "description" : "Evaluates and updates policy guardrails",
+          "destinationId" : "5",
+          "id" : "69",
+          "sourceId" : "23",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "OPA / policy integration"
+      }, {
+        "description" : "CPU, memory, disk, health, worker, NATS, and live status telemetry.",
+        "documentation" : { },
+        "id" : "24",
+        "name" : "NOC Telemetry Adapter",
+        "properties" : {
+          "structurizr.dsl.identifier" : "telemetry"
+        },
+        "relationships" : [ {
+          "description" : "Reads health status",
+          "destinationId" : "6",
+          "id" : "74",
+          "sourceId" : "24",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python telemetry service"
+      }, {
+        "description" : "Self-update check/apply workflow with backup, sync, deploy, verify, and catalog refresh stages.",
+        "documentation" : { },
+        "id" : "25",
+        "name" : "Release Workflow Orchestrator",
+        "properties" : {
+          "structurizr.dsl.identifier" : "release"
+        },
+        "relationships" : [ {
+          "description" : "Checks and applies releases",
+          "destinationId" : "2",
+          "id" : "64",
+          "sourceId" : "25",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python release orchestrator"
+      }, {
+        "description" : "Backup, verify, restore preview, restore execution, manifest validation.",
+        "documentation" : { },
+        "id" : "26",
+        "name" : "Backup / Disaster Recovery Engine",
+        "properties" : {
+          "structurizr.dsl.identifier" : "backup"
+        },
+        "relationships" : [ {
+          "description" : "Writes and restores backups",
+          "destinationId" : "7",
+          "id" : "76",
+          "sourceId" : "26",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python DR service"
+      } ],
+      "description" : "FastAPI + NATS/JetStream + Worker + React PWA control plane.",
+      "documentation" : { },
+      "id" : "8",
+      "name" : "Pocket Lab",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pocketlab"
+      },
+      "relationships" : [ {
+        "description" : "Reads desired state and release source",
+        "destinationId" : "2",
+        "id" : "63",
+        "linkedRelationshipId" : "62",
+        "sourceId" : "8"
+      }, {
+        "description" : "Uses mesh connectivity and join material",
+        "destinationId" : "3",
+        "id" : "66",
+        "linkedRelationshipId" : "65",
+        "sourceId" : "8"
+      }, {
+        "description" : "Rotates and reads dynamic secrets",
+        "destinationId" : "4",
+        "id" : "68",
+        "linkedRelationshipId" : "67",
+        "sourceId" : "8"
+      }, {
+        "description" : "Evaluates and updates policy guardrails",
+        "destinationId" : "5",
+        "id" : "70",
+        "linkedRelationshipId" : "69",
+        "sourceId" : "8"
+      }, {
+        "description" : "Reads health status",
+        "destinationId" : "6",
+        "id" : "75",
+        "linkedRelationshipId" : "74",
+        "sourceId" : "8"
+      }, {
+        "description" : "Writes and restores backups",
+        "destinationId" : "7",
+        "id" : "77",
+        "linkedRelationshipId" : "76",
+        "sourceId" : "8"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "Pocket Lab",
+  "properties" : {
+    "structurizr.inspection.error" : "62",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "configuration" : {
+      "styles" : {
+        "elements" : [ {
+          "background" : "#438dd5",
+          "color" : "#ffffff",
+          "tag" : "Container"
+        }, {
+          "shape" : "Cylinder",
+          "tag" : "Database"
+        }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "External"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "background" : "#1168bd",
+          "color" : "#ffffff",
+          "tag" : "Software System"
+        } ],
+        "relationships" : [ {
+          "color" : "#707070",
+          "tag" : "Relationship"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Major Pocket Lab runtime containers and their responsibilities.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "19",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "21",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "container-view",
+      "name" : "Container View: Pocket Lab",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "27"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "46"
+      }, {
+        "id" : "47"
+      }, {
+        "id" : "48"
+      }, {
+        "id" : "49"
+      }, {
+        "id" : "50"
+      }, {
+        "id" : "51"
+      }, {
+        "id" : "52"
+      }, {
+        "id" : "53"
+      }, {
+        "id" : "54"
+      }, {
+        "id" : "55"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "57"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "59"
+      }, {
+        "id" : "60"
+      }, {
+        "id" : "61"
+      }, {
+        "id" : "62"
+      }, {
+        "id" : "64"
+      }, {
+        "id" : "65"
+      }, {
+        "id" : "67"
+      }, {
+        "id" : "69"
+      }, {
+        "id" : "71"
+      }, {
+        "id" : "72"
+      }, {
+        "id" : "73"
+      }, {
+        "id" : "74"
+      }, {
+        "id" : "76"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Container View"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Typed operation submission through FastAPI, NATS/JetStream, worker execution, event journal, and UI updates.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "event-driven-runtime",
+      "name" : "Container View: Pocket Lab",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "27"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "44"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Event Driven Runtime"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Domain services behind App Catalog, GitOps, Drift, Fleet, Vault, Security, Telemetry, Release, and Disaster Recovery.",
+      "elements" : [ {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "19",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "21",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "domain-services",
+      "name" : "Container View: Pocket Lab",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "46"
+      }, {
+        "id" : "47"
+      }, {
+        "id" : "48"
+      }, {
+        "id" : "49"
+      }, {
+        "id" : "50"
+      }, {
+        "id" : "51"
+      }, {
+        "id" : "52"
+      }, {
+        "id" : "53"
+      }, {
+        "id" : "54"
+      }, {
+        "id" : "55"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "57"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "59"
+      }, {
+        "id" : "60"
+      }, {
+        "id" : "61"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Domain Services"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Security review view showing policy checks, vault operations, typed operation validation, audit evidence, and UI/API boundaries.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "security-review",
+      "name" : "Container View: Pocket Lab",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "27"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "48"
+      }, {
+        "id" : "49"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "57"
+      }, {
+        "id" : "67"
+      }, {
+        "id" : "69"
+      }, {
+        "id" : "71"
+      }, {
+        "id" : "72"
+      }, {
+        "id" : "73"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Security / Policy / Vault / OPA Relationships"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Event-driven boundary view showing frontend-to-API control, API-to-NATS command publishing, worker command consumption, event emission, and status reconstruction.",
+      "elements" : [ {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "nats-command-event-boundaries",
+      "name" : "Container View: Pocket Lab",
+      "order" : 6,
+      "relationships" : [ {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "50"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "61"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - NATS Command and Event Boundaries"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Operational resilience view showing audit evidence, retry exhaustion, dead-letter routing, and recovery state.",
+      "elements" : [ {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "audit-and-dlq-paths",
+      "name" : "Container View: Pocket Lab",
+      "order" : 7,
+      "relationships" : [ {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "48"
+      }, {
+        "id" : "49"
+      }, {
+        "id" : "52"
+      }, {
+        "id" : "53"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "57"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "60"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Audit and DLQ Paths"
+    } ],
+    "deploymentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Primary edge deployment topology for Android/Termux ARM64.",
+      "elements" : [ {
+        "id" : "78",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "79",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "80",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "83",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "85",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "88",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "91",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "94",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "Android / Termux Edge Device",
+      "key" : "android-termux-deployment",
+      "name" : "Deployment View: Pocket Lab - Android / Termux Edge Device",
+      "order" : 8,
+      "relationships" : [ {
+        "id" : "100"
+      }, {
+        "id" : "101"
+      }, {
+        "id" : "81"
+      }, {
+        "id" : "82"
+      }, {
+        "id" : "84"
+      }, {
+        "id" : "86"
+      }, {
+        "id" : "87"
+      }, {
+        "id" : "89"
+      }, {
+        "id" : "90"
+      }, {
+        "id" : "92"
+      }, {
+        "id" : "93"
+      }, {
+        "id" : "95"
+      }, {
+        "id" : "96"
+      }, {
+        "id" : "97"
+      }, {
+        "id" : "99"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Android / Termux Deployment"
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Local deterministic dev stack for testing and release validation.",
+      "elements" : [ {
+        "id" : "102",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "103",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "104",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "107",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "109",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "112",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "115",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "118",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "122",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "Developer Workstation",
+      "key" : "developer-workstation-deployment",
+      "name" : "Deployment View: Pocket Lab - Developer Workstation",
+      "order" : 9,
+      "relationships" : [ {
+        "id" : "105"
+      }, {
+        "id" : "106"
+      }, {
+        "id" : "108"
+      }, {
+        "id" : "110"
+      }, {
+        "id" : "111"
+      }, {
+        "id" : "113"
+      }, {
+        "id" : "114"
+      }, {
+        "id" : "116"
+      }, {
+        "id" : "117"
+      }, {
+        "id" : "119"
+      }, {
+        "id" : "120"
+      }, {
+        "id" : "121"
+      }, {
+        "id" : "123"
+      }, {
+        "id" : "124"
+      }, {
+        "id" : "125"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - Developer Workstation Deployment"
+    } ],
+    "dynamicViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "End-to-end runtime flow for typed operations.",
+      "elementId" : "8",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "typed-operation-flow",
+      "name" : "Dynamic View: Pocket Lab",
+      "order" : 10,
+      "relationships" : [ {
+        "description" : "Clicks Install / Update / Rotate Secret / Run Scan",
+        "id" : "27",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "POST typed operation",
+        "id" : "29",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Validate operation metadata",
+        "id" : "44",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Publish command",
+        "id" : "31",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Deliver command",
+        "id" : "33",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "Record operation.created / worker_claimed",
+        "id" : "34",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "Emit operation logs/events",
+        "id" : "32",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "Stream events via API/WebSocket",
+        "id" : "30",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "Record succeeded/failed/DLQ state",
+        "id" : "34",
+        "order" : "9",
+        "response" : false
+      } ],
+      "title" : "Pocket Lab - Typed Operation Flow"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "description" : "Pocket Lab as an edge-first self-hosted control plane interacting with GitHub, mesh networking, Vault/OpenBao, OPA, Gatus, and backup storage.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "system-context",
+      "name" : "System Context View: Pocket Lab",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "28"
+      }, {
+        "id" : "63"
+      }, {
+        "id" : "66"
+      }, {
+        "id" : "68"
+      }, {
+        "id" : "70"
+      }, {
+        "id" : "75"
+      }, {
+        "id" : "77"
+      } ],
+      "softwareSystemId" : "8",
+      "title" : "Pocket Lab - System Context"
+    } ]
+  }
+}

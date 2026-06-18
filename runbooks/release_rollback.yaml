@@ -1,0 +1,89 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: Runbook
+metadata:
+  name: release_rollback
+  title: Release Rollback
+  description: Controlled rollback path when release validation or apply fails.
+  owner: release-operations
+  tags:
+  - release
+  - rollback
+  - recovery
+spec:
+  professionalLabel: Roll Back Failed Release
+  simpleLabel: Go Back to Previous Release
+  category: release-management
+  severity: critical
+  trigger:
+    manual: true
+    eventHints:
+    - pocketlab.events.operation.failed
+    - pocketlab.dlq.original_subject
+  requiresApproval: true
+  policy:
+    approvalReason: Release rollback changes platform runtime state.
+    minimumRole: release_manager
+    evidenceRequired: true
+    approvalRequired: true
+    approvalRoles:
+    - release_manager
+  prerequisites:
+  - Failed release correlation ID is available.
+  - Previous known-good release or backup reference is known.
+  - Operator has reviewed release evidence.
+  steps:
+  - name: check_release_state
+    title: Check Release State
+    operation: release_check
+    description: Confirm current release state before rollback.
+    requiresApproval: false
+    timeoutSeconds: 300
+    onFailure: stop
+  - name: create_pre_rollback_backup
+    title: Create Pre-rollback Backup
+    operation: backup_now
+    description: Capture the current state before rollback.
+    requiresApproval: false
+    timeoutSeconds: 600
+    onFailure: stop
+  - name: restore_previous_state
+    title: Restore Previous State
+    operation: restore_backup
+    description: Restore previous known-good release state.
+    requiresApproval: true
+    timeoutSeconds: 1200
+    onFailure: stop
+  - name: verify_after_rollback
+    title: Verify After Rollback
+    operation: health_check
+    description: Confirm runtime health after rollback.
+    requiresApproval: false
+    timeoutSeconds: 300
+    onFailure: stop
+  rollback:
+    operation: release_apply
+    requiresApproval: true
+    description: Re-apply release only after root cause review and approval.
+  evidence:
+  - operation_events
+  - audit_events
+  - workflow_journal
+  - backup_manifest
+  - release_evidence
+  - health_snapshot
+  safety:
+    impact: critical
+    notes: Rollback must preserve evidence and correlation IDs for post-incident review.
+  approval:
+    required: true
+    role: release_manager
+    roles:
+    - release_manager
+    reviewerRoles:
+    - release_manager
+    approvers:
+    - role: release_manager
+  governance:
+    approvalRequired: true
+    approvalRoles:
+    - release_manager

@@ -1,0 +1,137 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: PolicyBundle
+metadata:
+  name: pocketlab-security-guardrails
+  title: Pocket Lab Security Guardrails
+  description: Repository-native policy metadata used to generate Pocket Lab security documentation from guardrails, governance, runbooks, and typed operations without changing runtime behavior.
+spec:
+  governanceModes:
+    simple:
+      label: Simple Mode
+      description: Uses friendly wording for non-technical users while preserving the same governed execution path.
+    professional:
+      label: Professional Mode
+      description: Shows operation, policy, and audit terminology for power users and maintainers.
+    personal:
+      label: Personal Mode
+      description: Default self-hosted mode. Eligible safe and dry-run governed runbooks may auto-approve with audit evidence.
+    enterprise:
+      label: Enterprise Mode
+      description: Opt-in strict governance. Human approval, role checks, and approval/rejection reasons are required for governed runbooks.
+  controls:
+    PL-CTRL-001:
+      title: Typed Operation Execution Boundary
+      family: Runtime Governance
+      description: User-facing actions must resolve to typed operations executed through FastAPI, NATS / JetStream, and workers.
+      evidence:
+        - contracts/operations/pocketlab-typed-operations.json
+        - operations/*.yaml
+        - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+    PL-CTRL-002:
+      title: Worker-Owned Execution and Resume
+      family: Runbook Governance
+      description: Runbooks orchestrate typed operations and workers own execution, approval handling, rejection, and resume.
+      evidence:
+        - runbooks/*.yaml
+        - docs/operations/generated/runbooks/runbook-catalog.json
+        - docs/runtime/runbook-approval-lifecycle.md
+    PL-CTRL-003:
+      title: Adaptive Approval Evidence
+      family: Approval Governance
+      description: Personal Mode auto-approval and Enterprise Mode human approval must produce explicit audit evidence.
+      evidence:
+        - pocket-lab-final-structure/runtime/api_fastapi/services/approval_policy.py
+        - pocket-lab-final-structure/runtime/api_fastapi/services/governance_settings.py
+        - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+    PL-CTRL-004:
+      title: Policy Guardrail Visibility
+      family: Security Posture
+      description: OPA-style guardrails and policy decisions must be documented and visible in the Security documentation portal.
+      evidence:
+        - src/tabs/PolicyGuardrailsTab.jsx
+        - docs/security/policy-guardrails-guide.md
+        - docs/security/generated/policy-reference.md
+    PL-CTRL-005:
+      title: Threat and Policy Source Freshness
+      family: Documentation Governance
+      description: Security documentation must be regenerated from repository sources and checked for stale generated artifacts.
+      evidence:
+        - docs/security/generated/policy-evidence-manifest.json
+        - scripts/docs/check_policy_evidence.py
+        - scripts/docs/check_policy_docs.py
+  policies:
+    - id: privileged-port-restriction
+      title: Privileged Port Restriction
+      package: pocketlab.network
+      severity: critical
+      mode: enforceable
+      summary: Prevents workloads from binding to privileged ports below 1024 on Android / Termux targets.
+      simpleSummary: Keeps apps from using restricted phone ports that would fail on Android.
+      appliesTo:
+        operations: [deploy_blueprint, health_check, security_scan]
+        runbooks: [recover_failed_install]
+      controls: [PL-CTRL-001, PL-CTRL-004]
+      evidenceEvents: [pocketlab.events.security.finding, pocketlab.audit.security.policy_updated]
+      rego: |
+        package pocketlab.network
+
+        deny[msg] {
+            port := input.playbook.tasks[_].pm2_env.PORT
+            to_number(port) < 1024
+            msg := "Android OS denies non-root binding to ports < 1024. Please use a port > 1023."
+        }
+    - id: hardcoded-secrets-prevention
+      title: Hardcoded Secrets Prevention
+      package: pocketlab.security
+      severity: high
+      mode: enforceable
+      summary: Requires secret handling through Vault / OpenBao lookup paths instead of plaintext playbook variables.
+      simpleSummary: Keeps passwords and tokens out of app setup files.
+      appliesTo:
+        operations: [rotate_secret, secret_read_dynamic, deploy_blueprint, security_scan]
+        runbooks: [rotate_secret_with_audit]
+      controls: [PL-CTRL-001, PL-CTRL-003, PL-CTRL-004]
+      evidenceEvents: [pocketlab.events.vault.secret_rotated, pocketlab.audit.vault.secret_rotated, pocketlab.events.security.finding]
+      rego: |
+        package pocketlab.security
+
+        deny[msg] {
+            some key
+            val := input.playbook.vars[key]
+            contains(lower(key), "password")
+            not contains(val, "lookup('hashi_vault'")
+            msg := "Hardcoded secrets detected. You must use the Vault AppRole lookup plugin."
+        }
+    - id: proot-isolation-enforcement
+      title: PRoot Isolation Enforcement
+      package: pocketlab.execution
+      severity: medium
+      mode: audit
+      summary: Ensures Linux package manager actions run inside the PRoot Ubuntu subsystem instead of native Termux.
+      simpleSummary: Keeps advanced Linux commands inside the safe Linux container area on Android.
+      appliesTo:
+        operations: [deploy_blueprint, release_apply, restore_backup]
+        runbooks: [recover_failed_install, release_rollback, backup_restore_verify]
+      controls: [PL-CTRL-001, PL-CTRL-004]
+      evidenceEvents: [pocketlab.events.security.finding]
+      rego: |
+        package pocketlab.execution
+
+        deny[msg] {
+            task := input.playbook.tasks[_]
+            contains(task.command, "apt-get")
+            not contains(task.prefix, "proot-distro login ubuntu")
+            msg := "Linux package managers must be executed inside the PRoot Ubuntu subsystem."
+        }
+    - id: adaptive-runbook-approval
+      title: Adaptive Runbook Approval
+      package: pocketlab.approval
+      severity: high
+      mode: decision
+      summary: Preserves Personal Mode auto-approval evidence and Enterprise Mode strict human authorization for approval-gated runbooks.
+      simpleSummary: Lets safe home-lab actions continue automatically, while Enterprise Mode requires a person to approve important changes.
+      appliesTo:
+        operations: [drift_approve, drift_apply, release_apply, restore_backup, rotate_secret]
+        runbooks: [backup_restore_verify, drift_detect_approve_apply, recover_failed_install, release_rollback, rotate_secret_with_audit]
+      controls: [PL-CTRL-002, PL-CTRL-003]
+      evidenceEvents: [pocketlab.events.runbook.auto_approved, pocketlab.audit.runbook.auto_approved, pocketlab.audit.runbook.approved, pocketlab.audit.runbook.rejected]

@@ -1,0 +1,7 @@
+{
+  "summary": {"status": "drift_detected", "count": 2},
+  "items": [
+    {"id": "nats-config", "severity": "high", "message": "NATS config differs from desired state"},
+    {"id": "caddy-ws-proxy", "severity": "medium", "message": "WebSocket proxy missing"}
+  ]
+}

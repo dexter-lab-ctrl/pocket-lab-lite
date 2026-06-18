@@ -1,0 +1,67 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: backup_now
+  title: Create Backup
+  description: Create a runtime backup snapshot.
+  tags:
+  - backup
+  - disaster-recovery
+  - write
+spec:
+  professionalLabel: Backup now
+  simpleLabel: Save a copy
+  uiEntrypoints:
+  - Disaster Recovery
+  - Release Workflow
+  apiEntrypoints:
+  - /api/operations/execute
+  natsSubject: pocketlab.commands.operation.execute
+  successEvents:
+  - pocketlab.events.operation.succeeded
+  failureEvents:
+  - pocketlab.events.operation.failed
+  backendOwner: backup/disaster recovery handler
+  targetShape:
+    type: state
+    ref: default
+  paramsShape:
+    include_event_journal: true
+  safety: Must verify destination space and redact sensitive data.
+  notes: Used before release apply and restore workflows.
+security:
+  data_classification: recovery
+  stride:
+  - Tampering
+  - Repudiation
+  - Denial of Service
+  - Elevation of Privilege
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  - worker_to_state_audit
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  - state_store
+  - event_journal
+  - dlq_subject
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  - event_sourced_workflow_journal
+  - dlq_review_path
+  - correlation_ids
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  - Edge-first deployments remain sensitive to host, storage, and network availability.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/backup_now.yaml

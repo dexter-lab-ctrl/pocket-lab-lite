@@ -1,0 +1,11 @@
+{
+  "overall": "healthy",
+  "services": {
+    "fastapi": "healthy",
+    "nats": "healthy",
+    "worker": "healthy",
+    "vault": "healthy",
+    "gitea": "healthy",
+    "gatus": "healthy"
+  }
+}

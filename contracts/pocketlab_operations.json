@@ -1,0 +1,56 @@
+{
+  "allowed_operations": [
+    "git_sync",
+    "deploy_blueprint",
+    "drift_scan",
+    "drift_preview",
+    "drift_apply",
+    "drift_ignore",
+    "fleet_join",
+    "fleet_command",
+    "rotate_secret",
+    "secret_read_dynamic",
+    "policy_deploy",
+    "security_scan",
+    "backup_now",
+    "restore_backup",
+    "backup_verify",
+    "release_check",
+    "release_apply",
+    "catalog_refresh",
+    "health_check"
+  ],
+  "required_endpoints": [
+    "/api",
+    "/health",
+    "/ready",
+    "/api/telemetry.json",
+    "/api/health-engine.json",
+    "/api/catalog.json",
+    "/api/fleet.json",
+    "/api/fleet/agents",
+    "/api/drift/summary",
+    "/api/release/workflow",
+    "/api/events/status",
+    "/api/nats/status",
+    "/api/workers/status",
+    "/api/workflows/status",
+    "/api/reliability/status"
+  ],
+  "required_paths": [
+    "src",
+    "pocket-lab-final-structure/runtime/api_fastapi",
+    "pocket-lab-final-structure/runtime/core",
+    "pocket-lab-final-structure/runtime/workers",
+    "pocket-lab-final-structure/runtime/agents",
+    "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts",
+    "pocket-lab-final-structure/pocket-lab-iac-api-compatible"
+  ],
+  "forbidden_symbols": [
+    "submitLegacyOperation",
+    "POCKETLAB_API_RUNTIME",
+    "pocket_lab_api_server",
+    "HTTPServer",
+    "runtime/api/"
+  ]
+}

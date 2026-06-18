@@ -1,0 +1,6 @@
+{
+  "connected": false,
+  "jetstream": false,
+  "required": true,
+  "reason": "nats_unavailable"
+}

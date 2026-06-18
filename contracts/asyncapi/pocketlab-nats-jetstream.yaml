@@ -1,0 +1,1035 @@
+{
+  "asyncapi": "3.1.0",
+  "info": {
+    "title": "Pocket Lab NATS / JetStream Event Contract",
+    "version": "2.3.0-phase12",
+    "description": "Pocket Lab uses NATS and JetStream as its durable command and event backbone. FastAPI publishes typed commands, workers consume them, and events are emitted for UI state, auditability, workflow recovery, retries, and dead-letter handling."
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "pocketlabNats": {
+      "host": "127.0.0.1:4222",
+      "protocol": "nats",
+      "description": "Local Pocket Lab NATS / JetStream runtime"
+    }
+  },
+  "channels": {
+    "pocketlab.commands.operation.execute": {
+      "address": "pocketlab.commands.operation.execute",
+      "messages": {
+        "pocketlab_commands_operation_execute": {
+          "$ref": "#/components/messages/pocketlab_commands_operation_execute"
+        }
+      }
+    },
+    "pocketlab.commands.catalog.refresh": {
+      "address": "pocketlab.commands.catalog.refresh",
+      "messages": {
+        "pocketlab_commands_catalog_refresh": {
+          "$ref": "#/components/messages/pocketlab_commands_catalog_refresh"
+        }
+      }
+    },
+    "pocketlab.commands.drift.scan": {
+      "address": "pocketlab.commands.drift.scan",
+      "messages": {
+        "pocketlab_commands_drift_scan": {
+          "$ref": "#/components/messages/pocketlab_commands_drift_scan"
+        }
+      }
+    },
+    "pocketlab.commands.fleet.join": {
+      "address": "pocketlab.commands.fleet.join",
+      "messages": {
+        "pocketlab_commands_fleet_join": {
+          "$ref": "#/components/messages/pocketlab_commands_fleet_join"
+        }
+      }
+    },
+    "pocketlab.commands.release.check": {
+      "address": "pocketlab.commands.release.check",
+      "messages": {
+        "pocketlab_commands_release_check": {
+          "$ref": "#/components/messages/pocketlab_commands_release_check"
+        }
+      }
+    },
+    "pocketlab.commands.release.apply": {
+      "address": "pocketlab.commands.release.apply",
+      "messages": {
+        "pocketlab_commands_release_apply": {
+          "$ref": "#/components/messages/pocketlab_commands_release_apply"
+        }
+      }
+    },
+    "pocketlab.commands.health.check": {
+      "address": "pocketlab.commands.health.check",
+      "messages": {
+        "pocketlab_commands_health_check": {
+          "$ref": "#/components/messages/pocketlab_commands_health_check"
+        }
+      }
+    },
+    "pocketlab.commands.security.scan": {
+      "address": "pocketlab.commands.security.scan",
+      "messages": {
+        "pocketlab_commands_security_scan": {
+          "$ref": "#/components/messages/pocketlab_commands_security_scan"
+        }
+      }
+    },
+    "pocketlab.commands.vault.rotate": {
+      "address": "pocketlab.commands.vault.rotate",
+      "messages": {
+        "pocketlab_commands_vault_rotate": {
+          "$ref": "#/components/messages/pocketlab_commands_vault_rotate"
+        }
+      }
+    },
+    "pocketlab.commands.vault.dynamic_secret": {
+      "address": "pocketlab.commands.vault.dynamic_secret",
+      "messages": {
+        "pocketlab_commands_vault_dynamic_secret": {
+          "$ref": "#/components/messages/pocketlab_commands_vault_dynamic_secret"
+        }
+      }
+    },
+    "pocketlab.commands.runbook.execute": {
+      "address": "pocketlab.commands.runbook.execute",
+      "messages": {
+        "pocketlab_commands_runbook_execute": {
+          "$ref": "#/components/messages/pocketlab_commands_runbook_execute"
+        }
+      }
+    },
+    "pocketlab.commands.runbook.approve": {
+      "address": "pocketlab.commands.runbook.approve",
+      "messages": {
+        "pocketlab_commands_runbook_approve": {
+          "$ref": "#/components/messages/pocketlab_commands_runbook_approve"
+        }
+      }
+    },
+    "pocketlab.commands.runbook.reject": {
+      "address": "pocketlab.commands.runbook.reject",
+      "messages": {
+        "pocketlab_commands_runbook_reject": {
+          "$ref": "#/components/messages/pocketlab_commands_runbook_reject"
+        }
+      }
+    },
+    "pocketlab.events.operation.created": {
+      "address": "pocketlab.events.operation.created",
+      "messages": {
+        "pocketlab_events_operation_created": {
+          "$ref": "#/components/messages/pocketlab_events_operation_created"
+        }
+      }
+    },
+    "pocketlab.events.operation.worker_claimed": {
+      "address": "pocketlab.events.operation.worker_claimed",
+      "messages": {
+        "pocketlab_events_operation_worker_claimed": {
+          "$ref": "#/components/messages/pocketlab_events_operation_worker_claimed"
+        }
+      }
+    },
+    "pocketlab.events.operation.log": {
+      "address": "pocketlab.events.operation.log",
+      "messages": {
+        "pocketlab_events_operation_log": {
+          "$ref": "#/components/messages/pocketlab_events_operation_log"
+        }
+      }
+    },
+    "pocketlab.events.operation.succeeded": {
+      "address": "pocketlab.events.operation.succeeded",
+      "messages": {
+        "pocketlab_events_operation_succeeded": {
+          "$ref": "#/components/messages/pocketlab_events_operation_succeeded"
+        }
+      }
+    },
+    "pocketlab.events.operation.failed": {
+      "address": "pocketlab.events.operation.failed",
+      "messages": {
+        "pocketlab_events_operation_failed": {
+          "$ref": "#/components/messages/pocketlab_events_operation_failed"
+        }
+      }
+    },
+    "pocketlab.events.command.queued": {
+      "address": "pocketlab.events.command.queued",
+      "messages": {
+        "pocketlab_events_command_queued": {
+          "$ref": "#/components/messages/pocketlab_events_command_queued"
+        }
+      }
+    },
+    "pocketlab.events.command.succeeded": {
+      "address": "pocketlab.events.command.succeeded",
+      "messages": {
+        "pocketlab_events_command_succeeded": {
+          "$ref": "#/components/messages/pocketlab_events_command_succeeded"
+        }
+      }
+    },
+    "pocketlab.events.command.failed": {
+      "address": "pocketlab.events.command.failed",
+      "messages": {
+        "pocketlab_events_command_failed": {
+          "$ref": "#/components/messages/pocketlab_events_command_failed"
+        }
+      }
+    },
+    "pocketlab.events.command.retry_scheduled": {
+      "address": "pocketlab.events.command.retry_scheduled",
+      "messages": {
+        "pocketlab_events_command_retry_scheduled": {
+          "$ref": "#/components/messages/pocketlab_events_command_retry_scheduled"
+        }
+      }
+    },
+    "pocketlab.events.command.dead_lettered": {
+      "address": "pocketlab.events.command.dead_lettered",
+      "messages": {
+        "pocketlab_events_command_dead_lettered": {
+          "$ref": "#/components/messages/pocketlab_events_command_dead_lettered"
+        }
+      }
+    },
+    "pocketlab.events.catalog.refreshed": {
+      "address": "pocketlab.events.catalog.refreshed",
+      "messages": {
+        "pocketlab_events_catalog_refreshed": {
+          "$ref": "#/components/messages/pocketlab_events_catalog_refreshed"
+        }
+      }
+    },
+    "pocketlab.events.drift.detected": {
+      "address": "pocketlab.events.drift.detected",
+      "messages": {
+        "pocketlab_events_drift_detected": {
+          "$ref": "#/components/messages/pocketlab_events_drift_detected"
+        }
+      }
+    },
+    "pocketlab.events.fleet.node_heartbeat": {
+      "address": "pocketlab.events.fleet.node_heartbeat",
+      "messages": {
+        "pocketlab_events_fleet_node_heartbeat": {
+          "$ref": "#/components/messages/pocketlab_events_fleet_node_heartbeat"
+        }
+      }
+    },
+    "pocketlab.events.fleet.node_telemetry": {
+      "address": "pocketlab.events.fleet.node_telemetry",
+      "messages": {
+        "pocketlab_events_fleet_node_telemetry": {
+          "$ref": "#/components/messages/pocketlab_events_fleet_node_telemetry"
+        }
+      }
+    },
+    "pocketlab.events.health.checked": {
+      "address": "pocketlab.events.health.checked",
+      "messages": {
+        "pocketlab_events_health_checked": {
+          "$ref": "#/components/messages/pocketlab_events_health_checked"
+        }
+      }
+    },
+    "pocketlab.events.telemetry.sampled": {
+      "address": "pocketlab.events.telemetry.sampled",
+      "messages": {
+        "pocketlab_events_telemetry_sampled": {
+          "$ref": "#/components/messages/pocketlab_events_telemetry_sampled"
+        }
+      }
+    },
+    "pocketlab.events.security.finding": {
+      "address": "pocketlab.events.security.finding",
+      "messages": {
+        "pocketlab_events_security_finding": {
+          "$ref": "#/components/messages/pocketlab_events_security_finding"
+        }
+      }
+    },
+    "pocketlab.events.vault.secret_rotated": {
+      "address": "pocketlab.events.vault.secret_rotated",
+      "messages": {
+        "pocketlab_events_vault_secret_rotated": {
+          "$ref": "#/components/messages/pocketlab_events_vault_secret_rotated"
+        }
+      }
+    },
+    "pocketlab.events.release.workflow.started": {
+      "address": "pocketlab.events.release.workflow.started",
+      "messages": {
+        "pocketlab_events_release_workflow_started": {
+          "$ref": "#/components/messages/pocketlab_events_release_workflow_started"
+        }
+      }
+    },
+    "pocketlab.events.release.stage.completed": {
+      "address": "pocketlab.events.release.stage.completed",
+      "messages": {
+        "pocketlab_events_release_stage_completed": {
+          "$ref": "#/components/messages/pocketlab_events_release_stage_completed"
+        }
+      }
+    },
+    "pocketlab.events.release.workflow.completed": {
+      "address": "pocketlab.events.release.workflow.completed",
+      "messages": {
+        "pocketlab_events_release_workflow_completed": {
+          "$ref": "#/components/messages/pocketlab_events_release_workflow_completed"
+        }
+      }
+    },
+    "pocketlab.events.worker.heartbeat": {
+      "address": "pocketlab.events.worker.heartbeat",
+      "messages": {
+        "pocketlab_events_worker_heartbeat": {
+          "$ref": "#/components/messages/pocketlab_events_worker_heartbeat"
+        }
+      }
+    },
+    "pocketlab.events.workflow.recovery_completed": {
+      "address": "pocketlab.events.workflow.recovery_completed",
+      "messages": {
+        "pocketlab_events_workflow_recovery_completed": {
+          "$ref": "#/components/messages/pocketlab_events_workflow_recovery_completed"
+        }
+      }
+    },
+    "pocketlab.events.runbook.queued": {
+      "address": "pocketlab.events.runbook.queued",
+      "messages": {
+        "pocketlab_events_runbook_queued": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_queued"
+        }
+      }
+    },
+    "pocketlab.events.runbook.started": {
+      "address": "pocketlab.events.runbook.started",
+      "messages": {
+        "pocketlab_events_runbook_started": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_started"
+        }
+      }
+    },
+    "pocketlab.events.runbook.approval_required": {
+      "address": "pocketlab.events.runbook.approval_required",
+      "messages": {
+        "pocketlab_events_runbook_approval_required": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_approval_required"
+        }
+      }
+    },
+    "pocketlab.events.runbook.approval_queued": {
+      "address": "pocketlab.events.runbook.approval_queued",
+      "messages": {
+        "pocketlab_events_runbook_approval_queued": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_approval_queued"
+        }
+      }
+    },
+    "pocketlab.events.runbook.approved": {
+      "address": "pocketlab.events.runbook.approved",
+      "messages": {
+        "pocketlab_events_runbook_approved": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_approved"
+        }
+      }
+    },
+    "pocketlab.events.runbook.rejection_queued": {
+      "address": "pocketlab.events.runbook.rejection_queued",
+      "messages": {
+        "pocketlab_events_runbook_rejection_queued": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_rejection_queued"
+        }
+      }
+    },
+    "pocketlab.events.runbook.rejected": {
+      "address": "pocketlab.events.runbook.rejected",
+      "messages": {
+        "pocketlab_events_runbook_rejected": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_rejected"
+        }
+      }
+    },
+    "pocketlab.events.runbook.resumed": {
+      "address": "pocketlab.events.runbook.resumed",
+      "messages": {
+        "pocketlab_events_runbook_resumed": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_resumed"
+        }
+      }
+    },
+    "pocketlab.events.runbook.step_started": {
+      "address": "pocketlab.events.runbook.step_started",
+      "messages": {
+        "pocketlab_events_runbook_step_started": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_step_started"
+        }
+      }
+    },
+    "pocketlab.events.runbook.step_succeeded": {
+      "address": "pocketlab.events.runbook.step_succeeded",
+      "messages": {
+        "pocketlab_events_runbook_step_succeeded": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_step_succeeded"
+        }
+      }
+    },
+    "pocketlab.events.runbook.step_failed": {
+      "address": "pocketlab.events.runbook.step_failed",
+      "messages": {
+        "pocketlab_events_runbook_step_failed": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_step_failed"
+        }
+      }
+    },
+    "pocketlab.events.runbook.succeeded": {
+      "address": "pocketlab.events.runbook.succeeded",
+      "messages": {
+        "pocketlab_events_runbook_succeeded": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_succeeded"
+        }
+      }
+    },
+    "pocketlab.events.runbook.failed": {
+      "address": "pocketlab.events.runbook.failed",
+      "messages": {
+        "pocketlab_events_runbook_failed": {
+          "$ref": "#/components/messages/pocketlab_events_runbook_failed"
+        }
+      }
+    },
+    "pocketlab.audit.release.applied": {
+      "address": "pocketlab.audit.release.applied",
+      "messages": {
+        "pocketlab_audit_release_applied": {
+          "$ref": "#/components/messages/pocketlab_audit_release_applied"
+        }
+      }
+    },
+    "pocketlab.audit.security.policy_updated": {
+      "address": "pocketlab.audit.security.policy_updated",
+      "messages": {
+        "pocketlab_audit_security_policy_updated": {
+          "$ref": "#/components/messages/pocketlab_audit_security_policy_updated"
+        }
+      }
+    },
+    "pocketlab.audit.vault.secret_rotated": {
+      "address": "pocketlab.audit.vault.secret_rotated",
+      "messages": {
+        "pocketlab_audit_vault_secret_rotated": {
+          "$ref": "#/components/messages/pocketlab_audit_vault_secret_rotated"
+        }
+      }
+    },
+    "pocketlab.audit.runbook.executed": {
+      "address": "pocketlab.audit.runbook.executed",
+      "messages": {
+        "pocketlab_audit_runbook_executed": {
+          "$ref": "#/components/messages/pocketlab_audit_runbook_executed"
+        }
+      }
+    },
+    "pocketlab.audit.runbook.approved": {
+      "address": "pocketlab.audit.runbook.approved",
+      "messages": {
+        "pocketlab_audit_runbook_approved": {
+          "$ref": "#/components/messages/pocketlab_audit_runbook_approved"
+        }
+      }
+    },
+    "pocketlab.audit.runbook.rejected": {
+      "address": "pocketlab.audit.runbook.rejected",
+      "messages": {
+        "pocketlab_audit_runbook_rejected": {
+          "$ref": "#/components/messages/pocketlab_audit_runbook_rejected"
+        }
+      }
+    },
+    "pocketlab.dlq.original_subject": {
+      "address": "pocketlab.dlq.original_subject",
+      "messages": {
+        "pocketlab_dlq_original_subject": {
+          "$ref": "#/components/messages/pocketlab_dlq_original_subject"
+        }
+      }
+    }
+  },
+  "components": {
+    "messages": {
+      "pocketlab_commands_operation_execute": {
+        "name": "pocketlab_commands_operation_execute",
+        "title": "Command: pocketlab.commands.operation.execute",
+        "summary": "Command: pocketlab.commands.operation.execute",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_catalog_refresh": {
+        "name": "pocketlab_commands_catalog_refresh",
+        "title": "Command: pocketlab.commands.catalog.refresh",
+        "summary": "Command: pocketlab.commands.catalog.refresh",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_drift_scan": {
+        "name": "pocketlab_commands_drift_scan",
+        "title": "Command: pocketlab.commands.drift.scan",
+        "summary": "Command: pocketlab.commands.drift.scan",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_fleet_join": {
+        "name": "pocketlab_commands_fleet_join",
+        "title": "Command: pocketlab.commands.fleet.join",
+        "summary": "Command: pocketlab.commands.fleet.join",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_release_check": {
+        "name": "pocketlab_commands_release_check",
+        "title": "Command: pocketlab.commands.release.check",
+        "summary": "Command: pocketlab.commands.release.check",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_release_apply": {
+        "name": "pocketlab_commands_release_apply",
+        "title": "Command: pocketlab.commands.release.apply",
+        "summary": "Command: pocketlab.commands.release.apply",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_health_check": {
+        "name": "pocketlab_commands_health_check",
+        "title": "Command: pocketlab.commands.health.check",
+        "summary": "Command: pocketlab.commands.health.check",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_security_scan": {
+        "name": "pocketlab_commands_security_scan",
+        "title": "Command: pocketlab.commands.security.scan",
+        "summary": "Command: pocketlab.commands.security.scan",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_vault_rotate": {
+        "name": "pocketlab_commands_vault_rotate",
+        "title": "Command: pocketlab.commands.vault.rotate",
+        "summary": "Command: pocketlab.commands.vault.rotate",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_vault_dynamic_secret": {
+        "name": "pocketlab_commands_vault_dynamic_secret",
+        "title": "Command: pocketlab.commands.vault.dynamic_secret",
+        "summary": "Command: pocketlab.commands.vault.dynamic_secret",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_runbook_execute": {
+        "name": "pocketlab_commands_runbook_execute",
+        "title": "Command: pocketlab.commands.runbook.execute",
+        "summary": "Command: pocketlab.commands.runbook.execute",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_runbook_approve": {
+        "name": "pocketlab_commands_runbook_approve",
+        "title": "Command: pocketlab.commands.runbook.approve",
+        "summary": "Command: pocketlab.commands.runbook.approve",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_commands_runbook_reject": {
+        "name": "pocketlab_commands_runbook_reject",
+        "title": "Command: pocketlab.commands.runbook.reject",
+        "summary": "Command: pocketlab.commands.runbook.reject",
+        "payload": {
+          "$ref": "#/components/schemas/CommandEnvelope"
+        }
+      },
+      "pocketlab_events_operation_created": {
+        "name": "pocketlab_events_operation_created",
+        "title": "Event: pocketlab.events.operation.created",
+        "summary": "Event: pocketlab.events.operation.created",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_operation_worker_claimed": {
+        "name": "pocketlab_events_operation_worker_claimed",
+        "title": "Event: pocketlab.events.operation.worker_claimed",
+        "summary": "Event: pocketlab.events.operation.worker_claimed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_operation_log": {
+        "name": "pocketlab_events_operation_log",
+        "title": "Event: pocketlab.events.operation.log",
+        "summary": "Event: pocketlab.events.operation.log",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_operation_succeeded": {
+        "name": "pocketlab_events_operation_succeeded",
+        "title": "Event: pocketlab.events.operation.succeeded",
+        "summary": "Event: pocketlab.events.operation.succeeded",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_operation_failed": {
+        "name": "pocketlab_events_operation_failed",
+        "title": "Event: pocketlab.events.operation.failed",
+        "summary": "Event: pocketlab.events.operation.failed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_command_queued": {
+        "name": "pocketlab_events_command_queued",
+        "title": "Event: pocketlab.events.command.queued",
+        "summary": "Event: pocketlab.events.command.queued",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_command_succeeded": {
+        "name": "pocketlab_events_command_succeeded",
+        "title": "Event: pocketlab.events.command.succeeded",
+        "summary": "Event: pocketlab.events.command.succeeded",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_command_failed": {
+        "name": "pocketlab_events_command_failed",
+        "title": "Event: pocketlab.events.command.failed",
+        "summary": "Event: pocketlab.events.command.failed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_command_retry_scheduled": {
+        "name": "pocketlab_events_command_retry_scheduled",
+        "title": "Event: pocketlab.events.command.retry_scheduled",
+        "summary": "Event: pocketlab.events.command.retry_scheduled",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_command_dead_lettered": {
+        "name": "pocketlab_events_command_dead_lettered",
+        "title": "Event: pocketlab.events.command.dead_lettered",
+        "summary": "Event: pocketlab.events.command.dead_lettered",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_catalog_refreshed": {
+        "name": "pocketlab_events_catalog_refreshed",
+        "title": "Event: pocketlab.events.catalog.refreshed",
+        "summary": "Event: pocketlab.events.catalog.refreshed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_drift_detected": {
+        "name": "pocketlab_events_drift_detected",
+        "title": "Event: pocketlab.events.drift.detected",
+        "summary": "Event: pocketlab.events.drift.detected",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_fleet_node_heartbeat": {
+        "name": "pocketlab_events_fleet_node_heartbeat",
+        "title": "Event: pocketlab.events.fleet.node_heartbeat",
+        "summary": "Event: pocketlab.events.fleet.node_heartbeat",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_fleet_node_telemetry": {
+        "name": "pocketlab_events_fleet_node_telemetry",
+        "title": "Event: pocketlab.events.fleet.node_telemetry",
+        "summary": "Event: pocketlab.events.fleet.node_telemetry",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_health_checked": {
+        "name": "pocketlab_events_health_checked",
+        "title": "Event: pocketlab.events.health.checked",
+        "summary": "Event: pocketlab.events.health.checked",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_telemetry_sampled": {
+        "name": "pocketlab_events_telemetry_sampled",
+        "title": "Event: pocketlab.events.telemetry.sampled",
+        "summary": "Event: pocketlab.events.telemetry.sampled",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_security_finding": {
+        "name": "pocketlab_events_security_finding",
+        "title": "Event: pocketlab.events.security.finding",
+        "summary": "Event: pocketlab.events.security.finding",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_vault_secret_rotated": {
+        "name": "pocketlab_events_vault_secret_rotated",
+        "title": "Event: pocketlab.events.vault.secret_rotated",
+        "summary": "Event: pocketlab.events.vault.secret_rotated",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_release_workflow_started": {
+        "name": "pocketlab_events_release_workflow_started",
+        "title": "Event: pocketlab.events.release.workflow.started",
+        "summary": "Event: pocketlab.events.release.workflow.started",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_release_stage_completed": {
+        "name": "pocketlab_events_release_stage_completed",
+        "title": "Event: pocketlab.events.release.stage.completed",
+        "summary": "Event: pocketlab.events.release.stage.completed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_release_workflow_completed": {
+        "name": "pocketlab_events_release_workflow_completed",
+        "title": "Event: pocketlab.events.release.workflow.completed",
+        "summary": "Event: pocketlab.events.release.workflow.completed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_worker_heartbeat": {
+        "name": "pocketlab_events_worker_heartbeat",
+        "title": "Event: pocketlab.events.worker.heartbeat",
+        "summary": "Event: pocketlab.events.worker.heartbeat",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_workflow_recovery_completed": {
+        "name": "pocketlab_events_workflow_recovery_completed",
+        "title": "Event: pocketlab.events.workflow.recovery_completed",
+        "summary": "Event: pocketlab.events.workflow.recovery_completed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_queued": {
+        "name": "pocketlab_events_runbook_queued",
+        "title": "Event: pocketlab.events.runbook.queued",
+        "summary": "Event: pocketlab.events.runbook.queued",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_started": {
+        "name": "pocketlab_events_runbook_started",
+        "title": "Event: pocketlab.events.runbook.started",
+        "summary": "Event: pocketlab.events.runbook.started",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_approval_required": {
+        "name": "pocketlab_events_runbook_approval_required",
+        "title": "Event: pocketlab.events.runbook.approval_required",
+        "summary": "Event: pocketlab.events.runbook.approval_required",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_approval_queued": {
+        "name": "pocketlab_events_runbook_approval_queued",
+        "title": "Event: pocketlab.events.runbook.approval_queued",
+        "summary": "Event: pocketlab.events.runbook.approval_queued",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_approved": {
+        "name": "pocketlab_events_runbook_approved",
+        "title": "Event: pocketlab.events.runbook.approved",
+        "summary": "Event: pocketlab.events.runbook.approved",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_rejection_queued": {
+        "name": "pocketlab_events_runbook_rejection_queued",
+        "title": "Event: pocketlab.events.runbook.rejection_queued",
+        "summary": "Event: pocketlab.events.runbook.rejection_queued",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_rejected": {
+        "name": "pocketlab_events_runbook_rejected",
+        "title": "Event: pocketlab.events.runbook.rejected",
+        "summary": "Event: pocketlab.events.runbook.rejected",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_resumed": {
+        "name": "pocketlab_events_runbook_resumed",
+        "title": "Event: pocketlab.events.runbook.resumed",
+        "summary": "Event: pocketlab.events.runbook.resumed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_step_started": {
+        "name": "pocketlab_events_runbook_step_started",
+        "title": "Event: pocketlab.events.runbook.step_started",
+        "summary": "Event: pocketlab.events.runbook.step_started",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_step_succeeded": {
+        "name": "pocketlab_events_runbook_step_succeeded",
+        "title": "Event: pocketlab.events.runbook.step_succeeded",
+        "summary": "Event: pocketlab.events.runbook.step_succeeded",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_step_failed": {
+        "name": "pocketlab_events_runbook_step_failed",
+        "title": "Event: pocketlab.events.runbook.step_failed",
+        "summary": "Event: pocketlab.events.runbook.step_failed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_succeeded": {
+        "name": "pocketlab_events_runbook_succeeded",
+        "title": "Event: pocketlab.events.runbook.succeeded",
+        "summary": "Event: pocketlab.events.runbook.succeeded",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_events_runbook_failed": {
+        "name": "pocketlab_events_runbook_failed",
+        "title": "Event: pocketlab.events.runbook.failed",
+        "summary": "Event: pocketlab.events.runbook.failed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_audit_release_applied": {
+        "name": "pocketlab_audit_release_applied",
+        "title": "Audit: pocketlab.audit.release.applied",
+        "summary": "Audit: pocketlab.audit.release.applied",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_audit_security_policy_updated": {
+        "name": "pocketlab_audit_security_policy_updated",
+        "title": "Audit: pocketlab.audit.security.policy_updated",
+        "summary": "Audit: pocketlab.audit.security.policy_updated",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_audit_vault_secret_rotated": {
+        "name": "pocketlab_audit_vault_secret_rotated",
+        "title": "Audit: pocketlab.audit.vault.secret_rotated",
+        "summary": "Audit: pocketlab.audit.vault.secret_rotated",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_audit_runbook_executed": {
+        "name": "pocketlab_audit_runbook_executed",
+        "title": "Audit: pocketlab.audit.runbook.executed",
+        "summary": "Audit: pocketlab.audit.runbook.executed",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_audit_runbook_approved": {
+        "name": "pocketlab_audit_runbook_approved",
+        "title": "Audit: pocketlab.audit.runbook.approved",
+        "summary": "Audit: pocketlab.audit.runbook.approved",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_audit_runbook_rejected": {
+        "name": "pocketlab_audit_runbook_rejected",
+        "title": "Audit: pocketlab.audit.runbook.rejected",
+        "summary": "Audit: pocketlab.audit.runbook.rejected",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      },
+      "pocketlab_dlq_original_subject": {
+        "name": "pocketlab_dlq_original_subject",
+        "title": "DLQ: pocketlab.dlq.original_subject",
+        "summary": "DLQ: pocketlab.dlq.original_subject",
+        "payload": {
+          "$ref": "#/components/schemas/DeadLetterEnvelope"
+        }
+      }
+    },
+    "schemas": {
+      "CommandEnvelope": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "operation_id"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "target": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "correlation_id": {
+            "type": "string"
+          }
+        }
+      },
+      "EventEnvelope": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "subject",
+          "time"
+        ],
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "operation_id": {
+            "type": "string"
+          },
+          "correlation_id": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DeadLetterEnvelope": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "original_subject": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "last_error": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  },
+  "x-pocketlab-streams": {
+    "POCKETLAB_COMMANDS": [
+      "pocketlab.commands.>"
+    ],
+    "POCKETLAB_EVENTS": [
+      "pocketlab.events.>"
+    ],
+    "POCKETLAB_AUDIT": [
+      "pocketlab.audit.>"
+    ],
+    "POCKETLAB_DLQ": [
+      "pocketlab.dlq.>"
+    ]
+  },
+  "x-pocketlab-retry-policy": {
+    "max_deliver": 5,
+    "ack_wait_seconds": 60,
+    "retry_base_seconds": 5,
+    "retry_max_seconds": 300
+  },
+  "x-pocketlab-redaction": {
+    "sensitive_keys": [
+      "token",
+      "password",
+      "secret",
+      "api_key",
+      "authorization",
+      "private_key",
+      "value"
+    ]
+  }
+}

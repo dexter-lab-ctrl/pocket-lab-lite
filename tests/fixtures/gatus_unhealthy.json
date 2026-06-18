@@ -1,0 +1,8 @@
+{
+  "overall": "unhealthy",
+  "services": {
+    "gatus": {"status": "unhealthy", "message": "health probe failed"},
+    "fastapi": "healthy",
+    "nats": "healthy"
+  }
+}

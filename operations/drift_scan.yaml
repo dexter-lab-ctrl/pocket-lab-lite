@@ -1,0 +1,68 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: drift_scan
+  title: Run Drift Scan
+  description: Compare actual runtime state against desired state.
+  tags:
+  - drift
+  - health
+  - read
+spec:
+  professionalLabel: Run drift scan
+  simpleLabel: Check what changed
+  uiEntrypoints:
+  - Drift Center
+  - Health & Issues
+  apiEntrypoints:
+  - /api/operations/execute
+  natsSubject: pocketlab.commands.drift.scan
+  successEvents:
+  - pocketlab.events.drift.scan_completed
+  - pocketlab.events.operation.succeeded
+  failureEvents:
+  - pocketlab.events.operation.failed
+  backendOwner: drift service / domain command handler
+  targetShape:
+    type: environment
+    ref: default
+  paramsShape:
+    scope: default|fleet|blueprint|security
+  safety: Read/analysis workflow. Remediation must be a separate typed write operation.
+  notes: Detects state differences and feeds Drift Center.
+security:
+  data_classification: configuration
+  stride:
+  - Tampering
+  - Repudiation
+  - Denial of Service
+  - Elevation of Privilege
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  - worker_to_state_audit
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  - state_store
+  - event_journal
+  - dlq_subject
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  - event_sourced_workflow_journal
+  - dlq_review_path
+  - correlation_ids
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  - Edge-first deployments remain sensitive to host, storage, and network availability.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/drift_scan.yaml

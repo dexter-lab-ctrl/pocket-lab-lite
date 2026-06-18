@@ -1,0 +1,70 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: Runbook
+metadata:
+  name: backup_restore_verify
+  title: Backup Restore Verification
+  description: Prove backup integrity and controlled restore readiness without bypassing typed operations.
+  owner: platform-operations
+  tags:
+    - backup
+    - disaster-recovery
+    - validation
+spec:
+  professionalLabel: Verify Backup and Restore Readiness
+  simpleLabel: Check Saved Copy and Recovery Readiness
+  category: disaster-recovery
+  severity: high
+  trigger:
+    manual: true
+    scheduleHint: before-release-or-maintenance
+  requiresApproval: true
+  policy:
+    approvalReason: Restore validation can touch backup and recovery paths.
+    minimumRole: operator
+    evidenceRequired: true
+  prerequisites:
+    - Backup destination has sufficient free space.
+    - Operator has selected the backup reference to verify.
+    - Restore target is clearly identified.
+  steps:
+    - name: create_backup
+      title: Create Backup
+      operation: backup_now
+      description: Create a fresh backup snapshot for verification.
+      requiresApproval: false
+      timeoutSeconds: 600
+      onFailure: stop
+    - name: verify_backup
+      title: Verify Backup
+      operation: backup_verify
+      description: Verify manifest and backup integrity before any restore path is considered.
+      requiresApproval: false
+      timeoutSeconds: 600
+      onFailure: stop
+    - name: restore_backup
+      title: Restore Backup
+      operation: restore_backup
+      description: Execute the typed restore operation only after backup verification succeeds.
+      requiresApproval: true
+      timeoutSeconds: 1200
+      onFailure: stop
+    - name: post_restore_health
+      title: Post-restore Health Check
+      operation: health_check
+      description: Confirm runtime health after restore.
+      requiresApproval: false
+      timeoutSeconds: 300
+      onFailure: stop
+  rollback:
+    operation: restore_backup
+    requiresApproval: true
+    description: Restore the prior known-good backup if verification restore fails.
+  evidence:
+    - operation_events
+    - audit_events
+    - workflow_journal
+    - backup_manifest
+    - health_snapshot
+  safety:
+    impact: high
+    notes: Restore execution requires explicit approval and auditable evidence.

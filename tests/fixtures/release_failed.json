@@ -1,0 +1,6 @@
+{
+  "workflow_id": "release-dev",
+  "status": "failed",
+  "failed_stage": "health_verify",
+  "message": "Health verification failed after deployment"
+}

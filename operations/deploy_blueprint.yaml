@@ -1,0 +1,61 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: deploy_blueprint
+  title: Deploy Blueprint
+  description: Deploy an app or service blueprint from a selected source.
+  tags:
+  - blueprint
+  - app-catalog
+  - write
+spec:
+  professionalLabel: Deploy Workload
+  simpleLabel: Install
+  uiEntrypoints:
+  - App Catalog
+  - Blueprint Registry
+  - Apps & Services
+  apiEntrypoints:
+  - /api/operations/execute
+  natsSubject: pocketlab.commands.operation.execute
+  successEvents:
+  - pocketlab.events.operation.succeeded
+  failureEvents:
+  - pocketlab.events.operation.failed
+  - pocketlab.dlq.original_subject
+  backendOwner: operation service / worker domain command handler
+  targetShape:
+    type: repository|oci|zip|http|local
+    ref: blueprint-ref
+  paramsShape:
+    name: string
+    version: string
+    playbook: string
+  safety: Privileged write action. Must remain typed, auditable, and policy-guarded.
+  notes: Primary App Catalog install/deployment workflow.
+security:
+  data_classification: operational
+  stride:
+  - Tampering
+  - Repudiation
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/deploy_blueprint.yaml

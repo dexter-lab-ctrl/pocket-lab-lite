@@ -1,0 +1,608 @@
+version: '3'
+
+vars:
+  PYTHON: '{{default ".venv/bin/python" .PYTHON}}'
+  API_URL: '{{default "http://127.0.0.1:8000" .API_URL}}'
+  FRONTEND_URL: '{{default "http://127.0.0.1:5173" .FRONTEND_URL}}'
+  NATS_URL: '{{default "nats://127.0.0.1:4222" .NATS_URL}}'
+  STATE_DIR: '{{default ".pocketlab-dev/state" .STATE_DIR}}'
+
+env:
+  POCKETLAB_STATE_DIR: '{{.STATE_DIR}}'
+  POCKETLAB_NATS_URL: '{{.NATS_URL}}'
+  POCKETLAB_NATS_REQUIRED: '1'
+  POCKETLAB_NATS_REQUIRE_JETSTREAM: '1'
+  POCKETLAB_ENV: dev
+
+tasks:
+  default:
+    desc: List available Pocket Lab development tasks
+    cmds: [task --list]
+
+  setup:
+    desc: Install Python/npm dependencies
+    cmds:
+      - python3 -m venv .venv || true
+      - .venv/bin/python -m pip install --upgrade pip setuptools wheel
+      - .venv/bin/python -m pip install -r requirements-dev.txt
+      - if [ -f package-lock.json ]; then PUPPETEER_SKIP_DOWNLOAD=1 npm ci; elif [ -f package.json ]; then PUPPETEER_SKIP_DOWNLOAD=1 npm install; fi
+
+  check:
+    desc: Run all local quality gates
+    deps: [check:contracts, test:frontend, test:backend, test:iac, test:bootstrap, check:supply-chain, test:performance]
+
+  check:contracts:
+    cmds: [bash scripts/dev/check-architecture-contract.sh]
+  check:frontend:
+    cmds: [task test:frontend]
+  check:backend:
+    cmds: [task test:backend]
+  check:iac:
+    cmds: [task test:iac]
+  check:bootstrap:
+    cmds: [task test:bootstrap]
+  check:supply-chain:
+    cmds: [bash scripts/dev/check-supply-chain.sh]
+
+  test:frontend:
+    desc: React/Vite PWA lint, typecheck, unit test and production build
+    cmds: [bash scripts/dev/check-frontend.sh]
+  test:backend:
+    desc: Backend compile, FastAPI tests and runtime tests
+    cmds: [bash scripts/dev/check-backend.sh]
+  test:e2e:
+    desc: Playwright browser E2E tests with screenshots/videos/traces
+    cmds:
+      - bash scripts/dev/run-e2e.sh
+  test:iac:
+    desc: Ansible/IaC validation and drift simulation
+    cmds: [bash scripts/dev/check-iac.sh]
+  test:bootstrap:
+    desc: Day 0 bootstrap static and dry-run validation
+    cmds: [bash scripts/dev/day0-static-check.sh, bash scripts/dev/day0-dry-run.sh]
+  test:nats:
+    desc: Start NATS, FastAPI, worker, submit typed operation, validate events/journal
+    cmds: [bash scripts/dev/test-nats-stack.sh]
+  test:state:
+    desc: Database/state migration tests
+    cmds: ['{{.PYTHON}} -m pytest -q tests/backend/test_state_migration.py pocket-lab-final-structure/runtime/tests/test_state_migration.py']
+  test:performance:
+    desc: Performance and reliability smoke tests
+    cmds: ['mkdir -p .pocketlab-dev/validation && PYTHONPATH=tests:. {{.PYTHON}} -m pytest -q tests/performance --junitxml=.pocketlab-dev/validation/pytest-performance.xml']
+
+  build:pwa:
+    desc: Build production React/Vite PWA
+    cmds: [npm run build]
+
+  dev:nats:
+    desc: Start local NATS/JetStream
+    cmds: [bash scripts/dev/run-nats-dev.sh]
+  dev:nats:down:
+    cmds: [docker compose -f docker-compose.dev.yml down]
+  dev:backend:
+    desc: Start FastAPI locally
+    cmds: [bash scripts/dev/run-fastapi-dev.sh]
+  dev:worker:
+    desc: Start Pocket Lab worker locally
+    cmds: [bash scripts/dev/run-worker-dev.sh]
+  dev:frontend:
+    desc: Start Vite PWA locally
+    cmds: [npm run dev -- --host 127.0.0.1]
+  dev:status:
+    desc: Show FastAPI/NATS/worker/frontend status
+    cmds: [bash scripts/dev/status.sh]
+  dev:observe:
+    desc: Generate local observability HTML snapshot
+    cmds: [bash scripts/dev/observability-snapshot.sh]
+  observability:status:
+    desc: Capture runtime observability status runtime observability health from FastAPI
+    cmds: ['{{.PYTHON}} scripts/dev/observability-runtime-status.py']
+  docs:observability:runtime-snapshot:
+    desc: Capture optional runtime observability status runtime observability evidence separately from observability evidence static docs
+    cmds: ['{{.PYTHON}} scripts/dev/observability-runtime-status.py']
+
+  android:smoke:
+    desc: Run Android/Termux Day 0 smoke helper over SSH
+    cmds: [bash scripts/dev/day0-termux-smoke.sh]
+
+  release:dry-run:
+    desc: Build release artifacts locally without publishing
+    cmds: [bash scripts/dev/release-dry-run.sh]
+
+  # architecture-plus dev stack tasks
+  dev:up:
+    desc: "Start deterministic local stack: NATS, FastAPI, worker, frontend"
+    cmds: [bash scripts/dev/up.sh]
+  dev:down:
+    desc: Stop deterministic local stack
+    cmds: [bash scripts/dev/down.sh]
+  dev:logs:
+    desc: Tail local dev stack logs
+    cmds: [bash scripts/dev/logs.sh]
+  dev:reset:
+    desc: Reset local dev state, logs and pid files
+    cmds: [bash scripts/dev/reset-state.sh]
+  dev:frontend:mock:
+    desc: Start Vite frontend with MSW mock API scenarios enabled
+    cmds: [npm run dev:mock]
+  dev:storybook:
+    desc: Start Storybook for Pocket Lab UI components
+    cmds: [npm run storybook]
+  test:storybook:
+    desc: Build Storybook for CI/component sanity
+    cmds: [npm run build-storybook]
+  check:api-contract:
+    desc: Export FastAPI OpenAPI and verify frontend API calls
+    cmds: [bash scripts/dev/export-openapi.sh, bash scripts/dev/check-api-contract.sh]
+  check:schemas:
+    desc: Validate fixtures and event payloads against JSON schemas
+    cmds: [bash scripts/dev/check-schemas.sh]
+  test:websockets:
+    desc: Backend and frontend WebSocket contract tests
+    cmds: ['{{.PYTHON}} -m pytest -q pocket-lab-final-structure/runtime/tests/test_websockets.py', npx playwright test tests/e2e/websocket-events.spec.ts]
+  test:nats-permissions:
+    desc: Simulate NATS subject permission model for API, worker and agent
+    cmds: ['{{.PYTHON}} -m pytest -q tests/nats/test_subject_permissions.py', bash scripts/dev/check-nats-permissions.sh]
+  test:visual:
+    desc: Playwright visual regression screenshot suite
+    cmds: [npx playwright test tests/e2e/visual-regression.spec.ts]
+  test:lighthouse:
+    desc: Lighthouse CI PWA quality gate
+    cmds: [bash scripts/dev/check-lighthouse.sh]
+  test:a11y:
+    desc: Axe accessibility checks through Playwright
+    cmds: [npx playwright test tests/e2e/accessibility.spec.ts]
+  test:network:
+    desc: Verify frontend operation network payloads are typed and non-legacy
+    cmds: [npx playwright test tests/e2e/network-contracts.spec.ts]
+  test:redaction:
+    desc: Verify event journal and logs redact secrets
+    cmds: ['{{.PYTHON}} -m pytest -q tests/backend/test_journal_redaction.py']
+  test:golden:
+    desc: Run the Pocket Lab golden-path release-candidate E2E flow
+    cmds: [npx playwright test tests/e2e/golden-path.spec.ts]
+  fault:nats-down:
+    cmds: [bash scripts/dev/fault-inject.sh nats-down]
+  fault:worker-down:
+    cmds: [bash scripts/dev/fault-inject.sh worker-down]
+  fault:bad-health:
+    cmds: [bash scripts/dev/fault-inject.sh bad-health]
+  test:faults:
+    desc: Enterprise fault injection and degraded-mode gate
+    cmds:
+      - bash scripts/dev/check-faults.sh
+
+  test:flakes:
+    desc: "Enterprise flaky-test gate: quarantine scan plus repeated high-signal Playwright stability runs"
+    cmds:
+      - bash scripts/dev/report-flakes.sh
+  trace:operation:
+    desc: Submit and trace a typed operation with correlation IDs
+    cmds: [bash scripts/dev/trace-operation.sh]
+  docs:api:
+   desc: Generate Pocket Lab API documentation
+   cmds:
+    - python3 scripts/docs/export_openapi.py
+    - python3 scripts/docs/enhance_openapi.py
+    - npx redocly lint contracts/generated/openapi.json
+
+  docs:events:
+    desc: Generate NATS / JetStream AsyncAPI documentation
+    cmds:
+      - python3 scripts/docs/generate_event_docs.py
+
+  docs:operations:
+    desc: Generate typed operations catalog documentation
+    cmds:
+      - python3 scripts/docs/generate_operations_docs.py
+
+  docs:workflows:
+    desc: Generate GitHub Actions workflow documentation
+    cmds:
+      - python3 scripts/docs/generate_github_workflow_docs.py
+
+  docs:build:
+    desc: Build Pocket Lab MkDocs documentation site
+    cmds:
+      - mkdocs build --strict
+
+  docs:serve:
+    desc: Serve Pocket Lab MkDocs documentation locally
+    cmds:
+      - mkdocs serve -a 127.0.0.1:8001
+
+  docs:check:
+    desc: Generate and validate Pocket Lab documentation
+    cmds:
+      - task docs:api
+      - task docs:events
+      - task docs:operations
+      - task docs:architecture
+      - task docs:workflows
+      - task docs:threat-model
+      - task docs:threat-model:sync
+      - task docs:security:full-check
+      - task docs:runbooks:full-check
+      - task docs:deployment:full-check
+      - task docs:observability:full-check
+      - task docs:ui:check
+      - task docs:validation:evidence
+      - task docs:validation:check
+      - mkdocs build --strict
+
+  docs:operations:seed:
+    desc: Seed Backstage-style typed operation metadata files
+    cmds:
+      - python3 scripts/docs/seed_operations_metadata.py
+
+  docs:operations:metadata:check:
+    desc: Validate Backstage-style typed operation metadata files
+    cmds:
+      - python3 scripts/docs/check_operations_metadata.py
+
+  docs:architecture:
+    desc: Generate Structurizr DSL architecture documentation
+    cmds:
+      - python3 scripts/docs/generate_structurizr_docs.py
+
+  docs:architecture:workspace:
+    desc: Generate Structurizr DSL workspace only
+    cmds:
+      - python3 scripts/docs/generate_structurizr_workspace.py
+
+  docs:architecture:serve:
+    desc: Serve Structurizr architecture workspace locally with Docker
+    cmds:
+      - docker run --rm -it -p 8080:8080 --user "$(id -u):$(id -g)" -v "$PWD/architecture/structurizr:/usr/local/structurizr" structurizr/structurizr local
+
+  docs:architecture:export:
+    desc: Export Structurizr views if structurizr-cli is installed
+    cmds:
+      - mkdir -p docs/architecture/generated/structurizr
+      - structurizr-cli export -workspace architecture/structurizr/workspace.dsl -format mermaid -output docs/architecture/generated/structurizr
+
+  threatdragon:pull:
+    desc: Pull the pinned OWASP Threat Dragon container image
+    cmds:
+      - docker pull owasp/threat-dragon:stable
+
+  threatdragon:serve:
+    desc: Run OWASP Threat Dragon locally on http://localhost:8082
+    cmds:
+      - bash scripts/dev/setup-threat-dragon.sh
+
+  threatdragon:stop:
+    desc: Stop local OWASP Threat Dragon container
+    cmds:
+      - docker rm -f pocketlab-threat-dragon || true
+
+  threatdragon:logs:
+    desc: Tail local OWASP Threat Dragon container logs
+    cmds:
+      - docker logs -f pocketlab-threat-dragon
+
+  docs:threat-model:
+    desc: Generate Pocket Lab threat-modeling capability threat-model metadata and documentation
+    cmds:
+      - python3 scripts/docs/generate_threat_model_docs.py
+      - task docs:threat-model:drift:seal
+
+  docs:threat-model:check:
+    desc: Validate generated Pocket Lab threat-modeling capability threat-model metadata and documentation
+    cmds:
+      - python3 scripts/docs/generate_threat_model_docs.py
+      - python3 scripts/docs/check_threat_model.py
+
+      - task docs:threat-model:drift:seal
+      - task docs:threat-model:drift
+  docs:operations:security:enrich:
+    desc: Add or complete operation-level threat-model security metadata
+    cmds:
+      - python3 scripts/docs/enrich_operations_security_metadata.py
+
+  docs:threat-model:drift:seal:
+    desc: Seal current generated threat-model artifacts against architecture and contract source fingerprints
+    cmds:
+      - python3 scripts/docs/generate_threat_model_drift_manifest.py
+      - python3 scripts/docs/generate_threat_model_drift_docs.py
+
+  docs:threat-model:drift:
+    desc: Check for threat-model drift without modifying generated artifacts
+    cmds:
+      - python3 scripts/docs/check_threat_model_drift.py
+
+  docs:threat-model:drift:docs:
+    desc: Generate the threat drift detection documentation page
+    cmds:
+      - python3 scripts/docs/generate_threat_model_drift_docs.py
+
+  docs:threat-model:sync:
+    desc: Generate threat-model source synchronization manifest and docs
+    cmds:
+      - python3 scripts/docs/generate_threat_model_source_sync_docs.py
+
+  docs:threat-model:sync:check:
+    desc: Validate threat-model source synchronization across Structurizr, OpenAPI, AsyncAPI, and Typed Operations
+    cmds:
+      - python3 scripts/docs/generate_threat_model_source_sync_docs.py
+      - python3 scripts/docs/check_threat_model_source_sync.py
+
+  docs:security:policies:
+    desc: Generate policy and security evidence security policy documentation and evidence from policy metadata, operations, runbooks, and security sources
+    cmds:
+      - python3 scripts/docs/generate_policy_evidence.py
+      - python3 scripts/docs/generate_policy_docs.py
+
+  docs:security:policies:check:
+    desc: Validate policy and security evidence generated policy documentation and evidence freshness
+    cmds:
+      - python3 scripts/docs/check_policy_evidence.py
+      - python3 scripts/docs/check_policy_docs.py
+
+  docs:security:controls:
+    desc: Generate policy and security evidence compliance controls reference from policy evidence
+    cmds:
+      - task docs:security:policies
+
+  docs:security:controls:check:
+    desc: Validate policy and security evidence compliance controls reference freshness
+    cmds:
+      - python3 scripts/docs/check_policy_docs.py
+
+  docs:security:full-check:
+    desc: Run complete policy and security evidence security policy documentation generation and freshness checks
+    cmds:
+      - task docs:security:policies
+      - task docs:security:policies:check
+      - task docs:security:controls:check
+
+  docs:runbooks:catalog:
+    desc: Generate Pocket Lab runbook metadata catalog runbook metadata catalog JSON
+    cmds:
+      - python3 scripts/docs/generate_runbook_catalog.py
+
+  docs:runbooks:
+    desc: Generate Pocket Lab runbook documentation capability runbook documentation from native runbook metadata
+    cmds:
+      - python3 scripts/docs/generate_runbook_docs.py
+
+  docs:runbooks:check:
+    desc: Validate Pocket Lab runbook metadata and generated runbook documentation
+    cmds:
+      - python3 scripts/docs/generate_runbook_docs.py
+      - python3 scripts/docs/check_runbook_catalog.py
+      - python3 scripts/docs/check_runbook_docs.py
+
+  docs:runbooks:docs:
+    desc: Generate runbook documentation capability runbook documentation pages and manifest
+    cmds:
+      - python3 scripts/docs/generate_runbook_docs.py
+
+  docs:runbooks:docs:check:
+    desc: Validate runbook documentation capability generated runbook documentation pages and manifest
+    cmds:
+      - python3 scripts/docs/generate_runbook_docs.py
+      - python3 scripts/docs/check_runbook_docs.py
+
+  docs:runbooks:gates:
+    desc: Generate Pocket Lab runbook validation gates runbook validation gate report
+    cmds:
+      - python3 scripts/docs/runbook_validation_gates.py --write
+
+  docs:runbooks:gates:check:
+    desc: Validate Pocket Lab runbook validation gates runbook validation gates
+    cmds:
+      - python3 scripts/docs/runbook_validation_gates.py --check
+
+  docs:runbooks:full-check:
+    desc: Run complete Pocket Lab runbook catalog, docs, and validation gates
+    cmds:
+      - task docs:runbooks:check
+      - task docs:runbooks:docs:check
+      - task docs:runbooks:gates:check
+
+  test:runbooks:execution:
+    desc: Validate native runbook execution engine via typed operations
+    cmds:
+      - pytest tests/backend/test_runbook_execution.py -q
+
+  docs:validation:evidence:
+    desc: Generate validation manifest, evidence bundle, readiness matrix, and Allure result files
+    cmds:
+      - python3 scripts/docs/generate_validation_evidence.py
+
+  docs:validation:check:
+    desc: Validate generated validation evidence and freshness
+    cmds:
+      - python3 scripts/docs/check_validation_evidence.py
+
+  docs:validation:allure:
+    desc: Generate a local static Allure report from validation evidence
+    cmds:
+      - bash scripts/docs/generate_allure_report.sh
+
+  docs:validation:record-docs:
+    desc: Record documentation validation command results for validation evidence and release readiness evidence
+    cmds:
+      - python3 scripts/docs/record_validation_result.py docs-api -- task docs:api
+      - python3 scripts/docs/record_validation_result.py docs-events -- task docs:events
+      - python3 scripts/docs/record_validation_result.py docs-operations -- task docs:operations
+      - python3 scripts/docs/record_validation_result.py docs-architecture -- task docs:architecture
+      - python3 scripts/docs/record_validation_result.py docs-workflows -- task docs:workflows
+      - python3 scripts/docs/record_validation_result.py docs-threat-model -- task docs:threat-model:check
+      - python3 scripts/docs/record_validation_result.py docs-runbooks -- task docs:runbooks:full-check
+      - python3 scripts/docs/record_validation_result.py docs-ui -- task docs:ui:check
+      - python3 scripts/docs/record_validation_result.py mkdocs-build -- mkdocs build --strict
+      - task docs:validation:evidence
+
+  docs:validation:release-gates:
+    desc: Record high-signal release validation gates for validation evidence and release readiness evidence
+    cmds:
+      - python3 scripts/docs/run_validation_release_gates.py
+      - task docs:validation:evidence
+  docs:validation:full-check:
+    desc: Run validation evidence checks and enforce release readiness from recorded evidence
+    cmds:
+      - task docs:validation:record-docs
+      - task docs:validation:evidence
+      - python3 scripts/docs/check_validation_evidence.py --enforce-ready
+
+
+  windows:host:preflight:
+    desc: Validate Windows 10 host readiness for WSL2 Ubuntu Pocket Lab development
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/check-wsl2-host.ps1
+
+  windows:host:check:
+    desc: Alias for Windows WSL2 host preflight
+    cmds:
+      - task windows:host:preflight
+
+  windows:vscode:configure:
+    desc: Configure VS Code for Pocket Lab Windows + WSL2 development
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/configure-vscode.ps1
+
+  windows:vscode:configure:optional:
+    desc: Configure VS Code for Pocket Lab with optional productivity extensions
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/configure-vscode.ps1 -IncludeOptionalExtensions
+
+  windows:vscode:check:
+    desc: Write and validate Pocket Lab VS Code workspace files without installing extensions
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/configure-vscode.ps1 -SkipExtensionInstall
+
+
+  windows:wsl:bootstrap:
+    desc: Bootstrap Ubuntu WSL2 developer environment for Pocket Lab
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/bootstrap-wsl2-ubuntu.ps1
+
+  windows:wsl:check:
+    desc: Validate Ubuntu WSL2 Pocket Lab developer environment
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/bootstrap-wsl2-ubuntu.ps1 -CheckOnly
+
+  storybook:build:
+    desc: Build Storybook static UI documentation
+    cmds:
+      - npm run build-storybook
+
+  docs:ui:
+    desc: Generate Storybook UI documentation Storybook UI screen reference documentation
+    cmds:
+      - python3 scripts/docs/generate_ui_storybook_docs.py
+      - python3 scripts/docs/embed_ui_storybook_screenshots.py
+
+  docs:ui:check:
+    desc: Validate Storybook UI documentation, required stories, Simple Mode labels, and freshness
+    cmds:
+      - python3 scripts/docs/check_ui_storybook_docs.py
+
+  storybook:screenshots:
+    desc: Capture Storybook screenshot evidence for MkDocs
+    cmds:
+      - npm run build-storybook
+      - node scripts/docs/capture_ui_storybook_screenshots.mjs
+
+  docs:ui:screenshots:
+    desc: Capture Storybook UI screenshots and regenerate MkDocs UI documentation
+    cmds:
+      - task: storybook:screenshots
+      - task: docs:ui
+
+  docs:ui:screenshots:check:
+    desc: Validate Storybook screenshot evidence and generated UI documentation freshness
+    cmds:
+      - python3 scripts/docs/check_ui_storybook_screenshots.py
+      - task: docs:ui:check
+
+  docs:deployment:evidence:
+    desc: Generate deployment evidence manifest from Ansible, bootstrap, platform, Taskfile, and environment sources
+    cmds:
+      - python3 scripts/docs/generate_deployment_evidence.py
+
+  docs:deployment:evidence:check:
+    desc: Validate deployment evidence manifest fingerprints and source integrity
+    cmds:
+      - python3 scripts/docs/check_deployment_evidence.py
+
+  docs:deployment:ansible:
+    desc: Generate deployment evidence Ansible playbook and role/task deployment reference docs
+    cmds:
+      - python3 scripts/docs/generate_deployment_evidence.py
+      - python3 scripts/docs/generate_deployment_docs.py
+
+  docs:deployment:ansible:check:
+    desc: Validate deployment evidence Ansible deployment docs and evidence freshness
+    cmds:
+      - python3 scripts/docs/check_deployment_evidence.py
+      - python3 scripts/docs/check_deployment_docs.py
+
+  docs:deployment:platform:
+    desc: Generate deployment evidence platform, bootstrap, environment, and runtime blueprint docs
+    cmds:
+      - python3 scripts/docs/generate_deployment_evidence.py
+      - python3 scripts/docs/generate_deployment_docs.py
+
+  docs:deployment:platform:check:
+    desc: Validate deployment evidence platform deployment docs and MkDocs navigation coverage
+    cmds:
+      - python3 scripts/docs/check_deployment_evidence.py
+      - python3 scripts/docs/check_deployment_docs.py
+
+  docs:deployment:
+    desc: Generate deployment documentation from repository-native deployment sources
+    cmds:
+      - task docs:deployment:evidence
+      - python3 scripts/docs/generate_deployment_docs.py
+
+  docs:deployment:check:
+    desc: Validate generated deployment documentation freshness
+    cmds:
+      - task docs:deployment:evidence:check
+      - python3 scripts/docs/check_deployment_docs.py
+
+  docs:deployment:full-check:
+    desc: Run all deployment documentation generation and freshness checks
+    cmds:
+      - task docs:deployment
+      - task docs:deployment:check
+      - task docs:deployment:ansible:check
+      - task docs:deployment:platform:check
+
+  docs:observability:evidence:
+    desc: Generate observability evidence manifest
+    cmds:
+      - python3 scripts/docs/generate_observability_evidence.py
+
+  docs:observability:
+    desc: Generate observability evidence documentation
+    cmds:
+      - task docs:observability:evidence
+      - python3 scripts/docs/generate_observability_docs.py
+
+  docs:observability:check:
+    desc: Check observability evidence and generated docs freshness
+    cmds:
+      - python3 scripts/docs/check_observability_evidence.py
+      - python3 scripts/docs/check_observability_docs.py
+
+  docs:observability:full-check:
+    desc: Generate and validate observability evidence documentation
+    cmds:
+      - task docs:observability
+      - task docs:observability:check
+
+  docs:ui:evidence:
+    desc: Generate Storybook UI documentation / 9A UI documentation and screenshot evidence
+    cmds:
+      - task docs:ui
+      - task docs:ui:screenshots
+
+  docs:ui:evidence:check:
+    desc: Validate Storybook UI documentation / 9A UI documentation and screenshot evidence freshness
+    cmds:
+      - task docs:ui:check
+      - task docs:ui:screenshots:check

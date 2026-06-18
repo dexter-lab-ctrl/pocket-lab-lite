@@ -1,0 +1,5 @@
+{
+  "available": false,
+  "workers": [],
+  "reason": "worker_heartbeat_missing"
+}

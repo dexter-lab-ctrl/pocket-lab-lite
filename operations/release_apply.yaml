@@ -1,0 +1,69 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: release_apply
+  title: Apply Release
+  description: Apply available release through backup, sync, deploy, verify, and catalog refresh stages.
+  tags:
+  - release
+  - upgrade
+  - write
+spec:
+  professionalLabel: Apply latest
+  simpleLabel: Update now
+  uiEntrypoints:
+  - Release Workflow
+  apiEntrypoints:
+  - /api/release/self-update/apply
+  natsSubject: pocketlab.commands.release.apply
+  successEvents:
+  - pocketlab.events.release.workflow.completed
+  - pocketlab.events.operation.succeeded
+  failureEvents:
+  - pocketlab.events.release.workflow.failed
+  - pocketlab.events.operation.failed
+  backendOwner: release orchestrator
+  targetShape:
+    type: release
+    ref: target-version
+  paramsShape:
+    channel: stable|latest
+    backup_before_apply: true
+  safety: High-impact write. Must backup before apply and fail closed when degraded.
+  notes: Release timeline should expose every stage.
+security:
+  data_classification: release
+  stride:
+  - Tampering
+  - Repudiation
+  - Denial of Service
+  - Elevation of Privilege
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  - worker_to_state_audit
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  - state_store
+  - event_journal
+  - dlq_subject
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  - event_sourced_workflow_journal
+  - dlq_review_path
+  - correlation_ids
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  - Edge-first deployments remain sensitive to host, storage, and network availability.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/release_apply.yaml

@@ -1,0 +1,728 @@
+{
+  "app": "Pocket Lab",
+  "architecture": "FastAPI + NATS / JetStream + Worker + Event-Sourced Workflow Engine",
+  "catalog_model": "Backstage-style per-operation metadata files",
+  "forbidden_patterns": [],
+  "operations": [
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "backup/disaster recovery handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.operation.execute",
+      "notes": "Used before release apply and restore workflows.",
+      "operation": "backup_now",
+      "params_shape": {
+        "include_event_journal": true
+      },
+      "professional_label": "Backup now",
+      "safety": "Must verify destination space and redact sensitive data.",
+      "simple_label": "Save a copy",
+      "source_file": "operations/backup_now.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Create a runtime backup snapshot.",
+      "tags": [
+        "backup",
+        "disaster-recovery",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "default",
+        "type": "state"
+      },
+      "title": "Create Backup",
+      "ui_entrypoints": [
+        "Disaster Recovery",
+        "Release Workflow"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "backup/disaster recovery handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.operation.execute",
+      "notes": "Prevents restoring from incomplete or corrupt backups.",
+      "operation": "backup_verify",
+      "params_shape": {
+        "manifest": "manifest-ref"
+      },
+      "professional_label": "Verify backup",
+      "safety": "Read/verification workflow. Should not mutate runtime state.",
+      "simple_label": "Check saved copy",
+      "source_file": "operations/backup_verify.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Verify backup manifest and integrity.",
+      "tags": [
+        "backup",
+        "disaster-recovery",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "backup-id",
+        "type": "backup"
+      },
+      "title": "Verify Backup",
+      "ui_entrypoints": [
+        "Disaster Recovery"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/catalog/refresh",
+        "/api/operations/execute"
+      ],
+      "backend_owner": "catalog router / action queue / domain command handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed",
+        "pocketlab.dlq.original_subject"
+      ],
+      "nats_subject": "pocketlab.commands.catalog.refresh",
+      "notes": "Used by the App Catalog and release workflow to refresh visible app/blueprint state.",
+      "operation": "catalog_refresh",
+      "params_shape": {
+        "source_mode": "repository|oci|zip|http"
+      },
+      "professional_label": "Refresh catalog",
+      "safety": "Write action. Requires FastAPI, NATS, JetStream, and worker readiness. Fails closed when degraded.",
+      "simple_label": "Update app list",
+      "source_file": "operations/catalog_refresh.yaml",
+      "success_events": [
+        "pocketlab.events.catalog.refreshed",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Refresh Apps & Services / App Catalog metadata.",
+      "tags": [
+        "catalog",
+        "apps",
+        "safe-write"
+      ],
+      "target_shape": {
+        "ref": "default",
+        "type": "catalog"
+      },
+      "title": "Refresh App Catalog",
+      "ui_entrypoints": [
+        "App Catalog",
+        "Apps & Services",
+        "Release Workflow"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "policy guardrails / OPA integration",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.security.configure_opa",
+      "notes": "Controls policy behavior for blueprint and security workflows.",
+      "operation": "configure_opa",
+      "params_shape": {
+        "bundle": "string"
+      },
+      "professional_label": "Configure OPA",
+      "safety": "Policy mutation. Must be auditable and recoverable.",
+      "simple_label": "Update safety rules",
+      "source_file": "operations/configure_opa.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Configure or refresh OPA policy guardrails.",
+      "tags": [
+        "security",
+        "opa",
+        "policy",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "opa-bundle",
+        "type": "policy"
+      },
+      "title": "Configure OPA",
+      "ui_entrypoints": [
+        "Policy Guardrails",
+        "Safety Center"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "operation service / worker domain command handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed",
+        "pocketlab.dlq.original_subject"
+      ],
+      "nats_subject": "pocketlab.commands.operation.execute",
+      "notes": "Primary App Catalog install/deployment workflow.",
+      "operation": "deploy_blueprint",
+      "params_shape": {
+        "name": "string",
+        "playbook": "string",
+        "version": "string"
+      },
+      "professional_label": "Deploy Workload",
+      "safety": "Privileged write action. Must remain typed, auditable, and policy-guarded.",
+      "simple_label": "Install",
+      "source_file": "operations/deploy_blueprint.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Deploy an app or service blueprint from a selected source.",
+      "tags": [
+        "blueprint",
+        "app-catalog",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "blueprint-ref",
+        "type": "repository|oci|zip|http|local"
+      },
+      "title": "Deploy Blueprint",
+      "ui_entrypoints": [
+        "App Catalog",
+        "Blueprint Registry",
+        "Apps & Services"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "drift worker handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed",
+        "pocketlab.dlq.original_subject"
+      ],
+      "nats_subject": "pocketlab.commands.drift.apply",
+      "notes": "Should not run as an implicit side effect of scan.",
+      "operation": "drift_apply",
+      "params_shape": {
+        "mode": "approved"
+      },
+      "professional_label": "Apply remediation",
+      "safety": "Write action. Requires healthy control plane and prior approval.",
+      "simple_label": "Fix issue",
+      "source_file": "operations/drift_apply.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Apply approved drift remediation.",
+      "tags": [
+        "drift",
+        "remediation",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "drift-id",
+        "type": "drift"
+      },
+      "title": "Apply Drift Remediation",
+      "ui_entrypoints": [
+        "Drift Center"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "drift service",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.drift.approve",
+      "notes": "Separates approval from apply.",
+      "operation": "drift_approve",
+      "params_shape": {
+        "approved_by": "operator"
+      },
+      "professional_label": "Approve remediation",
+      "safety": "Approval action. Must be auditable.",
+      "simple_label": "Approve fix",
+      "source_file": "operations/drift_approve.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Approve a drift remediation plan.",
+      "tags": [
+        "drift",
+        "approval",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "drift-id",
+        "type": "drift"
+      },
+      "title": "Approve Drift Remediation",
+      "ui_entrypoints": [
+        "Drift Center"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "drift service",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.drift.ignore",
+      "notes": "Used for intentional drift exceptions.",
+      "operation": "drift_ignore",
+      "params_shape": {
+        "reason": "string"
+      },
+      "professional_label": "Ignore finding",
+      "safety": "State mutation. Must be auditable.",
+      "simple_label": "Ignore this change",
+      "source_file": "operations/drift_ignore.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Mark a drift finding as accepted or ignored.",
+      "tags": [
+        "drift",
+        "exception",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "drift-id",
+        "type": "drift"
+      },
+      "title": "Ignore Drift Finding",
+      "ui_entrypoints": [
+        "Drift Center"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/preview",
+        "/api/operations/execute"
+      ],
+      "backend_owner": "drift service",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.drift.preview",
+      "notes": "Used before approving/applying remediation.",
+      "operation": "drift_preview",
+      "params_shape": {
+        "dry_run": true
+      },
+      "professional_label": "Preview remediation",
+      "safety": "Preview-only. Must not mutate runtime state.",
+      "simple_label": "Preview fix",
+      "source_file": "operations/drift_preview.yaml",
+      "success_events": [
+        "pocketlab.events.operation.previewed"
+      ],
+      "summary": "Preview the action required to remediate drift.",
+      "tags": [
+        "drift",
+        "preview",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "drift-id",
+        "type": "drift"
+      },
+      "title": "Preview Drift Remediation",
+      "ui_entrypoints": [
+        "Drift Center"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "drift service / domain command handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.drift.scan",
+      "notes": "Detects state differences and feeds Drift Center.",
+      "operation": "drift_scan",
+      "params_shape": {
+        "scope": "default|fleet|blueprint|security"
+      },
+      "professional_label": "Run drift scan",
+      "safety": "Read/analysis workflow. Remediation must be a separate typed write operation.",
+      "simple_label": "Check what changed",
+      "source_file": "operations/drift_scan.yaml",
+      "success_events": [
+        "pocketlab.events.drift.scan_completed",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Compare actual runtime state against desired state.",
+      "tags": [
+        "drift",
+        "health",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "default",
+        "type": "environment"
+      },
+      "title": "Run Drift Scan",
+      "ui_entrypoints": [
+        "Drift Center",
+        "Health & Issues"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "fleet router / fleet service / domain command handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.fleet.join",
+      "notes": "Supports zero-touch fleet onboarding and mesh agent workflows.",
+      "operation": "fleet_join",
+      "params_shape": {
+        "role": "compute|storage|observer|controller"
+      },
+      "professional_label": "Join Fleet",
+      "safety": "Sensitive onboarding action. Join secrets must be redacted.",
+      "simple_label": "Add Device",
+      "source_file": "operations/fleet_join.yaml",
+      "success_events": [
+        "pocketlab.events.fleet.invite_created",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Create onboarding material for a new fleet or mesh device.",
+      "tags": [
+        "fleet",
+        "onboarding",
+        "secret"
+      ],
+      "target_shape": {
+        "ref": "node-name",
+        "type": "fleet-node"
+      },
+      "title": "Join Fleet",
+      "ui_entrypoints": [
+        "Mesh Fleet",
+        "My Devices"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "GitOps operation handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.operation.execute",
+      "notes": "Replaces legacy command-style sync flows with typed operation execution.",
+      "operation": "git_sync",
+      "params_shape": {
+        "branch": "string",
+        "strategy": "safe-sync"
+      },
+      "professional_label": "Sync GitOps",
+      "safety": "Must not reintroduce retired sync shell compatibility paths.",
+      "simple_label": "Keep my environment updated",
+      "source_file": "operations/git_sync.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Synchronize desired state from a Git source.",
+      "tags": [
+        "gitops",
+        "sync",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "repo-or-branch",
+        "type": "git"
+      },
+      "title": "GitOps Sync",
+      "ui_entrypoints": [
+        "GitOps Pipeline",
+        "Keep My Environment Updated"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/health/check"
+      ],
+      "backend_owner": "health engine / Gatus integration",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.health.check",
+      "notes": "Feeds health panels and degraded-mode indicators.",
+      "operation": "health_check",
+      "params_shape": {
+        "scope": "all"
+      },
+      "professional_label": "Refresh health snapshot",
+      "safety": "Operational check. Should be safe to run repeatedly.",
+      "simple_label": "Check system health",
+      "source_file": "operations/health_check.yaml",
+      "success_events": [
+        "pocketlab.events.health.checked"
+      ],
+      "summary": "Run health engine check and emit health status.",
+      "tags": [
+        "health",
+        "noc",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "control-plane",
+        "type": "health"
+      },
+      "title": "Run Health Check",
+      "ui_entrypoints": [
+        "NOC Telemetry",
+        "System Status",
+        "Health Engine"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/release/self-update/apply"
+      ],
+      "backend_owner": "release orchestrator",
+      "failure_events": [
+        "pocketlab.events.release.workflow.failed",
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.release.apply",
+      "notes": "Release timeline should expose every stage.",
+      "operation": "release_apply",
+      "params_shape": {
+        "backup_before_apply": true,
+        "channel": "stable|latest"
+      },
+      "professional_label": "Apply latest",
+      "safety": "High-impact write. Must backup before apply and fail closed when degraded.",
+      "simple_label": "Update now",
+      "source_file": "operations/release_apply.yaml",
+      "success_events": [
+        "pocketlab.events.release.workflow.completed",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Apply available release through backup, sync, deploy, verify, and catalog refresh stages.",
+      "tags": [
+        "release",
+        "upgrade",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "target-version",
+        "type": "release"
+      },
+      "title": "Apply Release",
+      "ui_entrypoints": [
+        "Release Workflow"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/release/self-update/check"
+      ],
+      "backend_owner": "release orchestrator",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.release.check",
+      "notes": "Populates current/target release state.",
+      "operation": "release_check",
+      "params_shape": {
+        "channel": "stable|latest"
+      },
+      "professional_label": "Check release",
+      "safety": "Read/check workflow. Must not apply changes.",
+      "simple_label": "Check for update",
+      "source_file": "operations/release_check.yaml",
+      "success_events": [
+        "pocketlab.events.release.workflow.started",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Check whether a new Pocket Lab release is available.",
+      "tags": [
+        "release",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "stable",
+        "type": "release-channel"
+      },
+      "title": "Check Release",
+      "ui_entrypoints": [
+        "Release Workflow"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute",
+        "/api/operations/preview"
+      ],
+      "backend_owner": "backup/disaster recovery handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed",
+        "pocketlab.dlq.original_subject"
+      ],
+      "nats_subject": "pocketlab.commands.operation.execute",
+      "notes": "Should show overwrite warnings and estimated restore size.",
+      "operation": "restore_backup",
+      "params_shape": {
+        "confirm": true,
+        "preview": true
+      },
+      "professional_label": "Restore backup",
+      "safety": "Destructive write. Requires preview, confirmation, and healthy control plane.",
+      "simple_label": "Restore saved copy",
+      "source_file": "operations/restore_backup.yaml",
+      "success_events": [
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Restore runtime state from a verified backup.",
+      "tags": [
+        "backup",
+        "disaster-recovery",
+        "destructive"
+      ],
+      "target_shape": {
+        "ref": "backup-id",
+        "type": "backup"
+      },
+      "title": "Restore Backup",
+      "ui_entrypoints": [
+        "Disaster Recovery"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "vault domain command handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.vault.rotate",
+      "notes": "Simple Mode exposes this as Change Password.",
+      "operation": "rotate_secret",
+      "params_shape": {
+        "rotation_policy": "default"
+      },
+      "professional_label": "Rotate Secret",
+      "safety": "High sensitivity. Secret values must never appear in logs/events.",
+      "simple_label": "Change Password",
+      "source_file": "operations/rotate_secret.yaml",
+      "success_events": [
+        "pocketlab.events.vault.secret_rotated",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Rotate a secret through Identity Vault.",
+      "tags": [
+        "vault",
+        "secret",
+        "write"
+      ],
+      "target_shape": {
+        "ref": "vault/path/redacted",
+        "type": "secret"
+      },
+      "title": "Rotate Secret",
+      "ui_entrypoints": [
+        "Identity Vault",
+        "Passwords & Access"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/operations/execute"
+      ],
+      "backend_owner": "vault domain command handler",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.vault.dynamic_secret",
+      "notes": "Useful for short-lived credentials.",
+      "operation": "secret_read_dynamic",
+      "params_shape": {
+        "ttl": "string"
+      },
+      "professional_label": "Read dynamic secret",
+      "safety": "Lease values must be redacted and not persisted in UI-visible events.",
+      "simple_label": "Get temporary password",
+      "source_file": "operations/secret_read_dynamic.yaml",
+      "success_events": [
+        "pocketlab.events.vault.lease_created",
+        "pocketlab.events.operation.succeeded"
+      ],
+      "summary": "Request or renew a dynamic secret lease.",
+      "tags": [
+        "vault",
+        "dynamic-secret",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "role-name",
+        "type": "dynamic-secret"
+      },
+      "title": "Read Dynamic Secret",
+      "ui_entrypoints": [
+        "Identity Vault",
+        "Passwords & Access"
+      ]
+    },
+    {
+      "api_entrypoints": [
+        "/api/security/scan"
+      ],
+      "backend_owner": "security posture / policy guardrails",
+      "failure_events": [
+        "pocketlab.events.operation.failed"
+      ],
+      "nats_subject": "pocketlab.commands.security.scan",
+      "notes": "Feeds Safety Center and Security Posture.",
+      "operation": "security_scan",
+      "params_shape": {
+        "scan_type": "policy|posture|secrets"
+      },
+      "professional_label": "Run security scan",
+      "safety": "Scan workflow. Must redact findings containing secrets.",
+      "simple_label": "Check safety",
+      "source_file": "operations/security_scan.yaml",
+      "success_events": [
+        "pocketlab.events.security.scan_completed"
+      ],
+      "summary": "Run security posture or policy scan.",
+      "tags": [
+        "security",
+        "policy",
+        "read"
+      ],
+      "target_shape": {
+        "ref": "default",
+        "type": "security-scope"
+      },
+      "title": "Run Security Scan",
+      "ui_entrypoints": [
+        "Security Posture",
+        "Safety Center"
+      ]
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source": "operations/*.yaml"
+}

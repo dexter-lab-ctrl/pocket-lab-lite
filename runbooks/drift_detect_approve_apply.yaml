@@ -1,0 +1,70 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: Runbook
+metadata:
+  name: drift_detect_approve_apply
+  title: Drift Detect, Approve, and Apply
+  description: Guided drift remediation using preview, approval, and typed apply operations.
+  owner: platform-operations
+  tags:
+    - drift
+    - remediation
+    - approval
+spec:
+  professionalLabel: Detect, Approve, and Apply Drift Remediation
+  simpleLabel: Review and Fix Something Changed
+  category: drift-management
+  severity: medium
+  trigger:
+    manual: true
+    eventHints:
+      - pocketlab.events.operation.succeeded
+  requiresApproval: true
+  policy:
+    approvalReason: Drift remediation changes desired or runtime state.
+    minimumRole: operator
+    evidenceRequired: true
+  prerequisites:
+    - Desired state has been reviewed.
+    - Operator understands the proposed remediation.
+  steps:
+    - name: scan_drift
+      title: Scan Drift
+      operation: drift_scan
+      description: Detect configuration or runtime drift.
+      requiresApproval: false
+      timeoutSeconds: 300
+      onFailure: stop
+    - name: preview_remediation
+      title: Preview Remediation
+      operation: drift_preview
+      description: Produce a preview before applying any changes.
+      requiresApproval: false
+      timeoutSeconds: 300
+      onFailure: stop
+    - name: approve_remediation
+      title: Approve Remediation
+      operation: drift_approve
+      description: Record approval for the proposed drift remediation.
+      requiresApproval: true
+      timeoutSeconds: 300
+      onFailure: stop
+    - name: apply_remediation
+      title: Apply Remediation
+      operation: drift_apply
+      description: Apply approved remediation through typed operation execution.
+      requiresApproval: true
+      timeoutSeconds: 900
+      onFailure: stop
+  rollback:
+    operation: drift_ignore
+    requiresApproval: true
+    description: Mark or ignore remediation only after operator review if apply is not safe.
+  evidence:
+    - operation_events
+    - audit_events
+    - workflow_journal
+    - drift_report
+    - approval_record
+  safety:
+    impact: medium
+    notes: Preview and approval steps are required before apply.

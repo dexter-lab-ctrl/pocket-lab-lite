@@ -1,0 +1,6 @@
+{
+  "ready": false,
+  "reason": "nats_unavailable",
+  "nats": {"connected": false, "jetstream": false},
+  "worker": {"available": false}
+}

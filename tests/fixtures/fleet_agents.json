@@ -1,0 +1,6 @@
+{
+  "agents": [
+    {"node_id": "android-lab-01", "status": "online", "last_seen": "2026-06-02T10:00:00Z"},
+    {"node_id": "edge-lab-02", "status": "offline", "last_seen": "2026-06-01T10:00:00Z"}
+  ]
+}

@@ -1,0 +1,66 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: security_scan
+  title: Run Security Scan
+  description: Run security posture or policy scan.
+  tags:
+  - security
+  - policy
+  - read
+spec:
+  professionalLabel: Run security scan
+  simpleLabel: Check safety
+  uiEntrypoints:
+  - Security Posture
+  - Safety Center
+  apiEntrypoints:
+  - /api/security/scan
+  natsSubject: pocketlab.commands.security.scan
+  successEvents:
+  - pocketlab.events.security.scan_completed
+  failureEvents:
+  - pocketlab.events.operation.failed
+  backendOwner: security posture / policy guardrails
+  targetShape:
+    type: security-scope
+    ref: default
+  paramsShape:
+    scan_type: policy|posture|secrets
+  safety: Scan workflow. Must redact findings containing secrets.
+  notes: Feeds Safety Center and Security Posture.
+security:
+  data_classification: policy
+  stride:
+  - Tampering
+  - Repudiation
+  - Information Disclosure
+  - Elevation of Privilege
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  - worker_to_secrets_policy
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  - vault_or_policy_adapter
+  - audit_event_payload
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  - opa_policy_decision
+  - secret_redaction
+  - vault_or_openbao_leases
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  - New secret or policy fields may require manual redaction review.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/security_scan.yaml

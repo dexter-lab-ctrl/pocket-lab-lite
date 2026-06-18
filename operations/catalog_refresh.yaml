@@ -1,0 +1,61 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: catalog_refresh
+  title: Refresh App Catalog
+  description: Refresh Apps & Services / App Catalog metadata.
+  tags:
+  - catalog
+  - apps
+  - safe-write
+spec:
+  professionalLabel: Refresh catalog
+  simpleLabel: Update app list
+  uiEntrypoints:
+  - App Catalog
+  - Apps & Services
+  - Release Workflow
+  apiEntrypoints:
+  - /api/catalog/refresh
+  - /api/operations/execute
+  natsSubject: pocketlab.commands.catalog.refresh
+  successEvents:
+  - pocketlab.events.catalog.refreshed
+  - pocketlab.events.operation.succeeded
+  failureEvents:
+  - pocketlab.events.operation.failed
+  - pocketlab.dlq.original_subject
+  backendOwner: catalog router / action queue / domain command handler
+  targetShape:
+    type: catalog
+    ref: default
+  paramsShape:
+    source_mode: repository|oci|zip|http
+  safety: Write action. Requires FastAPI, NATS, JetStream, and worker readiness. Fails closed when degraded.
+  notes: Used by the App Catalog and release workflow to refresh visible app/blueprint state.
+security:
+  data_classification: operational
+  stride:
+  - Tampering
+  - Repudiation
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/catalog_refresh.yaml

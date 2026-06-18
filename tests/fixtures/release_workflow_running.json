@@ -1,0 +1,9 @@
+{
+  "workflow_id": "release-dev",
+  "status": "running",
+  "stages": [
+    {"name": "check", "status": "complete"},
+    {"name": "backup", "status": "running"},
+    {"name": "deploy", "status": "pending"}
+  ]
+}

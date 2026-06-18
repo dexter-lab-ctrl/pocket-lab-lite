@@ -1,0 +1,46 @@
+site_name: Pocket Lab Lite
+site_description: Lightweight Pocket Lab for low-power Android/Termux and edge devices
+site_author: Pocket Lab
+site_url: https://dexter-lab-ctrl.github.io/pocket-lab-lite/
+
+repo_name: dexter-lab-ctrl/pocket-lab-lite
+repo_url: https://github.com/dexter-lab-ctrl/pocket-lab-lite
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Android / Termux: getting-started/android-termux.md
+  - Architecture:
+      - Lite Architecture: architecture/lite-architecture.md
+  - Operations:
+      - Bootstrap Lite: operations/bootstrap-lite.md
+  - Security:
+      - Lite Security Model: security/lite-security-model.md
+  - Recovery:
+      - Backup and Restore: recovery/backup-restore.md

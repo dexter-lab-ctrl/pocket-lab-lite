@@ -1,0 +1,6 @@
+# Compatibility shim for older scripts.
+# New code should use:
+#   requirements.txt      -> production runtime
+#   requirements-dev.txt  -> local development and tests
+
+-r requirements.txt

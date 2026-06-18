@@ -1,0 +1,58 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: git_sync
+  title: GitOps Sync
+  description: Synchronize desired state from a Git source.
+  tags:
+  - gitops
+  - sync
+  - write
+spec:
+  professionalLabel: Sync GitOps
+  simpleLabel: Keep my environment updated
+  uiEntrypoints:
+  - GitOps Pipeline
+  - Keep My Environment Updated
+  apiEntrypoints:
+  - /api/operations/execute
+  natsSubject: pocketlab.commands.operation.execute
+  successEvents:
+  - pocketlab.events.operation.succeeded
+  failureEvents:
+  - pocketlab.events.operation.failed
+  backendOwner: GitOps operation handler
+  targetShape:
+    type: git
+    ref: repo-or-branch
+  paramsShape:
+    branch: string
+    strategy: safe-sync
+  safety: Must not reintroduce retired sync shell compatibility paths.
+  notes: Replaces legacy command-style sync flows with typed operation execution.
+security:
+  data_classification: operational
+  stride:
+  - Tampering
+  - Repudiation
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/git_sync.yaml

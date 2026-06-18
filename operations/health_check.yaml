@@ -1,0 +1,65 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: TypedOperation
+metadata:
+  name: health_check
+  title: Run Health Check
+  description: Run health engine check and emit health status.
+  tags:
+  - health
+  - noc
+  - read
+spec:
+  professionalLabel: Refresh health snapshot
+  simpleLabel: Check system health
+  uiEntrypoints:
+  - NOC Telemetry
+  - System Status
+  - Health Engine
+  apiEntrypoints:
+  - /api/health/check
+  natsSubject: pocketlab.commands.health.check
+  successEvents:
+  - pocketlab.events.health.checked
+  failureEvents:
+  - pocketlab.events.operation.failed
+  backendOwner: health engine / Gatus integration
+  targetShape:
+    type: health
+    ref: control-plane
+  paramsShape:
+    scope: all
+  safety: Operational check. Should be safe to run repeatedly.
+  notes: Feeds health panels and degraded-mode indicators.
+security:
+  data_classification: telemetry
+  stride:
+  - Tampering
+  - Repudiation
+  - Information Disclosure
+  - Denial of Service
+  trust_boundaries:
+  - browser_to_fastapi
+  - fastapi_to_nats
+  - nats_to_worker
+  attack_surfaces:
+  - api_endpoint
+  - nats_subject
+  - worker_handler
+  - telemetry_payload
+  - status_stream
+  mitigations:
+  - typed_operation_schema
+  - openapi_validation
+  - asyncapi_subject_governance
+  - operation_audit_events
+  - payload_minimization
+  - event_redaction
+  residual_risks:
+  - Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete.
+  - Telemetry schemas can drift if new fields are added without privacy review.
+  evidence:
+  - architecture/structurizr/workspace.dsl
+  - contracts/generated/openapi.json
+  - contracts/asyncapi/pocketlab-nats-jetstream.yaml
+  - contracts/operations/pocketlab-typed-operations.json
+  - operations/health_check.yaml

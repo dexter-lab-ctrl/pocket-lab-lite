@@ -1,0 +1,10 @@
+{
+  "overall": "degraded",
+  "services": {
+    "fastapi": "healthy",
+    "nats": "healthy",
+    "worker": "healthy",
+    "vault": {"status": "sealed", "message": "Vault is sealed"},
+    "gitea": "healthy"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "reason": "latest_backup_ref_missing",
+  "expected_ref": "latest"
+}

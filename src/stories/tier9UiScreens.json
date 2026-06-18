@@ -1,0 +1,451 @@
+{
+  "source": "src/stories/PocketLabTabs.stories.jsx",
+  "generatedDocs": {
+    "primary": "docs/product/ui-screen-reference.md",
+    "generatedMarkdown": "docs/product/generated/ui-screen-reference.generated.md",
+    "manifest": "docs/product/generated/ui-storybook-manifest.json"
+  },
+  "architectureGuardrails": [
+    "Frontend calls FastAPI only; stories use deterministic mock FastAPI responses.",
+    "No Storybook story talks directly to NATS or JetStream.",
+    "No Storybook story executes shell commands.",
+    "Write actions remain represented as Typed Operations submitted through FastAPI endpoints.",
+    "Approval, rejection, resume, auto-approval, operation status, and audit behavior are documented as UI states rather than bypassed."
+  ],
+  "simpleModeLabels": {
+    "GitOps": "Keep My Environment Updated",
+    "Blueprint Catalog": "Apps & Services",
+    "Drift Center": "Health & Issues",
+    "Fleet Scaling": "My Devices",
+    "Identity & Vault": "Passwords & Access",
+    "Security Posture": "Safety Center",
+    "NOC Telemetry": "System Status",
+    "Deploy Blueprint": "Install",
+    "Version": "Release",
+    "Drift Detected": "Something Changed",
+    "Join Fleet": "Add Device",
+    "Desired State": "What Should Be Installed",
+    "Rotate Secret": "Change Password"
+  },
+  "requiredStates": [
+    "normal",
+    "loading",
+    "empty",
+    "error",
+    "degraded",
+    "permission_or_approval_required",
+    "success",
+    "failed_operation",
+    "simple_mode",
+    "professional_mode",
+    "enterprise_mode",
+    "button_action_behavior",
+    "operation_status_behavior",
+    "backend_sync_behavior"
+  ],
+  "screens": [
+    {
+      "id": "app-store",
+      "component": "AppStoreTab",
+      "professionalLabel": "App Store / Blueprint Catalog",
+      "simpleLabel": "Apps & Services",
+      "status": "required",
+      "purpose": "Discover apps and services, refresh the catalog, choose install sources, and submit blueprint installs as typed operations.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/App Store",
+      "storyExports": [
+        "AppStoreNormal",
+        "AppStoreSimpleMode",
+        "AppStoreEmptyState",
+        "AppStoreDegradedWriteBlocked"
+      ],
+      "states": {
+        "normal": "Catalog cards are loaded from the FastAPI catalog endpoint with health and event panels visible.",
+        "loading": "Initial catalog fetch shows a loading treatment before cards are available.",
+        "empty": "No apps are shown when the catalog endpoint returns an empty item list.",
+        "degraded": "When FastAPI/NATS readiness is degraded, write actions are blocked and the UI explains that safe worker execution is required.",
+        "simple_mode": "The screen title becomes Apps & Services and deploy actions read Install.",
+        "professional_mode": "The professional screen exposes source mode, source reference, deployment phase, and task id details.",
+        "button_action_behavior": "Refresh catalog posts catalog_refresh; Install/Deploy Workload submits deploy_blueprint.",
+        "operation_status_behavior": "Queued, blocked, succeeded, and error phases are rendered through deployment status and SimpleStatus copy.",
+        "backend_sync_behavior": "Reads /api/catalog.json and /api/health-engine.json; writes through /api/catalog/refresh and /api/operations/execute."
+      },
+      "actions": [
+        "Refresh catalog",
+        "Check for New Apps",
+        "Deploy Workload",
+        "Install"
+      ],
+      "operations": [
+        "catalog_refresh",
+        "deploy_blueprint"
+      ],
+      "backendEndpoints": [
+        "GET /api/catalog.json",
+        "POST /api/catalog/refresh",
+        "POST /api/operations/execute",
+        "GET /api/events/recent"
+      ]
+    },
+    {
+      "id": "gitops",
+      "component": "GitOpsTab",
+      "professionalLabel": "GitOps",
+      "simpleLabel": "Keep My Environment Updated",
+      "status": "required",
+      "purpose": "Launch named update and validation tasks without exposing a command editor.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/GitOps",
+      "storyExports": [
+        "GitOpsProfessional",
+        "GitOpsSimpleMode",
+        "GitOpsApprovalRequired",
+        "GitOpsFailedOperation"
+      ],
+      "states": {
+        "normal": "Named tasks are selectable and the operation launcher is ready.",
+        "degraded": "The launcher shows FastAPI/NATS degraded state and blocks non-preview writes.",
+        "permission_or_approval_required": "Approval-required responses show the task as waiting for review instead of continuing locally.",
+        "failed_operation": "Failed operation responses render in the task stream without fallback execution.",
+        "simple_mode": "GitOps language becomes Keep My Environment Updated, Update Settings, Check for Changes, and Install.",
+        "professional_mode": "Operation identifiers and named task mapping remain visible.",
+        "button_action_behavior": "Run task calls previewOperation for previews or executeOperation for typed writes.",
+        "operation_status_behavior": "The launcher stream records queued, approval, success, and failure details with job references.",
+        "backend_sync_behavior": "Reads control-plane readiness and writes only through /api/operations/execute or /api/operations/preview."
+      },
+      "actions": [
+        "Run Sync Repository",
+        "Run Validate Blueprint",
+        "Run Deploy Blueprint"
+      ],
+      "operations": [
+        "git_sync",
+        "drift_scan",
+        "deploy_blueprint"
+      ],
+      "backendEndpoints": [
+        "GET /ready",
+        "POST /api/operations/execute",
+        "POST /api/operations/preview",
+        "GET /api/operations/{job_id}/status"
+      ]
+    },
+    {
+      "id": "fleet-scaling",
+      "component": "FleetScalingTab",
+      "professionalLabel": "Fleet Scaling",
+      "simpleLabel": "My Devices",
+      "status": "required",
+      "purpose": "Add and monitor edge devices through typed fleet join and NATS-backed agent status views.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Fleet Scaling",
+      "storyExports": [
+        "FleetNormal",
+        "FleetSimpleMode",
+        "FleetEmptyAgents",
+        "FleetDegraded"
+      ],
+      "states": {
+        "normal": "Fleet nodes and agents are visible with live health-check controls.",
+        "empty": "No live agents shows an explicit empty state.",
+        "degraded": "Write actions explain that safe NATS/worker execution is unavailable.",
+        "success": "A generated join payload is shown as an invite artifact after fleet_join is accepted.",
+        "simple_mode": "Fleet Scaling becomes My Devices and Generate fleet_join becomes Add Device.",
+        "professional_mode": "The join artifact and NATS-backed command details stay visible.",
+        "button_action_behavior": "Add Device submits fleet_join; Save Network Key submits rotate_secret for Tailscale; health checks use FastAPI fleet routes.",
+        "operation_status_behavior": "Invite, broadcast, and per-device check results are appended to the visible log stream.",
+        "backend_sync_behavior": "Reads /api/fleet.json and /api/fleet/agents; writes through /api/operations/execute and fleet agent command routes."
+      },
+      "actions": [
+        "Generate fleet_join",
+        "Add Device",
+        "Save API Key",
+        "Check Devices"
+      ],
+      "operations": [
+        "fleet_join",
+        "rotate_secret"
+      ],
+      "backendEndpoints": [
+        "GET /api/fleet.json",
+        "GET /api/fleet/agents",
+        "POST /api/operations/execute",
+        "POST /api/fleet/agents/broadcast"
+      ]
+    },
+    {
+      "id": "identity-vault",
+      "component": "IdentityVaultTab",
+      "professionalLabel": "Identity & Vault",
+      "simpleLabel": "Passwords & Access",
+      "status": "required",
+      "purpose": "Rotate managed secrets and request short-lived access while keeping secret values hidden behind typed operations.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Identity & Vault",
+      "storyExports": [
+        "IdentityVaultNormal",
+        "IdentityVaultSimpleMode",
+        "IdentityVaultSuccess",
+        "IdentityVaultFailedOperation"
+      ],
+      "states": {
+        "normal": "Saved access and dynamic lease panels are visible.",
+        "error": "Failed secret rotation or lease requests show controlled error copy.",
+        "success": "Successful rotate_secret and secret_read_dynamic responses show task references and lease metadata.",
+        "degraded": "Write actions are blocked when readiness is degraded.",
+        "simple_mode": "Identity & Vault becomes Passwords & Access and Rotate Secret becomes Change Password.",
+        "professional_mode": "Secret version, lease duration, and task ids remain visible for operators.",
+        "button_action_behavior": "Change Password/Rotate Secret calls rotate_secret; temporary access calls secret_read_dynamic.",
+        "operation_status_behavior": "Task references and lease status summarize queued/succeeded/failed outcomes.",
+        "backend_sync_behavior": "Writes through /api/operations/execute; reads live events through the shared event panel."
+      },
+      "actions": [
+        "Rotate Secret",
+        "Change Password",
+        "Create Temporary Access"
+      ],
+      "operations": [
+        "rotate_secret",
+        "secret_read_dynamic"
+      ],
+      "backendEndpoints": [
+        "GET /ready",
+        "POST /api/operations/execute",
+        "GET /api/events/recent"
+      ]
+    },
+    {
+      "id": "release-workflow",
+      "component": "ReleaseWorkflowTab",
+      "professionalLabel": "Release Workflow / Release",
+      "simpleLabel": "Release",
+      "status": "required",
+      "purpose": "Show release stages, update checks, release apply flow, and subsystem evidence for safe self-update behavior.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Release Workflow",
+      "storyExports": [
+        "ReleaseWorkflowNormal",
+        "ReleaseWorkflowSimpleMode",
+        "ReleaseWorkflowLoading",
+        "ReleaseWorkflowError"
+      ],
+      "states": {
+        "normal": "The workflow stage list, release status, subsystem bindings, and action history are visible.",
+        "loading": "The screen announces that the release workflow is loading.",
+        "error": "Unavailable release workflow data shows a controlled status line.",
+        "success": "Accepted update check/apply commands add action history entries.",
+        "simple_mode": "Release Workflow becomes Update Pocket Lab with Check Updates and Update Everything controls.",
+        "professional_mode": "Subsystem bindings and operation identifiers remain visible.",
+        "button_action_behavior": "Check release and Apply orchestrated release use release self-update FastAPI commands; stage buttons use typed operations.",
+        "operation_status_behavior": "Stage status and action history show command ids, job ids, running state, and failures.",
+        "backend_sync_behavior": "Reads /api/release/workflow and /api/release/self-update/status; writes check/apply through FastAPI."
+      },
+      "actions": [
+        "Check release",
+        "Apply orchestrated release",
+        "Check Updates",
+        "Update Everything"
+      ],
+      "operations": [
+        "release_sync",
+        "git_sync",
+        "drift_scan",
+        "backup_now",
+        "deploy_blueprint"
+      ],
+      "backendEndpoints": [
+        "GET /api/release/workflow",
+        "GET /api/release/self-update/status",
+        "POST /api/release/self-update/check",
+        "POST /api/release/self-update/apply",
+        "POST /api/operations/execute"
+      ]
+    },
+    {
+      "id": "drift-center",
+      "component": "DriftCenterTab",
+      "professionalLabel": "Drift Center",
+      "simpleLabel": "Health & Issues",
+      "status": "required",
+      "purpose": "Detect, preview, approve, apply, or ignore drift using typed operation status and policy guardrails.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Drift Center",
+      "storyExports": [
+        "DriftCenterNormal",
+        "DriftCenterSimpleMode",
+        "DriftCenterPermissionRequired",
+        "DriftCenterFailedOperation"
+      ],
+      "states": {
+        "normal": "Drift summary, selected job details, diff preview, and recent operation runs are visible.",
+        "permission_or_approval_required": "Policy guardrail details identify when remediation waits for review or policy readiness.",
+        "failed_operation": "Failed drift actions appear in the visible task message and operation stream.",
+        "degraded": "Drift data and write action results fail closed without local simulation.",
+        "simple_mode": "Drift Center becomes Health & Issues and Drift Detected becomes Something Changed.",
+        "professional_mode": "Job ids, targets, diff JSON, and operation status details remain visible.",
+        "button_action_behavior": "Scan, preview, approve, apply, and ignore call typed operation or FastAPI drift routes.",
+        "operation_status_behavior": "Recent runs and task messages show pending approval, failed, and completed outcomes.",
+        "backend_sync_behavior": "Reads /api/drift/summary, /api/drift/jobs, job diff endpoints, and /api/operations/runs; writes through typed operation and drift decision routes."
+      },
+      "actions": [
+        "Scan Drift",
+        "Scan for Changes",
+        "Preview",
+        "Approve",
+        "Apply",
+        "Ignore"
+      ],
+      "operations": [
+        "drift_scan",
+        "drift_preview",
+        "drift_approve",
+        "drift_apply",
+        "drift_ignore"
+      ],
+      "backendEndpoints": [
+        "GET /api/drift/summary",
+        "GET /api/drift/jobs",
+        "GET /api/drift/jobs/{job_id}/diff",
+        "POST /api/operations/execute",
+        "POST /api/drift/approve",
+        "POST /api/drift/apply",
+        "POST /api/drift/ignore"
+      ]
+    },
+    {
+      "id": "security-posture",
+      "component": "SecurityPostureTab",
+      "professionalLabel": "Security Posture",
+      "simpleLabel": "Safety Center",
+      "status": "additional",
+      "purpose": "Document safety checks and approved remediation actions.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Security Posture",
+      "storyExports": [
+        "SecurityPostureSimple"
+      ],
+      "states": {
+        "simple_mode": "Security Posture becomes Safety Center.",
+        "button_action_behavior": "Safety checks and approved fixes are typed operations."
+      },
+      "actions": [
+        "Run Safety Check",
+        "Fix Device Settings",
+        "Fix App Risks"
+      ],
+      "operations": [
+        "policy_deploy",
+        "deploy_blueprint"
+      ],
+      "backendEndpoints": [
+        "POST /api/operations/execute",
+        "GET /api/health-engine.json"
+      ]
+    },
+    {
+      "id": "noc-telemetry",
+      "component": "NocTelemetryTab",
+      "professionalLabel": "NOC Telemetry",
+      "simpleLabel": "System Status",
+      "status": "additional",
+      "purpose": "Document device resource and event-stream status.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/NOC Telemetry",
+      "storyExports": [
+        "NocTelemetryDegraded"
+      ],
+      "states": {
+        "degraded": "Low disk or degraded health is visible without hiding system status.",
+        "simple_mode": "NOC Telemetry becomes System Status."
+      },
+      "actions": [
+        "Refresh status"
+      ],
+      "operations": [
+        "health_check"
+      ],
+      "backendEndpoints": [
+        "GET /api/telemetry.json",
+        "GET /api/health-engine.json",
+        "GET /api/events/recent"
+      ]
+    },
+    {
+      "id": "disaster-recovery",
+      "component": "DisasterRecoveryTab",
+      "professionalLabel": "Disaster Recovery",
+      "simpleLabel": "Backups",
+      "status": "additional",
+      "purpose": "Document backup, restore, and verification states.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Disaster Recovery",
+      "storyExports": [
+        "DisasterRecoveryNormal"
+      ],
+      "states": {
+        "normal": "Recent backup activity and recovery controls are visible.",
+        "button_action_behavior": "Backup, restore, and verify are typed operations."
+      },
+      "actions": [
+        "Backup Now",
+        "Restore Backup",
+        "Verify Backup"
+      ],
+      "operations": [
+        "backup_now",
+        "restore_backup",
+        "backup_verify"
+      ],
+      "backendEndpoints": [
+        "GET /api/operations/runs",
+        "POST /api/operations/execute"
+      ]
+    },
+    {
+      "id": "policy-guardrails",
+      "component": "PolicyGuardrailsTab",
+      "professionalLabel": "Policy Guardrails",
+      "simpleLabel": "Enterprise policy guardrails",
+      "status": "additional",
+      "purpose": "Document OPA policy deployment, evaluation, and guardrail states.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Policy Guardrails",
+      "storyExports": [
+        "PolicyGuardrailsNormal"
+      ],
+      "states": {
+        "normal": "Policy evaluations and deployment controls are visible.",
+        "button_action_behavior": "Policy deploy is submitted as a typed operation."
+      },
+      "actions": [
+        "Deploy Policy",
+        "Evaluate"
+      ],
+      "operations": [
+        "policy_deploy"
+      ],
+      "backendEndpoints": [
+        "GET /api/opa_evaluations.json",
+        "POST /api/operations/execute"
+      ]
+    },
+    {
+      "id": "settings-governance",
+      "component": "SettingsTab",
+      "professionalLabel": "Settings / Enterprise Governance",
+      "simpleLabel": "Settings / Enterprise Governance",
+      "status": "additional",
+      "purpose": "Document the opt-in Enterprise Mode governance switch and Personal Mode auto-approval explanation.",
+      "storybookTitle": "Pocket Lab/UI Evidence Screens/Settings",
+      "storyExports": [
+        "SettingsEnterpriseGovernance"
+      ],
+      "states": {
+        "enterprise_mode": "Enterprise Mode requires human approval for governed runbooks.",
+        "normal": "Personal Mode auto-approves eligible governed runbooks and logs audit evidence."
+      },
+      "actions": [
+        "Select Personal Mode",
+        "Select Enterprise Mode"
+      ],
+      "operations": [
+        "runbook approval policy"
+      ],
+      "backendEndpoints": [
+        "GET /api/settings/governance",
+        "PUT /api/settings/governance"
+      ]
+    }
+  ],
+  "capability": "Storybook UI documentation and evidence"
+}

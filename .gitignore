@@ -1,0 +1,41 @@
+# local runtime
+.pocketlab-dev/
+pocketlab-state/
+*.log
+*.tmp
+*.pid
+
+# frontend
+node_modules/
+dist/
+storybook-static/
+coverage/
+
+# docs
+site/
+.cache/
+allure-results/
+allure-report/
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# secrets / local config
+.env
+.env.*
+*.key
+*.pem
+*.token
+vault-unseal*
+root-token*
+service-secrets.env
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/*.local.json

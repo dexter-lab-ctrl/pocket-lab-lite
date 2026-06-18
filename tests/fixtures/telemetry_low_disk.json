@@ -1,0 +1,9 @@
+{
+  "cpu_usage_percent": 44.1,
+  "memory_usage_mb": 1880,
+  "memory_total_mb": 4096,
+  "free_space_mb": 512,
+  "cpu_temp_c": 48.8,
+  "status": "warning",
+  "issues": ["low_disk"]
+}

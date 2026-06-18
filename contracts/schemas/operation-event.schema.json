@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["subject","time"],"properties":{"id":{"type":"string"},"subject":{"type":"string","pattern":"^pocketlab\\."},"operation":{"type":"string"},"status":{"type":"string"},"time":{"type":"string"},"message":{"type":"string"},"correlation_id":{"type":"string"}},"additionalProperties":true}

@@ -1,0 +1,74 @@
+apiVersion: pocketlab.io/v1alpha1
+kind: Runbook
+metadata:
+  name: recover_failed_install
+  title: Recover Failed Install
+  description: Guided recovery path for a failed Apps & Services / Blueprint installation.
+  owner: platform-operations
+  tags:
+    - apps
+    - recovery
+    - blueprint
+    - simple-mode
+spec:
+  professionalLabel: Recover Failed Blueprint Deployment
+  simpleLabel: Fix Failed App Install
+  category: recovery
+  severity: high
+  trigger:
+    manual: true
+    eventHints:
+      - pocketlab.events.operation.failed
+      - pocketlab.dlq.original_subject
+  requiresApproval: true
+  policy:
+    approvalReason: Failed deployment recovery can change installed state.
+    minimumRole: operator
+    evidenceRequired: true
+  prerequisites:
+    - FastAPI control API is reachable.
+    - NATS / JetStream is healthy.
+    - Worker process is running.
+    - Operator has reviewed the failed operation correlation ID.
+  steps:
+    - name: scan_current_state
+      title: Scan Current State
+      operation: drift_scan
+      description: Detect current runtime drift before recovery actions.
+      requiresApproval: false
+      timeoutSeconds: 300
+      onFailure: stop
+    - name: create_safety_backup
+      title: Create Safety Backup
+      operation: backup_now
+      description: Create a backup before changing installed state.
+      requiresApproval: false
+      timeoutSeconds: 600
+      onFailure: stop
+    - name: reinstall_blueprint
+      title: Re-run Install
+      operation: deploy_blueprint
+      description: Re-run the typed installation operation after backup and drift scan evidence exists.
+      requiresApproval: true
+      timeoutSeconds: 1200
+      onFailure: stop
+    - name: verify_health
+      title: Verify Health
+      operation: health_check
+      description: Confirm the recovered service and Pocket Lab runtime are healthy.
+      requiresApproval: false
+      timeoutSeconds: 300
+      onFailure: continue
+  rollback:
+    operation: restore_backup
+    requiresApproval: true
+    description: Restore from the safety backup if recovery leaves the environment unhealthy.
+  evidence:
+    - operation_events
+    - audit_events
+    - workflow_journal
+    - backup_manifest
+    - drift_report
+  safety:
+    impact: high
+    notes: Must preserve typed operation boundaries, audit events, and rollback evidence.
