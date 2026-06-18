@@ -1,0 +1,120 @@
+name: Build Pocket Lab Lite dist.zip
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'lite-*'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish, for example lite-20260618-201317. Leave empty on manual runs to auto-generate a date-based Lite tag.'
+        required: false
+        type: string
+      prerelease:
+        description: 'Mark the GitHub release as a prerelease.'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pocket-lab-lite-dist-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-dist:
+    name: Build and package Lite PWA
+    runs-on: ubuntu-latest
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: "1"
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Verify dist output
+        run: |
+          test -d dist
+          test -f dist/index.html
+          test -f dist/manifest.webmanifest
+
+      - name: Create dist.zip
+        run: |
+          rm -f dist.zip checksums.txt
+          (cd dist && zip -r ../dist.zip .)
+          sha256sum dist.zip > checksums.txt
+          ls -lh dist.zip checksums.txt
+
+      - name: Upload dist.zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-lab-lite-dist
+          path: |
+            dist.zip
+            checksums.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Resolve release tag
+        id: release_tag
+        env:
+          DISPATCH_RELEASE_TAG: ${{ github.event.inputs.release_tag }}
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${DISPATCH_RELEASE_TAG:-}" ]]; then
+            echo "tag=${DISPATCH_RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "tag=lite-$(date -u '+%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        if: steps.release_tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          PRERELEASE: ${{ github.event.inputs.prerelease }}
+        run: |
+          git fetch --tags --force
+
+          if ! git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+            git tag "$RELEASE_TAG"
+            git push origin "$RELEASE_TAG"
+          fi
+
+          flags=()
+          if [[ "${PRERELEASE:-false}" == "true" ]]; then
+            flags+=(--prerelease)
+          fi
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist.zip checksums.txt --clobber
+          else
+            gh release create "$RELEASE_TAG" dist.zip checksums.txt \
+              --title "Pocket Lab Lite ${RELEASE_TAG}" \
+              --notes "Pocket Lab Lite PWA build artifact. Download dist.zip and serve the extracted dist contents from the Lite web/static host." \
+              "${flags[@]}"
+          fi
