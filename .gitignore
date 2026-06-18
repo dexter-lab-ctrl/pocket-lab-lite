@@ -34,6 +34,9 @@ __pycache__/
 vault-unseal*
 root-token*
 service-secrets.env
+dist.zip
+*.patch
+*.zip
 
 # OS/editor
 .DS_Store
