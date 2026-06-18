@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import submit_domain_command, submit_operation_command
-from ..services import lite_status
+from ..services import lite_invites, lite_status
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -38,7 +38,10 @@ class LiteSecurityScanRequest(BaseModel):
 
 
 class LiteAddDeviceRequest(BaseModel):
-    role: str = "compute"
+    role: Literal["compute", "storage"] = Field(
+        default="compute",
+        description="Lite device role: compute for App Host or storage for Storage Node",
+    )
     hostname: str | None = None
 
 
@@ -158,14 +161,31 @@ def get_lite_fleet(request: Request) -> dict[str, Any]:
     return lite_status.lite_fleet()
 
 
+@router.get("/fleet/invites/latest")
+def get_latest_lite_fleet_invite(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    invite = lite_invites.latest_invite()
+    return {
+        "status": "invite_ready" if invite else "not_found",
+        "latest_invite": invite,
+        "updated_at": deps.now_utc_iso(),
+    }
+
+
 @router.post("/fleet/add-device", status_code=202)
 async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return await submit_domain_command(
-        "pocketlab.commands.fleet.join",
-        "fleet.join.requested",
-        {"role": payload.role, "hostname": payload.hostname},
-    )
+    try:
+        result = lite_invites.create_lite_invite(
+            role=payload.role,
+            hostname=payload.hostname,
+            request=request,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    await lite_invites.publish_invite_evidence(result)
+    return {key: value for key, value in result.items() if key != "event"}
 
 
 @router.get("/policy")

@@ -54,7 +54,26 @@ export const handlers = [
   ], count: 2, updated_at: new Date().toISOString() })),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
   http.get('/api/lite/security', () => HttpResponse.json({ status: 'healthy', summary: 'No critical issues in the current safety summary', findings_count: 0, checks_count: 4, last_checked: new Date().toISOString() })),
-  http.get('/api/lite/fleet', () => HttpResponse.json({ status: 'healthy', devices: [{ id: 'local', name: 'This device', status: 'online', last_seen: new Date().toISOString(), remote_access: true }], count: 1, updated_at: new Date().toISOString() })),
+  http.get('/api/lite/fleet', () => HttpResponse.json({
+    status: 'healthy',
+    devices: [{
+      id: 'local',
+      name: 'This device',
+      status: 'online',
+      last_seen: new Date().toISOString(),
+      remote_access: true,
+      role: 'compute',
+      role_label: 'App Host',
+      capabilities: ['Run apps', 'Report device health'],
+    }],
+    count: 1,
+    roles: [
+      { role: 'compute', role_label: 'App Host', description: 'Runs apps and services for your Pocket Lab.' },
+      { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' },
+    ],
+    latest_invite: null,
+    updated_at: new Date().toISOString(),
+  })),
   http.get('/api/lite/policy', () => HttpResponse.json({ status: 'healthy', summary: 'Protection rules are available in advisory mode', protection_enabled: false, requires_confirmation: true, allowed_actions: ['install_app', 'add_device', 'run_safety_check', 'backup_now'] })),
   http.get('/api/lite/recovery', () => HttpResponse.json({ status: 'unknown', summary: 'No backup activity has been recorded yet', actions: ['backup_now', 'restore'] })),
   http.post('/api/lite/catalog/install', async ({ request }) => {
@@ -63,7 +82,30 @@ export const handlers = [
   }),
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
   http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-security-scan' }, { status: 202 })),
-  http.post('/api/lite/fleet/add-device', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-add-device' }, { status: 202 })),
+  http.post('/api/lite/fleet/add-device', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    const role = body.role === 'storage' ? 'storage' : 'compute';
+    const roleLabel = role === 'storage' ? 'Storage Node' : 'App Host';
+    const hostname = body.hostname || (role === 'storage' ? 'Pocket Lab Storage Node' : 'Pocket Lab App Host');
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    return HttpResponse.json({
+      accepted: true,
+      status: 'invite_ready',
+      summary: `Invite ready for ${hostname}.`,
+      command_id: 'mock-add-device',
+      job_id: 'mock-add-device',
+      invite: {
+        url: 'http://127.0.0.1:8080/api/join.sh?role=' + role + '&token=mock-invite-token',
+        copy_text: 'http://127.0.0.1:8080/api/join.sh?role=' + role + '&token=mock-invite-token',
+        token_hint: 'mock…oken',
+        hostname,
+        role,
+        role_label: roleLabel,
+        expires_at: expiresAt,
+        instructions: 'Open this invite on the new device while it is connected to the same Pocket Lab private network.',
+      },
+    }, { status: 202 });
+  }),
   http.post('/api/lite/policy/apply', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-policy-apply' }, { status: 202 })),
   http.post('/api/lite/recovery/backup', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-backup-now' }, { status: 202 })),
   http.post('/api/lite/recovery/restore', async ({ request }) => {

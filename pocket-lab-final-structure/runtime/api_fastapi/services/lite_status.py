@@ -8,6 +8,7 @@ from .. import deps
 from .fleet_registry import fleet_health_snapshot, merged_fleet_nodes
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
+from . import lite_invites
 
 LITE_MODE = "lite"
 
@@ -259,19 +260,31 @@ def lite_security() -> dict[str, Any]:
 
 def lite_fleet() -> dict[str, Any]:
     nodes = merged_fleet_nodes()
-    return {
-        "status": fleet_health_snapshot().get("status", "unknown"),
-        "devices": [
+    devices: list[dict[str, Any]] = []
+    for item in nodes:
+        role = item.get("role") or "compute"
+        try:
+            role_info = lite_invites.role_metadata(str(role))
+        except ValueError:
+            role_info = lite_invites.role_metadata("compute")
+        devices.append(
             {
                 "id": item.get("id") or item.get("node_id") or item.get("name"),
                 "name": item.get("name") or item.get("hostname") or item.get("node_id") or "Device",
                 "status": _status(item.get("status", "unknown")),
                 "last_seen": item.get("last_seen") or item.get("last_seen_at") or item.get("updated_at"),
                 "remote_access": bool(item.get("tailnet_ip") or item.get("tailscale_ip")),
+                "role": role_info["role"],
+                "role_label": role_info["role_label"],
+                "capabilities": role_info["capabilities"],
             }
-            for item in nodes
-        ],
-        "count": len(nodes),
+        )
+    return {
+        "status": fleet_health_snapshot().get("status", "unknown"),
+        "devices": devices,
+        "count": len(devices),
+        "roles": lite_invites.lite_role_options(),
+        "latest_invite": lite_invites.latest_invite(),
         "updated_at": deps.now_utc_iso(),
     }
 
