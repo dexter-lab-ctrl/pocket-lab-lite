@@ -33,6 +33,44 @@ export const handlers = [
       meta: { matched_count: values.length, query_time_ms: 12, query: url.searchParams.get('query') || '' }
     });
   }),
+  http.get('/api/lite/status', () => HttpResponse.json({
+    overall: 'healthy',
+    checked_at: new Date().toISOString(),
+    device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
+    summary: { apps_available: 2, devices_known: 1, security_findings: 0, nats_connected: true, jetstream_enabled: true, live_sampler_running: true },
+    telemetry: { status: 'healthy', cpu_temp_c: 42, cpu_usage_percent: 12, free_space_mb: 256000, memory_usage_mb: 512 },
+    services: [
+      { name: 'Control API', status: 'healthy', summary: 'Pocket Lab Lite API is serving local control-plane requests' },
+      { name: 'Command Bus', status: 'healthy', summary: 'NATS / JetStream is ready for worker-owned operations' },
+      { name: 'Worker Execution', status: 'healthy', summary: 'Worker heartbeat sampler is active' },
+      { name: 'App Catalog', status: 'healthy', summary: '2 catalog items available' },
+      { name: 'Identity & Access', status: 'healthy', summary: 'Vault is ready' },
+      { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' },
+    ],
+  })),
+  http.get('/api/lite/catalog', () => HttpResponse.json({ items: [
+    { id: 'gitea', name: 'Gitea', status: 'available', summary: 'Local source store for app catalog workflows', installed: false },
+    { id: 'vault', name: 'Vault', status: 'available', summary: 'Passwords and access protection', installed: true },
+  ], count: 2, updated_at: new Date().toISOString() })),
+  http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
+  http.get('/api/lite/security', () => HttpResponse.json({ status: 'healthy', summary: 'No critical issues in the current safety summary', findings_count: 0, checks_count: 4, last_checked: new Date().toISOString() })),
+  http.get('/api/lite/fleet', () => HttpResponse.json({ status: 'healthy', devices: [{ id: 'local', name: 'This device', status: 'online', last_seen: new Date().toISOString(), remote_access: true }], count: 1, updated_at: new Date().toISOString() })),
+  http.get('/api/lite/policy', () => HttpResponse.json({ status: 'healthy', summary: 'Protection rules are available in advisory mode', protection_enabled: false, requires_confirmation: true, allowed_actions: ['install_app', 'add_device', 'run_safety_check', 'backup_now'] })),
+  http.get('/api/lite/recovery', () => HttpResponse.json({ status: 'unknown', summary: 'No backup activity has been recorded yet', actions: ['backup_now', 'restore'] })),
+  http.post('/api/lite/catalog/install', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    return HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-install-${body.app_id || 'app'}` }, { status: 202 });
+  }),
+  http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
+  http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-security-scan' }, { status: 202 })),
+  http.post('/api/lite/fleet/add-device', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-add-device' }, { status: 202 })),
+  http.post('/api/lite/policy/apply', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-policy-apply' }, { status: 202 })),
+  http.post('/api/lite/recovery/backup', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-backup-now' }, { status: 202 })),
+  http.post('/api/lite/recovery/restore', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    if (!body.confirm) return HttpResponse.json({ detail: { status: 'confirmation_required', summary: 'Confirm restore before running it.' } }, { status: 409 });
+    return HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-restore-latest' }, { status: 202 });
+  }),
   http.get('/api/catalog.json', () => HttpResponse.json({ items: [{ id: 'gitea', name: 'Gitea', operation: 'deploy_blueprint' }] })),
   http.get('/api/fleet.json', () => HttpResponse.json(fleetAgents)),
   http.get('/api/fleet/agents', () => HttpResponse.json(fleetAgents)),
