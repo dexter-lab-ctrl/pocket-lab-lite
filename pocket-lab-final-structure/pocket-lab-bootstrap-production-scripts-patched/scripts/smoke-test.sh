@@ -48,7 +48,11 @@ main(){
   check "NATS-backed fleet agents API" curl_quiet "$API_URL/api/fleet/agents"
   check "Event-native telemetry" curl_quiet "$API_URL/api/telemetry.json"
   check "Event-native health engine" curl_quiet "$API_URL/api/health-engine.json"
-  check "Gatus status API" curl_quiet "$GATUS_URL/api/v1/endpoints/statuses"
+  if is_lite_profile; then
+    check "Lite status API" curl_quiet "$API_URL/api/lite/status"
+  else
+    check "Gatus status API" curl_quiet "$GATUS_URL/api/v1/endpoints/statuses"
+  fi
 
   if have mariadb; then
     check "MariaDB socket" bash -lc "mariadb --protocol=socket -uroot -S '${PREFIX}/var/run/mysqld/mysqld.sock' -e 'SELECT 1;' >/dev/null"

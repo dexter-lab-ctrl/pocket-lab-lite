@@ -1,5 +1,22 @@
 # Bootstrap Lite
 
+## Current implementation status
+
+Pocket Lab Lite supports a dedicated bootstrap profile:
+
+```bash
+bash scripts/bootstrap.sh --profile lite
+```
+
+or:
+
+```bash
+bash scripts/bootstrap.sh --lite
+```
+
+The lite profile keeps the core control plane and skips the external observability stack by default.
+
+
 The lite bootstrap profile starts only the core services needed for low-power devices.
 
 ## Included by default

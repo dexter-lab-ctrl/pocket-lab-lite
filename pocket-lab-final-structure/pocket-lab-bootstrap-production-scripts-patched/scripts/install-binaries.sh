@@ -154,14 +154,26 @@ main() {
   ensure_dir_perm "$STATE_BIN_DIR" 755; ensure_dir_perm "$CHECKSUM_DIR" 700
   require_cmd curl unzip tar sha256sum
   install_vault; install_act_runner
-  install_go_binary gatus github.com/TwiN/gatus/v5 "v${GATUS_VERSION}"
+  if is_lite_profile; then
+    log INFO "Lite profile: skipping Gatus install; built-in /api/lite/status is used instead"
+  else
+    install_go_binary gatus github.com/TwiN/gatus/v5 "v${GATUS_VERSION}"
+  fi
   install_go_binary nats-server github.com/nats-io/nats-server/v2 latest
   ensure_python_runtime
   install_go_binary task github.com/go-task/task/v3/cmd/task "$TASK_VERSION"
   install_go_binary go-getter github.com/hashicorp/go-getter/cmd/go-getter "$GO_GETTER_VERSION"
   install_go_binary oras oras.land/oras/cmd/oras "$ORAS_VERSION"
-  install_proot_stack
+  if is_lite_profile; then
+    log INFO "Lite profile: skipping PRoot observability/security guest binaries"
+  else
+    install_proot_stack
+  fi
   mark_done binaries_ready
-  log INFO "Native and PRoot binary layer is ready and safe to rerun"
+  if is_lite_profile; then
+    log INFO "Lite native binary layer is ready and safe to rerun"
+  else
+    log INFO "Native and PRoot binary layer is ready and safe to rerun"
+  fi
 }
 main "$@"

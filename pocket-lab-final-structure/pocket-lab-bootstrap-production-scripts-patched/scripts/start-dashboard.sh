@@ -21,7 +21,11 @@ import importlib.util, sys
 required = ("fastapi", "uvicorn", "pydantic", "nats")
 sys.exit(0 if all(importlib.util.find_spec(m) for m in required) else 1)
 PYCHECK
-  mkdir -p "$PWA_DIR" "$OBS_DIR/loki_data" "$OBS_DIR/gatus" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+  if is_lite_profile; then
+    mkdir -p "$PWA_DIR" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+  else
+    mkdir -p "$PWA_DIR" "$OBS_DIR/loki_data" "$OBS_DIR/gatus" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+  fi
   if [[ ! -f "$PWA_DIR/index.html" ]]; then log INFO "UI assets missing; attempting self-recovery"; bash "$SCRIPT_DIR/install-pwa-ui.sh" || die "Failed to install UI assets"; fi
 }
 random_secret(){
@@ -76,7 +80,12 @@ EOF
 }
 
 write_caddyfile(){
-  local fqdn; fqdn="$(get_ts_fqdn || true)"
+  local fqdn loki_route
+  fqdn="$(get_ts_fqdn || true)"
+  loki_route=""
+  if ! is_lite_profile; then
+    loki_route="$loki_route"
+  fi
   log INFO "Writing Caddyfile idempotently"
   if [[ -n "$fqdn" ]]; then
     cat <<EOF | atomic_write "$CADDYFILE" 0644
@@ -93,7 +102,7 @@ $fqdn {
   handle /api/* { reverse_proxy 127.0.0.1:${API_PORT} }
   handle /ws/* { reverse_proxy 127.0.0.1:${API_PORT} }
   handle /gitea/* { reverse_proxy 127.0.0.1:3030 }
-  handle /loki/* { reverse_proxy 127.0.0.1:${API_PORT} }
+$loki_route
   handle /* { root * ${PWA_DIR}; try_files {path} /index.html; file_server }
 }
 EOF
@@ -110,7 +119,7 @@ EOF
   handle /api/* { reverse_proxy 127.0.0.1:${API_PORT} }
   handle /ws/* { reverse_proxy 127.0.0.1:${API_PORT} }
   handle /gitea/* { reverse_proxy 127.0.0.1:3030 }
-  handle /loki/* { reverse_proxy 127.0.0.1:${API_PORT} }
+$loki_route
   handle /* { root * ${PWA_DIR}; try_files {path} /index.html; file_server }
 }
 EOF
@@ -157,6 +166,10 @@ PYD
   chmod +x "$HARDWARE_DAEMON"
 }
 write_observability_configs(){
+  if is_lite_profile; then
+    log INFO "Lite profile: skipping observability config generation"
+    return 0
+  fi
   log INFO "Writing observability configs idempotently"
   cat <<EOF | atomic_write "$OBS_DIR/loki-config.yaml" 0644
 auth_enabled: false
@@ -254,18 +267,22 @@ start_pm2_daemons(){
   fi
   POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-api "$API_SERVER" --interpreter python3 --update-env
   pm2_start_or_restart caddy-proxy caddy -- run --config "$CADDYFILE"
-  if have gatus; then
-    pm2_start_or_restart pocket-gatus bash -- -c "GATUS_CONFIG_PATH=$OBS_DIR/gatus-config.yaml gatus"
+  if is_lite_profile; then
+    log INFO "Lite profile: skipping Gatus, Loki, Promtail, Prometheus, and Grafana PM2 services"
   else
-    log WARN "gatus missing; health UI will use API fallback"
-  fi
-  if proot_ubuntu_ready; then
-    pm2_start_or_restart loki-kms bash -- -c "proot-distro login ubuntu -- /usr/local/bin/loki -config.file=$OBS_DIR/loki-config.yaml" || true
-    pm2_start_or_restart promtail-agent bash -- -c "proot-distro login ubuntu -- /usr/local/bin/promtail -config.file=$OBS_DIR/promtail-config.yaml" || true
-    pm2_start_or_restart prometheus-db bash -- -c "proot-distro login ubuntu -- /usr/local/bin/prometheus --config.file=$OBS_DIR/prometheus.yml --storage.tsdb.path=$OBS_DIR/prom_data --web.listen-address=127.0.0.1:9090" || true
-    pm2_start_or_restart grafana-ui bash -- -c "proot-distro login ubuntu -- bash -c 'cd /opt/grafana && ./bin/grafana-server --homepath=/opt/grafana --config=$OBS_DIR/custom.ini'" || true
-  else
-    log WARN "PRoot Ubuntu unavailable; skipping Loki/Promtail/Prometheus/Grafana PM2 processes"
+    if have gatus; then
+      pm2_start_or_restart pocket-gatus bash -- -c "GATUS_CONFIG_PATH=$OBS_DIR/gatus-config.yaml gatus"
+    else
+      log WARN "gatus missing; health UI will use API fallback"
+    fi
+    if proot_ubuntu_ready; then
+      pm2_start_or_restart loki-kms bash -- -c "proot-distro login ubuntu -- /usr/local/bin/loki -config.file=$OBS_DIR/loki-config.yaml" || true
+      pm2_start_or_restart promtail-agent bash -- -c "proot-distro login ubuntu -- /usr/local/bin/promtail -config.file=$OBS_DIR/promtail-config.yaml" || true
+      pm2_start_or_restart prometheus-db bash -- -c "proot-distro login ubuntu -- /usr/local/bin/prometheus --config.file=$OBS_DIR/prometheus.yml --storage.tsdb.path=$OBS_DIR/prom_data --web.listen-address=127.0.0.1:9090" || true
+      pm2_start_or_restart grafana-ui bash -- -c "proot-distro login ubuntu -- bash -c 'cd /opt/grafana && ./bin/grafana-server --homepath=/opt/grafana --config=$OBS_DIR/custom.ini'" || true
+    else
+      log WARN "PRoot Ubuntu unavailable; skipping Loki/Promtail/Prometheus/Grafana PM2 processes"
+    fi
   fi
   pm2 save >/dev/null || true
 }
