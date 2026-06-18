@@ -73,3 +73,20 @@ Local docs:
 mkdocs build --strict
 mkdocs serve -a 127.0.0.1:8001
 ```
+
+## Validation
+
+Run the Lite validation bundle from the repository root:
+
+```bash
+task lite:check
+```
+
+Fallback without Taskfile:
+
+```bash
+bash scripts/dev/check-lite.sh
+```
+
+The validation checks the Lite bootstrap profile, `/api/lite/*` API surface, frontend production build, and MkDocs strict build.
+
