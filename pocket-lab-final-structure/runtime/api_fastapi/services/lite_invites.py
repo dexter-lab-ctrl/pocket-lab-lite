@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import os
 import secrets
+import socket
+import subprocess
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -97,10 +100,132 @@ def lite_role_options() -> list[dict[str, Any]]:
     return [dict(item) for item in LITE_ROLES.values()]
 
 
+def _is_loopback_or_unspecified_host(host: str | None) -> bool:
+    value = str(host or "").strip().lower()
+    if not value:
+        return True
+    if value in {"localhost", "localhost.localdomain", "testserver"}:
+        return True
+    if value.startswith("[") and value.endswith("]"):
+        value = value[1:-1]
+    try:
+        ip = ipaddress.ip_address(value)
+        return ip.is_loopback or ip.is_unspecified
+    except ValueError:
+        return False
+
+
+def _safe_ipv4(value: str | None) -> str | None:
+    candidate = str(value or "").strip()
+    if not candidate:
+        return None
+    try:
+        ip = ipaddress.ip_address(candidate)
+    except ValueError:
+        return None
+    if ip.version != 4 or ip.is_loopback or ip.is_unspecified or ip.is_link_local:
+        return None
+    return candidate
+
+
+def _run_first_ipv4(command: list[str]) -> str | None:
+    try:
+        result = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except Exception:
+        return None
+    if result.returncode != 0:
+        return None
+    for line in result.stdout.splitlines():
+        value = _safe_ipv4(line)
+        if value:
+            return value
+    return None
+
+
+def _tailscale_ipv4() -> str | None:
+    # Termux Tailscale installer exposes tailscale-cli; standard installs expose tailscale.
+    return _run_first_ipv4(["tailscale-cli", "ip", "-4"]) or _run_first_ipv4(["tailscale", "ip", "-4"])
+
+
+def _lan_ipv4() -> str | None:
+    # UDP connect does not send traffic; it asks the OS which source IP would be used.
+    for target in ("100.100.100.100", "8.8.8.8", "1.1.1.1"):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.settimeout(1)
+                sock.connect((target, 80))
+                value = _safe_ipv4(sock.getsockname()[0])
+                if value:
+                    return value
+        except Exception:
+            continue
+    return None
+
+
+def _request_scheme(request: Request | None) -> str:
+    configured = os.environ.get("POCKETLAB_LITE_INVITE_SCHEME", "").strip().lower()
+    if configured in {"http", "https"}:
+        return configured
+    if request is not None and request.url.scheme in {"http", "https"}:
+        return request.url.scheme
+    return "http"
+
+
+def _request_port(request: Request | None) -> int:
+    configured = os.environ.get("POCKETLAB_LITE_INVITE_PORT", "").strip()
+    if configured:
+        try:
+            return int(configured)
+        except ValueError:
+            pass
+    if request is not None and request.url.port:
+        return int(request.url.port)
+    return int(os.environ.get("DASH_PORT", "8443"))
+
+
+def _format_host_for_url(host: str) -> str:
+    if ":" in host and not host.startswith("["):
+        return f"[{host}]"
+    return host
+
+
+def _compose_base_url(*, scheme: str, host: str, port: int) -> str:
+    formatted_host = _format_host_for_url(host)
+    if (scheme == "http" and port == 80) or (scheme == "https" and port == 443):
+        return f"{scheme}://{formatted_host}"
+    return f"{scheme}://{formatted_host}:{port}"
+
+
+def _detected_invite_host(request: Request | None) -> str | None:
+    configured_host = os.environ.get("POCKETLAB_LITE_INVITE_HOST", "").strip()
+    if configured_host and not _is_loopback_or_unspecified_host(configured_host):
+        return configured_host
+
+    if request is not None:
+        request_host = request.url.hostname
+        if request_host and not _is_loopback_or_unspecified_host(request_host):
+            return request_host
+
+    return _tailscale_ipv4() or _lan_ipv4()
+
+
 def _invite_base_url(request: Request | None) -> str:
     configured = os.environ.get("POCKETLAB_LITE_INVITE_BASE_URL", "").strip().rstrip("/")
     if configured:
         return configured
+
+    scheme = _request_scheme(request)
+    port = _request_port(request)
+    detected_host = _detected_invite_host(request)
+    if detected_host:
+        return _compose_base_url(scheme=scheme, host=detected_host, port=port)
+
     if request is not None:
         return str(request.base_url).rstrip("/")
     return f"http://{deps.settings().host}:{deps.settings().port}"
