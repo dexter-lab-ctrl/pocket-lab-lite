@@ -150,3 +150,54 @@ def test_lite_devices_ui_does_not_expose_raw_invite_internals():
     ]
     for term in forbidden:
         assert term not in ui
+
+def test_lite_invite_uses_configured_public_base_url(monkeypatch):
+    api = client()
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.10:8443")
+    response = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "phone-two"},
+    )
+    assert response.status_code == 202
+    invite = response.json()["invite"]
+    assert invite["url"].startswith("http://100.64.0.10:8443/api/join.sh?")
+    assert "127.0.0.1" not in invite["url"]
+
+
+def test_lite_invite_autodetects_tailscale_ip_when_request_is_loopback(monkeypatch):
+    api = client()
+    from api_fastapi.services import lite_invites
+
+    monkeypatch.delenv("POCKETLAB_LITE_INVITE_BASE_URL", raising=False)
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_PORT", "8443")
+    monkeypatch.setattr(lite_invites, "_tailscale_ipv4", lambda: "100.64.0.20")
+    monkeypatch.setattr(lite_invites, "_lan_ipv4", lambda: "192.168.1.20")
+
+    response = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "storage-phone"},
+    )
+    assert response.status_code == 202
+    invite = response.json()["invite"]
+    assert invite["url"].startswith("http://100.64.0.20:8443/api/join.sh?")
+    assert "role=storage" in invite["url"]
+    assert "127.0.0.1" not in invite["url"]
+
+
+def test_lite_invite_falls_back_to_lan_ip_when_tailscale_unavailable(monkeypatch):
+    api = client()
+    from api_fastapi.services import lite_invites
+
+    monkeypatch.delenv("POCKETLAB_LITE_INVITE_BASE_URL", raising=False)
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_PORT", "8443")
+    monkeypatch.setattr(lite_invites, "_tailscale_ipv4", lambda: None)
+    monkeypatch.setattr(lite_invites, "_lan_ipv4", lambda: "192.168.1.50")
+
+    response = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "lan-phone"},
+    )
+    assert response.status_code == 202
+    invite = response.json()["invite"]
+    assert invite["url"].startswith("http://192.168.1.50:8443/api/join.sh?")
+    assert "127.0.0.1" not in invite["url"]
