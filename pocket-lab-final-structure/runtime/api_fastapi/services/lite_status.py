@@ -235,7 +235,7 @@ def _server_host_device() -> dict[str, Any]:
         "status": "healthy",
         "last_seen": now,
         "last_seen_at": now,
-        "remote_access": bool(os.environ.get("TAILSCALE_IP") or os.environ.get("POCKETLAB_TAILNET_IP")),
+        "remote_access": True,
         "connection": "online",
         "role": role_info["role"],
         "role_label": role_info["role_label"],
@@ -256,6 +256,44 @@ def _is_dummy_device(item: dict[str, Any]) -> bool:
         return True
     if identity.startswith("pixel-edge-") or name.startswith("pixel-edge-"):
         return True
+    return False
+
+
+def _is_static_fleet_record(item: dict[str, Any]) -> bool:
+    """Return True for full-app/demo/static fleet records that should not appear in Lite.
+
+    Lite should show the local Server Host plus real invite/agent lifecycle records.
+    Static fleet inventory from the full app can leak names such as worker2,
+    samsung-nfs, localhost, or pixel-edge-* into the Lite Devices tab.
+    """
+    source = str(item.get("source") or "fleet").strip().lower()
+    identity = _device_identity(item)
+    name = normalize_node_id(str(item.get("name") or item.get("hostname") or ""))
+
+    if _is_dummy_device(item):
+        return True
+
+    if identity in {"worker1", "worker2", "worker3"}:
+        return True
+
+    if source in {"fleet", "static", "demo", ""} and not any(
+        item.get(key)
+        for key in (
+            "agent_version",
+            "last_seen_at",
+            "auth_token_hash",
+            "accepted_at",
+            "created_at",
+        )
+    ):
+        return True
+
+    # If a static full-app record uses the Android/Termux hostname, merge/ignore it
+    # rather than showing it as a second device beside the canonical Server Host.
+    local_hostname = normalize_node_id(socket.gethostname())
+    if source in {"fleet", "static", "demo", ""} and name and name == local_hostname:
+        return True
+
     return False
 
 
@@ -343,6 +381,21 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _lite_device_merge_key(device: dict[str, Any]) -> str:
+    role = str(device.get("role") or "")
+    if role == "server_host":
+        return str(device.get("id") or "pocket-lab-lite-server")
+
+    identity = normalize_node_id(str(device.get("id") or ""))
+    name = normalize_node_id(str(device.get("name") or ""))
+
+    # Collapse pending invite IDs into their intended device name.
+    if identity.startswith("pending-") and name:
+        return name
+
+    return name or identity
+
+
 def _merge_lite_device(existing: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
     if _device_status_rank(incoming.get("status")) >= _device_status_rank(existing.get("status")):
         merged = {**existing, **incoming}
@@ -409,6 +462,9 @@ def lite_fleet() -> dict[str, Any]:
         if not isinstance(item, dict):
             continue
 
+        if _is_static_fleet_record(item):
+            continue
+
         if _is_current_server_record(item):
             # Current-server records may appear as localhost or the Android/Termux hostname.
             # Merge only useful connectivity/last-seen data into the canonical Server Host row.
@@ -424,7 +480,7 @@ def lite_fleet() -> dict[str, Any]:
         if not device:
             continue
 
-        key = normalize_node_id(str(device.get("id") or device.get("name")))
+        key = _lite_device_merge_key(device)
         if not key or key in _DUMMY_DEVICE_IDS:
             continue
 

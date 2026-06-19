@@ -36,6 +36,21 @@ function roleLabel(value) {
   return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
 }
 
+function deviceConnectionLabel(device) {
+  const connection = String(device?.connection || '').toLowerCase();
+  const role = String(device?.role || '').toLowerCase();
+  const status = String(device?.status || '').toLowerCase();
+
+  if (role === 'server_host') return 'Online';
+  if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) return 'Online';
+  if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return 'Joining';
+  if (connection === 'waiting' || ['pending', 'invited', 'invite_sent'].includes(status)) return 'Waiting';
+  if (connection === 'offline' || ['offline', 'failed', 'unhealthy'].includes(status)) return 'Offline';
+
+  return device?.remote_access ? 'Online' : 'Not setup yet';
+}
+
+
 function deviceStatusLabel(status) {
   const value = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
   if (['pending', 'invited', 'invite_sent'].includes(value)) return 'Invite sent';
@@ -1050,7 +1065,7 @@ function DevicesScreen() {
                     </div>
                     <div>
                       <span>Connection</span>
-                      <strong>{device.remote_access ? 'Ready' : (['pending', 'invited'].includes(String(device.status || '').toLowerCase()) ? 'Waiting' : 'Not set up yet')}</strong>
+                      <strong>{deviceConnectionLabel(device)}</strong>
                     </div>
                   </div>
                 </GlassCard>
