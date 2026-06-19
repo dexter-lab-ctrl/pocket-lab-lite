@@ -8,7 +8,7 @@ fail(){ printf '[FAIL] %s\n' "$*" >&2; exit 1; }
 have(){ command -v "$1" >/dev/null 2>&1; }
 
 SOURCE_ROOT="${POCKETLAB_WSL_SOURCE_ROOT:-$(pwd -P)}"
-TARGET_ROOT="${POCKETLAB_WSL_REPO_PATH:-$HOME/pocket-lab}"
+TARGET_ROOT="${POCKETLAB_WSL_REPO_PATH:-$HOME/pocket-lab-lite}"
 SKIP_REPO_SYNC="${POCKETLAB_WSL_SKIP_REPO_SYNC:-0}"
 REPORT_PATH="${POCKETLAB_WSL_REPORT_PATH:-$TARGET_ROOT/.pocketlab-dev/reports/wsl-ubuntu-bootstrap.json}"
 NODE_MAJOR="${POCKETLAB_NODE_MAJOR:-24}"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-ANDROID_HOST="${ANDROID_HOST:-}"; ANDROID_USER="${ANDROID_USER:-darkwizard}"; ANDROID_PORT="${ANDROID_PORT:-8022}"; ANDROID_REPO="${ANDROID_REPO:-~/pocket-lab}"
+ANDROID_HOST="${ANDROID_HOST:-}"; ANDROID_USER="${ANDROID_USER:-darkwizard}"; ANDROID_PORT="${ANDROID_PORT:-8022}"; ANDROID_REPO="${ANDROID_REPO:-~/pocket-lab-lite}"
 [[ -n "$ANDROID_HOST" ]] || { echo "Set ANDROID_HOST" >&2; exit 2; }
 target="$ANDROID_USER@$ANDROID_HOST"
 ssh -p "$ANDROID_PORT" "$target" "set -e
