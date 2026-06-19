@@ -276,17 +276,22 @@ def _safe_event_payload(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _append_local_evidence(record: dict[str, Any]) -> None:
+def _append_local_evidence(
+    record: dict[str, Any],
+    *,
+    event_type: str = "pocketlab.events.fleet.invite_created",
+    audit_type: str = "pocketlab.audit.fleet.invite_created",
+) -> None:
     safe = _safe_event_payload(record)
-    for name, event_type in (
-        ("fleet_invite_events.json", "pocketlab.events.fleet.invite_created"),
-        ("fleet_invite_audit.json", "pocketlab.audit.fleet.invite_created"),
+    for name, item_type in (
+        ("fleet_invite_events.json", event_type),
+        ("fleet_invite_audit.json", audit_type),
     ):
         payload = _read_state(name, {"events": [], "updated_at": None})
         if not isinstance(payload, dict):
             payload = {"events": [], "updated_at": None}
         events = payload.get("events") if isinstance(payload.get("events"), list) else []
-        events.insert(0, {"event_type": event_type, "created_at": _now_iso(), **safe})
+        events.insert(0, {"event_type": item_type, "created_at": _now_iso(), **safe})
         payload["events"] = events[:200]
         payload["updated_at"] = _now_iso()
         _write_state(name, payload)
@@ -373,25 +378,89 @@ def latest_invite() -> dict[str, Any] | None:
     return _public_invite(valid[0])
 
 
-def validate_invite_token(token: str, role: str | None = None) -> dict[str, Any] | None:
+def invite_token_status(token: str, role: str | None = None) -> tuple[str, dict[str, Any] | None]:
     if not token:
-        return None
+        return "missing", None
+
+    try:
+        expected_role = normalize_lite_role(role) if role else None
+    except ValueError:
+        return "invalid_role", None
+
     token_hash = _hash_token(token)
-    expected_role = normalize_lite_role(role) if role else None
     payload = _invites_payload()
+
     for item in payload["invites"]:
         if not isinstance(item, dict):
             continue
         if item.get("token_hash") != token_hash:
             continue
         if expected_role and item.get("role") != expected_role:
-            return None
+            return "role_mismatch", item
         if float(item.get("expires_at_epoch") or 0) <= _now_epoch():
-            return None
-        if int(item.get("uses_remaining") or 0) <= 0:
-            return None
-        return item
-    return None
+            return "expired", item
+        if int(item.get("uses_remaining") or 0) <= 0 or str(item.get("status") or "").lower() in {
+            "accepted",
+            "used",
+            "joined",
+        }:
+            return "used", item
+        return "valid", item
+
+    return "not_found", None
+
+
+def validate_invite_token(token: str, role: str | None = None) -> dict[str, Any] | None:
+    status, item = invite_token_status(token, role=role)
+    return item if status == "valid" else None
+
+
+def consume_invite_token(token: str, role: str | None = None) -> dict[str, Any] | None:
+    status, item = invite_token_status(token, role=role)
+    if status != "valid" or not item:
+        return None
+
+    payload = _invites_payload()
+    invite_id = item.get("invite_id")
+    updated: dict[str, Any] | None = None
+
+    for existing in payload["invites"]:
+        if not isinstance(existing, dict):
+            continue
+        if existing.get("invite_id") != invite_id:
+            continue
+        existing["uses_remaining"] = 0
+        existing["status"] = "accepted"
+        existing["accepted_at"] = _now_iso()
+        existing["updated_at"] = _now_iso()
+        updated = dict(existing)
+        break
+
+    if not updated:
+        return None
+
+    payload["updated_at"] = _now_iso()
+    _write_state("fleet_invites.json", payload)
+
+    upsert_agent(
+        {
+            "node_id": updated.get("node_id"),
+            "hostname": updated.get("hostname"),
+            "role": updated.get("role"),
+            "status": "joining",
+            "auth_token_hash": str(updated.get("token_hash") or "")[:16],
+            "capabilities": updated.get("capabilities") or [],
+        },
+        event_type="fleet.agent_join_started",
+    )
+
+    _append_local_evidence(
+        updated,
+        event_type="pocketlab.events.fleet.invite_accepted",
+        audit_type="pocketlab.audit.fleet.invite_accepted",
+    )
+
+    return updated
 
 
 async def publish_invite_evidence(invite_result: dict[str, Any]) -> None:

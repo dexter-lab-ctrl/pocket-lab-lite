@@ -201,3 +201,50 @@ def test_lite_invite_falls_back_to_lan_ip_when_tailscale_unavailable(monkeypatch
     invite = response.json()["invite"]
     assert invite["url"].startswith("http://192.168.1.50:8443/api/join.sh?")
     assert "127.0.0.1" not in invite["url"]
+
+def test_join_invite_browser_page_does_not_consume_token(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.30:8443")
+    api = client()
+
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "phone-two"},
+    )
+    assert created.status_code == 202
+    invite_url = created.json()["invite"]["url"]
+    path = invite_url.split("http://100.64.0.30:8443", 1)[1]
+
+    page = api.get(path, headers={"accept": "text/html", "user-agent": "Mozilla/5.0"})
+    assert page.status_code == 200
+    assert "Pocket Lab Lite invite ready" in page.text
+    assert "curl -fsSL" in page.text
+    assert "phone-two" in page.text
+
+    script = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
+    assert script.status_code == 200
+    assert "text/x-shellscript" in script.headers.get("content-type", "")
+    assert "POCKETLAB_AGENT_TOKEN" in script.text
+
+
+def test_join_invite_shell_access_is_single_use(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.31:8443")
+    api = client()
+
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "storage-phone"},
+    )
+    assert created.status_code == 202
+    invite_url = created.json()["invite"]["url"]
+    path = invite_url.split("http://100.64.0.31:8443", 1)[1]
+
+    first = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
+    assert first.status_code == 200
+
+    second = api.get(path, headers={"accept": "text/x-shellscript", "user-agent": "curl/8.0"})
+    assert second.status_code == 410
+    assert "already been used" in second.text
+
+    browser_after_use = api.get(path, headers={"accept": "text/html", "user-agent": "Mozilla/5.0"})
+    assert browser_after_use.status_code == 410
+    assert "Invite already used" in browser_after_use.text
