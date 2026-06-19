@@ -90,40 +90,77 @@ write_caddyfile(){
   if [[ -n "$fqdn" ]]; then
     cat <<EOF | atomic_write "$CADDYFILE" 0644
 $fqdn {
-  tls { get_certificate tailscale }
+  tls {
+    get_certificate tailscale
+  }
   encode gzip zstd
   header Strict-Transport-Security "max-age=31536000; includeSubDomains"
   header X-Content-Type-Options "nosniff"
   header X-Frame-Options "DENY"
   header Referrer-Policy "no-referrer"
-  handle /health { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /ready { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /healthz { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /api/* { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /ws/* { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /gitea/* { reverse_proxy 127.0.0.1:3030 }
+
+  handle /health {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /ready {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /healthz {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /api/* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /ws/* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /gitea/* {
+    reverse_proxy 127.0.0.1:3030
+  }
 $loki_route
-  handle /* { root * ${PWA_DIR}; try_files {path} /index.html; file_server }
+  handle {
+    root * ${PWA_DIR}
+    try_files {path} /index.html
+    file_server
+  }
 }
 EOF
   else
     cat <<EOF | atomic_write "$CADDYFILE" 0644
-:${DASH_PORT} {
+http://127.0.0.1:${DASH_PORT} {
   encode gzip zstd
   header X-Content-Type-Options "nosniff"
   header X-Frame-Options "DENY"
   header Referrer-Policy "no-referrer"
-  handle /health { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /ready { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /healthz { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /api/* { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /ws/* { reverse_proxy 127.0.0.1:${API_PORT} }
-  handle /gitea/* { reverse_proxy 127.0.0.1:3030 }
+
+  handle /health {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /ready {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /healthz {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /api/* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /ws/* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /gitea/* {
+    reverse_proxy 127.0.0.1:3030
+  }
 $loki_route
-  handle /* { root * ${PWA_DIR}; try_files {path} /index.html; file_server }
+  handle {
+    root * ${PWA_DIR}
+    try_files {path} /index.html
+    file_server
+  }
 }
 EOF
   fi
+  caddy validate --config "$CADDYFILE" >/dev/null
 }
 write_hardware_daemon(){
   log INFO "Writing Android-compatible telemetry daemon"

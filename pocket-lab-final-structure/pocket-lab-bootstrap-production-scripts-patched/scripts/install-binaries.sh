@@ -22,8 +22,10 @@ install_vault() {
 }
 install_act_runner() {
   if have act_runner; then log INFO "act_runner already installed"; return 0; fi
-  local bin="$STATE_DIR/act_runner_${ACT_RUNNER_VERSION}_${ARCH}"
-  download_if_missing "https://gitea.com/gitea/act_runner/releases/download/v${ACT_RUNNER_VERSION}/act_runner-${ACT_RUNNER_VERSION}-${ARCH}" "$bin"
+  # Vault release assets use linux_arm64, but act_runner uses linux-arm64.
+  local runner_arch="${ARCH/linux_/linux-}"
+  local bin="$STATE_DIR/act_runner_${ACT_RUNNER_VERSION}_${runner_arch}"
+  download_if_missing "https://gitea.com/gitea/act_runner/releases/download/v${ACT_RUNNER_VERSION}/act_runner-${ACT_RUNNER_VERSION}-${runner_arch}" "$bin"
   install -m 0755 "$bin" "$PREFIX/bin/act_runner"; rm -f "$bin"
 }
 install_go_binary() {
@@ -36,7 +38,7 @@ install_go_binary() {
 ensure_python_runtime() {
   require_cmd python3
   log INFO "Ensuring Python runtime packages"
-  python3 - <<'PYCHK' || python3 -m pip install --user --upgrade --no-cache-dir dulwich ansible-runner ansible-core fastapi "uvicorn[standard]" pydantic nats-py
+  python3 - <<'PYCHK' || python3 -m pip install --user --upgrade --no-cache-dir dulwich ansible-runner ansible-core "fastapi<0.111" uvicorn "pydantic<2" nats-py
 import importlib.util, sys
 required = ("dulwich", "ansible_runner", "fastapi", "uvicorn", "pydantic", "nats")
 sys.exit(0 if all(importlib.util.find_spec(m) for m in required) else 1)

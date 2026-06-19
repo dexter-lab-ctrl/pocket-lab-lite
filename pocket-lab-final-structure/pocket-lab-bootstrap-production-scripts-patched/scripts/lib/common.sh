@@ -240,14 +240,37 @@ ensure_pkg_installed() {
 
 pm2_has() { have pm2 && pm2 describe "$1" >/dev/null 2>&1; }
 pm2_start_or_restart() {
-  local name="$1"; shift
+  local name="$1"
+  shift
+
   require_cmd pm2
-  if pm2_has "$name"; then
-    log INFO "Restarting PM2 process: $name"
-    pm2 restart "$name" --update-env >/dev/null
+  log INFO "Starting PM2 process: $name"
+
+  local before_sep=()
+  local after_sep=()
+  local seen_sep=0
+  local arg
+
+  for arg in "$@"; do
+    if [[ "$arg" == "--" && "$seen_sep" -eq 0 ]]; then
+      seen_sep=1
+      continue
+    fi
+
+    if [[ "$seen_sep" -eq 1 ]]; then
+      after_sep+=("$arg")
+    else
+      before_sep+=("$arg")
+    fi
+  done
+
+  # Delete first instead of restart so command/path/env changes are applied reliably.
+  pm2 delete "$name" >/dev/null 2>&1 || true
+
+  if [[ "${#after_sep[@]}" -gt 0 ]]; then
+    pm2 start "${before_sep[@]}" --name "$name" -- "${after_sep[@]}"
   else
-    log INFO "Starting PM2 process: $name"
-    pm2 start "$@" --name "$name" --update-env
+    pm2 start "${before_sep[@]}" --name "$name"
   fi
 }
 
