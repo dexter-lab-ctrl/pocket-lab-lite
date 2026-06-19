@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import os
 from fastapi import APIRouter, HTTPException, Request, Response
 
@@ -10,6 +11,123 @@ from ..services.nats_bus import BUS
 from ..services import fleet_registry, lite_invites
 
 router = APIRouter(tags=["fleet"])
+
+
+def _is_browser_join_request(request: Request | None) -> bool:
+    if request is None:
+        return False
+    accept = str(request.headers.get("accept") or "").lower()
+    user_agent = str(request.headers.get("user-agent") or "").lower()
+    if any(tool in user_agent for tool in ("curl", "wget", "httpie", "python-requests")):
+        return False
+    return "text/html" in accept
+
+
+def _join_invite_html(
+    *,
+    status: str,
+    invite: dict | None,
+    role: str,
+    token: str,
+    request: Request | None,
+) -> Response:
+    safe_role = html.escape(str((invite or {}).get("role_label") or role or "Device"))
+    safe_hostname = html.escape(str((invite or {}).get("hostname") or "this device"))
+    safe_status = html.escape(status.replace("_", " ").title())
+
+    invite_url = str(request.url) if request is not None else ""
+    safe_command = html.escape(f'curl -fsSL "{invite_url}" | bash')
+
+    if status == "valid":
+        title = "Pocket Lab Lite invite ready"
+        message = (
+            "This invite is ready. To join this phone, open Termux on this device "
+            "and run the command below."
+        )
+        detail = f"Role: {safe_role}. Device name: {safe_hostname}."
+        command_html = f"<pre><code>{safe_command}</code></pre>"
+    elif status == "used":
+        title = "Invite already used"
+        message = "This invite has already been accepted and cannot be used again."
+        detail = "Create a new invite from the Pocket Lab Lite Devices tab if you need to join another device."
+        command_html = ""
+    elif status == "expired":
+        title = "Invite expired"
+        message = "This invite has expired."
+        detail = "Create a fresh invite from the Pocket Lab Lite Devices tab."
+        command_html = ""
+    else:
+        title = "Invite unavailable"
+        message = f"This invite cannot be used. Status: {safe_status}."
+        detail = "Check that the link is complete or create a new invite."
+        command_html = ""
+
+    body = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{html.escape(title)}</title>
+  <style>
+    body {{
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }}
+    main {{
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }}
+    .card {{
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+      padding: 28px;
+    }}
+    h1 {{
+      margin-top: 0;
+      font-size: 1.7rem;
+    }}
+    p {{
+      line-height: 1.6;
+    }}
+    pre {{
+      overflow-x: auto;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }}
+    .note {{
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #eff6ff;
+      color: #1e3a8a;
+    }}
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <h1>{html.escape(title)}</h1>
+      <p>{message}</p>
+      <p>{detail}</p>
+      {command_html}
+      <div class="note">
+        Keep this phone on the same Pocket Lab private network or Tailnet while joining.
+      </div>
+    </section>
+  </main>
+</body>
+</html>"""
+    code = 200 if status == "valid" else 410 if status in {"used", "expired"} else 400
+    return Response(content=body, media_type="text/html; charset=utf-8", status_code=code)
 
 
 @router.get("/api/config/tailscale.json")
@@ -237,13 +355,22 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
     token = (token or "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Missing token")
-    try:
-        invite = lite_invites.validate_invite_token(token, role=role)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    if invite is None:
-        raise HTTPException(status_code=403, detail="Invite token is invalid or expired")
-    role = invite.get("role") or role
+    status, invite = lite_invites.invite_token_status(token, role=role)
+
+    if _is_browser_join_request(request):
+        return _join_invite_html(status=status, invite=invite, role=role, token=token, request=request)
+
+    if status == "expired":
+        raise HTTPException(status_code=410, detail="Invite token has expired")
+    if status == "used":
+        raise HTTPException(status_code=410, detail="Invite token has already been used")
+    if status != "valid":
+        raise HTTPException(status_code=403, detail="Invite token is invalid")
+
+    consumed = lite_invites.consume_invite_token(token, role=role)
+    if consumed is None:
+        raise HTTPException(status_code=410, detail="Invite token is no longer available")
+    role = consumed.get("role") or role
     nats_url = BUS.servers[0] if BUS.servers else "nats://127.0.0.1:4222"
     nats_user = os.environ.get(
         "POCKETLAB_AGENT_NATS_USER",
