@@ -20,7 +20,7 @@ def _is_browser_join_request(request: Request | None) -> bool:
     user_agent = str(request.headers.get("user-agent") or "").lower()
     if any(tool in user_agent for tool in ("curl", "wget", "httpie", "python-requests")):
         return False
-    return "text/html" in accept
+    return "text/html" in accept or "mozilla" in user_agent or "android" in user_agent
 
 
 def _join_invite_html(
@@ -371,6 +371,8 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
     if consumed is None:
         raise HTTPException(status_code=410, detail="Invite token is no longer available")
     role = consumed.get("role") or role
+    node_id = consumed.get("node_id") or ""
+    hostname = consumed.get("hostname") or node_id or "Pocket Lab Device"
     nats_url = BUS.servers[0] if BUS.servers else "nats://127.0.0.1:4222"
     nats_user = os.environ.get(
         "POCKETLAB_AGENT_NATS_USER",
@@ -385,6 +387,8 @@ set -Eeuo pipefail
 echo "== Pocket Lab zero-touch provisioning =="
 echo "Target role: {role}"
 export POCKETLAB_NODE_ROLE="{role}"
+export POCKETLAB_NODE_ID="{node_id}"
+export POCKETLAB_NODE_NAME="{hostname}"
 export POCKETLAB_AGENT_TOKEN="{token}"
 export POCKETLAB_NATS_URL="{nats_url}"
 export POCKETLAB_NATS_USER="{nats_user}"
