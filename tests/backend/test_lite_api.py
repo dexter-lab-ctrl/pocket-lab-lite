@@ -248,3 +248,55 @@ def test_join_invite_shell_access_is_single_use(monkeypatch):
     browser_after_use = api.get(path, headers={"accept": "text/html", "user-agent": "Mozilla/5.0"})
     assert browser_after_use.status_code == 410
     assert "Invite already used" in browser_after_use.text
+
+def test_lite_fleet_defaults_to_server_host_only_when_no_remote_devices(monkeypatch):
+    api = client()
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setattr(lite_status, "merged_fleet_nodes", lambda: [])
+    monkeypatch.setenv("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
+
+    response = api.get("/api/lite/fleet")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] == 1
+    device = payload["devices"][0]
+    assert device["name"] == "Pocket Lab Lite Server"
+    assert device["role"] == "server_host"
+    assert device["role_label"] == "Server Host"
+    assert device["status"] == "healthy"
+    assert device["last_seen"]
+
+
+def test_lite_fleet_filters_dummy_and_deduplicates_invited_devices(monkeypatch):
+    api = client()
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setenv("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
+    monkeypatch.setattr(
+        lite_status,
+        "merged_fleet_nodes",
+        lambda: [
+            {"id": "pixel-edge-1", "name": "pixel-edge-1", "status": "active"},
+            {"id": "localhost", "name": "localhost", "status": "active"},
+            {"id": "samsung-nfs", "name": "Samsung-nfs", "status": "active", "isCurrent": True},
+            {"id": "phone-two", "name": "phone-two", "role": "compute", "status": "invited", "created_at": "2026-06-19T10:00:00Z"},
+            {"id": "phone-two", "name": "phone-two", "role": "compute", "status": "joining", "accepted_at": "2026-06-19T10:01:00Z"},
+        ],
+    )
+
+    response = api.get("/api/lite/fleet")
+    assert response.status_code == 200
+    devices = response.json()["devices"]
+    names = [item["name"] for item in devices]
+
+    assert names.count("Pocket Lab Lite Server") == 1
+    assert names.count("phone-two") == 1
+    assert "pixel-edge-1" not in names
+    assert "localhost" not in names
+    assert "Samsung-nfs" not in names
+
+    phone = next(item for item in devices if item["name"] == "phone-two")
+    assert phone["status"] == "joining"
+    assert phone["connection"] == "joining"
+    assert phone["last_seen"]

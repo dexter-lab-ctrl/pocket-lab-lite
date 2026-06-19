@@ -20,17 +20,26 @@ from .nats_bus import BUS
 LITE_INVITE_TTL_SECONDS = int(os.environ.get("POCKETLAB_LITE_INVITE_TTL_SECONDS", "1800"))
 
 LITE_ROLES: dict[str, dict[str, Any]] = {
+    "server_host": {
+        "role": "server_host",
+        "role_label": "Server Host",
+        "description": "Runs the Pocket Lab Lite control plane and coordinates invited devices.",
+        "capabilities": ["Run control plane", "Serve Lite UI", "Issue device invites", "Report server health"],
+        "joinable": False,
+    },
     "compute": {
         "role": "compute",
         "role_label": "App Host",
         "description": "Runs apps and services for your Pocket Lab.",
         "capabilities": ["Run apps", "Report device health", "Eligible for app installs"],
+        "joinable": True,
     },
     "storage": {
         "role": "storage",
         "role_label": "Storage Node",
         "description": "Stores backups, files, or app data.",
         "capabilities": ["Store backups or app data", "Report storage health", "Eligible as backup/storage target"],
+        "joinable": True,
     },
 }
 
@@ -43,6 +52,9 @@ _ROLE_ALIASES = {
     "storage-node": "storage",
     "storage node": "storage",
     "storage": "storage",
+    "server_host": "server_host",
+    "server-host": "server_host",
+    "server host": "server_host",
 }
 
 
@@ -97,7 +109,11 @@ def role_metadata(role: str | None) -> dict[str, Any]:
 
 
 def lite_role_options() -> list[dict[str, Any]]:
-    return [dict(item) for item in LITE_ROLES.values()]
+    return [
+        {key: value for key, value in item.items() if key != "joinable"}
+        for item in LITE_ROLES.values()
+        if item.get("joinable", True)
+    ]
 
 
 def _is_loopback_or_unspecified_host(host: str | None) -> bool:

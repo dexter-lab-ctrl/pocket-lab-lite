@@ -39,8 +39,10 @@ function roleLabel(value) {
 function deviceStatusLabel(status) {
   const value = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
   if (['pending', 'invited', 'invite_sent'].includes(value)) return 'Invite sent';
+  if (['joining', 'accepted', 'setup_started'].includes(value)) return 'Joining';
   return backendLabel(status, {
     ready: 'Online',
+    healthy: 'Online',
     review: 'Review',
     danger: 'Offline',
     checking: 'Checking',
