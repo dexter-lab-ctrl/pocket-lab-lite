@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 TARGET_ROOT="${POCKETLAB_WSL_REPO_PATH:-$(pwd -P)}"
-if [[ "$TARGET_ROOT" == '/home/$USER/pocket-lab' ]]; then TARGET_ROOT="$HOME/pocket-lab"; fi
+if [[ "$TARGET_ROOT" == '/home/$USER/pocket-lab-lite' ]]; then TARGET_ROOT="$HOME/pocket-lab-lite"; fi
 REPORT_PATH="${POCKETLAB_WSL_CHECK_REPORT_PATH:-$TARGET_ROOT/.pocketlab-dev/reports/wsl-ubuntu-check.json}"
 mkdir -p "$(dirname "$REPORT_PATH")"
 

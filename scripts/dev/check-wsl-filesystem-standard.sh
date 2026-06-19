@@ -6,7 +6,7 @@ fail(){ printf '[FAIL] %s\n  %s\n' "$1" "$2" >&2; exit 1; }
 warn(){ printf '[WARN] %s\n  %s\n' "$1" "$2"; }
 
 REPORT_PATH="${POCKETLAB_WSL_FILESYSTEM_REPORT_PATH:-.pocketlab-dev/reports/wsl-filesystem-standard.json}"
-EXPECTED_ROOT="${POCKETLAB_WSL_REPO_PATH:-$HOME/pocket-lab}"
+EXPECTED_ROOT="${POCKETLAB_WSL_REPO_PATH:-$HOME/pocket-lab-lite}"
 
 mkdir -p "$(dirname "$REPORT_PATH")"
 

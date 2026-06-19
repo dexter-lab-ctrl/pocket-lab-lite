@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SOURCE="${POCKETLAB_WSL_REPO:-/home/dj/pocket-lab}"
+SOURCE="${POCKETLAB_WSL_REPO:-/home/dj/pocket-lab-lite}"
 TARGET="${POCKETLAB_WINDOWS_REPO:-/mnt/h/HomeLab/Pocket-Lab/pocket-lab-app-pwa}"
 
 MODE="dry-run"
@@ -17,7 +17,7 @@ Usage:
   bash scripts/dev/sync-wsl-to-windows.sh --apply --no-delete
 
 Environment overrides:
-  POCKETLAB_WSL_REPO=/home/dj/pocket-lab
+  POCKETLAB_WSL_REPO=/home/dj/pocket-lab-lite
   POCKETLAB_WINDOWS_REPO=/mnt/h/HomeLab/Pocket-Lab/pocket-lab-app-pwa
 
 Default behavior:

@@ -167,7 +167,7 @@ write_hardware_daemon(){
   cat > "$HARDWARE_DAEMON" <<'PYD'
 #!/usr/bin/env python3
 import json, time, os
-API_DIR=os.environ.get('POCKET_LAB_API_DIR', os.path.expanduser('~/pocket-lab/api'))
+API_DIR=os.environ.get('POCKET_LAB_API_DIR', os.path.expanduser('~/pocket-lab-lite/api'))
 TELEMETRY_FILE=os.path.join(API_DIR,'telemetry.json')
 def thermal():
     for z in range(30):

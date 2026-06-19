@@ -16,7 +16,7 @@ else
 fi
 
 export PATH="$PREFIX/bin:$HOME/.local/bin:$PATH"
-export POCKET_LAB_BASE_DIR="${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab}"
+export POCKET_LAB_BASE_DIR="${POCKET_LAB_BASE_DIR:-$HOME/pocket-lab-lite}"
 export POCKET_LAB_IAC_DIR="${POCKET_LAB_IAC_DIR:-$POCKET_LAB_BASE_DIR/pocket_lab_iac}"
 export POCKET_LAB_API_DIR="${POCKET_LAB_API_DIR:-$POCKET_LAB_BASE_DIR/api}"
 export POCKET_LAB_PWA_DIR="${POCKET_LAB_PWA_DIR:-$POCKET_LAB_BASE_DIR/pwa_dist}"
