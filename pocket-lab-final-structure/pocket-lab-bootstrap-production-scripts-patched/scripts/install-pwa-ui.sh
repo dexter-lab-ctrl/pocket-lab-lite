@@ -4,7 +4,7 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/common.sh"
-REPO="${POCKET_LAB_RELEASE_REPO:-dexter-lab-ctrl/pocket-lab}"
+REPO="${POCKET_LAB_RELEASE_REPO:-dexter-lab-ctrl/pocket-lab-lite}"
 PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"
 TMP_DIR="$TMP_ROOT/pwa_extract"
 TMP_ZIP="$TMP_ROOT/dist.zip"
