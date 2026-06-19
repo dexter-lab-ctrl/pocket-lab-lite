@@ -300,3 +300,61 @@ def test_lite_fleet_filters_dummy_and_deduplicates_invited_devices(monkeypatch):
     assert phone["status"] == "joining"
     assert phone["connection"] == "joining"
     assert phone["last_seen"]
+
+def test_join_sh_returns_non_empty_script_and_marks_joining(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.60:8443")
+    api = client()
+
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "phone-join-script"},
+    )
+    assert created.status_code == 202
+
+    invite_url = created.json()["invite"]["url"]
+    script_path = invite_url.split("http://100.64.0.60:8443", 1)[1]
+    script_path = script_path.replace("/api/join?", "/api/join.sh?", 1)
+
+    response = api.get(
+        script_path,
+        headers={"accept": "*/*", "user-agent": "curl/termux"},
+    )
+
+    assert response.status_code == 200
+    assert "text/x-shellscript" in response.headers.get("content-type", "")
+    assert len(response.text.strip()) > 100
+    assert "Pocket Lab Lite device join" in response.text
+    assert 'POCKETLAB_NODE_ID="phone-join-script"' in response.text
+    assert ".pocketlab-lite-agent.env" in response.text
+
+    fleet = api.get("/api/lite/fleet")
+    assert fleet.status_code == 200
+    devices = fleet.json()["devices"]
+    matching = [
+        item for item in devices
+        if item.get("id") == "phone-join-script" or item.get("name") == "phone-join-script"
+    ]
+    assert matching
+    assert matching[0]["connection"] == "joining"
+
+
+def test_join_sh_reuse_is_rejected_after_consumption(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.61:8443")
+    api = client()
+
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "phone-single-use"},
+    )
+    assert created.status_code == 202
+
+    invite_url = created.json()["invite"]["url"]
+    script_path = invite_url.split("http://100.64.0.61:8443", 1)[1]
+    script_path = script_path.replace("/api/join?", "/api/join.sh?", 1)
+
+    first = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
+    assert first.status_code == 200
+    assert len(first.text.strip()) > 100
+
+    second = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
+    assert second.status_code == 410
