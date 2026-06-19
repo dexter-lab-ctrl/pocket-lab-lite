@@ -87,7 +87,7 @@ write_caddyfile(){
     loki_route="$loki_route"
   fi
   log INFO "Writing Caddyfile idempotently"
-  if [[ -n "$fqdn" ]]; then
+  if [[ -n "$fqdn" && ! is_lite_profile ]]; then
     cat <<EOF | atomic_write "$CADDYFILE" 0644
 $fqdn {
   tls {
@@ -109,6 +109,15 @@ $fqdn {
     reverse_proxy 127.0.0.1:${API_PORT}
   }
   handle /api/* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /openapi.json {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /docs* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /redoc* {
     reverse_proxy 127.0.0.1:${API_PORT}
   }
   handle /ws/* {
@@ -143,6 +152,15 @@ http://127.0.0.1:${DASH_PORT} {
     reverse_proxy 127.0.0.1:${API_PORT}
   }
   handle /api/* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /openapi.json {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /docs* {
+    reverse_proxy 127.0.0.1:${API_PORT}
+  }
+  handle /redoc* {
     reverse_proxy 127.0.0.1:${API_PORT}
   }
   handle /ws/* {
