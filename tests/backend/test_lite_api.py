@@ -358,3 +358,63 @@ def test_join_sh_reuse_is_rejected_after_consumption(monkeypatch):
 
     second = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
     assert second.status_code == 410
+
+
+def test_lite_bootstrap_script_uses_request_host_for_public_nats_url(monkeypatch):
+    monkeypatch.delenv("POCKETLAB_LITE_PUBLIC_NATS_URL", raising=False)
+    monkeypatch.delenv("POCKETLAB_PUBLIC_NATS_URL", raising=False)
+    monkeypatch.delenv("POCKETLAB_LITE_NATS_URL", raising=False)
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.80:8443")
+    monkeypatch.setenv("POCKETLAB_LITE_NATS_PORT", "4222")
+
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "phone-public-nats"},
+    )
+    assert created.status_code == 202
+    invite = created.json()["invite"]
+    bootstrap_url = invite.get("bootstrap_url") or invite["url"].replace(
+        "/api/join.sh?", "/api/lite/fleet/agent/bootstrap.sh?", 1
+    ).replace("/api/join?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
+    script_path = bootstrap_url.split("http://100.64.0.80:8443", 1)[1]
+
+    response = api.get(
+        script_path,
+        headers={
+            "host": "100.64.0.80:8443",
+            "accept": "*/*",
+            "user-agent": "curl/termux",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "text/x-shellscript" in response.headers.get("content-type", "")
+    assert 'export POCKETLAB_NATS_URL="nats://100.64.0.80:4222"' in response.text
+    assert 'export POCKETLAB_NATS_URL="nats://127.0.0.1:4222"' not in response.text
+
+
+def test_lite_bootstrap_script_prefers_explicit_public_nats_url(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.81:8443")
+    monkeypatch.setenv("POCKETLAB_LITE_PUBLIC_NATS_URL", "nats://100.64.0.99:4222")
+
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "phone-explicit-nats"},
+    )
+    assert created.status_code == 202
+    invite = created.json()["invite"]
+    bootstrap_url = invite.get("bootstrap_url") or invite["url"].replace(
+        "/api/join.sh?", "/api/lite/fleet/agent/bootstrap.sh?", 1
+    ).replace("/api/join?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
+    script_path = bootstrap_url.split("http://100.64.0.81:8443", 1)[1]
+
+    response = api.get(
+        script_path,
+        headers={"host": "100.64.0.81:8443", "accept": "*/*", "user-agent": "curl/termux"},
+    )
+
+    assert response.status_code == 200
+    assert 'export POCKETLAB_NATS_URL="nats://100.64.0.99:4222"' in response.text
+

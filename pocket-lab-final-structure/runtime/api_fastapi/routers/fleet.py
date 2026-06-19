@@ -9,9 +9,99 @@ from .. import deps
 from ..services.action_queue import submit_domain_command
 from ..services.live_status import LIVE_STATUS
 from ..services.nats_bus import BUS
-from ..services import fleet_registry, lite_invites, lite_invites
+from ..services import fleet_registry, lite_invites
 
 router = APIRouter(tags=["fleet"])
+
+
+def _normalize_nats_url(value: str | None) -> str:
+    value = str(value or "").strip()
+    if not value:
+        return ""
+    if "://" not in value:
+        return f"nats://{value}"
+    return value
+
+
+def _is_local_invite_host(host: str | None) -> bool:
+    normalized = str(host or "").strip().lower().strip("[]")
+    return normalized in {"", "localhost", "127.0.0.1", "0.0.0.0", "::1", "testserver"}
+
+
+def _request_hostname(request: Request | None) -> str:
+    if request is None:
+        return ""
+    try:
+        host = str(request.url.hostname or "").strip()
+    except Exception:
+        host = ""
+    if host:
+        return host.strip("[]")
+
+    # Defensive fallback for deployments where the public host is only present
+    # in proxy headers. Keep parsing conservative to avoid accepting arbitrary
+    # comma-separated values beyond the first hop.
+    forwarded = str(
+        request.headers.get("x-forwarded-host")
+        or request.headers.get("host")
+        or ""
+    ).split(",", 1)[0].strip()
+    if forwarded.startswith("[") and "]" in forwarded:
+        return forwarded[1:forwarded.index("]")]
+    if ":" in forwarded:
+        return forwarded.rsplit(":", 1)[0].strip("[]")
+    return forwarded.strip("[]")
+
+
+def _autodetected_public_host() -> str:
+    for helper_name in ("_tailscale_ipv4", "_lan_ipv4"):
+        helper = getattr(lite_invites, helper_name, None)
+        if callable(helper):
+            try:
+                value = str(helper() or "").strip()
+            except Exception:
+                value = ""
+            if value and not _is_local_invite_host(value):
+                return value
+    return ""
+
+
+def _public_nats_url_for_invite(request: Request | None, internal_url: str | None) -> str:
+    """Return the NATS URL a joining Lite device should use.
+
+    Priority order:
+    1. Explicit public NATS URL override for locked-down deployments.
+    2. Hostname/IP used to fetch the invite/bootstrap script, with NATS port.
+    3. Tailscale/LAN autodetection when the API request is local/testserver.
+    4. Internal/local NATS URL fallback.
+
+    This keeps the server's internal control-plane URL private while allowing a
+    secondary phone to heartbeat over the same Tailscale address it used to fetch
+    the bootstrap script.
+    """
+    for env_name in (
+        "POCKETLAB_LITE_PUBLIC_NATS_URL",
+        "POCKETLAB_PUBLIC_NATS_URL",
+        "POCKETLAB_LITE_NATS_URL",
+    ):
+        configured = _normalize_nats_url(os.environ.get(env_name))
+        if configured:
+            return configured
+
+    port = str(
+        os.environ.get("POCKETLAB_LITE_NATS_PORT")
+        or os.environ.get("POCKETLAB_PUBLIC_NATS_PORT")
+        or "4222"
+    ).strip() or "4222"
+
+    host = _request_hostname(request)
+    if _is_local_invite_host(host):
+        host = _autodetected_public_host()
+
+    if host and not _is_local_invite_host(host):
+        return f"nats://{host}:{port}"
+
+    return _normalize_nats_url(internal_url) or "nats://127.0.0.1:4222"
 
 
 def _is_browser_join_request(request: Request | None) -> bool:
@@ -385,7 +475,8 @@ def lite_fleet_agent_bootstrap_script(
     agent_token = cfg["agent_token"]
     agent_token_hash = cfg["agent_token_hash"]
 
-    nats_url = cfg.get("nats_url") or os.environ.get("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222")
+    internal_nats_url = cfg.get("nats_url") or os.environ.get("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222")
+    nats_url = _public_nats_url_for_invite(request, internal_nats_url)
     nats_user = os.environ.get(
         "POCKETLAB_AGENT_NATS_USER",
         os.environ.get("POCKETLAB_NATS_AGENT_USER", "pocketlab_agent"),
@@ -538,7 +629,8 @@ def join_script(role: str = "compute", token: str = "", request: Request = None)
         event_type="fleet.agent_join_started",
     )
 
-    nats_url = BUS.servers[0] if BUS.servers else "nats://127.0.0.1:4222"
+    internal_nats_url = BUS.servers[0] if BUS.servers else "nats://127.0.0.1:4222"
+    nats_url = _public_nats_url_for_invite(request, internal_nats_url)
     nats_user = os.environ.get(
         "POCKETLAB_AGENT_NATS_USER",
         os.environ.get("POCKETLAB_NATS_AGENT_USER", "pocketlab_agent"),
