@@ -252,6 +252,17 @@ def _invite_path() -> str:
 
 
 def _public_invite(record: dict[str, Any], *, url: str | None = None) -> dict[str, Any]:
+    bootstrap_url = record.get("bootstrap_url")
+    if not bootstrap_url and url:
+        bootstrap_url = (
+            url.replace("/api/join.sh?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
+            .replace("/api/join?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
+        )
+
+    bootstrap_command = record.get("bootstrap_command")
+    if not bootstrap_command and bootstrap_url:
+        bootstrap_command = f"curl -fsSL {bootstrap_url!r} | bash"
+
     public = {
         "invite_id": record.get("invite_id"),
         "token_hint": record.get("token_hint"),
@@ -262,10 +273,12 @@ def _public_invite(record: dict[str, Any], *, url: str | None = None) -> dict[st
         "expires_at": record.get("expires_at"),
         "status": record.get("status", "pending"),
         "instructions": "Open this invite on the new device while it is connected to the same Pocket Lab private network.",
+        "bootstrap_url": bootstrap_url,
+        "bootstrap_command": bootstrap_command,
     }
     if url:
         public["url"] = url
-        public["copy_text"] = url
+        public["copy_text"] = bootstrap_command or url
     return public
 
 

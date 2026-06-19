@@ -73,6 +73,10 @@ def _derive_status(agent: Dict[str, Any]) -> str:
     agent_status = str(agent.get("agent_status") or "unknown").lower()
     if agent_status in {"invited", "pending"}:
         return "pending"
+    if agent_status in {"joining", "accepted"}:
+        return agent_status
+    if agent_status in {"joining", "accepted"}:
+        return agent_status
     if (
         last_seen_epoch
         and (_epoch() - last_seen_epoch) <= AGENT_TTL_SECONDS
