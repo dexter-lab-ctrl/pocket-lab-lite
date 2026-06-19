@@ -454,6 +454,7 @@ def lite_security() -> dict[str, Any]:
 
 def lite_fleet() -> dict[str, Any]:
     nodes = merged_fleet_nodes()
+    active_invite_keys = lite_invites.active_invite_device_keys()
     server = _server_host_device()
     server_id = str(server["id"])
     devices_by_id: dict[str, dict[str, Any]] = {server_id: server}
@@ -482,6 +483,12 @@ def lite_fleet() -> dict[str, Any]:
 
         key = _lite_device_merge_key(device)
         if not key or key in _DUMMY_DEVICE_IDS:
+            continue
+
+        if (
+            str(device.get("status") or "").lower() in {"invited", "pending", "invite_sent"}
+            and key not in active_invite_keys
+        ):
             continue
 
         existing = devices_by_id.get(key)

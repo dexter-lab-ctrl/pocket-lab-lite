@@ -378,6 +378,24 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
     }
 
 
+def active_invite_device_keys() -> set[str]:
+    keys: set[str] = set()
+    payload = _invites_payload()
+    for item in payload.get("invites", []):
+        if not isinstance(item, dict):
+            continue
+        if float(item.get("expires_at_epoch") or 0) <= _now_epoch():
+            continue
+        if int(item.get("uses_remaining") or 0) <= 0:
+            continue
+        if str(item.get("status") or "").lower() in {"accepted", "used", "joined", "expired"}:
+            continue
+        for value in (item.get("node_id"), item.get("hostname"), item.get("name")):
+            if value:
+                keys.add(str(value).strip().lower().replace("_", "-").replace(" ", "-"))
+    return keys
+
+
 def latest_invite() -> dict[str, Any] | None:
     payload = _invites_payload()
     valid = [
