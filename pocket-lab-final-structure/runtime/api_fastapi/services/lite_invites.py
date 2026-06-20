@@ -218,6 +218,98 @@ def _compose_base_url(*, scheme: str, host: str, port: int) -> str:
     return f"{scheme}://{formatted_host}:{port}"
 
 
+def _strip_port(host: str | None) -> str | None:
+    value = str(host or "").strip()
+    if not value:
+        return None
+    if value.startswith("["):
+        end = value.find("]")
+        if end != -1:
+            return value[1:end]
+    if ":" in value and value.count(":") == 1:
+        return value.rsplit(":", 1)[0]
+    return value
+
+
+def _request_host(request: Request | None) -> str | None:
+    if request is None:
+        return None
+    host = _strip_port(request.url.hostname or request.headers.get("host"))
+    if host:
+        return host
+    return None
+
+
+def _normalize_nats_url(value: str | None) -> str | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    if "://" not in raw:
+        raw = f"nats://{raw}"
+    if not raw.startswith(("nats://", "tls://", "ws://", "wss://")):
+        return None
+    return raw
+
+
+def bootstrap_host(request: Request | None) -> str | None:
+    """Return a safe public-ish host for generated secondary-device scripts.
+
+    The result intentionally comes from operator config, the incoming request host,
+    Tailscale/Tailnet discovery, or LAN discovery. It never hardcodes a device
+    address in source code.
+    """
+    configured_host = os.environ.get("POCKETLAB_LITE_BOOTSTRAP_HOST", "").strip()
+    if configured_host and not _is_loopback_or_unspecified_host(configured_host):
+        return configured_host
+
+    host = _request_host(request)
+    if host and not _is_loopback_or_unspecified_host(host):
+        return host
+
+    return _tailscale_ipv4() or _lan_ipv4()
+
+
+def resolve_public_nats_url(request: Request | None) -> str:
+    """Resolve the NATS URL that a newly invited Lite device should use.
+
+    Priority:
+    1. POCKETLAB_LITE_PUBLIC_NATS_URL
+    2. POCKETLAB_PUBLIC_NATS_URL
+    3. POCKETLAB_LITE_NATS_URL
+    4. Incoming bootstrap request host -> nats://<host>:4222
+    5. Autodetected Tailscale/Tailnet IPv4
+    6. Autodetected LAN IPv4
+    7. localhost fallback for single-device/local-only setups
+    """
+    for name in (
+        "POCKETLAB_LITE_PUBLIC_NATS_URL",
+        "POCKETLAB_PUBLIC_NATS_URL",
+        "POCKETLAB_LITE_NATS_URL",
+    ):
+        configured = _normalize_nats_url(os.environ.get(name))
+        if configured:
+            return configured
+
+    host = bootstrap_host(request)
+    if host:
+        return f"nats://{_format_host_for_url(host)}:4222"
+
+    return "nats://127.0.0.1:4222"
+
+
+def _bootstrap_url_from_invite_url(invite_url: str) -> str:
+    return (
+        invite_url.replace("/api/join.sh?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
+        .replace("/api/join?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
+    )
+
+
+def _bootstrap_command(bootstrap_url: str | None) -> str | None:
+    if not bootstrap_url:
+        return None
+    return f"curl -fsSL {bootstrap_url!r} | bash"
+
+
 def _detected_invite_host(request: Request | None) -> str | None:
     configured_host = os.environ.get("POCKETLAB_LITE_INVITE_HOST", "").strip()
     if configured_host and not _is_loopback_or_unspecified_host(configured_host):
@@ -251,17 +343,16 @@ def _invite_path() -> str:
     return os.environ.get("POCKETLAB_LITE_INVITE_PATH", "/api/join.sh").strip() or "/api/join.sh"
 
 
-def _public_invite(record: dict[str, Any], *, url: str | None = None) -> dict[str, Any]:
-    bootstrap_url = record.get("bootstrap_url")
+def _public_invite(
+    record: dict[str, Any],
+    *,
+    url: str | None = None,
+    bootstrap_url: str | None = None,
+) -> dict[str, Any]:
     if not bootstrap_url and url:
-        bootstrap_url = (
-            url.replace("/api/join.sh?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
-            .replace("/api/join?", "/api/lite/fleet/agent/bootstrap.sh?", 1)
-        )
+        bootstrap_url = _bootstrap_url_from_invite_url(url)
 
-    bootstrap_command = record.get("bootstrap_command")
-    if not bootstrap_command and bootstrap_url:
-        bootstrap_command = f"curl -fsSL {bootstrap_url!r} | bash"
+    bootstrap_command = _bootstrap_command(bootstrap_url) or record.get("bootstrap_command")
 
     public = {
         "invite_id": record.get("invite_id"),
@@ -272,13 +363,17 @@ def _public_invite(record: dict[str, Any], *, url: str | None = None) -> dict[st
         "capabilities": record.get("capabilities") or [],
         "expires_at": record.get("expires_at"),
         "status": record.get("status", "pending"),
-        "instructions": "Open this invite on the new device while it is connected to the same Pocket Lab private network.",
+        "instructions": (
+            "Run this in Termux on the new phone. Pocket Lab will set up "
+            "the secure connection and start the device agent automatically."
+        ),
         "bootstrap_url": bootstrap_url,
         "bootstrap_command": bootstrap_command,
     }
     if url:
         public["url"] = url
-        public["copy_text"] = bootstrap_command or url
+    if bootstrap_command:
+        public["copy_text"] = bootstrap_command
     return public
 
 
@@ -337,6 +432,8 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
     base = _invite_base_url(request)
     query = urlencode({"role": metadata["role"], "token": token})
     invite_url = f"{base}{_invite_path()}?{query}"
+    bootstrap_url = _bootstrap_url_from_invite_url(invite_url)
+    bootstrap_command = _bootstrap_command(bootstrap_url)
 
     record = {
         "invite_id": invite_id,
@@ -380,13 +477,17 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
     )
     _append_local_evidence(record)
 
+    public_invite = _public_invite(record, url=invite_url, bootstrap_url=bootstrap_url)
     return {
         "accepted": True,
         "status": "invite_ready",
         "summary": f"Invite ready for {hostname_text}.",
         "command_id": command_id,
         "job_id": command_id,
-        "invite": _public_invite(record, url=invite_url),
+        "bootstrap_url": bootstrap_url,
+        "bootstrap_command": bootstrap_command,
+        "copy_text": bootstrap_command,
+        "invite": public_invite,
         "event": _safe_event_payload(record),
     }
 
