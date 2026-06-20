@@ -878,8 +878,16 @@ function DevicesScreen() {
     }
   }
 
+  function inviteCommand(inviteDetails) {
+    if (!inviteDetails) return '';
+    if (inviteDetails.copy_text) return inviteDetails.copy_text;
+    if (inviteDetails.bootstrap_command) return inviteDetails.bootstrap_command;
+    if (inviteDetails.bootstrap_url) return `curl -fsSL '${inviteDetails.bootstrap_url}' | bash`;
+    return inviteDetails.url || '';
+  }
+
   async function copyInvite() {
-    const copyValue = latestInvite?.copy_text || latestInvite?.url;
+    const copyValue = inviteCommand(latestInvite);
     const didCopy = await copyTextToClipboard(copyValue);
     if (didCopy) {
       setCopied(true);
@@ -1003,14 +1011,45 @@ function DevicesScreen() {
                 </div>
               </div>
 
-              <p>{latestInvite.instructions || 'Open this invite on the new device while it is connected to the same Pocket Lab private network.'}</p>
+              <p>Run this in Termux on the new phone. Pocket Lab will set up the secure connection and start the device agent automatically.</p>
 
-              {latestInvite.url || latestInvite.copy_text ? (
-                <LiteButton onClick={copyInvite} tone="secondary">
-                  <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy Invite Link'}
-                </LiteButton>
+              {inviteCommand(latestInvite) ? (
+                <>
+                  <div className="lite-invite-command" aria-label="Connect this device command">
+                    <span>Connect this device</span>
+                    <code>{inviteCommand(latestInvite)}</code>
+                  </div>
+                  <div className="lite-invite-actions">
+                    <LiteButton onClick={copyInvite} tone="secondary">
+                      <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
+                    </LiteButton>
+                    <LiteButton onClick={refresh} tone="ghost">Refresh devices</LiteButton>
+                  </div>
+
+                  <details className="lite-invite-details">
+                    <summary>What this does</summary>
+                    <ul>
+                      <li>Installs only the small required tools.</li>
+                      <li>Saves this device’s connection file.</li>
+                      <li>Checks the secure Pocket Lab connection.</li>
+                      <li>Downloads Pocket Lab Lite if needed.</li>
+                      <li>Starts the small device agent.</li>
+                      <li>The device appears Online when heartbeats arrive.</li>
+                    </ul>
+                  </details>
+
+                  <details className="lite-invite-details">
+                    <summary>Troubleshooting</summary>
+                    <ol>
+                      <li>Check that Tailscale is connected.</li>
+                      <li>Run: <code>source ~/.pocketlab-lite-agent.env && echo $POCKETLAB_NATS_URL</code></li>
+                      <li>The value should not be <code>nats://127.0.0.1:4222</code> on a secondary phone.</li>
+                      <li>Run: <code>tail -n 80 ~/pocketlab-agent-*.log</code></li>
+                    </ol>
+                  </details>
+                </>
               ) : (
-                <span className="lite-invite-muted">Invite link was created earlier. Create a new invite if you need to copy it again.</span>
+                <span className="lite-invite-muted">Invite details were created earlier. Create a new invite if you need to copy the command again.</span>
               )}
             </div>
           ) : null}

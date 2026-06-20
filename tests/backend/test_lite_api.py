@@ -70,7 +70,11 @@ def test_lite_add_device_invite_ready_or_queued_for_compute_role():
         invite = payload["invite"]
         assert invite["role"] == "compute"
         assert invite["role_label"] == "App Host"
-        assert invite.get("url") or invite.get("copy_text")
+        assert invite.get("bootstrap_url")
+        assert invite.get("bootstrap_command")
+        assert invite.get("copy_text") == invite.get("bootstrap_command")
+        assert payload.get("copy_text") == payload.get("bootstrap_command")
+        assert "curl -fsSL" in invite.get("copy_text")
         assert invite.get("expires_at")
 
 
@@ -87,7 +91,10 @@ def test_lite_add_device_invite_ready_or_queued_for_storage_role():
         invite = payload["invite"]
         assert invite["role"] == "storage"
         assert invite["role_label"] == "Storage Node"
-        assert invite.get("url") or invite.get("copy_text")
+        assert invite.get("bootstrap_url")
+        assert invite.get("bootstrap_command")
+        assert invite.get("copy_text") == invite.get("bootstrap_command")
+        assert "curl -fsSL" in invite.get("copy_text")
         assert invite.get("expires_at")
 
 
@@ -143,7 +150,6 @@ def test_lite_devices_ui_does_not_expose_raw_invite_internals():
     forbidden = [
         "Tailscale API key",
         "tailnet token",
-        "NATS",
         "JetStream",
         "fleet_join",
         "node agent",
