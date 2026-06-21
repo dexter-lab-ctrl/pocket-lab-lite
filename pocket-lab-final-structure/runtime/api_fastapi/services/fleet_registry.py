@@ -14,6 +14,77 @@ AGENT_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_AGENT_TTL_SECONDS", "90"
 COMMAND_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_COMMAND_TTL_SECONDS", "3600"))
 
 
+class DeviceRemovalError(Exception):
+    def __init__(self, status_code: int, detail: str):
+        super().__init__(detail)
+        self.status_code = status_code
+        self.detail = detail
+
+
+def _protected_server_ids() -> set[str]:
+    values = {
+        "pocket-lab-lite-server",
+        normalize_node_id(os.environ.get("POCKETLAB_NODE_ID") or ""),
+        normalize_node_id(os.environ.get("POCKETLAB_DEVICE_NAME") or ""),
+    }
+    return {value for value in values if value and value != "unknown-node"}
+
+
+def _record_identity_keys(record: Dict[str, Any]) -> set[str]:
+    keys: set[str] = set()
+    for field in ("id", "node_id", "hostname", "name"):
+        value = record.get(field)
+        if value:
+            keys.add(normalize_node_id(str(value)))
+    return {key for key in keys if key and key != "unknown-node"}
+
+
+def _role_value(record: Dict[str, Any]) -> str:
+    return str(record.get("role") or record.get("role_label") or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _connection_for_status(status: str) -> str:
+    value = str(status or "unknown").strip().lower()
+    if value in {"healthy", "active", "online", "ready"}:
+        return "online"
+    if value in {"joining", "accepted", "setup_started"}:
+        return "joining"
+    if value in {"invited", "pending", "invite_sent"}:
+        return "waiting"
+    if value in {"unhealthy", "offline", "failed", "stale", "degraded"}:
+        return "offline"
+    return "unknown"
+
+
+def _candidate_status(record: Dict[str, Any], *, from_agent: bool = False) -> str:
+    if from_agent:
+        return _derive_status(record)
+    return str(record.get("connection") or record.get("status") or record.get("agent_status") or "unknown").strip().lower()
+
+
+def _is_protected_device(record: Dict[str, Any], wanted: str) -> str | None:
+    keys = _record_identity_keys(record) | {wanted}
+    role = _role_value(record)
+    if keys.intersection(_protected_server_ids()):
+        return "Cannot remove the current Pocket Lab Lite server device."
+    if role in {"server_host", "server", "control_plane", "control_plane_host"}:
+        return "Cannot remove the Pocket Lab Lite server host."
+    if bool(record.get("is_current") or record.get("isCurrent") or record.get("is_control_plane")):
+        return "Cannot remove the current Pocket Lab Lite device."
+    return None
+
+
+def _is_online_or_healthy_status(status: str) -> bool:
+    return str(status or "").strip().lower() in {
+        "active",
+        "healthy",
+        "online",
+        "ready",
+        "success",
+        "succeeded",
+    }
+
+
 def _state_path(name: str) -> Path:
     return deps.settings().state_dir / name
 
@@ -343,6 +414,176 @@ def list_commands(node_id: str | None = None, limit: int = 100) -> List[Dict[str
             if normalize_node_id(str(cmd.get("node_id") or "")) == wanted
         ]
     return commands[: max(1, min(limit, 500))]
+
+
+def _candidate_matches(record: Dict[str, Any], wanted: str) -> bool:
+    return wanted in _record_identity_keys(record)
+
+
+def _cleanup_json_list_file(name: str, wanted: str, list_key: str | None = None) -> tuple[int, list[Dict[str, Any]]]:
+    path = _state_path(name)
+    if not path.exists():
+        return 0, []
+    default = {list_key: []} if list_key else []
+    payload = _read(path, default)
+    if list_key:
+        records = payload.get(list_key, []) if isinstance(payload, dict) else []
+    else:
+        records = payload if isinstance(payload, list) else []
+    if not isinstance(records, list):
+        return 0, []
+
+    removed: list[Dict[str, Any]] = []
+    kept: list[Dict[str, Any]] = []
+    for record in records:
+        if isinstance(record, dict) and _candidate_matches(record, wanted):
+            removed.append(record)
+        else:
+            kept.append(record)
+
+    if removed:
+        if list_key:
+            if not isinstance(payload, dict):
+                payload = {list_key: kept}
+            else:
+                payload[list_key] = kept
+                payload["updated_at"] = _now()
+            _write(path, payload)
+        else:
+            _write(path, kept)
+    return len(removed), removed
+
+
+def remove_device_records(device_id: str) -> Dict[str, Any]:
+    wanted = normalize_node_id(device_id)
+    if not wanted or wanted == "unknown-node":
+        raise DeviceRemovalError(400, "Choose a device to remove.")
+    if wanted in _protected_server_ids():
+        raise DeviceRemovalError(409, "Cannot remove the current Pocket Lab Lite server device.")
+
+    candidates: list[tuple[str, str, Dict[str, Any], str]] = []
+
+    agents_payload = _agents_payload()
+    for key, agent in agents_payload["agents"].items():
+        if isinstance(agent, dict) and (normalize_node_id(str(key)) == wanted or _candidate_matches(agent, wanted)):
+            candidates.append(("fleet_agents.json", str(key), agent, _candidate_status(agent, from_agent=True)))
+
+    for source_name, list_key in (("fleet.json", None), ("fleet_pending.json", "nodes")):
+        path = _state_path(source_name)
+        if not path.exists():
+            continue
+        payload = _read(path, {list_key: []} if list_key else [])
+        records = payload.get(list_key, []) if list_key and isinstance(payload, dict) else payload
+        if not isinstance(records, list):
+            continue
+        for index, record in enumerate(records):
+            if isinstance(record, dict) and _candidate_matches(record, wanted):
+                candidates.append((source_name, str(index), record, _candidate_status(record)))
+
+    if not candidates:
+        raise DeviceRemovalError(404, "Device record was not found.")
+
+    for _source, _key, record, _status in candidates:
+        reason = _is_protected_device(record, wanted)
+        if reason:
+            raise DeviceRemovalError(409, reason)
+
+    for _source, _key, record, status in candidates:
+        connection = str(record.get("connection") or "").strip().lower()
+        if _is_online_or_healthy_status(status) or connection == "online":
+            raise DeviceRemovalError(409, "Online devices are protected. Disconnect or mark the device stale before removing its saved record.")
+
+    _primary_source, _primary_key, primary, primary_status = candidates[0]
+    removed_device_records = 0
+
+    removed_agent_records: list[Dict[str, Any]] = []
+    agent_keys_to_remove = [
+        key
+        for key, agent in agents_payload["agents"].items()
+        if isinstance(agent, dict) and (normalize_node_id(str(key)) == wanted or _candidate_matches(agent, wanted))
+    ]
+    for key in agent_keys_to_remove:
+        removed = agents_payload["agents"].pop(key, None)
+        if isinstance(removed, dict):
+            removed_agent_records.append(removed)
+    if removed_agent_records:
+        agents_payload["updated_at"] = _now()
+        _write(_state_path("fleet_agents.json"), agents_payload)
+        removed_device_records += len(removed_agent_records)
+
+    for source_name, list_key in (("fleet.json", None), ("fleet_pending.json", "nodes")):
+        removed_count, _removed = _cleanup_json_list_file(source_name, wanted, list_key=list_key)
+        removed_device_records += removed_count
+
+    return {
+        "status": "removed",
+        "device_id": wanted,
+        "device_name": primary.get("name") or primary.get("hostname") or primary.get("node_id") or wanted,
+        "role": primary.get("role") or "compute",
+        "previous_status": "healthy" if primary_status == "active" else primary_status,
+        "previous_connection": _connection_for_status(primary_status),
+        "removed_device_records": removed_device_records,
+        "removed_from": sorted({source for source, _key, _record, _status in candidates}),
+        "updated_at": _now(),
+    }
+
+
+def append_device_removed_evidence(
+    removal: Dict[str, Any],
+    *,
+    removed_invite_records: int = 0,
+    reason: str | None = None,
+    requested_by: str = "lite-api",
+) -> Dict[str, Any]:
+    event = {
+        "event_type": "lite.fleet.device_removed",
+        "created_at": _now(),
+        "device_id": removal.get("device_id"),
+        "device_name": removal.get("device_name"),
+        "role": removal.get("role"),
+        "previous_status": removal.get("previous_status"),
+        "previous_connection": removal.get("previous_connection"),
+        "reason": reason or "Old device cleanup",
+        "removed_device_records": int(removal.get("removed_device_records") or 0),
+        "removed_invite_records": int(removed_invite_records or 0),
+        "requested_by": requested_by,
+        "timestamp": _now(),
+    }
+    for name, item_type in (
+        ("fleet_device_events.json", "lite.fleet.device_removed"),
+        ("fleet_device_audit.json", "lite.audit.fleet.device_removed"),
+    ):
+        payload = _read(_state_path(name), {"events": [], "updated_at": None})
+        if not isinstance(payload, dict):
+            payload = {"events": [], "updated_at": None}
+        events = payload.get("events") if isinstance(payload.get("events"), list) else []
+        events.insert(0, {**event, "event_type": item_type})
+        payload["events"] = events[:200]
+        payload["updated_at"] = _now()
+        _write(_state_path(name), payload)
+    return event
+
+
+async def publish_device_removed_evidence(event: Dict[str, Any]) -> None:
+    if not event:
+        return
+    from .nats_bus import BUS
+
+    if not BUS.connected:
+        return
+    trace_id = str(event.get("device_id") or "lite-device-removed")
+    await BUS.publish_json(
+        "pocketlab.events.fleet.device_removed",
+        "lite.fleet.device_removed",
+        event,
+        trace_id=trace_id,
+    )
+    await BUS.publish_json(
+        "pocketlab.audit.fleet.device_removed",
+        "lite.fleet.device_removed",
+        event,
+        trace_id=trace_id,
+    )
 
 
 def bootstrap_config(

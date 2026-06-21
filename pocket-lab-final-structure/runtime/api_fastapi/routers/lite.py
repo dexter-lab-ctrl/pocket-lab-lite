@@ -5,13 +5,13 @@ import os
 
 from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException, Request, Response, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import submit_domain_command, submit_operation_command
-from ..services import lite_invites, fleet_registry, fleet_registry, lite_status
+from ..services import fleet_registry, lite_invites, lite_status
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -46,6 +46,13 @@ class LiteAddDeviceRequest(BaseModel):
         description="Lite device role: compute for App Host or storage for Storage Node",
     )
     hostname: str | None = None
+
+
+class LiteRemoveDeviceRequest(BaseModel):
+    device_id: str = Field(default="", description="Lite device id to remove from saved records")
+    confirm: bool = False
+    reason: str | None = None
+    requested_by: str | None = None
 
 
 class LitePolicyApplyRequest(BaseModel):
@@ -189,6 +196,40 @@ async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> di
 
     await lite_invites.publish_invite_evidence(result)
     return {key: value for key, value in result.items() if key != "event"}
+
+
+@router.post("/fleet/remove-device")
+async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    device_id = (payload.device_id or "").strip()
+    if not device_id:
+        raise HTTPException(status_code=400, detail="Choose a device to remove.")
+    if not payload.confirm:
+        raise HTTPException(status_code=400, detail="Confirm removal before removing a saved device record.")
+
+    try:
+        removal = fleet_registry.remove_device_records(device_id)
+    except fleet_registry.DeviceRemovalError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+    invite_cleanup = lite_invites.remove_invites_for_device(device_id, device=removal)
+    removed_invites = int(invite_cleanup.get("removed_invite_records") or 0)
+    requested_by = (payload.requested_by or "lite-api").strip() or "lite-api"
+    evidence = fleet_registry.append_device_removed_evidence(
+        removal,
+        removed_invite_records=removed_invites,
+        reason=payload.reason,
+        requested_by=requested_by,
+    )
+    await fleet_registry.publish_device_removed_evidence(evidence)
+
+    return {
+        **removal,
+        "removed_invite_records": removed_invites,
+        "message": "Old device record removed.",
+        "summary": "Old device record removed. The phone was not wiped and Pocket Lab was not uninstalled from that device.",
+        "updated_at": deps.now_utc_iso(),
+    }
 
 
 @router.get("/policy")

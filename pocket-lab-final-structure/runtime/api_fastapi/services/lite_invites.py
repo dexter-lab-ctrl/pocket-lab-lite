@@ -506,8 +506,48 @@ def active_invite_device_keys() -> set[str]:
             continue
         for value in (item.get("node_id"), item.get("hostname"), item.get("name")):
             if value:
-                keys.add(str(value).strip().lower().replace("_", "-").replace(" ", "-"))
+                keys.add(normalize_node_id(str(value)))
     return keys
+
+
+def _invite_device_keys(record: dict[str, Any]) -> set[str]:
+    keys: set[str] = set()
+    for value in (record.get("device_id"), record.get("node_id"), record.get("hostname"), record.get("name")):
+        if value:
+            key = normalize_node_id(str(value))
+            if key and key != "unknown-node":
+                keys.add(key)
+    return keys
+
+
+def remove_invites_for_device(device_id: str, device: dict[str, Any] | None = None) -> dict[str, Any]:
+    wanted = normalize_node_id(device_id)
+    keys = {wanted} if wanted and wanted != "unknown-node" else set()
+    if isinstance(device, dict):
+        keys.update(_invite_device_keys(device))
+        for field in ("device_name", "name", "hostname"):
+            if device.get(field):
+                keys.add(normalize_node_id(str(device[field])))
+
+    payload = _invites_payload()
+    removed: list[dict[str, Any]] = []
+    kept: list[dict[str, Any]] = []
+    for item in payload.get("invites", []):
+        if isinstance(item, dict) and keys.intersection(_invite_device_keys(item)):
+            removed.append(item)
+        else:
+            kept.append(item)
+
+    if removed:
+        payload["invites"] = kept
+        payload["updated_at"] = _now_iso()
+        _write_state("fleet_invites.json", payload)
+
+    return {
+        "removed_invite_records": len(removed),
+        "removed_invite_ids": [str(item.get("invite_id")) for item in removed if item.get("invite_id")],
+        "updated_at": _now_iso(),
+    }
 
 
 def latest_invite() -> dict[str, Any] | None:
