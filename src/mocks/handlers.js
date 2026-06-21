@@ -10,6 +10,48 @@ const controlPlane = () => {
 };
 const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
 const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
+const normalizeLiteDeviceName = (value) => String(value || '')
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9_.-]+/g, '-')
+  .replace(/^[-._]+|[-._]+$/g, '');
+
+const mockLiteDevices = () => [
+  {
+    id: 'pocket-lab-lite-server',
+    name: 'Pocket Lab Lite Server',
+    status: 'healthy',
+    connection: 'online',
+    last_seen: new Date().toISOString(),
+    remote_access: true,
+    role: 'server_host',
+    role_label: 'Server Host',
+    is_current: true,
+    capabilities: ['Run control plane', 'Serve Lite UI'],
+  },
+  {
+    id: 'test-phone-2',
+    name: 'Test-Phone-2',
+    status: 'joining',
+    connection: 'joining',
+    last_seen: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    remote_access: false,
+    role: 'compute',
+    role_label: 'App Host',
+    capabilities: ['Run apps', 'Report device health'],
+  },
+  {
+    id: 'test-phone-4',
+    name: 'Test-Phone-4',
+    status: 'healthy',
+    connection: 'online',
+    last_seen: new Date().toISOString(),
+    remote_access: false,
+    role: 'compute',
+    role_label: 'App Host',
+    capabilities: ['Run apps', 'Report device health'],
+  },
+];
 
 export const handlers = [
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
@@ -56,43 +98,8 @@ export const handlers = [
   http.get('/api/lite/security', () => HttpResponse.json({ status: 'healthy', summary: 'No critical issues in the current safety summary', findings_count: 0, checks_count: 4, last_checked: new Date().toISOString() })),
   http.get('/api/lite/fleet', () => HttpResponse.json({
     status: 'healthy',
-    devices: [
-      {
-        id: 'pocket-lab-lite-server',
-        name: 'Pocket Lab Lite Server',
-        status: 'healthy',
-        connection: 'online',
-        last_seen: new Date().toISOString(),
-        remote_access: true,
-        role: 'server_host',
-        role_label: 'Server Host',
-        is_current: true,
-        capabilities: ['Run control plane', 'Serve Lite UI'],
-      },
-      {
-        id: 'test-phone-2',
-        name: 'Test-Phone-2',
-        status: 'joining',
-        connection: 'joining',
-        last_seen: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-        remote_access: false,
-        role: 'compute',
-        role_label: 'App Host',
-        capabilities: ['Run apps', 'Report device health'],
-      },
-      {
-        id: 'test-phone-4',
-        name: 'Test-Phone-4',
-        status: 'healthy',
-        connection: 'online',
-        last_seen: new Date().toISOString(),
-        remote_access: false,
-        role: 'compute',
-        role_label: 'App Host',
-        capabilities: ['Run apps', 'Report device health'],
-      },
-    ],
-    count: 3,
+    devices: mockLiteDevices(),
+    count: mockLiteDevices().length,
     roles: [
       { role: 'compute', role_label: 'App Host', description: 'Runs apps and services for your Pocket Lab.' },
       { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' },
@@ -137,6 +144,29 @@ export const handlers = [
     const role = body.role === 'storage' ? 'storage' : 'compute';
     const roleLabel = role === 'storage' ? 'Storage Node' : 'App Host';
     const hostname = body.hostname || (role === 'storage' ? 'Pocket Lab Storage Node' : 'Pocket Lab App Host');
+    const requested = normalizeLiteDeviceName(hostname);
+    const conflict = mockLiteDevices().find((device) => [device.id, device.name, device.hostname, device.node_id].map(normalizeLiteDeviceName).includes(requested));
+    if (conflict) {
+      const connected = conflict.connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(String(conflict.status || '').toLowerCase());
+      return HttpResponse.json({
+        detail: {
+          status: 'duplicate_device',
+          summary: 'A device with this name already exists.',
+          message: connected
+            ? 'This device is already connected. Use a different name if this is another phone.'
+            : 'An old device record already uses this name. Remove the old device record before creating a new invite.',
+          existing_device: {
+            device_id: conflict.id,
+            device_name: conflict.name,
+            role: conflict.role,
+            status: conflict.status,
+            connection: conflict.connection,
+            can_remove_old_record: !connected,
+          },
+          safe_next_actions: ['Use a different device name', 'Refresh the Devices list', 'Remove the old device record if it is no longer used'],
+        }
+      }, { status: 409 });
+    }
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
     return HttpResponse.json({
       accepted: true,

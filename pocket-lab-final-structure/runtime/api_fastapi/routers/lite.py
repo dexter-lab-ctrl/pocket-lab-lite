@@ -82,6 +82,52 @@ def _operation_payload(operation: str, target: dict[str, Any], params: dict[str,
     return deps.normalize_operation_request(raw), raw
 
 
+def _safe_duplicate_conflict_payload(conflict: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "device_id": conflict.get("device_id"),
+        "device_name": conflict.get("device_name"),
+        "role": conflict.get("role"),
+        "status": conflict.get("status"),
+        "connection": conflict.get("connection"),
+        "source": conflict.get("source"),
+        "can_remove_old_record": bool(conflict.get("can_remove_old_record")),
+    }
+
+
+def _duplicate_device_detail(conflict: dict[str, Any]) -> dict[str, Any]:
+    status = str(conflict.get("status") or "unknown").lower()
+    connection = str(conflict.get("connection") or "unknown").lower()
+    can_remove = bool(conflict.get("can_remove_old_record"))
+    if connection == "online" or status in {"healthy", "active", "online", "ready"}:
+        message = "This device is already connected. Use a different name if this is another phone."
+    elif status in {"pending", "invited"} or connection == "waiting":
+        message = "An invite for this device is already in progress. Use the existing invite or wait for the device to connect."
+    elif status in {"joining", "accepted"} or connection == "joining":
+        message = "This device is already joining. Use the existing invite or wait for the device to connect."
+    elif can_remove:
+        message = "An old device record already uses this name. Remove the old device record before creating a new invite."
+    else:
+        message = "Choose a different name, or refresh the Devices list before trying again."
+    return {
+        "status": "duplicate_device",
+        "summary": "A device with this name already exists.",
+        "message": message,
+        "existing_device": _safe_duplicate_conflict_payload(conflict),
+        "safe_next_actions": [
+            "Use a different device name",
+            "Refresh the Devices list",
+            "Remove the old device record if it is no longer used",
+        ],
+    }
+
+
+def _candidate_device_name(payload: LiteAddDeviceRequest) -> str:
+    if (payload.hostname or "").strip():
+        return str(payload.hostname).strip()
+    role_info = lite_invites.role_metadata(payload.role)
+    return f"Pocket Lab {role_info['role_label']}"
+
+
 @router.get("/status")
 async def get_lite_status(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
@@ -186,6 +232,13 @@ def get_latest_lite_fleet_invite(request: Request) -> dict[str, Any]:
 async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
     try:
+        device_name = _candidate_device_name(payload)
+        device_conflict = fleet_registry.find_device_identity_conflict(device_name)
+        invite_conflict = lite_invites.find_invite_identity_conflict(device_name)
+        conflict = device_conflict or invite_conflict
+        if conflict:
+            raise HTTPException(status_code=409, detail=_duplicate_device_detail(conflict))
+
         result = lite_invites.create_lite_invite(
             role=payload.role,
             hostname=payload.hostname,

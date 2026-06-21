@@ -73,6 +73,43 @@ function canRemoveDevice(device) {
     || ['joining', 'pending', 'invited', 'offline', 'stale'].includes(status);
 }
 
+function normalizeDeviceName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, '-')
+    .replace(/^[-._]+|[-._]+$/g, '');
+}
+
+function findDeviceNameConflict(name, devices = []) {
+  const wanted = normalizeDeviceName(name);
+  if (!wanted) return null;
+
+  return devices.find((device) => {
+    const identities = [device?.id, device?.node_id, device?.hostname, device?.name]
+      .map(normalizeDeviceName)
+      .filter(Boolean);
+    return identities.includes(wanted);
+  }) || null;
+}
+
+function deviceDuplicateMessage(device) {
+  if (!device) return '';
+  const connection = String(device?.connection || '').toLowerCase();
+  const status = String(device?.status || '').toLowerCase();
+
+  if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) {
+    return 'This device is already connected. Use a different name if this is another phone.';
+  }
+  if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) {
+    return 'This device is already joining. Use the existing invite or wait for the device to connect.';
+  }
+  if (connection === 'waiting' || ['pending', 'invited', 'invite_sent'].includes(status)) {
+    return 'An invite for this device is already in progress. Use the existing invite or wait for the device to connect.';
+  }
+  return 'An old device record already uses this name. Remove the old device record before creating a new invite.';
+}
+
 
 function deviceStatusLabel(status) {
   const value = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -876,10 +913,15 @@ function DevicesScreen() {
   const [restartBusy, setRestartBusy] = useState('');
   const [removeCandidate, setRemoveCandidate] = useState(null);
   const [removeBusy, setRemoveBusy] = useState(false);
+  const [serverConflict, setServerConflict] = useState(null);
   const devices = data?.devices || [];
   const latestInvite = invite || data?.latest_invite || null;
   const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
   const selectedRoleLabel = roleLabel(selectedRole);
+  const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
+  const localNameConflict = findDeviceNameConflict(candidateDeviceName, devices);
+  const activeNameConflict = localNameConflict || serverConflict;
+  const addDeviceDisabled = busy || Boolean(activeNameConflict);
 
   async function addDevice() {
     setBusy(true);
@@ -887,6 +929,7 @@ function DevicesScreen() {
     setInvite(null);
     setCopied(false);
     setActionError(null);
+    setServerConflict(null);
     try {
       const payload = await liteApi.addDevice({ role: selectedRole, hostname: hostname || undefined });
       setResult(payload);
@@ -897,8 +940,14 @@ function DevicesScreen() {
       }
       refresh();
     } catch (err) {
+      const detail = err?.payload?.detail || {};
       setResult(null);
-      setActionError(err.message);
+      if (detail?.status === 'duplicate_device') {
+        setServerConflict(detail.existing_device || null);
+        setActionError(detail.message || detail.summary || 'A device with this name already exists.');
+      } else {
+        setActionError(err.message);
+      }
     } finally {
       setBusy(false);
     }
@@ -1014,10 +1063,20 @@ function DevicesScreen() {
             id="device-name"
             className="pocket-input lite-devices-input"
             value={hostname}
-            onChange={(event) => setHostname(event.target.value)}
+            onChange={(event) => {
+              setHostname(event.target.value);
+              setServerConflict(null);
+            }}
             placeholder="Optional, for example: Kitchen tablet"
             aria-label="Device name"
           />
+
+          {activeNameConflict ? (
+            <div className="lite-devices-name-conflict" role="alert">
+              <strong>A device with this name already exists.</strong>
+              <span>{deviceDuplicateMessage(activeNameConflict)}</span>
+            </div>
+          ) : null}
 
           <div className="lite-devices-field-label">Select a role</div>
           <div className="lite-role-selector" role="radiogroup" aria-label="Device role">
@@ -1026,7 +1085,10 @@ function DevicesScreen() {
                 key={role.value}
                 type="button"
                 className={`lite-role-card ${selectedRole === role.value ? 'lite-role-card-selected' : ''}`}
-                onClick={() => setSelectedRole(role.value)}
+                onClick={() => {
+                  setSelectedRole(role.value);
+                  setServerConflict(null);
+                }}
                 role="radio"
                 aria-checked={selectedRole === role.value}
               >
@@ -1042,8 +1104,8 @@ function DevicesScreen() {
           </div>
 
           <div className="mt-5">
-            <LiteButton onClick={addDevice} disabled={busy}>
-              {busy ? 'Preparing invite...' : 'Add Device'}
+            <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
+              {busy ? 'Preparing invite...' : (activeNameConflict ? 'Device already added' : 'Add Device')}
             </LiteButton>
           </div>
 

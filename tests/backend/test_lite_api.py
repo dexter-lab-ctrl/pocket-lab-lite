@@ -1,4 +1,16 @@
-from pocket_lab_test_utils import client, isolated_state_dir
+import pytest
+
+from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_dir
+
+
+@pytest.fixture(autouse=True)
+def isolate_lite_runtime_state_per_test(tmp_path):
+    ensure_runtime_path()
+    from api_fastapi import deps
+
+    state = isolated_state_dir(tmp_path)
+    deps.core.SETTINGS = deps.core.Settings(state_dir=state)
+    yield
 
 
 def test_lite_status_endpoint_registered():
@@ -489,6 +501,7 @@ def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
 
 
 def _use_isolated_runtime_state(tmp_path):
+    ensure_runtime_path()
     from api_fastapi import deps
 
     state = isolated_state_dir(tmp_path)
@@ -666,3 +679,103 @@ def test_lite_remove_device_writes_audit_evidence(tmp_path):
     assert audit["events"][0]["event_type"] == "lite.audit.fleet.device_removed"
     assert audit["events"][0]["device_id"] == "audit-phone"
     assert audit["events"][0]["reason"] == "Old test device cleanup"
+
+
+def test_lite_add_device_rejects_duplicate_existing_device_name(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "kitchen-tablet",
+            "hostname": "Kitchen Tablet",
+            "role": "compute",
+            "status": "joining",
+        },
+        event_type="fleet.agent_join_started",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Kitchen Tablet"},
+    )
+
+    assert response.status_code == 409
+    detail = response.json()
+    assert detail["status"] == "duplicate_device"
+    assert detail["summary"] == "A device with this name already exists."
+    assert detail["existing_device"]["device_id"] == "kitchen-tablet"
+    assert "token_hash" not in response.text
+    assert "token=" not in response.text
+
+
+def test_lite_add_device_duplicate_matching_is_case_and_separator_insensitive(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "test-phone-9",
+            "hostname": "Test Phone 9",
+            "role": "compute",
+            "status": "joining",
+        },
+        event_type="fleet.agent_join_started",
+    )
+
+    for duplicate_name in ("test-phone-9", "TEST PHONE 9", "test_phone_9"):
+        response = client().post(
+            "/api/lite/fleet/add-device",
+            json={"role": "compute", "hostname": duplicate_name},
+        )
+        assert response.status_code == 409
+        assert response.json()["status"] == "duplicate_device"
+
+
+def test_lite_add_device_rejects_duplicate_active_invite_name(tmp_path, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.71:8443")
+    _use_isolated_runtime_state(tmp_path)
+
+    api = client()
+    first = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "Backup Phone"},
+    )
+    assert first.status_code == 202
+
+    second = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "backup-phone"},
+    )
+
+    assert second.status_code == 409
+    detail = second.json()
+    assert detail["status"] == "duplicate_device"
+    assert detail["existing_device"]["source"] in {"fleet_agents.json", "fleet_invites.json"}
+
+
+def test_lite_add_device_rejects_server_host_name_reuse(tmp_path):
+    _use_isolated_runtime_state(tmp_path)
+
+    response = client().post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Pocket Lab Lite Server"},
+    )
+
+    assert response.status_code == 409
+    detail = response.json()
+    assert detail["status"] == "duplicate_device"
+    assert detail["existing_device"]["role"] == "server_host"
+    assert detail["existing_device"]["can_remove_old_record"] is False
+
+
+def test_lite_add_device_allows_unique_device_name(tmp_path):
+    _use_isolated_runtime_state(tmp_path)
+
+    response = client().post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Unique Device Name"},
+    )
+
+    assert response.status_code == 202
+    assert response.json()["status"] == "invite_ready"
