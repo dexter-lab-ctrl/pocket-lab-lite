@@ -530,6 +530,10 @@ EOF_ENV
 echo "Saved agent environment:"
 echo "  $HOME/.pocketlab-lite-agent.env"
 
+set -a
+. "$HOME/.pocketlab-lite-agent.env"
+set +a
+
 if ! python3 - <<'PYCHECK' >/dev/null 2>&1
 import importlib.util, sys
 sys.exit(0 if importlib.util.find_spec("nats") else 1)
@@ -543,8 +547,13 @@ AGENT_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pock
 if [ -f "$AGENT_FILE" ]; then
   echo "Starting Pocket Lab Lite node agent..."
   if command -v pm2 >/dev/null 2>&1; then
-    pm2 delete "pocketlab-agent-{node_id}" >/dev/null 2>&1 || true
-    pm2 start python3 --name "pocketlab-agent-{node_id}" -- "$AGENT_FILE"
+    for process_name in $(pm2 jlist 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); [print(p.get("name","")) for p in data if str(p.get("name","")).startswith("pocketlab-agent-")]' 2>/dev/null || true); do
+      pm2 delete "$process_name" >/dev/null 2>&1 || true
+    done
+    if command -v pkill >/dev/null 2>&1; then
+      pkill -f 'pocketlab_node_agent.py' >/dev/null 2>&1 || true
+    fi
+    pm2 start python3 --name "pocketlab-agent-{node_id}" --update-env -- "$AGENT_FILE"
     pm2 save >/dev/null 2>&1 || true
     echo "Node agent started with PM2: pocketlab-agent-{node_id}"
   else

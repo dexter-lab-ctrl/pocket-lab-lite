@@ -136,7 +136,7 @@ $loki_route
 EOF
   else
     cat <<EOF | atomic_write "$CADDYFILE" 0644
-http://127.0.0.1:${DASH_PORT} {
+:${DASH_PORT} {
   encode gzip zstd
   header X-Content-Type-Options "nosniff"
   header X-Frame-Options "DENY"
