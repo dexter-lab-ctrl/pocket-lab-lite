@@ -9,7 +9,9 @@ import platform
 import ssl
 import re
 import signal
+import shutil
 import socket
+import subprocess
 import sys
 import uuid
 from pathlib import Path
@@ -138,7 +140,7 @@ class PocketLabNodeAgent:
         self.telemetry_seconds = int(env("POCKETLAB_AGENT_TELEMETRY_SECONDS", "20"))
         self.nc = None
         self.stop_event = asyncio.Event()
-        self.capabilities = ["heartbeat", "telemetry", "health", "node-command"]
+        self.capabilities = ["heartbeat", "telemetry", "health", "node-command", "agent-restart"]
 
     def base_payload(self) -> Dict[str, Any]:
         return {
@@ -153,6 +155,33 @@ class PocketLabNodeAgent:
             "auth_token_hash": token_hash(self.token),
             "capabilities": self.capabilities,
         }
+
+    async def safe_publish(
+        self, subject: str, event_type: str, data: Dict[str, Any]
+    ) -> bool:
+        try:
+            await self.publish(subject, event_type, data)
+            return True
+        except Exception as exc:
+            print(f"Pocket Lab node agent publish failed: {exc}", file=sys.stderr)
+            return False
+
+    async def restart_after_ack(self) -> None:
+        await asyncio.sleep(1)
+        process_name = f"pocketlab-agent-{self.node_id}"
+        if shutil.which("pm2"):
+            command = f"pm2 restart {process_name} --update-env >/dev/null 2>&1"
+            subprocess.Popen(
+                ["sh", "-lc", f"sleep 1; {command}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+            return
+
+        # Without PM2 there is no guaranteed external supervisor. Exit cleanly so
+        # a wrapper/supervisor can restart the process if one exists.
+        self.stop_event.set()
 
     async def publish(
         self, subject: str, event_type: str, data: Dict[str, Any]
@@ -181,7 +210,7 @@ class PocketLabNodeAgent:
 
     async def heartbeat_loop(self) -> None:
         while not self.stop_event.is_set():
-            await self.publish(
+            await self.safe_publish(
                 "pocketlab.events.fleet.node_heartbeat",
                 "fleet.node_heartbeat",
                 {**self.base_payload(), "heartbeat_at": now_iso()},
@@ -195,7 +224,7 @@ class PocketLabNodeAgent:
 
     async def telemetry_loop(self) -> None:
         while not self.stop_event.is_set():
-            await self.publish(
+            await self.safe_publish(
                 "pocketlab.events.fleet.node_telemetry",
                 "fleet.node_telemetry",
                 {
@@ -204,7 +233,7 @@ class PocketLabNodeAgent:
                     "sampled_at": now_iso(),
                 },
             )
-            await self.publish(
+            await self.safe_publish(
                 "pocketlab.events.fleet.node_health",
                 "fleet.node_health",
                 {
@@ -244,9 +273,11 @@ class PocketLabNodeAgent:
                 result = {"agent": self.base_payload()}
             elif command_name in {"agent.restart", "restart"}:
                 result = {
-                    "message": "Restart requested; external supervisor should restart the agent."
+                    "message": "Restart requested; PM2 will restart the agent when available.",
+                    "supervisor": "pm2" if shutil.which("pm2") else "process-exit",
                 }
                 status = "acknowledged"
+                asyncio.create_task(self.restart_after_ack())
             elif command_name in {"apply_blueprint", "node.apply_blueprint"}:
                 result = {
                     "message": "Blueprint execution is acknowledged; install a node executor to enable remote apply.",

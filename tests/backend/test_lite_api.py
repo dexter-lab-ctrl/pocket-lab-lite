@@ -1,4 +1,4 @@
-from pocket_lab_test_utils import client
+from pocket_lab_test_utils import client, isolated_state_dir
 
 
 def test_lite_status_endpoint_registered():
@@ -424,3 +424,121 @@ def test_lite_bootstrap_script_prefers_explicit_public_nats_url(monkeypatch):
     assert response.status_code == 200
     assert 'export POCKETLAB_NATS_URL="nats://100.64.0.99:4222"' in response.text
 
+
+
+def test_lite_fleet_stale_agent_renders_offline_connection(tmp_path, monkeypatch):
+    from api_fastapi import deps
+    from api_fastapi.services import fleet_registry
+
+    isolated_state_dir(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "stale-phone",
+            "hostname": "Stale Phone",
+            "role": "compute",
+            "status": "online",
+        },
+        event_type="fleet.node_heartbeat",
+    )
+
+    state_path = fleet_registry._state_path("fleet_agents.json")
+    state = deps.core.read_json_file(state_path, {})
+    assert "agents" in state
+    state["agents"]["stale-phone"]["last_seen_epoch"] = 1
+    state["agents"]["stale-phone"]["last_seen_at"] = "2026-01-01T00:00:00Z"
+    deps.core.write_json_file(state_path, state)
+
+    response = client().get("/api/lite/fleet")
+    assert response.status_code == 200
+    payload = response.json()
+    device = next(item for item in payload["devices"] if item["id"] == "stale-phone")
+    assert device["connection"] == "offline"
+
+
+def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
+    from api_fastapi import deps
+    from api_fastapi.services import fleet_registry
+
+    isolated_state_dir(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "restart-phone",
+            "hostname": "Restart Phone",
+            "role": "compute",
+            "status": "online",
+        },
+        event_type="fleet.node_heartbeat",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/devices/restart-phone/restart-agent",
+        json={"reason": "test restart"},
+    )
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["accepted"] is True
+    assert payload["node_id"] == "restart-phone"
+    assert payload["command_id"]
+
+    state_path = fleet_registry._state_path("fleet_agent_commands.json")
+    commands = deps.core.read_json_file(state_path, {})
+    assert "commands" in commands
+    assert commands["commands"][0]["command"] == "agent.restart"
+    assert commands["commands"][0]["node_id"] == "restart-phone"
+
+def test_lite_fleet_stale_agent_renders_offline_connection(tmp_path, monkeypatch):
+    from pocket_lab_runtime.api_fastapi import deps
+    from pocket_lab_runtime.api_fastapi.services import fleet_registry
+
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "stale-phone",
+            "hostname": "Stale Phone",
+            "role": "compute",
+            "status": "online",
+        },
+        event_type="fleet.node_heartbeat",
+    )
+
+    state_path = tmp_path / "fleet_agents.json"
+    state = deps.core.read_json_file(state_path, {})
+    state["agents"]["stale-phone"]["last_seen_epoch"] = 1
+    state["agents"]["stale-phone"]["last_seen_at"] = "2026-01-01T00:00:00Z"
+    deps.core.write_json_file(state_path, state)
+
+    response = client().get("/api/lite/fleet")
+    assert response.status_code == 200
+    payload = response.json()
+    device = next(item for item in payload["devices"] if item["id"] == "stale-phone")
+    assert device["connection"] == "offline"
+
+
+def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
+    from pocket_lab_runtime.api_fastapi import deps
+    from pocket_lab_runtime.api_fastapi.services import fleet_registry
+
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "restart-phone",
+            "hostname": "Restart Phone",
+            "role": "compute",
+            "status": "online",
+        },
+        event_type="fleet.node_heartbeat",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/devices/restart-phone/restart-agent",
+        json={"reason": "test restart"},
+    )
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["accepted"] is True
+    assert payload["node_id"] == "restart-phone"
+    assert payload["command_id"]
+
+    commands = deps.core.read_json_file(tmp_path / "fleet_agent_commands.json", {})
+    assert commands["commands"][0]["command"] == "agent.restart"
+    assert commands["commands"][0]["node_id"] == "restart-phone"
