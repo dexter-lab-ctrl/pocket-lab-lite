@@ -60,7 +60,7 @@ write_nats_config(){
   log INFO "Writing production NATS/JetStream config with auth, localhost monitoring, and durable storage"
   cat > "$nats_config" <<EOF
 server_name: pocketlab-nats
-listen: 127.0.0.1:4222
+listen: 0.0.0.0:4222
 http: 127.0.0.1:8222
 jetstream {
   store_dir: "$STATE_DIR/nats/store"
