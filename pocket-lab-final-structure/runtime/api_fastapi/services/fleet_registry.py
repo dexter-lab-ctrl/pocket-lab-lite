@@ -35,7 +35,7 @@ def _record_identity_keys(record: Dict[str, Any]) -> set[str]:
     for field in ("id", "node_id", "hostname", "name"):
         value = record.get(field)
         if value:
-            keys.add(normalize_node_id(str(value)))
+            keys.update(_identity_variants(str(value)))
     return {key for key in keys if key and key != "unknown-node"}
 
 
@@ -85,6 +85,81 @@ def _is_online_or_healthy_status(status: str) -> bool:
     }
 
 
+def _device_conflict_payload(
+    record: Dict[str, Any],
+    *,
+    status: str | None = None,
+    source: str = "fleet",
+) -> Dict[str, Any]:
+    resolved_status = str(status or _candidate_status(record)).strip().lower()
+    role = record.get("role") or "compute"
+    is_current = bool(record.get("is_current") or record.get("isCurrent") or record.get("is_control_plane"))
+    return {
+        "device_id": record.get("id") or record.get("node_id") or record.get("hostname") or record.get("name"),
+        "device_name": record.get("name") or record.get("hostname") or record.get("node_id") or record.get("id"),
+        "role": role,
+        "status": "healthy" if resolved_status == "active" else resolved_status,
+        "connection": _connection_for_status(resolved_status),
+        "is_current": is_current,
+        "source": source,
+        "can_remove_old_record": (
+            not is_current
+            and _role_value({"role": role}) not in {"server_host", "server", "control_plane", "control_plane_host"}
+            and not _is_online_or_healthy_status(resolved_status)
+        ),
+    }
+
+
+def find_device_identity_conflict(device_name: str | None) -> Dict[str, Any] | None:
+    wanted = normalize_node_id(device_name)
+    wanted_keys = _identity_variants(device_name)
+    if not wanted_keys:
+        return None
+
+    protected_names = _protected_server_ids() | {
+        normalize_node_id("Pocket Lab Lite Server"),
+        normalize_node_id(os.environ.get("POCKETLAB_DEVICE_NAME") or ""),
+    }
+    if wanted_keys.intersection({value for value in protected_names if value and value != "unknown-node"}):
+        return _device_conflict_payload(
+            {
+                "id": "pocket-lab-lite-server",
+                "name": os.environ.get("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server"),
+                "role": "server_host",
+                "status": "healthy",
+                "is_current": True,
+            },
+            status="healthy",
+            source="lite-server",
+        )
+
+    for agent in list_agents(include_stale=True):
+        if isinstance(agent, dict) and _candidate_matches(agent, wanted_keys):
+            return _device_conflict_payload(
+                agent,
+                status=str(agent.get("status") or _derive_status(agent)),
+                source="fleet_agents.json",
+            )
+
+    for source_name, list_key in (("fleet.json", None), ("fleet_pending.json", "nodes")):
+        path = _state_path(source_name)
+        if not path.exists():
+            continue
+        payload = _read(path, {list_key: []} if list_key else [])
+        records = payload.get(list_key, []) if list_key and isinstance(payload, dict) else payload
+        if not isinstance(records, list):
+            continue
+        for record in records:
+            if isinstance(record, dict) and _candidate_matches(record, wanted_keys):
+                return _device_conflict_payload(
+                    record,
+                    status=_candidate_status(record),
+                    source=source_name,
+                )
+
+    return None
+
+
 def _state_path(name: str) -> Path:
     return deps.settings().state_dir / name
 
@@ -109,6 +184,15 @@ def normalize_node_id(value: str | None) -> str:
     raw = (value or "").strip().lower()
     raw = re.sub(r"[^a-z0-9_.-]+", "-", raw).strip("-._")
     return raw or "unknown-node"
+
+
+def _identity_variants(value: str | None) -> set[str]:
+    canonical = normalize_node_id(value)
+    variants = {canonical}
+    if canonical and canonical != "unknown-node":
+        variants.add(canonical.replace("_", "-"))
+        variants.add(canonical.replace("_", "."))
+    return {item for item in variants if item and item != "unknown-node"}
 
 
 def _hash_token(value: str | None) -> str:
@@ -416,8 +500,9 @@ def list_commands(node_id: str | None = None, limit: int = 100) -> List[Dict[str
     return commands[: max(1, min(limit, 500))]
 
 
-def _candidate_matches(record: Dict[str, Any], wanted: str) -> bool:
-    return wanted in _record_identity_keys(record)
+def _candidate_matches(record: Dict[str, Any], wanted: str | set[str]) -> bool:
+    wanted_keys = wanted if isinstance(wanted, set) else _identity_variants(wanted)
+    return bool(wanted_keys.intersection(_record_identity_keys(record)))
 
 
 def _cleanup_json_list_file(name: str, wanted: str, list_key: str | None = None) -> tuple[int, list[Dict[str, Any]]]:

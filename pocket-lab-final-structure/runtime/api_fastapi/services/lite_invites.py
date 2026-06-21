@@ -550,6 +550,37 @@ def remove_invites_for_device(device_id: str, device: dict[str, Any] | None = No
     }
 
 
+def find_invite_identity_conflict(device_name: str | None) -> dict[str, Any] | None:
+    wanted = normalize_node_id(device_name)
+    if not wanted or wanted == "unknown-node":
+        return None
+
+    payload = _invites_payload()
+    for item in payload.get("invites", []):
+        if not isinstance(item, dict):
+            continue
+        if wanted not in _invite_device_keys(item):
+            continue
+        if float(item.get("expires_at_epoch") or 0) <= _now_epoch():
+            continue
+        status = str(item.get("status") or "pending").lower()
+        if status in {"expired", "removed"}:
+            continue
+        return {
+            "invite_id": item.get("invite_id"),
+            "device_id": item.get("node_id"),
+            "device_name": item.get("hostname") or item.get("node_id"),
+            "role": item.get("role") or "compute",
+            "status": status,
+            "connection": "joining" if status in {"accepted", "joining"} else "waiting",
+            "expires_at": item.get("expires_at"),
+            "source": "fleet_invites.json",
+            "can_remove_old_record": status in {"pending", "accepted", "joining", "used"},
+        }
+
+    return None
+
+
 def latest_invite() -> dict[str, Any] | None:
     payload = _invites_payload()
     valid = [
