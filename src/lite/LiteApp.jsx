@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   Menu,
   Network,
+  RefreshCw,
   ShieldCheck,
   WifiOff,
   X,
@@ -45,9 +46,18 @@ function deviceConnectionLabel(device) {
   if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) return 'Online';
   if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return 'Joining';
   if (connection === 'waiting' || ['pending', 'invited', 'invite_sent'].includes(status)) return 'Waiting';
-  if (connection === 'offline' || ['offline', 'failed', 'unhealthy'].includes(status)) return 'Offline';
+  if (connection === 'offline' || ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)) return 'Offline';
+  if (connection === 'unknown' && (device?.last_seen || device?.last_seen_at)) return 'Offline';
 
   return device?.remote_access ? 'Online' : 'Not setup yet';
+}
+
+function canRestartDeviceAgent(device) {
+  const role = String(device?.role || '').toLowerCase();
+  if (!device?.id || role === 'server_host' || device?.is_current || device?.isCurrent) return false;
+  const connection = String(device?.connection || '').toLowerCase();
+  const status = String(device?.status || '').toLowerCase();
+  return ['offline', 'unknown'].includes(connection) || ['offline', 'degraded', 'stale', 'unhealthy', 'failed'].includes(status);
 }
 
 
@@ -850,6 +860,7 @@ function DevicesScreen() {
   const [copied, setCopied] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [restartBusy, setRestartBusy] = useState('');
   const devices = data?.devices || [];
   const latestInvite = invite || data?.latest_invite || null;
   const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
@@ -894,6 +905,25 @@ function DevicesScreen() {
       window.setTimeout(() => setCopied(false), 1800);
     }
     refresh();
+  }
+
+  async function restartAgent(device) {
+    const nodeId = device?.id;
+    if (!nodeId) return;
+    setRestartBusy(nodeId);
+    setActionError(null);
+    setResult(null);
+    try {
+      const response = await liteApi.restartDeviceAgent(nodeId, {
+        reason: 'Lite Devices restart requested',
+      });
+      setResult(response);
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setRestartBusy('');
+    }
   }
 
   return (
@@ -1107,6 +1137,20 @@ function DevicesScreen() {
                       <strong>{deviceConnectionLabel(device)}</strong>
                     </div>
                   </div>
+
+                  {canRestartDeviceAgent(device) ? (
+                    <div className="lite-device-actions">
+                      <LiteButton
+                        tone="secondary"
+                        onClick={() => restartAgent(device)}
+                        disabled={restartBusy === device.id}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        {restartBusy === device.id ? 'Restarting...' : 'Restart agent'}
+                      </LiteButton>
+                    </div>
+                  ) : null}
+
                 </GlassCard>
               );
             })}

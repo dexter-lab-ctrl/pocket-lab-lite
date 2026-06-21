@@ -307,6 +307,93 @@ async def send_fleet_agent_command(
     }
 
 
+
+@router.post("/api/lite/fleet/devices/{node_id}/restart-agent", status_code=202)
+async def restart_lite_fleet_agent(
+    node_id: str, payload: dict | None = None, request: Request = None
+) -> dict:
+    """Request a supervised restart of a Lite fleet agent.
+
+    The UI never executes PM2 or shell commands. This endpoint records an auditable
+    command and publishes it over the node-agent NATS command subject. If the node
+    is offline, the command remains visible as queued; delivery requires the agent
+    to reconnect to NATS.
+    """
+    deps.require_auth(request, write=True)
+    payload = payload or {}
+    normalized_node_id = fleet_registry.normalize_node_id(node_id)
+    agent = fleet_registry.get_agent(normalized_node_id)
+    if not agent:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "status": "not_found",
+                "summary": "Device was not found.",
+                "node_id": normalized_node_id,
+            },
+        )
+
+    role = str(agent.get("role") or "").lower()
+    if role == "server_host" or bool(agent.get("is_current") or agent.get("isCurrent")):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "not_allowed",
+                "summary": "The server host agent cannot be restarted from the Lite Devices tab.",
+                "node_id": normalized_node_id,
+            },
+        )
+
+    command_payload = {
+        "reason": str(payload.get("reason") or "Lite Devices restart requested"),
+        "requested_from": "lite-devices",
+    }
+    item = fleet_registry.create_node_command(
+        normalized_node_id,
+        "agent.restart",
+        command_payload,
+        requested_by="lite-api",
+    )
+    subject = f"pocketlab.commands.node.{normalized_node_id}.agent.restart"
+
+    await BUS.publish_json(
+        subject,
+        "fleet.node_command_requested",
+        {**item, "command_subject": subject},
+        trace_id=item["command_id"],
+    )
+    await BUS.publish_json(
+        "pocketlab.events.fleet.node_command_queued",
+        "fleet.node_command_queued",
+        {
+            "node_id": normalized_node_id,
+            "command_id": item["command_id"],
+            "command": "agent.restart",
+            "requested_from": "lite-devices",
+        },
+        trace_id=item["command_id"],
+    )
+
+    status = str(agent.get("status") or "unknown").lower()
+    delivery = "sent" if status in {"active", "healthy", "online"} else "queued"
+
+    return {
+        "accepted": True,
+        "status": "queued",
+        "delivery": delivery,
+        "summary": (
+            "Restart requested. If the device is offline, it will run after the agent reconnects."
+            if delivery == "queued"
+            else "Restart requested for the device agent."
+        ),
+        "node_id": normalized_node_id,
+        "command_id": item["command_id"],
+        "command": item,
+        "command_subject": subject,
+        "bus": BUS.status(),
+    }
+
+
 @router.post("/api/fleet/agents/broadcast", status_code=202)
 async def broadcast_fleet_agent_command(
     payload: dict | None = None, request: Request = None

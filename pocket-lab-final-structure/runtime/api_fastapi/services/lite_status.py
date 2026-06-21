@@ -333,7 +333,7 @@ def _connection_label(status: str) -> str:
         return "joining"
     if value in {"invited", "pending", "invite_sent"}:
         return "waiting"
-    if value in {"unhealthy", "offline", "failed"}:
+    if value in {"unhealthy", "offline", "failed", "stale", "degraded"}:
         return "offline"
     return "unknown"
 

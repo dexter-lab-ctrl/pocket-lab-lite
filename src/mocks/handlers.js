@@ -82,6 +82,14 @@ export const handlers = [
   }),
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
   http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-security-scan' }, { status: 202 })),
+  http.post('/api/lite/fleet/devices/:nodeId/restart-agent', ({ params }) => HttpResponse.json({
+    accepted: true,
+    status: 'queued',
+    delivery: 'queued',
+    summary: 'Restart requested. If the device is offline, it will run after the agent reconnects.',
+    node_id: params.nodeId,
+    command_id: 'mock-restart-agent',
+  }, { status: 202 })),
   http.post('/api/lite/fleet/add-device', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     const role = body.role === 'storage' ? 'storage' : 'compute';

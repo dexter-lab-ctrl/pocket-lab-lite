@@ -82,7 +82,7 @@ def _derive_status(agent: Dict[str, Any]) -> str:
     ):
         return "active"
     if last_seen_epoch:
-        return "stale"
+        return "offline"
     return "unknown"
 
 
@@ -241,7 +241,7 @@ def fleet_health_snapshot() -> Dict[str, Any]:
     healthy = sum(
         1 for node in nodes if str(node.get("status") or "").lower() == "active"
     )
-    stale = sum(1 for node in nodes if str(node.get("status") or "").lower() == "stale")
+    stale = sum(1 for node in nodes if str(node.get("status") or "").lower() in {"stale", "offline"})
     unhealthy = max(0, len(nodes) - healthy)
     return {
         "status": (
