@@ -779,3 +779,112 @@ def test_lite_add_device_allows_unique_device_name(tmp_path):
 
     assert response.status_code == 202
     assert response.json()["status"] == "invite_ready"
+
+def _token_from_url(value: str) -> str:
+    from urllib.parse import parse_qs, urlparse
+
+    return parse_qs(urlparse(value).query)["token"][0]
+
+
+def test_lite_bootstrap_script_blocks_mismatched_existing_identity_before_accept(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.90:8443")
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Kitchen Tablet 2"},
+    )
+    assert created.status_code == 202
+    bootstrap_url = created.json()["invite"]["bootstrap_url"]
+    script_path = bootstrap_url.split("http://100.64.0.90:8443", 1)[1]
+
+    response = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
+
+    assert response.status_code == 200
+    assert "This phone is already connected as:" in response.text
+    assert "The Pocket Lab agent was not restarted." in response.text
+    assert "POCKETLAB_LITE_ALLOW_REJOIN=1" in response.text
+    assert "/api/lite/fleet/agent/bootstrap.env" in response.text
+    assert "/api/lite/fleet/agent/bootstrap-blocked" in response.text
+
+
+def test_lite_bootstrap_script_preview_does_not_consume_invite(monkeypatch):
+    from api_fastapi.services import lite_invites
+
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.91:8443")
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Preview Guard Phone"},
+    )
+    assert created.status_code == 202
+    invite = created.json()["invite"]
+    token = _token_from_url(invite["bootstrap_url"])
+    script_path = invite["bootstrap_url"].split("http://100.64.0.91:8443", 1)[1]
+
+    response = api.get(script_path, headers={"accept": "*/*", "user-agent": "curl/termux"})
+
+    assert response.status_code == 200
+    status, _record = lite_invites.invite_token_status(token, role="compute")
+    assert status == "valid"
+
+
+def test_lite_bootstrap_blocked_records_audit_without_consuming_invite(monkeypatch):
+    from api_fastapi import deps
+    from api_fastapi.services import lite_invites
+
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.92:8443")
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Wrong Phone Invite"},
+    )
+    assert created.status_code == 202
+    token = _token_from_url(created.json()["invite"]["bootstrap_url"])
+
+    blocked = api.post(
+        "/api/lite/fleet/agent/bootstrap-blocked",
+        json={
+            "role": "compute",
+            "token": token,
+            "existing_node_id": "secondary-phone8-test",
+            "existing_node_name": "Secondary-Phone8-Test",
+            "intended_node_id": "wrong-phone-invite",
+            "intended_node_name": "Wrong Phone Invite",
+        },
+    )
+
+    assert blocked.status_code == 200
+    assert blocked.json()["status"] == "blocked"
+    status, _record = lite_invites.invite_token_status(token, role="compute")
+    assert status == "valid"
+    audit = deps.core.read_json_file(deps.settings().state_dir / "fleet_invite_audit.json", {})
+    assert audit["events"][0]["event_type"] == "pocketlab.audit.fleet.bootstrap_blocked"
+    assert audit["events"][0]["existing_node_id"] == "secondary-phone8-test"
+
+
+def test_lite_bootstrap_accept_consumes_invite_and_returns_env(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.93:8443")
+    monkeypatch.setenv("POCKETLAB_LITE_PUBLIC_NATS_URL", "nats://100.64.0.93:4222")
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "storage", "hostname": "Accepted Guard Phone"},
+    )
+    assert created.status_code == 202
+    token = _token_from_url(created.json()["invite"]["bootstrap_url"])
+
+    accepted = api.post(
+        "/api/lite/fleet/agent/bootstrap.env",
+        json={"role": "storage", "token": token},
+        headers={"host": "100.64.0.93:8443"},
+    )
+
+    assert accepted.status_code == 200
+    assert 'export POCKETLAB_NODE_ID="accepted-guard-phone"' in accepted.text
+    assert 'export POCKETLAB_NATS_URL="nats://100.64.0.93:4222"' in accepted.text
+
+    reused = api.post(
+        "/api/lite/fleet/agent/bootstrap.env",
+        json={"role": "storage", "token": token},
+    )
+    assert reused.status_code == 410

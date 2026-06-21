@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import shlex
 from fastapi import APIRouter, HTTPException, Request, Response
 
 from .. import deps
@@ -524,20 +525,43 @@ async def create_fleet_join(
 
 
 
-@router.get("/api/lite/fleet/agent/bootstrap.sh")
-def lite_fleet_agent_bootstrap_script(
-    role: str = "compute",
-    token: str = "",
-    request: Request = None,
-):
-    """Lite-friendly token-gated device bootstrap script.
+@router.post("/api/lite/fleet/agent/bootstrap-blocked")
+def lite_fleet_agent_bootstrap_blocked(payload: dict | None = None):
+    """Record a token-gated audit event when a device refuses a mismatched invite."""
+    payload = payload or {}
+    token = str(payload.get("token") or "").strip()
+    role = str(payload.get("role") or "compute").strip() or "compute"
+    if not token:
+        raise HTTPException(status_code=400, detail="Missing invite token")
 
-    This route intentionally lives in the fleet router so it is loaded with the
-    existing fleet/join runtime. Browser-safe invite cards can point users to a
-    friendly link, while Termux/curl consumes this shell endpoint.
-    """
-    role = (role or "compute").strip() or "compute"
-    token = (token or "").strip()
+    status, invite = lite_invites.invite_token_status(token, role=role)
+    if status not in {"valid", "used"} or not invite:
+        raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
+
+    event = lite_invites.append_bootstrap_blocked_evidence(
+        invite,
+        existing_node_id=str(payload.get("existing_node_id") or ""),
+        existing_node_name=str(payload.get("existing_node_name") or ""),
+        intended_node_id=str(payload.get("intended_node_id") or invite.get("node_id") or ""),
+        intended_node_name=str(payload.get("intended_node_name") or invite.get("hostname") or ""),
+        reason=str(payload.get("reason") or "Device already has a different Pocket Lab Lite identity."),
+        requested_by="lite-bootstrap",
+    )
+    return {
+        "status": "blocked",
+        "message": "Existing device identity was preserved. Invite was not applied on this phone.",
+        "event_type": event.get("event_type"),
+        "existing_node_id": event.get("existing_node_id"),
+        "intended_node_id": event.get("intended_node_id"),
+    }
+
+
+@router.post("/api/lite/fleet/agent/bootstrap.env")
+def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request = None):
+    """Consume a Lite invite only after the joining device passes local identity checks."""
+    payload = payload or {}
+    role = str(payload.get("role") or "compute").strip() or "compute"
+    token = str(payload.get("token") or "").strip()
     if not token:
         raise HTTPException(status_code=400, detail="Missing invite token")
 
@@ -597,7 +621,47 @@ def lite_fleet_agent_bootstrap_script(
         f"export POCKETLAB_NATS_USER={json.dumps(nats_user)}",
         f"export POCKETLAB_NATS_PASSWORD={json.dumps(nats_password)}",
     ]
-    env_body = "\n".join(env_lines)
+    return Response(content="\n".join(env_lines) + "\n", media_type="text/plain; charset=utf-8")
+
+
+@router.get("/api/lite/fleet/agent/bootstrap.sh")
+def lite_fleet_agent_bootstrap_script(
+    role: str = "compute",
+    token: str = "",
+    request: Request = None,
+):
+    """Lite-friendly token-gated device bootstrap script.
+
+    The script performs a local identity guard before the invite is consumed.
+    This prevents an already-enrolled phone from accidentally overwriting its
+    local agent identity with a different invite.
+    """
+    role = (role or "compute").strip() or "compute"
+    token = (token or "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Missing invite token")
+
+    status, invite = lite_invites.invite_token_status(token, role=role)
+    if status == "expired":
+        raise HTTPException(status_code=410, detail="Invite token has expired")
+    if status == "used":
+        raise HTTPException(status_code=410, detail="Invite token has already been used")
+    if status != "valid" or not invite:
+        raise HTTPException(status_code=403, detail=f"Invite token is invalid: {status}")
+
+    hostname = str(invite.get("hostname") or invite.get("node_id") or "pocket-lite-device")
+    role = str(invite.get("role") or role)
+    node_id = fleet_registry.normalize_node_id(hostname)
+    node_name = hostname
+
+    request_base = str(request.base_url).rstrip("/") if request is not None else ""
+    accept_url = f"{request_base}/api/lite/fleet/agent/bootstrap.env"
+    blocked_url = f"{request_base}/api/lite/fleet/agent/bootstrap-blocked"
+    accept_payload_arg = shlex.quote(json.dumps({"role": role, "token": token}))
+    preview_nats_url = _public_nats_url_for_invite(
+        request,
+        os.environ.get("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222"),
+    )
 
     bash_script = f"""#!/usr/bin/env bash
 set -Eeuo pipefail
@@ -607,18 +671,92 @@ echo "Device name: {node_name}"
 echo "Device role: {role}"
 echo "Node id: {node_id}"
 echo ""
+# The token-gated accept step returns: export POCKETLAB_NATS_URL={json.dumps(preview_nats_url)}
+
+ENV_FILE="$HOME/.pocketlab-lite-agent.env"
+INTENDED_NODE_ID={shlex.quote(node_id)}
+INTENDED_NODE_NAME={shlex.quote(node_name)}
+INVITE_ROLE={shlex.quote(role)}
+INVITE_TOKEN={shlex.quote(token)}
+ACCEPT_URL={shlex.quote(accept_url)}
+BLOCKED_URL={shlex.quote(blocked_url)}
+ALLOW_REJOIN="${{POCKETLAB_LITE_ALLOW_REJOIN:-${{POCKETLAB_LITE_REPAIR:-0}}}}"
+
+post_blocked_evidence() {{
+  if ! command -v python3 >/dev/null 2>&1; then
+    return 0
+  fi
+  POCKETLAB_BLOCKED_URL="$BLOCKED_URL" \
+  POCKETLAB_BLOCKED_TOKEN="$INVITE_TOKEN" \
+  POCKETLAB_BLOCKED_ROLE="$INVITE_ROLE" \
+  POCKETLAB_EXISTING_NODE_ID="${{EXISTING_NODE_ID:-}}" \
+  POCKETLAB_EXISTING_NODE_NAME="${{EXISTING_NODE_NAME:-}}" \
+  POCKETLAB_INTENDED_NODE_ID="$INTENDED_NODE_ID" \
+  POCKETLAB_INTENDED_NODE_NAME="$INTENDED_NODE_NAME" \
+  python3 - <<'PYBLOCK' >/dev/null 2>&1 || true
+import json
+import os
+import urllib.request
+payload = {{
+    "token": os.environ.get("POCKETLAB_BLOCKED_TOKEN", ""),
+    "role": os.environ.get("POCKETLAB_BLOCKED_ROLE", "compute"),
+    "existing_node_id": os.environ.get("POCKETLAB_EXISTING_NODE_ID", ""),
+    "existing_node_name": os.environ.get("POCKETLAB_EXISTING_NODE_NAME", ""),
+    "intended_node_id": os.environ.get("POCKETLAB_INTENDED_NODE_ID", ""),
+    "intended_node_name": os.environ.get("POCKETLAB_INTENDED_NODE_NAME", ""),
+    "reason": "Device already has a different Pocket Lab Lite identity.",
+}}
+req = urllib.request.Request(
+    os.environ["POCKETLAB_BLOCKED_URL"],
+    data=json.dumps(payload).encode("utf-8"),
+    headers={{"Content-Type": "application/json"}},
+    method="POST",
+)
+urllib.request.urlopen(req, timeout=5).read()
+PYBLOCK
+}}
+
+if [ -f "$ENV_FILE" ]; then
+  EXISTING_NODE_ID=""
+  EXISTING_NODE_NAME=""
+  set +u
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  EXISTING_NODE_ID="${{POCKETLAB_NODE_ID:-}}"
+  EXISTING_NODE_NAME="${{POCKETLAB_NODE_NAME:-$EXISTING_NODE_ID}}"
+  set -u
+  if [ -n "$EXISTING_NODE_ID" ] && [ "$EXISTING_NODE_ID" != "$INTENDED_NODE_ID" ] && [ "$ALLOW_REJOIN" != "1" ]; then
+    echo "Pocket Lab Lite did not change this phone."
+    echo ""
+    echo "This phone is already connected as: $EXISTING_NODE_NAME ($EXISTING_NODE_ID)"
+    echo "This invite is for: $INTENDED_NODE_NAME ($INTENDED_NODE_ID)"
+    echo ""
+    echo "To protect your setup, the existing agent environment was not overwritten."
+    echo "The Pocket Lab agent was not restarted."
+    echo ""
+    echo "If this is intentional, run the invite again with:"
+    echo "  curl -fsSL '<invite-url>' | POCKETLAB_LITE_ALLOW_REJOIN=1 bash"
+    post_blocked_evidence
+    exit 42
+  fi
+fi
 
 mkdir -p "$HOME/.config/pocket-lab-lite"
+TMP_ENV="$(mktemp)"
+trap 'rm -f "$TMP_ENV"' EXIT
 
-cat > "$HOME/.pocketlab-lite-agent.env" <<'EOF_ENV'
-{env_body}
-EOF_ENV
+curl -fsS -X POST "$ACCEPT_URL" \
+  -H 'Content-Type: application/json' \
+  --data-raw {accept_payload_arg} \
+  > "$TMP_ENV"
+
+install -m 600 "$TMP_ENV" "$ENV_FILE"
 
 echo "Saved agent environment:"
-echo "  $HOME/.pocketlab-lite-agent.env"
+echo "  $ENV_FILE"
 
 set -a
-. "$HOME/.pocketlab-lite-agent.env"
+. "$ENV_FILE"
 set +a
 
 if ! python3 - <<'PYCHECK' >/dev/null 2>&1
@@ -640,11 +778,11 @@ if [ -f "$AGENT_FILE" ]; then
     if command -v pkill >/dev/null 2>&1; then
       pkill -f 'pocketlab_node_agent.py' >/dev/null 2>&1 || true
     fi
-    pm2 start python3 --name "pocketlab-agent-{node_id}" --update-env -- "$AGENT_FILE"
+    pm2 start python3 --name "pocketlab-agent-$POCKETLAB_NODE_ID" --update-env -- "$AGENT_FILE"
     pm2 save >/dev/null 2>&1 || true
-    echo "Node agent started with PM2: pocketlab-agent-{node_id}"
+    echo "Node agent started with PM2: pocketlab-agent-$POCKETLAB_NODE_ID"
   else
-    nohup python3 "$AGENT_FILE" > "$HOME/pocketlab-agent-{node_id}.log" 2>&1 &
+    nohup python3 "$AGENT_FILE" > "$HOME/pocketlab-agent-$POCKETLAB_NODE_ID.log" 2>&1 &
     echo "Node agent started in background."
   fi
 else
@@ -652,7 +790,7 @@ else
   echo "Pocket Lab Lite repo was not found on this device."
   echo "To finish setup, clone the Lite repo on this device, then run:"
   echo "  cd $HOME/pocket-lab-lite/pocket-lab-final-structure/runtime"
-  echo "  source $HOME/.pocketlab-lite-agent.env"
+  echo "  source $ENV_FILE"
   echo "  python3 agents/pocketlab_node_agent.py"
 fi
 

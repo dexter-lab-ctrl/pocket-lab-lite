@@ -581,6 +581,57 @@ def find_invite_identity_conflict(device_name: str | None) -> dict[str, Any] | N
     return None
 
 
+
+
+def append_bootstrap_blocked_evidence(
+    invite: dict[str, Any] | None,
+    *,
+    existing_node_id: str | None = None,
+    existing_node_name: str | None = None,
+    intended_node_id: str | None = None,
+    intended_node_name: str | None = None,
+    reason: str | None = None,
+    requested_by: str = "lite-bootstrap",
+) -> dict[str, Any]:
+    """Record safe local evidence when a device refuses a mismatched invite.
+
+    The payload intentionally avoids raw invite tokens, token hashes, NATS
+    credentials, and backend state paths. It records enough context for the
+    Devices tab/operator to understand that a physical device was already
+    enrolled under a different identity and did not overwrite its local agent
+    environment.
+    """
+    safe_invite = _safe_event_payload(invite or {})
+    event = {
+        "event_type": "pocketlab.events.fleet.bootstrap_blocked",
+        "created_at": _now_iso(),
+        "invite_id": safe_invite.get("invite_id"),
+        "token_hint": safe_invite.get("token_hint"),
+        "role": safe_invite.get("role"),
+        "role_label": safe_invite.get("role_label"),
+        "existing_node_id": normalize_node_id(existing_node_id or ""),
+        "existing_node_name": existing_node_name or existing_node_id or "Unknown device",
+        "intended_node_id": normalize_node_id(intended_node_id or safe_invite.get("hostname") or ""),
+        "intended_node_name": intended_node_name or safe_invite.get("hostname") or "Invited device",
+        "reason": reason or "Device already has a different Pocket Lab Lite identity.",
+        "requested_by": requested_by,
+        "status": "blocked",
+    }
+    for name, item_type in (
+        ("fleet_invite_events.json", "pocketlab.events.fleet.bootstrap_blocked"),
+        ("fleet_invite_audit.json", "pocketlab.audit.fleet.bootstrap_blocked"),
+    ):
+        payload = _read_state(name, {"events": [], "updated_at": None})
+        if not isinstance(payload, dict):
+            payload = {"events": [], "updated_at": None}
+        events = payload.get("events") if isinstance(payload.get("events"), list) else []
+        events.insert(0, {**event, "event_type": item_type})
+        payload["events"] = events[:200]
+        payload["updated_at"] = _now_iso()
+        _write_state(name, payload)
+    return event
+
+
 def latest_invite() -> dict[str, Any] | None:
     payload = _invites_payload()
     valid = [
