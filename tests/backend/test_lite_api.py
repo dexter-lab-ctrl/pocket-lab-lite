@@ -486,43 +486,151 @@ def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
     assert commands["commands"][0]["command"] == "agent.restart"
     assert commands["commands"][0]["node_id"] == "restart-phone"
 
-def test_lite_fleet_stale_agent_renders_offline_connection(tmp_path, monkeypatch):
-    from pocket_lab_runtime.api_fastapi import deps
-    from pocket_lab_runtime.api_fastapi.services import fleet_registry
 
-    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+
+def _use_isolated_runtime_state(tmp_path):
+    from api_fastapi import deps
+
+    state = isolated_state_dir(tmp_path)
+    deps.core.SETTINGS = deps.core.Settings(state_dir=state)
+    return state, deps
+
+
+def test_lite_remove_joining_device_succeeds_and_fleet_no_longer_includes_it(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
     fleet_registry.upsert_agent(
         {
-            "node_id": "stale-phone",
-            "hostname": "Stale Phone",
+            "node_id": "old-phone",
+            "hostname": "Old Phone",
             "role": "compute",
-            "status": "online",
+            "status": "joining",
         },
-        event_type="fleet.node_heartbeat",
+        event_type="fleet.agent_join_started",
     )
 
-    state_path = tmp_path / "fleet_agents.json"
-    state = deps.core.read_json_file(state_path, {})
-    state["agents"]["stale-phone"]["last_seen_epoch"] = 1
-    state["agents"]["stale-phone"]["last_seen_at"] = "2026-01-01T00:00:00Z"
-    deps.core.write_json_file(state_path, state)
+    api = client()
+    before = api.get("/api/lite/fleet")
+    assert before.status_code == 200
+    assert any(item["id"] == "old-phone" for item in before.json()["devices"])
 
-    response = client().get("/api/lite/fleet")
+    response = api.post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "old-phone", "confirm": True, "reason": "Old test device cleanup"},
+    )
+
     assert response.status_code == 200
     payload = response.json()
-    device = next(item for item in payload["devices"] if item["id"] == "stale-phone")
-    assert device["connection"] == "offline"
+    assert payload["status"] == "removed"
+    assert payload["device_id"] == "old-phone"
+    assert payload["removed_device_records"] >= 1
+    assert payload["message"] == "Old device record removed."
+
+    after = api.get("/api/lite/fleet")
+    assert after.status_code == 200
+    assert all(item["id"] != "old-phone" for item in after.json()["devices"])
 
 
-def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
-    from pocket_lab_runtime.api_fastapi import deps
-    from pocket_lab_runtime.api_fastapi.services import fleet_registry
+def test_lite_remove_device_cleans_matching_latest_invite(tmp_path, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.70:8443")
+    _use_isolated_runtime_state(tmp_path)
 
-    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    api = client()
+    created = api.post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Test Phone 5"},
+    )
+    assert created.status_code == 202
+    assert created.json()["status"] == "invite_ready"
+    assert api.get("/api/lite/fleet").json().get("latest_invite") is not None
+
+    response = api.post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "test-phone-5", "confirm": True, "reason": "Old test device cleanup"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["removed_invite_records"] == 1
+    assert api.get("/api/lite/fleet").json().get("latest_invite") is None
+
+
+def test_lite_remove_device_requires_confirm_true(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {"node_id": "confirm-phone", "hostname": "Confirm Phone", "role": "compute", "status": "joining"},
+        event_type="fleet.agent_join_started",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "confirm-phone", "confirm": False},
+    )
+
+    assert response.status_code == 400
+    assert "Confirm removal" in response.text
+
+
+def test_lite_remove_unknown_device_returns_404(tmp_path):
+    _use_isolated_runtime_state(tmp_path)
+
+    response = client().post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "missing-phone", "confirm": True},
+    )
+
+    assert response.status_code == 404
+
+
+def test_lite_remove_server_host_is_blocked(tmp_path):
+    _use_isolated_runtime_state(tmp_path)
+
+    response = client().post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "pocket-lab-lite-server", "confirm": True},
+    )
+
+    assert response.status_code == 409
+    assert "server" in response.text.lower()
+
+
+def test_lite_remove_is_current_device_is_blocked(tmp_path):
+    from api_fastapi import deps
+
+    _use_isolated_runtime_state(tmp_path)
+    deps.core.write_json_file(
+        deps.settings().state_dir / "fleet.json",
+        [
+            {
+                "id": "current-phone",
+                "name": "Current Phone",
+                "role": "compute",
+                "status": "joining",
+                "is_current": True,
+            }
+        ],
+    )
+
+    response = client().post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "current-phone", "confirm": True},
+    )
+
+    assert response.status_code == 409
+    assert "current" in response.text.lower()
+
+
+def test_lite_remove_online_healthy_device_is_protected(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
     fleet_registry.upsert_agent(
         {
-            "node_id": "restart-phone",
-            "hostname": "Restart Phone",
+            "node_id": "online-phone",
+            "hostname": "Online Phone",
             "role": "compute",
             "status": "online",
         },
@@ -530,15 +638,31 @@ def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
     )
 
     response = client().post(
-        "/api/lite/fleet/devices/restart-phone/restart-agent",
-        json={"reason": "test restart"},
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "online-phone", "confirm": True},
     )
-    assert response.status_code == 202
-    payload = response.json()
-    assert payload["accepted"] is True
-    assert payload["node_id"] == "restart-phone"
-    assert payload["command_id"]
 
-    commands = deps.core.read_json_file(tmp_path / "fleet_agent_commands.json", {})
-    assert commands["commands"][0]["command"] == "agent.restart"
-    assert commands["commands"][0]["node_id"] == "restart-phone"
+    assert response.status_code == 409
+    assert "Online devices are protected" in response.text
+
+
+def test_lite_remove_device_writes_audit_evidence(tmp_path):
+    from api_fastapi import deps
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {"node_id": "audit-phone", "hostname": "Audit Phone", "role": "compute", "status": "joining"},
+        event_type="fleet.agent_join_started",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/remove-device",
+        json={"device_id": "audit-phone", "confirm": True, "reason": "Old test device cleanup"},
+    )
+
+    assert response.status_code == 200
+    audit = deps.core.read_json_file(deps.settings().state_dir / "fleet_device_audit.json", {})
+    assert audit["events"][0]["event_type"] == "lite.audit.fleet.device_removed"
+    assert audit["events"][0]["device_id"] == "audit-phone"
+    assert audit["events"][0]["reason"] == "Old test device cleanup"

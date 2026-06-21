@@ -50,6 +50,11 @@ export const liteApi = {
   rotateIdentity: (target, options = {}) => postJson('/api/lite/identity/rotate', { target, ...options }),
   runSecurityScan: (scope = 'local') => postJson('/api/lite/security/scan', { scope }),
   addDevice: (payload = {}) => postJson('/api/lite/fleet/add-device', payload),
+  removeDevice: (deviceId, payload = {}) => postJson('/api/lite/fleet/remove-device', {
+    device_id: deviceId,
+    confirm: true,
+    ...payload,
+  }),
   restartDeviceAgent: (deviceId, payload = {}) => postJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId)}/restart-agent`, payload),
   applyPolicy: (payload = {}) => postJson('/api/lite/policy/apply', payload),
   backupNow: (payload = {}) => postJson('/api/lite/recovery/backup', payload),

@@ -11,6 +11,7 @@ import {
   Network,
   RefreshCw,
   ShieldCheck,
+  Trash2,
   WifiOff,
   X,
 } from 'lucide-react';
@@ -58,6 +59,18 @@ function canRestartDeviceAgent(device) {
   const connection = String(device?.connection || '').toLowerCase();
   const status = String(device?.status || '').toLowerCase();
   return ['offline', 'unknown'].includes(connection) || ['offline', 'degraded', 'stale', 'unhealthy', 'failed'].includes(status);
+}
+
+function canRemoveDevice(device) {
+  const role = String(device?.role || '').toLowerCase();
+  const connection = String(device?.connection || '').toLowerCase();
+  const status = String(device?.status || '').toLowerCase();
+
+  if (!device?.id || device?.is_current || device?.isCurrent) return false;
+  if (role === 'server_host') return false;
+
+  return ['joining', 'waiting', 'offline', 'stale'].includes(connection)
+    || ['joining', 'pending', 'invited', 'offline', 'stale'].includes(status);
 }
 
 
@@ -861,6 +874,8 @@ function DevicesScreen() {
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [restartBusy, setRestartBusy] = useState('');
+  const [removeCandidate, setRemoveCandidate] = useState(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
   const devices = data?.devices || [];
   const latestInvite = invite || data?.latest_invite || null;
   const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
@@ -923,6 +938,27 @@ function DevicesScreen() {
       setActionError(err.message);
     } finally {
       setRestartBusy('');
+    }
+  }
+
+  async function removeOldDevice() {
+    const nodeId = removeCandidate?.id;
+    if (!nodeId) return;
+    setRemoveBusy(true);
+    setActionError(null);
+    setResult(null);
+    try {
+      const response = await liteApi.removeDevice(nodeId, {
+        reason: 'Old device cleanup from Lite Devices tab',
+      });
+      setResult(response);
+      setRemoveCandidate(null);
+      setInvite(null);
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setRemoveBusy(false);
     }
   }
 
@@ -1103,6 +1139,52 @@ function DevicesScreen() {
             />
           ) : null}
 
+          {removeCandidate ? (
+            <GlassCard className="lite-device-remove-panel">
+              <div className="lite-device-remove-panel-head">
+                <div>
+                  <span>Remove old device</span>
+                  <h3>{removeCandidate.name || 'Selected device'}</h3>
+                </div>
+                <button
+                  type="button"
+                  className="lite-device-remove-close"
+                  onClick={() => setRemoveCandidate(null)}
+                  aria-label="Close remove old device confirmation"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <p className="lite-device-remove-copy">
+                This only removes the saved device record. It does not wipe the phone or uninstall Pocket Lab from that device.
+              </p>
+
+              <div className="lite-device-remove-facts">
+                <div><span>Status</span><strong>{deviceStatusLabel(removeCandidate.status)}</strong></div>
+                <div><span>Connection</span><strong>{deviceConnectionLabel(removeCandidate)}</strong></div>
+                <div><span>Role</span><strong>{removeCandidate.role_label || roleLabel(removeCandidate.role)}</strong></div>
+                <div><span>Last seen</span><strong>{formatLiteTime(removeCandidate.last_seen)}</strong></div>
+              </div>
+
+              <ul className="lite-device-remove-safety">
+                <li>This removes the saved record from this Pocket Lab server.</li>
+                <li>It does not wipe the phone.</li>
+                <li>It does not uninstall Pocket Lab.</li>
+                <li>It does not stop a running agent on that device.</li>
+              </ul>
+
+              <div className="lite-device-remove-actions">
+                <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy}>
+                  {removeBusy ? 'Removing...' : 'Confirm removal'}
+                </LiteButton>
+                <LiteButton tone="secondary" onClick={() => setRemoveCandidate(null)} disabled={removeBusy}>
+                  Keep device
+                </LiteButton>
+              </div>
+            </GlassCard>
+          ) : null}
+
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
           <div className="lite-devices-grid">
@@ -1138,16 +1220,28 @@ function DevicesScreen() {
                     </div>
                   </div>
 
-                  {canRestartDeviceAgent(device) ? (
+                  {canRestartDeviceAgent(device) || canRemoveDevice(device) ? (
                     <div className="lite-device-actions">
-                      <LiteButton
-                        tone="secondary"
-                        onClick={() => restartAgent(device)}
-                        disabled={restartBusy === device.id}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        {restartBusy === device.id ? 'Restarting...' : 'Restart agent'}
-                      </LiteButton>
+                      {canRestartDeviceAgent(device) ? (
+                        <LiteButton
+                          tone="secondary"
+                          onClick={() => restartAgent(device)}
+                          disabled={restartBusy === device.id}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          {restartBusy === device.id ? 'Restarting...' : 'Restart agent'}
+                        </LiteButton>
+                      ) : null}
+                      {canRemoveDevice(device) ? (
+                        <LiteButton
+                          tone="danger"
+                          onClick={() => setRemoveCandidate(device)}
+                          disabled={removeBusy}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Remove old device
+                        </LiteButton>
+                      ) : null}
                     </div>
                   ) : null}
 
@@ -1166,7 +1260,7 @@ function DevicesScreen() {
         </section>
       </div>
 
-      <ResultNotice result={latestInvite ? null : result} error={actionError} />
+      <ResultNotice result={result?.status === 'removed' ? result : (latestInvite ? null : result)} error={actionError} />
     </>
   );
 }

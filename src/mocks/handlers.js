@@ -56,17 +56,43 @@ export const handlers = [
   http.get('/api/lite/security', () => HttpResponse.json({ status: 'healthy', summary: 'No critical issues in the current safety summary', findings_count: 0, checks_count: 4, last_checked: new Date().toISOString() })),
   http.get('/api/lite/fleet', () => HttpResponse.json({
     status: 'healthy',
-    devices: [{
-      id: 'local',
-      name: 'This device',
-      status: 'online',
-      last_seen: new Date().toISOString(),
-      remote_access: true,
-      role: 'compute',
-      role_label: 'App Host',
-      capabilities: ['Run apps', 'Report device health'],
-    }],
-    count: 1,
+    devices: [
+      {
+        id: 'pocket-lab-lite-server',
+        name: 'Pocket Lab Lite Server',
+        status: 'healthy',
+        connection: 'online',
+        last_seen: new Date().toISOString(),
+        remote_access: true,
+        role: 'server_host',
+        role_label: 'Server Host',
+        is_current: true,
+        capabilities: ['Run control plane', 'Serve Lite UI'],
+      },
+      {
+        id: 'test-phone-2',
+        name: 'Test-Phone-2',
+        status: 'joining',
+        connection: 'joining',
+        last_seen: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+        remote_access: false,
+        role: 'compute',
+        role_label: 'App Host',
+        capabilities: ['Run apps', 'Report device health'],
+      },
+      {
+        id: 'test-phone-4',
+        name: 'Test-Phone-4',
+        status: 'healthy',
+        connection: 'online',
+        last_seen: new Date().toISOString(),
+        remote_access: false,
+        role: 'compute',
+        role_label: 'App Host',
+        capabilities: ['Run apps', 'Report device health'],
+      },
+    ],
+    count: 3,
     roles: [
       { role: 'compute', role_label: 'App Host', description: 'Runs apps and services for your Pocket Lab.' },
       { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' },
@@ -90,6 +116,22 @@ export const handlers = [
     node_id: params.nodeId,
     command_id: 'mock-restart-agent',
   }, { status: 202 })),
+  http.post('/api/lite/fleet/remove-device', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    if (!body.device_id) return HttpResponse.json({ detail: 'Choose a device to remove.' }, { status: 400 });
+    if (!body.confirm) return HttpResponse.json({ detail: 'Confirm removal before removing a saved device record.' }, { status: 400 });
+    if (body.device_id === 'pocket-lab-lite-server') return HttpResponse.json({ detail: 'Cannot remove the current Pocket Lab Lite server device.' }, { status: 409 });
+    if (body.device_id === 'test-phone-4') return HttpResponse.json({ detail: 'Online devices are protected.' }, { status: 409 });
+    return HttpResponse.json({
+      status: 'removed',
+      device_id: body.device_id,
+      removed_device_records: 1,
+      removed_invite_records: 1,
+      message: 'Old device record removed.',
+      summary: 'Old device record removed. The phone was not wiped and Pocket Lab was not uninstalled from that device.',
+      updated_at: new Date().toISOString(),
+    });
+  }),
   http.post('/api/lite/fleet/add-device', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     const role = body.role === 'storage' ? 'storage' : 'compute';
