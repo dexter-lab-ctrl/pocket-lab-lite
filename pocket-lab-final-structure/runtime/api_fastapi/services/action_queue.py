@@ -47,6 +47,26 @@ def worker_execution_enabled() -> bool:
     return True
 
 
+async def ensure_worker_execution_ready() -> bool:
+    mode = worker_mode()
+    if mode in {"0", "false", "no", "off", "direct", "inprocess"}:
+        return worker_execution_enabled()
+    if not BUS.connected:
+        try:
+            await BUS.start()
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": "NATS/JetStream is required for write operations and is not connected",
+                    "execution_mode": "unavailable",
+                    "detail": str(exc),
+                    "bus": BUS.status(),
+                },
+            ) from exc
+    return worker_execution_enabled()
+
+
 async def _publish_with_reconnect(subject: str, event_type: str, payload: Dict[str, Any], *, trace_id: str | None = None) -> None:
     try:
         await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
@@ -98,7 +118,7 @@ async def submit_operation_command(
     command.  The worker owns execution.  Production mode fails closed when
     NATS/JetStream is unavailable.
     """
-    worker_execution_enabled()
+    await ensure_worker_execution_ready()
     submitted = deps.operation_service().submit_queued(op_request)
     command = operation_command_payload(submitted, raw)
     await BUS.publish_json(
@@ -141,7 +161,7 @@ async def submit_domain_command(
     payload.setdefault("command_id", command_id)
     payload.setdefault("trace_id", trace_id or command_id)
 
-    worker_execution_enabled()
+    await ensure_worker_execution_ready()
     try:
         await _publish_with_reconnect(subject, event_type, payload, trace_id=payload["trace_id"])
         await _publish_with_reconnect(
@@ -177,7 +197,7 @@ async def submit_runbook_command(raw: Dict[str, Any]) -> Dict[str, Any]:
     FastAPI validates and publishes only. The worker owns execution and each
     runbook step is executed as a typed operation inside the worker boundary.
     """
-    worker_execution_enabled()
+    await ensure_worker_execution_ready()
     command = runbook_command_payload(raw)
     await BUS.publish_json(
         "pocketlab.events.runbook.queued",
@@ -234,7 +254,7 @@ def runbook_rejection_payload(raw: Dict[str, Any]) -> Dict[str, Any]:
 
 async def submit_runbook_approval(raw: Dict[str, Any]) -> Dict[str, Any]:
     """Submit a runbook approval request through durable NATS/JetStream."""
-    worker_execution_enabled()
+    await ensure_worker_execution_ready()
     command = runbook_approval_payload(raw)
 
     await BUS.publish_json(
@@ -264,7 +284,7 @@ async def submit_runbook_approval(raw: Dict[str, Any]) -> Dict[str, Any]:
 
 async def submit_runbook_rejection(raw: Dict[str, Any]) -> Dict[str, Any]:
     """Submit a runbook rejection request through durable NATS/JetStream."""
-    worker_execution_enabled()
+    await ensure_worker_execution_ready()
     command = runbook_rejection_payload(raw)
 
     await BUS.publish_json(

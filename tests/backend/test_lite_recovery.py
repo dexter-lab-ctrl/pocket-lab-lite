@@ -172,12 +172,22 @@ def test_lite_recovery_pending_backup_is_visible_until_worker_finishes(tmp_path,
 def test_lite_backup_queue_failure_does_not_create_pending_state(tmp_path, monkeypatch):
     _install_fake_restic(tmp_path, monkeypatch)
     from api_fastapi.services import lite_backup
+    from api_fastapi.services.nats_bus import BUS
+
+    BUS.connected = False
+    BUS.nc = None
+    BUS.js = None
+
+    async def fail_start():
+        raise RuntimeError("unit-test NATS unavailable")
+
+    monkeypatch.setattr(BUS, "start", fail_start)
 
     response = client().post(
         "/api/lite/recovery/backup",
         json={"include_app_data": False, "reason": "queue-failure-test"},
     )
-    assert response.status_code in {403, 503}
+    assert response.status_code == 503
     assert lite_backup.pending_backup() is None
 
 
