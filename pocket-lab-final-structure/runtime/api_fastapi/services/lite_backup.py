@@ -100,10 +100,20 @@ def _restic_binary() -> str | None:
 
 
 def _run_restic(
-    args: list[str], *, env: dict[str, str], timeout: int = 180
+    args: list[str],
+    *,
+    env: dict[str, str],
+    timeout: int = 180,
+    cwd: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        args, check=False, capture_output=True, text=True, env=env, timeout=timeout
+        args,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=timeout,
+        cwd=str(cwd) if cwd else None,
     )
 
 
@@ -264,6 +274,34 @@ def _copy_sources_to_staging(backup_id: str, staging_root: Path) -> list[dict[st
     return copied
 
 
+def _record_backup_failure(backup_id: str, *, reason: str, include_app_data: bool, error: str) -> None:
+    safe_error = str(error or "backup failed").strip()
+    if len(safe_error) > 2000:
+        safe_error = safe_error[:2000] + "..."
+    failed_at = _utc()
+    _write_backup_state(
+        {
+            "pending_backup": {
+                "backup_id": backup_id,
+                "status": "failed",
+                "requested_at": _read_backup_state().get("pending_backup", {}).get("requested_at") or failed_at,
+                "completed_at": failed_at,
+                "reason": reason,
+                "include_app_data": include_app_data,
+                "summary": "Backup failed. See recovery details and worker evidence for the exact error.",
+                "error": safe_error,
+            },
+            "last_backup_error": {
+                "backup_id": backup_id,
+                "status": "failed",
+                "failed_at": failed_at,
+                "error": safe_error,
+            },
+            "updated_at": failed_at,
+        }
+    )
+
+
 def _parse_snapshot_id(stdout: str) -> str | None:
     snapshot_id: str | None = None
     for line in stdout.splitlines():
@@ -317,14 +355,14 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
         backup_args = [
             restic,
             "backup",
-            str(staging_root),
+            ".",
             "--json",
             "--tag",
             "pocket-lab-lite",
             "--tag",
             f"backup-id={backup_id}",
         ]
-        backup_result = _run_restic(backup_args, env=env, timeout=600)
+        backup_result = _run_restic(backup_args, env=env, timeout=600, cwd=staging_root)
         if backup_result.returncode != 0:
             raise RuntimeError(
                 f"restic backup failed: {backup_result.stderr.strip() or backup_result.stdout.strip()}"
@@ -402,6 +440,14 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
             "receipt": lite_backup_manifest.api_receipt(receipt),
             "summary": manifest["summary"],
         }
+    except Exception as exc:
+        _record_backup_failure(
+            backup_id,
+            reason=reason,
+            include_app_data=include_app_data,
+            error=str(exc),
+        )
+        raise
     finally:
         try:
             shutil.rmtree(staging_root)

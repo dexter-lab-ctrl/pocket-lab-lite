@@ -200,3 +200,82 @@ def test_lite_recovery_pending_backup_is_not_reported_as_last_backup(tmp_path, m
     assert payload["last_backup"] is None
     assert payload["last_backup_time"] is None
     assert payload["pending_backup"]["backup_id"] == "queued-backup-003"
+
+
+def test_lite_backup_failure_records_failed_pending_state(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "bin-failing-restic"
+    bin_dir.mkdir()
+    restic = bin_dir / "restic"
+    restic.write_text(
+        """#!/usr/bin/env python3
+import os
+import pathlib
+import sys
+args = sys.argv[1:]
+repo = pathlib.Path(os.environ.get('RESTIC_REPOSITORY', ''))
+if 'init' in args:
+    repo.mkdir(parents=True, exist_ok=True)
+    (repo / 'config').write_text('{}', encoding='utf-8')
+    raise SystemExit(0)
+if 'backup' in args:
+    print('{"message_type":"error","error":{"message":"xattr denied"}}')
+    raise SystemExit(3)
+print('restic 0.16.0')
+raise SystemExit(0)
+""",
+        encoding="utf-8",
+    )
+    restic.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+    from api_fastapi.services import lite_backup
+
+    lite_backup.record_backup_request({"command_id": "test-backup-fail", "reason": "unit-fail"})
+    with pytest.raises(RuntimeError):
+        lite_backup.create_backup({"command_id": "test-backup-fail", "reason": "unit-fail"})
+
+    pending = lite_backup.pending_backup()
+    assert pending is not None
+    assert pending["backup_id"] == "test-backup-fail"
+    assert pending["status"] == "failed"
+    assert "restic backup failed" in pending["error"]
+
+
+def test_lite_backup_uses_relative_restic_source(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "bin-capturing-restic"
+    bin_dir.mkdir()
+    restic = bin_dir / "restic"
+    capture = tmp_path / "restic-capture.json"
+    restic.write_text(
+        f"""#!/usr/bin/env python3
+import json
+import os
+import pathlib
+import sys
+args = sys.argv[1:]
+repo = pathlib.Path(os.environ.get('RESTIC_REPOSITORY', ''))
+if 'init' in args:
+    repo.mkdir(parents=True, exist_ok=True)
+    (repo / 'config').write_text('{{}}', encoding='utf-8')
+    raise SystemExit(0)
+if 'backup' in args:
+    pathlib.Path({str(capture)!r}).write_text(json.dumps({{'args': args, 'cwd': os.getcwd()}}), encoding='utf-8')
+    print(json.dumps({{'message_type': 'summary', 'snapshot_id': 'relative-snapshot'}}))
+    raise SystemExit(0)
+print('restic 0.16.0')
+raise SystemExit(0)
+""",
+        encoding="utf-8",
+    )
+    restic.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+    from api_fastapi import deps
+    from api_fastapi.services import lite_backup
+
+    deps.core.write_json_file(deps.settings().state_dir / "fleet_agents.json", {"agents": {}})
+    lite_backup.create_backup({"command_id": "test-backup-relative", "reason": "unit-relative"})
+
+    captured = __import__("json").loads(capture.read_text(encoding="utf-8"))
+    assert captured["args"][0:2] == ["backup", "."]
+    assert "/data/data" not in captured["args"]
