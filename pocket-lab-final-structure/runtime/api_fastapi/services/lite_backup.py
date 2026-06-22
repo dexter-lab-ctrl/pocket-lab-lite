@@ -7,7 +7,6 @@ import secrets
 import shutil
 import subprocess
 import uuid
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -224,13 +223,17 @@ def recovery_status() -> dict[str, Any]:
         "backup_history": backups,
         "pending_backup": _api_pending_backup(pending) if pending else None,
         "restore_risk": "low" if latest else "none",
-        "pre_restore_checkpoint": {
+        "pre_restore_checkpoint": state.get("pre_restore_checkpoint")
+        or {
             "status": "not_created",
-            "summary": "A checkpoint will be required before restore is implemented.",
+            "summary": "A checkpoint will be created automatically before restore changes local state.",
         },
         "latest_restore_preview": state.get("latest_restore_preview"),
-        "actions": ["backup_now"] + (["verify_backup", "preview_restore"] if latest else []),
-        "planned_actions": ["restore_latest"],
+        "last_restore": state.get("last_restore"),
+        "actions": ["backup_now"]
+        + (["verify_backup", "preview_restore"] if latest else [])
+        + (["restore_latest"] if state.get("latest_restore_preview", {}).get("status") == "ready" else []),
+        "planned_actions": [],
         "updated_at": _utc(),
     }
 
@@ -544,17 +547,18 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
         "snapshot_id": snapshot_id,
         "created_at": created_at,
         "status": "ready" if verified else "needs_verification",
-        "restore_allowed": False,
-        "restore_supported": False,
+        "restore_allowed": bool(verified),
+        "restore_supported": True,
         "verification_status": manifest.get("verification_status", "not_verified"),
         "reason": reason or "manual restore preview",
-        "summary": "Preview ready. Restore execution remains disabled until Increment 4." if verified else "Preview created, but backup must be verified before restore can be enabled.",
+        "summary": "Preview ready. Restore can run only after explicit confirmation and an automatic checkpoint." if verified else "Preview created, but backup must be verified before restore can be enabled.",
         "change_count": len(changes),
         "changes": changes[:500],
         "restic_item_count": len(restic_items),
         "sensitive_items_excluded": manifest.get("excluded_sensitive_items", []),
         "warnings": [
             "Restore execution is not performed by this preview.",
+            "A pre-restore checkpoint will be created before any state file is changed.",
             "Raw secrets remain excluded from this restore point.",
         ],
     }
@@ -580,6 +584,312 @@ def create_restore_preview(backup_id: str = "latest", *, reason: str | None = No
         },
     )
     return preview
+
+
+def restore_checkpoint_path(checkpoint_id: str) -> Path:
+    return backup_layout().restore_checkpoints / f"{checkpoint_id}.json"
+
+
+def restore_run_path(restore_id: str) -> Path:
+    return backup_layout().restore_runs / f"{restore_id}.json"
+
+
+def get_restore_checkpoint(checkpoint_id: str) -> dict[str, Any] | None:
+    path = restore_checkpoint_path(checkpoint_id)
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def get_restore_run(restore_id: str) -> dict[str, Any] | None:
+    path = restore_run_path(restore_id)
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _is_within_path(path: Path, base: Path) -> bool:
+    try:
+        path.resolve().relative_to(base.resolve())
+        return True
+    except Exception:
+        return False
+
+
+def _safe_restore_error(error: Exception | str) -> str:
+    text = str(error or "restore failed").strip()
+    if len(text) > 2000:
+        text = text[:2000] + "..."
+    return text
+
+
+def _manifest_file_by_relative_path(manifest: dict[str, Any], relative_path: str) -> dict[str, Any] | None:
+    wanted = str(relative_path or "").lstrip("/")
+    for item in manifest.get("included_files") or []:
+        if str(item.get("relative_path") or item.get("source") or "").lstrip("/") == wanted:
+            return item
+    return None
+
+
+def _restored_source_for(restored_root: Path, relative_path: str) -> Path | None:
+    rel = Path(str(relative_path or "").lstrip("/"))
+    candidate = restored_root / rel
+    if candidate.exists() and candidate.is_file():
+        return candidate
+    wanted = rel.parts
+    if not wanted:
+        return None
+    for item in restored_root.rglob(rel.name):
+        if not item.is_file():
+            continue
+        parts = item.relative_to(restored_root).parts
+        if len(parts) >= len(wanted) and parts[-len(wanted):] == wanted:
+            return item
+    return None
+
+
+def _create_pre_restore_checkpoint(preview: dict[str, Any], *, restore_id: str, reason: str) -> dict[str, Any]:
+    checkpoint_id = f"checkpoint-{restore_id}-{uuid.uuid4().hex[:12]}"
+    layout = backup_layout()
+    checkpoint_dir = layout.restore_checkpoints / checkpoint_id
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    state_dir = deps.settings().state_dir
+    files: list[dict[str, Any]] = []
+    skipped = 0
+    for change in preview.get("changes") or []:
+        rel = str(change.get("relative_path") or "")
+        if not rel.startswith("state/"):
+            skipped += 1
+            continue
+        target = _target_for_backup_path(rel)
+        if not target or not _is_within_path(target, state_dir):
+            skipped += 1
+            continue
+        entry: dict[str, Any] = {
+            "relative_path": rel,
+            "target": "Lite state",
+            "current_exists": target.exists(),
+        }
+        if target.exists() and target.is_file():
+            checkpoint_file = checkpoint_dir / rel
+            checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(target, checkpoint_file)
+            entry.update(
+                {
+                    "checkpoint_relative_path": str(checkpoint_file.relative_to(checkpoint_dir)),
+                    "size_bytes": checkpoint_file.stat().st_size,
+                    "sha256": _sha256(checkpoint_file),
+                }
+            )
+        files.append(entry)
+    created_at = _utc()
+    checkpoint = {
+        "checkpoint_id": checkpoint_id,
+        "restore_id": restore_id,
+        "backup_id": preview.get("backup_id"),
+        "preview_id": preview.get("preview_id"),
+        "status": "created",
+        "created_at": created_at,
+        "reason": reason,
+        "file_count": len([item for item in files if item.get("checkpoint_relative_path")]),
+        "tracked_change_count": len(files),
+        "skipped_change_count": skipped,
+        "files": files,
+        "summary": "Pre-restore checkpoint created before changing Lite state.",
+    }
+    restore_checkpoint_path(checkpoint_id).write_text(
+        json.dumps(checkpoint, indent=2, sort_keys=True, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    _write_backup_state(
+        {
+            "pre_restore_checkpoint": {
+                "status": "created",
+                "checkpoint_id": checkpoint_id,
+                "restore_id": restore_id,
+                "backup_id": preview.get("backup_id"),
+                "preview_id": preview.get("preview_id"),
+                "created_at": created_at,
+                "file_count": checkpoint["file_count"],
+                "summary": checkpoint["summary"],
+            }
+        }
+    )
+    return checkpoint
+
+
+def _record_restore_run(restore_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    restore_run_path(restore_id).write_text(
+        json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return payload
+
+
+def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
+    restore_id = _command_id(command)
+    preview_id = str(command.get("preview_id") or "").strip()
+    requested_backup = str(command.get("backup_id") or "latest").strip() or "latest"
+    reason = str(command.get("reason") or "manual restore")
+    if not command.get("confirm"):
+        raise RuntimeError("Restore requires explicit confirmation")
+    if not preview_id:
+        raise RuntimeError("Restore requires a restore preview id")
+    preview = get_restore_preview(preview_id)
+    if not preview:
+        raise RuntimeError("Restore preview was not found")
+    if preview.get("status") != "ready" or preview.get("verification_status") != "verified":
+        raise RuntimeError("Restore preview is not ready. Verify backup and create Preview Restore first.")
+    if not preview.get("restore_allowed") or not preview.get("restore_supported"):
+        raise RuntimeError("Restore preview is not marked as restorable. Recreate Preview Restore after Increment 4.")
+    backup_id = str(preview.get("backup_id") or "")
+    resolved = lite_backup_manifest.resolve_backup_id(requested_backup)
+    if requested_backup != "latest" and resolved != backup_id:
+        raise RuntimeError("Restore preview does not match the requested backup id")
+    manifest = lite_backup_manifest.read_manifest(backup_id)
+    if not manifest:
+        raise RuntimeError("Backup manifest was not found")
+    if manifest.get("verification_status") != "verified":
+        raise RuntimeError("Backup must be verified before restore")
+    snapshot_id = str(manifest.get("snapshot_id") or "").strip()
+    if snapshot_id != str(preview.get("snapshot_id") or "").strip():
+        raise RuntimeError("Restore preview snapshot does not match the backup manifest")
+    restic = _restic_binary()
+    if not restic:
+        raise RuntimeError("restic is required for Lite restore but was not found in PATH")
+
+    started_at = _utc()
+    layout = backup_layout()
+    layout.ensure()
+    restore_root = layout.staging / f"restore-{restore_id}"
+    if restore_root.exists():
+        shutil.rmtree(restore_root)
+    restore_root.mkdir(parents=True, exist_ok=True)
+    checkpoint: dict[str, Any] | None = None
+    restored_files: list[dict[str, Any]] = []
+    skipped_changes: list[dict[str, Any]] = []
+    try:
+        checkpoint = _create_pre_restore_checkpoint(preview, restore_id=restore_id, reason=reason)
+        restore_result = _run_restic(
+            [restic, "restore", snapshot_id, "--target", str(restore_root)],
+            env=_restic_env(layout),
+            timeout=600,
+        )
+        if restore_result.returncode != 0:
+            raise RuntimeError(f"restic restore failed: {_safe_restic_error(restore_result.stderr or restore_result.stdout)}")
+        state_dir = deps.settings().state_dir
+        for change in preview.get("changes") or []:
+            rel = str(change.get("relative_path") or "")
+            if not rel.startswith("state/"):
+                skipped_changes.append({"relative_path": rel, "reason": "metadata_only"})
+                continue
+            target = _target_for_backup_path(rel)
+            if not target or not _is_within_path(target, state_dir):
+                skipped_changes.append({"relative_path": rel, "reason": "target_not_allowed"})
+                continue
+            source = _restored_source_for(restore_root, rel)
+            if not source:
+                skipped_changes.append({"relative_path": rel, "reason": "not_found_in_restored_snapshot"})
+                continue
+            manifest_file = _manifest_file_by_relative_path(manifest, rel)
+            expected_sha = str((manifest_file or {}).get("sha256") or "")
+            source_sha = _sha256(source)
+            if expected_sha and source_sha != expected_sha:
+                raise RuntimeError(f"Restored file checksum mismatch for {rel}")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            tmp_target = target.with_name(f".{target.name}.restore-{restore_id}.tmp")
+            shutil.copy2(source, tmp_target)
+            tmp_target.replace(target)
+            restored_files.append(
+                {
+                    "relative_path": rel,
+                    "target": "Lite state",
+                    "size_bytes": target.stat().st_size,
+                    "sha256": _sha256(target),
+                    "action": change.get("action") or "restored",
+                }
+            )
+        completed_at = _utc()
+        result = {
+            "status": "succeeded",
+            "restore_id": restore_id,
+            "backup_id": backup_id,
+            "preview_id": preview_id,
+            "snapshot_id": snapshot_id,
+            "checkpoint_id": checkpoint.get("checkpoint_id") if checkpoint else None,
+            "started_at": started_at,
+            "completed_at": completed_at,
+            "restored_file_count": len(restored_files),
+            "skipped_change_count": len(skipped_changes),
+            "restored_files": restored_files[:500],
+            "skipped_changes": skipped_changes[:500],
+            "summary": f"Restore completed. {len(restored_files)} Lite state file(s) restored after checkpoint creation.",
+            "evidence_references": [
+                "pocketlab.events.lite.restore.started",
+                "pocketlab.events.lite.restore.checkpoint_created",
+                "pocketlab.events.lite.restore.completed",
+                "pocketlab.audit.lite.restore.completed",
+            ],
+        }
+        _record_restore_run(restore_id, result)
+        _write_backup_state(
+            {
+                "pending_backup": None,
+                "last_restore": {
+                    "status": "succeeded",
+                    "restore_id": restore_id,
+                    "backup_id": backup_id,
+                    "preview_id": preview_id,
+                    "checkpoint_id": result["checkpoint_id"],
+                    "completed_at": completed_at,
+                    "restored_file_count": len(restored_files),
+                    "summary": result["summary"],
+                },
+            }
+        )
+        return result
+    except Exception as exc:
+        failed_at = _utc()
+        result = {
+            "status": "failed",
+            "restore_id": restore_id,
+            "backup_id": preview.get("backup_id"),
+            "preview_id": preview_id,
+            "checkpoint_id": checkpoint.get("checkpoint_id") if checkpoint else None,
+            "started_at": started_at,
+            "failed_at": failed_at,
+            "error": _safe_restore_error(exc),
+            "summary": "Restore failed. The pre-restore checkpoint remains available for recovery." if checkpoint else "Restore failed before checkpoint creation.",
+        }
+        _record_restore_run(restore_id, result)
+        _write_backup_state(
+            {
+                "last_restore": {
+                    "status": "failed",
+                    "restore_id": restore_id,
+                    "backup_id": preview.get("backup_id"),
+                    "preview_id": preview_id,
+                    "checkpoint_id": result["checkpoint_id"],
+                    "failed_at": failed_at,
+                    "error": result["error"],
+                    "summary": result["summary"],
+                }
+            }
+        )
+        raise
+    finally:
+        try:
+            shutil.rmtree(restore_root)
+        except Exception:
+            pass
 
 
 def create_backup(command: dict[str, Any]) -> dict[str, Any]:

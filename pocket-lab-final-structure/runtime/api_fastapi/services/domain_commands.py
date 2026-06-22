@@ -590,7 +590,7 @@ async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]
             "backup_id": result.get("backup_id"),
             "preview_id": result.get("preview_id"),
             "change_count": result.get("change_count"),
-            "restore_allowed": False,
+            "restore_allowed": result.get("restore_allowed"),
         },
         trace_id=command_id,
     )
@@ -598,6 +598,76 @@ async def handle_lite_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]
         "pocketlab.audit.lite.restore.preview_created",
         "lite.restore.preview_created",
         {"command_id": command_id, "backup_id": result.get("backup_id"), "preview_id": result.get("preview_id")},
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    backup_id = str(command.get("backup_id") or "latest")
+    preview_id = str(command.get("preview_id") or "")
+    await _publish(
+        "pocketlab.events.lite.restore.started",
+        "lite.restore.started",
+        {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id},
+        trace_id=command_id,
+    )
+    from . import lite_backup
+
+    try:
+        result = await asyncio.to_thread(lite_backup.apply_restore, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.restore.failed",
+            "lite.restore.failed",
+            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "error": str(exc)},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.restore.failed",
+            "lite.restore.failed",
+            {"command_id": command_id, "backup_id": backup_id, "preview_id": preview_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+    checkpoint_id = result.get("checkpoint_id")
+    await _publish(
+        "pocketlab.events.lite.restore.checkpoint_created",
+        "lite.restore.checkpoint_created",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "preview_id": result.get("preview_id"),
+            "checkpoint_id": checkpoint_id,
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.events.lite.restore.completed",
+        "lite.restore.completed",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "preview_id": result.get("preview_id"),
+            "checkpoint_id": checkpoint_id,
+            "restored_file_count": result.get("restored_file_count"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.restore.completed",
+        "lite.restore.completed",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "preview_id": result.get("preview_id"),
+            "checkpoint_id": checkpoint_id,
+            "restored_file_count": result.get("restored_file_count"),
+        },
         trace_id=command_id,
     )
     return result
@@ -629,6 +699,7 @@ HANDLERS = {
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
     "pocketlab.commands.lite.backup.verify": handle_lite_backup_verify,
     "pocketlab.commands.lite.restore.preview": handle_lite_restore_preview,
+    "pocketlab.commands.lite.restore.apply": handle_lite_restore_apply,
 }
 
 

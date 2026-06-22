@@ -1647,6 +1647,7 @@ function RecoveryScreen() {
   const [backupResult, setBackupResult] = useState(null);
   const [verifyResult, setVerifyResult] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
+  const [restoreResult, setRestoreResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState('');
 
@@ -1698,8 +1699,32 @@ function RecoveryScreen() {
     }
   }
 
+  async function restoreLatestBackup() {
+    if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
+    const confirmed = window.confirm('Restore will change local Lite state. Pocket Lab will create a checkpoint first. Continue?');
+    if (!confirmed) return;
+    setBusy('restore');
+    setRestoreResult(null);
+    setActionError(null);
+    try {
+      setRestoreResult(await liteApi.restoreBackup({
+        backup_id: latestBackup.backup_id,
+        preview_id: latestPreview.preview_id,
+        confirm: true,
+      }));
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
   const latestBackupVerified = latestBackup?.verification_status === 'verified';
   const latestPreview = data?.latest_restore_preview || null;
+  const latestPreviewReady = latestPreview?.status === 'ready';
+  const lastRestore = data?.last_restore || null;
+  const checkpoint = data?.pre_restore_checkpoint || null;
 
   return (
     <>
@@ -1784,6 +1809,15 @@ function RecoveryScreen() {
           tone="healthy"
           title="Restore preview queued"
           description={previewResult.summary || 'Pocket Lab is preparing a restore preview without changing local state.'}
+          className="mb-5"
+        />
+      ) : null}
+
+      {restoreResult ? (
+        <StateSurface
+          tone="healthy"
+          title="Restore queued"
+          description={restoreResult.summary || 'Pocket Lab will create a checkpoint before applying the restore.'}
           className="mb-5"
         />
       ) : null}
@@ -1880,12 +1914,14 @@ function RecoveryScreen() {
 
           <h2>Restore Latest</h2>
           <p>
-            Verify the backup, then preview what would change. Restore execution stays disabled until the next increment.
+            Verify the backup, preview what would change, then restore only after clear confirmation.
           </p>
 
           <div className="lite-recovery-warning-note">
             <strong>{latestBackupVerified ? 'Backup verified' : 'Verification required'}</strong>
             <span>{latestPreview ? `Latest preview checks ${latestPreview.change_count || 0} item(s).` : 'Pocket Lab will check the backup and show what changes before restoring.'}</span>
+            {checkpoint?.checkpoint_id ? <span>Checkpoint ready: {checkpoint.checkpoint_id}</span> : null}
+            {lastRestore?.status ? <span>Last restore: {lastRestore.status}</span> : null}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -1895,7 +1931,9 @@ function RecoveryScreen() {
             <LiteButton disabled={!latestBackup || busy === 'preview'} tone="secondary" onClick={previewLatestRestore}>
               {busy === 'preview' ? 'Preparing preview...' : 'Preview Restore'}
             </LiteButton>
-            <LiteButton disabled tone="danger">Restore Latest</LiteButton>
+            <LiteButton disabled={!latestBackupVerified || !latestPreviewReady || busy === 'restore'} tone="danger" onClick={restoreLatestBackup}>
+              {busy === 'restore' ? 'Starting restore...' : 'Restore Latest'}
+            </LiteButton>
           </div>
         </GlassCard>
       </div>

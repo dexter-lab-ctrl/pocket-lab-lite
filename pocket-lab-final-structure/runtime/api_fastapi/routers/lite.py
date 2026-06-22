@@ -440,7 +440,31 @@ def get_lite_restore_preview(preview_id: str, request: Request) -> dict[str, Any
     return preview
 
 
-@router.post("/recovery/restore", status_code=501)
+@router.get("/recovery/restore/checkpoints/{checkpoint_id}")
+def get_lite_restore_checkpoint(checkpoint_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    checkpoint = lite_backup.get_restore_checkpoint(checkpoint_id)
+    if not checkpoint:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Restore checkpoint was not found."},
+        )
+    return checkpoint
+
+
+@router.get("/recovery/restore/runs/{restore_id}")
+def get_lite_restore_run(restore_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    restore_run = lite_backup.get_restore_run(restore_id)
+    if not restore_run:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Restore run was not found."},
+        )
+    return restore_run
+
+
+@router.post("/recovery/restore", status_code=202)
 async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
     if not payload.confirm:
@@ -451,12 +475,44 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
                 "summary": "Restore can change local state. Confirm the restore before running it.",
             },
         )
-    raise HTTPException(
-        status_code=501,
-        detail={
-            "status": "restore_not_implemented",
-            "summary": "Restore is protected and will be enabled after backup creation, verification, and restore preview are validated.",
-            "required_next_steps": ["Verify Backup", "Preview Restore", "Confirm Restore"],
+    if not payload.preview_id:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "preview_required",
+                "summary": "Run Preview Restore and include the preview id before restoring.",
+            },
+        )
+    preview = lite_backup.get_restore_preview(payload.preview_id)
+    if not preview:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "preview_not_found", "summary": "Restore preview was not found."},
+        )
+    if preview.get("status") != "ready" or not preview.get("restore_allowed"):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "preview_not_ready",
+                "summary": "Create a verified Preview Restore before restoring.",
+            },
+        )
+    command_id = uuid.uuid4().hex
+    selected = payload.backup_id or payload.backup_ref or "latest"
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.restore.apply",
+        "lite.restore.apply_queued",
+        {
+            "command_id": command_id,
+            "backup_id": selected,
+            "preview_id": payload.preview_id,
+            "confirm": True,
+            "reason": "manual confirmed restore",
+            "requested_by": "lite-api",
         },
     )
+    submitted["backup_id"] = selected
+    submitted["preview_id"] = payload.preview_id
+    submitted["summary"] = "Restore queued. Pocket Lab will create a pre-restore checkpoint before changing Lite state."
+    return submitted
 

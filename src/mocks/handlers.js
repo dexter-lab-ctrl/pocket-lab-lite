@@ -123,9 +123,11 @@ export const handlers = [
     available_restore_points: [
       { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
     ],
-    latest_restore_preview: null,
-    actions: ['backup_now', 'verify_backup', 'preview_restore'],
-    planned_actions: ['restore_latest'],
+    latest_restore_preview: { preview_id: 'mock-preview-001', backup_id: 'mock-backup-001', status: 'ready', change_count: 2 },
+    pre_restore_checkpoint: { status: 'not_created', summary: 'A checkpoint will be created automatically before restore changes local state.' },
+    last_restore: null,
+    actions: ['backup_now', 'verify_backup', 'preview_restore', 'restore_latest'],
+    planned_actions: [],
     updated_at: new Date().toISOString(),
   })),
   http.get('/api/lite/recovery/backups', () => HttpResponse.json({
@@ -140,8 +142,8 @@ export const handlers = [
     preview_id: params.previewId,
     backup_id: 'mock-backup-001',
     status: 'ready',
-    restore_allowed: false,
-    restore_supported: false,
+    restore_allowed: true,
+    restore_supported: true,
     verification_status: 'verified',
     change_count: 2,
     changes: [
@@ -239,7 +241,7 @@ export const handlers = [
   http.post('/api/lite/recovery/restore', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     if (!body.confirm) return HttpResponse.json({ detail: { status: 'confirmation_required', summary: 'Confirm restore before running it.' } }, { status: 409 });
-    return HttpResponse.json({ detail: { status: 'restore_not_implemented', summary: 'Restore is protected until backup verification and Preview Restore are ready.' } }, { status: 501 });
+    return HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-restore-apply', command_subject: 'pocketlab.commands.lite.restore.apply', summary: 'Restore queued. Pocket Lab will create a pre-restore checkpoint before changing Lite state.' }, { status: 202 });
   }),
   http.get('/api/catalog.json', () => HttpResponse.json({ items: [{ id: 'gitea', name: 'Gitea', operation: 'deploy_blueprint' }] })),
   http.get('/api/fleet.json', () => HttpResponse.json(fleetAgents)),
