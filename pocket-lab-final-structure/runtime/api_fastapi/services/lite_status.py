@@ -26,6 +26,8 @@ def _status(value: Any, *, default: str = "unknown") -> str:
         return "healthy"
     if raw in {"warning", "degraded", "partial", "stale", "needs_attention"}:
         return "degraded"
+    if raw in {"agent_stopped", "repairing", "supervisor_repairing"}:
+        return raw
     if raw in {"failed", "error", "unhealthy", "down", "offline"}:
         return "unhealthy"
     if raw in {"unavailable", "missing", "disabled", "not_configured"}:
@@ -435,6 +437,10 @@ def _connection_label(status: str) -> str:
         return "joining"
     if value in {"invited", "pending", "invite_sent"}:
         return "waiting"
+    if value in {"agent_stopped", "stopped"}:
+        return "stopped"
+    if value in {"repairing", "supervisor_repairing"}:
+        return "repairing"
     if value in {"unhealthy", "offline", "failed", "stale", "degraded"}:
         return "offline"
     return "unknown"
@@ -457,6 +463,8 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         status = "invited"
     elif raw_status in {"joining", "accepted"}:
         status = "joining"
+    elif raw_status in {"agent_stopped", "repairing", "supervisor_repairing"}:
+        status = raw_status
     else:
         status = _status(raw_status)
 
@@ -480,6 +488,11 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "role_label": role_info["role_label"],
         "capabilities": role_info["capabilities"],
         "source": item.get("source") or "fleet",
+        "agent_process_status": item.get("agent_process_status"),
+        "supervisor_status": item.get("supervisor_status"),
+        "last_supervisor_at": item.get("last_supervisor_at"),
+        "supervisor_repair_count": item.get("supervisor_repair_count"),
+        "last_supervisor_repair_at": item.get("last_supervisor_repair_at"),
     }
 
 

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_dir
@@ -984,3 +986,90 @@ def test_lite_fleet_reports_tailscale_ip_only_when_remote_access_ready(monkeypat
     server = payload["devices"][0]
     assert server["tailnet_ip"] == "100.13.7.11"
     assert server["remote_access"] is True
+
+
+def test_lite_bootstrap_script_starts_local_supervisor(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_PUBLIC_NATS_URL", "nats://100.64.0.91:4222")
+    created = client().post(
+        "/api/lite/fleet/add-device",
+        json={"role": "compute", "hostname": "Supervisor Phone"},
+    )
+    assert created.status_code == 202
+    token = _token_from_url(created.json()["invite"]["bootstrap_url"])
+
+    script = client().get(f"/api/lite/fleet/agent/bootstrap.sh?role=compute&token={token}")
+
+    assert script.status_code == 200
+    assert "pocketlab_agent_supervisor.py" in script.text
+    assert "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" in script.text
+    assert "not str(p.get(\"name\",\"\")).startswith(\"pocketlab-agent-supervisor-\")" in script.text
+
+
+def test_lite_fleet_marks_supervisor_reported_stopped_agent(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "stopped-phone",
+            "hostname": "Stopped Phone",
+            "role": "compute",
+            "status": "agent_stopped",
+            "agent_process_status": "stopped",
+            "supervisor_status": "healthy",
+            "repair_count": 2,
+            "checked_at": "2026-06-22T10:00:00Z",
+        },
+        event_type="fleet.node_supervisor",
+    )
+
+    response = client().get("/api/lite/fleet")
+
+    assert response.status_code == 200
+    payload = response.json()
+    device = next(item for item in payload["devices"] if item["id"] == "stopped-phone")
+    assert device["status"] == "agent_stopped"
+    assert device["connection"] == "stopped"
+    assert device["agent_process_status"] == "stopped"
+    assert device["supervisor_status"] == "healthy"
+    assert device["supervisor_repair_count"] == 2
+
+
+def test_lite_restart_agent_reports_stopped_agent_progress(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "stopped-progress-phone",
+            "hostname": "Stopped Progress Phone",
+            "role": "compute",
+            "status": "agent_stopped",
+            "agent_process_status": "stopped",
+            "supervisor_status": "repairing",
+            "repair_count": 1,
+            "checked_at": "2026-06-22T10:00:00Z",
+        },
+        event_type="fleet.node_supervisor",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/devices/stopped-progress-phone/restart-agent",
+        json={"reason": "stopped agent test"},
+    )
+
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["delivery"] in {"agent_stopped", "supervisor_repairing"}
+    assert payload["progress"]["status"] in {"agent_stopped", "repairing"}
+    step_ids = [step["id"] for step in payload["progress"]["steps"]]
+    assert "local_supervisor" in step_ids
+    assert "device_agent" in step_ids
+
+
+def test_lite_ui_has_error_boundary_and_safe_restart_steps():
+    ui = Path("src/lite/LiteApp.jsx").read_text()
+    assert "LiteErrorBoundary" in ui
+    assert "Pocket Lab needs a moment" in ui
+    assert "safeRestartSteps" in ui
+    assert "Device agent is stopped" in ui

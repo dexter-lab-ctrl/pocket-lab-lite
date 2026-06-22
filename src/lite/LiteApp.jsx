@@ -44,6 +44,8 @@ function deviceConnectionLabel(device) {
   const status = String(device?.status || '').toLowerCase();
 
   if (role === 'server_host') return 'Online';
+  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return 'Stopped';
+  if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return 'Repairing';
   if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) return 'Online';
   if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return 'Joining';
   if (connection === 'waiting' || ['pending', 'invited', 'invite_sent'].includes(status)) return 'Waiting';
@@ -58,7 +60,7 @@ function canRestartDeviceAgent(device) {
   if (!device?.id || role === 'server_host' || device?.is_current || device?.isCurrent) return false;
   const connection = String(device?.connection || '').toLowerCase();
   const status = String(device?.status || '').toLowerCase();
-  return ['offline', 'unknown'].includes(connection) || ['offline', 'degraded', 'stale', 'unhealthy', 'failed'].includes(status);
+  return ['offline', 'unknown', 'stopped', 'repairing'].includes(connection) || ['offline', 'degraded', 'stale', 'unhealthy', 'failed', 'agent_stopped', 'repairing', 'supervisor_repairing'].includes(status);
 }
 
 function canRemoveDevice(device) {
@@ -115,6 +117,8 @@ function deviceStatusLabel(status) {
   const value = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
   if (['pending', 'invited', 'invite_sent'].includes(value)) return 'Invite sent';
   if (['joining', 'accepted', 'setup_started'].includes(value)) return 'Joining';
+  if (['agent_stopped', 'stopped'].includes(value)) return 'Agent stopped';
+  if (['repairing', 'supervisor_repairing'].includes(value)) return 'Repairing';
   return backendLabel(status, {
     ready: 'Online',
     healthy: 'Online',
@@ -168,11 +172,11 @@ function normalizeBackendState(status) {
     return 'ready';
   }
 
-  if (['degraded', 'warning', 'needs_attention', 'pending', 'invited', 'invite_sent', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused'].includes(value)) {
+  if (['degraded', 'warning', 'needs_attention', 'pending', 'invited', 'invite_sent', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused', 'repairing', 'supervisor_repairing'].includes(value)) {
     return 'review';
   }
 
-  if (['unhealthy', 'failed', 'failure', 'error', 'blocked', 'unavailable'].includes(value)) {
+  if (['unhealthy', 'failed', 'failure', 'error', 'blocked', 'unavailable', 'agent_stopped', 'stopped'].includes(value)) {
     return 'danger';
   }
 
@@ -1285,8 +1289,8 @@ function DevicesScreen() {
                 <strong>{restartProgress.device_name || restartProgress.node_id}</strong>
               </div>
               <ol className="lite-device-restart-steps">
-                {(restartProgress.steps || []).map((step) => (
-                  <li key={step.id} className={`lite-device-restart-step lite-device-restart-step-${step.state || 'waiting'}`}>
+                {safeRestartSteps(restartProgress).map((step) => (
+                  <li key={step.id || step.label} className={`lite-device-restart-step lite-device-restart-step-${step.state || 'waiting'}`}>
                     <span className="lite-device-restart-step-dot" aria-hidden="true" />
                     <div>
                       <strong>{step.label}</strong>
@@ -1296,9 +1300,9 @@ function DevicesScreen() {
                   </li>
                 ))}
               </ol>
-              {restartProgress.status === 'waiting' ? (
+              {['waiting', 'agent_stopped', 'repairing'].includes(String(restartProgress.status || '').toLowerCase()) ? (
                 <p className="lite-device-restart-hint">
-                  If the phone recently lost network access, the upgraded agent will reconnect and publish a fresh heartbeat automatically.
+                  If the device agent is stopped, the local supervisor should start it. If this phone does not have the supervisor yet, open Termux on that phone and start it once.
                 </p>
               ) : null}
             </GlassCard>
@@ -1595,6 +1599,28 @@ function RulesScreen() {
   );
 }
 
+function restartProgressTitle(progress = {}) {
+  const status = String(progress?.status || '').toLowerCase();
+  if (status === 'completed') return 'Device is back online';
+  if (status === 'agent_stopped') return 'Device agent is stopped';
+  if (status === 'repairing') return 'Supervisor is repairing the agent';
+  if (status === 'failed') return 'Restart needs attention';
+  if (status === 'starting') return 'Preparing restart';
+  return 'Restart in progress';
+}
+
+function restartStepStateLabel(state) {
+  const value = String(state || 'waiting').toLowerCase();
+  if (value === 'complete') return 'Done';
+  if (value === 'active') return 'Working';
+  if (value === 'failed') return 'Needs help';
+  return 'Waiting';
+}
+
+function safeRestartSteps(progress = {}) {
+  return Array.isArray(progress?.steps) ? progress.steps.filter(Boolean) : [];
+}
+
 function RecoveryScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.recovery, []);
   const [backupResult, setBackupResult] = useState(null);
@@ -1796,7 +1822,38 @@ function RecoveryScreen() {
   );
 }
 
-export default function LiteApp() {
+class LiteErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="pocket-app-shell theme-pocket-lite-daylight lite-motion-system">
+          <main className="pocket-main lite-error-boundary-wrap">
+            <GlassCard className="lite-error-boundary-card">
+              <div className="lite-devices-mini-icon">
+                <WifiOff className="h-5 w-5" />
+              </div>
+              <h1>Pocket Lab needs a moment</h1>
+              <p>Refresh the Devices tab. Your services are still running, and Pocket Lab kept the action safely contained.</p>
+              <LiteButton onClick={() => window.location.reload()} tone="secondary">Refresh app</LiteButton>
+            </GlassCard>
+          </main>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function LiteAppShell() {
   const [active, setActive] = useState('home');
   const [menuOpen, setMenuOpen] = useState(false);
   const online = useOnlineStatus();
@@ -1897,5 +1954,13 @@ export default function LiteApp() {
         {content}
       </main>
     </div>
+  );
+}
+
+export default function LiteApp() {
+  return (
+    <LiteErrorBoundary>
+      <LiteAppShell />
+    </LiteErrorBoundary>
   );
 }
