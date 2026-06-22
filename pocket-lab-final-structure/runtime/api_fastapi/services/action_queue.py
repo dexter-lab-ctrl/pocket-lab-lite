@@ -47,6 +47,18 @@ def worker_execution_enabled() -> bool:
     return True
 
 
+async def _publish_with_reconnect(subject: str, event_type: str, payload: Dict[str, Any], *, trace_id: str | None = None) -> None:
+    try:
+        await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
+        return
+    except Exception:
+        # A phone sleep/wake or NATS listener restart can leave the FastAPI bus
+        # object marked disconnected after the first publish attempt. Try one
+        # bounded reconnect before surfacing a structured failure to the API.
+        await BUS.start()
+        await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
+
+
 def operation_command_payload(
     submitted: Dict[str, Any], raw: Dict[str, Any]
 ) -> Dict[str, Any]:
@@ -130,13 +142,25 @@ async def submit_domain_command(
     payload.setdefault("trace_id", trace_id or command_id)
 
     worker_execution_enabled()
-    await BUS.publish_json(subject, event_type, payload, trace_id=payload["trace_id"])
-    await BUS.publish_json(
-        "pocketlab.events.command.queued",
-        "command.queued",
-        {"command_id": command_id, "command_subject": subject, **payload},
-        trace_id=payload["trace_id"],
-    )
+    try:
+        await _publish_with_reconnect(subject, event_type, payload, trace_id=payload["trace_id"])
+        await _publish_with_reconnect(
+            "pocketlab.events.command.queued",
+            "command.queued",
+            {"command_id": command_id, "command_subject": subject, **payload},
+            trace_id=payload["trace_id"],
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "NATS/JetStream command publish failed",
+                "execution_mode": "unavailable",
+                "command_subject": subject,
+                "detail": str(exc),
+                "bus": BUS.status(),
+            },
+        ) from exc
     return {
         "status": "queued",
         "accepted": True,

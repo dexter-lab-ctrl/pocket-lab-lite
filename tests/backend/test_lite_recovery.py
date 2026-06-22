@@ -123,3 +123,47 @@ def test_lite_restore_confirmed_fails_closed_until_preview_exists():
     )
     assert response.status_code == 501
     assert response.json()["status"] == "restore_not_implemented"
+
+
+def test_lite_recovery_latest_endpoints_are_script_friendly_before_first_backup(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+
+    list_response = client().get("/api/lite/recovery/backups")
+    assert list_response.status_code == 200
+    list_payload = list_response.json()
+    assert list_payload["count"] == 0
+    assert list_payload["status"] in {"degraded", "unavailable"}
+    assert list_payload["latest_backup"] is None
+
+    latest_response = client().get("/api/lite/recovery/backups/latest")
+    assert latest_response.status_code == 200
+    latest_payload = latest_response.json()
+    assert latest_payload["status"] == "not_created"
+    assert latest_payload["latest_backup_available"] is False
+
+    receipt_response = client().get("/api/lite/recovery/receipts/latest")
+    assert receipt_response.status_code == 200
+    receipt_payload = receipt_response.json()
+    assert receipt_payload["status"] == "not_created"
+    assert receipt_payload["latest_backup_available"] is False
+
+
+def test_lite_recovery_pending_backup_is_visible_until_worker_finishes(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_backup
+
+    pending = lite_backup.record_backup_request({"command_id": "queued-backup-001", "reason": "queued-test"})
+    assert pending["backup_id"] == "queued-backup-001"
+
+    latest_response = client().get("/api/lite/recovery/backups/latest")
+    assert latest_response.status_code == 200
+    latest_payload = latest_response.json()
+    assert latest_payload["backup_id"] == "queued-backup-001"
+    assert latest_payload["status"] == "queued"
+    assert latest_payload["pending"] is True
+
+    history_response = client().get("/api/lite/recovery/backups")
+    assert history_response.status_code == 200
+    history_payload = history_response.json()
+    assert history_payload["status"] == "queued"
+    assert history_payload["pending_backup"]["backup_id"] == "queued-backup-001"

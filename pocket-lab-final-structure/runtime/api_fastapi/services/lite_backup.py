@@ -24,6 +24,60 @@ def _utc() -> str:
     return deps.now_utc_iso()
 
 
+def _state_file() -> Path:
+    return deps.settings().state_dir / "backup_state.json"
+
+
+def _read_backup_state() -> dict[str, Any]:
+    try:
+        payload = deps.core.read_json_file(_state_file(), {})
+    except Exception:
+        payload = {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _write_backup_state(payload: dict[str, Any]) -> None:
+    current = _read_backup_state()
+    current.update(payload)
+    current["updated_at"] = _utc()
+    deps.core.write_json_file(_state_file(), current)
+
+
+def record_backup_request(command: dict[str, Any]) -> dict[str, Any]:
+    backup_id = _command_id(command)
+    requested_at = _utc()
+    pending = {
+        "backup_id": backup_id,
+        "status": "queued",
+        "requested_at": requested_at,
+        "reason": command.get("reason") or "manual backup",
+        "include_app_data": bool(command.get("include_app_data", False)),
+        "summary": "Backup request queued. The worker will initialize the encrypted repository if needed and then create the backup.",
+    }
+    _write_backup_state({"pending_backup": pending})
+    return pending
+
+
+def pending_backup() -> dict[str, Any] | None:
+    pending = _read_backup_state().get("pending_backup")
+    return pending if isinstance(pending, dict) else None
+
+
+def _api_pending_backup(pending: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "backup_id": pending.get("backup_id"),
+        "status": pending.get("status") or "queued",
+        "created_at": pending.get("requested_at"),
+        "engine": "restic",
+        "verification_status": "not_verified",
+        "risk_level": "low",
+        "included_sets": [],
+        "included_file_count": 0,
+        "summary": pending.get("summary") or "Backup request queued.",
+        "pending": True,
+    }
+
+
 def _command_id(command: dict[str, Any]) -> str:
     return str(
         command.get("command_id")
@@ -128,11 +182,19 @@ def recovery_status() -> dict[str, Any]:
         for item in lite_backup_manifest.list_manifests(limit=25)
     ]
     latest = backups[0] if backups else None
+    pending = pending_backup() if not latest else None
     scope = backup_scope()
     status = readiness["status"]
     if latest and readiness.get("restic_available"):
         status = "healthy"
-    summary = "Recovery Ready" if latest else readiness.get("summary") or "Needs Attention"
+    elif pending:
+        status = "degraded"
+    summary = (
+        "Recovery Ready"
+        if latest
+        else (pending.get("summary") if pending else readiness.get("summary"))
+        or "Needs Attention"
+    )
     return {
         "status": status,
         "summary": summary,
@@ -142,12 +204,13 @@ def recovery_status() -> dict[str, Any]:
         "what_will_not_be_backed_up": scope["excluded_sensitive"]
         + scope["excluded_runtime"],
         "conditional_items": scope["conditional"],
-        "last_backup": latest,
-        "last_backup_time": latest.get("created_at") if latest else None,
+        "last_backup": latest or (_api_pending_backup(pending) if pending else None),
+        "last_backup_time": latest.get("created_at") if latest else (pending.get("requested_at") if pending else None),
         "last_verification_result": (latest or {}).get("verification_status")
         or "not_verified",
         "available_restore_points": backups,
         "backup_history": backups,
+        "pending_backup": _api_pending_backup(pending) if pending else None,
         "restore_risk": "low" if latest else "none",
         "pre_restore_checkpoint": {
             "status": "not_created",
@@ -325,6 +388,7 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
             {
                 "latest_backup_id": backup_id,
                 "latest_snapshot_id": snapshot_id,
+                "pending_backup": None,
                 "updated_at": _utc(),
                 "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
                 "receipt": str(lite_backup_manifest.receipt_path(backup_id)),
@@ -346,8 +410,12 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
 
 
 def get_backup(backup_id: str) -> dict[str, Any] | None:
-    resolved = lite_backup_manifest.resolve_backup_id(backup_id)
+    requested = str(backup_id or "").strip()
+    resolved = lite_backup_manifest.resolve_backup_id(requested)
     if not resolved:
+        if requested == "latest":
+            pending = pending_backup()
+            return _api_pending_backup(pending) if pending else lite_backup_manifest.no_backup_payload(backup_id="latest")
         return None
     manifest = lite_backup_manifest.read_manifest(resolved)
     return lite_backup_manifest.api_manifest(manifest) if manifest else None
@@ -358,18 +426,30 @@ def list_backups(limit: int = 25) -> dict[str, Any]:
         lite_backup_manifest.api_manifest(item)
         for item in lite_backup_manifest.list_manifests(limit=limit)
     ]
+    pending = pending_backup() if not items else None
+    readiness = repository_readiness()
     return {
-        "status": "healthy" if items else "unknown",
+        "status": "healthy" if items else ("queued" if pending else readiness.get("status", "degraded")),
         "count": len(items),
         "backups": items,
         "latest_backup": items[0] if items else None,
+        "pending_backup": _api_pending_backup(pending) if pending else None,
+        "summary": "Backup history is empty. Run Backup Now to initialize the encrypted repository and create the first backup." if not items and not pending else None,
         "updated_at": _utc(),
     }
 
 
 def get_receipt(backup_id: str) -> dict[str, Any] | None:
-    resolved = lite_backup_manifest.resolve_backup_id(backup_id)
+    requested = str(backup_id or "").strip()
+    resolved = lite_backup_manifest.resolve_backup_id(requested)
     if not resolved:
+        if requested == "latest":
+            pending = pending_backup()
+            if pending:
+                payload = _api_pending_backup(pending)
+                payload["summary"] = "Backup receipt will be available after the worker finishes the backup."
+                return payload
+            return lite_backup_manifest.no_backup_payload(backup_id="latest", kind="receipt")
         return None
     receipt = lite_backup_manifest.read_receipt(resolved)
     return lite_backup_manifest.api_receipt(receipt) if receipt else None
