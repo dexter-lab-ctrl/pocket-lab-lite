@@ -13,6 +13,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import time
 import uuid
 from pathlib import Path
 from typing import Any, Dict
@@ -22,7 +23,7 @@ try:
 except Exception:  # pragma: no cover
     nats = None  # type: ignore
 
-AGENT_VERSION = "2.3.0-phase10"
+AGENT_VERSION = "2.4.0-lite-reconnect-watchdog"
 
 
 def env(name: str, default: str = "") -> str:
@@ -140,7 +141,12 @@ class PocketLabNodeAgent:
         self.telemetry_seconds = int(env("POCKETLAB_AGENT_TELEMETRY_SECONDS", "20"))
         self.nc = None
         self.stop_event = asyncio.Event()
-        self.capabilities = ["heartbeat", "telemetry", "health", "node-command", "agent-restart"]
+        self.restarting = False
+        self.last_publish_success_epoch = 0.0
+        self.last_disconnect_epoch = 0.0
+        self.reconnect_count = 0
+        self.self_heal_seconds = int(env("POCKETLAB_AGENT_SELF_HEAL_SECONDS", "180"))
+        self.capabilities = ["heartbeat", "telemetry", "health", "node-command", "agent-restart", "reconnect-watchdog"]
 
     def base_payload(self) -> Dict[str, Any]:
         return {
@@ -161,13 +167,29 @@ class PocketLabNodeAgent:
     ) -> bool:
         try:
             await self.publish(subject, event_type, data)
+            self.last_publish_success_epoch = time.time()
             return True
         except Exception as exc:
             print(f"Pocket Lab node agent publish failed: {exc}", file=sys.stderr)
+            await self.maybe_self_heal_after_publish_failure()
             return False
 
-    async def restart_after_ack(self) -> None:
-        await asyncio.sleep(1)
+    async def maybe_self_heal_after_publish_failure(self) -> None:
+        if self.restarting:
+            return
+        now = time.time()
+        last_success = self.last_publish_success_epoch or now
+        if now - last_success < max(60, self.self_heal_seconds):
+            return
+        print(
+            "Pocket Lab node agent has not published successfully after reconnect window; restarting self.",
+            file=sys.stderr,
+        )
+        self.restarting = True
+        await self.restart_after_ack(delay_seconds=1, reason="publish-watchdog")
+
+    async def restart_after_ack(self, delay_seconds: int = 1, reason: str = "command") -> None:
+        await asyncio.sleep(max(0, delay_seconds))
         process_name = f"pocketlab-agent-{self.node_id}"
         if shutil.which("pm2"):
             command = f"pm2 restart {process_name} --update-env >/dev/null 2>&1"
@@ -182,6 +204,36 @@ class PocketLabNodeAgent:
         # Without PM2 there is no guaranteed external supervisor. Exit cleanly so
         # a wrapper/supervisor can restart the process if one exists.
         self.stop_event.set()
+
+    async def on_disconnected(self) -> None:
+        self.last_disconnect_epoch = time.time()
+        print("Pocket Lab node agent disconnected from NATS; waiting for reconnect.", file=sys.stderr)
+
+    async def on_reconnected(self) -> None:
+        self.reconnect_count += 1
+        print("Pocket Lab node agent reconnected to NATS; publishing fresh heartbeat.", file=sys.stderr)
+        await self.safe_publish(
+            "pocketlab.events.fleet.node_reconnected",
+            "fleet.node_reconnected",
+            {
+                **self.base_payload(),
+                "reconnected_at": now_iso(),
+                "reconnect_count": self.reconnect_count,
+                "last_disconnect_epoch": self.last_disconnect_epoch,
+            },
+        )
+        await self.register()
+        await self.safe_publish(
+            "pocketlab.events.fleet.node_heartbeat",
+            "fleet.node_heartbeat",
+            {**self.base_payload(), "heartbeat_at": now_iso(), "reason": "nats-reconnected"},
+        )
+
+    async def on_closed(self) -> None:
+        print("Pocket Lab node agent NATS connection closed.", file=sys.stderr)
+
+    async def on_error(self, exc: Exception) -> None:
+        print(f"Pocket Lab node agent NATS error: {exc}", file=sys.stderr)
 
     async def publish(
         self, subject: str, event_type: str, data: Dict[str, Any]
@@ -322,6 +374,10 @@ class PocketLabNodeAgent:
             "name": f"pocketlab-agent-{self.node_id}",
             "reconnect_time_wait": 2,
             "max_reconnect_attempts": -1,
+            "disconnected_cb": self.on_disconnected,
+            "reconnected_cb": self.on_reconnected,
+            "closed_cb": self.on_closed,
+            "error_cb": self.on_error,
         }
         if self.nats_user:
             connect_kwargs["user"] = self.nats_user

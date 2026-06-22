@@ -911,6 +911,7 @@ function DevicesScreen() {
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [restartBusy, setRestartBusy] = useState('');
+  const [restartProgress, setRestartProgress] = useState(null);
   const [removeCandidate, setRemoveCandidate] = useState(null);
   const [removeBusy, setRemoveBusy] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
@@ -977,14 +978,54 @@ function DevicesScreen() {
     setRestartBusy(nodeId);
     setActionError(null);
     setResult(null);
+    setRestartProgress({
+      node_id: nodeId,
+      device_name: device?.name || device?.hostname || nodeId,
+      status: 'starting',
+      summary: 'Pocket Lab is preparing a safe restart request.',
+      steps: [
+        { id: 'request_saved', label: 'Preparing request', detail: 'Pocket Lab is recording the restart request.', state: 'active' },
+        { id: 'private_channel', label: 'Private channel', detail: 'The request will be sent through the device command channel.', state: 'waiting' },
+        { id: 'device_ack', label: 'Device agent', detail: 'Waiting for the device agent to receive the request.', state: 'waiting' },
+        { id: 'heartbeat', label: 'Back online', detail: 'The device will show Online after a fresh heartbeat arrives.', state: 'waiting' },
+      ],
+    });
     try {
       const response = await liteApi.restartDeviceAgent(nodeId, {
         reason: 'Lite Devices restart requested',
       });
       setResult(response);
+      setRestartProgress({
+        ...response.progress,
+        node_id: nodeId,
+        device_name: device?.name || device?.hostname || nodeId,
+      });
       refresh();
+
+      const commandId = response?.command_id;
+      if (commandId) {
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+          await sleep(2500);
+          const statusPayload = await liteApi.restartDeviceAgentStatus(nodeId, commandId);
+          const nextProgress = statusPayload?.progress || statusPayload;
+          setRestartProgress({
+            ...nextProgress,
+            node_id: nodeId,
+            device_name: device?.name || device?.hostname || nodeId,
+          });
+          refresh();
+          if (['completed', 'failed'].includes(nextProgress?.status)) break;
+        }
+      }
     } catch (err) {
       setActionError(err.message);
+      setRestartProgress((current) => ({
+        ...(current || {}),
+        node_id: nodeId,
+        device_name: device?.name || device?.hostname || nodeId,
+        status: 'failed',
+        summary: err.message || 'Pocket Lab could not confirm the restart.',
+      }));
     } finally {
       setRestartBusy('');
     }
@@ -1201,6 +1242,49 @@ function DevicesScreen() {
             />
           ) : null}
 
+          {restartProgress ? (
+            <GlassCard className="lite-device-restart-panel" aria-live="polite">
+              <div className="lite-device-restart-panel-head">
+                <div>
+                  <span>Restart agent</span>
+                  <h3>{restartProgressTitle(restartProgress)}</h3>
+                </div>
+                <button
+                  type="button"
+                  className="lite-device-remove-close"
+                  onClick={() => setRestartProgress(null)}
+                  aria-label="Close restart progress"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="lite-device-restart-copy">
+                {restartProgress.summary || 'Pocket Lab is checking whether the device reports back after the restart request.'}
+              </p>
+              <div className="lite-device-restart-device">
+                <span>Device</span>
+                <strong>{restartProgress.device_name || restartProgress.node_id}</strong>
+              </div>
+              <ol className="lite-device-restart-steps">
+                {(restartProgress.steps || []).map((step) => (
+                  <li key={step.id} className={`lite-device-restart-step lite-device-restart-step-${step.state || 'waiting'}`}>
+                    <span className="lite-device-restart-step-dot" aria-hidden="true" />
+                    <div>
+                      <strong>{step.label}</strong>
+                      <p>{step.detail}</p>
+                    </div>
+                    <em>{restartStepStateLabel(step.state)}</em>
+                  </li>
+                ))}
+              </ol>
+              {restartProgress.status === 'waiting' ? (
+                <p className="lite-device-restart-hint">
+                  If the phone recently lost network access, the upgraded agent will reconnect and publish a fresh heartbeat automatically.
+                </p>
+              ) : null}
+            </GlassCard>
+          ) : null}
+
           {removeCandidate ? (
             <GlassCard className="lite-device-remove-panel">
               <div className="lite-device-remove-panel-head">
@@ -1291,7 +1375,7 @@ function DevicesScreen() {
                           disabled={restartBusy === device.id}
                         >
                           <RefreshCw className="h-4 w-4" />
-                          {restartBusy === device.id ? 'Restarting...' : 'Restart agent'}
+                          {restartBusy === device.id ? 'Checking progress...' : 'Restart agent'}
                         </LiteButton>
                       ) : null}
                       {canRemoveDevice(device) ? (

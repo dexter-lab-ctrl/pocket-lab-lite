@@ -378,6 +378,7 @@ async def restart_lite_fleet_agent(
     status = str(agent.get("status") or "unknown").lower()
     delivery = "sent" if status in {"active", "healthy", "online"} else "queued"
 
+    progress = fleet_registry.command_progress(item, agent)
     return {
         "accepted": True,
         "status": "queued",
@@ -391,7 +392,39 @@ async def restart_lite_fleet_agent(
         "command_id": item["command_id"],
         "command": item,
         "command_subject": subject,
+        "progress": progress,
+        "poll_url": f"/api/lite/fleet/devices/{normalized_node_id}/restart-agent/status?command_id={item['command_id']}",
         "bus": BUS.status(),
+    }
+
+
+@router.get("/api/lite/fleet/devices/{node_id}/restart-agent/status")
+def lite_fleet_agent_restart_status(
+    node_id: str, command_id: str = "", request: Request = None
+) -> dict:
+    deps.require_auth(request)
+    normalized_node_id = fleet_registry.normalize_node_id(node_id)
+    agent = fleet_registry.get_agent(normalized_node_id)
+    command = fleet_registry.get_command(command_id, node_id=normalized_node_id)
+    if not agent and not command:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "status": "not_found",
+                "summary": "Restart progress was not found for this device.",
+                "node_id": normalized_node_id,
+                "command_id": command_id,
+            },
+        )
+    progress = fleet_registry.command_progress(command, agent)
+    return {
+        "accepted": True,
+        "status": progress.get("status"),
+        "node_id": normalized_node_id,
+        "command_id": command_id,
+        "progress": progress,
+        "summary": progress.get("summary"),
+        "updated_at": deps.now_utc_iso(),
     }
 
 

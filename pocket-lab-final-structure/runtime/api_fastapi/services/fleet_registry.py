@@ -438,6 +438,7 @@ def create_node_command(
         "status": "queued",
         "requested_by": requested_by,
         "created_at": _now(),
+        "created_at_epoch": _epoch(),
         "updated_at": _now(),
         "expires_at_epoch": _epoch() + COMMAND_TTL_SECONDS,
     }
@@ -451,6 +452,83 @@ def create_node_command(
     state["updated_at"] = _now()
     _write(_state_path("fleet_agent_commands.json"), state)
     return item
+
+
+
+
+def get_command(command_id: str, node_id: str | None = None) -> Dict[str, Any] | None:
+    command_id = str(command_id or "").strip()
+    if not command_id:
+        return None
+    for command in list_commands(node_id=node_id, limit=500):
+        if str(command.get("command_id") or "") == command_id:
+            return command
+    return None
+
+
+def command_progress(command: Dict[str, Any] | None, agent: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    command = command or {}
+    agent = agent or {}
+    command_status = str(command.get("status") or "queued").lower()
+    command_id = str(command.get("command_id") or "")
+    node_id = normalize_node_id(str(command.get("node_id") or agent.get("node_id") or agent.get("id") or ""))
+    created_epoch = float(command.get("created_at_epoch") or 0)
+    last_seen_epoch = float(agent.get("last_seen_epoch") or 0)
+    agent_status = str(agent.get("status") or "unknown").lower()
+    command_finished = command_status in {"acknowledged", "completed", "succeeded"}
+    command_failed = command_status in {"failed", "error", "unsupported"}
+    heartbeat_after_request = bool(last_seen_epoch and created_epoch and last_seen_epoch >= created_epoch)
+    online = agent_status in {"active", "healthy", "online"}
+
+    def step(step_id: str, label: str, detail: str, state: str) -> Dict[str, Any]:
+        return {"id": step_id, "label": label, "detail": detail, "state": state}
+
+    steps = [
+        step(
+            "request_saved",
+            "Request saved",
+            "Pocket Lab recorded the restart request safely.",
+            "complete" if command_id else "waiting",
+        ),
+        step(
+            "private_channel",
+            "Sent through the private channel",
+            "Pocket Lab sent the request through the device command channel.",
+            "complete" if command_id else "waiting",
+        ),
+        step(
+            "device_ack",
+            "Waiting for the device agent",
+            "The device agent needs to receive and acknowledge the restart request.",
+            "failed" if command_failed else ("complete" if command_finished else "active"),
+        ),
+        step(
+            "heartbeat",
+            "Waiting for the device to report back",
+            "The device will show Online after a fresh heartbeat arrives.",
+            "failed" if command_failed else ("complete" if heartbeat_after_request and online else "active" if command_finished else "waiting"),
+        ),
+    ]
+    overall = "failed" if command_failed else ("completed" if heartbeat_after_request and online else "waiting")
+    if not command_id:
+        overall = "unknown"
+    return {
+        "status": overall,
+        "command_id": command_id,
+        "node_id": node_id,
+        "command_status": command_status,
+        "agent_status": agent_status,
+        "heartbeat_after_request": heartbeat_after_request,
+        "last_seen_at": agent.get("last_seen_at"),
+        "steps": steps,
+        "summary": (
+            "Device reported back after restart."
+            if overall == "completed"
+            else "Pocket Lab is waiting for the device agent to report back."
+            if overall == "waiting"
+            else "Pocket Lab could not confirm the restart."
+        ),
+    }
 
 
 def record_command_result(data: Dict[str, Any]) -> Dict[str, Any]:
