@@ -645,6 +645,28 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
         trace_id=command_id,
     )
     await _publish(
+        "pocketlab.events.lite.restore.service_restart_checked",
+        "lite.restore.service_restart_checked",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "service_restart": result.get("service_restart"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.events.lite.restore.health_validated",
+        "lite.restore.health_validated",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "health_validation": result.get("health_validation"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
         "pocketlab.events.lite.restore.completed",
         "lite.restore.completed",
         {
@@ -654,6 +676,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "preview_id": result.get("preview_id"),
             "checkpoint_id": checkpoint_id,
             "restored_file_count": result.get("restored_file_count"),
+            "status": result.get("status"),
         },
         trace_id=command_id,
     )
@@ -667,6 +690,7 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
             "preview_id": result.get("preview_id"),
             "checkpoint_id": checkpoint_id,
             "restored_file_count": result.get("restored_file_count"),
+            "status": result.get("status"),
         },
         trace_id=command_id,
     )

@@ -145,9 +145,16 @@ def test_lite_restore_requires_existing_preview_after_confirmation():
     )
     assert unconfirmed.status_code == 409
 
-    response = client().post(
+    missing_backup = client().post(
         "/api/lite/recovery/restore",
         json={"backup_id": "latest", "preview_id": "missing", "confirm": True},
+    )
+    assert missing_backup.status_code == 409
+    assert missing_backup.json()["status"] == "backup_required"
+
+    response = client().post(
+        "/api/lite/recovery/restore",
+        json={"backup_id": "backup-missing", "preview_id": "missing", "confirm": True},
     )
     assert response.status_code == 404
     assert response.json()["status"] == "preview_not_found"
@@ -384,6 +391,16 @@ def test_lite_restore_apply_requires_confirmation_and_ready_preview(tmp_path, mo
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(preview), encoding="utf-8")
 
+    with pytest.raises(RuntimeError, match="explicit backup_id"):
+        lite_backup.apply_restore(
+            {
+                "command_id": "test-restore-guard-missing-backup",
+                "backup_id": "latest",
+                "preview_id": preview_id,
+                "confirm": True,
+            }
+        )
+
     with pytest.raises(RuntimeError, match="explicit confirmation"):
         lite_backup.apply_restore(
             {
@@ -403,3 +420,24 @@ def test_lite_restore_apply_requires_confirmation_and_ready_preview(tmp_path, mo
                 "confirm": True,
             }
         )
+
+
+
+def test_lite_restore_service_restart_and_health_helpers(monkeypatch):
+    from api_fastapi.services import lite_backup
+
+    assert lite_backup._restore_service_restart_if_needed([])["status"] == "not_required"
+
+    class Response:
+        status = 200
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc, tb):
+            return False
+        def read(self, _limit):
+            return b'{"status":"healthy"}'
+
+    monkeypatch.setattr(lite_backup.urllib.request, "urlopen", lambda *args, **kwargs: Response())
+    result = lite_backup._validate_lite_api_health()
+    assert result["status"] == "passed"
+    assert result["recovery_status"] == "healthy"

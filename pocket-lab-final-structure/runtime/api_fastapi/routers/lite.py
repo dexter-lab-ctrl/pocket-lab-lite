@@ -483,6 +483,14 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
                 "summary": "Run Preview Restore and include the preview id before restoring.",
             },
         )
+    if not payload.backup_id or payload.backup_id == "latest":
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "backup_required",
+                "summary": "Restore requires the explicit backup id from the verified preview.",
+            },
+        )
     preview = lite_backup.get_restore_preview(payload.preview_id)
     if not preview:
         raise HTTPException(
@@ -498,7 +506,7 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
             },
         )
     command_id = uuid.uuid4().hex
-    selected = payload.backup_id or payload.backup_ref or "latest"
+    selected = payload.backup_id
     submitted = await submit_domain_command(
         "pocketlab.commands.lite.restore.apply",
         "lite.restore.apply_queued",
