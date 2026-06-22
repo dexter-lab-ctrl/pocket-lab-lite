@@ -6267,3 +6267,30 @@ textarea {
     gap: 0.8rem;
   }
 }
+
+/* Lite Backup & Restore flip visibility fix.
+   Keeps the grid-stacked flip panel visible after the overlap hardening patch.
+   The parent no longer rotates; the front/back faces own the visual transition. */
+.theme-pocket-lite-daylight .lite-recovery-flip-inner,
+.theme-pocket-lite-daylight .lite-recovery-flip-shell.is-flipped .lite-recovery-flip-inner {
+  transform: none;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-back {
+  visibility: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-shell.is-flipped .lite-recovery-flip-back {
+  visibility: visible;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-shell.is-flipped .lite-recovery-flip-front {
+  visibility: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-head,
+.theme-pocket-lite-daylight .lite-recovery-flip-readiness,
+.theme-pocket-lite-daylight .lite-recovery-action-log {
+  position: relative;
+  z-index: 3;
+}
