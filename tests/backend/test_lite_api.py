@@ -888,3 +888,60 @@ def test_lite_bootstrap_accept_consumes_invite_and_returns_env(monkeypatch):
         json={"role": "storage", "token": token},
     )
     assert reused.status_code == 410
+
+def test_lite_restart_agent_returns_progress_steps(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "progress-phone",
+            "hostname": "Progress Phone",
+            "role": "compute",
+            "status": "online",
+        },
+        event_type="fleet.node_heartbeat",
+    )
+
+    response = client().post(
+        "/api/lite/fleet/devices/progress-phone/restart-agent",
+        json={"reason": "test restart progress"},
+    )
+
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["command_id"]
+    assert payload["progress"]["steps"]
+    assert payload["progress"]["steps"][0]["id"] == "request_saved"
+    assert payload["poll_url"].endswith(payload["command_id"])
+
+
+def test_lite_restart_agent_status_reports_command_progress(tmp_path):
+    from api_fastapi.services import fleet_registry
+
+    _use_isolated_runtime_state(tmp_path)
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "status-phone",
+            "hostname": "Status Phone",
+            "role": "compute",
+            "status": "online",
+        },
+        event_type="fleet.node_heartbeat",
+    )
+    queued = client().post(
+        "/api/lite/fleet/devices/status-phone/restart-agent",
+        json={"reason": "status check"},
+    )
+    assert queued.status_code == 202
+    command_id = queued.json()["command_id"]
+
+    response = client().get(
+        f"/api/lite/fleet/devices/status-phone/restart-agent/status?command_id={command_id}"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["command_id"] == command_id
+    assert payload["progress"]["steps"][1]["id"] == "private_channel"
+    assert payload["progress"]["status"] in {"waiting", "completed"}
