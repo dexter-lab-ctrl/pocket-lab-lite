@@ -5325,3 +5325,445 @@ textarea {
     flex-direction: column;
   }
 }
+
+/* Pocket Lab Lite Recovery premium UX additions */
+.theme-pocket-lite-daylight .lite-recovery-hero-premium {
+  isolation: isolate;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.72rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-pill::before {
+  content: "";
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: #94a3b8;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-ready {
+  border-color: rgba(16, 185, 129, 0.22);
+  color: #065f46;
+  background: rgba(236, 253, 245, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-ready::before {
+  background: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-card {
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.35) 38%, transparent 72%);
+  transform: translateX(-120%);
+  animation: lite-recovery-card-sheen 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-meter {
+  width: 100%;
+  height: 0.45rem;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.9);
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-confidence-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+  transition: width 420ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-timeline-card {
+  min-height: auto;
+  margin-bottom: 1rem;
+  border-color: rgba(14, 165, 233, 0.16) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-timeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  min-height: 7rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.15rem;
+  background: rgba(248, 250, 252, 0.76);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step-complete {
+  border-color: rgba(16, 185, 129, 0.26);
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.9), rgba(240, 253, 250, 0.78));
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step-dot {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 0.7rem;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step-complete .lite-recovery-step-dot {
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  color: #fff;
+  animation: lite-recovery-check-pop 280ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-step span {
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-restore-cockpit {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-restore-cockpit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 80% 8%, rgba(248, 113, 113, 0.12), transparent 12rem);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-restore-chips,
+.theme-pocket-lite-daylight .lite-recovery-history-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.95rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-restore-chips span,
+.theme-pocket-lite-daylight .lite-recovery-history-tags em {
+  display: inline-flex;
+  padding: 0.38rem 0.62rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.84);
+  color: #64748b;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-restore-chips span.is-ready,
+.theme-pocket-lite-daylight .lite-recovery-history-tags em:nth-child(2) {
+  border-color: rgba(16, 185, 129, 0.22);
+  background: rgba(236, 253, 245, 0.88);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-preview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-preview-stats > div {
+  padding: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-preview-stats span,
+.theme-pocket-lite-daylight .lite-recovery-last-restore-card span {
+  display: block;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-preview-stats strong,
+.theme-pocket-lite-daylight .lite-recovery-last-restore-card strong {
+  display: block;
+  margin-top: 0.3rem;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-safety-panel {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.78);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-last-restore-card {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: 1.15rem;
+  background: rgba(236, 253, 245, 0.78);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-last-restore-card p {
+  margin-top: 0.35rem;
+  color: #065f46;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-card {
+  min-height: auto;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-row-premium {
+  position: relative;
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-row-premium:hover {
+  transform: translateY(-2px);
+  border-color: rgba(14, 165, 233, 0.2);
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-actions button {
+  padding: 0.42rem 0.68rem;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 999px;
+  background: rgba(240, 249, 255, 0.86);
+  color: #0369a1;
+  font-size: 0.76rem;
+  font-weight: 900;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(10px);
+  animation: lite-recovery-fade-in 180ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-drawer {
+  width: min(30rem, calc(100vw - 1.5rem));
+  height: 100%;
+  padding: 1.1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94));
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: -24px 0 70px rgba(15, 23, 42, 0.18);
+  overflow-y: auto;
+  animation: lite-recovery-drawer-in 220ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.35rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-head span {
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-head h2 {
+  margin-top: 0.2rem;
+  color: #0f172a;
+  font-size: 1.55rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-head p {
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-head button {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #334155;
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-item span,
+.theme-pocket-lite-daylight .lite-recovery-evidence-item strong {
+  grid-column: 1;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-item span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-item strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-evidence-item button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: center;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 999px;
+  background: rgba(240, 249, 255, 0.9);
+  color: #0369a1;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+@keyframes lite-recovery-card-sheen {
+  0%, 45% { transform: translateX(-120%); }
+  68%, 100% { transform: translateX(120%); }
+}
+
+@keyframes lite-recovery-check-pop {
+  0% { transform: scale(0.82); }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes lite-recovery-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lite-recovery-drawer-in {
+  from { transform: translateX(1.25rem); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-recovery-timeline,
+  .theme-pocket-lite-daylight .lite-recovery-preview-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-recovery-confidence-card::after,
+  .theme-pocket-lite-daylight .lite-recovery-icon,
+  .theme-pocket-lite-daylight .lite-recovery-step-complete .lite-recovery-step-dot,
+  .theme-pocket-lite-daylight .lite-recovery-evidence-backdrop,
+  .theme-pocket-lite-daylight .lite-recovery-evidence-drawer {
+    animation: none !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-step,
+  .theme-pocket-lite-daylight .lite-recovery-history-row-premium,
+  .theme-pocket-lite-daylight .lite-recovery-history-actions button,
+  .theme-pocket-lite-daylight .lite-recovery-confidence-meter span {
+    transition: none !important;
+  }
+}
