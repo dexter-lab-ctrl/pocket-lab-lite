@@ -11,6 +11,63 @@ API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
 PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"; OBS_DIR="${OBS_DIR:-$POCKET_LAB_OBSERVABILITY_DIR}"
 DASH_PORT="${DASH_PORT:-8443}"; API_PORT="${API_PORT:-8080}"; GATUS_PORT="${GATUS_PORT:-8081}"
 get_ts_fqdn(){ if have tailscale; then tailscale status --json 2>/dev/null | jq -r '.Self.DNSName // empty' | sed 's/\.$//' | grep -E '.ts.net$' || true; fi; }
+
+tailscale_command(){
+  if have tailscale-cli; then echo tailscale-cli; return 0; fi
+  if have tailscale; then echo tailscale; return 0; fi
+  return 1
+}
+tailscaled_is_running(){
+  if have pgrep && pgrep -f tailscaled >/dev/null 2>&1; then return 0; fi
+  ps -A 2>/dev/null | grep -v grep | grep -q tailscaled
+}
+start_tailscale_if_missing(){
+  is_lite_profile || return 0
+  if tailscaled_is_running; then
+    log INFO "Lite remote access: tailscaled is already running"
+  elif have tailscaled-start; then
+    log INFO "Lite remote access: tailscaled is not running; starting with tailscaled-start"
+    tailscaled-start >/dev/null 2>&1 || log WARN "Lite remote access: tailscaled-start did not complete successfully"
+    sleep 2
+  elif have tailscaled; then
+    log INFO "Lite remote access: tailscaled is not running; starting tailscaled directly"
+    nohup tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:0 > "$LOG_DIR/tailscaled.log" 2>&1 &
+    sleep 2
+  else
+    log WARN "Lite remote access: tailscaled is not installed; remote devices may stay offline"
+    return 0
+  fi
+
+  local ts_cmd ts_ip
+  ts_cmd="$(tailscale_command || true)"
+  if [[ -n "$ts_cmd" ]]; then
+    ts_ip="$($ts_cmd ip -4 2>/dev/null | head -1 || true)"
+    if [[ -n "$ts_ip" ]]; then
+      log INFO "Lite remote access: Tailscale IP detected: $ts_ip"
+      export POCKETLAB_TAILNET_IP="$ts_ip"
+    else
+      log WARN "Lite remote access: Tailscale is running but no IPv4 address is available yet"
+    fi
+  fi
+}
+verify_lite_remote_nats(){
+  is_lite_profile || return 0
+  local ts_cmd ts_ip port
+  ts_cmd="$(tailscale_command || true)"
+  [[ -n "$ts_cmd" ]] || return 0
+  ts_ip="$($ts_cmd ip -4 2>/dev/null | head -1 || true)"
+  [[ -n "$ts_ip" ]] || return 0
+  port="${POCKETLAB_LITE_NATS_PORT:-${POCKETLAB_PUBLIC_NATS_PORT:-4222}}"
+  python3 - "$ts_ip" "$port" <<'PYCHECK' || log WARN "Lite remote access: NATS is not reachable on the Tailscale IP yet"
+import socket, sys
+host = sys.argv[1]
+port = int(sys.argv[2])
+with socket.create_connection((host, port), timeout=2):
+    pass
+print(f"Lite remote access: NATS reachable on {host}:{port}")
+PYCHECK
+}
+
 ensure_assets(){
   [[ -f "$API_SERVER" ]] || die "Missing dashboard API server: $API_SERVER"
   [[ -f "$WORKER_SERVER" ]] || die "Missing worker process required for production NATS execution: $WORKER_SERVER"
@@ -343,7 +400,7 @@ start_pm2_daemons(){
 }
 main(){
   SCRIPT_NAME="start-dashboard.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
-  ensure_assets; write_hardware_daemon; write_caddyfile; write_observability_configs; start_pm2_daemons; mark_done dashboard_ready
+  ensure_assets; start_tailscale_if_missing; write_hardware_daemon; write_caddyfile; write_observability_configs; start_pm2_daemons; verify_lite_remote_nats; mark_done dashboard_ready
   log INFO "Dashboard/control-plane services are ready and safe to rerun"
 }
 main "$@"

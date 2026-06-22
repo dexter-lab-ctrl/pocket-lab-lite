@@ -4937,3 +4937,129 @@ textarea {
   35%, 65% { opacity: 1; }
   100% { transform: translateX(35%); opacity: 0; }
 }
+
+.theme-pocket-lite-daylight .lite-remote-access-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin: -0.2rem 0 1.1rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  animation: lite-remote-access-rise 280ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.72;
+  background: radial-gradient(circle at 12% 0%, rgba(186, 230, 253, 0.6), transparent 13rem);
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-not-ready {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(255, 251, 235, 0.92);
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-ready {
+  border-color: rgba(16, 185, 129, 0.22);
+  background: rgba(240, 253, 250, 0.92);
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-icon,
+.theme-pocket-lite-daylight .lite-remote-access-copy,
+.theme-pocket-lite-daylight .lite-remote-access-ip {
+  position: relative;
+  z-index: 1;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 1rem;
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-ready .lite-remote-access-icon {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  animation: lite-remote-access-pulse 2.4s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-not-ready .lite-remote-access-icon {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-copy {
+  display: grid;
+  gap: 0.16rem;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-copy span,
+.theme-pocket-lite-daylight .lite-remote-access-ip span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-copy strong {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-copy p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-ip {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: end;
+}
+
+.theme-pocket-lite-daylight .lite-remote-access-ip code {
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #065f46;
+  font-size: 0.82rem;
+  font-weight: 950;
+  padding: 0.42rem 0.7rem;
+}
+
+@media (max-width: 740px) {
+  .theme-pocket-lite-daylight .lite-remote-access-panel {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .theme-pocket-lite-daylight .lite-remote-access-ip {
+    grid-column: 1 / -1;
+    justify-items: start;
+  }
+}
+
+@keyframes lite-remote-access-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lite-remote-access-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.0); transform: scale(1); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.08); transform: scale(1.04); }
+}
