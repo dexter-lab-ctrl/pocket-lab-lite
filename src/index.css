@@ -6070,3 +6070,103 @@ textarea {
     display:none;
   }
 }
+
+
+/* Lite Backup & Restore layout safety.
+   Keeps action buttons in normal flow and prevents result/evidence panels from
+   overlapping controls on mobile or narrow desktop widths. */
+.theme-pocket-lite-daylight .lite-recovery-card,
+.theme-pocket-lite-daylight .lite-recovery-restore-card,
+.theme-pocket-lite-daylight .lite-recovery-backup-card {
+  position: relative;
+  overflow: visible;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-actions,
+.theme-pocket-lite-daylight .lite-restore-actions,
+.theme-pocket-lite-daylight .lite-backup-actions,
+.theme-pocket-lite-daylight .lite-recovery-action-row,
+.theme-pocket-lite-daylight .lite-restore-action-row,
+.theme-pocket-lite-daylight .lite-recovery-action-buttons,
+.theme-pocket-lite-daylight .lite-recovery-flip-actions,
+.theme-pocket-lite-daylight .lite-restore-flip-actions {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-actions > *,
+.theme-pocket-lite-daylight .lite-restore-actions > *,
+.theme-pocket-lite-daylight .lite-backup-actions > *,
+.theme-pocket-lite-daylight .lite-recovery-action-row > *,
+.theme-pocket-lite-daylight .lite-restore-action-row > *,
+.theme-pocket-lite-daylight .lite-recovery-action-buttons > *,
+.theme-pocket-lite-daylight .lite-recovery-flip-actions > *,
+.theme-pocket-lite-daylight .lite-restore-flip-actions > * {
+  flex: 0 1 auto;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-result,
+.theme-pocket-lite-daylight .lite-recovery-result-card,
+.theme-pocket-lite-daylight .lite-recovery-evidence,
+.theme-pocket-lite-daylight .lite-recovery-evidence-card,
+.theme-pocket-lite-daylight .lite-recovery-friendly-log,
+.theme-pocket-lite-daylight .lite-recovery-readiness,
+.theme-pocket-lite-daylight .lite-restore-readiness,
+.theme-pocket-lite-daylight .lite-restore-readiness-card,
+.theme-pocket-lite-daylight .lite-restore-detail-card,
+.theme-pocket-lite-daylight .lite-restore-flip-card,
+.theme-pocket-lite-daylight .lite-restore-card-back,
+.theme-pocket-lite-daylight .lite-restore-card-front {
+  position: relative;
+  z-index: 1;
+  clear: both;
+  margin-top: 1rem;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-recovery-actions,
+  .theme-pocket-lite-daylight .lite-restore-actions,
+  .theme-pocket-lite-daylight .lite-backup-actions,
+  .theme-pocket-lite-daylight .lite-recovery-action-row,
+  .theme-pocket-lite-daylight .lite-restore-action-row,
+  .theme-pocket-lite-daylight .lite-recovery-action-buttons,
+  .theme-pocket-lite-daylight .lite-recovery-flip-actions,
+  .theme-pocket-lite-daylight .lite-restore-flip-actions {
+    align-items: stretch;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-actions > *,
+  .theme-pocket-lite-daylight .lite-restore-actions > *,
+  .theme-pocket-lite-daylight .lite-backup-actions > *,
+  .theme-pocket-lite-daylight .lite-recovery-action-row > *,
+  .theme-pocket-lite-daylight .lite-restore-action-row > *,
+  .theme-pocket-lite-daylight .lite-recovery-action-buttons > *,
+  .theme-pocket-lite-daylight .lite-recovery-flip-actions > *,
+  .theme-pocket-lite-daylight .lite-restore-flip-actions > * {
+    flex: 1 1 10rem;
+    min-width: min(100%, 10rem);
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-result,
+  .theme-pocket-lite-daylight .lite-recovery-result-card,
+  .theme-pocket-lite-daylight .lite-recovery-evidence,
+  .theme-pocket-lite-daylight .lite-recovery-evidence-card,
+  .theme-pocket-lite-daylight .lite-recovery-friendly-log,
+  .theme-pocket-lite-daylight .lite-recovery-readiness,
+  .theme-pocket-lite-daylight .lite-restore-readiness,
+  .theme-pocket-lite-daylight .lite-restore-readiness-card,
+  .theme-pocket-lite-daylight .lite-restore-detail-card,
+  .theme-pocket-lite-daylight .lite-restore-flip-card,
+  .theme-pocket-lite-daylight .lite-restore-card-back,
+  .theme-pocket-lite-daylight .lite-restore-card-front {
+    margin-top: 1.25rem;
+  }
+}
+

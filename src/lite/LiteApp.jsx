@@ -1650,6 +1650,28 @@ function RecoveryScreen() {
   const [restoreResult, setRestoreResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState('');
+  const lastRecoveryActionRef = React.useRef('');
+
+  React.useEffect(() => {
+    if (busy) {
+      lastRecoveryActionRef.current = busy;
+      return undefined;
+    }
+
+    if (!lastRecoveryActionRef.current) {
+      return undefined;
+    }
+
+    lastRecoveryActionRef.current = '';
+    refresh();
+
+    const timers = [
+      window.setTimeout(refresh, 700),
+      window.setTimeout(refresh, 1800),
+    ];
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [busy, refresh]);
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [copiedEvidence, setCopiedEvidence] = useState('');
   const [activeActionPanel, setActiveActionPanel] = useState('');
