@@ -840,9 +840,29 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             ],
         }
         _record_restore_run(restore_id, result)
+        checkpoint_summary = {
+            "status": "created",
+            "checkpoint_id": result["checkpoint_id"],
+            "restore_id": restore_id,
+            "backup_id": backup_id,
+            "preview_id": preview_id,
+            "created_at": checkpoint.get("created_at") if checkpoint else started_at,
+            "file_count": checkpoint.get("file_count") if checkpoint else 0,
+            "summary": "Pre-restore checkpoint created before changing Lite state.",
+        }
         _write_backup_state(
             {
+                "latest_backup_id": backup_id,
+                "latest_snapshot_id": snapshot_id,
                 "pending_backup": None,
+                "latest_restore_preview": {
+                    "preview_id": preview_id,
+                    "backup_id": backup_id,
+                    "status": preview.get("status"),
+                    "created_at": preview.get("created_at"),
+                    "change_count": preview.get("change_count"),
+                },
+                "pre_restore_checkpoint": checkpoint_summary,
                 "last_restore": {
                     "status": "succeeded",
                     "restore_id": restore_id,
@@ -853,6 +873,9 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
                     "restored_file_count": len(restored_files),
                     "summary": result["summary"],
                 },
+                "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
+                "restore_preview": str(restore_preview_path(preview_id)),
+                "restore_run": str(restore_run_path(restore_id)),
             }
         )
         return result
@@ -870,20 +893,30 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             "summary": "Restore failed. The pre-restore checkpoint remains available for recovery." if checkpoint else "Restore failed before checkpoint creation.",
         }
         _record_restore_run(restore_id, result)
-        _write_backup_state(
-            {
-                "last_restore": {
-                    "status": "failed",
-                    "restore_id": restore_id,
-                    "backup_id": preview.get("backup_id"),
-                    "preview_id": preview_id,
-                    "checkpoint_id": result["checkpoint_id"],
-                    "failed_at": failed_at,
-                    "error": result["error"],
-                    "summary": result["summary"],
-                }
+        state_update: dict[str, Any] = {
+            "last_restore": {
+                "status": "failed",
+                "restore_id": restore_id,
+                "backup_id": preview.get("backup_id"),
+                "preview_id": preview_id,
+                "checkpoint_id": result["checkpoint_id"],
+                "failed_at": failed_at,
+                "error": result["error"],
+                "summary": result["summary"],
             }
-        )
+        }
+        if checkpoint:
+            state_update["pre_restore_checkpoint"] = {
+                "status": "created",
+                "checkpoint_id": checkpoint.get("checkpoint_id"),
+                "restore_id": restore_id,
+                "backup_id": preview.get("backup_id"),
+                "preview_id": preview_id,
+                "created_at": checkpoint.get("created_at"),
+                "file_count": checkpoint.get("file_count"),
+                "summary": checkpoint.get("summary"),
+            }
+        _write_backup_state(state_update)
         raise
     finally:
         try:
