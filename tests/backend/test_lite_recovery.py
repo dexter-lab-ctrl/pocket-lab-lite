@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -57,6 +58,12 @@ if 'ls' in args:
     ]:
         print(json.dumps(item))
     raise SystemExit(0)
+if 'restore' in args:
+    target = pathlib.Path(args[args.index('--target') + 1])
+    (target / 'state').mkdir(parents=True, exist_ok=True)
+    (target / 'state' / 'fleet_agents.json').write_text(json.dumps({'agents': {}}, indent=2, ensure_ascii=False), encoding='utf-8')
+    print('restore completed')
+    raise SystemExit(0)
 if 'version' in args or not args:
     print('restic 0.16.0')
     raise SystemExit(0)
@@ -78,7 +85,7 @@ def test_lite_recovery_status_reports_repository_shape(tmp_path, monkeypatch):
     assert payload["repository"]["encrypted"] is True
     assert "raw API tokens" in payload["what_will_not_be_backed_up"]
     assert "backup_now" in payload["actions"]
-    assert "restore_latest" in payload["planned_actions"]
+    assert "restore_latest" not in payload["actions"]
 
 
 def test_lite_backup_create_writes_manifest_and_receipt(tmp_path, monkeypatch):
@@ -131,13 +138,19 @@ def test_lite_recovery_backup_history_endpoints(tmp_path, monkeypatch):
     assert receipt_response.json()["summary"] == "Evidence saved"
 
 
-def test_lite_restore_confirmed_fails_closed_until_preview_exists():
+def test_lite_restore_requires_existing_preview_after_confirmation():
+    unconfirmed = client().post(
+        "/api/lite/recovery/restore",
+        json={"backup_id": "latest", "preview_id": "missing", "confirm": False},
+    )
+    assert unconfirmed.status_code == 409
+
     response = client().post(
         "/api/lite/recovery/restore",
         json={"backup_id": "latest", "preview_id": "missing", "confirm": True},
     )
-    assert response.status_code == 501
-    assert response.json()["status"] == "restore_not_implemented"
+    assert response.status_code == 404
+    assert response.json()["status"] == "preview_not_found"
 
 
 def test_lite_recovery_latest_endpoints_are_script_friendly_before_first_backup(tmp_path, monkeypatch):
@@ -337,8 +350,8 @@ def test_lite_restore_preview_writes_preview_without_restore(tmp_path, monkeypat
 
     preview = lite_backup.create_restore_preview("test-backup-preview", reason="unit-preview")
     assert preview["status"] == "ready"
-    assert preview["restore_allowed"] is False
-    assert preview["restore_supported"] is False
+    assert preview["restore_allowed"] is True
+    assert preview["restore_supported"] is True
     assert preview["verification_status"] == "verified"
     assert preview["change_count"] > 0
     assert preview["restic_item_count"] >= 1
@@ -350,3 +363,43 @@ def test_lite_restore_preview_writes_preview_without_restore(tmp_path, monkeypat
 
     status = lite_backup.recovery_status()
     assert status["latest_restore_preview"]["preview_id"] == preview["preview_id"]
+
+
+def test_lite_restore_apply_requires_confirmation_and_ready_preview(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_backup
+
+    preview_id = "preview-guard"
+    preview = {
+        "preview_id": preview_id,
+        "backup_id": "backup-guard",
+        "snapshot_id": "deadbeefcafebabe",
+        "status": "ready",
+        "verification_status": "verified",
+        "restore_allowed": False,
+        "restore_supported": True,
+        "changes": [],
+    }
+    path = lite_backup.restore_preview_path(preview_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(preview), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="explicit confirmation"):
+        lite_backup.apply_restore(
+            {
+                "command_id": "test-restore-guard",
+                "backup_id": "backup-guard",
+                "preview_id": preview_id,
+                "confirm": False,
+            }
+        )
+
+    with pytest.raises(RuntimeError, match="not marked as restorable"):
+        lite_backup.apply_restore(
+            {
+                "command_id": "test-restore-guard-2",
+                "backup_id": "backup-guard",
+                "preview_id": preview_id,
+                "confirm": True,
+            }
+        )

@@ -75,6 +75,8 @@ class LiteBackupLayout:
     manifests: Path
     receipts: Path
     restore_previews: Path
+    restore_checkpoints: Path
+    restore_runs: Path
     staging: Path
     password_file: Path
 
@@ -85,6 +87,8 @@ class LiteBackupLayout:
             self.manifests,
             self.receipts,
             self.restore_previews,
+            self.restore_checkpoints,
+            self.restore_runs,
             self.staging,
             self.password_file.parent,
         ):
@@ -106,6 +110,8 @@ def backup_layout() -> LiteBackupLayout:
         manifests=root / "manifests",
         receipts=root / "receipts",
         restore_previews=root / "restore-previews",
+        restore_checkpoints=root / "restore-checkpoints",
+        restore_runs=root / "restore-runs",
         staging=root / ".staging",
         password_file=root / ".secrets" / "restic-password",
     )
