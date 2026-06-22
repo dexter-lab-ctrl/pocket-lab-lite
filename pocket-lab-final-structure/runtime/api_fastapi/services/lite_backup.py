@@ -6,6 +6,8 @@ import os
 import secrets
 import shutil
 import subprocess
+import urllib.error
+import urllib.request
 import uuid
 from pathlib import Path
 from typing import Any
@@ -734,11 +736,102 @@ def _record_restore_run(restore_id: str, payload: dict[str, Any]) -> dict[str, A
     return payload
 
 
+RESTART_RELEVANT_RESTORE_PATHS = {
+    "state/release_state.json",
+    "state/catalog.json",
+    "state/opa.json",
+}
+
+
+def _env_true(name: str) -> bool:
+    return str(os.environ.get(name, "")).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _restore_service_restart_if_needed(restored_files: list[dict[str, Any]]) -> dict[str, Any]:
+    impacted = sorted(
+        {
+            str(item.get("relative_path") or "")
+            for item in restored_files
+            if str(item.get("relative_path") or "") in RESTART_RELEVANT_RESTORE_PATHS
+        }
+    )
+    if not impacted:
+        return {
+            "status": "not_required",
+            "needed": False,
+            "services": [],
+            "summary": "Restored Lite state does not require a service restart.",
+        }
+    if not _env_true("POCKETLAB_LITE_RESTORE_ALLOW_SERVICE_RESTART"):
+        return {
+            "status": "skipped_requires_opt_in",
+            "needed": True,
+            "services": ["pocket-api"],
+            "impacted_paths": impacted,
+            "summary": "Service restart may be useful, but automatic restart is disabled. Set POCKETLAB_LITE_RESTORE_ALLOW_SERVICE_RESTART=1 to enable it.",
+        }
+    pm2 = shutil.which(os.environ.get("POCKETLAB_PM2_BIN", "pm2"))
+    if not pm2:
+        return {
+            "status": "failed",
+            "needed": True,
+            "services": ["pocket-api"],
+            "impacted_paths": impacted,
+            "summary": "Service restart was required but pm2 was not found.",
+        }
+    api_name = os.environ.get("POCKETLAB_LITE_API_PM2_NAME", "pocket-api")
+    result = subprocess.run(
+        [pm2, "restart", api_name, "--update-env"],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    return {
+        "status": "succeeded" if result.returncode == 0 else "failed",
+        "needed": True,
+        "services": [api_name],
+        "impacted_paths": impacted,
+        "summary": "Service restart completed." if result.returncode == 0 else "Service restart failed.",
+        "stderr_present": bool(result.stderr.strip()),
+    }
+
+
+def _validate_lite_api_health() -> dict[str, Any]:
+    url = os.environ.get("POCKETLAB_LITE_RESTORE_HEALTH_URL", "http://127.0.0.1:8443/api/lite/recovery")
+    timeout = float(os.environ.get("POCKETLAB_LITE_RESTORE_HEALTH_TIMEOUT", "5"))
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as response:  # noqa: S310 - local operator-configured URL
+            raw = response.read(1024 * 1024).decode("utf-8", errors="replace")
+            http_status = int(getattr(response, "status", 200))
+    except Exception as exc:
+        return {
+            "status": "failed",
+            "url": url,
+            "summary": f"Lite API health check failed: {_safe_restore_error(exc)}",
+        }
+    try:
+        payload = json.loads(raw) if raw else {}
+    except Exception:
+        payload = {}
+    recovery_status = str(payload.get("status") or "").lower() if isinstance(payload, dict) else ""
+    passed = http_status == 200 and recovery_status in {"healthy", "degraded"}
+    return {
+        "status": "passed" if passed else "failed",
+        "url": url,
+        "http_status": http_status,
+        "recovery_status": recovery_status or None,
+        "summary": "Lite API health validated after restore." if passed else "Lite API responded, but health status was not acceptable after restore.",
+    }
+
+
 def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
     restore_id = _command_id(command)
     preview_id = str(command.get("preview_id") or "").strip()
-    requested_backup = str(command.get("backup_id") or "latest").strip() or "latest"
+    requested_backup = str(command.get("backup_id") or "").strip()
     reason = str(command.get("reason") or "manual restore")
+    if not requested_backup or requested_backup == "latest":
+        raise RuntimeError("Restore requires an explicit backup_id")
     if not command.get("confirm"):
         raise RuntimeError("Restore requires explicit confirmation")
     if not preview_id:
@@ -752,7 +845,7 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError("Restore preview is not marked as restorable. Recreate Preview Restore after Increment 4.")
     backup_id = str(preview.get("backup_id") or "")
     resolved = lite_backup_manifest.resolve_backup_id(requested_backup)
-    if requested_backup != "latest" and resolved != backup_id:
+    if resolved != backup_id:
         raise RuntimeError("Restore preview does not match the requested backup id")
     manifest = lite_backup_manifest.read_manifest(backup_id)
     if not manifest:
@@ -817,9 +910,12 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
                     "action": change.get("action") or "restored",
                 }
             )
+        service_restart = _restore_service_restart_if_needed(restored_files)
+        health_validation = _validate_lite_api_health()
         completed_at = _utc()
+        final_status = "succeeded" if health_validation.get("status") == "passed" and service_restart.get("status") not in {"failed"} else "succeeded_with_warnings"
         result = {
-            "status": "succeeded",
+            "status": final_status,
             "restore_id": restore_id,
             "backup_id": backup_id,
             "preview_id": preview_id,
@@ -831,10 +927,14 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
             "skipped_change_count": len(skipped_changes),
             "restored_files": restored_files[:500],
             "skipped_changes": skipped_changes[:500],
-            "summary": f"Restore completed. {len(restored_files)} Lite state file(s) restored after checkpoint creation.",
+            "service_restart": service_restart,
+            "health_validation": health_validation,
+            "summary": f"Restore completed. {len(restored_files)} Lite state file(s) restored after checkpoint creation." if final_status == "succeeded" else f"Restore completed with warnings. {len(restored_files)} Lite state file(s) restored after checkpoint creation.",
             "evidence_references": [
                 "pocketlab.events.lite.restore.started",
                 "pocketlab.events.lite.restore.checkpoint_created",
+                "pocketlab.events.lite.restore.service_restart_checked",
+                "pocketlab.events.lite.restore.health_validated",
                 "pocketlab.events.lite.restore.completed",
                 "pocketlab.audit.lite.restore.completed",
             ],
@@ -864,7 +964,7 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
                 },
                 "pre_restore_checkpoint": checkpoint_summary,
                 "last_restore": {
-                    "status": "succeeded",
+                    "status": final_status,
                     "restore_id": restore_id,
                     "backup_id": backup_id,
                     "preview_id": preview_id,
@@ -872,6 +972,8 @@ def apply_restore(command: dict[str, Any]) -> dict[str, Any]:
                     "completed_at": completed_at,
                     "restored_file_count": len(restored_files),
                     "summary": result["summary"],
+                    "service_restart": service_restart,
+                    "health_validation": health_validation,
                 },
                 "manifest": str(lite_backup_manifest.manifest_path(backup_id)),
                 "restore_preview": str(restore_preview_path(preview_id)),
