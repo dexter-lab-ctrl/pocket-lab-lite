@@ -6170,3 +6170,100 @@ textarea {
   }
 }
 
+
+/* Lite Backup & Restore overlap hardening.
+   The flip panel uses grid stacking so its content reserves height in normal flow.
+   This prevents action buttons, readiness, evidence, and detail panels from overlapping. */
+.theme-pocket-lite-daylight .lite-recovery-restore-cockpit {
+  overflow: visible;
+  contain: layout;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-shell {
+  display: block;
+  height: auto;
+  min-height: 0;
+  margin-bottom: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-inner {
+  display: grid;
+  min-height: 0;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-face {
+  position: relative;
+  inset: auto;
+  grid-area: 1 / 1;
+  height: auto;
+  min-height: 0;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-front {
+  z-index: 2;
+  opacity: 1;
+  pointer-events: auto;
+  transform: rotateY(0deg);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-back {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: rotateY(-180deg);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-shell.is-flipped .lite-recovery-flip-front {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: rotateY(180deg);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-flip-shell.is-flipped .lite-recovery-flip-back {
+  z-index: 2;
+  opacity: 1;
+  pointer-events: auto;
+  transform: rotateY(0deg);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-action-buttons {
+  clear: both;
+  position: relative;
+  z-index: 4;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-history-card,
+.theme-pocket-lite-daylight .lite-recovery-evidence-backdrop,
+.theme-pocket-lite-daylight .lite-recovery-result,
+.theme-pocket-lite-daylight .lite-recovery-result-card,
+.theme-pocket-lite-daylight .lite-recovery-evidence,
+.theme-pocket-lite-daylight .lite-recovery-evidence-card,
+.theme-pocket-lite-daylight .lite-recovery-friendly-log,
+.theme-pocket-lite-daylight .lite-recovery-readiness,
+.theme-pocket-lite-daylight .lite-restore-readiness,
+.theme-pocket-lite-daylight .lite-restore-readiness-card,
+.theme-pocket-lite-daylight .lite-restore-detail-card {
+  clear: both;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-recovery-flip-shell {
+    margin-bottom: 1.5rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-flip-back {
+    padding: 1rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-flip-readiness,
+  .theme-pocket-lite-daylight .lite-recovery-preview-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-action-buttons {
+    gap: 0.8rem;
+  }
+}
