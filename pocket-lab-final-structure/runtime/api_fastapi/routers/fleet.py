@@ -376,18 +376,27 @@ async def restart_lite_fleet_agent(
     )
 
     status = str(agent.get("status") or "unknown").lower()
-    delivery = "sent" if status in {"active", "healthy", "online"} else "queued"
+    process_status = str(agent.get("agent_process_status") or "").lower()
+    supervisor_status = str(agent.get("supervisor_status") or "").lower()
+    if status == "agent_stopped" or process_status in {"stopped", "missing", "errored", "error", "stopping"}:
+        delivery = "supervisor_repairing" if supervisor_status == "repairing" else "agent_stopped"
+    else:
+        delivery = "sent" if status in {"active", "healthy", "online"} else "queued"
 
     progress = fleet_registry.command_progress(item, agent)
+    if delivery == "agent_stopped":
+        summary = "The device agent is stopped. Pocket Lab is waiting for the local supervisor to start it."
+    elif delivery == "supervisor_repairing":
+        summary = "The local supervisor is already working to bring this device back."
+    elif delivery == "queued":
+        summary = "Restart requested. If the device is offline, it will run after the device agent reconnects."
+    else:
+        summary = "Restart requested for the device agent."
     return {
         "accepted": True,
         "status": "queued",
         "delivery": delivery,
-        "summary": (
-            "Restart requested. If the device is offline, it will run after the agent reconnects."
-            if delivery == "queued"
-            else "Restart requested for the device agent."
-        ),
+        "summary": summary,
         "node_id": normalized_node_id,
         "command_id": item["command_id"],
         "command": item,
@@ -801,22 +810,34 @@ then
 fi
 
 AGENT_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py"
+SUPERVISOR_FILE="$HOME/pocket-lab-lite/pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py"
 
 if [ -f "$AGENT_FILE" ]; then
   echo "Starting Pocket Lab Lite node agent..."
   if command -v pm2 >/dev/null 2>&1; then
-    for process_name in $(pm2 jlist 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); [print(p.get("name","")) for p in data if str(p.get("name","")).startswith("pocketlab-agent-")]' 2>/dev/null || true); do
+    for process_name in $(pm2 jlist 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); [print(p.get("name","")) for p in data if str(p.get("name","")).startswith("pocketlab-agent-") and not str(p.get("name","")).startswith("pocketlab-agent-supervisor-")]' 2>/dev/null || true); do
       pm2 delete "$process_name" >/dev/null 2>&1 || true
     done
     if command -v pkill >/dev/null 2>&1; then
       pkill -f 'pocketlab_node_agent.py' >/dev/null 2>&1 || true
     fi
     pm2 start python3 --name "pocketlab-agent-$POCKETLAB_NODE_ID" --update-env -- "$AGENT_FILE"
+    echo "Device agent started with PM2: pocketlab-agent-$POCKETLAB_NODE_ID"
+    if [ -f "$SUPERVISOR_FILE" ]; then
+      if pm2 describe "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" >/dev/null 2>&1; then
+        pm2 restart "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" --update-env >/dev/null 2>&1 || true
+      else
+        pm2 start python3 --name "pocketlab-agent-supervisor-$POCKETLAB_NODE_ID" --update-env -- "$SUPERVISOR_FILE"
+      fi
+      echo "Local supervisor started with PM2: pocketlab-agent-supervisor-$POCKETLAB_NODE_ID"
+    fi
     pm2 save >/dev/null 2>&1 || true
-    echo "Node agent started with PM2: pocketlab-agent-$POCKETLAB_NODE_ID"
   else
     nohup python3 "$AGENT_FILE" > "$HOME/pocketlab-agent-$POCKETLAB_NODE_ID.log" 2>&1 &
-    echo "Node agent started in background."
+    if [ -f "$SUPERVISOR_FILE" ]; then
+      nohup python3 "$SUPERVISOR_FILE" > "$HOME/pocketlab-agent-supervisor-$POCKETLAB_NODE_ID.log" 2>&1 &
+    fi
+    echo "Device agent started in background."
   fi
 else
   echo ""
@@ -825,6 +846,7 @@ else
   echo "  cd $HOME/pocket-lab-lite/pocket-lab-final-structure/runtime"
   echo "  source $ENV_FILE"
   echo "  python3 agents/pocketlab_node_agent.py"
+  echo "  python3 agents/pocketlab_agent_supervisor.py"
 fi
 
 echo ""

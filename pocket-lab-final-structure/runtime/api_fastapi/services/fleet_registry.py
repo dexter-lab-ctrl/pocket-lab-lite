@@ -12,6 +12,7 @@ from .. import deps
 
 AGENT_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_AGENT_TTL_SECONDS", "90"))
 COMMAND_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_COMMAND_TTL_SECONDS", "3600"))
+SUPERVISOR_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_SUPERVISOR_TTL_SECONDS", "180"))
 
 
 class DeviceRemovalError(Exception):
@@ -225,17 +226,28 @@ def _commands_payload() -> Dict[str, Any]:
 
 def _derive_status(agent: Dict[str, Any]) -> str:
     last_seen_epoch = float(agent.get("last_seen_epoch") or 0)
+    supervisor_seen_epoch = float(agent.get("last_supervisor_epoch") or 0)
     agent_status = str(agent.get("agent_status") or "unknown").lower()
+    supervisor_status = str(agent.get("supervisor_status") or "").lower()
+    process_status = str(agent.get("agent_process_status") or "").lower()
+    supervisor_fresh = bool(supervisor_seen_epoch and (_epoch() - supervisor_seen_epoch) <= SUPERVISOR_TTL_SECONDS)
+
     if agent_status in {"invited", "pending"}:
         return "pending"
     if agent_status in {"joining", "accepted"}:
         return agent_status
+    if supervisor_fresh and supervisor_status == "repairing":
+        return "repairing"
+    if supervisor_fresh and process_status in {"stopped", "missing", "errored", "error", "stopping"}:
+        return "agent_stopped"
     if (
         last_seen_epoch
         and (_epoch() - last_seen_epoch) <= AGENT_TTL_SECONDS
-        and agent_status not in {"failed", "unhealthy", "offline"}
+        and agent_status not in {"failed", "unhealthy", "offline", "agent_stopped"}
     ):
         return "active"
+    if supervisor_fresh and agent_status in {"agent_stopped", "repairing"}:
+        return agent_status
     if last_seen_epoch:
         return "offline"
     return "unknown"
@@ -286,12 +298,31 @@ def upsert_agent(
         "last_seen_at": data.get("seen_at")
         or data.get("heartbeat_at")
         or data.get("sampled_at")
+        or data.get("checked_at")
         or now,
         "last_seen_epoch": _epoch(),
         "updated_at": now,
         "isCurrent": bool(data.get("is_control_plane", False)),
         "source": "nats-agent",
     }
+
+    supervisor_seen = bool(
+        data.get("supervisor_status")
+        or data.get("agent_process_status")
+        or str(event_type or "").endswith("node_supervisor")
+    )
+    if supervisor_seen:
+        merged["supervisor_status"] = data.get("supervisor_status") or existing.get("supervisor_status") or "unknown"
+        merged["agent_process"] = data.get("agent_process") or existing.get("agent_process")
+        merged["agent_process_status"] = data.get("agent_process_status") or existing.get("agent_process_status") or "unknown"
+        merged["supervisor_process"] = data.get("supervisor_process") or existing.get("supervisor_process")
+        merged["supervisor_version"] = data.get("supervisor_version") or existing.get("supervisor_version")
+        merged["last_supervisor_at"] = data.get("checked_at") or data.get("seen_at") or now
+        merged["last_supervisor_epoch"] = _epoch()
+        merged["supervisor_repair_count"] = int(data.get("repair_count") or existing.get("supervisor_repair_count") or 0)
+        merged["last_supervisor_repair_at"] = data.get("last_repair_at") or existing.get("last_supervisor_repair_at") or ""
+        merged["supervisor_nats_reachable"] = bool(data.get("nats_reachable"))
+
     if isinstance(data.get("telemetry"), dict):
         merged["telemetry"] = data["telemetry"]
     if isinstance(data.get("health"), dict):
@@ -325,6 +356,7 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
         "node_telemetry",
         "node_health",
         "node_left",
+        "node_supervisor",
     )
     if not subject.endswith(agent_event_suffixes):
         return
@@ -374,6 +406,13 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "agent_version": agent.get("agent_version"),
                 "telemetry": agent.get("telemetry") or {},
                 "health": agent.get("health") or {},
+                "supervisor_status": agent.get("supervisor_status"),
+                "agent_process": agent.get("agent_process"),
+                "agent_process_status": agent.get("agent_process_status"),
+                "last_supervisor_at": agent.get("last_supervisor_at"),
+                "supervisor_repair_count": agent.get("supervisor_repair_count"),
+                "last_supervisor_repair_at": agent.get("last_supervisor_repair_at"),
+                "supervisor_nats_reachable": agent.get("supervisor_nats_reachable"),
             }
         )
     return nodes
@@ -475,34 +514,90 @@ def command_progress(command: Dict[str, Any] | None, agent: Dict[str, Any] | Non
     created_epoch = float(command.get("created_at_epoch") or 0)
     last_seen_epoch = float(agent.get("last_seen_epoch") or 0)
     agent_status = str(agent.get("status") or "unknown").lower()
+    process_status = str(agent.get("agent_process_status") or "").lower()
+    supervisor_status = str(agent.get("supervisor_status") or "").lower()
+    supervisor_seen_epoch = float(agent.get("last_supervisor_epoch") or 0)
+    supervisor_fresh = bool(supervisor_seen_epoch and (_epoch() - supervisor_seen_epoch) <= SUPERVISOR_TTL_SECONDS)
     command_finished = command_status in {"acknowledged", "completed", "succeeded"}
     command_failed = command_status in {"failed", "error", "unsupported"}
     heartbeat_after_request = bool(last_seen_epoch and created_epoch and last_seen_epoch >= created_epoch)
     online = agent_status in {"active", "healthy", "online"}
+    stopped = agent_status == "agent_stopped" or process_status in {"stopped", "missing", "errored", "error", "stopping"}
+    repairing = agent_status == "repairing" or supervisor_status == "repairing"
+    supervisor_known = bool(supervisor_status or process_status or supervisor_seen_epoch)
 
     def step(step_id: str, label: str, detail: str, state: str) -> Dict[str, Any]:
         return {"id": step_id, "label": label, "detail": detail, "state": state}
 
+    if stopped or repairing:
+        supervisor_state = "active" if repairing else ("complete" if supervisor_known and not stopped else "waiting" if supervisor_known else "failed")
+        heartbeat_state = "complete" if heartbeat_after_request and online else "waiting"
+        overall = "completed" if heartbeat_after_request and online else ("repairing" if repairing or supervisor_state == "active" else "agent_stopped")
+        steps = [
+            step("request_saved", "Request saved", "Pocket Lab recorded the restart request safely.", "complete" if command_id else "waiting"),
+            step(
+                "private_channel",
+                "Private channel checked",
+                "The normal restart request can run only after the device agent is available.",
+                "waiting" if stopped and not online else "complete",
+            ),
+            step(
+                "device_agent",
+                "Device agent is stopped" if stopped else "Device agent is being repaired",
+                "The device agent is not currently available to receive commands." if stopped else "The local supervisor is working to bring the device agent back.",
+                "failed" if stopped and not supervisor_known else "active" if repairing else "waiting",
+            ),
+            step(
+                "local_supervisor",
+                "Local supervisor",
+                "The local supervisor can start the stopped device agent on that phone." if supervisor_known else "This phone has not reported a local supervisor yet. Open Termux on that phone to start the supervisor once.",
+                supervisor_state,
+            ),
+            step("heartbeat", "Waiting for the device to report back", "The device will show Online after a fresh heartbeat arrives.", heartbeat_state),
+        ]
+        return {
+            "status": overall,
+            "command_id": command_id,
+            "node_id": node_id,
+            "command_status": command_status,
+            "agent_status": agent_status,
+            "agent_process_status": process_status or "unknown",
+            "supervisor_status": supervisor_status or "unknown",
+            "heartbeat_after_request": heartbeat_after_request,
+            "last_seen_at": agent.get("last_seen_at"),
+            "steps": steps,
+            "summary": (
+                "Device reported back after local repair."
+                if overall == "completed"
+                else "The device agent is stopped. Pocket Lab is waiting for the local supervisor to start it."
+                if overall == "agent_stopped"
+                else "The local supervisor is repairing the device agent."
+            ),
+        }
+
+    def normal_step(step_id: str, label: str, detail: str, state: str) -> Dict[str, Any]:
+        return {"id": step_id, "label": label, "detail": detail, "state": state}
+
     steps = [
-        step(
+        normal_step(
             "request_saved",
             "Request saved",
             "Pocket Lab recorded the restart request safely.",
             "complete" if command_id else "waiting",
         ),
-        step(
+        normal_step(
             "private_channel",
             "Sent through the private channel",
             "Pocket Lab sent the request through the device command channel.",
             "complete" if command_id else "waiting",
         ),
-        step(
+        normal_step(
             "device_ack",
             "Waiting for the device agent",
             "The device agent needs to receive and acknowledge the restart request.",
             "failed" if command_failed else ("complete" if command_finished else "active"),
         ),
-        step(
+        normal_step(
             "heartbeat",
             "Waiting for the device to report back",
             "The device will show Online after a fresh heartbeat arrives.",
@@ -518,6 +613,8 @@ def command_progress(command: Dict[str, Any] | None, agent: Dict[str, Any] | Non
         "node_id": node_id,
         "command_status": command_status,
         "agent_status": agent_status,
+        "agent_process_status": process_status or "unknown",
+        "supervisor_status": supervisor_status or "unknown",
         "heartbeat_after_request": heartbeat_after_request,
         "last_seen_at": agent.get("last_seen_at"),
         "steps": steps,
@@ -529,7 +626,6 @@ def command_progress(command: Dict[str, Any] | None, agent: Dict[str, Any] | Non
             else "Pocket Lab could not confirm the restart."
         ),
     }
-
 
 def record_command_result(data: Dict[str, Any]) -> Dict[str, Any]:
     command_id = str(data.get("command_id") or "")
