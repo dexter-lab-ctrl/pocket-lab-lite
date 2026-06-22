@@ -745,21 +745,30 @@ async def publish_invite_evidence(invite_result: dict[str, Any]) -> None:
         return
     command_id = str(invite_result.get("command_id") or event.get("invite_id") or "")
     command_payload = {**event, "command_id": command_id, "trace_id": command_id}
-    await BUS.publish_json(
-        "pocketlab.commands.fleet.join",
-        "fleet.join.requested",
-        command_payload,
-        trace_id=command_id,
-    )
-    await BUS.publish_json(
-        "pocketlab.events.fleet.invite_created",
-        "fleet.invite_created",
-        event,
-        trace_id=command_id,
-    )
-    await BUS.publish_json(
-        "pocketlab.audit.fleet.invite_created",
-        "fleet.invite_created",
-        event,
-        trace_id=command_id,
-    )
+    try:
+        await BUS.publish_json(
+            "pocketlab.commands.fleet.join",
+            "fleet.join.requested",
+            command_payload,
+            trace_id=command_id,
+        )
+        await BUS.publish_json(
+            "pocketlab.events.fleet.invite_created",
+            "fleet.invite_created",
+            event,
+            trace_id=command_id,
+        )
+        await BUS.publish_json(
+            "pocketlab.audit.fleet.invite_created",
+            "fleet.invite_created",
+            event,
+            trace_id=command_id,
+        )
+    except Exception as exc:
+        # Invite creation already wrote local state and redacted audit evidence.
+        # A stale or reconnecting NATS client must not turn Add Device into a
+        # 500; the UI can still show the copyable bootstrap command and Lite
+        # status will surface the command bus degradation.
+        BUS.connected = False
+        BUS.fallback_reason = str(exc)
+        return
