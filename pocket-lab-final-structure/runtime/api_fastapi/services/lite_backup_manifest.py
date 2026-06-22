@@ -105,6 +105,17 @@ def resolve_backup_id(backup_id: str) -> str | None:
     return value or None
 
 
+
+def no_backup_payload(*, backup_id: str = "latest", kind: str = "backup") -> dict[str, Any]:
+    label = "Backup receipt" if kind == "receipt" else "Backup"
+    return {
+        "status": "not_created",
+        "backup_id": backup_id,
+        "summary": f"{label} has not been created yet. Run Backup Now first, then refresh this endpoint.",
+        "latest_backup_available": False,
+        "retry_after_seconds": 2,
+    }
+
 def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     return {
         "backup_id": manifest.get("backup_id"),

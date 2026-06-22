@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import uuid
 
 from typing import Any, Literal
 
@@ -314,18 +315,38 @@ def get_lite_recovery(request: Request) -> dict[str, Any]:
 @router.post("/recovery/backup", status_code=202)
 async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
+    command_id = uuid.uuid4().hex
     command = {
+        "command_id": command_id,
         "include_event_journal": payload.include_event_journal,
         "include_app_data": payload.include_app_data,
         "reason": payload.reason or "manual backup",
         "dry_run": payload.dry_run,
         "requested_by": "lite-api",
     }
-    return await submit_domain_command(
-        "pocketlab.commands.lite.backup.create",
-        "lite.backup.queued",
-        command,
-    )
+    pending = lite_backup.record_backup_request(command)
+    try:
+        submitted = await submit_domain_command(
+            "pocketlab.commands.lite.backup.create",
+            "lite.backup.queued",
+            command,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "backup_queue_unavailable",
+                "summary": "Backup request could not be queued because the local command bus is not reachable.",
+                "detail": str(exc),
+                "pending_backup": pending,
+            },
+        ) from exc
+    submitted["backup_id"] = command_id
+    submitted["pending_backup"] = pending
+    submitted["summary"] = "Backup request queued. The encrypted repository will be initialized automatically if this is the first backup."
+    return submitted
 
 
 @router.get("/recovery/backups")
