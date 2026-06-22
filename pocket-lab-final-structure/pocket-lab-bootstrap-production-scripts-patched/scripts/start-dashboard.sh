@@ -126,8 +126,8 @@ jetstream {
 }
 authorization {
   users: [
-    { user: "$POCKETLAB_NATS_API_USER", password: "$POCKETLAB_NATS_API_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
-    { user: "$POCKETLAB_NATS_WORKER_USER", password: "$POCKETLAB_NATS_WORKER_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
+    { user: "$POCKETLAB_NATS_API_USER", password: "$POCKETLAB_NATS_API_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "\$js.ack.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
+    { user: "$POCKETLAB_NATS_WORKER_USER", password: "$POCKETLAB_NATS_WORKER_PASSWORD", permissions: { publish: ["\$JS.API.>", "\$JS.ACK.>", "\$js.ack.>", "pocketlab.events.>", "pocketlab.audit.>", "pocketlab.dlq.>"], subscribe: ["_INBOX.>", "pocketlab.commands.>", "pocketlab.events.>", "pocketlab.audit.>"] } },
     { user: "$POCKETLAB_NATS_AGENT_USER", password: "$POCKETLAB_NATS_AGENT_PASSWORD", permissions: { publish: ["pocketlab.events.fleet.>", "pocketlab.events.telemetry.>", "pocketlab.events.health.>"], subscribe: ["_INBOX.>", "pocketlab.commands.node.>"] } }
   ]
 }
