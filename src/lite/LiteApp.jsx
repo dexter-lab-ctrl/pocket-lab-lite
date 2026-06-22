@@ -916,32 +916,6 @@ function deviceLinkState(device) {
   return 'disconnected';
 }
 
-function DeviceLinkVisual({ device }) {
-  const state = deviceLinkState(device);
-  const copy = {
-    server: 'This is the Pocket Lab Lite server.',
-    joined: 'Joined to the Pocket Lab Lite server.',
-    repairing: 'Supervisor is repairing the connection.',
-    disconnected: 'Not joined to the server right now.',
-  }[state];
-
-  return (
-    <div className={`lite-device-link-visual lite-device-link-${state}`} aria-label={copy}>
-      <div className="lite-device-link-node lite-device-link-server">
-        <Download className="h-4 w-4" />
-      </div>
-      <div className="lite-device-link-rail">
-        <span className="lite-device-link-flow" />
-        <span className="lite-device-link-gap" />
-      </div>
-      <div className="lite-device-link-node lite-device-link-client">
-        <Network className="h-4 w-4" />
-      </div>
-      <p>{copy}</p>
-    </div>
-  );
-}
-
 function DevicesScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.fleet, []);
   const [hostname, setHostname] = useState('');
@@ -1393,12 +1367,18 @@ function DevicesScreen() {
 
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
-          <div className="lite-devices-grid">
+          <div className="lite-devices-grid lite-devices-linked-grid">
             {devices.map((device) => {
               const online = normalizeBackendState(device.status) === 'ready';
+              const linkState = deviceLinkState(device);
+              const role = String(device?.role || '').toLowerCase();
+              const isServerCard = role === 'server_host' || device?.is_current || device?.isCurrent;
+              const connectionClass = isServerCard
+                ? 'lite-device-card-server'
+                : `lite-device-card-linked lite-device-card-linked-${linkState}`;
 
               return (
-                <GlassCard key={device.id || device.name} className="lite-device-card">
+                <GlassCard key={device.id || device.name} className={`lite-device-card ${connectionClass}`}>
                   <div className="lite-device-card-top">
                     <div className="lite-device-icon">
                       <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
@@ -1411,7 +1391,9 @@ function DevicesScreen() {
 
                   <h2>{device.name || 'Unnamed device'}</h2>
 
-                  <DeviceLinkVisual device={device} />
+                  <div className="lite-device-connection-copy">
+                    {isServerCard ? 'Connection anchor for this Pocket Lab.' : linkState === 'joined' ? 'Connected to the Pocket Lab Lite server.' : linkState === 'repairing' ? 'Connection is being repaired.' : 'Disconnected from the Pocket Lab Lite server.'}
+                  </div>
 
                   <div className="lite-device-details">
                     <div>
