@@ -1645,33 +1645,19 @@ function safeRestartSteps(progress = {}) {
 function RecoveryScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.recovery, []);
   const [backupResult, setBackupResult] = useState(null);
-  const [restoreResult, setRestoreResult] = useState(null);
   const [actionError, setActionError] = useState(null);
-  const [confirmRestore, setConfirmRestore] = useState(false);
   const [busy, setBusy] = useState('');
+
+  const latestBackup = data?.last_backup || data?.latest_backup || null;
+  const history = data?.backup_history || data?.available_restore_points || [];
+  const repository = data?.repository || {};
 
   async function backup() {
     setBusy('backup');
     setBackupResult(null);
-    setRestoreResult(null);
     setActionError(null);
     try {
-      setBackupResult(await liteApi.backupNow({ include_event_journal: true }));
-      refresh();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
-  }
-
-  async function restore() {
-    setBusy('restore');
-    setRestoreResult(null);
-    setBackupResult(null);
-    setActionError(null);
-    try {
-      setRestoreResult(await liteApi.restoreBackup({ backup_ref: 'latest', confirm: confirmRestore }));
+      setBackupResult(await liteApi.backupNow({ include_app_data: false, reason: 'manual backup' }));
       refresh();
     } catch (err) {
       setActionError(err.message);
@@ -1685,7 +1671,7 @@ function RecoveryScreen() {
       <PageHeader
         eyebrow="Recovery"
         title="Backup & Restore"
-        description="Create a safety copy before changes and restore only when you clearly choose to continue."
+        description="Create a safety copy before changes. Restore stays protected until backup checks and preview are ready."
         actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
       />
 
@@ -1694,20 +1680,15 @@ function RecoveryScreen() {
           <div className="lite-home-pill">
             <span className="lite-ready-dot" />
             {backendLabel(data?.status, {
-              ready: 'Recovery ready',
-              review: 'Recovery needs review',
-              danger: 'Recovery needs attention',
+              ready: 'Recovery Ready',
+              review: 'Needs Attention',
+              danger: 'Needs Attention',
               checking: 'Checking recovery',
             })}
           </div>
-          <h2>{backendHeroTitle(data?.status, {
-            ready: 'Keep a safe way back.',
-            review: 'Review your recovery setup.',
-            danger: 'Recovery needs attention.',
-            checking: 'Checking recovery readiness.',
-          })}</h2>
+          <h2>{latestBackup ? 'You have a safe restore point.' : 'Create your first safe copy.'}</h2>
           <p>
-            Back up your Pocket Lab before important changes. Restore is intentionally protected so it cannot happen by accident.
+            Pocket Lab backs up local Lite state into an encrypted restic repository and saves a clear evidence receipt.
           </p>
           <div className="lite-recovery-actions">
             <LiteButton onClick={backup} disabled={busy === 'backup'}>
@@ -1721,18 +1702,13 @@ function RecoveryScreen() {
           <div className="lite-recovery-icon">
             <Database className="h-7 w-7" />
           </div>
-          <span>Recovery state</span>
-          <strong>{backendLabel(data?.status, {
-            ready: 'Ready',
-            review: 'Review',
-            danger: 'Attention',
-            checking: 'Checking',
-          })}</strong>
+          <span>Last backup</span>
+          <strong>{latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'None yet'}</strong>
           <StatusBadge status={backendBadgeStatus(data?.status)}>
-            {backendLabel(data?.status, {
-              ready: 'Ready',
-              review: 'Review',
-              danger: 'Attention',
+            {latestBackup ? 'Safe restore point' : backendLabel(data?.status, {
+              ready: 'Recovery Ready',
+              review: 'Needs Attention',
+              danger: 'Needs Attention',
               checking: 'Checking',
             })}
           </StatusBadge>
@@ -1756,33 +1732,30 @@ function RecoveryScreen() {
             <div className="lite-recovery-mini-icon">
               <Database className="h-5 w-5" />
             </div>
-            <StatusBadge status={backendBadgeStatus(data?.status)}>
-              {backendLabel(data?.status, {
-                ready: 'Ready',
-                review: 'Review',
-                danger: 'Attention',
-                checking: 'Checking',
-              })}
+            <StatusBadge status={repository?.ready ? 'healthy' : backendBadgeStatus(data?.status)}>
+              {repository?.ready ? 'Repository ready' : 'Needs Attention'}
             </StatusBadge>
           </div>
 
-          <h2>Backup</h2>
-          <p>
-            {data?.summary || 'Pocket Lab is checking whether backup and restore are ready.'}
-          </p>
+          <h2>Backup status</h2>
+          <p>{data?.summary || 'Pocket Lab is checking whether backups are ready.'}</p>
 
-          <div className="lite-recovery-checklist">
+          <div className="lite-recovery-facts">
             <div>
-              <span className="lite-recovery-dot" />
-              Save a recovery point before important changes
+              <span>Stored in</span>
+              <strong>{repository?.location || 'Local backup folder'}</strong>
             </div>
             <div>
-              <span className="lite-recovery-dot" />
-              Keep restore separate from everyday actions
+              <span>Engine</span>
+              <strong>{repository?.engine || 'restic'}</strong>
             </div>
             <div>
-              <span className="lite-recovery-dot" />
-              Show a clear result after every request
+              <span>Last check</span>
+              <strong>{data?.updated_at ? formatLiteTime(data.updated_at) : 'Not available yet'}</strong>
+            </div>
+            <div>
+              <span>Last verification</span>
+              <strong>{data?.last_verification_result || 'Not verified yet'}</strong>
             </div>
           </div>
 
@@ -1793,52 +1766,106 @@ function RecoveryScreen() {
           </div>
         </GlassCard>
 
+        <GlassCard className="lite-recovery-card">
+          <div className="lite-recovery-card-head">
+            <div className="lite-recovery-mini-icon">
+              <FileCheck className="h-5 w-5" />
+            </div>
+            <span className="lite-recovery-warning-badge">Evidence saved</span>
+          </div>
+
+          <h2>What is protected</h2>
+          <p>Pocket Lab saves the Lite state needed to recover devices, app metadata, rules, and evidence.</p>
+
+          <div className="lite-recovery-checklist">
+            {(data?.what_will_be_backed_up || []).slice(0, 6).map((item) => (
+              <div key={item}>
+                <span className="lite-recovery-dot" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="lite-recovery-grid mt-4">
+        <GlassCard className="lite-recovery-card">
+          <div className="lite-recovery-card-head">
+            <div className="lite-recovery-mini-icon lite-recovery-mini-icon-warning">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <span className="lite-recovery-warning-badge">Secrets excluded</span>
+          </div>
+          <h2>What is not backed up</h2>
+          <p>Raw secrets are not saved by default. A separate encrypted secret recovery bundle can be added later only with clear confirmation.</p>
+          <div className="lite-recovery-checklist">
+            {(data?.what_will_not_be_backed_up || []).slice(0, 6).map((item) => (
+              <div key={item}>
+                <span className="lite-recovery-dot lite-recovery-dot-warning" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+
         <GlassCard className="lite-recovery-card lite-recovery-restore-card">
           <div className="lite-recovery-card-head">
             <div className="lite-recovery-mini-icon lite-recovery-mini-icon-warning">
               <FileCheck className="h-5 w-5" />
             </div>
-            <span className="lite-recovery-warning-badge">Confirm first</span>
+            <span className="lite-recovery-warning-badge">Protected</span>
           </div>
 
-          <h2>Restore</h2>
+          <h2>Restore Latest</h2>
           <p>
-            Restore can replace the current setup with the latest saved backup. Use it only when you are sure.
+            Restore is protected. It will be enabled only after backup verification and Preview Restore are in place.
           </p>
 
-          <button
-            type="button"
-            className={`lite-recovery-confirm ${confirmRestore ? 'lite-recovery-confirm-on' : ''}`}
-            onClick={() => setConfirmRestore((value) => !value)}
-            aria-pressed={confirmRestore}
-          >
-            <span className="lite-recovery-confirm-box">
-              {confirmRestore ? '✓' : ''}
-            </span>
-            <span>
-              <strong>I understand what restore does</strong>
-              <small>{confirmRestore ? 'Restore is now unlocked.' : 'Turn this on before restoring.'}</small>
-            </span>
-          </button>
-
           <div className="lite-recovery-warning-note">
-            <strong>Restore is protected</strong>
-            <span>You must confirm before Pocket Lab starts a restore request.</span>
+            <strong>Restore requires confirmation</strong>
+            <span>Pocket Lab will check the backup and show what changes before restoring.</span>
           </div>
 
-          <div className="mt-5">
-            <LiteButton
-              onClick={restore}
-              disabled={busy === 'restore' || !confirmRestore}
-              tone="danger"
-            >
-              {busy === 'restore' ? 'Starting restore...' : 'Restore Latest'}
-            </LiteButton>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <LiteButton disabled tone="secondary">Verify Backup</LiteButton>
+            <LiteButton disabled tone="secondary">Preview Restore</LiteButton>
+            <LiteButton disabled tone="danger">Restore Latest</LiteButton>
           </div>
         </GlassCard>
       </div>
 
-      <ResultNotice result={backupResult || restoreResult} error={actionError} />
+      <GlassCard className="lite-recovery-card mt-4">
+        <div className="lite-recovery-card-head">
+          <div>
+            <h2>Backup history</h2>
+            <p>Available restore points and evidence receipts appear here.</p>
+          </div>
+          <StatusBadge status={history.length ? 'healthy' : 'unknown'}>{history.length} saved</StatusBadge>
+        </div>
+        {history.length ? (
+          <div className="lite-recovery-history">
+            {history.slice(0, 6).map((backup) => (
+              <div key={backup.backup_id} className="lite-recovery-history-row">
+                <div>
+                  <strong>{backup.summary || 'Backup created'}</strong>
+                  <span>{formatLiteTime(backup.created_at)} · {backup.engine || 'restic'} · {backup.included_file_count || 0} item(s)</span>
+                </div>
+                <StatusBadge status={backup.verification_status === 'verified' ? 'healthy' : 'degraded'}>
+                  {backup.verification_status === 'verified' ? 'Verified' : 'Not verified'}
+                </StatusBadge>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <StateSurface
+            tone="empty"
+            title="No backups yet"
+            description="Use Backup Now to create your first encrypted local backup."
+          />
+        )}
+      </GlassCard>
+
+      <ResultNotice result={backupResult} error={actionError} />
     </>
   );
 }

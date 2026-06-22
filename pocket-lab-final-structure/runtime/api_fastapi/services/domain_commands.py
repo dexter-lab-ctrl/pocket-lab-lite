@@ -461,6 +461,57 @@ async def handle_vault_dynamic_secret(command: Dict[str, Any]) -> Dict[str, Any]
     return result
 
 
+async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    await _publish(
+        "pocketlab.events.lite.backup.started",
+        "lite.backup.started",
+        {"command_id": command_id, "engine": "restic"},
+        trace_id=command_id,
+    )
+    from . import lite_backup
+
+    try:
+        result = await asyncio.to_thread(lite_backup.create_backup, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.backup.failed",
+            "lite.backup.failed",
+            {"command_id": command_id, "error": str(exc)},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.backup.failed",
+            "lite.backup.failed",
+            {"command_id": command_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+    await _publish(
+        "pocketlab.events.lite.backup.snapshot_created",
+        "lite.backup.snapshot_created",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id"),
+            "snapshot_id": result.get("snapshot_id"),
+            "manifest_checksum": (result.get("manifest") or {}).get("manifest_checksum"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.backup.created",
+        "lite.backup.created",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id"),
+            "snapshot_id": result.get("snapshot_id"),
+            "evidence_saved": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
 HANDLERS = {
     "pocketlab.commands.catalog.refresh": handle_catalog_refresh,
     "pocketlab.commands.drift.scan": handle_drift_scan,
@@ -484,6 +535,7 @@ HANDLERS = {
     "pocketlab.commands.security.configure_opa": handle_security_configure_opa,
     "pocketlab.commands.vault.rotate": handle_vault_rotate,
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
+    "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
 }
 
 

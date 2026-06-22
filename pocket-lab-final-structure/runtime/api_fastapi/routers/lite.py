@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_invites, lite_status
+from ..services import fleet_registry, lite_backup, lite_invites, lite_status
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -62,11 +62,15 @@ class LitePolicyApplyRequest(BaseModel):
 
 class LiteBackupRequest(BaseModel):
     include_event_journal: bool = True
+    include_app_data: bool = False
+    reason: str | None = None
     dry_run: bool = False
 
 
 class LiteRestoreRequest(BaseModel):
+    backup_id: str | None = None
     backup_ref: str = "latest"
+    preview_id: str | None = None
     confirm: bool = False
     dry_run: bool = False
 
@@ -310,16 +314,51 @@ def get_lite_recovery(request: Request) -> dict[str, Any]:
 @router.post("/recovery/backup", status_code=202)
 async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    op, raw = _operation_payload(
-        "backup_now",
-        {"type": "state", "ref": "default"},
-        {"include_event_journal": payload.include_event_journal},
-        dry_run=payload.dry_run,
+    command = {
+        "include_event_journal": payload.include_event_journal,
+        "include_app_data": payload.include_app_data,
+        "reason": payload.reason or "manual backup",
+        "dry_run": payload.dry_run,
+        "requested_by": "lite-api",
+    }
+    return await submit_domain_command(
+        "pocketlab.commands.lite.backup.create",
+        "lite.backup.queued",
+        command,
     )
-    return await submit_operation_command(op, raw)
 
 
-@router.post("/recovery/restore", status_code=202)
+@router.get("/recovery/backups")
+def list_lite_backups(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_backup.list_backups()
+
+
+@router.get("/recovery/backups/{backup_id}")
+def get_lite_backup(backup_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    backup = lite_backup.get_backup(backup_id)
+    if not backup:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Backup was not found."},
+        )
+    return backup
+
+
+@router.get("/recovery/receipts/{backup_id}")
+def get_lite_backup_receipt(backup_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    receipt = lite_backup.get_receipt(backup_id)
+    if not receipt:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Backup receipt was not found."},
+        )
+    return receipt
+
+
+@router.post("/recovery/restore", status_code=501)
 async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
     if not payload.confirm:
@@ -330,11 +369,12 @@ async def restore_lite(payload: LiteRestoreRequest, request: Request) -> dict[st
                 "summary": "Restore can change local state. Confirm the restore before running it.",
             },
         )
-    op, raw = _operation_payload(
-        "restore_backup",
-        {"type": "backup", "ref": payload.backup_ref},
-        {"backup_ref": payload.backup_ref, "confirmed": True},
-        dry_run=payload.dry_run,
+    raise HTTPException(
+        status_code=501,
+        detail={
+            "status": "restore_not_implemented",
+            "summary": "Restore is protected and will be enabled after backup creation, verification, and restore preview are validated.",
+            "required_next_steps": ["Verify Backup", "Preview Restore", "Confirm Restore"],
+        },
     )
-    return await submit_operation_command(op, raw)
 
