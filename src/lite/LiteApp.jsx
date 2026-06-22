@@ -1652,6 +1652,8 @@ function RecoveryScreen() {
   const [busy, setBusy] = useState('');
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [copiedEvidence, setCopiedEvidence] = useState('');
+  const [activeActionPanel, setActiveActionPanel] = useState('');
+  const [highlightedAction, setHighlightedAction] = useState('');
 
   const latestBackup = data?.last_backup || data?.latest_backup || null;
   const history = data?.backup_history || data?.available_restore_points || [];
@@ -1702,6 +1704,61 @@ function RecoveryScreen() {
     { label: 'Restore ID', value: lastRestore?.restore_id },
   ].filter((item) => item.value);
 
+  const actionPanelMeta = {
+    verify: {
+      title: 'Verify Backup',
+      subtitle: latestBackupVerified ? 'Evidence checked and backup is ready.' : 'Pocket Lab is checking the backup evidence.',
+      next: 'Preview Restore',
+      logs: [
+        'Verification runs through the Lite control API.',
+        latestBackupVerified ? 'Manifest checksum passed.' : 'Manifest checksum will be checked.',
+        latestBackupVerified ? 'Restic snapshot lookup passed.' : 'Restic snapshot lookup will be checked.',
+        latestBackupVerified ? 'Repository metadata check passed.' : 'Repository metadata will be checked.',
+      ],
+    },
+    preview: {
+      title: 'Preview Restore',
+      subtitle: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'Pocket Lab will inspect the restore point safely.',
+      next: 'Restore Latest',
+      logs: [
+        'Preview runs through the worker and does not restore files.',
+        latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) would be restored.` : 'Restore changes will be counted before restore is enabled.',
+        latestPreviewReady ? `${latestPreview?.restic_item_count || 0} restic item(s) inspected.` : 'Encrypted repository contents will be inspected.',
+        'Raw secrets remain excluded from this restore point.',
+      ],
+    },
+    restore: {
+      title: 'Restore Latest',
+      subtitle: restoreSucceeded ? `${lastRestore?.restored_file_count || 0} file(s) restored after checkpoint creation.` : 'Restore creates a checkpoint before changing Lite state.',
+      next: 'Evidence',
+      logs: [
+        checkpoint?.checkpoint_id ? `Checkpoint saved: ${shortId(checkpoint.checkpoint_id)}` : 'Checkpoint will be saved before restore.',
+        restoreSucceeded ? `${lastRestore?.restored_file_count || 0} Lite state file(s) restored.` : 'Restore is waiting for confirmation.',
+        serviceRestart?.status ? `Service restart: ${serviceRestart.status}` : 'Service restart will be checked after restore.',
+        healthValidation?.status ? `Lite API health: ${healthValidation.status}` : 'Lite API health will be checked after restore.',
+      ],
+    },
+    evidence: {
+      title: 'Evidence',
+      subtitle: evidenceItems.length ? 'Recovery IDs are ready to copy or inspect.' : 'Evidence will appear after backup activity.',
+      next: 'Verify Backup',
+      logs: evidenceItems.length
+        ? evidenceItems.slice(0, 6).map((item) => `${item.label}: ${shortId(item.value)}`)
+        : ['No evidence IDs are available yet. Create a backup first.'],
+    },
+  };
+
+  const activePanel = actionPanelMeta[activeActionPanel] || null;
+
+  function openActionPanel(action) {
+    setActiveActionPanel(action);
+    setHighlightedAction('');
+  }
+
+  function closeActionPanel() {
+    setActiveActionPanel('');
+  }
+
   async function copyEvidence(value, label) {
     const copied = await copyTextToClipboard(value);
     if (copied) {
@@ -1726,11 +1783,13 @@ function RecoveryScreen() {
 
   async function verifyLatestBackup() {
     if (!latestBackup?.backup_id) return;
+    openActionPanel('verify');
     setBusy('verify');
     setVerifyResult(null);
     setActionError(null);
     try {
       setVerifyResult(await liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' }));
+      setHighlightedAction('preview');
       refresh();
     } catch (err) {
       setActionError(err.message);
@@ -1741,11 +1800,13 @@ function RecoveryScreen() {
 
   async function previewLatestRestore() {
     if (!latestBackup?.backup_id) return;
+    openActionPanel('preview');
     setBusy('preview');
     setPreviewResult(null);
     setActionError(null);
     try {
       setPreviewResult(await liteApi.previewRestore({ backup_id: latestBackup.backup_id, reason: 'manual restore preview' }));
+      setHighlightedAction('restore');
       refresh();
     } catch (err) {
       setActionError(err.message);
@@ -1756,6 +1817,7 @@ function RecoveryScreen() {
 
   async function restoreLatestBackup() {
     if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
+    openActionPanel('restore');
     const confirmed = window.confirm('Restore will change local Lite state. Pocket Lab will create a checkpoint first. Continue?');
     if (!confirmed) return;
     setBusy('restore');
@@ -1767,6 +1829,7 @@ function RecoveryScreen() {
         preview_id: latestPreview.preview_id,
         confirm: true,
       }));
+      setHighlightedAction('evidence');
       refresh();
     } catch (err) {
       setActionError(err.message);
@@ -1997,52 +2060,97 @@ function RecoveryScreen() {
             Verify the backup, preview what would change, then restore only after clear confirmation.
           </p>
 
-          <div className="lite-recovery-restore-chips">
-            <span className={latestBackupVerified ? 'is-ready' : ''}>Verified</span>
-            <span className={latestPreviewReady ? 'is-ready' : ''}>Preview ready</span>
-            <span className={checkpoint?.checkpoint_id ? 'is-ready' : ''}>Checkpoint saved</span>
-            <span className={healthValidation?.status === 'passed' ? 'is-ready' : ''}>Health passed</span>
-          </div>
+          <div className={`lite-recovery-flip-shell ${activePanel ? 'is-flipped' : ''}`}>
+            <div className="lite-recovery-flip-inner">
+              <div className="lite-recovery-flip-face lite-recovery-flip-front" aria-hidden={Boolean(activePanel)}>
+                <div className="lite-recovery-restore-chips">
+                  <span className={latestBackupVerified ? 'is-ready' : ''}>Verified</span>
+                  <span className={latestPreviewReady ? 'is-ready' : ''}>Preview ready</span>
+                  <span className={checkpoint?.checkpoint_id ? 'is-ready' : ''}>Checkpoint saved</span>
+                  <span className={healthValidation?.status === 'passed' ? 'is-ready' : ''}>Health passed</span>
+                </div>
 
-          <div className="lite-recovery-preview-stats">
-            {previewStats.map((stat) => (
-              <div key={stat.label}>
-                <span>{stat.label}</span>
-                <strong>{stat.value}</strong>
+                <div className="lite-recovery-preview-stats">
+                  {previewStats.map((stat) => (
+                    <div key={stat.label}>
+                      <span>{stat.label}</span>
+                      <strong>{stat.value}</strong>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="lite-recovery-warning-note lite-recovery-safety-panel">
+                  <strong>{latestBackupVerified ? 'Backup verified' : 'Verification required'}</strong>
+                  <span>{latestPreview ? `Latest preview checks ${latestPreview.change_count || 0} item(s).` : 'Pocket Lab will check the backup and show what changes before restoring.'}</span>
+                  {checkpoint?.checkpoint_id ? <span>Checkpoint: {shortId(checkpoint.checkpoint_id)}</span> : null}
+                  {lastRestore?.status ? <span>Last restore: {lastRestore.status}</span> : null}
+                  {serviceRestart?.status ? <span>Service restart: {serviceRestart.status}</span> : null}
+                  {healthValidation?.status ? <span>Health: {healthValidation.status}</span> : null}
+                </div>
+
+                {lastRestore?.restore_id ? (
+                  <div className="lite-recovery-last-restore-card">
+                    <span>Last restore</span>
+                    <strong>{lastRestore.status || 'Unknown'}</strong>
+                    <p>{lastRestore.summary || `${lastRestore.restored_file_count || 0} file(s) restored.`}</p>
+                  </div>
+                ) : null}
               </div>
-            ))}
-          </div>
 
-          <div className="lite-recovery-warning-note lite-recovery-safety-panel">
-            <strong>{latestBackupVerified ? 'Backup verified' : 'Verification required'}</strong>
-            <span>{latestPreview ? `Latest preview checks ${latestPreview.change_count || 0} item(s).` : 'Pocket Lab will check the backup and show what changes before restoring.'}</span>
-            {checkpoint?.checkpoint_id ? <span>Checkpoint: {shortId(checkpoint.checkpoint_id)}</span> : null}
-            {lastRestore?.status ? <span>Last restore: {lastRestore.status}</span> : null}
-            {serviceRestart?.status ? <span>Service restart: {serviceRestart.status}</span> : null}
-            {healthValidation?.status ? <span>Health: {healthValidation.status}</span> : null}
-          </div>
-
-          {lastRestore?.restore_id ? (
-            <div className="lite-recovery-last-restore-card">
-              <span>Last restore</span>
-              <strong>{lastRestore.status || 'Unknown'}</strong>
-              <p>{lastRestore.summary || `${lastRestore.restored_file_count || 0} file(s) restored.`}</p>
+              <div className="lite-recovery-flip-face lite-recovery-flip-back" aria-hidden={!activePanel}>
+                <button type="button" className="lite-recovery-flip-close" onClick={closeActionPanel} aria-label="Show restore controls">
+                  <X className="h-4 w-4" />
+                </button>
+                <div className="lite-recovery-flip-head">
+                  <span>{activePanel?.title || 'Restore readiness'}</span>
+                  <h3>{activePanel?.subtitle || 'Pocket Lab is preparing the restore path.'}</h3>
+                  {activePanel?.next ? <p>Next suggested action: <strong>{activePanel.next}</strong></p> : null}
+                </div>
+                <div className="lite-recovery-flip-readiness">
+                  {restoreSteps.map((step) => (
+                    <div key={step.key} className={step.complete ? 'is-complete' : ''}>
+                      <span>{step.complete ? '✓' : '•'}</span>
+                      <strong>{step.label}</strong>
+                      <small>{step.detail}</small>
+                    </div>
+                  ))}
+                </div>
+                <div className="lite-recovery-action-log">
+                  <strong>Friendly log</strong>
+                  {(activePanel?.logs || []).map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </div>
+                {activeActionPanel === 'evidence' ? (
+                  <LiteButton disabled={!evidenceItems.length} tone="secondary" onClick={() => setEvidenceOpen(true)}>
+                    Open evidence details
+                  </LiteButton>
+                ) : null}
+              </div>
             </div>
-          ) : null}
+          </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            <LiteButton disabled={!latestBackup || busy === 'verify'} tone="secondary" onClick={verifyLatestBackup}>
-              {busy === 'verify' ? 'Verifying evidence...' : 'Verify Backup'}
-            </LiteButton>
-            <LiteButton disabled={!latestBackup || busy === 'preview'} tone="secondary" onClick={previewLatestRestore}>
-              {busy === 'preview' ? 'Preparing preview...' : 'Preview Restore'}
-            </LiteButton>
-            <LiteButton disabled={!latestBackupVerified || !latestPreviewReady || busy === 'restore'} tone="danger" onClick={restoreLatestBackup}>
-              {busy === 'restore' ? 'Creating checkpoint...' : 'Restore Latest'}
-            </LiteButton>
-            <LiteButton disabled={!evidenceItems.length} tone="secondary" onClick={() => setEvidenceOpen(true)}>
-              Evidence
-            </LiteButton>
+          <div className="lite-recovery-action-buttons">
+            <span className={highlightedAction === 'verify' ? 'lite-recovery-next-action' : ''}>
+              <LiteButton disabled={!latestBackup || busy === 'verify'} tone="secondary" onClick={verifyLatestBackup}>
+                {busy === 'verify' ? 'Verifying evidence...' : 'Verify Backup'}
+              </LiteButton>
+            </span>
+            <span className={highlightedAction === 'preview' ? 'lite-recovery-next-action' : ''}>
+              <LiteButton disabled={!latestBackup || busy === 'preview'} tone="secondary" onClick={previewLatestRestore}>
+                {busy === 'preview' ? 'Preparing preview...' : 'Preview Restore'}
+              </LiteButton>
+            </span>
+            <span className={highlightedAction === 'restore' ? 'lite-recovery-next-action' : ''}>
+              <LiteButton disabled={!latestBackupVerified || !latestPreviewReady || busy === 'restore'} tone="danger" onClick={restoreLatestBackup}>
+                {busy === 'restore' ? 'Creating checkpoint...' : 'Restore Latest'}
+              </LiteButton>
+            </span>
+            <span className={highlightedAction === 'evidence' ? 'lite-recovery-next-action' : ''}>
+              <LiteButton disabled={!evidenceItems.length} tone="secondary" onClick={() => openActionPanel('evidence')}>
+                Evidence
+              </LiteButton>
+            </span>
           </div>
         </GlassCard>
       </div>
