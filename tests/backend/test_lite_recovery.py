@@ -167,3 +167,26 @@ def test_lite_recovery_pending_backup_is_visible_until_worker_finishes(tmp_path,
     history_payload = history_response.json()
     assert history_payload["status"] == "queued"
     assert history_payload["pending_backup"]["backup_id"] == "queued-backup-001"
+
+
+def test_lite_backup_queue_failure_does_not_create_pending_state(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_backup
+
+    response = client().post(
+        "/api/lite/recovery/backup",
+        json={"include_app_data": False, "reason": "queue-failure-test"},
+    )
+    assert response.status_code in {403, 503}
+    assert lite_backup.pending_backup() is None
+
+
+def test_lite_recovery_pending_backup_is_not_reported_as_last_backup(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_backup
+
+    lite_backup.record_backup_request({"command_id": "queued-backup-003", "reason": "queued-test"})
+    payload = lite_backup.recovery_status()
+    assert payload["last_backup"] is None
+    assert payload["last_backup_time"] is None
+    assert payload["pending_backup"]["backup_id"] == "queued-backup-003"

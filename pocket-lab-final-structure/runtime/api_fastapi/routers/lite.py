@@ -324,7 +324,6 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
         "dry_run": payload.dry_run,
         "requested_by": "lite-api",
     }
-    pending = lite_backup.record_backup_request(command)
     try:
         submitted = await submit_domain_command(
             "pocketlab.commands.lite.backup.create",
@@ -340,9 +339,9 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
                 "status": "backup_queue_unavailable",
                 "summary": "Backup request could not be queued because the local command bus is not reachable.",
                 "detail": str(exc),
-                "pending_backup": pending,
             },
         ) from exc
+    pending = lite_backup.record_backup_request(command)
     submitted["backup_id"] = command_id
     submitted["pending_backup"] = pending
     submitted["summary"] = "Backup request queued. The encrypted repository will be initialized automatically if this is the first backup."

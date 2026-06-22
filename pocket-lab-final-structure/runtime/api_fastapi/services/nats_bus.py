@@ -94,6 +94,9 @@ class PocketLabEventBus:
         self.command_ack_wait_seconds = deps.core._env_int(
             "POCKETLAB_COMMAND_ACK_WAIT_SECONDS", 60
         )
+        self.event_fanout_enabled = deps.core._env_bool(
+            "POCKETLAB_NATS_EVENT_FANOUT", True
+        )
         self.durable_consumers: dict[str, str] = {}
 
     async def start(self) -> None:
@@ -147,7 +150,7 @@ class PocketLabEventBus:
                 ) from exc
 
     async def _subscribe_event_fanout(self) -> None:
-        if not self.nc:
+        if not self.nc or not self.event_fanout_enabled:
             return
 
         async def _fanout(msg: Any) -> None:

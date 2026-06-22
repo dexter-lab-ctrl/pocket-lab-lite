@@ -21,6 +21,12 @@ for path in (
     if path not in sys.path:
         sys.path.insert(0, path)
 
+# The worker uses JetStream durable command consumption and publishes lifecycle
+# events. It does not need FastAPI's read-side event fanout subscription; leaving
+# it enabled requires broader subscribe permissions and can destabilize command
+# recovery when NATS permissions are intentionally tight.
+os.environ.setdefault("POCKETLAB_NATS_EVENT_FANOUT", "0")
+
 from api_fastapi import deps  # type: ignore  # noqa: E402
 from api_fastapi.services.nats_bus import BUS  # type: ignore  # noqa: E402
 from api_fastapi.services.operation_events import install_operation_event_publisher  # type: ignore  # noqa: E402
