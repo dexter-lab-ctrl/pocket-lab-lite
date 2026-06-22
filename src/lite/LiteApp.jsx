@@ -905,6 +905,43 @@ function SecurityScreen() {
   );
 }
 
+function deviceLinkState(device) {
+  const role = String(device?.role || '').toLowerCase();
+  const status = String(device?.status || '').toLowerCase();
+  const connection = String(device?.connection || '').toLowerCase();
+
+  if (role === 'server_host' || device?.is_current || device?.isCurrent) return 'server';
+  if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) return 'joined';
+  if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return 'repairing';
+  return 'disconnected';
+}
+
+function DeviceLinkVisual({ device }) {
+  const state = deviceLinkState(device);
+  const copy = {
+    server: 'This is the Pocket Lab Lite server.',
+    joined: 'Joined to the Pocket Lab Lite server.',
+    repairing: 'Supervisor is repairing the connection.',
+    disconnected: 'Not joined to the server right now.',
+  }[state];
+
+  return (
+    <div className={`lite-device-link-visual lite-device-link-${state}`} aria-label={copy}>
+      <div className="lite-device-link-node lite-device-link-server">
+        <Download className="h-4 w-4" />
+      </div>
+      <div className="lite-device-link-rail">
+        <span className="lite-device-link-flow" />
+        <span className="lite-device-link-gap" />
+      </div>
+      <div className="lite-device-link-node lite-device-link-client">
+        <Network className="h-4 w-4" />
+      </div>
+      <p>{copy}</p>
+    </div>
+  );
+}
+
 function DevicesScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.fleet, []);
   const [hostname, setHostname] = useState('');
@@ -1373,6 +1410,8 @@ function DevicesScreen() {
                   </div>
 
                   <h2>{device.name || 'Unnamed device'}</h2>
+
+                  <DeviceLinkVisual device={device} />
 
                   <div className="lite-device-details">
                     <div>
@@ -1892,12 +1931,8 @@ function LiteAppShell() {
             <div className="rounded-2xl border border-indigo-300/25 bg-indigo-500/15 p-2 text-indigo-100"><Download className="h-5 w-5" /></div>
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Pocket Lab Lite</p>
-              <p className="text-sm text-slate-400">Simple self-hosted workspace</p>
+              <p className="text-sm text-slate-400">Self-hosted workspace</p>
             </div>
-          </div>
-          <div className="hidden items-center gap-2 md:flex">
-            <StatusBadge status={status.overall}>{status.overall === 'healthy' ? 'Ready' : 'Needs attention'}</StatusBadge>
-            <button type="button" onClick={refresh} className="pocket-button pocket-button-secondary">Refresh</button>
           </div>
           <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
         </div>

@@ -1073,3 +1073,17 @@ def test_lite_ui_has_error_boundary_and_safe_restart_steps():
     assert "Pocket Lab needs a moment" in ui
     assert "safeRestartSteps" in ui
     assert "Device agent is stopped" in ui
+
+
+def test_lite_devices_ui_has_enterprise_polish_without_top_duplicate_refresh():
+    ui = Path("src/lite/LiteApp.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "Self-hosted workspace" in ui
+    assert "Simple self-hosted workspace" not in ui
+    assert "lite-device-link-visual" in ui
+    assert "DeviceLinkVisual" in ui
+    assert "lite-device-link-joined" in css
+    assert "lite-device-link-disconnected" in css
+    assert "lite-device-link-repairing" in css
+    assert "lite-device-link-joined" in css and "@keyframes lite-device-link-joined" in css
