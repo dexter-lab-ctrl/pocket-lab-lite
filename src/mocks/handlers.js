@@ -108,7 +108,33 @@ export const handlers = [
     updated_at: new Date().toISOString(),
   })),
   http.get('/api/lite/policy', () => HttpResponse.json({ status: 'healthy', summary: 'Protection rules are available in advisory mode', protection_enabled: false, requires_confirmation: true, allowed_actions: ['install_app', 'add_device', 'run_safety_check', 'backup_now'] })),
-  http.get('/api/lite/recovery', () => HttpResponse.json({ status: 'unknown', summary: 'No backup activity has been recorded yet', actions: ['backup_now', 'restore'] })),
+  http.get('/api/lite/recovery', () => HttpResponse.json({
+    status: 'healthy',
+    summary: 'Recovery Ready',
+    repository: { type: 'local', engine: 'restic', encrypted: true, ready: true, location: '~/pocket-lab-lite-backups' },
+    what_will_be_backed_up: ['Lite runtime state', 'Device records and heartbeats', 'Device invite lifecycle records', 'Rules/protection state', 'App catalog/install metadata', 'Backup manifests and receipts'],
+    what_will_not_be_backed_up: ['raw API tokens', 'raw invite tokens', 'NATS passwords', 'Vault root token', 'Vault unseal keys', 'private SSH keys'],
+    last_backup: { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
+    last_backup_time: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    last_verification_result: 'not_verified',
+    backup_history: [
+      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
+    ],
+    available_restore_points: [
+      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
+    ],
+    actions: ['backup_now'],
+    planned_actions: ['verify_backup', 'preview_restore', 'restore_latest'],
+    updated_at: new Date().toISOString(),
+  })),
+  http.get('/api/lite/recovery/backups', () => HttpResponse.json({
+    status: 'healthy',
+    count: 1,
+    latest_backup: { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6 },
+    backups: [{ backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6 }],
+  })),
+  http.get('/api/lite/recovery/backups/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, engine: 'restic', verification_status: 'not_verified', included_file_count: 6 })),
+  http.get('/api/lite/recovery/receipts/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, status: 'succeeded', summary: 'Evidence saved', engine: 'restic', evidence_saved: true })),
   http.post('/api/lite/catalog/install', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     return HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-install-${body.app_id || 'app'}` }, { status: 202 });
@@ -192,11 +218,11 @@ export const handlers = [
     }, { status: 202 });
   }),
   http.post('/api/lite/policy/apply', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-policy-apply' }, { status: 202 })),
-  http.post('/api/lite/recovery/backup', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-backup-now' }, { status: 202 })),
+  http.post('/api/lite/recovery/backup', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-backup-now', command_subject: 'pocketlab.commands.lite.backup.create' }, { status: 202 })),
   http.post('/api/lite/recovery/restore', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     if (!body.confirm) return HttpResponse.json({ detail: { status: 'confirmation_required', summary: 'Confirm restore before running it.' } }, { status: 409 });
-    return HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-restore-latest' }, { status: 202 });
+    return HttpResponse.json({ detail: { status: 'restore_not_implemented', summary: 'Restore is protected until backup verification and Preview Restore are ready.' } }, { status: 501 });
   }),
   http.get('/api/catalog.json', () => HttpResponse.json({ items: [{ id: 'gitea', name: 'Gitea', operation: 'deploy_blueprint' }] })),
   http.get('/api/fleet.json', () => HttpResponse.json(fleetAgents)),

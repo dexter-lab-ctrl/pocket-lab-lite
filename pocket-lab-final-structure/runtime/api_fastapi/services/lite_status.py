@@ -9,7 +9,7 @@ from .. import deps
 from .fleet_registry import fleet_health_snapshot, merged_fleet_nodes, normalize_node_id
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
-from . import lite_invites
+from . import lite_backup, lite_invites
 
 LITE_MODE = "lite"
 
@@ -641,14 +641,4 @@ def lite_policy() -> dict[str, Any]:
 
 
 def lite_recovery() -> dict[str, Any]:
-    runs = deps.operation_service().list(limit=50)
-    backup_runs = [
-        run for run in runs if _text(run.get("operation")).lower() in {"backup_now", "backup_verify", "restore_backup"}
-    ]
-    latest = backup_runs[0] if backup_runs else None
-    return {
-        "status": _status((latest or {}).get("status", "unknown")) if latest else "unknown",
-        "summary": "Recovery actions are ready" if latest else "No backup activity has been recorded yet",
-        "last_activity": latest,
-        "actions": ["backup_now", "restore"],
-    }
+    return lite_backup.recovery_status()
