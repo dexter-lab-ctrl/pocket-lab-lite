@@ -627,3 +627,8 @@ tasks:
     cmds:
       - bash scripts/dev/check-lite.sh
 
+
+  lite:
+    desc: Alias for lite:check
+    cmds:
+      - task: lite:check
