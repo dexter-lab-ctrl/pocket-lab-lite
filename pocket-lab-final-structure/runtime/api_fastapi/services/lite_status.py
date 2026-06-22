@@ -9,7 +9,7 @@ from .. import deps
 from .fleet_registry import fleet_health_snapshot, merged_fleet_nodes, normalize_node_id
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
-from . import lite_backup, lite_invites
+from . import lite_backup, lite_invites, lite_security as lite_security_service
 
 LITE_MODE = "lite"
 
@@ -551,20 +551,7 @@ def lite_identity() -> dict[str, Any]:
 
 
 def lite_security() -> dict[str, Any]:
-    evaluations = deps.core.build_opa_evaluations()
-    findings = [
-        item
-        for item in evaluations
-        if _text(item.get("decision") or item.get("status")).lower()
-        in {"deny", "failed", "blocked"}
-    ]
-    return {
-        "status": "needs_attention" if findings else "healthy",
-        "summary": f"{len(findings)} item(s) need review" if findings else "No critical issues in the current safety summary",
-        "findings_count": len(findings),
-        "checks_count": len(evaluations),
-        "last_checked": deps.now_utc_iso(),
-    }
+    return lite_security_service.current_state()
 
 
 def lite_fleet() -> dict[str, Any]:

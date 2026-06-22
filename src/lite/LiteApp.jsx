@@ -172,11 +172,11 @@ function normalizeBackendState(status) {
     return 'ready';
   }
 
-  if (['degraded', 'warning', 'needs_attention', 'pending', 'invited', 'invite_sent', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused', 'repairing', 'supervisor_repairing'].includes(value)) {
+  if (['review', 'degraded', 'warning', 'needs_attention', 'pending', 'invited', 'invite_sent', 'pending_approval', 'approval_required', 'waiting_for_approval', 'paused', 'repairing', 'supervisor_repairing'].includes(value)) {
     return 'review';
   }
 
-  if (['unhealthy', 'failed', 'failure', 'error', 'blocked', 'unavailable', 'agent_stopped', 'stopped'].includes(value)) {
+  if (['danger', 'unhealthy', 'failed', 'failure', 'error', 'blocked', 'unavailable', 'agent_stopped', 'stopped'].includes(value)) {
     return 'danger';
   }
 
@@ -741,31 +741,71 @@ function SecurityScreen() {
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [evidence, setEvidence] = useState(null);
+  const [evidenceError, setEvidenceError] = useState(null);
 
-  const findings = Number(data?.findings_count ?? 0);
-  const checks = Number(data?.checks_count ?? 0);
+  const lastRun = data?.last_run || null;
+  const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
+  const checks = Number(data?.checks_reviewed ?? data?.checks_count ?? 0);
+  const criticalIssues = Array.isArray(data?.critical_issues) ? data.critical_issues : [];
+  const guidance = Array.isArray(data?.guidance) && data.guidance.length ? data.guidance : [
+    { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
+    { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
+    { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
+  ];
+  const runStatus = String(lastRun?.status || '').toLowerCase();
+  const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
   const safetyStatus = data?.status || (findings === 0 ? 'healthy' : 'degraded');
-  const safetyState = normalizeBackendState(safetyStatus);
+  const safetyState = ['queued', 'running'].includes(runStatus) ? 'checking' : normalizeBackendState(safetyStatus);
   const safetyIsReady = safetyState === 'ready' && findings === 0;
-  const safetyLabel = backendLabel(safetyStatus, {
-    ready: findings === 0 ? 'Looks safe' : 'Review recommended',
-    review: 'Review recommended',
-    danger: 'Needs attention',
-    checking: 'Checking safety',
-  });
-  const safetyScore = safetyIsReady ? 100 : Math.max(55, 100 - Math.max(findings, 1) * 12);
+  const scoreValue = Number(data?.score ?? (safetyIsReady ? 100 : Math.max(55, 100 - Math.max(findings, 1) * 12)));
+  const safetyScore = Number.isFinite(scoreValue) ? Math.max(0, Math.min(100, Math.round(scoreValue))) : 0;
+  const safetyLabel = runStatus === 'queued'
+    ? 'Safety check queued'
+    : runStatus === 'running'
+      ? 'Safety check running'
+      : backendLabel(safetyStatus, {
+        ready: findings === 0 ? 'Looks safe' : 'Needs review',
+        review: 'Needs review',
+        danger: 'Needs attention',
+        checking: 'Checking safety',
+      });
+
+  function scheduleSecurityRefresh() {
+    refresh();
+    [700, 1800, 4000].forEach((delay) => window.setTimeout(() => refresh(), delay));
+  }
 
   async function scan() {
     setBusy(true);
-    setResult(null);
+    setResult({ status: 'queued', summary: 'Safety check queued.' });
     setActionError(null);
+    setEvidence(null);
+    setEvidenceError(null);
     try {
-      setResult(await liteApi.runSecurityScan('local'));
-      refresh();
+      const payload = await liteApi.runSecurityScan('local', { reason: 'manual safety check' });
+      setResult(payload);
+      scheduleSecurityRefresh();
     } catch (err) {
+      setResult(null);
       setActionError(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function showEvidence() {
+    const runId = lastRun?.run_id || result?.run_id;
+    if (!runId) {
+      setEvidenceError('Run a safety check before opening evidence.');
+      return;
+    }
+    setEvidenceError(null);
+    try {
+      setEvidence(await liteApi.securityEvidence(runId));
+    } catch (err) {
+      setEvidence(null);
+      setEvidenceError(err.message);
     }
   }
 
@@ -775,7 +815,7 @@ function SecurityScreen() {
         eyebrow="Safety"
         title="Security"
         description="Check whether your Pocket Lab needs attention. The results are summarized clearly so you know what to do next."
-        actions={<LiteButton onClick={scan} disabled={busy}>{busy ? 'Checking...' : 'Run Safety Check'}</LiteButton>}
+        actions={<LiteButton onClick={scan} disabled={scanInProgress}>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>}
       />
 
       <section className="lite-security-hero">
@@ -784,18 +824,22 @@ function SecurityScreen() {
             <span className="lite-ready-dot" />
             {safetyLabel}
           </div>
-          <h2>{backendHeroTitle(safetyStatus, {
-            ready: safetyIsReady ? 'No urgent safety issues found.' : 'A few items may need your review.',
-            review: 'A few items may need your review.',
-            danger: 'Safety needs attention.',
-            checking: 'Checking your safety status.',
-          })}</h2>
+          <h2>{runStatus === 'queued'
+            ? 'Safety check queued.'
+            : runStatus === 'running'
+              ? 'Safety check running.'
+              : backendHeroTitle(safetyStatus, {
+                ready: safetyIsReady ? 'No urgent safety issues found.' : 'A few items may need your review.',
+                review: 'A few items may need your review.',
+                danger: 'Safety needs attention.',
+                checking: 'Checking your safety status.',
+              })}</h2>
           <p>
-            Run a quick safety check anytime. Pocket Lab keeps the result simple and helps you focus on what matters.
+            Pocket Lab checks host readiness, dependency risks, configuration concerns, and secret-like findings through the backend worker.
           </p>
           <div className="lite-security-actions">
-            <LiteButton onClick={scan} disabled={busy}>{busy ? 'Checking...' : 'Run Safety Check'}</LiteButton>
-            <LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>
+            <LiteButton onClick={scan} disabled={scanInProgress}>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
+            <LiteButton onClick={showEvidence} tone="secondary">Evidence</LiteButton>
           </div>
         </div>
 
@@ -804,19 +848,9 @@ function SecurityScreen() {
             <span>{safetyScore}</span>
           </div>
           <strong>Safety score</strong>
-          <p>{backendLabel(safetyStatus, {
-            ready: safetyIsReady ? 'Everything important looks okay.' : 'Review the recommended items.',
-            review: 'Review the recommended items.',
-            danger: 'Take a look before making more changes.',
-            checking: 'Pocket Lab is checking the current result.',
-          })}</p>
+          <p>{data?.summary || 'Pocket Lab is checking the current safety state.'}</p>
           <StatusBadge status={backendBadgeStatus(safetyStatus)}>
-            {backendLabel(safetyStatus, {
-              ready: safetyIsReady ? 'Ready' : 'Review',
-              review: 'Review',
-              danger: 'Attention',
-              checking: 'Checking',
-            })}
+            {safetyLabel}
           </StatusBadge>
         </div>
       </section>
@@ -839,22 +873,12 @@ function SecurityScreen() {
               <ShieldCheck className="h-5 w-5" />
             </div>
             <StatusBadge status={backendBadgeStatus(safetyStatus)}>
-              {backendLabel(safetyStatus, {
-                ready: safetyIsReady ? 'Ready' : 'Review',
-                review: 'Review',
-                danger: 'Attention',
-                checking: 'Checking',
-              })}
+              {safetyLabel}
             </StatusBadge>
           </div>
 
-          <h2>{backendHeroTitle(safetyStatus, {
-            ready: safetyIsReady ? 'No critical issues' : 'Review recommended',
-            review: 'Review recommended',
-            danger: 'Needs attention',
-            checking: 'Checking safety',
-          })}</h2>
-          <p>{data?.summary || 'Pocket Lab is checking the current safety state.'}</p>
+          <h2>{criticalIssues.length ? 'Critical issues found' : 'No critical issues'}</h2>
+          <p>{criticalIssues.length ? 'Review the items below before making more changes.' : 'No urgent safety issues were found in the latest summary.'}</p>
 
           <div className="lite-security-summary-list">
             <div>
@@ -868,6 +892,17 @@ function SecurityScreen() {
               <p>items to review</p>
             </div>
           </div>
+
+          {criticalIssues.length ? (
+            <div className="lite-security-issue-list">
+              {criticalIssues.slice(0, 4).map((issue) => (
+                <div key={issue.id || issue.summary} className="lite-security-issue">
+                  <strong>{issue.summary || 'Critical issue found'}</strong>
+                  <p>{issue.recommendation || 'Review this item and apply the recommended fix.'}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </GlassCard>
 
         <GlassCard className="lite-security-card lite-security-guide-card">
@@ -880,25 +915,38 @@ function SecurityScreen() {
 
           <h2>What happens during a check?</h2>
           <p>
-            Pocket Lab reviews the local setup and reports only the outcome you need to act on.
+            Pocket Lab runs the safety tools in the backend, saves sanitized evidence, and shows only clear next steps here.
           </p>
 
           <div className="lite-security-steps">
-            <div>
-              <span>1</span>
-              <p>Check local readiness</p>
-            </div>
-            <div>
-              <span>2</span>
-              <p>Summarize what changed</p>
-            </div>
-            <div>
-              <span>3</span>
-              <p>Show clear next steps</p>
-            </div>
+            {guidance.map((item, index) => (
+              <div key={item.step || item.title || index}>
+                <span>{item.step || index + 1}</span>
+                <p>{item.title || item.summary}</p>
+              </div>
+            ))}
           </div>
+
+          {lastRun ? (
+            <div className="lite-security-run-note">
+              <strong>Latest check</strong>
+              <span>{lastRun.status || 'unknown'} · {lastRun.completed_at ? formatLiteTime(lastRun.completed_at) : 'not finished yet'}</span>
+            </div>
+          ) : null}
         </GlassCard>
       </div>
+
+      {evidence ? (
+        <StateSurface
+          tone="healthy"
+          title="Evidence saved"
+          description={`${evidence?.findings?.length ?? 0} finding(s) in sanitized evidence. Raw scanner output is not shown.`}
+          className="mb-5"
+        />
+      ) : null}
+      {evidenceError ? (
+        <StateSurface tone="degraded" title="Evidence not ready" description={evidenceError} className="mb-5" />
+      ) : null}
 
       <ResultNotice result={result} error={actionError} />
     </>

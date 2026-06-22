@@ -697,6 +697,104 @@ async def handle_lite_restore_apply(command: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+async def handle_lite_security_scan(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    run_id = str(command.get("run_id") or command_id)
+    await _publish(
+        "pocketlab.events.lite.security.scan.started",
+        "lite.security.scan.started",
+        {"command_id": command_id, "run_id": run_id},
+        trace_id=command_id,
+    )
+    from . import lite_security
+
+    try:
+        result = await asyncio.to_thread(lite_security.run_security_scan, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.audit.lite.security.scan.failed",
+            "lite.security.scan.failed",
+            {"command_id": command_id, "run_id": run_id, "status": "failed", "error": str(exc)},
+            trace_id=command_id,
+        )
+        raise
+
+    run = result.get("run") or {}
+    state = result.get("state") or {}
+    tool_results = run.get("tool_results") or {}
+    for tool, payload in tool_results.items():
+        status = str((payload or {}).get("status") or "unknown")
+        if status == "missing_tool":
+            await _publish(
+                "pocketlab.events.lite.security.tool_missing",
+                "lite.security.tool_missing",
+                {"command_id": command_id, "run_id": run_id, "tool": tool},
+                trace_id=command_id,
+            )
+        else:
+            await _publish(
+                f"pocketlab.events.lite.security.{tool}.completed",
+                f"lite.security.{tool}.completed",
+                {
+                    "command_id": command_id,
+                    "run_id": run_id,
+                    "tool": tool,
+                    "status": status,
+                    "finding_count": (payload or {}).get("finding_count", 0),
+                },
+                trace_id=command_id,
+            )
+
+    critical = state.get("critical_issues") or []
+    for finding in critical[:10]:
+        await _publish(
+            "pocketlab.events.lite.security.critical_found",
+            "lite.security.critical_found",
+            {
+                "command_id": command_id,
+                "run_id": run_id,
+                "finding_id": finding.get("id"),
+                "category": finding.get("category"),
+                "component": finding.get("component"),
+            },
+            trace_id=command_id,
+        )
+
+    completed_payload = {
+        "command_id": command_id,
+        "run_id": run_id,
+        "status": run.get("status"),
+        "score": state.get("score"),
+        "critical_count": (state.get("last_run") or {}).get("critical_count", 0),
+        "high_count": (state.get("last_run") or {}).get("high_count", 0),
+        "medium_count": (state.get("last_run") or {}).get("medium_count", 0),
+        "low_count": (state.get("last_run") or {}).get("low_count", 0),
+        "partial_results": run.get("partial_results", False),
+        "evidence_saved": True,
+    }
+    await _publish(
+        "pocketlab.events.lite.security.scan.completed",
+        "lite.security.scan.completed",
+        completed_payload,
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.security.scan.completed",
+        "lite.security.scan.completed",
+        completed_payload,
+        trace_id=command_id,
+    )
+    return {
+        "status": run.get("status") or "succeeded",
+        "command_id": command_id,
+        "run_id": run_id,
+        "score": state.get("score"),
+        "summary": state.get("summary"),
+        "evidence_refs": result.get("evidence_refs") or [],
+        "state": state,
+    }
+
+
 HANDLERS = {
     "pocketlab.commands.catalog.refresh": handle_catalog_refresh,
     "pocketlab.commands.drift.scan": handle_drift_scan,
@@ -717,6 +815,7 @@ HANDLERS = {
     "pocketlab.commands.release.apply": handle_release_apply,
     "pocketlab.commands.health.check": handle_health_check,
     "pocketlab.commands.security.scan": handle_security_scan,
+    "pocketlab.commands.lite.security.scan": handle_lite_security_scan,
     "pocketlab.commands.security.configure_opa": handle_security_configure_opa,
     "pocketlab.commands.vault.rotate": handle_vault_rotate,
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
