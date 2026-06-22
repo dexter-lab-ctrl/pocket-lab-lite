@@ -62,6 +62,9 @@ export const liteApi = {
   restartDeviceAgentStatus: (deviceId, commandId) => readJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId)}/restart-agent/status?command_id=${encodeURIComponent(commandId || '')}`),
   applyPolicy: (payload = {}) => postJson('/api/lite/policy/apply', payload),
   backupNow: (payload = {}) => postJson('/api/lite/recovery/backup', payload),
+  verifyBackup: (backupId = 'latest', payload = {}) => postJson(`/api/lite/recovery/backups/${encodeURIComponent(backupId || 'latest')}/verify`, payload),
+  previewRestore: (payload = {}) => postJson('/api/lite/recovery/restore/preview', payload),
+  restorePreview: (previewId) => readJson(`/api/lite/recovery/restore/previews/${encodeURIComponent(previewId || '')}`),
   restoreBackup: (payload = {}) => postJson('/api/lite/recovery/restore', payload),
 };
 

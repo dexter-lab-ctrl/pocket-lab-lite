@@ -132,6 +132,7 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         "manifest_checksum": manifest.get("manifest_checksum"),
         "evidence_references": manifest.get("evidence_references", []),
         "summary": manifest.get("summary"),
+        "verification": manifest.get("verification"),
     }
 
 
@@ -149,5 +150,8 @@ def api_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
         "repository",
         "included_sets",
         "excluded_sensitive_items",
+        "verification_status",
+        "verified_at",
+        "verification_checks",
     }
     return {k: v for k, v in receipt.items() if k in allowed}

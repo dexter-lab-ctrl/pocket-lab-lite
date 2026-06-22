@@ -7,6 +7,7 @@ import secrets
 import shutil
 import subprocess
 import uuid
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -205,6 +206,7 @@ def recovery_status() -> dict[str, Any]:
         else (pending.get("summary") if pending else readiness.get("summary"))
         or "Needs Attention"
     )
+    state = _read_backup_state()
     return {
         "status": status,
         "summary": summary,
@@ -226,8 +228,9 @@ def recovery_status() -> dict[str, Any]:
             "status": "not_created",
             "summary": "A checkpoint will be required before restore is implemented.",
         },
-        "actions": ["backup_now"],
-        "planned_actions": ["verify_backup", "preview_restore", "restore_latest"],
+        "latest_restore_preview": state.get("latest_restore_preview"),
+        "actions": ["backup_now"] + (["verify_backup", "preview_restore"] if latest else []),
+        "planned_actions": ["restore_latest"],
         "updated_at": _utc(),
     }
 
@@ -323,6 +326,260 @@ def _parse_snapshot_id(stdout: str) -> str | None:
                     snapshot_id = part
                     break
     return snapshot_id
+
+
+
+def _safe_restic_error(result: subprocess.CompletedProcess[str]) -> str:
+    text = (result.stderr.strip() or result.stdout.strip() or "restic command failed").strip()
+    if len(text) > 2000:
+        text = text[:2000] + "..."
+    return text
+
+
+def _load_verified_manifest(backup_id: str) -> tuple[str, dict[str, Any]]:
+    resolved = lite_backup_manifest.resolve_backup_id(backup_id)
+    if not resolved:
+        raise FileNotFoundError("Backup was not found.")
+    manifest = lite_backup_manifest.read_manifest(resolved)
+    if not manifest:
+        raise FileNotFoundError("Backup manifest was not found.")
+    return resolved, manifest
+
+
+def _restic_snapshot_exists(restic: str, snapshot_id: str, env: dict[str, str]) -> dict[str, Any]:
+    result = _run_restic([restic, "snapshots", "--json", snapshot_id], env=env, timeout=120)
+    if result.returncode != 0:
+        return {"name": "restic snapshot lookup", "status": "failed", "summary": _safe_restic_error(result)}
+    try:
+        payload = json.loads(result.stdout or "[]")
+    except Exception:
+        payload = []
+    found = False
+    if isinstance(payload, list):
+        for item in payload:
+            if isinstance(item, dict) and str(item.get("id") or item.get("short_id") or "").startswith(snapshot_id[:8]):
+                found = True
+                break
+    return {
+        "name": "restic snapshot lookup",
+        "status": "passed" if found else "failed",
+        "summary": "Snapshot is present in the encrypted repository." if found else "Snapshot was not found in the encrypted repository.",
+    }
+
+
+def _restic_repository_check(restic: str, env: dict[str, str]) -> dict[str, Any]:
+    result = _run_restic([restic, "check", "--json"], env=env, timeout=300)
+    return {
+        "name": "restic repository check",
+        "status": "passed" if result.returncode == 0 else "failed",
+        "summary": "Repository metadata check passed." if result.returncode == 0 else _safe_restic_error(result),
+    }
+
+
+def verify_backup(backup_id: str = "latest", *, reason: str | None = None) -> dict[str, Any]:
+    resolved, manifest = _load_verified_manifest(backup_id)
+    layout = backup_layout()
+    layout.ensure()
+    restic = _restic_binary()
+    if not restic:
+        raise RuntimeError("restic is required for backup verification but was not found in PATH")
+    snapshot_id = str(manifest.get("snapshot_id") or "").strip()
+    if not snapshot_id:
+        raise RuntimeError("Backup manifest does not include a restic snapshot id")
+    stored_checksum = str(manifest.get("manifest_checksum") or "")
+    computed_checksum = lite_backup_manifest.canonical_checksum(manifest)
+    checksum_ok = bool(stored_checksum and computed_checksum == stored_checksum)
+    env = _restic_env(layout)
+    checks = [
+        {
+            "name": "manifest checksum",
+            "status": "passed" if checksum_ok else "failed",
+            "summary": "Manifest checksum matches the saved evidence." if checksum_ok else "Manifest checksum does not match the saved evidence.",
+        },
+        _restic_snapshot_exists(restic, snapshot_id, env),
+        _restic_repository_check(restic, env),
+    ]
+    status = "verified" if all(check.get("status") == "passed" for check in checks) else "failed"
+    verified_at = _utc()
+    manifest = dict(manifest)
+    manifest["verification_status"] = status
+    manifest["verified_at"] = verified_at if status == "verified" else None
+    manifest["verification"] = {
+        "status": status,
+        "checked_at": verified_at,
+        "reason": reason or "manual verification",
+        "checks": checks,
+        "previous_manifest_checksum": stored_checksum,
+    }
+    manifest["summary"] = "Backup verified and ready for restore preview." if status == "verified" else "Backup verification failed. Review checks before restore."
+    manifest = lite_backup_manifest.write_manifest(manifest)
+    receipt = lite_backup_manifest.read_receipt(resolved) or {"backup_id": resolved}
+    receipt.update(
+        {
+            "backup_id": resolved,
+            "verification_status": status,
+            "verified_at": verified_at if status == "verified" else None,
+            "verification_checks": checks,
+            "manifest_checksum": manifest.get("manifest_checksum"),
+        }
+    )
+    lite_backup_manifest.write_receipt(resolved, receipt)
+    deps.core.write_json_file(
+        deps.settings().state_dir / "backup_state.json",
+        {
+            "latest_backup_id": resolved,
+            "latest_snapshot_id": snapshot_id,
+            "pending_backup": None,
+            "last_verification": {
+                "backup_id": resolved,
+                "status": status,
+                "checked_at": verified_at,
+                "checks": checks,
+            },
+            "updated_at": verified_at,
+            "manifest": str(lite_backup_manifest.manifest_path(resolved)),
+            "receipt": str(lite_backup_manifest.receipt_path(resolved)),
+        },
+    )
+    return {
+        "status": status,
+        "backup_id": resolved,
+        "snapshot_id": snapshot_id,
+        "verified_at": verified_at if status == "verified" else None,
+        "checks": checks,
+        "manifest_checksum": manifest.get("manifest_checksum"),
+        "summary": manifest.get("summary"),
+    }
+
+
+def _parse_restic_ls(stdout: str) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for line in stdout.splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        try:
+            payload = json.loads(text)
+        except Exception:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        if payload.get("struct_type") == "node" or payload.get("type") in {"file", "dir"}:
+            path = str(payload.get("path") or "").lstrip("/")
+            if path:
+                items.append(
+                    {
+                        "path": path,
+                        "type": payload.get("type") or "unknown",
+                        "size_bytes": payload.get("size"),
+                    }
+                )
+    return items
+
+
+def _target_for_backup_path(relative_path: str) -> Path | None:
+    rel = Path(str(relative_path or "").lstrip("/"))
+    parts = rel.parts
+    if not parts:
+        return None
+    if parts[0] == "state":
+        return deps.settings().state_dir.joinpath(*parts[1:]) if len(parts) > 1 else deps.settings().state_dir
+    return None
+
+
+def restore_preview_path(preview_id: str) -> Path:
+    return backup_layout().restore_previews / f"{preview_id}.json"
+
+
+def get_restore_preview(preview_id: str) -> dict[str, Any] | None:
+    path = restore_preview_path(preview_id)
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def create_restore_preview(backup_id: str = "latest", *, reason: str | None = None) -> dict[str, Any]:
+    resolved, manifest = _load_verified_manifest(backup_id)
+    snapshot_id = str(manifest.get("snapshot_id") or "").strip()
+    if not snapshot_id:
+        raise RuntimeError("Backup manifest does not include a restic snapshot id")
+    layout = backup_layout()
+    layout.ensure()
+    restic = _restic_binary()
+    if not restic:
+        raise RuntimeError("restic is required for restore preview but was not found in PATH")
+    result = _run_restic([restic, "ls", snapshot_id, "--json"], env=_restic_env(layout), timeout=180)
+    if result.returncode != 0:
+        raise RuntimeError(f"restic restore preview failed: {_safe_restic_error(result)}")
+    restic_items = _parse_restic_ls(result.stdout)
+    included = manifest.get("included_files") or []
+    changes: list[dict[str, Any]] = []
+    for item in included:
+        rel = str(item.get("relative_path") or item.get("source") or "")
+        target = _target_for_backup_path(rel)
+        current_exists = bool(target and target.exists())
+        action = "would_overwrite" if current_exists else "would_create"
+        if rel.startswith("backup-metadata/"):
+            action = "metadata_only"
+        changes.append(
+            {
+                "relative_path": rel,
+                "set": item.get("set") or "Lite runtime state",
+                "action": action,
+                "current_exists": current_exists,
+                "target": "Lite state" if target else "Backup metadata",
+                "backup_size_bytes": item.get("size_bytes"),
+            }
+        )
+    preview_id = f"preview-{resolved}-{uuid.uuid4().hex[:12]}"
+    created_at = _utc()
+    verified = manifest.get("verification_status") == "verified"
+    preview = {
+        "preview_id": preview_id,
+        "backup_id": resolved,
+        "snapshot_id": snapshot_id,
+        "created_at": created_at,
+        "status": "ready" if verified else "needs_verification",
+        "restore_allowed": False,
+        "restore_supported": False,
+        "verification_status": manifest.get("verification_status", "not_verified"),
+        "reason": reason or "manual restore preview",
+        "summary": "Preview ready. Restore execution remains disabled until Increment 4." if verified else "Preview created, but backup must be verified before restore can be enabled.",
+        "change_count": len(changes),
+        "changes": changes[:500],
+        "restic_item_count": len(restic_items),
+        "sensitive_items_excluded": manifest.get("excluded_sensitive_items", []),
+        "warnings": [
+            "Restore execution is not performed by this preview.",
+            "Raw secrets remain excluded from this restore point.",
+        ],
+    }
+    path = restore_preview_path(preview_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(preview, indent=2, sort_keys=True, ensure_ascii=False), encoding="utf-8")
+    deps.core.write_json_file(
+        deps.settings().state_dir / "backup_state.json",
+        {
+            "latest_backup_id": resolved,
+            "latest_snapshot_id": snapshot_id,
+            "pending_backup": None,
+            "latest_restore_preview": {
+                "preview_id": preview_id,
+                "backup_id": resolved,
+                "status": preview["status"],
+                "created_at": created_at,
+                "change_count": len(changes),
+            },
+            "updated_at": created_at,
+            "manifest": str(lite_backup_manifest.manifest_path(resolved)),
+            "restore_preview": str(path),
+        },
+    )
+    return preview
 
 
 def create_backup(command: dict[str, Any]) -> dict[str, Any]:
