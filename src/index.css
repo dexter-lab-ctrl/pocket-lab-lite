@@ -3411,6 +3411,55 @@ textarea {
   font-weight: 800;
 }
 
+.theme-pocket-lite-daylight .lite-security-issue-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-issue {
+  padding: 0.85rem;
+  border: 1px solid rgba(244, 63, 94, 0.18);
+  border-radius: 1rem;
+  background: rgba(255, 241, 242, 0.78);
+}
+
+.theme-pocket-lite-daylight .lite-security-issue strong {
+  display: block;
+  color: #9f1239;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-issue p {
+  margin-top: 0.35rem;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-security-run-note {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-security-run-note strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-run-note span {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 @keyframes lite-security-score-in {
   from {
     opacity: 0;

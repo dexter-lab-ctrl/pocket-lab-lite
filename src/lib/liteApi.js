@@ -51,7 +51,9 @@ export const liteApi = {
   recoveryReceipt: (backupId = 'latest') => readJson(`/api/lite/recovery/receipts/${encodeURIComponent(backupId)}`),
   installApp: (appId, options = {}) => postJson('/api/lite/catalog/install', { app_id: appId, ...options }),
   rotateIdentity: (target, options = {}) => postJson('/api/lite/identity/rotate', { target, ...options }),
-  runSecurityScan: (scope = 'local') => postJson('/api/lite/security/scan', { scope }),
+  runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, ...options }),
+  securityRun: (runId) => readJson(`/api/lite/security/runs/${encodeURIComponent(runId || '')}`),
+  securityEvidence: (runId) => readJson(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}`),
   addDevice: (payload = {}) => postJson('/api/lite/fleet/add-device', payload),
   removeDevice: (deviceId, payload = {}) => postJson('/api/lite/fleet/remove-device', {
     device_id: deviceId,

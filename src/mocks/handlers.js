@@ -95,7 +95,31 @@ export const handlers = [
     { id: 'vault', name: 'Vault', status: 'available', summary: 'Passwords and access protection', installed: true },
   ], count: 2, updated_at: new Date().toISOString() })),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
-  http.get('/api/lite/security', () => HttpResponse.json({ status: 'healthy', summary: 'No critical issues in the current safety summary', findings_count: 0, checks_count: 4, last_checked: new Date().toISOString() })),
+  http.get('/api/lite/security', () => HttpResponse.json({
+    status: 'healthy',
+    summary: 'No urgent safety issues found.',
+    score: 100,
+    last_run: {
+      run_id: 'security-mock-001',
+      status: 'succeeded',
+      started_at: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+      completed_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+      tools: ['lynis', 'trivy'],
+      critical_count: 0,
+      high_count: 0,
+      medium_count: 0,
+      low_count: 0,
+    },
+    checks_reviewed: 2,
+    items_to_review: 0,
+    critical_issues: [],
+    guidance: [
+      { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
+      { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
+      { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
+    ],
+    updated_at: new Date().toISOString(),
+  })),
   http.get('/api/lite/fleet', () => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
@@ -157,7 +181,9 @@ export const handlers = [
     return HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-install-${body.app_id || 'app'}` }, { status: 202 });
   }),
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
-  http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-security-scan' }, { status: 202 })),
+  http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Safety check queued. Pocket Lab will scan local security posture and dependency risks.' }, { status: 202 })),
+  http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 })),
+  http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded' }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json'] })),
   http.post('/api/lite/fleet/devices/:nodeId/restart-agent', ({ params }) => HttpResponse.json({
     accepted: true,
     status: 'queued',

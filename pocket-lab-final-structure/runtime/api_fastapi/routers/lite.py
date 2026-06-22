@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_backup, lite_invites, lite_status
+from ..services import fleet_registry, lite_backup, lite_invites, lite_status, lite_security
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -39,6 +39,7 @@ class LiteIdentityRotateRequest(BaseModel):
 
 class LiteSecurityScanRequest(BaseModel):
     scope: str = "local"
+    reason: str | None = None
 
 
 class LiteAddDeviceRequest(BaseModel):
@@ -213,17 +214,61 @@ async def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Requ
 @router.get("/security")
 def get_lite_security(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_status.lite_security()
+    return lite_security.current_state()
+
+
+@router.post("/security/check", status_code=202)
+async def check_lite_security(payload: LiteSecurityScanRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    run_id = lite_security.new_run_id()
+    command = {
+        "run_id": run_id,
+        "command_id": run_id,
+        "scope": payload.scope or "local",
+        "reason": payload.reason or "manual safety check",
+        "requested_at": deps.now_utc_iso(),
+    }
+    queued = await submit_domain_command(
+        lite_security.policy.COMMAND_SUBJECT,
+        "lite.security.scan.requested",
+        command,
+    )
+    lite_security.record_queued_run(command)
+    queued.update(
+        {
+            "status": "queued",
+            "accepted": True,
+            "run_id": run_id,
+            "command_subject": lite_security.policy.COMMAND_SUBJECT,
+            "execution_mode": "worker",
+            "summary": "Safety check queued. Pocket Lab will scan local security posture and dependency risks.",
+        }
+    )
+    return queued
 
 
 @router.post("/security/scan", status_code=202)
 async def scan_lite_security(payload: LiteSecurityScanRequest, request: Request) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
-    return await submit_domain_command(
-        "pocketlab.commands.security.scan",
-        "security.scan.requested",
-        {"scope": payload.scope},
-    )
+    # Backward-compatible alias for older Lite UI builds. New UI calls /security/check.
+    return await check_lite_security(payload, request)
+
+
+@router.get("/security/runs/{run_id}")
+def get_lite_security_run(run_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    run = lite_security.read_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Security check run not found.")
+    return run
+
+
+@router.get("/security/evidence/{run_id}")
+def get_lite_security_evidence(run_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    payload = lite_security.read_evidence(run_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail="Security evidence not found.")
+    return payload
 
 
 @router.get("/fleet")
