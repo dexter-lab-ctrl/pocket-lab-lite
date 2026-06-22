@@ -1081,9 +1081,10 @@ def test_lite_devices_ui_has_enterprise_polish_without_top_duplicate_refresh():
 
     assert "Self-hosted workspace" in ui
     assert "Simple self-hosted workspace" not in ui
-    assert "lite-device-link-visual" in ui
-    assert "DeviceLinkVisual" in ui
-    assert "lite-device-link-joined" in css
-    assert "lite-device-link-disconnected" in css
-    assert "lite-device-link-repairing" in css
-    assert "lite-device-link-joined" in css and "@keyframes lite-device-link-joined" in css
+    assert "lite-devices-linked-grid" in ui
+    assert "lite-device-card-linked" in ui
+    assert "Disconnected from the Pocket Lab Lite server." in ui
+    assert "lite-device-card-linked-joined" in css
+    assert "lite-device-card-linked-disconnected" in css
+    assert "lite-device-cross-card-flow" in css
+    assert "lite-device-cross-card-x" in css
