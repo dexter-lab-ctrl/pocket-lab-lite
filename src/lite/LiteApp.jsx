@@ -1650,10 +1650,65 @@ function RecoveryScreen() {
   const [restoreResult, setRestoreResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState('');
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [copiedEvidence, setCopiedEvidence] = useState('');
 
   const latestBackup = data?.last_backup || data?.latest_backup || null;
   const history = data?.backup_history || data?.available_restore_points || [];
   const repository = data?.repository || {};
+  const latestBackupVerified = latestBackup?.verification_status === 'verified';
+  const latestPreview = data?.latest_restore_preview || null;
+  const latestPreviewReady = latestPreview?.status === 'ready';
+  const lastRestore = data?.last_restore || null;
+  const checkpoint = data?.pre_restore_checkpoint || null;
+  const serviceRestart = lastRestore?.service_restart || {};
+  const healthValidation = lastRestore?.health_validation || {};
+  const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
+
+  const shortId = (value) => {
+    const text = String(value || '');
+    if (!text) return 'Not available';
+    if (text.length <= 18) return text;
+    return `${text.slice(0, 10)}…${text.slice(-6)}`;
+  };
+
+  const restoreSteps = [
+    { key: 'backup', label: 'Backup', detail: latestBackup ? 'Safe copy saved' : 'Create backup', complete: Boolean(latestBackup) },
+    { key: 'verified', label: 'Verified', detail: latestBackupVerified ? 'Evidence checked' : 'Verify backup', complete: latestBackupVerified },
+    { key: 'preview', label: 'Preview', detail: latestPreviewReady ? `${latestPreview?.change_count || 0} item(s)` : 'Preview changes', complete: latestPreviewReady },
+    { key: 'checkpoint', label: 'Checkpoint', detail: checkpoint?.checkpoint_id ? 'Saved before restore' : 'Created on restore', complete: checkpoint?.status === 'created' },
+    { key: 'restored', label: 'Restored', detail: restoreSucceeded ? `${lastRestore?.restored_file_count || 0} file(s)` : 'Confirm restore', complete: restoreSucceeded },
+  ];
+
+  const confidencePills = [
+    { label: repository?.encrypted ? 'Encrypted backup' : 'Local backup', state: repository?.ready ? 'ready' : 'waiting' },
+    { label: latestBackupVerified ? 'Verified' : 'Needs verification', state: latestBackupVerified ? 'ready' : 'waiting' },
+    { label: latestPreviewReady ? 'Preview ready' : 'Preview needed', state: latestPreviewReady ? 'ready' : 'waiting' },
+    { label: healthValidation?.status === 'passed' ? 'Health passed' : 'Health pending', state: healthValidation?.status === 'passed' ? 'ready' : 'waiting' },
+  ];
+
+  const previewStats = [
+    { label: 'Will restore', value: latestPreview?.change_count ?? lastRestore?.restored_file_count ?? '—' },
+    { label: 'Skipped', value: lastRestore?.skipped_change_count ?? 0 },
+    { label: 'Secrets', value: 'Excluded' },
+  ];
+
+  const evidenceItems = [
+    { label: 'Backup ID', value: latestBackup?.backup_id },
+    { label: 'Snapshot ID', value: latestBackup?.snapshot_id },
+    { label: 'Manifest checksum', value: latestBackup?.manifest_checksum },
+    { label: 'Preview ID', value: latestPreview?.preview_id },
+    { label: 'Checkpoint ID', value: checkpoint?.checkpoint_id || lastRestore?.checkpoint_id },
+    { label: 'Restore ID', value: lastRestore?.restore_id },
+  ].filter((item) => item.value);
+
+  async function copyEvidence(value, label) {
+    const copied = await copyTextToClipboard(value);
+    if (copied) {
+      setCopiedEvidence(label);
+      window.setTimeout(() => setCopiedEvidence(''), 1600);
+    }
+  }
 
   async function backup() {
     setBusy('backup');
@@ -1720,12 +1775,6 @@ function RecoveryScreen() {
     }
   }
 
-  const latestBackupVerified = latestBackup?.verification_status === 'verified';
-  const latestPreview = data?.latest_restore_preview || null;
-  const latestPreviewReady = latestPreview?.status === 'ready';
-  const lastRestore = data?.last_restore || null;
-  const checkpoint = data?.pre_restore_checkpoint || null;
-
   return (
     <>
       <PageHeader
@@ -1735,7 +1784,7 @@ function RecoveryScreen() {
         actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
       />
 
-      <section className="lite-recovery-hero">
+      <section className="lite-recovery-hero lite-recovery-hero-premium">
         <div className="lite-recovery-hero-copy">
           <div className="lite-home-pill">
             <span className="lite-ready-dot" />
@@ -1750,6 +1799,13 @@ function RecoveryScreen() {
           <p>
             Pocket Lab backs up local Lite state into an encrypted restic repository and saves a clear evidence receipt.
           </p>
+          <div className="lite-recovery-confidence-strip" aria-label="Recovery confidence">
+            {confidencePills.map((pill) => (
+              <span key={pill.label} className={`lite-recovery-confidence-pill lite-recovery-confidence-${pill.state}`}>
+                {pill.label}
+              </span>
+            ))}
+          </div>
           <div className="lite-recovery-actions">
             <LiteButton onClick={backup} disabled={busy === 'backup'}>
               {busy === 'backup' ? 'Starting backup...' : 'Backup Now'}
@@ -1758,7 +1814,7 @@ function RecoveryScreen() {
           </div>
         </div>
 
-        <div className="lite-recovery-status-card">
+        <div className="lite-recovery-status-card lite-recovery-confidence-card">
           <div className="lite-recovery-icon">
             <Database className="h-7 w-7" />
           </div>
@@ -1772,8 +1828,32 @@ function RecoveryScreen() {
               checking: 'Checking',
             })}
           </StatusBadge>
+          <div className="lite-recovery-confidence-meter" aria-hidden="true">
+            <span style={{ width: `${restoreSteps.filter((step) => step.complete).length * 20}%` }} />
+          </div>
         </div>
       </section>
+
+      <GlassCard className="lite-recovery-card lite-recovery-timeline-card">
+        <div className="lite-recovery-card-head">
+          <div>
+            <h2>Restore readiness</h2>
+            <p>Follow each safety step before restoring local state.</p>
+          </div>
+          <StatusBadge status={restoreSucceeded ? 'healthy' : latestPreviewReady ? 'degraded' : 'unknown'}>
+            {restoreSucceeded ? 'Restored' : latestPreviewReady ? 'Ready to restore' : 'In progress'}
+          </StatusBadge>
+        </div>
+        <div className="lite-recovery-timeline">
+          {restoreSteps.map((step, index) => (
+            <div key={step.key} className={`lite-recovery-step ${step.complete ? 'lite-recovery-step-complete' : ''}`}>
+              <div className="lite-recovery-step-dot">{step.complete ? '✓' : index + 1}</div>
+              <strong>{step.label}</strong>
+              <span>{step.detail}</span>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
 
       {loading ? <LoadingCard label="Loading recovery..." /> : null}
 
@@ -1904,7 +1984,7 @@ function RecoveryScreen() {
           </div>
         </GlassCard>
 
-        <GlassCard className="lite-recovery-card lite-recovery-restore-card">
+        <GlassCard className="lite-recovery-card lite-recovery-restore-card lite-recovery-restore-cockpit">
           <div className="lite-recovery-card-head">
             <div className="lite-recovery-mini-icon lite-recovery-mini-icon-warning">
               <FileCheck className="h-5 w-5" />
@@ -1917,28 +1997,57 @@ function RecoveryScreen() {
             Verify the backup, preview what would change, then restore only after clear confirmation.
           </p>
 
-          <div className="lite-recovery-warning-note">
+          <div className="lite-recovery-restore-chips">
+            <span className={latestBackupVerified ? 'is-ready' : ''}>Verified</span>
+            <span className={latestPreviewReady ? 'is-ready' : ''}>Preview ready</span>
+            <span className={checkpoint?.checkpoint_id ? 'is-ready' : ''}>Checkpoint saved</span>
+            <span className={healthValidation?.status === 'passed' ? 'is-ready' : ''}>Health passed</span>
+          </div>
+
+          <div className="lite-recovery-preview-stats">
+            {previewStats.map((stat) => (
+              <div key={stat.label}>
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="lite-recovery-warning-note lite-recovery-safety-panel">
             <strong>{latestBackupVerified ? 'Backup verified' : 'Verification required'}</strong>
             <span>{latestPreview ? `Latest preview checks ${latestPreview.change_count || 0} item(s).` : 'Pocket Lab will check the backup and show what changes before restoring.'}</span>
-            {checkpoint?.checkpoint_id ? <span>Checkpoint ready: {checkpoint.checkpoint_id}</span> : null}
+            {checkpoint?.checkpoint_id ? <span>Checkpoint: {shortId(checkpoint.checkpoint_id)}</span> : null}
             {lastRestore?.status ? <span>Last restore: {lastRestore.status}</span> : null}
+            {serviceRestart?.status ? <span>Service restart: {serviceRestart.status}</span> : null}
+            {healthValidation?.status ? <span>Health: {healthValidation.status}</span> : null}
           </div>
+
+          {lastRestore?.restore_id ? (
+            <div className="lite-recovery-last-restore-card">
+              <span>Last restore</span>
+              <strong>{lastRestore.status || 'Unknown'}</strong>
+              <p>{lastRestore.summary || `${lastRestore.restored_file_count || 0} file(s) restored.`}</p>
+            </div>
+          ) : null}
 
           <div className="mt-5 flex flex-wrap gap-2">
             <LiteButton disabled={!latestBackup || busy === 'verify'} tone="secondary" onClick={verifyLatestBackup}>
-              {busy === 'verify' ? 'Verifying...' : 'Verify Backup'}
+              {busy === 'verify' ? 'Verifying evidence...' : 'Verify Backup'}
             </LiteButton>
             <LiteButton disabled={!latestBackup || busy === 'preview'} tone="secondary" onClick={previewLatestRestore}>
               {busy === 'preview' ? 'Preparing preview...' : 'Preview Restore'}
             </LiteButton>
             <LiteButton disabled={!latestBackupVerified || !latestPreviewReady || busy === 'restore'} tone="danger" onClick={restoreLatestBackup}>
-              {busy === 'restore' ? 'Starting restore...' : 'Restore Latest'}
+              {busy === 'restore' ? 'Creating checkpoint...' : 'Restore Latest'}
+            </LiteButton>
+            <LiteButton disabled={!evidenceItems.length} tone="secondary" onClick={() => setEvidenceOpen(true)}>
+              Evidence
             </LiteButton>
           </div>
         </GlassCard>
       </div>
 
-      <GlassCard className="lite-recovery-card mt-4">
+      <GlassCard className="lite-recovery-card mt-4 lite-recovery-history-card">
         <div className="lite-recovery-card-head">
           <div>
             <h2>Backup history</h2>
@@ -1949,14 +2058,22 @@ function RecoveryScreen() {
         {history.length ? (
           <div className="lite-recovery-history">
             {history.slice(0, 6).map((backup) => (
-              <div key={backup.backup_id} className="lite-recovery-history-row">
+              <div key={backup.backup_id} className="lite-recovery-history-row lite-recovery-history-row-premium">
                 <div>
-                  <strong>{backup.summary || 'Backup created'}</strong>
+                  <strong>{backup.verification_status === 'verified' ? 'Backup verified and ready' : backup.summary || 'Backup created'}</strong>
                   <span>{formatLiteTime(backup.created_at)} · {backup.engine || 'restic'} · {backup.included_file_count || 0} item(s)</span>
+                  <div className="lite-recovery-history-tags">
+                    <em>Encrypted</em>
+                    <em>{backup.verification_status === 'verified' ? 'Verified' : 'Needs verification'}</em>
+                    {latestPreviewReady ? <em>Preview ready</em> : null}
+                  </div>
                 </div>
-                <StatusBadge status={backup.verification_status === 'verified' ? 'healthy' : 'degraded'}>
-                  {backup.verification_status === 'verified' ? 'Verified' : 'Not verified'}
-                </StatusBadge>
+                <div className="lite-recovery-history-actions">
+                  <StatusBadge status={backup.verification_status === 'verified' ? 'healthy' : 'degraded'}>
+                    {backup.verification_status === 'verified' ? 'Verified' : 'Not verified'}
+                  </StatusBadge>
+                  <button type="button" onClick={() => setEvidenceOpen(true)}>Evidence</button>
+                </div>
               </div>
             ))}
           </div>
@@ -1968,6 +2085,33 @@ function RecoveryScreen() {
           />
         )}
       </GlassCard>
+
+      {evidenceOpen ? (
+        <div className="lite-recovery-evidence-backdrop" role="presentation" onClick={() => setEvidenceOpen(false)}>
+          <aside className="lite-recovery-evidence-drawer" role="dialog" aria-label="Recovery evidence" onClick={(event) => event.stopPropagation()}>
+            <div className="lite-recovery-evidence-head">
+              <div>
+                <span>Evidence</span>
+                <h2>Recovery details</h2>
+                <p>IDs are shortened here. Copy a value to inspect logs or evidence.</p>
+              </div>
+              <button type="button" onClick={() => setEvidenceOpen(false)} aria-label="Close evidence details">×</button>
+            </div>
+            <div className="lite-recovery-evidence-list">
+              {evidenceItems.map((item) => (
+                <div key={item.label} className="lite-recovery-evidence-item">
+                  <span>{item.label}</span>
+                  <strong>{shortId(item.value)}</strong>
+                  <button type="button" onClick={() => copyEvidence(item.value, item.label)}>
+                    <Copy className="h-4 w-4" />
+                    {copiedEvidence === item.label ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      ) : null}
 
       <ResultNotice result={backupResult} error={actionError} />
     </>
