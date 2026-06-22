@@ -1645,6 +1645,8 @@ function safeRestartSteps(progress = {}) {
 function RecoveryScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.recovery, []);
   const [backupResult, setBackupResult] = useState(null);
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [previewResult, setPreviewResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState('');
 
@@ -1665,6 +1667,39 @@ function RecoveryScreen() {
       setBusy('');
     }
   }
+
+  async function verifyLatestBackup() {
+    if (!latestBackup?.backup_id) return;
+    setBusy('verify');
+    setVerifyResult(null);
+    setActionError(null);
+    try {
+      setVerifyResult(await liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' }));
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function previewLatestRestore() {
+    if (!latestBackup?.backup_id) return;
+    setBusy('preview');
+    setPreviewResult(null);
+    setActionError(null);
+    try {
+      setPreviewResult(await liteApi.previewRestore({ backup_id: latestBackup.backup_id, reason: 'manual restore preview' }));
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  const latestBackupVerified = latestBackup?.verification_status === 'verified';
+  const latestPreview = data?.latest_restore_preview || null;
 
   return (
     <>
@@ -1722,6 +1757,33 @@ function RecoveryScreen() {
           tone="degraded"
           title="Recovery needs a moment"
           description={error}
+          className="mb-5"
+        />
+      ) : null}
+
+      {actionError ? (
+        <StateSurface
+          tone="degraded"
+          title="Recovery action needs attention"
+          description={actionError}
+          className="mb-5"
+        />
+      ) : null}
+
+      {verifyResult ? (
+        <StateSurface
+          tone="healthy"
+          title="Backup verification queued"
+          description={verifyResult.summary || 'Pocket Lab is checking the backup evidence and repository metadata.'}
+          className="mb-5"
+        />
+      ) : null}
+
+      {previewResult ? (
+        <StateSurface
+          tone="healthy"
+          title="Restore preview queued"
+          description={previewResult.summary || 'Pocket Lab is preparing a restore preview without changing local state.'}
           className="mb-5"
         />
       ) : null}
@@ -1818,17 +1880,21 @@ function RecoveryScreen() {
 
           <h2>Restore Latest</h2>
           <p>
-            Restore is protected. It will be enabled only after backup verification and Preview Restore are in place.
+            Verify the backup, then preview what would change. Restore execution stays disabled until the next increment.
           </p>
 
           <div className="lite-recovery-warning-note">
-            <strong>Restore requires confirmation</strong>
-            <span>Pocket Lab will check the backup and show what changes before restoring.</span>
+            <strong>{latestBackupVerified ? 'Backup verified' : 'Verification required'}</strong>
+            <span>{latestPreview ? `Latest preview checks ${latestPreview.change_count || 0} item(s).` : 'Pocket Lab will check the backup and show what changes before restoring.'}</span>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <LiteButton disabled tone="secondary">Verify Backup</LiteButton>
-            <LiteButton disabled tone="secondary">Preview Restore</LiteButton>
+            <LiteButton disabled={!latestBackup || busy === 'verify'} tone="secondary" onClick={verifyLatestBackup}>
+              {busy === 'verify' ? 'Verifying...' : 'Verify Backup'}
+            </LiteButton>
+            <LiteButton disabled={!latestBackup || busy === 'preview'} tone="secondary" onClick={previewLatestRestore}>
+              {busy === 'preview' ? 'Preparing preview...' : 'Preview Restore'}
+            </LiteButton>
             <LiteButton disabled tone="danger">Restore Latest</LiteButton>
           </div>
         </GlassCard>

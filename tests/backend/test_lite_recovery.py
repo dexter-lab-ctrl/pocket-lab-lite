@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -41,6 +42,20 @@ if 'backup' in args:
     repo.mkdir(parents=True, exist_ok=True)
     (repo / 'latest-snapshot').write_text('deadbeefcafebabe', encoding='utf-8')
     print(json.dumps({'message_type': 'summary', 'snapshot_id': 'deadbeefcafebabe'}))
+    raise SystemExit(0)
+if 'snapshots' in args:
+    print(json.dumps([{'id': 'deadbeefcafebabe', 'short_id': 'deadbeef'}]))
+    raise SystemExit(0)
+if 'check' in args:
+    print(json.dumps({'message_type': 'status', 'status': 'ok'}))
+    raise SystemExit(0)
+if 'ls' in args:
+    for item in [
+        {'path': '/', 'type': 'dir'},
+        {'path': '/state/fleet_agents.json', 'type': 'file', 'size': 16},
+        {'path': '/backup-metadata/scope.json', 'type': 'file', 'size': 32},
+    ]:
+        print(json.dumps(item))
     raise SystemExit(0)
 if 'version' in args or not args:
     print('restic 0.16.0')
@@ -279,3 +294,59 @@ raise SystemExit(0)
     captured = __import__("json").loads(capture.read_text(encoding="utf-8"))
     assert captured["args"][0:2] == ["backup", "."]
     assert "/data/data" not in captured["args"]
+
+
+
+def test_lite_backup_verify_updates_manifest_and_receipt(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi import deps
+    from api_fastapi.services import lite_backup, lite_backup_manifest
+
+    deps.core.write_json_file(deps.settings().state_dir / "fleet_agents.json", {"agents": {}})
+    lite_backup.create_backup({"command_id": "test-backup-verify", "reason": "unit-verify"})
+
+    result = lite_backup.verify_backup("test-backup-verify", reason="unit-verify")
+    assert result["status"] == "verified"
+    assert result["verified_at"]
+    assert all(check["status"] == "passed" for check in result["checks"])
+
+    manifest = lite_backup_manifest.read_manifest("test-backup-verify")
+    receipt = lite_backup_manifest.read_receipt("test-backup-verify")
+    assert manifest is not None
+    assert receipt is not None
+    assert manifest["verification_status"] == "verified"
+    assert manifest["verified_at"] == result["verified_at"]
+    assert manifest["verification"]["status"] == "verified"
+    assert receipt["verification_status"] == "verified"
+    assert receipt["verification_checks"]
+
+    status = lite_backup.recovery_status()
+    assert status["last_verification_result"] == "verified"
+    assert "verify_backup" in status["actions"]
+    assert "preview_restore" in status["actions"]
+
+
+def test_lite_restore_preview_writes_preview_without_restore(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi import deps
+    from api_fastapi.services import lite_backup
+
+    deps.core.write_json_file(deps.settings().state_dir / "fleet_agents.json", {"agents": {}})
+    lite_backup.create_backup({"command_id": "test-backup-preview", "reason": "unit-preview"})
+    lite_backup.verify_backup("test-backup-preview", reason="unit-preview")
+
+    preview = lite_backup.create_restore_preview("test-backup-preview", reason="unit-preview")
+    assert preview["status"] == "ready"
+    assert preview["restore_allowed"] is False
+    assert preview["restore_supported"] is False
+    assert preview["verification_status"] == "verified"
+    assert preview["change_count"] > 0
+    assert preview["restic_item_count"] >= 1
+    assert any(change["relative_path"] == "state/fleet_agents.json" for change in preview["changes"])
+
+    loaded = lite_backup.get_restore_preview(preview["preview_id"])
+    assert loaded is not None
+    assert loaded["preview_id"] == preview["preview_id"]
+
+    status = lite_backup.recovery_status()
+    assert status["latest_restore_preview"]["preview_id"] == preview["preview_id"]

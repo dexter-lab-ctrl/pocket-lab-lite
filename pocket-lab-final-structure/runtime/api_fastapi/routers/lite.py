@@ -68,6 +68,16 @@ class LiteBackupRequest(BaseModel):
     dry_run: bool = False
 
 
+class LiteBackupVerifyRequest(BaseModel):
+    backup_id: str = "latest"
+    reason: str | None = None
+
+
+class LiteRestorePreviewRequest(BaseModel):
+    backup_id: str = "latest"
+    reason: str | None = None
+
+
 class LiteRestoreRequest(BaseModel):
     backup_id: str | None = None
     backup_ref: str = "latest"
@@ -376,6 +386,58 @@ def get_lite_backup_receipt(backup_id: str, request: Request) -> dict[str, Any]:
             detail={"status": "not_found", "summary": "Backup receipt was not found."},
         )
     return receipt
+
+
+@router.post("/recovery/backups/{backup_id}/verify", status_code=202)
+async def verify_lite_backup(backup_id: str, payload: LiteBackupVerifyRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    selected = backup_id or payload.backup_id or "latest"
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.backup.verify",
+        "lite.backup.verify_queued",
+        {
+            "command_id": command_id,
+            "backup_id": selected,
+            "reason": payload.reason or "manual verification",
+            "requested_by": "lite-api",
+        },
+    )
+    submitted["backup_id"] = selected
+    submitted["summary"] = "Backup verification queued. The worker will check the manifest, restic snapshot, and repository metadata."
+    return submitted
+
+
+@router.post("/recovery/restore/preview", status_code=202)
+async def preview_lite_restore(payload: LiteRestorePreviewRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    command_id = uuid.uuid4().hex
+    selected = payload.backup_id or "latest"
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.restore.preview",
+        "lite.restore.preview_queued",
+        {
+            "command_id": command_id,
+            "backup_id": selected,
+            "reason": payload.reason or "manual restore preview",
+            "requested_by": "lite-api",
+        },
+    )
+    submitted["backup_id"] = selected
+    submitted["summary"] = "Restore preview queued. The worker will inspect the verified backup without changing local state."
+    return submitted
+
+
+@router.get("/recovery/restore/previews/{preview_id}")
+def get_lite_restore_preview(preview_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    preview = lite_backup.get_restore_preview(preview_id)
+    if not preview:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Restore preview was not found."},
+        )
+    return preview
 
 
 @router.post("/recovery/restore", status_code=501)

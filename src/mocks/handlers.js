@@ -123,8 +123,9 @@ export const handlers = [
     available_restore_points: [
       { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
     ],
-    actions: ['backup_now'],
-    planned_actions: ['verify_backup', 'preview_restore', 'restore_latest'],
+    latest_restore_preview: null,
+    actions: ['backup_now', 'verify_backup', 'preview_restore'],
+    planned_actions: ['restore_latest'],
     updated_at: new Date().toISOString(),
   })),
   http.get('/api/lite/recovery/backups', () => HttpResponse.json({
@@ -135,6 +136,20 @@ export const handlers = [
   })),
   http.get('/api/lite/recovery/backups/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, engine: 'restic', verification_status: 'not_verified', included_file_count: 6 })),
   http.get('/api/lite/recovery/receipts/:backupId', ({ params }) => HttpResponse.json({ backup_id: params.backupId, status: 'succeeded', summary: 'Evidence saved', engine: 'restic', evidence_saved: true })),
+  http.get('/api/lite/recovery/restore/previews/:previewId', ({ params }) => HttpResponse.json({
+    preview_id: params.previewId,
+    backup_id: 'mock-backup-001',
+    status: 'ready',
+    restore_allowed: false,
+    restore_supported: false,
+    verification_status: 'verified',
+    change_count: 2,
+    changes: [
+      { relative_path: 'state/fleet_agents.json', action: 'would_overwrite', target: 'Lite state' },
+      { relative_path: 'backup-metadata/scope.json', action: 'metadata_only', target: 'Backup metadata' },
+    ],
+    summary: 'Preview ready. Restore execution remains disabled until Increment 4.',
+  })),
   http.post('/api/lite/catalog/install', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     return HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-install-${body.app_id || 'app'}` }, { status: 202 });
@@ -219,6 +234,8 @@ export const handlers = [
   }),
   http.post('/api/lite/policy/apply', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-policy-apply' }, { status: 202 })),
   http.post('/api/lite/recovery/backup', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-backup-now', command_subject: 'pocketlab.commands.lite.backup.create' }, { status: 202 })),
+  http.post('/api/lite/recovery/backups/:backupId/verify', ({ params }) => HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-verify-${params.backupId}`, command_subject: 'pocketlab.commands.lite.backup.verify', summary: 'Backup verification queued.' }, { status: 202 })),
+  http.post('/api/lite/recovery/restore/preview', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-restore-preview', command_subject: 'pocketlab.commands.lite.restore.preview', summary: 'Restore preview queued.' }, { status: 202 })),
   http.post('/api/lite/recovery/restore', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
     if (!body.confirm) return HttpResponse.json({ detail: { status: 'confirmation_required', summary: 'Confirm restore before running it.' } }, { status: 409 });
