@@ -945,3 +945,42 @@ def test_lite_restart_agent_status_reports_command_progress(tmp_path):
     assert payload["command_id"] == command_id
     assert payload["progress"]["steps"][1]["id"] == "private_channel"
     assert payload["progress"]["status"] in {"waiting", "completed"}
+
+def test_lite_fleet_reports_remote_access_not_ready_when_tailscale_down(monkeypatch):
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setattr(lite_status, "_tailscaled_running", lambda: False)
+    monkeypatch.setattr(lite_status, "_tailscale_ipv4_status", lambda: None)
+    monkeypatch.setattr(lite_status, "_nats_reachable_on_host", lambda host: False)
+    monkeypatch.setattr(lite_status, "merged_fleet_nodes", lambda: [])
+
+    response = client().get("/api/lite/fleet")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["remote_access"]["status"] == "unavailable"
+    assert payload["remote_access"]["ip"] is None
+    assert "Remote access not ready" in payload["remote_access"]["summary"]
+    server = payload["devices"][0]
+    assert server["role"] == "server_host"
+    assert server["tailnet_ip"] is None
+    assert server["remote_access_status"] == "unavailable"
+
+
+def test_lite_fleet_reports_tailscale_ip_only_when_remote_access_ready(monkeypatch):
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setattr(lite_status, "_tailscaled_running", lambda: True)
+    monkeypatch.setattr(lite_status, "_tailscale_ipv4_status", lambda: "100.13.7.11")
+    monkeypatch.setattr(lite_status, "_nats_reachable_on_host", lambda host: host == "100.13.7.11")
+    monkeypatch.setattr(lite_status, "merged_fleet_nodes", lambda: [])
+
+    response = client().get("/api/lite/fleet")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["remote_access"]["status"] == "healthy"
+    assert payload["remote_access"]["ip"] == "100.13.7.11"
+    server = payload["devices"][0]
+    assert server["tailnet_ip"] == "100.13.7.11"
+    assert server["remote_access"] is True

@@ -916,6 +916,8 @@ function DevicesScreen() {
   const [removeBusy, setRemoveBusy] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
   const devices = data?.devices || [];
+  const remoteAccess = data?.remote_access || {};
+  const remoteAccessReady = remoteAccess?.status === 'healthy' || remoteAccess?.ready;
   const latestInvite = invite || data?.latest_invite || null;
   const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
   const selectedRoleLabel = roleLabel(selectedRole);
@@ -1065,7 +1067,7 @@ function DevicesScreen() {
         <div className="lite-devices-hero-copy">
           <div className="lite-home-pill">
             <span className="lite-ready-dot" />
-            {onlineDevices > 0 ? 'Devices online' : 'Ready to add devices'}
+            {remoteAccessReady ? (onlineDevices > 0 ? 'Devices online' : 'Remote access ready') : 'Remote access not ready'}
           </div>
           <h2>Keep your devices easy to find and easy to trust.</h2>
           <p>
@@ -1081,6 +1083,23 @@ function DevicesScreen() {
           <strong>{onlineDevices}</strong>
           <p>{devices.length} total device{devices.length === 1 ? '' : 's'} known</p>
         </div>
+      </section>
+
+      <section className={`lite-remote-access-panel ${remoteAccessReady ? 'lite-remote-access-ready' : 'lite-remote-access-not-ready'}`} aria-live="polite">
+        <div className="lite-remote-access-icon">
+          <Network className="h-5 w-5" />
+        </div>
+        <div className="lite-remote-access-copy">
+          <span>Remote access</span>
+          <strong>{remoteAccessReady ? 'Remote access ready' : 'Remote access not ready'}</strong>
+          <p>{remoteAccess?.summary || 'Pocket Lab is checking whether private-network device access is available.'}</p>
+        </div>
+        {remoteAccessReady && remoteAccess?.ip ? (
+          <div className="lite-remote-access-ip">
+            <span>Tailscale IP</span>
+            <code>{remoteAccess.ip}</code>
+          </div>
+        ) : null}
       </section>
 
       <div className="lite-devices-layout">
@@ -1364,6 +1383,12 @@ function DevicesScreen() {
                       <span>Connection</span>
                       <strong>{deviceConnectionLabel(device)}</strong>
                     </div>
+                    {device.tailnet_ip ? (
+                      <div>
+                        <span>Tailscale IP</span>
+                        <strong>{device.tailnet_ip}</strong>
+                      </div>
+                    ) : null}
                   </div>
 
                   {canRestartDeviceAgent(device) || canRemoveDevice(device) ? (

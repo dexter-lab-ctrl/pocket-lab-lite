@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import socket
+import subprocess
 from typing import Any
 
 from .. import deps
@@ -63,6 +64,92 @@ def _find_health_service(engine: dict[str, Any], *needles: str) -> dict[str, Any
     return None
 
 
+
+
+def _run_remote_access_command(command: list[str], timeout: float = 1.5) -> subprocess.CompletedProcess[str] | None:
+    try:
+        return subprocess.run(command, check=False, capture_output=True, text=True, timeout=timeout)
+    except Exception:
+        return None
+
+
+def _first_available_command(*names: str) -> str | None:
+    for name in names:
+        result = _run_remote_access_command(["sh", "-lc", f"command -v {name}"], timeout=0.8)
+        if result and result.returncode == 0:
+            value = result.stdout.strip().splitlines()
+            if value:
+                return value[0]
+    return None
+
+
+def _tailscaled_running() -> bool:
+    result = _run_remote_access_command(["pgrep", "-f", "tailscaled"], timeout=0.8)
+    if result and result.returncode == 0 and result.stdout.strip():
+        return True
+    result = _run_remote_access_command(["sh", "-lc", "ps -A 2>/dev/null | grep -v grep | grep -q tailscaled"], timeout=0.8)
+    return bool(result and result.returncode == 0)
+
+
+def _tailscale_ipv4_status() -> str | None:
+    command = _first_available_command("tailscale-cli", "tailscale")
+    if not command:
+        return None
+    result = _run_remote_access_command([command, "ip", "-4"], timeout=1.8)
+    if not result or result.returncode != 0:
+        return None
+    for line in result.stdout.splitlines():
+        value = line.strip()
+        if value and not value.startswith("127."):
+            return value
+    return None
+
+
+def _nats_reachable_on_host(host: str | None) -> bool:
+    if not host:
+        return False
+    try:
+        port = int(os.environ.get("POCKETLAB_LITE_NATS_PORT") or os.environ.get("POCKETLAB_PUBLIC_NATS_PORT") or "4222")
+    except ValueError:
+        port = 4222
+    try:
+        with socket.create_connection((host, port), timeout=0.8) as sock:
+            sock.settimeout(0.5)
+            try:
+                sock.recv(120)
+            except Exception:
+                pass
+        return True
+    except Exception:
+        return False
+
+
+def lite_remote_access_status() -> dict[str, Any]:
+    running = _tailscaled_running()
+    ip = _tailscale_ipv4_status() if running else None
+    nats_reachable = _nats_reachable_on_host(ip) if ip else False
+    ready = bool(running and ip and nats_reachable)
+    if ready:
+        status = "healthy"
+        summary = "Remote access is ready. Other devices can reach this Pocket Lab over the private network."
+    elif running and ip:
+        status = "degraded"
+        summary = "Remote access is running, but the device command port is not reachable on the private network."
+    else:
+        status = "unavailable"
+        summary = "Remote access not ready. Start Tailscale on the server phone so other devices can reconnect."
+    return {
+        "status": status,
+        "running": bool(running),
+        "ready": ready,
+        "ip": ip if ready else None,
+        "tailscale_ip": ip if ready else None,
+        "nats_reachable": bool(nats_reachable),
+        "summary": summary,
+        "checked_at": deps.now_utc_iso(),
+    }
+
+
 def _mysql_socket_available() -> bool | None:
     candidates = [
         os.environ.get("POCKETLAB_MARIADB_SOCKET"),
@@ -89,6 +176,7 @@ async def build_lite_status() -> dict[str, Any]:
     engine = deps.core.build_health_engine_snapshot()
     bus = BUS.status()
     live = LIVE_STATUS.status()
+    remote_access = lite_remote_access_status()
 
     try:
         telemetry = await LIVE_STATUS.sample_telemetry(source="lite-status")
@@ -122,6 +210,13 @@ async def build_lite_status() -> dict[str, Any]:
             "healthy" if bus.get("connected") and bus.get("jetstream_enabled") else "degraded",
             "NATS / JetStream is ready for worker-owned operations" if bus.get("connected") else "Command bus is not connected yet",
             source="FastAPI NATS status",
+        ),
+        _service(
+            "Remote Access",
+            remote_access.get("status"),
+            remote_access.get("summary") or "Remote access status is being checked",
+            source="Tailscale / NATS",
+            tailnet_ip=remote_access.get("ip"),
         ),
         _service(
             "Worker Execution",
@@ -183,7 +278,8 @@ async def build_lite_status() -> dict[str, Any]:
         "name": os.environ.get("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server"),
         "mode": LITE_MODE,
         "resource_profile": os.environ.get("POCKETLAB_RESOURCE_PROFILE", "low-power"),
-        "tailnet_ip": os.environ.get("TAILSCALE_IP") or os.environ.get("POCKETLAB_TAILNET_IP"),
+        "tailnet_ip": remote_access.get("ip"),
+        "remote_access": remote_access,
     }
 
     return {
@@ -198,6 +294,7 @@ async def build_lite_status() -> dict[str, Any]:
             "nats_connected": bool(bus.get("connected")),
             "jetstream_enabled": bool(bus.get("jetstream_enabled")),
             "live_sampler_running": bool(live.get("running")),
+            "remote_access_ready": bool(remote_access.get("ready")),
         },
         "telemetry": _lite_telemetry(telemetry),
     }
@@ -224,18 +321,23 @@ _DUMMY_DEVICE_IDS = {
 }
 
 
-def _server_host_device() -> dict[str, Any]:
+def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str, Any]:
     now = deps.now_utc_iso()
     name = os.environ.get("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
     node_id = normalize_node_id(os.environ.get("POCKETLAB_NODE_ID") or "pocket-lab-lite-server")
     role_info = lite_invites.role_metadata("server_host")
+    remote_access = remote_access or lite_remote_access_status()
+    ready = bool(remote_access.get("ready"))
     return {
         "id": node_id,
         "name": name,
         "status": "healthy",
         "last_seen": now,
         "last_seen_at": now,
-        "remote_access": True,
+        "remote_access": ready,
+        "remote_access_status": remote_access.get("status"),
+        "remote_access_summary": remote_access.get("summary"),
+        "tailnet_ip": remote_access.get("ip") if ready else None,
         "connection": "online",
         "role": role_info["role"],
         "role_label": role_info["role_label"],
@@ -455,7 +557,8 @@ def lite_security() -> dict[str, Any]:
 def lite_fleet() -> dict[str, Any]:
     nodes = merged_fleet_nodes()
     active_invite_keys = lite_invites.active_invite_device_keys()
-    server = _server_host_device()
+    remote_access = lite_remote_access_status()
+    server = _server_host_device(remote_access)
     server_id = str(server["id"])
     devices_by_id: dict[str, dict[str, Any]] = {server_id: server}
 
@@ -506,6 +609,7 @@ def lite_fleet() -> dict[str, Any]:
         "devices": devices,
         "count": len(devices),
         "roles": lite_invites.lite_role_options(),
+        "remote_access": remote_access,
         "latest_invite": lite_invites.latest_invite(),
         "updated_at": deps.now_utc_iso(),
     }
