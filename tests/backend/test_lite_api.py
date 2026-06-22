@@ -1088,3 +1088,12 @@ def test_lite_devices_ui_has_enterprise_polish_without_top_duplicate_refresh():
     assert "lite-device-card-linked-disconnected" in css
     assert "lite-device-cross-card-flow" in css
     assert "lite-device-cross-card-x" in css
+
+
+def test_lite_device_connection_lines_render_on_stacked_mobile_layout():
+    css = Path("src/index.css").read_text()
+    assert "@media (max-width: 1100px)" in css
+    assert "lite-device-mobile-flow" in css
+    assert "top: calc(-1rem - 1px)" in css
+    assert "repeating-linear-gradient(180deg" in css
+    assert "display: none" not in css.split("@media (max-width: 1100px)")[-1]
