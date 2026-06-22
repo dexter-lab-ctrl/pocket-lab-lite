@@ -204,8 +204,8 @@ def recovery_status() -> dict[str, Any]:
         "what_will_not_be_backed_up": scope["excluded_sensitive"]
         + scope["excluded_runtime"],
         "conditional_items": scope["conditional"],
-        "last_backup": latest or (_api_pending_backup(pending) if pending else None),
-        "last_backup_time": latest.get("created_at") if latest else (pending.get("requested_at") if pending else None),
+        "last_backup": latest,
+        "last_backup_time": latest.get("created_at") if latest else None,
         "last_verification_result": (latest or {}).get("verification_status")
         or "not_verified",
         "available_restore_points": backups,
