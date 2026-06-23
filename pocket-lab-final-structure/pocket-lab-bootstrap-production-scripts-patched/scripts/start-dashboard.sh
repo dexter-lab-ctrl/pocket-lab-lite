@@ -31,6 +31,14 @@ parse_start_dashboard_args(){
   done
 }
 parse_start_dashboard_args "$@"
+prepare_lite_state_path(){
+  is_lite_profile || return 0
+  export POCKETLAB_BASE_DIR="${POCKETLAB_BASE_DIR:-$POCKET_LAB_BASE_DIR}"
+  export POCKETLAB_STATE_DIR="${POCKETLAB_STATE_DIR:-$POCKETLAB_BASE_DIR/state}"
+  mkdir -p "$POCKETLAB_STATE_DIR"
+  log INFO "Lite state directory: $POCKETLAB_STATE_DIR"
+}
+prepare_lite_state_path
 log INFO "Profile: $(normalize_profile "${POCKETLAB_PROFILE:-full}")"
 FASTAPI_SERVER="$SCRIPT_DIR/../../runtime/api_fastapi/pocket_lab_fastapi_server.py"
 WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"

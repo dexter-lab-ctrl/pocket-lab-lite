@@ -285,3 +285,22 @@ def test_security_scan_progress_marks_completed(monkeypatch):
     assert state["scan_progress"]["percent"] == 100
     assert state["scan_progress"]["estimated_remaining_seconds"] == 0
     assert state["scan_progress"]["stage"] == "Safety check complete"
+
+
+def test_security_redaction_preserves_scanner_return_codes():
+    from api_fastapi.services import lite_security_policy as policy
+
+    payload = {
+        "secret_returncode": 0,
+        "vuln_returncode": 1,
+        "password": "do-not-show",
+        "nested": {"api_key": "do-not-show", "trivy_secret_returncode": 0},
+    }
+
+    redacted = policy.redact_value(payload)
+    assert redacted["secret_returncode"] == 0
+    assert redacted["vuln_returncode"] == 1
+    assert redacted["nested"]["trivy_secret_returncode"] == 0
+    assert redacted["password"] == "***REDACTED***"
+    assert redacted["nested"]["api_key"] == "***REDACTED***"
+

@@ -162,11 +162,28 @@ def redact_text(value: str) -> str:
     return redacted
 
 
+SAFE_SCANNER_METADATA_KEYS = {
+    "returncode",
+    "return_code",
+    "exit_code",
+    "vuln_returncode",
+    "vulnerability_returncode",
+    "misconfig_returncode",
+    "secret_returncode",
+    "lynis_returncode",
+}
+
+
+def is_safe_scanner_metadata_key(key: Any) -> bool:
+    normalized = str(key or "").strip().lower().replace("-", "_")
+    return normalized in SAFE_SCANNER_METADATA_KEYS or normalized.endswith("_returncode")
+
+
 def redact_value(value: Any) -> Any:
     if isinstance(value, dict):
         clean: dict[str, Any] = {}
         for key, item in value.items():
-            if SENSITIVE_KEY_RE.search(str(key)):
+            if SENSITIVE_KEY_RE.search(str(key)) and not is_safe_scanner_metadata_key(key):
                 clean[str(key)] = "***REDACTED***"
             else:
                 clean[str(key)] = redact_value(item)
