@@ -228,12 +228,18 @@ async def check_lite_security(payload: LiteSecurityScanRequest, request: Request
         "reason": payload.reason or "manual safety check",
         "requested_at": deps.now_utc_iso(),
     }
-    queued = await submit_domain_command(
-        lite_security.policy.COMMAND_SUBJECT,
-        "lite.security.scan.requested",
-        command,
-    )
+    # Record the queued state before publishing so a fast worker cannot complete
+    # the scan and then have the API overwrite the completed state back to queued.
     lite_security.record_queued_run(command)
+    try:
+        queued = await submit_domain_command(
+            lite_security.policy.COMMAND_SUBJECT,
+            "lite.security.scan.requested",
+            command,
+        )
+    except Exception:
+        lite_security.discard_queued_run(run_id)
+        raise
     queued.update(
         {
             "status": "queued",

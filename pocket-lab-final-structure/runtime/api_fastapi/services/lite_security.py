@@ -54,8 +54,25 @@ def read_evidence(run_id: str) -> dict[str, Any] | None:
     return evidence.read_evidence_summary(run_id)
 
 
+def discard_queued_run(run_id: str) -> None:
+    existing = evidence.read_run(run_id)
+    if existing and str(existing.get("status") or "") == "queued":
+        evidence.delete_run(run_id)
+    state = evidence.read_state() or {}
+    last_run = state.get("last_run") or {}
+    if last_run.get("run_id") == run_id and str(last_run.get("status") or "") == "queued":
+        evidence.write_state(default_state())
+
+
 def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(command.get("run_id") or command.get("command_id") or new_run_id())
+    existing = evidence.read_run(run_id)
+    if existing and str(existing.get("status") or "") not in {"", "queued"}:
+        return existing
+    state = evidence.read_state() or {}
+    last_run = state.get("last_run") or {}
+    if last_run.get("run_id") == run_id and str(last_run.get("status") or "") not in {"", "queued"}:
+        return last_run
     now = deps.now_utc_iso()
     run = {
         "run_id": run_id,
