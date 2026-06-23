@@ -45,9 +45,12 @@ def current_state() -> dict[str, Any]:
     state.setdefault("critical_issues", [])
     state.setdefault("component_posture", component_posture(state.get("findings") or []))
     last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+    findings = state.get("findings") if isinstance(state.get("findings"), list) else []
     if last_run and not state.get("scan_progress"):
         state["scan_progress"] = scan_progress_for_run(last_run)
     state.setdefault("scan_progress", None)
+    state.setdefault("history", security_history(current_run=last_run, current_findings=findings, current_evidence_refs=state.get("evidence_refs") or []))
+    state.setdefault("finding_delta", finding_delta_for_run(last_run, findings))
     state.setdefault("updated_at", deps.now_utc_iso())
     return policy.redact_value(state)
 
@@ -446,6 +449,163 @@ def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
     )
 
 
+def _run_time_value(run: dict[str, Any]) -> float:
+    for key in ("completed_at", "started_at", "requested_at"):
+        parsed = _parse_iso_timestamp(run.get(key))
+        if parsed:
+            return parsed.timestamp()
+    return 0.0
+
+
+def _finding_key(finding: dict[str, Any]) -> str:
+    for key in ("id", "evidence_ref"):
+        value = str(finding.get(key) or "").strip()
+        if value:
+            return value
+    return "|".join(
+        str(finding.get(key) or "").strip().lower()
+        for key in ("source", "category", "component", "file", "summary")
+    )
+
+
+def _finding_delta_item(finding: dict[str, Any]) -> dict[str, Any]:
+    return policy.redact_value(
+        {
+            "id": finding.get("id") or _finding_key(finding),
+            "source": finding.get("source"),
+            "category": finding.get("category"),
+            "severity": policy.normalize_severity(finding.get("severity")),
+            "component": finding.get("component"),
+            "file": finding.get("file"),
+            "summary": finding.get("summary") or "Security finding",
+            "recommendation": finding.get("recommendation"),
+        }
+    )
+
+
+def _duration_seconds(run: dict[str, Any]) -> int | None:
+    started = _parse_iso_timestamp(run.get("started_at") or run.get("requested_at"))
+    completed = _parse_iso_timestamp(run.get("completed_at"))
+    if not started or not completed:
+        return None
+    return max(0, int((completed - started).total_seconds()))
+
+
+def _findings_for_run(run_id: str) -> list[dict[str, Any]]:
+    summary = evidence.read_evidence_summary(run_id) or {}
+    findings = summary.get("findings")
+    return findings if isinstance(findings, list) else []
+
+
+def _refs_for_run(run: dict[str, Any]) -> list[str]:
+    refs = run.get("evidence_refs")
+    if isinstance(refs, list):
+        return [str(item) for item in refs]
+    summary = evidence.read_evidence_summary(str(run.get("run_id") or "")) or {}
+    refs = summary.get("evidence_refs")
+    return [str(item) for item in refs] if isinstance(refs, list) else []
+
+
+def _history_entry(run: dict[str, Any], findings: list[dict[str, Any]], evidence_refs: list[str]) -> dict[str, Any]:
+    counts = count_findings(findings)
+    score = run.get("score")
+    if score is None:
+        score = policy.score_for_counts(counts)
+    try:
+        score = int(score)
+    except Exception:
+        score = policy.score_for_counts(counts)
+    status = str(run.get("status") or "unknown").lower()
+    return policy.redact_value(
+        {
+            "run_id": run.get("run_id"),
+            "status": status,
+            "score": max(0, min(100, score)),
+            "started_at": run.get("started_at") or run.get("requested_at"),
+            "completed_at": run.get("completed_at"),
+            "duration_seconds": _duration_seconds(run),
+            "partial_results": bool(run.get("partial_results")),
+            "critical_count": counts.get("critical", 0),
+            "high_count": counts.get("high", 0),
+            "medium_count": counts.get("medium", 0),
+            "low_count": counts.get("low", 0),
+            "info_count": counts.get("info", 0),
+            "items_to_review": len([item for item in findings if policy.normalize_severity(item.get("severity")) != "info"]),
+            "evidence_count": len(evidence_refs),
+            "sbom_saved": any("sbom.cdx.json" in str(ref) for ref in evidence_refs),
+            "tools": run.get("tools") or ["lynis", "trivy"],
+        }
+    )
+
+
+def security_history(
+    *,
+    current_run: dict[str, Any] | None = None,
+    current_findings: list[dict[str, Any]] | None = None,
+    current_evidence_refs: list[str] | None = None,
+    limit: int = 8,
+) -> list[dict[str, Any]]:
+    entries: dict[str, dict[str, Any]] = {}
+    for run in evidence.list_runs(limit=40):
+        run_id = str(run.get("run_id") or "")
+        if not run_id:
+            continue
+        entries[run_id] = _history_entry(run, _findings_for_run(run_id), _refs_for_run(run))
+    if current_run and current_run.get("run_id"):
+        run_id = str(current_run.get("run_id"))
+        entries[run_id] = _history_entry(current_run, current_findings or [], current_evidence_refs or _refs_for_run(current_run))
+    ordered = sorted(entries.values(), key=lambda item: _run_time_value(item), reverse=True)
+    return policy.redact_value(ordered[: max(1, limit)])
+
+
+def _previous_completed_run(current_run_id: str | None) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    for run in sorted(evidence.list_runs(limit=40), key=_run_time_value, reverse=True):
+        run_id = str(run.get("run_id") or "")
+        if not run_id or run_id == current_run_id:
+            continue
+        if str(run.get("status") or "").lower() in {"succeeded", "degraded", "failed"}:
+            return run, _findings_for_run(run_id)
+    return None, []
+
+
+def finding_delta_for_run(current_run: dict[str, Any] | None, current_findings: list[dict[str, Any]]) -> dict[str, Any]:
+    current_run_id = str((current_run or {}).get("run_id") or "") or None
+    previous_run, previous_findings = _previous_completed_run(current_run_id)
+    if not previous_run:
+        return policy.redact_value(
+            {
+                "baseline": "first_run",
+                "previous_run_id": None,
+                "new_count": 0,
+                "resolved_count": 0,
+                "unchanged_count": len(current_findings),
+                "new": [],
+                "resolved": [],
+                "unchanged": [_finding_delta_item(item) for item in current_findings[:10]],
+                "summary": "Baseline established. Future checks will show what changed.",
+            }
+        )
+
+    current_by_key = {_finding_key(item): item for item in current_findings}
+    previous_by_key = {_finding_key(item): item for item in previous_findings}
+    new_keys = sorted(set(current_by_key) - set(previous_by_key))
+    resolved_keys = sorted(set(previous_by_key) - set(current_by_key))
+    unchanged_keys = sorted(set(current_by_key) & set(previous_by_key))
+    return policy.redact_value(
+        {
+            "baseline": "compared",
+            "previous_run_id": previous_run.get("run_id"),
+            "new_count": len(new_keys),
+            "resolved_count": len(resolved_keys),
+            "unchanged_count": len(unchanged_keys),
+            "new": [_finding_delta_item(current_by_key[key]) for key in new_keys[:10]],
+            "resolved": [_finding_delta_item(previous_by_key[key]) for key in resolved_keys[:10]],
+            "unchanged": [_finding_delta_item(current_by_key[key]) for key in unchanged_keys[:10]],
+            "summary": "No new review items." if not new_keys else f"{len(new_keys)} new review item(s).",
+        }
+    )
+
+
 def count_findings(findings: list[dict[str, Any]]) -> dict[str, int]:
     counts = {severity: 0 for severity in policy.SEVERITIES}
     for finding in findings:
@@ -521,6 +681,8 @@ def build_state(
             "component_posture": component_posture(findings),
             "findings": findings[:100],
             "evidence_refs": evidence_refs,
+            "history": security_history(current_run=run, current_findings=findings, current_evidence_refs=evidence_refs),
+            "finding_delta": finding_delta_for_run(run, findings),
             "scan_progress": scan_progress_for_run(run),
             "updated_at": deps.now_utc_iso(),
         }

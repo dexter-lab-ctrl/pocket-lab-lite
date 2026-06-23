@@ -125,6 +125,21 @@ export const handlers = [
     checks_reviewed: 2,
     items_to_review: 0,
     critical_issues: [],
+    history: [
+      { run_id: 'security-mock-001', status: 'succeeded', score: 100, started_at: new Date(Date.now() - 3 * 60 * 1000).toISOString(), completed_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(), duration_seconds: 60, items_to_review: 0, evidence_count: 4, sbom_saved: true },
+      { run_id: 'security-mock-000', status: 'succeeded', score: 96, started_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), completed_at: new Date(Date.now() - 24 * 60 * 60 * 1000 + 120000).toISOString(), duration_seconds: 120, items_to_review: 1, evidence_count: 4, sbom_saved: true },
+    ],
+    finding_delta: {
+      baseline: 'compared',
+      previous_run_id: 'security-mock-000',
+      new_count: 0,
+      resolved_count: 1,
+      unchanged_count: 0,
+      summary: 'No new review items.',
+      new: [],
+      resolved: [{ id: 'mock-resolved-risk', source: 'trivy', category: 'dependency_vulnerability', severity: 'high', summary: 'Old dependency risk resolved.' }],
+      unchanged: [],
+    },
     guidance: [
       { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
       { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
