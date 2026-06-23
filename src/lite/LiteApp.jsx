@@ -350,6 +350,68 @@ function securityDeltaTone(type) {
 }
 
 
+function securityExecutionStateTone(state) {
+  if (state === 'done') return 'ready';
+  if (state === 'active') return 'checking';
+  if (state === 'review') return 'review';
+  if (state === 'failed') return 'danger';
+  return 'waiting';
+}
+
+function securityToolStatusLabel(toolResult = {}) {
+  const status = String(toolResult?.status || '').toLowerCase();
+  if (status === 'completed') return 'Completed';
+  if (status === 'timed_out') return 'Timed out';
+  if (status === 'missing_tool') return 'Tool missing';
+  if (status === 'partial') return 'Partial';
+  if (status) return status.replace(/_/g, ' ');
+  return 'Pending';
+}
+
+function securityExecutionTimeline({ runStatus, scanProgress, evidenceRun, toolResults, evidenceRefs, sbomSaved }) {
+  const status = String(evidenceRun?.status || runStatus || '').toLowerCase();
+  const terminal = ['succeeded', 'degraded', 'failed'].includes(status);
+  const running = status === 'running';
+  const queued = status === 'queued';
+  const lynis = toolResults?.lynis || {};
+  const trivy = toolResults?.trivy || {};
+  const hasEvidence = Boolean(evidenceRefs?.length || evidenceRun?.evidence_refs?.length);
+
+  return [
+    {
+      key: 'queued',
+      title: 'Request accepted',
+      detail: queued ? 'FastAPI queued the check.' : 'FastAPI accepted the safety request.',
+      state: queued ? 'active' : status ? 'done' : 'waiting',
+    },
+    {
+      key: 'worker',
+      title: 'Worker picked it up',
+      detail: running ? 'The backend worker is running local tools.' : terminal ? 'The backend worker finished the check.' : 'Waiting for the backend worker.',
+      state: running ? 'active' : terminal ? 'done' : queued ? 'waiting' : 'waiting',
+    },
+    {
+      key: 'lynis',
+      title: 'Lynis host check',
+      detail: lynis.status ? securityToolStatusLabel(lynis) : scanProgress?.stage === 'Running Lynis and Trivy' ? 'Host readiness is being checked.' : 'Checks host readiness.',
+      state: lynis.status === 'completed' ? 'done' : lynis.status === 'timed_out' || lynis.status === 'missing_tool' ? 'review' : running ? 'active' : terminal ? 'done' : 'waiting',
+    },
+    {
+      key: 'trivy',
+      title: 'Trivy dependency & secret check',
+      detail: trivy.status ? `${securityToolStatusLabel(trivy)}${trivy.sbom_saved ? ' · SBOM saved' : ''}` : 'Checks dependencies, config, secret-like values, and SBOM evidence.',
+      state: trivy.status === 'completed' ? 'done' : trivy.status === 'partial' || trivy.status === 'missing_tool' ? 'review' : running ? 'active' : terminal ? 'done' : 'waiting',
+    },
+    {
+      key: 'evidence',
+      title: 'Evidence saved',
+      detail: hasEvidence ? `${evidenceRefs?.length || evidenceRun?.evidence_refs?.length || 0} sanitized file(s) ready.` : sbomSaved ? 'SBOM saved; evidence metadata is available.' : 'Sanitized evidence appears after completion.',
+      state: hasEvidence || terminal ? 'done' : running ? 'waiting' : 'waiting',
+    },
+  ];
+}
+
+
 function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
     <div className="mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
@@ -889,6 +951,7 @@ function SecurityScreen() {
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [receiptCopied, setReceiptCopied] = useState(false);
   const [progressNow, setProgressNow] = useState(() => Date.now());
 
   const lastRun = data?.last_run || null;
@@ -945,6 +1008,26 @@ function SecurityScreen() {
   const scanProgressLabel = securityProgressStage(scanProgress, runStatus);
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
+  const executionSteps = securityExecutionTimeline({
+    runStatus,
+    scanProgress,
+    evidenceRun,
+    toolResults,
+    evidenceRefs,
+    sbomSaved,
+  });
+  const evidenceReceipt = evidence ? {
+    run_id: evidenceRun?.run_id || lastRun?.run_id,
+    status: evidenceRun?.status || data?.status || 'unknown',
+    score: evidence?.score ?? data?.score ?? 0,
+    findings: evidenceFindings.length,
+    completed_at: evidenceRun?.completed_at || lastRun?.completed_at,
+    duration_seconds: evidenceRun?.duration_seconds || (typeof latestHistory !== 'undefined' ? latestHistory?.duration_seconds : undefined),
+    tools: Object.keys(toolResults).length ? Object.keys(toolResults) : toolNames,
+    evidence_files: evidence.evidence_refs || evidenceRefs,
+    sbom_saved: Boolean(toolResults?.trivy?.sbom_saved || sbomSaved),
+    sanitized: true,
+  } : null;
   const safetyStatus = data?.status || (findings === 0 ? 'healthy' : 'degraded');
   const safetyState = ['queued', 'running'].includes(runStatus) ? 'checking' : normalizeBackendState(safetyStatus);
   const safetyIsReady = safetyState === 'ready' && findings === 0;
@@ -1018,6 +1101,7 @@ function SecurityScreen() {
     setEvidence(null);
     setEvidenceError(null);
     setEvidenceLoading(false);
+    setReceiptCopied(false);
     try {
       const payload = await liteApi.runSecurityScan('local', { reason: 'manual safety check' });
       setResult(payload);
@@ -1034,6 +1118,16 @@ function SecurityScreen() {
     setEvidence(null);
     setEvidenceError(null);
     setEvidenceLoading(false);
+    setReceiptCopied(false);
+  }
+
+  async function copyEvidenceReceipt() {
+    if (!evidenceReceipt) return;
+    const copied = await copyTextToClipboard(JSON.stringify(evidenceReceipt, null, 2));
+    if (copied) {
+      setReceiptCopied(true);
+      window.setTimeout(() => setReceiptCopied(false), 1800);
+    }
   }
 
   async function showEvidence() {
@@ -1158,6 +1252,28 @@ function SecurityScreen() {
           className="mb-5"
         />
       ) : null}
+
+      <GlassCard className="lite-security-card lite-security-execution-card">
+        <div className="lite-security-card-head">
+          <div className="lite-security-icon">
+            <Activity className="h-5 w-5" />
+          </div>
+          <span className="lite-security-soft-badge">Execution timeline</span>
+        </div>
+        <h2>Per-tool check path</h2>
+        <p>Security checks move through FastAPI, the backend worker, Lynis, Trivy, and sanitized evidence.</p>
+        <div className="lite-security-execution-timeline" role="list" aria-label="Security tool execution timeline">
+          {executionSteps.map((step, index) => (
+            <div key={step.key} className={`lite-security-execution-step lite-security-execution-${securityExecutionStateTone(step.state)}`} role="listitem">
+              <span>{index + 1}</span>
+              <div>
+                <strong>{step.title}</strong>
+                <p>{step.detail}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
 
       {(securityHistory.length || findingDelta.summary) ? (
         <section className="lite-security-history-grid" aria-label="Security history and change summary">
@@ -1388,6 +1504,23 @@ function SecurityScreen() {
                   );
                 })}
               </div>
+
+              {evidenceReceipt ? (
+                <div className="lite-security-receipt-card">
+                  <div>
+                    <span>Evidence receipt</span>
+                    <strong>{shortRunId(evidenceReceipt.run_id)}</strong>
+                    <p>Sanitized receipt for support, audit review, or your own records.</p>
+                  </div>
+                  <div className="lite-security-receipt-grid">
+                    <div><span>Status</span><strong>{evidenceReceipt.status}</strong></div>
+                    <div><span>Duration</span><strong>{formatSecurityDuration(evidenceReceipt.duration_seconds)}</strong></div>
+                    <div><span>Tools</span><strong>{evidenceReceipt.tools.length}</strong></div>
+                    <div><span>SBOM</span><strong>{evidenceReceipt.sbom_saved ? 'Saved' : 'Not saved'}</strong></div>
+                  </div>
+                  <LiteButton tone="secondary" onClick={copyEvidenceReceipt}>{receiptCopied ? 'Copied' : 'Copy Receipt'}</LiteButton>
+                </div>
+              ) : null}
 
               <div className="lite-security-evidence-files">
                 {(evidence.evidence_refs || evidenceRefs).slice(0, 6).map((ref) => (
