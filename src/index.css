@@ -3460,6 +3460,164 @@ textarea {
   font-weight: 700;
 }
 
+
+.theme-pocket-lite-daylight .lite-security-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-trust-strip > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.48rem 0.7rem;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #065f46;
+  font-size: 0.78rem;
+  font-weight: 900;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+}
+
+.theme-pocket-lite-daylight .lite-security-score-meta {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.theme-pocket-lite-daylight .lite-security-score-meta span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-security-assurance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-assurance-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.7rem;
+  align-items: start;
+  padding: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+.theme-pocket-lite-daylight .lite-security-assurance-card span {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.95), rgba(219, 234, 254, 0.78));
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-security-assurance-card strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-assurance-card p {
+  grid-column: 2;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.theme-pocket-lite-daylight .lite-security-review-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-review-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.78));
+}
+
+.theme-pocket-lite-daylight .lite-security-review-item strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.96rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-review-item p {
+  margin-top: 0.35rem;
+  color: #475569;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-security-severity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.1rem;
+  padding: 0.32rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.theme-pocket-lite-daylight .lite-security-severity-safe {
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  background: rgba(236, 253, 245, 0.9);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-security-severity-warning {
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  background: rgba(255, 251, 235, 0.92);
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-security-severity-danger {
+  border: 1px solid rgba(244, 63, 94, 0.22);
+  background: rgba(255, 241, 242, 0.92);
+  color: #9f1239;
+}
+
+.theme-pocket-lite-daylight .lite-security-safe-panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 1rem;
+  background: rgba(236, 253, 245, 0.82);
+  color: #065f46;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
 @keyframes lite-security-score-in {
   from {
     opacity: 0;
@@ -3473,12 +3631,17 @@ textarea {
 
 @media (max-width: 900px) {
   .theme-pocket-lite-daylight .lite-security-hero,
-  .theme-pocket-lite-daylight .lite-security-grid {
+  .theme-pocket-lite-daylight .lite-security-grid,
+  .theme-pocket-lite-daylight .lite-security-assurance-grid {
     grid-template-columns: 1fr;
   }
 
   .theme-pocket-lite-daylight .lite-security-score-card {
     min-height: auto;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-review-item {
+    grid-template-columns: 1fr;
   }
 }
 
