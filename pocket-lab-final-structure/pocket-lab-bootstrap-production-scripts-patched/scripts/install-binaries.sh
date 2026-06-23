@@ -35,6 +35,51 @@ install_go_binary() {
   log INFO "Installing $cmd with go install"
   GOBIN="$PREFIX/bin" GO111MODULE=on go install "${module}@${version}"
 }
+
+install_lite_trivy() {
+  if have trivy; then log INFO "Trivy already installed"; return 0; fi
+  require_cmd go
+  ensure_dir_perm "$STATE_BIN_DIR" 755
+  ensure_dir_perm "$STATE_DIR/trivy-cache" 700
+  log INFO "Lite profile: installing Trivy with Go into managed state bin dir"
+  GOBIN="$STATE_BIN_DIR" GO111MODULE=on go install "github.com/aquasecurity/trivy/cmd/trivy@v${TRIVY_VERSION}"
+  [[ -x "$STATE_BIN_DIR/trivy" ]] || die "Trivy install did not produce $STATE_BIN_DIR/trivy"
+  cat > "$PREFIX/bin/trivy" <<SH
+#!/usr/bin/env bash
+export TRIVY_CACHE_DIR="\${TRIVY_CACHE_DIR:-$STATE_DIR/trivy-cache}"
+exec "$STATE_BIN_DIR/trivy" "\$@"
+SH
+  chmod 0755 "$PREFIX/bin/trivy"
+}
+
+install_lite_lynis() {
+  if have lynis; then log INFO "Lynis already installed"; return 0; fi
+  require_cmd curl tar
+  local archive="$STATE_DIR/lynis-${LYNIS_VERSION}.tar.gz"
+  local install_dir="$STATE_DIR/lynis-${LYNIS_VERSION}"
+  log INFO "Lite profile: installing Lynis into managed state dir"
+  download_if_missing "https://github.com/CISOfy/lynis/archive/refs/tags/${LYNIS_VERSION}.tar.gz" "$archive"
+  rm -rf "$install_dir" "$STATE_DIR/lynis"
+  mkdir -p "$install_dir"
+  tar --no-same-owner --no-same-permissions -xzf "$archive" -C "$install_dir" --strip-components=1
+  [[ -x "$install_dir/lynis" ]] || die "Lynis install did not produce $install_dir/lynis"
+  ln -sfn "$install_dir" "$STATE_DIR/lynis"
+  cat > "$PREFIX/bin/lynis" <<SH
+#!/usr/bin/env bash
+cd "$STATE_DIR/lynis"
+exec ./lynis "\$@"
+SH
+  chmod 0755 "$PREFIX/bin/lynis"
+  rm -f "$archive"
+}
+
+install_lite_security_tools() {
+  log INFO "Lite profile: installing only Security tools: Lynis and Trivy"
+  install_lite_lynis
+  install_lite_trivy
+  lynis show version >/dev/null 2>&1 || die "Lynis installed but version check failed"
+  trivy --version >/dev/null 2>&1 || die "Trivy installed but version check failed"
+}
 ensure_python_runtime() {
   require_cmd python3
   log INFO "Ensuring Python runtime packages"
@@ -155,27 +200,23 @@ main() {
   SCRIPT_NAME="install-binaries.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux
   ensure_dir_perm "$STATE_BIN_DIR" 755; ensure_dir_perm "$CHECKSUM_DIR" 700
   require_cmd curl unzip tar sha256sum
-  install_vault; install_act_runner
   if is_lite_profile; then
-    log INFO "Lite profile: skipping Gatus install; built-in /api/lite/status is used instead"
-  else
-    install_go_binary gatus github.com/TwiN/gatus/v5 "v${GATUS_VERSION}"
+    install_lite_security_tools
+    mark_done lite_security_tools_ready
+    mark_done binaries_ready
+    log INFO "Lite Security tools are ready and safe to rerun"
+    return 0
   fi
+
+  install_vault; install_act_runner
+  install_go_binary gatus github.com/TwiN/gatus/v5 "v${GATUS_VERSION}"
   install_go_binary nats-server github.com/nats-io/nats-server/v2 latest
   ensure_python_runtime
   install_go_binary task github.com/go-task/task/v3/cmd/task "$TASK_VERSION"
   install_go_binary go-getter github.com/hashicorp/go-getter/cmd/go-getter "$GO_GETTER_VERSION"
   install_go_binary oras oras.land/oras/cmd/oras "$ORAS_VERSION"
-  if is_lite_profile; then
-    log INFO "Lite profile: skipping PRoot observability/security guest binaries"
-  else
-    install_proot_stack
-  fi
+  install_proot_stack
   mark_done binaries_ready
-  if is_lite_profile; then
-    log INFO "Lite native binary layer is ready and safe to rerun"
-  else
-    log INFO "Native and PRoot binary layer is ready and safe to rerun"
-  fi
+  log INFO "Native and PRoot binary layer is ready and safe to rerun"
 }
 main "$@"
