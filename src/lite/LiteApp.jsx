@@ -921,6 +921,9 @@ function SecurityScreen() {
         danger: 'Needs attention',
         checking: 'Checking safety',
       });
+  const safetyScoreSummary = lastRun?.partial_results
+    ? 'Partial check completed. Available evidence was saved.'
+    : data?.summary || 'Pocket Lab is checking the current safety state.';
   const trustSignals = [
     {
       icon: Server,
@@ -1082,7 +1085,7 @@ function SecurityScreen() {
             <span>{safetyScore}</span>
           </div>
           <strong>Safety score</strong>
-          <p>{data?.summary || 'Pocket Lab is checking the current safety state.'}</p>
+          <p>{safetyScoreSummary}</p>
           <StatusBadge status={backendBadgeStatus(safetyStatus)}>
             {safetyLabel}
           </StatusBadge>

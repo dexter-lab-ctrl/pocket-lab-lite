@@ -3961,14 +3961,15 @@ textarea {
   }
 
   .theme-pocket-lite-daylight .lite-security-evidence-modal-backdrop {
-    align-items: end;
-    padding: 0.75rem;
+    align-items: center;
+    justify-items: center;
+    padding: 1rem;
   }
 
   .theme-pocket-lite-daylight .lite-security-evidence-panel {
-    width: 100%;
-    max-height: 88vh;
-    border-radius: 1.45rem 1.45rem 1rem 1rem;
+    width: min(100%, 34rem);
+    max-height: 84vh;
+    border-radius: 1.45rem;
   }
 }
 
