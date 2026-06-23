@@ -68,6 +68,14 @@ def read_run(run_id: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def delete_run(run_id: str) -> None:
+    path = runs_dir() / f"{safe_run_id(run_id)}.json"
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        return
+
+
 def write_evidence(run_id: str, filename: str, payload: Any) -> str:
     directory = evidence_dir(run_id)
     safe_name = "".join(ch if ch.isalnum() or ch in {"-", "_", "."} else "-" for ch in filename)
