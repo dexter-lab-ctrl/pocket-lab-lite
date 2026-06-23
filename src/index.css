@@ -3531,7 +3531,16 @@ textarea {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #0ea5e9, #10b981);
+  position: relative;
   transition: width 420ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-progress-track span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.42), transparent);
+  animation: lite-security-progress-shine 1.7s ease-in-out infinite;
 }
 
 .theme-pocket-lite-daylight .lite-security-progress-card p {
@@ -3575,6 +3584,14 @@ textarea {
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
   backdrop-filter: blur(16px);
+  animation: lite-security-card-rise 520ms ease both;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-assurance-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.28);
+  box-shadow: 0 22px 46px rgba(15, 23, 42, 0.10);
 }
 
 .theme-pocket-lite-daylight .lite-security-assurance-card span {
@@ -3664,6 +3681,140 @@ textarea {
   color: #9f1239;
 }
 
+.theme-pocket-lite-daylight .lite-security-dashboard-card,
+.theme-pocket-lite-daylight .lite-security-evidence-panel {
+  animation: lite-security-card-rise 520ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard > div {
+  position: relative;
+  overflow: hidden;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.92), rgba(236, 253, 245, 0.7));
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard > div::after {
+  content: "";
+  position: absolute;
+  right: -1.8rem;
+  top: -1.8rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.18), transparent 68%);
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard > div:hover {
+  transform: translateY(-2px);
+  border-color: rgba(14, 165, 233, 0.28);
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard span {
+  display: block;
+  color: #0369a1;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.theme-pocket-lite-daylight .lite-security-mini-dashboard p {
+  margin-top: 0.2rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.theme-pocket-lite-daylight .lite-security-compact-steps {
+  margin-top: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-panel {
+  margin-top: 1rem;
+  border-color: rgba(14, 165, 233, 0.18);
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-summary,
+.theme-pocket-lite-daylight .lite-security-evidence-tools {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-tools {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-summary > div,
+.theme-pocket-lite-daylight .lite-security-evidence-tools > div {
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-summary span,
+.theme-pocket-lite-daylight .lite-security-evidence-tools span {
+  display: block;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-summary strong,
+.theme-pocket-lite-daylight .lite-security-evidence-tools strong {
+  display: block;
+  margin-top: 0.22rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-files code {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(14, 165, 233, 0.16);
+  border-radius: 999px;
+  background: rgba(240, 249, 255, 0.9);
+  color: #075985;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-note {
+  margin-top: 0.9rem;
+  color: #065f46;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
 .theme-pocket-lite-daylight .lite-security-safe-panel {
   display: inline-flex;
   align-items: center;
@@ -3676,6 +3827,26 @@ textarea {
   color: #065f46;
   font-size: 0.9rem;
   font-weight: 850;
+}
+
+@keyframes lite-security-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lite-security-progress-shine {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(110%);
+  }
 }
 
 @keyframes lite-security-score-in {
@@ -3707,6 +3878,31 @@ textarea {
 
   .theme-pocket-lite-daylight .lite-security-progress-head {
     display: grid;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-hero {
+    padding: 1rem;
+    border-radius: 1.4rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-hero h2 {
+    font-size: clamp(2rem, 12vw, 3.1rem);
+  }
+
+  .theme-pocket-lite-daylight .lite-security-actions,
+  .theme-pocket-lite-daylight .lite-security-trust-strip {
+    width: 100%;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-actions .pocket-button {
+    flex: 1 1 12rem;
+    justify-content: center;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-mini-dashboard,
+  .theme-pocket-lite-daylight .lite-security-evidence-summary,
+  .theme-pocket-lite-daylight .lite-security-evidence-tools {
+    grid-template-columns: 1fr;
   }
 }
 

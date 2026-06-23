@@ -261,6 +261,22 @@ function scanInProgressValue(runStatus, busy, progress) {
   return busy ? 8 : 0;
 }
 
+function triggerHapticFeedback(pattern = 12) {
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+      navigator.vibrate(pattern);
+    }
+  } catch (_error) {
+    // Haptics are optional and must never block a Lite action.
+  }
+}
+
+function shortRunId(value) {
+  const text = String(value || '');
+  if (!text) return 'Not available yet';
+  return text.length > 18 ? `${text.slice(0, 12)}…${text.slice(-6)}` : text;
+}
+
 
 function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
@@ -275,15 +291,22 @@ function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }
   );
 }
 
-function LiteButton({ children, onClick, disabled = false, tone = 'primary', type = 'button' }) {
+function LiteButton({ children, onClick, disabled = false, tone = 'primary', type = 'button', haptic = false }) {
   const toneClass = {
     primary: 'pocket-button-primary',
     secondary: 'pocket-button-secondary',
     success: 'pocket-button-success',
     danger: 'pocket-button-danger',
   }[tone] || 'pocket-button-secondary';
+
+  function handleClick(event) {
+    if (disabled) return;
+    if (haptic) triggerHapticFeedback();
+    if (onClick) onClick(event);
+  }
+
   return (
-    <button type={type} onClick={onClick} disabled={disabled} className={`pocket-button ${toneClass}`}>
+    <button type={type} onClick={handleClick} disabled={disabled} className={`pocket-button ${toneClass}`}>
       {children}
     </button>
   );
@@ -793,6 +816,7 @@ function SecurityScreen() {
   const [busy, setBusy] = useState(false);
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -806,6 +830,23 @@ function SecurityScreen() {
     { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
     { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
     { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
+  ];
+  const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const evidenceRun = evidence?.run || null;
+  const toolResults = evidenceRun?.tool_results || {};
+  const protectedFileNames = new Set([
+    ...reviewItems.map((item) => item?.file).filter(Boolean),
+    ...evidenceFindings.map((item) => item?.file).filter(Boolean),
+  ]);
+  const protectedFileCount = protectedFileNames.size;
+  const toolNames = Array.isArray(lastRun?.tools) && lastRun.tools.length ? lastRun.tools : ['lynis', 'trivy'];
+  const sbomSaved = evidenceRefs.some((ref) => String(ref).includes('sbom.cdx.json')) || Boolean(toolResults?.trivy?.sbom_saved);
+  const evidenceFileCount = evidenceRefs.length || (Array.isArray(evidence?.evidence_refs) ? evidence.evidence_refs.length : 0);
+  const postureDashboard = [
+    { label: 'Tools active', value: toolNames.length, detail: toolNames.join(' + ') },
+    { label: 'Protected files', value: protectedFileCount || '—', detail: protectedFileCount ? 'with sanitized findings' : 'no file findings' },
+    { label: 'Evidence files', value: evidenceFileCount, detail: sbomSaved ? 'SBOM saved' : 'saved after check' },
+    { label: 'Protected areas', value: healthyComponents || componentPosture.length || 0, detail: 'components watched' },
   ];
   const runStatus = String(lastRun?.status || result?.status || '').toLowerCase();
   const scanProgress = data?.scan_progress || result?.scan_progress || null;
@@ -834,7 +875,7 @@ function SecurityScreen() {
     {
       icon: Server,
       title: 'Backend-run checks',
-      summary: 'Lynis and Trivy run through the worker, not the browser.',
+      summary: 'Security tools run on this device, not in your browser.',
     },
     {
       icon: EyeOff,
@@ -865,6 +906,7 @@ function SecurityScreen() {
     setActionError(null);
     setEvidence(null);
     setEvidenceError(null);
+    setEvidenceLoading(false);
     try {
       const payload = await liteApi.runSecurityScan('local', { reason: 'manual safety check' });
       setResult(payload);
@@ -878,17 +920,26 @@ function SecurityScreen() {
   }
 
   async function showEvidence() {
+    triggerHapticFeedback(8);
+    if (evidence) {
+      setEvidence(null);
+      setEvidenceError(null);
+      return;
+    }
     const runId = lastRun?.run_id || result?.run_id;
     if (!runId) {
       setEvidenceError('Run a safety check before opening evidence.');
       return;
     }
     setEvidenceError(null);
+    setEvidenceLoading(true);
     try {
       setEvidence(await liteApi.securityEvidence(runId));
     } catch (err) {
       setEvidence(null);
       setEvidenceError(err.message);
+    } finally {
+      setEvidenceLoading(false);
     }
   }
 
@@ -898,7 +949,7 @@ function SecurityScreen() {
         eyebrow="Safety"
         title="Security"
         description="Check whether your Pocket Lab needs attention. The results are summarized clearly so you know what to do next."
-        actions={<LiteButton onClick={scan} disabled={scanInProgress}>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>}
+        actions={<LiteButton onClick={scan} disabled={scanInProgress} haptic>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>}
       />
 
       <section className="lite-security-hero">
@@ -947,8 +998,8 @@ function SecurityScreen() {
             </div>
           ) : null}
           <div className="lite-security-actions">
-            <LiteButton onClick={scan} disabled={scanInProgress}>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
-            <LiteButton onClick={showEvidence} tone="secondary">Evidence</LiteButton>
+            <LiteButton onClick={scan} disabled={scanInProgress} haptic>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
+            <LiteButton onClick={showEvidence} tone="secondary">{evidence ? 'Hide Evidence' : evidenceLoading ? 'Opening...' : 'Evidence'}</LiteButton>
           </div>
         </div>
 
@@ -1052,48 +1103,95 @@ function SecurityScreen() {
           )}
         </GlassCard>
 
-        <GlassCard className="lite-security-card lite-security-guide-card">
+        <GlassCard className="lite-security-card lite-security-dashboard-card">
           <div className="lite-security-card-head">
             <div className="lite-security-icon">
               <FileCheck className="h-5 w-5" />
             </div>
-            <span className="lite-security-soft-badge">Simple guidance</span>
+            <span className="lite-security-soft-badge">Protection dashboard</span>
           </div>
 
-          <h2>What happens during a check?</h2>
+          <h2>Local protection summary</h2>
           <p>
-            Pocket Lab runs the safety tools in the backend, saves sanitized evidence, and separates urgent risks from protected runtime items.
+            Lynis checks host readiness. Trivy checks dependency, config, secret-like findings, and saves SBOM evidence.
           </p>
 
-          <div className="lite-security-steps">
-            {guidance.map((item, index) => (
+          <div className="lite-security-mini-dashboard" aria-label="Security protection dashboard">
+            {postureDashboard.map((item) => (
+              <div key={item.label}>
+                <strong>{item.value}</strong>
+                <span>{item.label}</span>
+                <p>{item.detail}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="lite-security-steps lite-security-compact-steps">
+            {guidance.slice(0, 3).map((item, index) => (
               <div key={item.step || item.title || index}>
                 <span>{item.step || index + 1}</span>
                 <p>{item.title || item.summary}</p>
               </div>
             ))}
           </div>
-
-          {lastRun ? (
-            <div className="lite-security-run-note">
-              <strong>Latest check</strong>
-              <span>{lastRun.status || 'unknown'} · {lastRun.completed_at ? formatLiteTime(lastRun.completed_at) : 'not finished yet'}</span>
-              <span>{evidenceRefs.length ? `${evidenceRefs.length} evidence files saved` : 'Evidence will appear when the check completes'}</span>
-            </div>
-          ) : null}
         </GlassCard>
       </div>
 
-      {evidence ? (
-        <StateSurface
-          tone="healthy"
-          title="Evidence saved"
-          description={`${evidence?.findings?.length ?? 0} finding(s) in sanitized evidence. Raw scanner output is not shown.`}
-          className="mb-5"
-        />
-      ) : null}
-      {evidenceError ? (
-        <StateSurface tone="degraded" title="Evidence not ready" description={evidenceError} className="mb-5" />
+      {(evidence || evidenceError || evidenceLoading) ? (
+        <GlassCard className="lite-security-card lite-security-evidence-panel">
+          <div className="lite-security-card-head">
+            <div className="lite-security-icon">
+              <FileCheck className="h-5 w-5" />
+            </div>
+            <span className="lite-security-soft-badge">Sanitized evidence</span>
+          </div>
+
+          <h2>{evidenceError ? 'Evidence not ready' : evidenceLoading ? 'Opening evidence...' : 'Evidence details'}</h2>
+          {evidenceError ? <p>{evidenceError}</p> : null}
+          {evidenceLoading ? <p>Pocket Lab is opening the sanitized evidence summary for the latest safety check.</p> : null}
+          {evidence ? (
+            <>
+              <div className="lite-security-evidence-summary">
+                <div>
+                  <span>Run</span>
+                  <strong>{shortRunId(evidence?.run?.run_id || lastRun?.run_id)}</strong>
+                </div>
+                <div>
+                  <span>Status</span>
+                  <strong>{evidence?.run?.status || 'unknown'}</strong>
+                </div>
+                <div>
+                  <span>Score</span>
+                  <strong>{evidence?.score ?? safetyScore}</strong>
+                </div>
+                <div>
+                  <span>Findings</span>
+                  <strong>{evidenceFindings.length}</strong>
+                </div>
+              </div>
+
+              <div className="lite-security-evidence-tools">
+                {['lynis', 'trivy'].map((tool) => {
+                  const item = toolResults?.[tool] || {};
+                  return (
+                    <div key={tool}>
+                      <strong>{tool}</strong>
+                      <span>{item.status || 'recorded'}</span>
+                      <p>{tool === 'trivy' && item.sbom_saved ? 'SBOM saved and findings normalized.' : 'Output normalized before display.'}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="lite-security-evidence-files">
+                {(evidence.evidence_refs || evidenceRefs).slice(0, 6).map((ref) => (
+                  <code key={ref}>{String(ref).split('/').slice(-1)[0]}</code>
+                ))}
+              </div>
+              <p className="lite-security-evidence-note">Raw scanner output and sensitive values stay hidden. This panel shows only sanitized evidence metadata.</p>
+            </>
+          ) : null}
+        </GlassCard>
       ) : null}
 
       <ResultNotice result={result} error={actionError} />
