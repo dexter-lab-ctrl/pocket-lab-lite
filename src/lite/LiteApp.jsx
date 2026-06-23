@@ -4,12 +4,15 @@ import {
   Copy,
   Database,
   Download,
+  EyeOff,
   FileCheck,
   Fingerprint,
   LayoutGrid,
+  Lock,
   Menu,
   Network,
   RefreshCw,
+  Server,
   ShieldCheck,
   Trash2,
   WifiOff,
@@ -209,6 +212,23 @@ function backendHeroTitle(status, labels = {}) {
     danger: labels.danger || 'Needs attention',
     checking: labels.checking || 'Checking status',
   });
+}
+
+function securityFindingTone(severity) {
+  const value = String(severity || '').toLowerCase();
+  if (value === 'critical' || value === 'high') return 'danger';
+  if (value === 'medium') return 'warning';
+  return 'safe';
+}
+
+function securityFindingLabel(finding) {
+  if (!finding) return 'Review item';
+  if (finding.category === 'protected_runtime_secret') return 'Protected runtime secret';
+  if (finding.category === 'secret_exposure') return 'Secret-like value';
+  if (finding.category === 'host_hardening') return 'Host readiness';
+  if (finding.category === 'dependency_vulnerability') return 'Dependency risk';
+  if (finding.category === 'missing_tool') return 'Tool needed';
+  return finding.summary || 'Review item';
 }
 
 
@@ -748,6 +768,10 @@ function SecurityScreen() {
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
   const checks = Number(data?.checks_reviewed ?? data?.checks_count ?? 0);
   const criticalIssues = Array.isArray(data?.critical_issues) ? data.critical_issues : [];
+  const reviewItems = Array.isArray(data?.findings) ? data.findings : [];
+  const evidenceRefs = Array.isArray(data?.evidence_refs) ? data.evidence_refs : [];
+  const componentPosture = Array.isArray(data?.component_posture) ? data.component_posture : [];
+  const healthyComponents = componentPosture.filter((item) => normalizeBackendState(item?.status) === 'ready').length;
   const guidance = Array.isArray(data?.guidance) && data.guidance.length ? data.guidance : [
     { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
     { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
@@ -765,11 +789,28 @@ function SecurityScreen() {
     : runStatus === 'running'
       ? 'Safety check running'
       : backendLabel(safetyStatus, {
-        ready: findings === 0 ? 'Looks safe' : 'Needs review',
+        ready: findings === 0 ? 'Protected' : 'Protected · review item',
         review: 'Needs review',
         danger: 'Needs attention',
         checking: 'Checking safety',
       });
+  const trustSignals = [
+    {
+      icon: Server,
+      title: 'Backend-run checks',
+      summary: 'Lynis and Trivy run through the worker, not the browser.',
+    },
+    {
+      icon: EyeOff,
+      title: 'Secrets stay hidden',
+      summary: 'Findings are redacted before they appear in the app.',
+    },
+    {
+      icon: FileCheck,
+      title: 'Evidence saved',
+      summary: evidenceRefs.length ? `${evidenceRefs.length} sanitized evidence files` : 'Evidence appears after a completed check.',
+    },
+  ];
 
   function scheduleSecurityRefresh() {
     refresh();
@@ -835,8 +876,19 @@ function SecurityScreen() {
                 checking: 'Checking your safety status.',
               })}</h2>
           <p>
-            Pocket Lab checks host readiness, dependency risks, configuration concerns, and secret-like findings through the backend worker.
+            Pocket Lab checks host readiness, dependency risks, configuration concerns, and secret-like findings through the backend worker. Sensitive values stay hidden and evidence is saved for review.
           </p>
+          <div className="lite-security-trust-strip" aria-label="Security assurances">
+            {trustSignals.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title}>
+                  <Icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                </div>
+              );
+            })}
+          </div>
           <div className="lite-security-actions">
             <LiteButton onClick={scan} disabled={scanInProgress}>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
             <LiteButton onClick={showEvidence} tone="secondary">Evidence</LiteButton>
@@ -852,7 +904,24 @@ function SecurityScreen() {
           <StatusBadge status={backendBadgeStatus(safetyStatus)}>
             {safetyLabel}
           </StatusBadge>
+          <div className="lite-security-score-meta">
+            <span>{lastRun?.completed_at ? `Last check ${formatLiteTime(lastRun.completed_at)}` : 'Run a check to refresh posture'}</span>
+            <span>{healthyComponents || componentPosture.length || 0} protected areas healthy</span>
+          </div>
         </div>
+      </section>
+
+      <section className="lite-security-assurance-grid" aria-label="Security assurances">
+        {trustSignals.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.title} className="lite-security-assurance-card">
+              <span><Icon className="h-4 w-4" /></span>
+              <strong>{item.title}</strong>
+              <p>{item.summary}</p>
+            </div>
+          );
+        })}
       </section>
 
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}
@@ -903,6 +972,27 @@ function SecurityScreen() {
               ))}
             </div>
           ) : null}
+
+          {reviewItems.length ? (
+            <div className="lite-security-review-list">
+              {reviewItems.slice(0, 4).map((item) => (
+                <div key={item.id || item.summary} className="lite-security-review-item">
+                  <span className={`lite-security-severity lite-security-severity-${securityFindingTone(item.severity)}`}>
+                    {item.severity || 'review'}
+                  </span>
+                  <div>
+                    <strong>{securityFindingLabel(item)}</strong>
+                    <p>{item.recommendation || item.summary || 'Review this item and keep the workspace protected.'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="lite-security-safe-panel">
+              <Lock className="h-4 w-4" />
+              <span>No urgent issues. Pocket Lab will keep evidence ready after each check.</span>
+            </div>
+          )}
         </GlassCard>
 
         <GlassCard className="lite-security-card lite-security-guide-card">
@@ -915,7 +1005,7 @@ function SecurityScreen() {
 
           <h2>What happens during a check?</h2>
           <p>
-            Pocket Lab runs the safety tools in the backend, saves sanitized evidence, and shows only clear next steps here.
+            Pocket Lab runs the safety tools in the backend, saves sanitized evidence, and separates urgent risks from protected runtime items.
           </p>
 
           <div className="lite-security-steps">
@@ -931,6 +1021,7 @@ function SecurityScreen() {
             <div className="lite-security-run-note">
               <strong>Latest check</strong>
               <span>{lastRun.status || 'unknown'} · {lastRun.completed_at ? formatLiteTime(lastRun.completed_at) : 'not finished yet'}</span>
+              <span>{evidenceRefs.length ? `${evidenceRefs.length} evidence files saved` : 'Evidence will appear when the check completes'}</span>
             </div>
           ) : null}
         </GlassCard>
