@@ -76,6 +76,15 @@ install_lite_lynis() {
   if [[ -f "$install_dir/include/functions" ]]; then
     sed -i "s|mktemp /tmp/lynis.XXXXXXXXXX|mktemp ${lynis_tmp_dir}/lynis.XXXXXXXXXX|g" "$install_dir/include/functions"
   fi
+  if [[ -f "$install_dir/default.prf" ]] && ! grep -q '^skip-test=NETW-3014$' "$install_dir/default.prf"; then
+    cat >> "$install_dir/default.prf" <<'EOF'
+
+# Pocket Lab Lite / Android Termux:
+# Android restricts /proc/net/dev for the Termux app user.
+# Skip Lynis network interface discovery to avoid a non-actionable platform warning.
+skip-test=NETW-3014
+EOF
+  fi
   ln -sfn "$install_dir" "$STATE_DIR/lynis"
   cat > "$PREFIX/bin/lynis" <<SH
 #!/usr/bin/env bash
