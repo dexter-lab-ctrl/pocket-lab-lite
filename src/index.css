@@ -6834,3 +6834,189 @@ textarea {
   position: relative;
   z-index: 3;
 }
+
+
+.theme-pocket-lite-daylight .lite-security-history-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-history-card,
+.theme-pocket-lite-daylight .lite-security-delta-card {
+  animation: lite-security-card-rise 520ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-summary,
+.theme-pocket-lite-daylight .lite-security-delta-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-summary > div,
+.theme-pocket-lite-daylight .lite-security-delta-stat {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 1.05rem;
+  background: rgba(248, 250, 252, 0.72);
+  padding: 0.85rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-summary span,
+.theme-pocket-lite-daylight .lite-security-delta-stat span {
+  display: block;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-summary strong,
+.theme-pocket-lite-daylight .lite-security-delta-stat strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-safe {
+  border-color: rgba(16, 185, 129, 0.22);
+  background: rgba(236, 253, 245, 0.74);
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(255, 251, 235, 0.78);
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-neutral {
+  border-color: rgba(59, 130, 246, 0.18);
+  background: rgba(239, 246, 255, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline,
+.theme-pocket-lite-daylight .lite-security-delta-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 0.8rem;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-row:hover {
+  transform: translateY(-1px);
+  border-color: rgba(20, 184, 166, 0.28);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: #94a3b8;
+  box-shadow: 0 0 0 0.35rem rgba(148, 163, 184, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-ready,
+.theme-pocket-lite-daylight .lite-security-timeline-succeeded {
+  background: #10b981;
+  box-shadow: 0 0 0 0.35rem rgba(16, 185, 129, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-review,
+.theme-pocket-lite-daylight .lite-security-timeline-degraded {
+  background: #f59e0b;
+  box-shadow: 0 0 0 0.35rem rgba(245, 158, 11, 0.14);
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-danger,
+.theme-pocket-lite-daylight .lite-security-timeline-failed {
+  background: #ef4444;
+  box-shadow: 0 0 0 0.35rem rgba(239, 68, 68, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-row strong,
+.theme-pocket-lite-daylight .lite-security-delta-item strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-row p,
+.theme-pocket-lite-daylight .lite-security-delta-item p {
+  margin: 0.15rem 0 0;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-score {
+  text-align: right;
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-score span {
+  display: block;
+  color: #047857;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-timeline-score small {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 0.8rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-severity-neutral {
+  border-color: rgba(59, 130, 246, 0.2);
+  background: rgba(239, 246, 255, 0.78);
+  color: #1d4ed8;
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-security-history-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-security-trend-summary,
+  .theme-pocket-lite-daylight .lite-security-delta-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-timeline-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .theme-pocket-lite-daylight .lite-security-timeline-score {
+    grid-column: 2;
+    text-align: left;
+  }
+}

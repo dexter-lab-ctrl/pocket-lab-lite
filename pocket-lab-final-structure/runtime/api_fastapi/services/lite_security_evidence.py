@@ -68,6 +68,17 @@ def read_run(run_id: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def list_runs(limit: int = 20) -> list[dict[str, Any]]:
+    runs: list[dict[str, Any]] = []
+    for path in sorted(runs_dir().glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
+        payload = read_json(path, {})
+        if isinstance(payload, dict):
+            runs.append(payload)
+        if len(runs) >= max(1, limit):
+            break
+    return runs
+
+
 def delete_run(run_id: str) -> None:
     path = runs_dir() / f"{safe_run_id(run_id)}.json"
     try:

@@ -326,6 +326,30 @@ function shortRunId(value) {
 }
 
 
+function formatSecurityDuration(seconds) {
+  const value = Number(seconds);
+  if (!Number.isFinite(value)) return 'duration unknown';
+  const safe = Math.max(0, Math.round(value));
+  if (safe < 60) return `${safe}s`;
+  const minutes = Math.floor(safe / 60);
+  const remainder = safe % 60;
+  return remainder ? `${minutes}m ${String(remainder).padStart(2, '0')}s` : `${minutes} min`;
+}
+
+function securityTrendLabel(value) {
+  const delta = Number(value || 0);
+  if (delta > 0) return `+${delta} improved`;
+  if (delta < 0) return `${delta} lower`;
+  return 'no score change';
+}
+
+function securityDeltaTone(type) {
+  if (type === 'new') return 'warning';
+  if (type === 'resolved') return 'safe';
+  return 'neutral';
+}
+
+
 function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
     <div className="mb-5 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
@@ -897,6 +921,21 @@ function SecurityScreen() {
     { label: 'Evidence files', value: evidenceFileCount, detail: sbomSaved ? 'SBOM saved' : 'saved after check' },
     { label: 'Protected areas', value: healthyComponents || componentPosture.length || 0, detail: 'components watched' },
   ];
+  const securityHistory = Array.isArray(data?.history) ? data.history : [];
+  const findingDelta = data?.finding_delta && typeof data.finding_delta === 'object' ? data.finding_delta : {};
+  const latestHistory = securityHistory[0] || null;
+  const previousHistory = securityHistory.find((item) => item?.run_id && item.run_id !== latestHistory?.run_id) || null;
+  const scoreTrend = latestHistory && previousHistory ? Number(latestHistory.score || 0) - Number(previousHistory.score || 0) : 0;
+  const deltaStats = [
+    { key: 'new', label: 'New', value: Number(findingDelta.new_count || 0), tone: 'warning' },
+    { key: 'resolved', label: 'Resolved', value: Number(findingDelta.resolved_count || 0), tone: 'safe' },
+    { key: 'unchanged', label: 'Still present', value: Number(findingDelta.unchanged_count || 0), tone: 'neutral' },
+  ];
+  const deltaPreview = [
+    ...(Array.isArray(findingDelta.new) ? findingDelta.new.slice(0, 2).map((item) => ({ ...item, delta_type: 'new' })) : []),
+    ...(Array.isArray(findingDelta.resolved) ? findingDelta.resolved.slice(0, 2).map((item) => ({ ...item, delta_type: 'resolved' })) : []),
+    ...(Array.isArray(findingDelta.unchanged) ? findingDelta.unchanged.slice(0, 2).map((item) => ({ ...item, delta_type: 'unchanged' })) : []),
+  ].slice(0, 4);
   const runStatus = String(lastRun?.status || result?.status || '').toLowerCase();
   const scanProgress = data?.scan_progress || result?.scan_progress || null;
   const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
@@ -1118,6 +1157,92 @@ function SecurityScreen() {
           description={error}
           className="mb-5"
         />
+      ) : null}
+
+      {(securityHistory.length || findingDelta.summary) ? (
+        <section className="lite-security-history-grid" aria-label="Security history and change summary">
+          <GlassCard className="lite-security-card lite-security-history-card">
+            <div className="lite-security-card-head">
+              <div className="lite-security-icon">
+                <Activity className="h-5 w-5" />
+              </div>
+              <span className="lite-security-soft-badge">Security history</span>
+            </div>
+            <h2>Trend timeline</h2>
+            <p>Recent checks show whether the safety score is improving, stable, or needs attention.</p>
+            <div className="lite-security-trend-summary">
+              <div>
+                <span>Latest score</span>
+                <strong>{latestHistory?.score ?? safetyScore}</strong>
+              </div>
+              <div>
+                <span>Trend</span>
+                <strong>{securityTrendLabel(scoreTrend)}</strong>
+              </div>
+              <div>
+                <span>Last duration</span>
+                <strong>{formatSecurityDuration(latestHistory?.duration_seconds)}</strong>
+              </div>
+            </div>
+            <div className="lite-security-timeline" role="list">
+              {securityHistory.slice(0, 6).map((entry, index) => {
+                const reviewCount = Number(entry.items_to_review || 0);
+                return (
+                  <div key={entry.run_id || index} className="lite-security-timeline-row" role="listitem">
+                    <span className={`lite-security-timeline-dot lite-security-timeline-${normalizeBackendState(entry.status)}`} />
+                    <div>
+                      <strong>{entry.completed_at ? formatLiteTime(entry.completed_at) : entry.status || 'recorded'}</strong>
+                      <p>{reviewCount ? `${reviewCount} review item${reviewCount === 1 ? '' : 's'}` : 'No urgent items'} · {entry.evidence_count || 0} evidence file{entry.evidence_count === 1 ? '' : 's'}</p>
+                    </div>
+                    <div className="lite-security-timeline-score">
+                      <span>{entry.score ?? '—'}</span>
+                      <small>{formatSecurityDuration(entry.duration_seconds)}</small>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="lite-security-card lite-security-delta-card">
+            <div className="lite-security-card-head">
+              <div className="lite-security-icon">
+                <RefreshCw className="h-5 w-5" />
+              </div>
+              <span className="lite-security-soft-badge">What changed</span>
+            </div>
+            <h2>Finding delta</h2>
+            <p>{findingDelta.summary || 'Future checks will show new, resolved, and still-present items.'}</p>
+            <div className="lite-security-delta-stats" aria-label="Finding changes">
+              {deltaStats.map((item) => (
+                <div key={item.key} className={`lite-security-delta-stat lite-security-delta-${item.tone}`}>
+                  <strong>{item.value}</strong>
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+            {deltaPreview.length ? (
+              <div className="lite-security-delta-list">
+                {deltaPreview.map((item) => (
+                  <div key={`${item.delta_type}-${item.id || item.summary}`} className="lite-security-delta-item">
+                    <span className={`lite-security-severity lite-security-severity-${securityDeltaTone(item.delta_type)}`}>
+                      {item.delta_type === 'new' ? 'new' : item.delta_type === 'resolved' ? 'resolved' : 'same'}
+                    </span>
+                    <div>
+                      <strong>{securityFindingLabel(item)}</strong>
+                      <p>{item.summary || item.recommendation || 'Security item recorded.'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="lite-security-safe-panel">
+                <Lock className="h-4 w-4" />
+                <span>Baseline ready. The next check will show what changed.</span>
+              </div>
+            )}
+          </GlassCard>
+        </section>
       ) : null}
 
       <div className="lite-security-grid">

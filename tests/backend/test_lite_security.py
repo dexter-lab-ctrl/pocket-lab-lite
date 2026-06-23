@@ -304,3 +304,47 @@ def test_security_redaction_preserves_scanner_return_codes():
     assert redacted["password"] == "***REDACTED***"
     assert redacted["nested"]["api_key"] == "***REDACTED***"
 
+
+def test_security_history_and_delta_compare_previous_run():
+    from api_fastapi.services import lite_security
+    from api_fastapi.services import lite_security_evidence as evidence
+
+    previous_run = {
+        "run_id": "security-previous",
+        "status": "succeeded",
+        "tools": ["lynis", "trivy"],
+        "started_at": "2026-01-01T00:00:00Z",
+        "completed_at": "2026-01-01T00:02:00Z",
+        "partial_results": False,
+    }
+    previous_findings = [
+        lite_security.normalize_finding({"id": "resolved-risk", "source": "trivy", "category": "dependency_vulnerability", "severity": "high", "summary": "Old dependency risk"}),
+        lite_security.normalize_finding({"id": "same-risk", "source": "trivy", "category": "protected_runtime_secret", "severity": "low", "summary": "Protected runtime secret"}),
+    ]
+    evidence.write_run("security-previous", previous_run)
+    evidence.write_evidence("security-previous", "summary.json", {"run": previous_run, "findings": previous_findings, "evidence_refs": ["security/evidence/security-previous/summary.json"]})
+
+    current_run = {
+        "run_id": "security-current",
+        "status": "succeeded",
+        "tools": ["lynis", "trivy"],
+        "started_at": "2026-01-02T00:00:00Z",
+        "completed_at": "2026-01-02T00:03:00Z",
+        "partial_results": False,
+    }
+    current_findings = [
+        lite_security.normalize_finding({"id": "same-risk", "source": "trivy", "category": "protected_runtime_secret", "severity": "low", "summary": "Protected runtime secret"}),
+        lite_security.normalize_finding({"id": "new-risk", "source": "lynis", "category": "host_hardening", "severity": "medium", "summary": "New host readiness item"}),
+    ]
+
+    state = lite_security.build_state(current_run, current_findings, ["security/evidence/security-current/summary.json"])
+    assert len(state["history"]) >= 2
+    assert state["history"][0]["run_id"] == "security-current"
+    assert state["history"][0]["duration_seconds"] == 180
+    assert state["finding_delta"]["previous_run_id"] == "security-previous"
+    assert state["finding_delta"]["new_count"] == 1
+    assert state["finding_delta"]["resolved_count"] == 1
+    assert state["finding_delta"]["unchanged_count"] == 1
+    assert state["finding_delta"]["new"][0]["id"] == "new-risk"
+    assert state["finding_delta"]["resolved"][0]["id"] == "resolved-risk"
+
