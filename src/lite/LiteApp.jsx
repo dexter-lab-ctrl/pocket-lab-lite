@@ -237,14 +237,62 @@ function clampSecurityProgress(value, fallback = 8) {
   return Math.max(0, Math.min(100, Math.round(parsed)));
 }
 
-function formatSecurityEta(progress) {
-  if (!progress) return 'calculating';
-  if (progress.estimated_remaining_label) return progress.estimated_remaining_label;
-  const seconds = Number(progress.estimated_remaining_seconds);
+function parseSecurityTimestamp(value) {
+  if (!value) return null;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatSecurityRemainingSeconds(seconds, runStatus = 'running') {
   if (!Number.isFinite(seconds)) return 'calculating';
-  if (seconds <= 0) return 'less than 10 sec';
-  if (seconds < 60) return `about ${Math.max(10, Math.round(seconds))} sec`;
-  return `about ${Math.max(1, Math.round(seconds / 60))} min`;
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  if (runStatus === 'running' && safeSeconds <= 0) return 'finalizing';
+  if (safeSeconds < 60) return `${Math.max(1, safeSeconds)} sec`;
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainder = safeSeconds % 60;
+  return remainder ? `${minutes}m ${String(remainder).padStart(2, '0')}s` : `${minutes} min`;
+}
+
+function liveSecurityProgress(progress, runStatus, busy, nowMs) {
+  const status = String(progress?.status || runStatus || '').toLowerCase();
+  const estimatedTotal = Math.max(60, Number(progress?.estimated_total_seconds || 180));
+  const startedAt = parseSecurityTimestamp(progress?.started_at);
+  const serverElapsed = Number(progress?.elapsed_seconds || 0);
+  const liveElapsed = startedAt ? Math.max(0, Math.round((nowMs - startedAt) / 1000)) : serverElapsed;
+  const elapsed = Math.max(serverElapsed, liveElapsed);
+
+  if (status === 'queued') {
+    return {
+      percent: 5,
+      eta: formatSecurityRemainingSeconds(estimatedTotal, status),
+      elapsed,
+      remaining: estimatedTotal,
+    };
+  }
+
+  if (status === 'running' || busy) {
+    const percentFromElapsed = Math.round((elapsed / estimatedTotal) * 100);
+    const serverPercent = Number(progress?.percent || 0);
+    const percent = Math.max(8, Math.min(95, Math.max(serverPercent, percentFromElapsed)));
+    const remaining = Math.max(0, estimatedTotal - elapsed);
+    return {
+      percent,
+      eta: formatSecurityRemainingSeconds(remaining, 'running'),
+      elapsed,
+      remaining,
+    };
+  }
+
+  if (['succeeded', 'degraded', 'failed'].includes(status)) {
+    return { percent: 100, eta: 'complete', elapsed, remaining: 0 };
+  }
+
+  return {
+    percent: scanInProgressValue(runStatus, busy, progress),
+    eta: progress?.estimated_remaining_label || 'calculating',
+    elapsed,
+    remaining: Number(progress?.estimated_remaining_seconds || estimatedTotal),
+  };
 }
 
 function securityProgressStage(progress, runStatus) {
@@ -817,6 +865,7 @@ function SecurityScreen() {
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [progressNow, setProgressNow] = useState(() => Date.now());
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -850,12 +899,13 @@ function SecurityScreen() {
   ];
   const runStatus = String(lastRun?.status || result?.status || '').toLowerCase();
   const scanProgress = data?.scan_progress || result?.scan_progress || null;
-  const scanProgressPercent = scanInProgressValue(runStatus, busy, scanProgress);
-  const scanProgressEta = formatSecurityEta(scanProgress);
+  const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
+  const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
+  const scanProgressPercent = liveProgress.percent;
+  const scanProgressEta = liveProgress.eta;
   const scanProgressLabel = securityProgressStage(scanProgress, runStatus);
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
-  const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
   const safetyStatus = data?.status || (findings === 0 ? 'healthy' : 'degraded');
   const safetyState = ['queued', 'running'].includes(runStatus) ? 'checking' : normalizeBackendState(safetyStatus);
   const safetyIsReady = safetyState === 'ready' && findings === 0;
@@ -891,9 +941,28 @@ function SecurityScreen() {
 
   React.useEffect(() => {
     if (!scanInProgress) return undefined;
-    const timer = window.setInterval(() => refresh(), 15000);
-    return () => window.clearInterval(timer);
+    setProgressNow(Date.now());
+    const timer = window.setInterval(() => setProgressNow(Date.now()), 1000);
+    const refreshTimer = window.setInterval(() => refresh(), 8000);
+    return () => {
+      window.clearInterval(timer);
+      window.clearInterval(refreshTimer);
+    };
   }, [scanInProgress, refresh]);
+
+  React.useEffect(() => {
+    const panelOpen = evidence || evidenceError || evidenceLoading;
+    if (!panelOpen) return undefined;
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setEvidence(null);
+        setEvidenceError(null);
+        setEvidenceLoading(false);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [evidence, evidenceError, evidenceLoading]);
 
   function scheduleSecurityRefresh() {
     refresh();
@@ -919,11 +988,16 @@ function SecurityScreen() {
     }
   }
 
+  function closeEvidencePanel() {
+    setEvidence(null);
+    setEvidenceError(null);
+    setEvidenceLoading(false);
+  }
+
   async function showEvidence() {
     triggerHapticFeedback(8);
     if (evidence) {
-      setEvidence(null);
-      setEvidenceError(null);
+      closeEvidencePanel();
       return;
     }
     const runId = lastRun?.run_id || result?.run_id;
@@ -1138,19 +1212,23 @@ function SecurityScreen() {
       </div>
 
       {(evidence || evidenceError || evidenceLoading) ? (
-        <GlassCard className="lite-security-card lite-security-evidence-panel">
-          <div className="lite-security-card-head">
-            <div className="lite-security-icon">
-              <FileCheck className="h-5 w-5" />
+        <div className="lite-security-evidence-modal-backdrop" role="presentation" onClick={closeEvidencePanel}>
+          <GlassCard className="lite-security-card lite-security-evidence-panel" role="dialog" aria-modal="true" aria-label="Sanitized security evidence" onClick={(event) => event.stopPropagation()}>
+            <div className="lite-security-card-head">
+              <div className="lite-security-icon">
+                <FileCheck className="h-5 w-5" />
+              </div>
+              <span className="lite-security-soft-badge">Sanitized evidence</span>
+              <button type="button" className="lite-security-evidence-close" onClick={closeEvidencePanel} aria-label="Close evidence details">
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <span className="lite-security-soft-badge">Sanitized evidence</span>
-          </div>
 
-          <h2>{evidenceError ? 'Evidence not ready' : evidenceLoading ? 'Opening evidence...' : 'Evidence details'}</h2>
-          {evidenceError ? <p>{evidenceError}</p> : null}
-          {evidenceLoading ? <p>Pocket Lab is opening the sanitized evidence summary for the latest safety check.</p> : null}
-          {evidence ? (
-            <>
+            <h2>{evidenceError ? 'Evidence not ready' : evidenceLoading ? 'Opening evidence...' : 'Evidence details'}</h2>
+            {evidenceError ? <p>{evidenceError}</p> : null}
+            {evidenceLoading ? <p>Pocket Lab is opening the sanitized evidence summary for the latest safety check.</p> : null}
+            {evidence ? (
+              <>
               <div className="lite-security-evidence-summary">
                 <div>
                   <span>Run</span>
@@ -1191,7 +1269,8 @@ function SecurityScreen() {
               <p className="lite-security-evidence-note">Raw scanner output and sensitive values stay hidden. This panel shows only sanitized evidence metadata.</p>
             </>
           ) : null}
-        </GlassCard>
+          </GlassCard>
+        </div>
       ) : null}
 
       <ResultNotice result={result} error={actionError} />
