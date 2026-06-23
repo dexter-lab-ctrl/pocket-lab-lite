@@ -4,6 +4,34 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/common.sh"
+
+parse_start_dashboard_args(){
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --profile)
+        [[ "${2:-}" != "" ]] || die "--profile requires a value"
+        export POCKETLAB_PROFILE="$(normalize_profile "$2")"
+        if [[ "$POCKETLAB_PROFILE" == "lite" ]]; then export POCKETLAB_LITE=1; fi
+        shift 2
+        ;;
+      --profile=*)
+        export POCKETLAB_PROFILE="$(normalize_profile "${1#--profile=}")"
+        if [[ "$POCKETLAB_PROFILE" == "lite" ]]; then export POCKETLAB_LITE=1; fi
+        shift
+        ;;
+      --lite)
+        export POCKETLAB_PROFILE="lite"
+        export POCKETLAB_LITE=1
+        shift
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+}
+parse_start_dashboard_args "$@"
+log INFO "Profile: $(normalize_profile "${POCKETLAB_PROFILE:-full}")"
 FASTAPI_SERVER="$SCRIPT_DIR/../../runtime/api_fastapi/pocket_lab_fastapi_server.py"
 WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
