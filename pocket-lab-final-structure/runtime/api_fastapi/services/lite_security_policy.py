@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import stat
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,31 @@ EXCLUDED_DIRS = [
 SENSITIVE_KEY_RE = re.compile(
     r"(token|password|passwd|pwd|secret|api[_-]?key|authorization|bearer|vault|unseal|nats|invite|tailscale[_-]?auth|private[_-]?key)",
     re.IGNORECASE,
+)
+
+
+ANSI_ESCAPE_RE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+LEADING_E_RE = re.compile(r"^\s*-e\s+")
+STATUS_PADDING_RE = re.compile(r"\s{2,}")
+
+LYNIS_NOISE_PATTERNS = (
+    re.compile(r"^$", re.IGNORECASE),
+    re.compile(r"^warnings?\s*\(\d+\):?", re.IGNORECASE),
+    re.compile(r"^suggestions?\s*\(\d+\):?", re.IGNORECASE),
+    re.compile(r"^\[\+\]", re.IGNORECASE),
+    re.compile(r"^hardening index\b", re.IGNORECASE),
+    re.compile(r"^auditing, system hardening, and compliance", re.IGNORECASE),
+    re.compile(r"^\*\s*article:\s*", re.IGNORECASE),
+    re.compile(r"pid file exists", re.IGNORECASE),
+    re.compile(r"had a long execution", re.IGNORECASE),
+)
+
+LYNIS_DEDUPE_PATTERNS = (
+    (re.compile(r"consider hardening ssh configuration", re.IGNORECASE), "ssh-hardening"),
+)
+
+PROTECTED_RUNTIME_SECRET_TARGETS = (
+    "gitea/conf/app.runtime.ini",
 )
 
 SECRET_VALUE_REPLACEMENTS = [
@@ -175,3 +201,49 @@ def status_for_score(score: int, counts: dict[str, int]) -> tuple[str, str]:
     if score <= 89:
         return "review", "Needs review"
     return "healthy", "Looks safe"
+
+
+def clean_security_text(value: Any) -> str:
+    cleaned = ANSI_ESCAPE_RE.sub("", str(value or ""))
+    cleaned = LEADING_E_RE.sub("", cleaned).strip()
+    cleaned = STATUS_PADDING_RE.sub(" ", cleaned)
+    return redact_text(cleaned).strip()
+
+
+def should_skip_lynis_text(value: str) -> bool:
+    cleaned = clean_security_text(value)
+    return any(pattern.search(cleaned) for pattern in LYNIS_NOISE_PATTERNS)
+
+
+def lynis_dedupe_key(value: str) -> str:
+    cleaned = clean_security_text(value).lower()
+    for pattern, key in LYNIS_DEDUPE_PATTERNS:
+        if pattern.search(cleaned):
+            return key
+    return cleaned
+
+
+def _safe_mode(path: Path) -> int | None:
+    try:
+        return stat.S_IMODE(path.stat().st_mode)
+    except OSError:
+        return None
+
+
+def is_protected_runtime_secret(target: str, root: Path | None = None) -> bool:
+    raw_target = str(target or "").replace("\\", "/").lstrip("/")
+    if raw_target not in PROTECTED_RUNTIME_SECRET_TARGETS:
+        return False
+    base = (root or repo_root()).resolve()
+    candidate = (base / raw_target).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        return False
+    file_mode = _safe_mode(candidate)
+    parent_mode = _safe_mode(candidate.parent)
+    if file_mode is None or parent_mode is None:
+        return False
+    file_locked = (file_mode & 0o077) == 0
+    parent_locked = (parent_mode & 0o077) == 0
+    return file_locked and parent_locked

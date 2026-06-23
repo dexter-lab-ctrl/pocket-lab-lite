@@ -166,3 +166,59 @@ def test_score_calculation_and_critical_status():
     assert state["status"] == "danger"
     assert state["last_run"]["critical_count"] == 1
     assert len(state["critical_issues"]) == 1
+
+
+def test_lynis_normalizer_strips_noise_and_dedupes():
+    from api_fastapi.services import lite_security
+
+    result = {
+        "returncode": 0,
+        "stdout": "\n".join(
+            [
+                "\x1b[2C-e   [WARNING]: Test KRNL-6000 had a long execution: 13.0 seconds",
+                "Warning: PID file exists, probably another Lynis process is running.",
+                "-e \x1b[4C- OpenSSH option: MaxAuthTries\x1b[27C [ SUGGESTION ]",
+                "* Consider hardening SSH configuration [SSH-7408]",
+                "* Consider hardening SSH configuration [SSH-7408]",
+                "* Article: OpenSSH security and hardening: https://example.invalid/ssh",
+                "Suggestions (31):",
+            ]
+        ),
+        "stderr": "",
+        "timed_out": False,
+    }
+
+    findings = lite_security.normalize_lynis_output(result, "security-clean")
+    recommendations = [item["recommendation"] for item in findings]
+    assert len([item for item in recommendations if "Consider hardening SSH" in item]) == 1
+    assert all("\x1b" not in item for item in recommendations)
+    assert all(not item.startswith("-e") for item in recommendations)
+    assert all("long execution" not in item.lower() for item in recommendations)
+    assert all("pid file exists" not in item.lower() for item in recommendations)
+    assert all("article:" not in item.lower() for item in recommendations)
+
+
+def test_protected_runtime_secret_is_downgraded_when_locked_down(tmp_path):
+    from api_fastapi.services import lite_security
+
+    conf_dir = tmp_path / "gitea" / "conf"
+    conf_dir.mkdir(parents=True)
+    runtime = conf_dir / "app.runtime.ini"
+    runtime.write_text("[security]\nJWT_SECRET=super-secret-value\n", encoding="utf-8")
+    conf_dir.chmod(0o700)
+    runtime.chmod(0o600)
+
+    payload = {
+        "Results": [
+            {
+                "Target": "gitea/conf/app.runtime.ini",
+                "Secrets": [{"RuleID": "jwt-token", "Severity": "CRITICAL", "Match": "JWT_SECRET=super-secret-value"}],
+            }
+        ]
+    }
+    findings = lite_security.normalize_trivy_json(payload, "security-protected", secret_mode=True, root=tmp_path)
+    assert len(findings) == 1
+    assert findings[0]["category"] == "protected_runtime_secret"
+    assert findings[0]["severity"] == "low"
+    assert findings[0]["summary"] == "Protected backend runtime secret found."
+    assert "super-secret-value" not in str(findings[0])

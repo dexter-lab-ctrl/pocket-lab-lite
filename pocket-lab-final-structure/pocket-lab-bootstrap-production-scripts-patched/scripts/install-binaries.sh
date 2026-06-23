@@ -37,12 +37,16 @@ install_go_binary() {
 }
 
 install_lite_trivy() {
-  if have trivy; then log INFO "Trivy already installed"; return 0; fi
+  if have trivy && trivy --version >/dev/null 2>&1; then log INFO "Trivy already installed and usable"; return 0; fi
+  if have trivy; then
+    log WARN "Existing Trivy command is not usable; reinstalling Lite-managed Trivy"
+    rm -f "$PREFIX/bin/trivy"
+  fi
   require_cmd go
   ensure_dir_perm "$STATE_BIN_DIR" 755
   ensure_dir_perm "$STATE_DIR/trivy-cache" 700
   log INFO "Lite profile: installing Trivy with Go into managed state bin dir"
-  GOBIN="$STATE_BIN_DIR" GO111MODULE=on go install "github.com/aquasecurity/trivy/cmd/trivy@v${TRIVY_VERSION}"
+  GOEXPERIMENT="${GOEXPERIMENT:-jsonv2}" GOBIN="$STATE_BIN_DIR" GO111MODULE=on go install "github.com/aquasecurity/trivy/cmd/trivy@v${TRIVY_VERSION}"
   [[ -x "$STATE_BIN_DIR/trivy" ]] || die "Trivy install did not produce $STATE_BIN_DIR/trivy"
   cat > "$PREFIX/bin/trivy" <<SH
 #!/usr/bin/env bash
@@ -53,7 +57,11 @@ SH
 }
 
 install_lite_lynis() {
-  if have lynis; then log INFO "Lynis already installed"; return 0; fi
+  if have lynis && lynis show version >/dev/null 2>&1; then log INFO "Lynis already installed and usable"; return 0; fi
+  if have lynis; then
+    log WARN "Existing Lynis command is not usable; reinstalling Lite-managed Lynis"
+    rm -f "$PREFIX/bin/lynis"
+  fi
   require_cmd curl tar
   local archive="$STATE_DIR/lynis-${LYNIS_VERSION}.tar.gz"
   local install_dir="$STATE_DIR/lynis-${LYNIS_VERSION}"
@@ -63,9 +71,17 @@ install_lite_lynis() {
   mkdir -p "$install_dir"
   tar --no-same-owner --no-same-permissions -xzf "$archive" -C "$install_dir" --strip-components=1
   [[ -x "$install_dir/lynis" ]] || die "Lynis install did not produce $install_dir/lynis"
+  local lynis_tmp_dir="$STATE_DIR/lynis-tmp"
+  ensure_dir_perm "$lynis_tmp_dir" 700
+  if [[ -f "$install_dir/include/functions" ]]; then
+    sed -i "s|mktemp /tmp/lynis.XXXXXXXXXX|mktemp ${lynis_tmp_dir}/lynis.XXXXXXXXXX|g" "$install_dir/include/functions"
+  fi
   ln -sfn "$install_dir" "$STATE_DIR/lynis"
   cat > "$PREFIX/bin/lynis" <<SH
 #!/usr/bin/env bash
+set -Eeuo pipefail
+export TMPDIR="\${TMPDIR:-$PREFIX/tmp}"
+mkdir -p "\$TMPDIR" 2>/dev/null || true
 cd "$STATE_DIR/lynis"
 exec ./lynis "\$@"
 SH
