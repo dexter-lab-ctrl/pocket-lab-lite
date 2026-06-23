@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 FASTAPI_SERVER="$SCRIPT_DIR/../../runtime/api_fastapi/pocket_lab_fastapi_server.py"
 WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
+CORE_SUPERVISOR_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_core_supervisor.py"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
 PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"; OBS_DIR="${OBS_DIR:-$POCKET_LAB_OBSERVABILITY_DIR}"
 DASH_PORT="${DASH_PORT:-8443}"; API_PORT="${API_PORT:-8080}"; GATUS_PORT="${GATUS_PORT:-8081}"
@@ -72,6 +73,9 @@ ensure_assets(){
   [[ -f "$API_SERVER" ]] || die "Missing dashboard API server: $API_SERVER"
   [[ -f "$WORKER_SERVER" ]] || die "Missing worker process required for production NATS execution: $WORKER_SERVER"
   [[ -f "$AGENT_SERVER" ]] || log WARN "Missing NATS-backed fleet agent; multi-device live fleet status will be unavailable: $AGENT_SERVER"
+  if is_lite_profile; then
+    [[ -f "$CORE_SUPERVISOR_SERVER" ]] || die "Missing Lite core supervisor: $CORE_SUPERVISOR_SERVER"
+  fi
   have nats-server || die "nats-server is required; production FastAPI/NATS mode does not allow memory fallback"
   python3 - <<'PYCHECK' || die "FastAPI runtime missing; run install-binaries.sh to install fastapi, uvicorn, pydantic, and nats-py"
 import importlib.util, sys
@@ -395,6 +399,8 @@ start_pm2_daemons(){
   POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-api "$API_SERVER" --interpreter python3 --update-env
   pm2_start_or_restart caddy-proxy caddy -- run --config "$CADDYFILE"
   if is_lite_profile; then
+    POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_start_or_restart pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
+    log INFO "Lite profile: started Pocket Lab Lite core supervisor"
     log INFO "Lite profile: skipping Gatus, Loki, Promtail, Prometheus, and Grafana PM2 services"
   else
     if have gatus; then
