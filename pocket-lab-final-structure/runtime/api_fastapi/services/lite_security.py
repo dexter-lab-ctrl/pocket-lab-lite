@@ -131,7 +131,7 @@ def _run_command(args: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
             capture_output=True,
             text=True,
             timeout=timeout,
-            env={**os.environ, "NO_COLOR": "1"},
+            env={**os.environ, "NO_COLOR": "1", "TERM": "dumb"},
         )
         return {
             "ok": completed.returncode == 0,
@@ -211,28 +211,34 @@ def normalize_lynis_output(result: dict[str, Any], run_id: str) -> list[dict[str
         )
         return findings
 
-    lines = (result.get("stdout") or "").splitlines()
-    for index, line in enumerate(lines):
-        text = line.strip()
+    raw_lines = f"{result.get('stdout') or ''}\n{result.get('stderr') or ''}".splitlines()
+    seen: set[str] = set()
+    for index, line in enumerate(raw_lines):
+        text = policy.clean_security_text(line)
         lowered = text.lower()
-        if not text:
+        if not text or policy.should_skip_lynis_text(text):
             continue
-        if "warning" in lowered or "suggestion" in lowered or "hardening" in lowered:
-            severity = "high" if "warning" in lowered else "low"
-            findings.append(
-                normalize_finding(
-                    {
-                        "id": f"lynis-{index}",
-                        "source": "lynis",
-                        "category": "host_hardening",
-                        "severity": severity,
-                        "component": _component_for_text(text),
-                        "summary": "Host hardening item found.",
-                        "recommendation": text[:280],
-                        "evidence_ref": f"security/evidence/{run_id}/lynis-normalized.json",
-                    }
-                )
+        if not ("warning" in lowered or "suggestion" in lowered or "hardening" in lowered or "[ warning ]" in lowered or "[ suggestion ]" in lowered):
+            continue
+        dedupe_key = policy.lynis_dedupe_key(text)
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        severity = "high" if "warning" in lowered or "[ warning ]" in lowered else "low"
+        findings.append(
+            normalize_finding(
+                {
+                    "id": f"lynis-{index}",
+                    "source": "lynis",
+                    "category": "host_hardening",
+                    "severity": severity,
+                    "component": _component_for_text(text),
+                    "summary": "Host hardening item found.",
+                    "recommendation": text[:280],
+                    "evidence_ref": f"security/evidence/{run_id}/lynis-normalized.json",
+                }
             )
+        )
         if len(findings) >= 50:
             break
 
@@ -263,7 +269,7 @@ def _load_json_text(text: str) -> Any:
         return {}
 
 
-def normalize_trivy_json(payload: Any, run_id: str, *, secret_mode: bool = False) -> list[dict[str, Any]]:
+def normalize_trivy_json(payload: Any, run_id: str, *, secret_mode: bool = False, root: Path | None = None) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     if not isinstance(payload, dict):
         return findings
@@ -315,17 +321,22 @@ def normalize_trivy_json(payload: Any, run_id: str, *, secret_mode: bool = False
             if not isinstance(secret, dict):
                 continue
             sid = secret.get("RuleID") or secret.get("ID") or uuid.uuid4().hex[:8]
+            protected = secret_mode and policy.is_protected_runtime_secret(target, root)
             findings.append(
                 normalize_finding(
                     {
                         "id": f"trivy-secret-{sid}-{target}",
                         "source": "trivy",
-                        "category": "secret_exposure",
-                        "severity": "critical",
+                        "category": "protected_runtime_secret" if protected else "secret_exposure",
+                        "severity": "low" if protected else "critical",
                         "component": _component_for_text(target),
                         "file": target,
-                        "summary": "Potential secret-like value found.",
-                        "recommendation": "Move the value to a server-side secret store, rotate it if it was real, and keep it out of frontend assets and normal evidence.",
+                        "summary": "Protected backend runtime secret found." if protected else "Potential secret-like value found.",
+                        "recommendation": (
+                            "Keep this server-side config locked down, exclude it from frontend assets and normal evidence, and rotate it during planned maintenance if exposure is suspected."
+                            if protected
+                            else "Move the value to a server-side secret store, rotate it if it was real, and keep it out of frontend assets and normal evidence."
+                        ),
                         "evidence_ref": f"security/evidence/{run_id}/trivy-normalized.json",
                         "redacted": True,
                     }
@@ -461,7 +472,7 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         findings.append(missing)
         tool_results["lynis"] = {"status": "missing_tool", "available": False}
     else:
-        result = _run_command([lynis, "audit", "system", "--quick", "--no-colors"], cwd=root, timeout=_command_timeout("lynis"))
+        result = _run_command([lynis, "audit", "system", "--quick", "--no-colors", "--quiet"], cwd=root, timeout=_command_timeout("lynis"))
         normalized = normalize_lynis_output(result, run_id)
         findings.extend(normalized)
         partial = partial or bool(result.get("timed_out"))
@@ -488,7 +499,7 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 vuln_args.extend(["--skip-dirs", item])
             vuln_args.append(str(root))
             vuln_result = _run_command(vuln_args, cwd=root, timeout=_command_timeout("trivy_vuln_misconfig"))
-            vuln_findings = normalize_trivy_json(_load_json_text(vuln_result.get("stdout") or ""), run_id)
+            vuln_findings = normalize_trivy_json(_load_json_text(vuln_result.get("stdout") or ""), run_id, root=root)
             findings.extend(vuln_findings)
 
             secret_args = [trivy, "fs", "--format", "json", "--scanners", "secret"]
@@ -496,7 +507,7 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 secret_args.extend(["--skip-dirs", item])
             secret_args.append(str(root))
             secret_result = _run_command(secret_args, cwd=root, timeout=_command_timeout("trivy_secret"))
-            secret_findings = normalize_trivy_json(_load_json_text(secret_result.get("stdout") or ""), run_id, secret_mode=True)
+            secret_findings = normalize_trivy_json(_load_json_text(secret_result.get("stdout") or ""), run_id, secret_mode=True, root=root)
             findings.extend(secret_findings)
             partial = partial or bool(vuln_result.get("timed_out") or secret_result.get("timed_out"))
             sbom_ref = _write_sbom(run_id, trivy, root)
