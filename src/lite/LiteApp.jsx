@@ -1016,6 +1016,15 @@ function SecurityScreen() {
     evidenceRefs,
     sbomSaved,
   });
+  const executionDoneCount = executionSteps.filter((step) => ['done', 'review', 'failed'].includes(step.state)).length;
+  const executionProgress = scanInProgress
+    ? scanProgressPercent
+    : Math.round((executionDoneCount / Math.max(1, executionSteps.length)) * 100);
+  const executionLiveLabel = scanInProgress
+    ? `${scanProgressLabel} · ${scanProgressPercent}%`
+    : lastRun?.completed_at
+      ? `Completed ${formatLiteTime(lastRun.completed_at)}`
+      : 'Ready for the next safety check';
   const evidenceReceipt = evidence ? {
     run_id: evidenceRun?.run_id || lastRun?.run_id,
     status: evidenceRun?.status || data?.status || 'unknown',
@@ -1253,19 +1262,31 @@ function SecurityScreen() {
         />
       ) : null}
 
-      <GlassCard className="lite-security-card lite-security-execution-card">
+      <GlassCard className={`lite-security-card lite-security-execution-card ${scanInProgress ? 'lite-security-execution-card-live' : ''}`}>
         <div className="lite-security-card-head">
           <div className="lite-security-icon">
             <Activity className="h-5 w-5" />
           </div>
           <span className="lite-security-soft-badge">Execution timeline</span>
+          <span className={`lite-security-live-chip ${scanInProgress ? 'lite-security-live-chip-active' : ''}`}>
+            {scanInProgress ? 'Live' : 'Last run'}
+          </span>
         </div>
         <h2>Per-tool check path</h2>
         <p>Security checks move through FastAPI, the backend worker, Lynis, Trivy, and sanitized evidence.</p>
+        <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgress} aria-label="Security execution progress">
+          <span style={{ width: `${executionProgress}%` }} />
+        </div>
+        <p className="lite-security-execution-status">{executionLiveLabel}</p>
         <div className="lite-security-execution-timeline" role="list" aria-label="Security tool execution timeline">
           {executionSteps.map((step, index) => (
-            <div key={step.key} className={`lite-security-execution-step lite-security-execution-${securityExecutionStateTone(step.state)}`} role="listitem">
-              <span>{index + 1}</span>
+            <div
+              key={step.key}
+              className={`lite-security-execution-step lite-security-execution-${securityExecutionStateTone(step.state)} ${step.state === 'active' ? 'lite-security-execution-step-active' : ''}`}
+              role="listitem"
+              aria-current={step.state === 'active' ? 'step' : undefined}
+            >
+              <span>{step.state === 'done' ? '✓' : index + 1}</span>
               <div>
                 <strong>{step.title}</strong>
                 <p>{step.detail}</p>

@@ -7218,3 +7218,142 @@ textarea {
     animation: none !important;
   }
 }
+
+
+.theme-pocket-lite-daylight .lite-security-execution-card {
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-card-live {
+  border-color: rgba(14, 165, 233, 0.22);
+  box-shadow: 0 24px 60px rgba(14, 165, 233, 0.1), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.theme-pocket-lite-daylight .lite-security-live-chip {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #475569;
+  padding: 0.4rem 0.62rem;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-security-live-chip::before {
+  content: '';
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 999px;
+  background: #94a3b8;
+  box-shadow: 0 0 0 0.25rem rgba(148, 163, 184, 0.1);
+}
+
+.theme-pocket-lite-daylight .lite-security-live-chip-active {
+  border-color: rgba(14, 165, 233, 0.24);
+  background: rgba(240, 249, 255, 0.86);
+  color: #0369a1;
+}
+
+.theme-pocket-lite-daylight .lite-security-live-chip-active::before {
+  background: #0ea5e9;
+  animation: lite-security-live-dot 1.2s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-livebar {
+  position: relative;
+  height: 0.5rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.9);
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-livebar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 0.5rem;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #0ea5e9, #6366f1);
+  transition: width 420ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-livebar span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-110%);
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.45) 50%, transparent 80%);
+  animation: lite-security-livebar-shine 1.6s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-status {
+  margin: 0.55rem 0 0;
+  color: #0369a1;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-step-active {
+  isolation: isolate;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-step-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateX(-120%);
+  background: linear-gradient(100deg, transparent 10%, rgba(14, 165, 233, 0.12) 42%, rgba(99, 102, 241, 0.1) 58%, transparent 90%);
+  animation: lite-security-step-scan 1.8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-step-active strong::after {
+  content: ' running';
+  display: inline-flex;
+  margin-left: 0.45rem;
+  color: #0284c7;
+  font-size: 0.65rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@keyframes lite-security-live-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.38); }
+  50% { box-shadow: 0 0 0 0.38rem rgba(14, 165, 233, 0.08); }
+}
+
+@keyframes lite-security-livebar-shine {
+  to { transform: translateX(115%); }
+}
+
+@keyframes lite-security-step-scan {
+  0% { transform: translateX(-120%); opacity: 0.2; }
+  35%, 70% { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0.2; }
+}
+
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-security-live-chip {
+    margin-left: 0;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-execution-card .lite-security-card-head {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-security-live-chip-active::before,
+  .theme-pocket-lite-daylight .lite-security-execution-livebar span::after,
+  .theme-pocket-lite-daylight .lite-security-execution-step-active::after,
+  .theme-pocket-lite-daylight .lite-security-execution-step-active strong::after {
+    animation: none !important;
+  }
+}
