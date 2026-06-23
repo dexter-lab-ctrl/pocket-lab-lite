@@ -55,6 +55,7 @@ LYNIS_NOISE_PATTERNS = (
     re.compile(r"^\*\s*article:\s*", re.IGNORECASE),
     re.compile(r"pid file exists", re.IGNORECASE),
     re.compile(r"had a long execution", re.IGNORECASE),
+    re.compile(r"cannot open /proc/net/dev.*permission denied.*limited output", re.IGNORECASE),
 )
 
 LYNIS_DEDUPE_PATTERNS = (

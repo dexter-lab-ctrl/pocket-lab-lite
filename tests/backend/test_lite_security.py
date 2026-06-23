@@ -168,6 +168,20 @@ def test_score_calculation_and_critical_status():
     assert len(state["critical_issues"]) == 1
 
 
+def test_lynis_normalizer_filters_termux_proc_net_dev_warning():
+    from api_fastapi.services import lite_security
+
+    result = {
+        "returncode": 0,
+        "stdout": "Warning: cannot open /proc/net/dev (Permission denied). Limited output.",
+        "stderr": "",
+        "timed_out": False,
+    }
+
+    findings = lite_security.normalize_lynis_output(result, "security-termux-net-dev")
+    assert findings == []
+
+
 def test_lynis_normalizer_strips_noise_and_dedupes():
     from api_fastapi.services import lite_security
 
