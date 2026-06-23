@@ -236,3 +236,52 @@ def test_protected_runtime_secret_is_downgraded_when_locked_down(tmp_path):
     assert findings[0]["severity"] == "low"
     assert findings[0]["summary"] == "Protected backend runtime secret found."
     assert "super-secret-value" not in str(findings[0])
+
+
+def test_security_scan_progress_estimates_remaining_time(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi import deps
+    from api_fastapi.services import lite_security
+
+    monkeypatch.setenv("POCKETLAB_LITE_SECURITY_ESTIMATED_SECONDS", "240")
+    monkeypatch.setattr(deps, "now_utc_iso", lambda: "2026-01-01T00:01:00Z")
+
+    run = {
+        "run_id": "security-progress",
+        "status": "running",
+        "tools": ["lynis", "trivy"],
+        "started_at": "2026-01-01T00:00:00Z",
+        "completed_at": None,
+        "partial_results": False,
+    }
+
+    state = lite_security.build_state(run, [], [], status_override="running")
+    progress = state["scan_progress"]
+    assert progress["status"] == "running"
+    assert progress["stage"] == "Running Lynis and Trivy"
+    assert progress["elapsed_seconds"] == 60
+    assert progress["estimated_total_seconds"] == 240
+    assert progress["estimated_remaining_seconds"] == 180
+    assert progress["estimated_remaining_label"] == "about 3 min"
+    assert progress["percent"] == 25
+
+
+def test_security_scan_progress_marks_completed(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi import deps
+    from api_fastapi.services import lite_security
+
+    monkeypatch.setattr(deps, "now_utc_iso", lambda: "2026-01-01T00:04:00Z")
+    run = {
+        "run_id": "security-progress-complete",
+        "status": "succeeded",
+        "tools": ["lynis", "trivy"],
+        "started_at": "2026-01-01T00:00:00Z",
+        "completed_at": "2026-01-01T00:03:00Z",
+        "partial_results": False,
+    }
+
+    state = lite_security.build_state(run, [], [])
+    assert state["scan_progress"]["percent"] == 100
+    assert state["scan_progress"]["estimated_remaining_seconds"] == 0
+    assert state["scan_progress"]["stage"] == "Safety check complete"

@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,7 @@ def default_state() -> dict[str, Any]:
         "critical_issues": [],
         "guidance": policy.GUIDANCE,
         "component_posture": component_posture([]),
+        "scan_progress": None,
         "updated_at": now,
     }
 
@@ -42,6 +44,10 @@ def current_state() -> dict[str, Any]:
     state.setdefault("guidance", policy.GUIDANCE)
     state.setdefault("critical_issues", [])
     state.setdefault("component_posture", component_posture(state.get("findings") or []))
+    last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+    if last_run and not state.get("scan_progress"):
+        state["scan_progress"] = scan_progress_for_run(last_run)
+    state.setdefault("scan_progress", None)
     state.setdefault("updated_at", deps.now_utc_iso())
     return policy.redact_value(state)
 
@@ -353,6 +359,93 @@ def _component_for_text(text: str) -> str:
     return "Pocket Lab Lite"
 
 
+
+def _parse_iso_timestamp(value: Any) -> datetime | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        parsed = datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _estimated_security_seconds() -> int:
+    try:
+        configured = int(os.environ.get("POCKETLAB_LITE_SECURITY_ESTIMATED_SECONDS", "180"))
+    except Exception:
+        configured = 180
+    return max(60, min(configured, 900))
+
+
+def _duration_label(seconds: int | None) -> str:
+    if seconds is None:
+        return "calculating"
+    safe_seconds = max(0, int(seconds))
+    if safe_seconds < 10:
+        return "less than 10 sec"
+    if safe_seconds < 60:
+        return f"about {safe_seconds} sec"
+    minutes = max(1, round(safe_seconds / 60))
+    return f"about {minutes} min"
+
+
+def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
+    status = str(run.get("status") or "").lower()
+    if not status:
+        return None
+
+    estimated_total = _estimated_security_seconds()
+    started_at = run.get("started_at") or run.get("requested_at")
+    started = _parse_iso_timestamp(started_at)
+    now = _parse_iso_timestamp(deps.now_utc_iso()) or datetime.now(timezone.utc)
+    elapsed = max(0, int((now - started).total_seconds())) if started else 0
+
+    if status == "queued":
+        percent = 5
+        remaining = estimated_total
+        stage = "Waiting for the backend worker"
+        step = 1
+    elif status == "running":
+        percent = max(8, min(95, int(round((elapsed / estimated_total) * 100))))
+        remaining = max(0, estimated_total - elapsed)
+        stage = "Running Lynis and Trivy"
+        step = 2
+    elif status in {"succeeded", "degraded", "failed"}:
+        percent = 100
+        remaining = 0
+        stage = "Safety check complete" if status != "failed" else "Safety check needs review"
+        step = 3
+    else:
+        percent = 0
+        remaining = estimated_total
+        stage = "Preparing safety check"
+        step = 1
+
+    return policy.redact_value(
+        {
+            "status": status,
+            "stage": stage,
+            "step": step,
+            "steps_total": 3,
+            "started_at": started_at,
+            "elapsed_seconds": elapsed,
+            "estimated_total_seconds": estimated_total,
+            "estimated_remaining_seconds": remaining,
+            "estimated_remaining_label": _duration_label(remaining),
+            "percent": percent,
+            "message": "Pocket Lab is checking host readiness and dependency risks in the backend worker.",
+        }
+    )
+
+
 def count_findings(findings: list[dict[str, Any]]) -> dict[str, int]:
     counts = {severity: 0 for severity in policy.SEVERITIES}
     for finding in findings:
@@ -428,6 +521,7 @@ def build_state(
             "component_posture": component_posture(findings),
             "findings": findings[:100],
             "evidence_refs": evidence_refs,
+            "scan_progress": scan_progress_for_run(run),
             "updated_at": deps.now_utc_iso(),
         }
     )

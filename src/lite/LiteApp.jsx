@@ -231,6 +231,36 @@ function securityFindingLabel(finding) {
   return finding.summary || 'Review item';
 }
 
+function clampSecurityProgress(value, fallback = 8) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(parsed)));
+}
+
+function formatSecurityEta(progress) {
+  if (!progress) return 'calculating';
+  if (progress.estimated_remaining_label) return progress.estimated_remaining_label;
+  const seconds = Number(progress.estimated_remaining_seconds);
+  if (!Number.isFinite(seconds)) return 'calculating';
+  if (seconds <= 0) return 'less than 10 sec';
+  if (seconds < 60) return `about ${Math.max(10, Math.round(seconds))} sec`;
+  return `about ${Math.max(1, Math.round(seconds / 60))} min`;
+}
+
+function securityProgressStage(progress, runStatus) {
+  if (progress?.stage) return progress.stage;
+  if (runStatus === 'queued') return 'Waiting for the backend worker';
+  if (runStatus === 'running') return 'Running Lynis and Trivy';
+  return 'Preparing safety check';
+}
+
+function scanInProgressValue(runStatus, busy, progress) {
+  if (progress?.percent !== undefined) return clampSecurityProgress(progress.percent, busy ? 8 : 0);
+  if (runStatus === 'queued') return 5;
+  if (runStatus === 'running') return 16;
+  return busy ? 8 : 0;
+}
+
 
 function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
   return (
@@ -777,7 +807,13 @@ function SecurityScreen() {
     { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
     { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
   ];
-  const runStatus = String(lastRun?.status || '').toLowerCase();
+  const runStatus = String(lastRun?.status || result?.status || '').toLowerCase();
+  const scanProgress = data?.scan_progress || result?.scan_progress || null;
+  const scanProgressPercent = scanInProgressValue(runStatus, busy, scanProgress);
+  const scanProgressEta = formatSecurityEta(scanProgress);
+  const scanProgressLabel = securityProgressStage(scanProgress, runStatus);
+  const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
+  const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
   const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
   const safetyStatus = data?.status || (findings === 0 ? 'healthy' : 'degraded');
   const safetyState = ['queued', 'running'].includes(runStatus) ? 'checking' : normalizeBackendState(safetyStatus);
@@ -811,6 +847,12 @@ function SecurityScreen() {
       summary: evidenceRefs.length ? `${evidenceRefs.length} sanitized evidence files` : 'Evidence appears after a completed check.',
     },
   ];
+
+  React.useEffect(() => {
+    if (!scanInProgress) return undefined;
+    const timer = window.setInterval(() => refresh(), 15000);
+    return () => window.clearInterval(timer);
+  }, [scanInProgress, refresh]);
 
   function scheduleSecurityRefresh() {
     refresh();
@@ -889,6 +931,21 @@ function SecurityScreen() {
               );
             })}
           </div>
+          {scanInProgress ? (
+            <div className="lite-security-progress-card" aria-live="polite">
+              <div className="lite-security-progress-head">
+                <div>
+                  <strong>{scanProgressLabel}</strong>
+                  <span>Step {scanProgressStep} of {scanProgressStepsTotal}</span>
+                </div>
+                <span>{scanProgressEta} remaining</span>
+              </div>
+              <div className="lite-security-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
+                <span style={{ width: `${scanProgressPercent}%` }} />
+              </div>
+              <p>{scanProgress?.message || 'Pocket Lab is checking host readiness and dependency risks in the backend worker.'}</p>
+            </div>
+          ) : null}
           <div className="lite-security-actions">
             <LiteButton onClick={scan} disabled={scanInProgress}>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
             <LiteButton onClick={showEvidence} tone="secondary">Evidence</LiteButton>
@@ -905,7 +962,7 @@ function SecurityScreen() {
             {safetyLabel}
           </StatusBadge>
           <div className="lite-security-score-meta">
-            <span>{lastRun?.completed_at ? `Last check ${formatLiteTime(lastRun.completed_at)}` : 'Run a check to refresh posture'}</span>
+            <span>{scanInProgress ? `${scanProgressPercent}% complete · ${scanProgressEta} remaining` : lastRun?.completed_at ? `Last check ${formatLiteTime(lastRun.completed_at)}` : 'Run a check to refresh posture'}</span>
             <span>{healthyComponents || componentPosture.length || 0} protected areas healthy</span>
           </div>
         </div>
