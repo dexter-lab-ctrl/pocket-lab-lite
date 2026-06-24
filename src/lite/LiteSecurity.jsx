@@ -703,7 +703,7 @@ function evidenceReferenceLabel(finding = {}, evidenceRefs = [], lastRun = null)
   return safeSecurityText(safeRef.split('/').slice(-2).join('/'), 'Saved evidence not available for this item.');
 }
 
-function SecurityFindingDetailModal({ finding, context, onClose, onOpenEvidence }) {
+function SecurityFindingDetailModal({ finding, context, onClose }) {
   if (!finding) return null;
   const remediation = buildSecurityRemediation(finding, context);
   const action = remediation.action || classifyFindingAction(finding, context);
@@ -716,11 +716,10 @@ function SecurityFindingDetailModal({ finding, context, onClose, onOpenEvidence 
   const titleId = 'lite-security-finding-detail-title';
 
   return (
-    <div className="lite-finding-detail-backdrop" role="presentation" onClick={onClose}>
-      <section className="lite-finding-detail-modal" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} onClick={(event) => event.stopPropagation()}>
+    <section className="lite-finding-detail-modal lite-security-coverage-scroll" role="region" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex="0">
         <div className="lite-finding-detail-header">
           <div>
-            <span className="lite-security-soft-badge">Finding title</span>
+            <span className="lite-security-soft-badge">Finding</span>
             <h2 id={titleId}>{title}</h2>
           </div>
           <button type="button" className="lite-finding-detail-close" onClick={onClose} aria-label="Close finding details">
@@ -755,11 +754,9 @@ function SecurityFindingDetailModal({ finding, context, onClose, onOpenEvidence 
         </div>
 
         <div className="lite-finding-detail-actions">
-          <LiteButton tone="secondary" onClick={onOpenEvidence}>View Evidence Receipt</LiteButton>
           <button type="button" className="lite-finding-detail-trigger" onClick={onClose}>Close</button>
         </div>
       </section>
-    </div>
   );
 }
 
@@ -1435,10 +1432,6 @@ export default function SecurityScreen() {
     window.setTimeout(() => findingDetailTriggerRef.current?.focus?.(), 0);
   }
 
-  function openEvidenceFromFindingDetails() {
-    closeFindingDetails();
-    showEvidence();
-  }
 
   return (
     <>
@@ -1813,6 +1806,13 @@ export default function SecurityScreen() {
                       <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(issue, event)}>View details</button>
                       <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(issue)}>What should I do?</button>
                     </div>
+                    {selectedFinding === issue ? (
+                      <SecurityFindingDetailModal
+                        finding={issue}
+                        context={remediationContext}
+                        onClose={closeFindingDetails}
+                      />
+                    ) : null}
                   </div>
                 );
               })}
@@ -1838,6 +1838,13 @@ export default function SecurityScreen() {
                         <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
                         <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
                       </div>
+                      {selectedFinding === item ? (
+                        <SecurityFindingDetailModal
+                          finding={item}
+                          context={remediationContext}
+                          onClose={closeFindingDetails}
+                        />
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -1885,12 +1892,6 @@ export default function SecurityScreen() {
         </GlassCard>
       </div>
 
-      <SecurityFindingDetailModal
-        finding={selectedFinding}
-        context={remediationContext}
-        onClose={closeFindingDetails}
-        onOpenEvidence={openEvidenceFromFindingDetails}
-      />
 
       <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} />
 
