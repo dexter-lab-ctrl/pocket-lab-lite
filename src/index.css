@@ -7357,3 +7357,72 @@ textarea {
     animation: none !important;
   }
 }
+
+/* Lite Security production copy polish for trend and delta review states */
+.theme-pocket-lite-daylight .lite-security-trend-summary small {
+  display: block;
+  margin-top: 0.3rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-tone {
+  letter-spacing: -0.02em;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-safe {
+  color: #047857 !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-warning {
+  color: #b45309 !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-trend-neutral {
+  color: #1d4ed8 !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.85rem 0 0;
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.92), rgba(254, 243, 199, 0.58));
+  color: #92400e;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-insight svg {
+  flex: 0 0 auto;
+  margin-top: 0.08rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-delta-item small {
+  display: block;
+  margin-top: 0.45rem;
+  border-left: 3px solid rgba(20, 184, 166, 0.34);
+  color: #334155;
+  padding-left: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-security-trend-summary small {
+    font-size: 0.72rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-delta-insight,
+  .theme-pocket-lite-daylight .lite-security-delta-item small {
+    font-size: 0.73rem;
+  }
+}
+

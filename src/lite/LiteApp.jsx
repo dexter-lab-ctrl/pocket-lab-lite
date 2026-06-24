@@ -338,15 +338,93 @@ function formatSecurityDuration(seconds) {
 
 function securityTrendLabel(value) {
   const delta = Number(value || 0);
-  if (delta > 0) return `+${delta} improved`;
-  if (delta < 0) return `${delta} lower`;
-  return 'no score change';
+  if (delta > 0) return `Up ${delta} pts`;
+  if (delta < 0) return `Down ${Math.abs(delta)} pts`;
+  return 'Stable';
 }
 
-function securityDeltaTone(type) {
+function securityTrendView(latest, previous) {
+  if (!latest || !previous) {
+    return { label: 'Baseline', detail: 'Future checks will show movement.', tone: 'neutral' };
+  }
+  const latestScore = Number(latest.score || 0);
+  const previousScore = Number(previous.score || 0);
+  const delta = latestScore - previousScore;
+  if (delta > 0) {
+    return {
+      label: `Up ${delta} pts`,
+      detail: `Latest ${latestScore} vs previous ${previousScore}.`,
+      tone: 'safe',
+    };
+  }
+  if (delta < 0) {
+    return {
+      label: `Down ${Math.abs(delta)} pts`,
+      detail: `Latest ${latestScore} vs previous ${previousScore}. Usually caused by a new review item or partial check.`,
+      tone: 'warning',
+    };
+  }
+  return {
+    label: 'Stable',
+    detail: `Latest ${latestScore} matches the previous check.`,
+    tone: 'neutral',
+  };
+}
+
+function securityDeltaTone(type, finding) {
+  if (isSecurityTimeoutFinding(finding)) return 'warning';
   if (type === 'new') return 'warning';
   if (type === 'resolved') return 'safe';
   return 'neutral';
+}
+
+function isSecurityTimeoutFinding(finding) {
+  const summary = `${finding?.summary || ''} ${finding?.recommendation || ''}`.toLowerCase();
+  return finding?.category === 'host_hardening' && summary.includes('timed out');
+}
+
+function securityDeltaBadge(finding) {
+  if (isSecurityTimeoutFinding(finding)) return 'recheck';
+  if (finding?.delta_type === 'resolved') return 'resolved';
+  if (finding?.delta_type === 'unchanged') return 'ongoing';
+  return 'new';
+}
+
+function securityDeltaTitle(finding) {
+  if (isSecurityTimeoutFinding(finding)) return 'Host readiness partially checked';
+  return securityFindingLabel(finding);
+}
+
+function securityDeltaDescription(finding) {
+  if (isSecurityTimeoutFinding(finding)) {
+    return 'Lynis did not finish every host-readiness check before the timeout. This is usually a device speed, battery, or timeout condition, not evidence of compromise.';
+  }
+  return finding?.summary || finding?.recommendation || 'Security item recorded.';
+}
+
+function securityDeltaAction(finding) {
+  if (isSecurityTimeoutFinding(finding)) {
+    return 'Run the check again while the device is charging, or increase the Lynis timeout for slower devices.';
+  }
+  return finding?.recommendation || '';
+}
+
+function securityDeltaSummary(delta, previewItems = []) {
+  const newCount = Number(delta?.new_count || 0);
+  const resolvedCount = Number(delta?.resolved_count || 0);
+  const unchangedCount = Number(delta?.unchanged_count || 0);
+  const timeoutCount = previewItems.filter(isSecurityTimeoutFinding).length;
+  if (timeoutCount && newCount === timeoutCount) {
+    return `${timeoutCount} host-readiness check needs a re-run. No critical issue was found, but the latest check was partial.`;
+  }
+  if (newCount || resolvedCount || unchangedCount) {
+    const parts = [];
+    if (newCount) parts.push(`${newCount} new review item${newCount === 1 ? '' : 's'}`);
+    if (resolvedCount) parts.push(`${resolvedCount} resolved`);
+    if (unchangedCount) parts.push(`${unchangedCount} ongoing`);
+    return `${parts.join(' · ')} since the previous completed check.`;
+  }
+  return delta?.summary || 'Future checks will show new, resolved, and ongoing items.';
 }
 
 
@@ -989,16 +1067,19 @@ function SecurityScreen() {
   const latestHistory = securityHistory[0] || null;
   const previousHistory = securityHistory.find((item) => item?.run_id && item.run_id !== latestHistory?.run_id) || null;
   const scoreTrend = latestHistory && previousHistory ? Number(latestHistory.score || 0) - Number(previousHistory.score || 0) : 0;
+  const scoreTrendView = securityTrendView(latestHistory, previousHistory);
   const deltaStats = [
-    { key: 'new', label: 'New', value: Number(findingDelta.new_count || 0), tone: 'warning' },
+    { key: 'new', label: 'New review', value: Number(findingDelta.new_count || 0), tone: 'warning' },
     { key: 'resolved', label: 'Resolved', value: Number(findingDelta.resolved_count || 0), tone: 'safe' },
-    { key: 'unchanged', label: 'Still present', value: Number(findingDelta.unchanged_count || 0), tone: 'neutral' },
+    { key: 'unchanged', label: 'Ongoing', value: Number(findingDelta.unchanged_count || 0), tone: 'neutral' },
   ];
   const deltaPreview = [
     ...(Array.isArray(findingDelta.new) ? findingDelta.new.slice(0, 2).map((item) => ({ ...item, delta_type: 'new' })) : []),
     ...(Array.isArray(findingDelta.resolved) ? findingDelta.resolved.slice(0, 2).map((item) => ({ ...item, delta_type: 'resolved' })) : []),
     ...(Array.isArray(findingDelta.unchanged) ? findingDelta.unchanged.slice(0, 2).map((item) => ({ ...item, delta_type: 'unchanged' })) : []),
   ].slice(0, 4);
+  const deltaSummary = securityDeltaSummary(findingDelta, deltaPreview);
+  const timeoutDeltaCount = deltaPreview.filter(isSecurityTimeoutFinding).length;
   const runStatus = String(lastRun?.status || result?.status || '').toLowerCase();
   const scanProgress = data?.scan_progress || result?.scan_progress || null;
   const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
@@ -1314,7 +1395,8 @@ function SecurityScreen() {
               </div>
               <div>
                 <span>Trend</span>
-                <strong>{securityTrendLabel(scoreTrend)}</strong>
+                <strong className={`lite-security-trend-tone lite-security-trend-${scoreTrendView.tone}`}>{scoreTrendView.label}</strong>
+                <small>{scoreTrendView.detail}</small>
               </div>
               <div>
                 <span>Last duration</span>
@@ -1349,7 +1431,13 @@ function SecurityScreen() {
               <span className="lite-security-soft-badge">What changed</span>
             </div>
             <h2>Finding delta</h2>
-            <p>{findingDelta.summary || 'Future checks will show new, resolved, and still-present items.'}</p>
+            <p>{deltaSummary}</p>
+            {timeoutDeltaCount ? (
+              <div className="lite-security-delta-insight">
+                <Activity className="h-4 w-4" />
+                <span>Lynis host readiness was partial. Treat this as a recheck recommendation, not a confirmed security failure.</span>
+              </div>
+            ) : null}
             <div className="lite-security-delta-stats" aria-label="Finding changes">
               {deltaStats.map((item) => (
                 <div key={item.key} className={`lite-security-delta-stat lite-security-delta-${item.tone}`}>
@@ -1362,12 +1450,13 @@ function SecurityScreen() {
               <div className="lite-security-delta-list">
                 {deltaPreview.map((item) => (
                   <div key={`${item.delta_type}-${item.id || item.summary}`} className="lite-security-delta-item">
-                    <span className={`lite-security-severity lite-security-severity-${securityDeltaTone(item.delta_type)}`}>
-                      {item.delta_type === 'new' ? 'new' : item.delta_type === 'resolved' ? 'resolved' : 'same'}
+                    <span className={`lite-security-severity lite-security-severity-${securityDeltaTone(item.delta_type, item)}`}>
+                      {securityDeltaBadge(item)}
                     </span>
                     <div>
-                      <strong>{securityFindingLabel(item)}</strong>
-                      <p>{item.summary || item.recommendation || 'Security item recorded.'}</p>
+                      <strong>{securityDeltaTitle(item)}</strong>
+                      <p>{securityDeltaDescription(item)}</p>
+                      {securityDeltaAction(item) ? <small>{securityDeltaAction(item)}</small> : null}
                     </div>
                   </div>
                 ))}
