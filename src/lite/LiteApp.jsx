@@ -436,6 +436,13 @@ function securityExecutionStateTone(state) {
   return 'waiting';
 }
 
+function securityExecutionStepGlyph(step, index) {
+  if (step?.state === 'done') return '✓';
+  if (step?.state === 'review') return '!';
+  if (step?.state === 'failed') return '×';
+  return index + 1;
+}
+
 function securityToolStatusLabel(toolResult = {}) {
   const status = String(toolResult?.status || '').toLowerCase();
   if (status === 'completed') return 'Completed';
@@ -446,7 +453,25 @@ function securityToolStatusLabel(toolResult = {}) {
   return 'Pending';
 }
 
-function securityExecutionTimeline({ runStatus, scanProgress, evidenceRun, toolResults, evidenceRefs, sbomSaved }) {
+function securityExecutionTimeline({ executionTimeline, runStatus, scanProgress, evidenceRun, toolResults, evidenceRefs, sbomSaved }) {
+  if (Array.isArray(executionTimeline) && executionTimeline.length) {
+    return executionTimeline.map((step) => ({
+      key: step.key,
+      title: step.title,
+      detail: step.detail,
+      state:
+        step.status === 'completed'
+          ? 'done'
+          : step.status === 'running'
+            ? 'active'
+            : step.status === 'review'
+              ? 'review'
+              : step.status === 'failed'
+                ? 'failed'
+                : 'waiting',
+    }));
+  }
+
   const status = String(evidenceRun?.status || runStatus || '').toLowerCase();
   const terminal = ['succeeded', 'degraded', 'failed'].includes(status);
   const running = status === 'running';
@@ -1090,6 +1115,7 @@ function SecurityScreen() {
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
   const executionSteps = securityExecutionTimeline({
+    executionTimeline: data?.execution_timeline || evidence?.run?.execution_timeline || lastRun?.execution_timeline,
     runStatus,
     scanProgress,
     evidenceRun,
@@ -1097,12 +1123,14 @@ function SecurityScreen() {
     evidenceRefs,
     sbomSaved,
   });
-  const executionDoneCount = executionSteps.filter((step) => ['done', 'review', 'failed'].includes(step.state)).length;
-  const executionProgress = scanInProgress
-    ? scanProgressPercent
-    : Math.round((executionDoneCount / Math.max(1, executionSteps.length)) * 100);
+  const executionProgressUnits = executionSteps.reduce((total, step) => {
+    if (['done', 'review', 'failed'].includes(step.state)) return total + 1;
+    if (step.state === 'active') return total + 0.5;
+    return total;
+  }, 0);
+  const executionProgress = Math.round((executionProgressUnits / Math.max(1, executionSteps.length)) * 100);
   const executionLiveLabel = scanInProgress
-    ? `${scanProgressLabel} · ${scanProgressPercent}%`
+    ? `${scanProgressLabel} · ${executionProgress}%`
     : lastRun?.completed_at
       ? `Completed ${formatLiteTime(lastRun.completed_at)}`
       : 'Ready for the next safety check';
@@ -1367,7 +1395,7 @@ function SecurityScreen() {
               role="listitem"
               aria-current={step.state === 'active' ? 'step' : undefined}
             >
-              <span>{step.state === 'done' ? '✓' : index + 1}</span>
+              <span>{securityExecutionStepGlyph(step, index)}</span>
               <div>
                 <strong>{step.title}</strong>
                 <p>{step.detail}</p>
