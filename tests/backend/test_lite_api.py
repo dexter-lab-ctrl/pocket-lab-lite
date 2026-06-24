@@ -1200,6 +1200,11 @@ def test_lite_security_ui_has_mobile_first_finding_detail_modal():
     assert "lite-finding-detail-modal" in css
     assert "lite-finding-detail-backdrop" in css
     assert "lite-finding-detail-trigger" in css
+    assert "lite-security-evidence-dropdown" in ui
+    assert 'role="region"' in ui
+    assert "lite-security-evidence-dropdown" in css
+    assert "SecurityFindingDetailModal" in ui
+    assert "finding={selectedFinding}" in ui
     assert "@media (max-width: 720px)" in css
 
 def test_lite_security_ui_preserves_backend_owned_boundaries():

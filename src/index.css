@@ -8390,3 +8390,33 @@ textarea {
     transition: none;
   }
 }
+
+/* Lite Security evidence receipt inline dropdown polish */
+.theme-pocket-lite-daylight .lite-security-evidence-dropdown {
+  margin: -0.35rem 0 1rem;
+  animation: lite-security-card-rise 220ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-dropdown .lite-security-evidence-panel {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  border-color: rgba(14, 165, 233, 0.18);
+  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.1);
+}
+
+.theme-pocket-lite-daylight .lite-security-evidence-dropdown .lite-security-evidence-close {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-evidence-dropdown {
+    margin-top: -0.2rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-evidence-dropdown .lite-security-evidence-panel {
+    max-height: none;
+    border-radius: 1.25rem;
+  }
+}
