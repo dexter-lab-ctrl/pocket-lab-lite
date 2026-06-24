@@ -53,6 +53,161 @@ const mockLiteDevices = () => [
   },
 ];
 
+const securityEvidenceRefs = (runId = 'security-mock-001') => [
+  `security/evidence/${runId}/summary.json`,
+  `security/evidence/${runId}/lynis-normalized.json`,
+  `security/evidence/${runId}/trivy-normalized.json`,
+  `security/evidence/${runId}/sbom.cdx.json`,
+];
+
+const mockLiteSecurityPayload = () => {
+  const now = Date.now();
+  const currentRunId = 'security-mock-001';
+  const previousRunId = 'security-mock-000';
+  const baseRun = {
+    run_id: currentRunId,
+    status: 'succeeded',
+    started_at: new Date(now - 3 * 60 * 1000).toISOString(),
+    completed_at: new Date(now - 2 * 60 * 1000).toISOString(),
+    tools: ['lynis', 'trivy'],
+    critical_count: 0,
+    high_count: 0,
+    medium_count: 0,
+    low_count: 0,
+    partial_results: false,
+    sbom_saved: true,
+    tool_results: {
+      lynis: { status: 'completed' },
+      trivy: { status: 'completed', sbom_saved: true },
+    },
+  };
+  const completedTimeline = [
+    { key: 'request_accepted', title: 'Request accepted', detail: 'FastAPI accepted the safety request.', status: 'completed' },
+    { key: 'worker_picked_up', title: 'Worker picked it up', detail: 'The backend worker started the check.', status: 'completed' },
+    { key: 'lynis_host_check', title: 'Lynis host check', detail: 'Host readiness checks completed.', status: 'completed' },
+    { key: 'trivy_dependency_secret_check', title: 'Trivy dependency & secret check', detail: 'Dependency, config, secret-like, and SBOM checks completed.', status: 'completed' },
+    { key: 'evidence_saved', title: 'Evidence saved', detail: 'Sanitized evidence files ready.', status: 'completed' },
+  ];
+  const base = {
+    status: 'healthy',
+    summary: 'No urgent safety issues found.',
+    score: 100,
+    last_run: baseRun,
+    scan_progress: {
+      status: 'succeeded',
+      stage: 'Safety check complete',
+      step: 5,
+      steps_total: 5,
+      elapsed_seconds: 60,
+      estimated_total_seconds: 180,
+      estimated_remaining_seconds: 0,
+      estimated_remaining_label: 'done',
+      percent: 100,
+      message: 'Pocket Lab checked host readiness and dependency risks in the backend worker.',
+    },
+    execution_timeline: completedTimeline,
+    evidence_refs: securityEvidenceRefs(currentRunId),
+    checks_reviewed: 2,
+    items_to_review: 0,
+    critical_issues: [],
+    findings: [],
+    history: [
+      { run_id: currentRunId, status: 'succeeded', score: 100, started_at: new Date(now - 3 * 60 * 1000).toISOString(), completed_at: new Date(now - 2 * 60 * 1000).toISOString(), duration_seconds: 60, items_to_review: 0, evidence_count: 4, sbom_saved: true },
+      { run_id: previousRunId, status: 'succeeded', score: 96, started_at: new Date(now - 24 * 60 * 60 * 1000).toISOString(), completed_at: new Date(now - 24 * 60 * 60 * 1000 + 120000).toISOString(), duration_seconds: 120, items_to_review: 1, evidence_count: 4, sbom_saved: true },
+    ],
+    finding_delta: {
+      baseline: 'compared',
+      previous_run_id: previousRunId,
+      new_count: 0,
+      resolved_count: 1,
+      unchanged_count: 0,
+      summary: 'No new review items.',
+      new: [],
+      resolved: [{ id: 'mock-resolved-risk', source: 'trivy', category: 'dependency_vulnerability', severity: 'high', summary: 'Old dependency risk resolved.' }],
+      unchanged: [],
+    },
+    guidance: [
+      { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
+      { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
+      { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
+    ],
+    updated_at: new Date(now).toISOString(),
+  };
+
+  if (scenario() === 'security-partial') {
+    return {
+      ...base,
+      status: 'degraded',
+      summary: 'Medium confidence — Lynis did not finish every host-readiness check. Trivy and evidence completed. Recheck recommended.',
+      score: 94,
+      last_run: {
+        ...baseRun,
+        status: 'degraded',
+        partial_results: true,
+        low_count: 1,
+        tool_results: {
+          lynis: { status: 'timed_out' },
+          trivy: { status: 'completed', sbom_saved: true },
+        },
+      },
+      execution_timeline: completedTimeline.map((step) => step.key === 'lynis_host_check'
+        ? { ...step, detail: 'Host readiness was partial on this device.', status: 'review' }
+        : step),
+      items_to_review: 1,
+      findings: [{ id: 'mock-lynis-timeout', source: 'lynis', category: 'host_hardening', severity: 'low', summary: 'Lynis host-readiness check was partial.', recommendation: 'Recheck while the device is charging.' }],
+      finding_delta: {
+        ...base.finding_delta,
+        new_count: 1,
+        resolved_count: 0,
+        summary: 'One partial host-readiness item needs a recheck.',
+        new: [{ id: 'mock-lynis-timeout', source: 'lynis', category: 'host_hardening', severity: 'low', summary: 'Lynis host-readiness check was partial.' }],
+        resolved: [],
+      },
+    };
+  }
+
+  if (scenario() === 'security-low') {
+    return {
+      ...base,
+      status: 'unhealthy',
+      summary: 'Safety check could not finish because a required tool is missing.',
+      score: 42,
+      last_run: {
+        ...baseRun,
+        status: 'failed',
+        partial_results: true,
+        sbom_saved: false,
+        completed_at: new Date(now - 90 * 1000).toISOString(),
+        tool_results: {
+          lynis: { status: 'missing_tool' },
+          trivy: { status: 'partial', sbom_saved: false },
+        },
+      },
+      execution_timeline: [
+        completedTimeline[0],
+        completedTimeline[1],
+        { key: 'lynis_host_check', title: 'Lynis host check', detail: 'Lynis is missing on this device.', status: 'missing_tool' },
+        { key: 'trivy_dependency_secret_check', title: 'Trivy dependency & secret check', detail: 'Trivy could not complete every check.', status: 'partial' },
+        { key: 'evidence_saved', title: 'Evidence saved', detail: 'Useful evidence was not saved.', status: 'failed' },
+      ],
+      evidence_refs: [],
+      items_to_review: 2,
+      critical_issues: [{ id: 'mock-missing-tool', summary: 'Security tool missing', recommendation: 'Install Lynis and rerun Safety Check.' }],
+      findings: [{ id: 'mock-missing-tool', source: 'lynis', category: 'missing_tool', severity: 'high', summary: 'Lynis is not available.', recommendation: 'Install Lynis and rerun Safety Check.' }],
+      finding_delta: {
+        ...base.finding_delta,
+        new_count: 1,
+        resolved_count: 0,
+        summary: 'A required tool is missing.',
+        new: [{ id: 'mock-missing-tool', source: 'lynis', category: 'missing_tool', severity: 'high', summary: 'Lynis is not available.' }],
+        resolved: [],
+      },
+    };
+  }
+
+  return base;
+};
+
 export const handlers = [
   http.get('/ready', () => HttpResponse.json(controlPlane(), { status: controlPlane().ready ? 200 : 503 })),
   http.get('/api', () => HttpResponse.json({ name: 'Pocket Lab FastAPI/NATS Control API', mode: 'msw' })),
@@ -95,58 +250,7 @@ export const handlers = [
     { id: 'vault', name: 'Vault', status: 'available', summary: 'Passwords and access protection', installed: true },
   ], count: 2, updated_at: new Date().toISOString() })),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
-  http.get('/api/lite/security', () => HttpResponse.json({
-    status: 'healthy',
-    summary: 'No urgent safety issues found.',
-    score: 100,
-    last_run: {
-      run_id: 'security-mock-001',
-      status: 'succeeded',
-      started_at: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-      completed_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-      tools: ['lynis', 'trivy'],
-      critical_count: 0,
-      high_count: 0,
-      medium_count: 0,
-      low_count: 0,
-    },
-    scan_progress: {
-      status: 'succeeded',
-      stage: 'Safety check complete',
-      step: 3,
-      steps_total: 3,
-      elapsed_seconds: 60,
-      estimated_total_seconds: 180,
-      estimated_remaining_seconds: 0,
-      estimated_remaining_label: 'less than 10 sec',
-      percent: 100,
-      message: 'Pocket Lab checked host readiness and dependency risks in the backend worker.',
-    },
-    checks_reviewed: 2,
-    items_to_review: 0,
-    critical_issues: [],
-    history: [
-      { run_id: 'security-mock-001', status: 'succeeded', score: 100, started_at: new Date(Date.now() - 3 * 60 * 1000).toISOString(), completed_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(), duration_seconds: 60, items_to_review: 0, evidence_count: 4, sbom_saved: true },
-      { run_id: 'security-mock-000', status: 'succeeded', score: 96, started_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), completed_at: new Date(Date.now() - 24 * 60 * 60 * 1000 + 120000).toISOString(), duration_seconds: 120, items_to_review: 1, evidence_count: 4, sbom_saved: true },
-    ],
-    finding_delta: {
-      baseline: 'compared',
-      previous_run_id: 'security-mock-000',
-      new_count: 0,
-      resolved_count: 1,
-      unchanged_count: 0,
-      summary: 'No new review items.',
-      new: [],
-      resolved: [{ id: 'mock-resolved-risk', source: 'trivy', category: 'dependency_vulnerability', severity: 'high', summary: 'Old dependency risk resolved.' }],
-      unchanged: [],
-    },
-    guidance: [
-      { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
-      { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
-      { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
-    ],
-    updated_at: new Date().toISOString(),
-  })),
+  http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
   http.get('/api/lite/fleet', () => HttpResponse.json({
     status: 'healthy',
     devices: mockLiteDevices(),
@@ -210,7 +314,19 @@ export const handlers = [
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
   http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Safety check queued. Pocket Lab will scan local security posture and dependency risks.' }, { status: 202 })),
   http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 })),
-  http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded' }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json'] })),
+  http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({
+    run: {
+      run_id: params.runId,
+      status: 'succeeded',
+      tool_results: { lynis: { status: 'completed' }, trivy: { status: 'completed', sbom_saved: true } },
+      evidence_refs: securityEvidenceRefs(params.runId),
+    },
+    score: 100,
+    status: 'healthy',
+    summary: 'No urgent safety issues found.',
+    findings: [],
+    evidence_refs: securityEvidenceRefs(params.runId),
+  })),
   http.post('/api/lite/fleet/devices/:nodeId/restart-agent', ({ params }) => HttpResponse.json({
     accepted: true,
     status: 'queued',
