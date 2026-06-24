@@ -1074,6 +1074,31 @@ def test_lite_restart_agent_reports_stopped_agent_progress(tmp_path):
     assert "device_agent" in step_ids
 
 
+
+def test_lite_security_ui_has_confidence_trust_boundary_and_coverage_matrix():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    mocks = Path("src/mocks/handlers.js").read_text()
+
+    assert "deriveSecurityConfidence" in ui
+    assert "Confidence: High" in ui
+    assert "Confidence: Medium" in ui
+    assert "Confidence: Low" in ui
+    assert "Both Lynis and Trivy completed. Evidence and SBOM were saved." in ui
+    assert "You are protected because" in ui
+    assert "Browser never runs shell commands" in ui
+    assert "Browser to evidence path" in ui
+    assert "The browser only requests checks and displays summaries." in ui
+    assert "Coverage: 7 protected areas" in ui
+    assert "SecurityCoverageMatrixCard" in ui
+    assert "aria-expanded" in ui
+    assert "not covered by this check" in ui
+    assert "lite-security-confidence-card" in css
+    assert "lite-security-boundary-flow" in css
+    assert "lite-security-coverage-scroll" in css
+    assert "security-partial" in mocks
+    assert "security-low" in mocks
+
 def test_lite_ui_has_error_boundary_and_safe_restart_steps():
     ui = _lite_ui_source()
     assert "LiteErrorBoundary" in ui

@@ -78,6 +78,275 @@ import {
   safeRestartSteps
 } from './LiteUi.jsx';
 
+const SECURITY_COVERAGE_ROWS = [
+  { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'PWA bundle', dependencies: true, secrets: true, config: false, runtime: false, evidence: true },
+  { component: 'Caddy', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'NATS', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'Worker', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
+  { component: 'Bootstrap scripts', dependencies: false, secrets: true, config: true, runtime: false, evidence: true },
+  { component: 'Recovery state', dependencies: false, secrets: true, config: true, runtime: true, evidence: true },
+];
+
+const SECURITY_PROTECTION_REASONS = [
+  'Scans run locally through Pocket Lab',
+  'Browser never runs shell commands',
+  'Secrets are redacted before display',
+  'Evidence is saved with sensitive values hidden',
+  'SBOM is generated for dependency visibility',
+];
+
+const SECURITY_TRUST_BOUNDARY_STEPS = [
+  { label: 'Browser', note: 'requests only' },
+  { label: 'FastAPI', note: 'control API' },
+  { label: 'Worker', note: 'runs tools' },
+  { label: 'Lynis/Trivy', note: 'local checks' },
+  { label: 'Evidence', note: 'sanitized before display' },
+];
+
+function securityStepState(steps, key) {
+  return steps.find((step) => step.key === key)?.state || 'waiting';
+}
+
+function securityToolCompleted(toolResult = {}) {
+  const status = String(toolResult?.status || '').toLowerCase();
+  return ['completed', 'succeeded', 'success', 'done'].includes(status);
+}
+
+function securityToolPartial(toolResult = {}) {
+  const status = String(toolResult?.status || '').toLowerCase();
+  return ['partial', 'timed_out', 'timeout', 'review', 'degraded'].includes(status);
+}
+
+function securityToolMissing(toolResult = {}) {
+  return String(toolResult?.status || '').toLowerCase() === 'missing_tool';
+}
+
+function deriveSecurityConfidence({ lastRun, runStatus, executionSteps, evidenceRefs, evidence, toolResults, sbomSaved, reviewItems }) {
+  const status = String(lastRun?.status || runStatus || '').toLowerCase();
+  const hasRun = Boolean(lastRun?.run_id || status);
+  const evidenceSaved = Boolean(
+    evidenceRefs.length ||
+    evidence?.evidence_refs?.length ||
+    securityStepState(executionSteps, 'evidence_saved') === 'done'
+  );
+  const lynisState = securityStepState(executionSteps, 'lynis_host_check');
+  const trivyState = securityStepState(executionSteps, 'trivy_dependency_secret_check');
+  const workerState = securityStepState(executionSteps, 'worker_picked_up');
+  const lynisCompleted = lynisState === 'done' || securityToolCompleted(toolResults?.lynis);
+  const trivyCompleted = trivyState === 'done' || securityToolCompleted(toolResults?.trivy);
+  const workerCompleted = ['succeeded', 'completed', 'healthy', 'degraded'].includes(status) || workerState === 'done';
+  const missingTool =
+    securityToolMissing(toolResults?.lynis) ||
+    securityToolMissing(toolResults?.trivy) ||
+    reviewItems.some((item) => String(item?.category || item?.status || '').toLowerCase().includes('missing_tool'));
+  const partialTool =
+    Boolean(lastRun?.partial_results) ||
+    ['partial', 'degraded', 'review'].includes(status) ||
+    [lynisState, trivyState].includes('review') ||
+    securityToolPartial(toolResults?.lynis) ||
+    securityToolPartial(toolResults?.trivy);
+  const failedCoreStep = executionSteps.some((step) => step.state === 'failed') || ['failed', 'failure', 'error'].includes(status);
+
+  if (!hasRun) {
+    return {
+      level: 'Low',
+      tone: 'danger',
+      title: 'Confidence: Low',
+      summary: 'Run Safety Check to create fresh evidence and SBOM visibility for this device.',
+      chips: [
+        { label: 'No recent check', tone: 'danger' },
+        { label: 'Evidence unavailable', tone: 'danger' },
+      ],
+    };
+  }
+
+  if (failedCoreStep || missingTool || (!evidenceSaved && ['succeeded', 'completed', 'degraded', 'failed'].includes(status))) {
+    const missingReason = missingTool ? 'A required security tool is missing.' : 'The worker did not finish with usable evidence.';
+    return {
+      level: 'Low',
+      tone: 'danger',
+      title: 'Confidence: Low',
+      summary: `${missingReason} Recheck after fixing the tool or worker issue.`,
+      chips: [
+        { label: lynisCompleted ? 'Lynis completed' : missingTool ? 'Tool missing' : 'Lynis not complete', tone: lynisCompleted ? 'ready' : 'danger' },
+        { label: trivyCompleted ? 'Trivy completed' : missingTool ? 'Tool missing' : 'Trivy not complete', tone: trivyCompleted ? 'ready' : 'danger' },
+        { label: evidenceSaved ? 'Evidence saved' : 'Evidence unavailable', tone: evidenceSaved ? 'ready' : 'danger' },
+      ],
+    };
+  }
+
+  if (!partialTool && lynisCompleted && trivyCompleted && evidenceSaved && sbomSaved && workerCompleted) {
+    return {
+      level: 'High',
+      tone: 'ready',
+      title: 'Confidence: High',
+      summary: 'Both Lynis and Trivy completed. Evidence and SBOM were saved.',
+      chips: [
+        { label: 'Lynis completed', tone: 'ready' },
+        { label: 'Trivy completed', tone: 'ready' },
+        { label: 'Evidence saved', tone: 'ready' },
+        { label: 'SBOM saved', tone: 'ready' },
+      ],
+    };
+  }
+
+  const partialLabel = lynisState === 'review' || securityToolPartial(toolResults?.lynis)
+    ? 'Lynis did not finish every host-readiness check.'
+    : trivyState === 'review' || securityToolPartial(toolResults?.trivy)
+      ? 'Trivy completed with partial review data.'
+      : 'The latest check has partial quality signals.';
+
+  return {
+    level: 'Medium',
+    tone: 'review',
+    title: 'Confidence: Medium',
+    summary: `${partialLabel} ${evidenceSaved ? 'Available evidence was saved.' : 'Evidence is not complete yet.'} Recheck recommended.`,
+    chips: [
+      { label: lynisCompleted ? 'Lynis completed' : lynisState === 'review' ? 'Lynis partial' : 'Lynis pending', tone: lynisCompleted ? 'ready' : 'review' },
+      { label: trivyCompleted ? 'Trivy completed' : trivyState === 'review' ? 'Trivy partial' : 'Trivy pending', tone: trivyCompleted ? 'ready' : 'review' },
+      { label: evidenceSaved ? 'Evidence saved' : 'Evidence pending', tone: evidenceSaved ? 'ready' : 'review' },
+      { label: sbomSaved ? 'SBOM saved' : 'SBOM pending', tone: sbomSaved ? 'ready' : 'review' },
+      { label: 'Recheck recommended', tone: 'review' },
+    ],
+  };
+}
+
+function SecurityConfidenceCard({ confidence }) {
+  return (
+    <section className={`lite-security-confidence-card lite-security-confidence-${confidence.tone}`} aria-labelledby="security-confidence-title">
+      <div>
+        <span className="lite-security-confidence-eyebrow">Security confidence</span>
+        <h2 id="security-confidence-title">{confidence.title}</h2>
+        <p>{confidence.summary}</p>
+      </div>
+      <div className="lite-security-confidence-chips" aria-label="Security confidence reasons">
+        {confidence.chips.map((chip) => (
+          <span key={`${chip.label}-${chip.tone}`} className={`lite-security-confidence-chip lite-security-confidence-chip-${chip.tone}`}>
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SecurityProtectionReasonsCard() {
+  return (
+    <GlassCard className="lite-security-card lite-security-protection-card">
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon">
+          <Lock className="h-5 w-5" />
+        </div>
+        <span className="lite-security-soft-badge">Protected by design</span>
+      </div>
+      <h2>You are protected because...</h2>
+      <div className="lite-security-protection-list" role="list">
+        {SECURITY_PROTECTION_REASONS.map((reason) => (
+          <div key={reason} role="listitem">
+            <span aria-hidden="true">✓</span>
+            <p>{reason}</p>
+          </div>
+        ))}
+      </div>
+      <p className="lite-security-card-note">This does not mean every compromise is impossible. It means Pocket Lab keeps checks local, browser-safe, and evidence-based.</p>
+    </GlassCard>
+  );
+}
+
+function SecurityTrustBoundaryCard() {
+  return (
+    <GlassCard className="lite-security-card lite-security-boundary-card">
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon">
+          <Network className="h-5 w-5" />
+        </div>
+        <span className="lite-security-soft-badge">Trust boundary</span>
+      </div>
+      <h2>Browser to evidence path</h2>
+      <div className="lite-security-boundary-flow" aria-label="Browser to FastAPI to Worker to Lynis and Trivy to sanitized evidence">
+        {SECURITY_TRUST_BOUNDARY_STEPS.map((step, index) => (
+          <React.Fragment key={step.label}>
+            <div className="lite-security-boundary-node">
+              <strong>{step.label}</strong>
+              <span>{step.note}</span>
+            </div>
+            {index < SECURITY_TRUST_BOUNDARY_STEPS.length - 1 ? <span className="lite-security-boundary-arrow" aria-hidden="true">→</span> : null}
+          </React.Fragment>
+        ))}
+      </div>
+      <p>The browser only requests checks and displays summaries. Security tools run on the device through Pocket Lab.</p>
+    </GlassCard>
+  );
+}
+
+function CoverageCell({ covered, label }) {
+  return (
+    <span
+      className={`lite-security-coverage-mark ${covered ? 'lite-security-coverage-covered' : 'lite-security-coverage-not-covered'}`}
+      aria-label={`${label}: ${covered ? 'covered' : 'not covered by this check'}`}
+      title={`${label}: ${covered ? 'covered' : 'not covered by this check'}`}
+    >
+      {covered ? '✓' : '—'}
+    </span>
+  );
+}
+
+function SecurityCoverageMatrixCard({ expanded, onToggle }) {
+  return (
+    <GlassCard className="lite-security-card lite-security-coverage-card">
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon">
+          <LayoutGrid className="h-5 w-5" />
+        </div>
+        <span className="lite-security-soft-badge">Coverage</span>
+      </div>
+      <h2>Coverage: 7 protected areas</h2>
+      <p>Dependencies, secrets, config, runtime, and evidence are checked across Pocket Lab Lite components where the backend can safely inspect them.</p>
+      <button type="button" className="lite-security-coverage-toggle" onClick={onToggle} aria-expanded={expanded}>
+        {expanded ? 'Hide details' : 'Details'}
+      </button>
+      {expanded ? (
+        <div className="lite-security-coverage-scroll" role="region" aria-label="Security coverage matrix" tabIndex="0">
+          <table className="lite-security-coverage-table">
+            <caption>Coverage means Pocket Lab checks evidence and configuration paths it can safely inspect. It does not expose raw secrets.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Component</th>
+                <th scope="col">Dependencies</th>
+                <th scope="col">Secrets</th>
+                <th scope="col">Config</th>
+                <th scope="col">Runtime</th>
+                <th scope="col">Evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SECURITY_COVERAGE_ROWS.map((row) => (
+                <tr key={row.component}>
+                  <th scope="row">{row.component}</th>
+                  <td><CoverageCell covered={row.dependencies} label={`${row.component} dependencies`} /></td>
+                  <td><CoverageCell covered={row.secrets} label={`${row.component} secrets`} /></td>
+                  <td><CoverageCell covered={row.config} label={`${row.component} config`} /></td>
+                  <td><CoverageCell covered={row.runtime} label={`${row.component} runtime`} /></td>
+                  <td><CoverageCell covered={row.evidence} label={`${row.component} evidence`} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="lite-security-coverage-summary" aria-label="Coverage summary">
+          <span>Dependencies</span>
+          <span>Secrets</span>
+          <span>Config</span>
+          <span>Runtime</span>
+          <span>Evidence</span>
+        </div>
+      )}
+    </GlassCard>
+  );
+}
+
 export default function SecurityScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.security, []);
   const [result, setResult] = useState(null);
@@ -87,6 +356,7 @@ export default function SecurityScreen() {
   const [evidenceError, setEvidenceError] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [receiptCopied, setReceiptCopied] = useState(false);
+  const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [progressNow, setProgressNow] = useState(() => Date.now());
 
   const lastRun = data?.last_run || null;
@@ -104,15 +374,20 @@ export default function SecurityScreen() {
   ];
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const evidenceRun = evidence?.run || null;
-  const toolResults = evidenceRun?.tool_results || {};
+  const toolResults = evidenceRun?.tool_results || lastRun?.tool_results || data?.tool_results || {};
+  const currentEvidenceRefs = Array.from(new Set([
+    ...evidenceRefs,
+    ...(Array.isArray(evidence?.evidence_refs) ? evidence.evidence_refs : []),
+    ...(Array.isArray(evidenceRun?.evidence_refs) ? evidenceRun.evidence_refs : []),
+  ]));
   const protectedFileNames = new Set([
     ...reviewItems.map((item) => item?.file).filter(Boolean),
     ...evidenceFindings.map((item) => item?.file).filter(Boolean),
   ]);
   const protectedFileCount = protectedFileNames.size;
   const toolNames = Array.isArray(lastRun?.tools) && lastRun.tools.length ? lastRun.tools : ['lynis', 'trivy'];
-  const sbomSaved = evidenceRefs.some((ref) => String(ref).includes('sbom.cdx.json')) || Boolean(toolResults?.trivy?.sbom_saved);
-  const evidenceFileCount = evidenceRefs.length || (Array.isArray(evidence?.evidence_refs) ? evidence.evidence_refs.length : 0);
+  const sbomSaved = currentEvidenceRefs.some((ref) => String(ref).includes('sbom.cdx.json')) || Boolean(toolResults?.trivy?.sbom_saved || lastRun?.sbom_saved || data?.sbom_saved);
+  const evidenceFileCount = currentEvidenceRefs.length;
   const postureDashboard = [
     { label: 'Tools active', value: toolNames.length, detail: toolNames.join(' + ') },
     { label: 'Protected files', value: protectedFileCount || '—', detail: protectedFileCount ? 'with sanitized findings' : 'no file findings' },
@@ -153,7 +428,7 @@ export default function SecurityScreen() {
     scanProgress,
     evidenceRun,
     toolResults,
-    evidenceRefs,
+    evidenceRefs: currentEvidenceRefs,
     sbomSaved,
   });
   const executionResolved = executionSteps.length > 0 && executionSteps.every((step) => ['done', 'review', 'failed'].includes(step.state));
@@ -172,6 +447,16 @@ export default function SecurityScreen() {
     : lastRun?.completed_at
       ? `Completed ${formatLiteTime(lastRun.completed_at)}`
       : 'Ready for the next safety check';
+  const securityConfidence = useMemo(() => deriveSecurityConfidence({
+    lastRun,
+    runStatus,
+    executionSteps,
+    evidenceRefs: currentEvidenceRefs,
+    evidence,
+    toolResults,
+    sbomSaved,
+    reviewItems,
+  }), [lastRun, runStatus, executionSteps, currentEvidenceRefs, evidence, toolResults, sbomSaved, reviewItems]);
   const evidenceReceipt = evidence ? {
     run_id: evidenceRun?.run_id || lastRun?.run_id,
     status: evidenceRun?.status || data?.status || 'unknown',
@@ -180,7 +465,7 @@ export default function SecurityScreen() {
     completed_at: evidenceRun?.completed_at || lastRun?.completed_at,
     duration_seconds: evidenceRun?.duration_seconds || (typeof latestHistory !== 'undefined' ? latestHistory?.duration_seconds : undefined),
     tools: Object.keys(toolResults).length ? Object.keys(toolResults) : toolNames,
-    evidence_files: evidence.evidence_refs || evidenceRefs,
+    evidence_files: currentEvidenceRefs,
     sbom_saved: Boolean(toolResults?.trivy?.sbom_saved || sbomSaved),
     sanitized: true,
   } : null;
@@ -382,6 +667,7 @@ export default function SecurityScreen() {
             <span>{scanInProgress ? `${scanProgressPercent}% complete · ${scanProgressEta} remaining` : lastRun?.completed_at ? `Last check ${formatLiteTime(lastRun.completed_at)}` : 'Run a check to refresh posture'}</span>
             <span>{healthyComponents || componentPosture.length || 0} protected areas healthy</span>
           </div>
+          <SecurityConfidenceCard confidence={securityConfidence} />
         </div>
       </section>
 
@@ -396,6 +682,12 @@ export default function SecurityScreen() {
             </div>
           );
         })}
+      </section>
+
+      <section className="lite-security-trust-grid" aria-label="Security trust and coverage">
+        <SecurityProtectionReasonsCard />
+        <SecurityTrustBoundaryCard />
+        <SecurityCoverageMatrixCard expanded={coverageExpanded} onToggle={() => setCoverageExpanded((value) => !value)} />
       </section>
 
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}
@@ -706,7 +998,7 @@ export default function SecurityScreen() {
               ) : null}
 
               <div className="lite-security-evidence-files">
-                {(evidence.evidence_refs || evidenceRefs).slice(0, 6).map((ref) => (
+                {currentEvidenceRefs.slice(0, 6).map((ref) => (
                   <code key={ref}>{String(ref).split('/').slice(-1)[0]}</code>
                 ))}
               </div>

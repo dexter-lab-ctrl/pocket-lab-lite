@@ -7474,3 +7474,351 @@ textarea {
     align-items: flex-start;
   }
 }
+
+/* Lite Security confidence, trust boundary, and coverage additions */
+.theme-pocket-lite-daylight .lite-security-confidence-card {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.9rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  text-align: left;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-ready {
+  border-color: rgba(16, 185, 129, 0.24);
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.92), rgba(255, 255, 255, 0.82));
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-review {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.94), rgba(255, 255, 255, 0.82));
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-danger {
+  border-color: rgba(239, 68, 68, 0.24);
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.94), rgba(255, 255, 255, 0.82));
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-eyebrow {
+  display: block;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-card h2 {
+  margin-top: 0.15rem;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-card p {
+  margin: 0.35rem 0 0;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  padding: 0.36rem 0.55rem;
+  background: rgba(248, 250, 252, 0.86);
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-chip-ready {
+  border-color: rgba(16, 185, 129, 0.22);
+  background: rgba(236, 253, 245, 0.9);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-chip-review {
+  border-color: rgba(245, 158, 11, 0.26);
+  background: rgba(255, 251, 235, 0.92);
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-security-confidence-chip-danger {
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(254, 242, 242, 0.92);
+  color: #991b1b;
+}
+
+.theme-pocket-lite-daylight .lite-security-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-protection-card,
+.theme-pocket-lite-daylight .lite-security-boundary-card,
+.theme-pocket-lite-daylight .lite-security-coverage-card {
+  min-height: auto;
+  animation: lite-security-card-rise 520ms ease both;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-card {
+  grid-column: 1 / -1;
+}
+
+.theme-pocket-lite-daylight .lite-security-protection-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-protection-list > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.6rem;
+  padding: 0.72rem 0.8rem;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 0.95rem;
+  background: rgba(236, 253, 245, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-security-protection-list span {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-protection-list p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-security-card-note {
+  margin-top: 0.9rem !important;
+  color: #64748b !important;
+  font-size: 0.82rem !important;
+  font-weight: 760 !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-boundary-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-boundary-node {
+  display: grid;
+  align-content: center;
+  min-width: 7.2rem;
+  flex: 1 1 7.2rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 1rem;
+  background: rgba(240, 249, 255, 0.86);
+}
+
+.theme-pocket-lite-daylight .lite-security-boundary-node strong {
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-boundary-node span {
+  margin-top: 0.15rem;
+  color: #0369a1;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.theme-pocket-lite-daylight .lite-security-boundary-arrow {
+  display: inline-flex;
+  align-items: center;
+  color: #0f766e;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  min-height: 2.55rem;
+  border: 1px solid rgba(14, 165, 233, 0.22);
+  border-radius: 999px;
+  background: rgba(240, 249, 255, 0.9);
+  color: #075985;
+  padding: 0.6rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 950;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-toggle:hover,
+.theme-pocket-lite-daylight .lite-security-coverage-toggle:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(14, 165, 233, 0.36);
+  background: rgba(224, 242, 254, 0.95);
+  outline: none;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-summary span {
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  border-radius: 999px;
+  background: rgba(240, 253, 250, 0.82);
+  color: #0f766e;
+  padding: 0.4rem 0.62rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-scroll {
+  max-width: 100%;
+  margin-top: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-scroll:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.3);
+  outline-offset: 3px;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-table {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-table caption {
+  caption-side: bottom;
+  padding: 0.8rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-table th,
+.theme-pocket-lite-daylight .lite-security-coverage-table td {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 0.72rem;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-table th:first-child {
+  text-align: left;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-table thead th {
+  background: rgba(248, 250, 252, 0.92);
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-table tbody tr:last-child th,
+.theme-pocket-lite-daylight .lite-security-coverage-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-covered {
+  background: rgba(236, 253, 245, 0.95);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-not-covered {
+  background: rgba(241, 245, 249, 0.95);
+  color: #64748b;
+}
+
+@media (max-width: 900px) {
+  .theme-pocket-lite-daylight .lite-security-trust-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-boundary-flow {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-boundary-arrow {
+    justify-content: center;
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-security-confidence-card {
+    padding: 0.82rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-coverage-table {
+    min-width: 42rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-security-coverage-toggle,
+  .theme-pocket-lite-daylight .lite-security-boundary-arrow {
+    transition: none !important;
+  }
+}
