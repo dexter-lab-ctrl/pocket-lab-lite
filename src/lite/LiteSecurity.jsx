@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -623,6 +623,146 @@ function SecurityHealthBanner({ banner }) {
   );
 }
 
+
+function safeSecurityText(value, fallback = 'Not available') {
+  const text = String(value || '').trim();
+  if (!text) return fallback;
+  return text.replace(/(token|password|secret|api[_-]?key|authorization|private[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[hidden]');
+}
+
+function findingTitle(finding = {}) {
+  const rawTitle = finding?.title || finding?.summary || finding?.name;
+  if (rawTitle) return safeSecurityText(rawTitle, 'Security review item');
+  const category = String(finding?.category || '').toLowerCase();
+  if (category === 'protected_runtime_secret') return 'Protected backend runtime secret';
+  if (category === 'missing_tool') return 'Security tool missing';
+  if (category === 'dependency_vulnerability') return 'Dependency vulnerability';
+  if (category === 'secret_exposure') return 'Secret-like value found';
+  if (category === 'misconfiguration') return 'Configuration review';
+  if (category === 'host_hardening') return isSecurityTimeoutFinding(finding) ? 'Host readiness check timed out' : 'Host readiness review';
+  return 'Security review item';
+}
+
+function normalizeSecuritySeverityLabel(value) {
+  const severity = String(value || 'unknown').toLowerCase();
+  if (severity === 'critical') return 'Critical';
+  if (severity === 'high') return 'High';
+  if (severity === 'medium') return 'Medium';
+  if (severity === 'low') return 'Low';
+  if (severity === 'info' || severity === 'informational') return 'Info';
+  if (severity === 'review') return 'Review';
+  return 'Unknown';
+}
+
+function deriveFindingSource(finding = {}) {
+  const raw = `${finding?.source || ''} ${finding?.tool || ''} ${finding?.scanner || ''} ${finding?.category || ''} ${finding?.evidence_ref || ''}`.toLowerCase();
+  if (raw.includes('lynis') || raw.includes('host_hardening')) return 'Lynis';
+  if (raw.includes('trivy') || raw.includes('dependency_vulnerability') || raw.includes('misconfiguration') || raw.includes('secret_exposure') || raw.includes('protected_runtime_secret')) return 'Trivy';
+  if (raw.includes('pocket lab') || raw.includes('pocketlab') || raw.includes('review')) return 'Pocket Lab';
+  return 'Unknown';
+}
+
+function safeFindingComponentLabel(finding = {}) {
+  const category = String(finding?.category || '').toLowerCase();
+  if (category === 'protected_runtime_secret') return 'Backend runtime file';
+  if (category === 'dependency_vulnerability') return safeSecurityText(finding?.component || finding?.package || finding?.target || 'Local dependency', 'Local dependency');
+  if (category === 'host_hardening') return 'Host readiness';
+  if (category === 'misconfiguration') return safeSecurityText(finding?.resource || finding?.target || finding?.component || 'Configuration', 'Configuration');
+  if (category === 'secret_exposure') return 'Scanned path';
+  if (category === 'missing_tool') return safeSecurityText(finding?.tool || finding?.source || 'Security tool', 'Security tool');
+
+  const raw = finding?.component || finding?.package || finding?.target || finding?.file || finding?.path || finding?.location || finding?.relative_path || finding?.resource;
+  const text = String(raw || '').trim();
+  if (!text) return 'Pocket Lab runtime';
+  if (/(token|password|secret|api[_-]?key|authorization|private[_-]?key)/i.test(text)) return 'Pocket Lab runtime';
+  if (text.length > 96) return 'Evidence item';
+  return safeSecurityText(text, 'Pocket Lab runtime');
+}
+
+function evidenceReferenceLabel(finding = {}, evidenceRefs = [], lastRun = null) {
+  const candidates = [
+    finding?.evidence_ref,
+    finding?.evidence,
+    finding?.evidence_file,
+    finding?.evidence_path,
+    ...(Array.isArray(finding?.evidence_refs) ? finding.evidence_refs : []),
+  ].filter(Boolean);
+  const category = String(finding?.category || '').toLowerCase();
+  const refs = Array.isArray(evidenceRefs) ? evidenceRefs : [];
+  if (!candidates.length) {
+    if (category === 'host_hardening') candidates.push(refs.find((ref) => String(ref).toLowerCase().includes('lynis')) || 'lynis-normalized.json');
+    if (['dependency_vulnerability', 'misconfiguration', 'secret_exposure', 'protected_runtime_secret', 'missing_tool'].includes(category)) {
+      candidates.push(refs.find((ref) => String(ref).toLowerCase().includes('trivy')) || 'trivy-normalized.json');
+    }
+    if (!candidates.length && refs.length) candidates.push(refs[0]);
+    if (!candidates.length && lastRun?.run_id) candidates.push(`security/evidence/${shortRunId(lastRun.run_id)}/summary.json`);
+  }
+  const ref = String(candidates[0] || '').trim();
+  if (!ref) return 'Saved evidence not available for this item.';
+  const safeRef = ref.replace(/(token|password|secret|api[_-]?key|authorization|private[_-]?key)[^/\s]*/gi, '$1-hidden');
+  return safeSecurityText(safeRef.split('/').slice(-2).join('/'), 'Saved evidence not available for this item.');
+}
+
+function SecurityFindingDetailModal({ finding, context, onClose, onOpenEvidence }) {
+  if (!finding) return null;
+  const remediation = buildSecurityRemediation(finding, context);
+  const action = remediation.action || classifyFindingAction(finding, context);
+  const title = findingTitle(finding);
+  const severity = normalizeSecuritySeverityLabel(finding?.severity || action?.label || 'review');
+  const source = deriveFindingSource(finding);
+  const component = safeFindingComponentLabel(finding);
+  const evidenceRef = evidenceReferenceLabel(finding, context?.evidenceRefs || [], context?.lastRun);
+  const descriptionId = 'lite-security-finding-detail-description';
+  const titleId = 'lite-security-finding-detail-title';
+
+  return (
+    <div className="lite-finding-detail-backdrop" role="presentation" onClick={onClose}>
+      <section className="lite-finding-detail-modal" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} onClick={(event) => event.stopPropagation()}>
+        <div className="lite-finding-detail-header">
+          <div>
+            <span className="lite-security-soft-badge">Finding title</span>
+            <h2 id={titleId}>{title}</h2>
+          </div>
+          <button type="button" className="lite-finding-detail-close" onClick={onClose} aria-label="Close finding details">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="lite-finding-detail-meta" id={descriptionId}>
+          <span className={`lite-finding-detail-chip lite-security-action-${action.tone || 'neutral'}`}>Severity: {severity}</span>
+          <span className="lite-finding-detail-chip">Source: {source}</span>
+          <span className={`lite-finding-detail-chip lite-security-action-${action.tone || 'neutral'}`}>Status: {action.label || 'Review recommended'}</span>
+        </div>
+
+        <div className="lite-finding-detail-section">
+          <h3>Affected component</h3>
+          <p>{component}</p>
+        </div>
+
+        <div className="lite-finding-detail-section">
+          <h3>Recommendation</h3>
+          <p>{remediation.recommended}</p>
+        </div>
+
+        <div className="lite-finding-detail-section lite-finding-detail-evidence">
+          <h3>Evidence reference</h3>
+          <p>{evidenceRef}</p>
+        </div>
+
+        <div className="lite-finding-detail-section">
+          <h3>What should I do?</h3>
+          <p>{remediation.happened} {remediation.means} {remediation.risk}</p>
+        </div>
+
+        <div className="lite-finding-detail-actions">
+          <LiteButton tone="secondary" onClick={onOpenEvidence}>View Evidence Receipt</LiteButton>
+          <button type="button" className="lite-finding-detail-trigger" onClick={onClose}>Close</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function SecurityRemediationDrawer({ finding, context, onClose }) {
   if (!finding) return null;
   const remediation = buildSecurityRemediation(finding, context);
@@ -1008,6 +1148,8 @@ export default function SecurityScreen() {
   const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [progressNow, setProgressNow] = useState(() => Date.now());
   const [remediationFinding, setRemediationFinding] = useState(null);
+  const [selectedFinding, setSelectedFinding] = useState(null);
+  const findingDetailTriggerRef = useRef(null);
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -1198,6 +1340,17 @@ export default function SecurityScreen() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [remediationFinding]);
 
+  React.useEffect(() => {
+    if (!selectedFinding) return undefined;
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        closeFindingDetails();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedFinding]);
+
   function scheduleSecurityRefresh() {
     refresh();
     [700, 1800, 4000].forEach((delay) => window.setTimeout(() => refresh(), delay));
@@ -1269,6 +1422,22 @@ export default function SecurityScreen() {
 
   function closeRemediation() {
     setRemediationFinding(null);
+  }
+
+  function openFindingDetails(finding, event) {
+    triggerHapticFeedback(6);
+    findingDetailTriggerRef.current = event?.currentTarget || null;
+    setSelectedFinding(finding);
+  }
+
+  function closeFindingDetails() {
+    setSelectedFinding(null);
+    window.setTimeout(() => findingDetailTriggerRef.current?.focus?.(), 0);
+  }
+
+  function openEvidenceFromFindingDetails() {
+    closeFindingDetails();
+    showEvidence();
   }
 
   return (
@@ -1561,7 +1730,10 @@ export default function SecurityScreen() {
                       <SecurityActionIndicator action={action} />
                     </div>
                     <p>{issue.recommendation || 'Review this item and apply the recommended fix.'}</p>
-                    <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(issue)}>What should I do?</button>
+                    <div className="lite-security-finding-actions">
+                      <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(issue, event)}>View details</button>
+                      <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(issue)}>What should I do?</button>
+                    </div>
                   </div>
                 );
               })}
@@ -1583,7 +1755,10 @@ export default function SecurityScreen() {
                         <SecurityActionIndicator action={action} />
                       </div>
                       <p>{item.recommendation || item.summary || 'Review this item and keep the workspace protected.'}</p>
-                      <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
+                      <div className="lite-security-finding-actions">
+                        <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
+                        <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
+                      </div>
                     </div>
                   </div>
                 );
