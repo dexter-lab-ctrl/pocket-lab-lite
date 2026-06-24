@@ -348,3 +348,111 @@ def test_security_history_and_delta_compare_previous_run():
     assert state["finding_delta"]["new"][0]["id"] == "new-risk"
     assert state["finding_delta"]["resolved"][0]["id"] == "resolved-risk"
 
+
+
+def test_security_execution_timeline_tracks_real_step_progress():
+    from api_fastapi.services import lite_security
+
+    queued = lite_security.record_queued_run({"command_id": "security-timeline", "run_id": "security-timeline"})
+    queued_steps = {item["key"]: item["status"] for item in queued["execution_timeline"]}
+    assert queued_steps["request_accepted"] == "completed"
+    assert queued_steps["worker_picked_up"] == "pending"
+    assert queued_steps["lynis_host_check"] == "pending"
+
+    running = lite_security.mark_running({"command_id": "security-timeline", "run_id": "security-timeline"})
+    running_steps = {item["key"]: item["status"] for item in running["execution_timeline"]}
+    assert running_steps["request_accepted"] == "completed"
+    assert running_steps["worker_picked_up"] == "completed"
+    assert running_steps["lynis_host_check"] == "running"
+    assert running_steps["trivy_dependency_secret_check"] == "pending"
+    assert running_steps["evidence_saved"] == "pending"
+
+
+def test_security_execution_timeline_marks_steps_truthfully_on_completion(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _write_fake_tool(
+        bin_dir / "lynis",
+        """
+import sys
+print('Lynis quick scan completed')
+raise SystemExit(0)
+""",
+    )
+    _write_fake_tool(
+        bin_dir / "trivy",
+        """
+import json
+import pathlib
+import sys
+args = sys.argv[1:]
+if '--format' in args and args[args.index('--format') + 1] == 'cyclonedx':
+    out = pathlib.Path(args[args.index('--output') + 1])
+    out.write_text(json.dumps({'bomFormat': 'CycloneDX', 'components': []}), encoding='utf-8')
+    raise SystemExit(0)
+print(json.dumps({'Results': []}))
+raise SystemExit(0)
+""",
+    )
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}")
+
+    from api_fastapi.services import lite_security
+
+    result = lite_security.run_security_scan({"command_id": "security-timeline-final", "run_id": "security-timeline-final"})
+    steps = {item["key"]: item["status"] for item in result["state"]["execution_timeline"]}
+    assert steps["request_accepted"] == "completed"
+    assert steps["worker_picked_up"] == "completed"
+    assert steps["lynis_host_check"] == "completed"
+    assert steps["trivy_dependency_secret_check"] == "completed"
+    assert steps["evidence_saved"] == "completed"
+
+
+def test_security_progress_percent_follows_execution_timeline():
+    from api_fastapi.services import lite_security
+
+    run = {
+        "run_id": "security-progress-timeline",
+        "status": "running",
+        "tools": ["lynis", "trivy"],
+        "started_at": "2026-01-01T00:00:00Z",
+        "completed_at": None,
+        "partial_results": False,
+        "execution_timeline": [
+            {"key": "request_accepted", "title": "Request accepted", "detail": "Accepted.", "status": "completed"},
+            {"key": "worker_picked_up", "title": "Worker picked it up", "detail": "Started.", "status": "completed"},
+            {"key": "lynis_host_check", "title": "Lynis host check", "detail": "Running.", "status": "running"},
+            {"key": "trivy_dependency_secret_check", "title": "Trivy dependency & secret check", "detail": "Pending.", "status": "pending"},
+            {"key": "evidence_saved", "title": "Evidence saved", "detail": "Pending.", "status": "pending"},
+        ],
+    }
+
+    progress = lite_security.scan_progress_for_run(run)
+    assert progress["percent"] == 50
+    assert progress["step"] == 3
+    assert progress["steps_total"] == 5
+    assert progress["stage"] == "Lynis host check"
+
+
+def test_security_progress_percent_reaches_100_when_timeline_terminal():
+    from api_fastapi.services import lite_security
+
+    run = {
+        "run_id": "security-progress-terminal",
+        "status": "degraded",
+        "tools": ["lynis", "trivy"],
+        "started_at": "2026-01-01T00:00:00Z",
+        "completed_at": "2026-01-01T00:03:00Z",
+        "partial_results": True,
+        "execution_timeline": [
+            {"key": "request_accepted", "title": "Request accepted", "detail": "Accepted.", "status": "completed"},
+            {"key": "worker_picked_up", "title": "Worker picked it up", "detail": "Started.", "status": "completed"},
+            {"key": "lynis_host_check", "title": "Lynis host check", "detail": "Partial.", "status": "review"},
+            {"key": "trivy_dependency_secret_check", "title": "Trivy dependency & secret check", "detail": "Completed.", "status": "completed"},
+            {"key": "evidence_saved", "title": "Evidence saved", "detail": "Saved.", "status": "completed"},
+        ],
+    }
+
+    progress = lite_security.scan_progress_for_run(run)
+    assert progress["percent"] == 100
+    assert progress["step"] == 5
+    assert progress["steps_total"] == 5

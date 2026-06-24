@@ -97,7 +97,10 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
         "medium_count": 0,
         "low_count": 0,
         "info_count": 0,
+        "tool_results": {},
+        "execution_timeline": [],
     }
+    run["execution_timeline"] = execution_timeline_for_phase(run, "queued")
     evidence.write_run(run_id, run)
     state = build_state(run, [], [], status_override="queued")
     evidence.write_state(state)
@@ -107,12 +110,13 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
 def mark_running(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(command.get("run_id") or command.get("command_id") or new_run_id())
     now = deps.now_utc_iso()
+    existing = evidence.read_run(run_id) or {}
     run = {
         "run_id": run_id,
         "status": "running",
         "summary": "Safety check running.",
         "tools": ["lynis", "trivy"],
-        "requested_at": command.get("requested_at"),
+        "requested_at": command.get("requested_at") or existing.get("requested_at") or now,
         "started_at": now,
         "completed_at": None,
         "partial_results": False,
@@ -121,7 +125,10 @@ def mark_running(command: dict[str, Any]) -> dict[str, Any]:
         "medium_count": 0,
         "low_count": 0,
         "info_count": 0,
+        "tool_results": {},
+        "execution_timeline": [],
     }
+    run["execution_timeline"] = execution_timeline_for_phase(run, "lynis_running")
     evidence.write_run(run_id, run)
     evidence.write_state(build_state(run, [], [], status_override="running"))
     return run
@@ -432,12 +439,21 @@ def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
         stage = "Preparing safety check"
         step = 1
 
+    timeline_progress = execution_timeline_progress(run.get("execution_timeline") or [], status)
+    if timeline_progress:
+        percent = timeline_progress["percent"]
+        step = timeline_progress["step"]
+        steps_total = timeline_progress["steps_total"]
+        stage = timeline_progress["stage"]
+    else:
+        steps_total = 3
+
     return policy.redact_value(
         {
             "status": status,
             "stage": stage,
             "step": step,
-            "steps_total": 3,
+            "steps_total": steps_total,
             "started_at": started_at,
             "elapsed_seconds": elapsed,
             "estimated_total_seconds": estimated_total,
@@ -606,6 +622,163 @@ def finding_delta_for_run(current_run: dict[str, Any] | None, current_findings: 
     )
 
 
+def _timeline_step(key: str, title: str, detail: str, status: str) -> dict[str, Any]:
+    return {
+        "key": key,
+        "title": title,
+        "detail": detail,
+        "status": status,
+    }
+
+
+def execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[dict[str, Any]]:
+    tool_results = run.get("tool_results") or {}
+    lynis_status = str((tool_results.get("lynis") or {}).get("status") or "").lower()
+    trivy_status = str((tool_results.get("trivy") or {}).get("status") or "").lower()
+
+    def tool_state(status: str) -> str:
+        if status == "completed":
+            return "completed"
+        if status in {"timed_out", "missing_tool", "partial"}:
+            return "review"
+        if status in {"failed", "error"}:
+            return "failed"
+        return "pending"
+
+    request_status = "completed" if phase in {
+        "queued", "lynis_running", "trivy_running", "evidence_saving",
+        "completed", "degraded", "failed"
+    } else "pending"
+
+    worker_status = "completed" if phase in {
+        "lynis_running", "trivy_running", "evidence_saving",
+        "completed", "degraded", "failed"
+    } else "pending"
+
+    if phase == "lynis_running":
+        lynis_step_status = "running"
+    elif phase in {"trivy_running", "evidence_saving", "completed", "degraded", "failed"}:
+        lynis_step_status = tool_state(lynis_status or "completed")
+    else:
+        lynis_step_status = "pending"
+
+    if phase == "trivy_running":
+        trivy_step_status = "running"
+    elif phase in {"evidence_saving", "completed", "degraded", "failed"}:
+        trivy_step_status = tool_state(trivy_status or "completed")
+    else:
+        trivy_step_status = "pending"
+
+    if phase == "evidence_saving":
+        evidence_status = "running"
+    elif phase in {"completed", "degraded", "failed"}:
+        evidence_status = "completed"
+    else:
+        evidence_status = "pending"
+
+    lynis_detail = "Checks host readiness."
+    if lynis_status == "completed":
+        lynis_detail = "Host readiness checks completed."
+    elif lynis_status == "timed_out":
+        lynis_detail = "Host readiness partially checked."
+    elif lynis_status == "missing_tool":
+        lynis_detail = "Lynis is not available on this device."
+    elif phase == "lynis_running":
+        lynis_detail = "Host readiness is being checked."
+
+    trivy_detail = "Checks dependencies, config, secret-like values, and SBOM evidence."
+    if trivy_status == "completed":
+        trivy_detail = "Dependency, config, secret-like, and SBOM checks completed."
+    elif trivy_status == "partial":
+        trivy_detail = "Trivy completed with partial results."
+    elif trivy_status == "missing_tool":
+        trivy_detail = "Trivy is not available on this device."
+    elif phase == "trivy_running":
+        trivy_detail = "Dependency, config, secret-like values, and SBOM are being checked."
+
+    evidence_count = len(run.get("evidence_refs") or [])
+    evidence_detail = "Sanitized evidence appears after completion."
+    if phase == "evidence_saving":
+        evidence_detail = "Sanitized evidence is being finalized."
+    elif phase in {"completed", "degraded", "failed"}:
+        evidence_detail = f"{evidence_count} sanitized file(s) ready." if evidence_count else "Sanitized evidence was finalized."
+
+    return [
+        _timeline_step("request_accepted", "Request accepted", "FastAPI accepted the safety request.", request_status),
+        _timeline_step("worker_picked_up", "Worker picked it up", "The backend worker started the check.", worker_status),
+        _timeline_step("lynis_host_check", "Lynis host check", lynis_detail, lynis_step_status),
+        _timeline_step("trivy_dependency_secret_check", "Trivy dependency & secret check", trivy_detail, trivy_step_status),
+        _timeline_step("evidence_saved", "Evidence saved", evidence_detail, evidence_status),
+    ]
+
+
+def execution_timeline_progress(timeline: list[dict[str, Any]], run_status: str) -> dict[str, Any] | None:
+    if not isinstance(timeline, list) or not timeline:
+        return None
+
+    total = max(1, len(timeline))
+    completed_states = {"completed", "review", "failed"}
+    units = 0.0
+    active_index: int | None = None
+    pending_index: int | None = None
+
+    for index, step in enumerate(timeline):
+        status = str((step or {}).get("status") or "").lower()
+        if status in completed_states:
+            units += 1.0
+        elif status == "running":
+            units += 0.5
+            if active_index is None:
+                active_index = index
+        elif pending_index is None:
+            pending_index = index
+
+    status = str(run_status or "").lower()
+    all_terminal_steps = all(str((step or {}).get("status") or "").lower() in completed_states for step in timeline)
+
+    if status in {"succeeded", "degraded", "failed"} and all_terminal_steps:
+        percent = 100
+    else:
+        percent = int(round((units / total) * 100))
+        if status in {"queued", "running"}:
+            percent = max(5, min(95, percent))
+        else:
+            percent = max(0, min(100, percent))
+
+    current_index = active_index
+    if current_index is None:
+        current_index = pending_index
+    if current_index is None:
+        current_index = total - 1
+
+    current = timeline[current_index] if current_index < len(timeline) else {}
+    stage = str(current.get("title") or "Security check progress")
+
+    return {
+        "percent": percent,
+        "step": current_index + 1,
+        "steps_total": total,
+        "stage": stage,
+    }
+
+
+def _write_intermediate_running_state(
+    run: dict[str, Any],
+    findings: list[dict[str, Any]],
+    evidence_refs: list[str],
+) -> None:
+    evidence.write_run(str(run["run_id"]), run)
+    evidence.write_state(
+        build_state(
+            run,
+            findings,
+            evidence_refs,
+            status_override="running",
+            summary_override="Safety check running.",
+        )
+    )
+
+
 def count_findings(findings: list[dict[str, Any]]) -> dict[str, int]:
     counts = {severity: 0 for severity in policy.SEVERITIES}
     for finding in findings:
@@ -683,6 +856,14 @@ def build_state(
             "evidence_refs": evidence_refs,
             "history": security_history(current_run=run, current_findings=findings, current_evidence_refs=evidence_refs),
             "finding_delta": finding_delta_for_run(run, findings),
+            "execution_timeline": run.get("execution_timeline") or execution_timeline_for_phase(
+                run,
+                "completed" if str(run.get("status") or "").lower() == "succeeded"
+                else "degraded" if str(run.get("status") or "").lower() == "degraded"
+                else "failed" if str(run.get("status") or "").lower() == "failed"
+                else "lynis_running" if str(run.get("status") or "").lower() == "running"
+                else "queued"
+            ),
             "scan_progress": scan_progress_for_run(run),
             "updated_at": deps.now_utc_iso(),
         }
@@ -739,6 +920,9 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "finding_count": len(normalized),
         }
     evidence_refs.append(evidence.write_evidence(run_id, "lynis-normalized.json", {"tool": "lynis", "findings": [f for f in findings if f.get("source") == "lynis"]}))
+    run["tool_results"] = tool_results
+    run["execution_timeline"] = execution_timeline_for_phase(run, "trivy_running")
+    _write_intermediate_running_state(run, findings, evidence_refs)
 
     if time.monotonic() - started > policy.TIMEOUTS["overall"]:
         partial = True
@@ -779,6 +963,9 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             }
 
     evidence_refs.append(evidence.write_evidence(run_id, "trivy-normalized.json", {"tool": "trivy", "findings": [f for f in findings if f.get("source") == "trivy"]}))
+    run["tool_results"] = tool_results
+    run["execution_timeline"] = execution_timeline_for_phase(run, "evidence_saving")
+    _write_intermediate_running_state(run, findings, evidence_refs)
 
     counts = count_findings(findings)
     final_status = "degraded" if partial else "succeeded"
@@ -797,6 +984,7 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "evidence_refs": evidence_refs,
         }
     )
+    run["execution_timeline"] = execution_timeline_for_phase(run, "degraded" if partial else "completed")
     state = build_state(
         run,
         findings,
