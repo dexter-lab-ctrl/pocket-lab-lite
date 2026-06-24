@@ -1547,9 +1547,9 @@ export default function SecurityScreen() {
       <SecurityHealthBanner banner={healthBanner} />
 
       <section className="lite-security-insight-grid" aria-label="Security evidence and posture summaries">
-        <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} collapsed={securityCardCollapsed('latestEvidence')} onToggle={() => toggleSecurityCard('latestEvidence')} />
-        <SecurityLastKnownGoodCard marker={lastKnownGood} collapsed={securityCardCollapsed('lastKnownGood')} onToggle={() => toggleSecurityCard('lastKnownGood')} />
-        <SecurityPostureComparisonCard comparison={postureComparison} collapsed={securityCardCollapsed('postureComparison')} onToggle={() => toggleSecurityCard('postureComparison')} />
+        <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} collapsed={isSecurityCardCollapsed('latestEvidence')} onToggle={() => toggleSecurityCard('latestEvidence')} />
+        <SecurityLastKnownGoodCard marker={lastKnownGood} collapsed={isSecurityCardCollapsed('lastKnownGood')} onToggle={() => toggleSecurityCard('lastKnownGood')} />
+        <SecurityPostureComparisonCard comparison={postureComparison} collapsed={isSecurityCardCollapsed('postureComparison')} onToggle={() => toggleSecurityCard('postureComparison')} />
       </section>
 
       {(evidence || evidenceError || evidenceLoading) ? (
@@ -1661,7 +1661,7 @@ export default function SecurityScreen() {
         />
       ) : null}
 
-      <GlassCard className={`lite-security-card lite-security-execution-card ${executionTimelineLive ? 'lite-security-execution-card-live' : ''} ${securityCardCollapsed('executionTimeline') ? 'lite-security-card-collapsed' : ''}`}>
+      <GlassCard className={`lite-security-card lite-security-execution-card ${executionTimelineLive ? 'lite-security-execution-card-live' : ''} ${isSecurityCardCollapsed('executionTimeline') ? 'lite-security-card-collapsed' : ''}`}>
         <div className="lite-security-card-head lite-security-card-head-collapsible">
           <div className="lite-security-icon">
             <Activity className="h-5 w-5" />
@@ -1670,9 +1670,9 @@ export default function SecurityScreen() {
           <span className={`lite-security-live-chip ${executionTimelineLive ? 'lite-security-live-chip-active' : ''}`}>
             {executionTimelineLive ? 'Live' : 'Last run'}
           </span>
-          <SecurityCollapseToggle label="Execution timeline" collapsed={securityCardCollapsed('executionTimeline')} onToggle={() => toggleSecurityCard('executionTimeline')} controls="lite-security-execution-timeline-body" />
+          <SecurityCollapseToggle label="Execution timeline" collapsed={isSecurityCardCollapsed('executionTimeline')} onToggle={() => toggleSecurityCard('executionTimeline')} controls="lite-security-execution-timeline-body" />
         </div>
-        <div id="lite-security-execution-timeline-body" className="lite-security-collapsible-body" hidden={securityCardCollapsed('executionTimeline')}>
+        <div id="lite-security-execution-timeline-body" className="lite-security-collapsible-body" hidden={isSecurityCardCollapsed('executionTimeline')}>
         <h2>Per-tool check path</h2>
         <p>Security checks move through FastAPI, the backend worker, Lynis, Trivy, and sanitized evidence.</p>
         <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgressAligned} aria-label="Security execution progress">
@@ -1705,19 +1705,19 @@ export default function SecurityScreen() {
         </div>
       </GlassCard>
 
-      <SecurityScanQualityCard quality={scanQuality} collapsed={securityCardCollapsed('scanQuality')} onToggle={() => toggleSecurityCard('scanQuality')} />
+      <SecurityScanQualityCard quality={scanQuality} collapsed={isSecurityCardCollapsed('scanQuality')} onToggle={() => toggleSecurityCard('scanQuality')} />
 
       {(securityHistory.length || findingDelta.summary) ? (
         <section className="lite-security-history-grid" aria-label="Security history and change summary">
-          <GlassCard className={`lite-security-card lite-security-history-card ${securityCardCollapsed('securityHistory') ? 'lite-security-card-collapsed' : ''}`}>
+          <GlassCard className={`lite-security-card lite-security-history-card ${isSecurityCardCollapsed('securityHistory') ? 'lite-security-card-collapsed' : ''}`}>
             <div className="lite-security-card-head lite-security-card-head-collapsible">
               <div className="lite-security-icon">
                 <Activity className="h-5 w-5" />
               </div>
               <span className="lite-security-soft-badge">Security history</span>
-              <SecurityCollapseToggle label="Security history" collapsed={securityCardCollapsed('securityHistory')} onToggle={() => toggleSecurityCard('securityHistory')} controls="lite-security-history-body" />
+              <SecurityCollapseToggle label="Security history" collapsed={isSecurityCardCollapsed('securityHistory')} onToggle={() => toggleSecurityCard('securityHistory')} controls="lite-security-history-body" />
             </div>
-            <div id="lite-security-history-body" className="lite-security-collapsible-body" hidden={securityCardCollapsed('securityHistory')}>
+            <div id="lite-security-history-body" className="lite-security-collapsible-body" hidden={isSecurityCardCollapsed('securityHistory')}>
             <h2>Trend timeline</h2>
             <p>Recent checks show whether the safety score is improving, stable, or needs attention.</p>
             <div className="lite-security-trend-summary">
@@ -1898,16 +1898,16 @@ export default function SecurityScreen() {
           )}
         </GlassCard>
 
-        <GlassCard className={`lite-security-card lite-security-dashboard-card ${securityCardCollapsed('protectionDashboard') ? 'lite-security-card-collapsed' : ''}`}>
+        <GlassCard className={`lite-security-card lite-security-dashboard-card ${isSecurityCardCollapsed('protectionDashboard') ? 'lite-security-card-collapsed' : ''}`}>
           <div className="lite-security-card-head lite-security-card-head-collapsible">
             <div className="lite-security-icon">
               <FileCheck className="h-5 w-5" />
             </div>
             <span className="lite-security-soft-badge">Protection dashboard</span>
-            <SecurityCollapseToggle label="Protection dashboard" collapsed={securityCardCollapsed('protectionDashboard')} onToggle={() => toggleSecurityCard('protectionDashboard')} controls="lite-security-protection-dashboard-body" />
+            <SecurityCollapseToggle label="Protection dashboard" collapsed={isSecurityCardCollapsed('protectionDashboard')} onToggle={() => toggleSecurityCard('protectionDashboard')} controls="lite-security-protection-dashboard-body" />
           </div>
 
-          <div id="lite-security-protection-dashboard-body" className="lite-security-collapsible-body" hidden={securityCardCollapsed('protectionDashboard')}>
+          <div id="lite-security-protection-dashboard-body" className="lite-security-collapsible-body" hidden={isSecurityCardCollapsed('protectionDashboard')}>
           <h2>Local protection summary</h2>
           <p>
             Lynis checks host readiness. Trivy checks dependency, config, secret-like findings, and saves SBOM evidence.
