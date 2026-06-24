@@ -453,23 +453,90 @@ function securityToolStatusLabel(toolResult = {}) {
   return 'Pending';
 }
 
-function securityExecutionTimeline({ executionTimeline, runStatus, scanProgress, evidenceRun, toolResults, evidenceRefs, sbomSaved }) {
-  if (Array.isArray(executionTimeline) && executionTimeline.length) {
-    return executionTimeline.map((step) => ({
-      key: step.key,
-      title: step.title,
-      detail: step.detail,
-      state:
-        step.status === 'completed'
-          ? 'done'
-          : step.status === 'running'
-            ? 'active'
-            : step.status === 'review'
-              ? 'review'
-              : step.status === 'failed'
-                ? 'failed'
-                : 'waiting',
-    }));
+function securityExecutionStateFromBackend(status) {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'completed' || normalized === 'succeeded') return 'done';
+  if (normalized === 'running' || normalized === 'in_progress') return 'active';
+  if (normalized === 'review' || normalized === 'partial' || normalized === 'timed_out' || normalized === 'missing_tool' || normalized === 'degraded') return 'review';
+  if (normalized === 'failed' || normalized === 'error') return 'failed';
+  return 'waiting';
+}
+
+function securityExecutionStepLabel(state) {
+  if (state === 'done') return 'Completed';
+  if (state === 'active') return 'Running';
+  if (state === 'review') return 'Needs review';
+  if (state === 'failed') return 'Failed';
+  return 'Waiting';
+}
+
+function normalizeSecurityExecutionSteps(steps = []) {
+  const normalized = steps.map((step) => ({ ...step }));
+  const terminalStates = ['done', 'review', 'failed'];
+
+  let activeIndex = normalized.findIndex((step) => step.state === 'active');
+  let lastResolvedIndex = -1;
+
+  normalized.forEach((step, index) => {
+    if (terminalStates.includes(step.state)) {
+      lastResolvedIndex = index;
+    }
+  });
+
+  if (activeIndex >= 0) {
+    normalized.forEach((step, index) => {
+      if (index < activeIndex && (step.state === 'waiting' || step.state === 'active')) {
+        step.state = 'done';
+      }
+      if (index > activeIndex && step.state === 'active') {
+        step.state = 'waiting';
+      }
+    });
+  }
+
+  if (lastResolvedIndex >= 0) {
+    normalized.forEach((step, index) => {
+      if (index < lastResolvedIndex && step.state === 'waiting') {
+        step.state = 'done';
+      }
+    });
+  }
+
+  const allTerminal = normalized.length > 0 && normalized.every((step) => terminalStates.includes(step.state));
+  if (allTerminal) {
+    normalized.forEach((step) => {
+      if (step.state === 'waiting' || step.state === 'active') {
+        step.state = 'done';
+      }
+    });
+  }
+
+  return normalized;
+}
+
+function securityExecutionTimeline({ executionTimeline, currentRunId, runStatus, scanProgress, evidenceRun, toolResults, evidenceRefs, sbomSaved }) {
+  const backendTimeline = Array.isArray(executionTimeline) ? executionTimeline : [];
+
+  if (backendTimeline.length) {
+    const keyTitleMap = {
+      request_accepted: 'Request accepted',
+      worker_picked_up: 'Worker picked it up',
+      lynis_host_check: 'Lynis host check',
+      trivy_dependency_secret_check: 'Trivy dependency & secret check',
+      evidence_saved: 'Evidence saved',
+    };
+
+    const normalizedBackendSteps = backendTimeline.map((step, index) => {
+      const key = String(step?.key || `step_${index + 1}`);
+      return {
+        key,
+        title: step?.title || keyTitleMap[key] || `Step ${index + 1}`,
+        detail: step?.detail || step?.summary || step?.message || 'Security step update.',
+        state: securityExecutionStateFromBackend(step?.status),
+      };
+    });
+
+    return normalizeSecurityExecutionSteps(normalizedBackendSteps);
   }
 
   const status = String(evidenceRun?.status || runStatus || '').toLowerCase();
@@ -478,41 +545,71 @@ function securityExecutionTimeline({ executionTimeline, runStatus, scanProgress,
   const queued = status === 'queued';
   const lynis = toolResults?.lynis || {};
   const trivy = toolResults?.trivy || {};
-  const hasEvidence = Boolean(evidenceRefs?.length || evidenceRun?.evidence_refs?.length);
+  const sameRunEvidence = Boolean(
+    evidenceRun?.run_id &&
+    currentRunId &&
+    String(evidenceRun.run_id) === String(currentRunId)
+  );
+  const hasCurrentRunEvidence = terminal && Boolean(
+    (sameRunEvidence && evidenceRun?.evidence_refs?.length) ||
+    evidenceRefs?.length ||
+    sbomSaved
+  );
 
-  return [
+  const fallbackSteps = [
     {
-      key: 'queued',
+      key: 'request_accepted',
       title: 'Request accepted',
       detail: queued ? 'FastAPI queued the check.' : 'FastAPI accepted the safety request.',
       state: queued ? 'active' : status ? 'done' : 'waiting',
     },
     {
-      key: 'worker',
+      key: 'worker_picked_up',
       title: 'Worker picked it up',
       detail: running ? 'The backend worker is running local tools.' : terminal ? 'The backend worker finished the check.' : 'Waiting for the backend worker.',
-      state: running ? 'active' : terminal ? 'done' : queued ? 'waiting' : 'waiting',
+      state: running || terminal ? 'done' : 'waiting',
     },
     {
-      key: 'lynis',
+      key: 'lynis_host_check',
       title: 'Lynis host check',
-      detail: lynis.status ? securityToolStatusLabel(lynis) : scanProgress?.stage === 'Running Lynis and Trivy' ? 'Host readiness is being checked.' : 'Checks host readiness.',
-      state: lynis.status === 'completed' ? 'done' : lynis.status === 'timed_out' || lynis.status === 'missing_tool' ? 'review' : running ? 'active' : terminal ? 'done' : 'waiting',
+      detail: lynis.status ? securityToolStatusLabel(lynis) : 'Checks host readiness.',
+      state:
+        lynis.status === 'completed'
+          ? 'done'
+          : lynis.status === 'timed_out' || lynis.status === 'missing_tool'
+            ? 'review'
+            : running
+              ? 'active'
+              : terminal
+                ? 'done'
+                : 'waiting',
     },
     {
-      key: 'trivy',
+      key: 'trivy_dependency_secret_check',
       title: 'Trivy dependency & secret check',
       detail: trivy.status ? `${securityToolStatusLabel(trivy)}${trivy.sbom_saved ? ' · SBOM saved' : ''}` : 'Checks dependencies, config, secret-like values, and SBOM evidence.',
-      state: trivy.status === 'completed' ? 'done' : trivy.status === 'partial' || trivy.status === 'missing_tool' ? 'review' : running ? 'active' : terminal ? 'done' : 'waiting',
+      state:
+        trivy.status === 'completed'
+          ? 'done'
+          : trivy.status === 'partial' || trivy.status === 'missing_tool'
+            ? 'review'
+            : running && (lynis.status === 'completed' || lynis.status === 'timed_out' || lynis.status === 'missing_tool')
+              ? 'active'
+              : terminal
+                ? 'done'
+                : 'waiting',
     },
     {
-      key: 'evidence',
+      key: 'evidence_saved',
       title: 'Evidence saved',
-      detail: hasEvidence ? `${evidenceRefs?.length || evidenceRun?.evidence_refs?.length || 0} sanitized file(s) ready.` : sbomSaved ? 'SBOM saved; evidence metadata is available.' : 'Sanitized evidence appears after completion.',
-      state: hasEvidence || terminal ? 'done' : running ? 'waiting' : 'waiting',
+      detail: hasCurrentRunEvidence ? `${evidenceRefs?.length || evidenceRun?.evidence_refs?.length || (sbomSaved ? 1 : 0)} sanitized file(s) ready.` : 'Sanitized evidence appears after completion.',
+      state: hasCurrentRunEvidence || terminal ? 'done' : 'waiting',
     },
   ];
+
+  return normalizeSecurityExecutionSteps(fallbackSteps);
 }
+
 
 
 function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, actions }) {
@@ -1115,7 +1212,8 @@ function SecurityScreen() {
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
   const executionSteps = securityExecutionTimeline({
-    executionTimeline: data?.execution_timeline || evidence?.run?.execution_timeline || lastRun?.execution_timeline,
+    executionTimeline: data?.execution_timeline || evidenceRun?.execution_timeline || lastRun?.execution_timeline,
+    currentRunId: lastRun?.run_id || result?.run_id,
     runStatus,
     scanProgress,
     evidenceRun,
@@ -1123,14 +1221,19 @@ function SecurityScreen() {
     evidenceRefs,
     sbomSaved,
   });
-  const executionProgressUnits = executionSteps.reduce((total, step) => {
+  const executionResolved = executionSteps.length > 0 && executionSteps.every((step) => ['done', 'review', 'failed'].includes(step.state));
+  const executionActiveStep = executionSteps.find((step) => step.state === 'active') || null;
+  const executionProgressUnitsAligned = executionSteps.reduce((total, step) => {
     if (['done', 'review', 'failed'].includes(step.state)) return total + 1;
     if (step.state === 'active') return total + 0.5;
     return total;
   }, 0);
-  const executionProgress = Math.round((executionProgressUnits / Math.max(1, executionSteps.length)) * 100);
-  const executionLiveLabel = scanInProgress
-    ? `${scanProgressLabel} · ${executionProgress}%`
+  const executionProgressAligned = executionResolved
+    ? 100
+    : Math.max(0, Math.min(100, Math.round((executionProgressUnitsAligned / Math.max(1, executionSteps.length)) * 100)));
+  const executionTimelineLive = !executionResolved && (scanInProgress || Boolean(executionActiveStep));
+  const executionLiveLabelAligned = executionTimelineLive
+    ? `${executionActiveStep?.title || scanProgressLabel} · ${executionProgressAligned}%`
     : lastRun?.completed_at
       ? `Completed ${formatLiteTime(lastRun.completed_at)}`
       : 'Ready for the next safety check';
@@ -1371,22 +1474,22 @@ function SecurityScreen() {
         />
       ) : null}
 
-      <GlassCard className={`lite-security-card lite-security-execution-card ${scanInProgress ? 'lite-security-execution-card-live' : ''}`}>
+      <GlassCard className={`lite-security-card lite-security-execution-card ${executionTimelineLive ? 'lite-security-execution-card-live' : ''}`}>
         <div className="lite-security-card-head">
           <div className="lite-security-icon">
             <Activity className="h-5 w-5" />
           </div>
           <span className="lite-security-soft-badge">Execution timeline</span>
-          <span className={`lite-security-live-chip ${scanInProgress ? 'lite-security-live-chip-active' : ''}`}>
-            {scanInProgress ? 'Live' : 'Last run'}
+          <span className={`lite-security-live-chip ${executionTimelineLive ? 'lite-security-live-chip-active' : ''}`}>
+            {executionTimelineLive ? 'Live' : 'Last run'}
           </span>
         </div>
         <h2>Per-tool check path</h2>
         <p>Security checks move through FastAPI, the backend worker, Lynis, Trivy, and sanitized evidence.</p>
-        <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgress} aria-label="Security execution progress">
-          <span style={{ width: `${executionProgress}%` }} />
+        <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgressAligned} aria-label="Security execution progress">
+          <span style={{ width: `${executionProgressAligned}%` }} />
         </div>
-        <p className="lite-security-execution-status">{executionLiveLabel}</p>
+        <p className="lite-security-execution-status">{executionLiveLabelAligned}</p>
         <div className="lite-security-execution-timeline" role="list" aria-label="Security tool execution timeline">
           {executionSteps.map((step, index) => (
             <div
@@ -1397,7 +1500,14 @@ function SecurityScreen() {
             >
               <span>{securityExecutionStepGlyph(step, index)}</span>
               <div>
-                <strong>{step.title}</strong>
+                <div className="lite-security-execution-step-head">
+                  <strong>{step.title}</strong>
+                  {step.state !== 'waiting' ? (
+                    <span className={`lite-security-execution-pill lite-security-execution-pill-${step.state}`}>
+                      {securityExecutionStepLabel(step.state)}
+                    </span>
+                  ) : null}
+                </div>
                 <p>{step.detail}</p>
               </div>
             </div>

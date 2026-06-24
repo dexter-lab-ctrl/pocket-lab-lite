@@ -7426,3 +7426,51 @@ textarea {
   }
 }
 
+
+
+.theme-pocket-lite-daylight .lite-security-execution-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.22rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-pill-done {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-pill-active {
+  background: rgba(59, 130, 246, 0.14);
+  color: #1d4ed8;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-pill-review {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.theme-pocket-lite-daylight .lite-security-execution-pill-failed {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-security-execution-step-head {
+    align-items: flex-start;
+  }
+}
