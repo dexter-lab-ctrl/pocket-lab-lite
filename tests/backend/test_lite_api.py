@@ -1154,6 +1154,31 @@ def test_lite_security_ui_has_remediation_guidance_and_health_banner():
     assert "@media (max-width: 720px)" in css
 
 
+
+def test_lite_security_ui_has_evidence_quality_and_posture_summaries():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+
+    assert "Latest evidence" in ui
+    assert "View Evidence Receipt" in ui
+    assert "Secrets: Hidden" in ui
+    assert "Last known good" in ui
+    assert "Current check is partial. Last known good state is still available." in ui
+    assert "Compared with last check" in ui
+    assert "Score:" in ui
+    assert "Scan quality" in ui
+    assert "Complete scan" in ui
+    assert "Partial scan" in ui
+    assert "Incomplete scan" in ui
+    assert "Run a safety check to measure scan quality." in ui
+    assert "lite-security-insight-grid" in ui
+    assert "lite-security-receipt-summary-card" in ui
+    assert "lite-security-scan-quality-card" in ui
+    assert "lite-security-insight-grid" in css
+    assert "lite-security-quality-chips" in css
+    assert "lite-security-receipt-summary-grid" in css
+
+
 def test_lite_security_ui_preserves_backend_owned_boundaries():
     ui = _lite_ui_source().lower()
 

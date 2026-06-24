@@ -8069,3 +8069,148 @@ textarea {
     animation: none !important;
   }
 }
+
+.theme-pocket-lite-daylight .lite-security-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-receipt-summary-card,
+.theme-pocket-lite-daylight .lite-security-known-good-card,
+.theme-pocket-lite-daylight .lite-security-comparison-card,
+.theme-pocket-lite-daylight .lite-security-scan-quality-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-security-receipt-summary-grid,
+.theme-pocket-lite-daylight .lite-security-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-receipt-summary-grid div,
+.theme-pocket-lite-daylight .lite-security-comparison-grid div {
+  min-width: 0;
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: 16px;
+  padding: 0.7rem;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.theme-pocket-lite-daylight .lite-security-receipt-summary-grid span,
+.theme-pocket-lite-daylight .lite-security-comparison-grid span {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.theme-pocket-lite-daylight .lite-security-receipt-summary-grid strong,
+.theme-pocket-lite-daylight .lite-security-comparison-grid strong {
+  display: block;
+  min-width: 0;
+  margin-top: 0.2rem;
+  color: #0f172a;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-note {
+  margin-top: 0.75rem;
+  border-radius: 16px;
+  padding: 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-review {
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.72);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-danger {
+  color: #991b1b;
+  background: rgba(254, 226, 226, 0.74);
+  border: 1px solid rgba(248, 113, 113, 0.28);
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(203, 213, 225, 0.86);
+  border-radius: 999px;
+  padding: 0.38rem 0.62rem;
+  color: #334155;
+  background: rgba(248, 250, 252, 0.9);
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-safe {
+  color: #166534;
+  background: rgba(220, 252, 231, 0.78);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-review {
+  color: #92400e;
+  background: rgba(254, 243, 199, 0.76);
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.theme-pocket-lite-daylight .lite-security-quality-danger {
+  color: #991b1b;
+  background: rgba(254, 226, 226, 0.78);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.theme-pocket-lite-daylight .lite-security-scan-quality-card {
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-scan-quality-complete {
+  border-color: rgba(34, 197, 94, 0.24);
+}
+
+.theme-pocket-lite-daylight .lite-security-scan-quality-partial {
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.theme-pocket-lite-daylight .lite-security-scan-quality-failed {
+  border-color: rgba(248, 113, 113, 0.32);
+}
+
+@media (max-width: 980px) {
+  .theme-pocket-lite-daylight .lite-security-insight-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-receipt-summary-grid,
+  .theme-pocket-lite-daylight .lite-security-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-quality-chip {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.25;
+  }
+}

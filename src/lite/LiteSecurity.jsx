@@ -668,6 +668,334 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
   );
 }
 
+
+function securityRunIsTerminal(status) {
+  const value = String(status || '').toLowerCase();
+  return ['succeeded', 'success', 'healthy', 'degraded', 'partial', 'failed', 'error'].some((item) => value.includes(item));
+}
+
+function securityRunIsGood(run, evidenceAvailable = false) {
+  if (!run) return false;
+  const status = String(run.status || '').toLowerCase();
+  const criticalHigh = Number(run.critical_count || 0) + Number(run.high_count || 0);
+  const evidenceSaved = evidenceAvailable
+    || Number(run.evidence_count || 0) > 0
+    || Boolean(run.evidence_saved)
+    || Boolean(run.sbom_saved);
+  return status.includes('succeeded') && criticalHigh === 0 && evidenceSaved && !run.partial_results;
+}
+
+function evidenceRefCount(data, fallbackRefs = []) {
+  const refs = Array.isArray(fallbackRefs) ? fallbackRefs : [];
+  return refs.length || Number(data?.last_run?.evidence_count || data?.evidence_count || 0) || 0;
+}
+
+function formatSecurityToolsLabel(tools = []) {
+  const normalized = (Array.isArray(tools) ? tools : [])
+    .filter(Boolean)
+    .map((tool) => String(tool).trim())
+    .filter(Boolean);
+  if (!normalized.length) return 'Not recorded';
+  return normalized.map((tool) => tool.charAt(0).toUpperCase() + tool.slice(1)).join(' + ');
+}
+
+export function deriveLatestEvidenceReceipt(securityData, evidenceState = {}) {
+  const lastRun = securityData?.last_run || null;
+  const runStatus = String(lastRun?.status || securityData?.scan_progress?.status || '').toLowerCase();
+  const currentRunInProgress = ['queued', 'running'].includes(runStatus);
+  const refs = Array.isArray(securityData?.evidence_refs) ? securityData.evidence_refs : [];
+  const evidenceRefs = Array.isArray(evidenceState?.evidence?.evidence_refs) && evidenceState.evidence.evidence_refs.length
+    ? evidenceState.evidence.evidence_refs
+    : refs;
+  const history = Array.isArray(securityData?.history) ? securityData.history : [];
+  const latestHistoryWithEvidence = history.find((item) => Number(item?.evidence_count || 0) > 0 && item?.run_id);
+  const sourceRun = currentRunInProgress && latestHistoryWithEvidence ? latestHistoryWithEvidence : (lastRun || latestHistoryWithEvidence);
+  const available = Boolean(sourceRun?.run_id) && (securityHasEvidence(securityData, evidenceRefs) || Number(sourceRun?.evidence_count || 0) > 0);
+
+  if (!available) {
+    return {
+      available: false,
+      status: 'empty',
+      title: 'Latest evidence',
+      summary: 'Run a safety check to create a sanitized receipt.',
+      runLabel: 'No saved evidence yet.',
+      fileCountLabel: 'No saved evidence yet.',
+      sbomLabel: 'Not saved',
+      secretsLabel: 'Hidden after a check',
+    };
+  }
+
+  const tools = Array.isArray(sourceRun?.tools) && sourceRun.tools.length
+    ? sourceRun.tools
+    : (Array.isArray(lastRun?.tools) && lastRun.tools.length ? lastRun.tools : ['lynis', 'trivy']);
+  const fileCount = evidenceRefs.length || Number(sourceRun?.evidence_count || 0);
+  const sbomSaved = Boolean(sourceRun?.sbom_saved)
+    || evidenceRefs.some((ref) => String(ref).toLowerCase().includes('sbom'))
+    || Boolean(evidenceState?.sbomSaved);
+
+  return {
+    available: true,
+    status: currentRunInProgress ? 'saved_previous' : 'ready',
+    title: currentRunInProgress ? 'Latest saved evidence' : 'Latest evidence',
+    runId: sourceRun.run_id,
+    shortRunId: shortRunId(sourceRun.run_id),
+    toolsLabel: formatSecurityToolsLabel(tools),
+    fileCountLabel: `${fileCount} sanitized evidence file${fileCount === 1 ? '' : 's'}`,
+    sbomLabel: sbomSaved ? 'Saved' : 'Not saved',
+    secretsLabel: 'Hidden',
+    summary: currentRunInProgress
+      ? 'Current check is running. Showing the latest saved sanitized receipt.'
+      : 'Sanitized evidence is ready for review.',
+  };
+}
+
+export function deriveLastKnownGood(securityData, findings = []) {
+  const lastRun = securityData?.last_run || null;
+  const refs = Array.isArray(securityData?.evidence_refs) ? securityData.evidence_refs : [];
+  const history = Array.isArray(securityData?.history) ? securityData.history : [];
+  const currentPartial = Boolean(lastRun?.partial_results) || String(lastRun?.status || '').toLowerCase().includes('partial');
+  const currentHighRisk = Number(lastRun?.critical_count || 0) + Number(lastRun?.high_count || 0)
+    + (Array.isArray(findings) ? findings.filter((item) => ['critical', 'high'].includes(findingSeverity(item))).length : 0);
+
+  const knownGood = history.find((run) => securityRunIsGood(run, false))
+    || (securityRunIsGood(lastRun, securityHasEvidence(securityData, refs)) ? lastRun : null);
+
+  if (!knownGood) {
+    return {
+      available: false,
+      title: 'Last known good',
+      summary: 'Run a successful safety check to establish a baseline.',
+      completedAtLabel: 'Not available yet',
+      currentPartialNote: null,
+      historicalWarning: currentHighRisk > 0 ? 'Current review still needs attention.' : null,
+    };
+  }
+
+  return {
+    available: true,
+    title: 'Last known good',
+    runId: knownGood.run_id,
+    shortRunId: shortRunId(knownGood.run_id),
+    completedAt: knownGood.completed_at,
+    completedAtLabel: knownGood.completed_at ? formatLiteTime(knownGood.completed_at) : 'Saved baseline',
+    score: knownGood.score,
+    summary: `Score ${knownGood.score ?? '—'} · No urgent issues · Evidence saved`,
+    currentPartialNote: currentPartial ? 'Current check is partial. Last known good state is still available.' : null,
+    historicalWarning: currentHighRisk > 0 ? 'Last known good is historical. Current review still needs attention.' : null,
+  };
+}
+
+function friendlyDeltaItemLabel(items = [], fallback = 'review item') {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) return '0';
+  const actionCount = list.filter((item) => classifyFindingAction(item).label === 'Action needed').length;
+  const recheckCount = list.filter((item) => classifyFindingAction(item).label === 'Recheck').length;
+  const expectedCount = list.filter((item) => classifyFindingAction(item).label === 'Expected').length;
+  const count = list.length;
+  if (actionCount) return `${count} action-needed item${count === 1 ? '' : 's'}`;
+  if (recheckCount) return `${count} recheck item${count === 1 ? '' : 's'}`;
+  if (expectedCount) return `${count} expected backend item${count === 1 ? '' : 's'}`;
+  return `${count} ${fallback}${count === 1 ? '' : 's'}`;
+}
+
+export function deriveSecurityPostureComparison(securityData) {
+  const history = Array.isArray(securityData?.history) ? securityData.history : [];
+  const latest = history[0] || securityData?.last_run || null;
+  const previous = history.find((item) => item?.run_id && item.run_id !== latest?.run_id) || null;
+  const delta = securityData?.finding_delta && typeof securityData.finding_delta === 'object' ? securityData.finding_delta : {};
+  const newItems = Array.isArray(delta.new) ? delta.new : [];
+  const resolvedItems = Array.isArray(delta.resolved) ? delta.resolved : [];
+  const stillItems = Array.isArray(delta.still_present) ? delta.still_present : (Array.isArray(delta.unchanged) ? delta.unchanged : []);
+  const hasDelta = Boolean(delta.summary) || newItems.length || resolvedItems.length || stillItems.length;
+  const hasScores = latest && previous && latest.score !== undefined && previous.score !== undefined;
+
+  if (!hasDelta && !hasScores) {
+    return {
+      available: false,
+      title: 'Compared with last check',
+      summary: 'Run another safety check to compare posture over time.',
+    };
+  }
+
+  const scoreDelta = hasScores ? Number(latest.score || 0) - Number(previous.score || 0) : 0;
+  const scoreLabel = !hasScores
+    ? 'Not enough history'
+    : scoreDelta > 0
+      ? `Up ${scoreDelta} pts`
+      : scoreDelta < 0
+        ? `Down ${Math.abs(scoreDelta)} pts`
+        : 'No change';
+  const newLabel = newItems.length ? friendlyDeltaItemLabel(newItems) : `${Number(delta.new_count || 0)} review items`;
+  const resolvedLabel = resolvedItems.length ? String(resolvedItems.length) : String(Number(delta.resolved_count || 0));
+  const stillPresentCount = stillItems.length || Number(delta.still_present_count || delta.unchanged_count || 0);
+  const stillPresentLabel = stillItems.length ? friendlyDeltaItemLabel(stillItems) : `${stillPresentCount} review items`;
+  const tone = newItems.some((item) => classifyFindingAction(item).label === 'Action needed') || scoreDelta < 0 ? 'review' : 'safe';
+
+  return {
+    available: true,
+    title: 'Compared with last check',
+    scoreDirection: scoreDelta > 0 ? 'up' : scoreDelta < 0 ? 'down' : 'same',
+    scoreDelta: Math.abs(scoreDelta),
+    scoreLabel,
+    newLabel,
+    resolvedLabel,
+    stillPresentLabel,
+    tone,
+    summary: delta.summary || 'Posture comparison is based on saved Security history and finding changes.',
+  };
+}
+
+export function deriveScanQuality(securityData, evidenceReceipt, executionSteps = []) {
+  const lastRun = securityData?.last_run || null;
+  const runStatus = String(lastRun?.status || securityData?.scan_progress?.status || securityData?.status || '').toLowerCase();
+  const refs = Array.isArray(securityData?.evidence_refs) ? securityData.evidence_refs : [];
+  const evidenceSaved = Boolean(evidenceReceipt?.available) || securityHasEvidence(securityData, refs);
+  const stepText = (Array.isArray(executionSteps) ? executionSteps : [])
+    .map((step) => `${step?.key || ''} ${step?.title || ''} ${step?.detail || ''} ${step?.state || ''}`.toLowerCase())
+    .join(' ');
+  const lynisCompleted = stepText.includes('lynis') && (stepText.includes('lynis completed') || stepText.includes('host readiness checks completed') || stepText.includes('done'))
+    || String(lastRun?.tool_results?.lynis?.status || '').toLowerCase() === 'completed'
+    || (Array.isArray(lastRun?.tools) && lastRun.tools.includes('lynis') && !runStatus.includes('failed'));
+  const trivyCompleted = stepText.includes('trivy') && (stepText.includes('trivy completed') || stepText.includes('dependency') || stepText.includes('done'))
+    || String(lastRun?.tool_results?.trivy?.status || '').toLowerCase() === 'completed'
+    || (Array.isArray(lastRun?.tools) && lastRun.tools.includes('trivy') && !runStatus.includes('failed'));
+  const sbomSaved = Boolean(lastRun?.sbom_saved)
+    || refs.some((ref) => String(ref).toLowerCase().includes('sbom'))
+    || evidenceReceipt?.sbomLabel === 'Saved';
+  const timeoutOrPartial = Boolean(lastRun?.partial_results)
+    || runStatus.includes('partial')
+    || stepText.includes('timed out')
+    || stepText.includes('timeout')
+    || stepText.includes('review');
+  const failedOrMissing = runStatus.includes('failed')
+    || runStatus.includes('error')
+    || stepText.includes('missing')
+    || stepText.includes('failed')
+    || !evidenceSaved;
+
+  if (!lastRun) {
+    return {
+      status: 'not_checked',
+      title: 'Not checked yet',
+      detail: 'Run a safety check to measure scan quality.',
+      chips: [{ label: 'Run Safety Check', tone: 'neutral' }],
+    };
+  }
+
+  if (failedOrMissing) {
+    return {
+      status: 'failed',
+      title: 'Incomplete scan',
+      detail: evidenceSaved ? 'A required tool or worker step did not complete.' : 'Evidence is missing for the last terminal run.',
+      chips: [
+        { label: evidenceSaved ? 'Evidence saved' : 'Evidence missing', tone: evidenceSaved ? 'safe' : 'danger' },
+        { label: stepText.includes('missing') ? 'Tool missing' : 'Recheck recommended', tone: 'danger' },
+      ],
+    };
+  }
+
+  if (timeoutOrPartial || !lynisCompleted || !trivyCompleted) {
+    return {
+      status: 'partial',
+      title: 'Partial scan',
+      detail: `${lynisCompleted ? 'Lynis completed' : 'Lynis timed out'} · ${trivyCompleted ? 'Trivy completed' : 'Trivy needs recheck'} · Evidence saved`,
+      chips: [
+        { label: lynisCompleted ? 'Lynis completed' : 'Lynis timed out', tone: lynisCompleted ? 'safe' : 'review' },
+        { label: trivyCompleted ? 'Trivy completed' : 'Trivy needs recheck', tone: trivyCompleted ? 'safe' : 'review' },
+        { label: 'Evidence saved', tone: 'safe' },
+        { label: 'Recheck recommended', tone: 'review' },
+      ],
+    };
+  }
+
+  return {
+    status: 'complete',
+    title: 'Complete scan',
+    detail: `Lynis completed · Trivy completed · ${sbomSaved ? 'SBOM saved' : 'Evidence saved'}`,
+    chips: [
+      { label: 'Lynis completed', tone: 'safe' },
+      { label: 'Trivy completed', tone: 'safe' },
+      { label: sbomSaved ? 'SBOM saved' : 'Evidence saved', tone: 'safe' },
+      { label: 'Evidence saved', tone: 'safe' },
+    ],
+  };
+}
+
+function SecurityEvidenceReceiptSummary({ receipt, onOpen }) {
+  return (
+    <GlassCard className={`lite-security-card lite-security-receipt-summary-card lite-security-receipt-${receipt.status}`}>
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon"><FileCheck className="h-5 w-5" /></div>
+        <span className="lite-security-soft-badge">{receipt.title}</span>
+      </div>
+      <h2>Latest evidence</h2>
+      <p>{receipt.summary}</p>
+      <div className="lite-security-receipt-summary-grid" aria-label="Latest evidence receipt summary">
+        <div><span>Run ID</span><strong>{receipt.available ? receipt.shortRunId : receipt.runLabel}</strong></div>
+        <div><span>Tools</span><strong>{receipt.available ? receipt.toolsLabel : 'Not recorded'}</strong></div>
+        <div><span>Files</span><strong>{receipt.fileCountLabel}</strong></div>
+        <div><span>SBOM</span><strong>{receipt.sbomLabel}</strong></div>
+        <div aria-label="Secrets: Hidden"><span>Secrets</span><strong>Secrets: {receipt.secretsLabel}</strong></div>
+      </div>
+      <LiteButton tone="secondary" onClick={onOpen}>{receipt.available ? 'View Evidence Receipt' : 'Run Safety Check first'}</LiteButton>
+    </GlassCard>
+  );
+}
+
+function SecurityLastKnownGoodCard({ marker }) {
+  return (
+    <GlassCard className="lite-security-card lite-security-known-good-card">
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon"><ShieldCheck className="h-5 w-5" /></div>
+        <span className="lite-security-soft-badge">Last known good</span>
+      </div>
+      <h2>{marker.completedAtLabel}</h2>
+      <p>{marker.available ? marker.summary : 'Run a successful safety check to establish a baseline.'}</p>
+      {marker.currentPartialNote ? <div className="lite-security-quality-note lite-security-quality-review">{marker.currentPartialNote}</div> : null}
+      {marker.historicalWarning ? <div className="lite-security-quality-note lite-security-quality-danger">{marker.historicalWarning}</div> : null}
+    </GlassCard>
+  );
+}
+
+function SecurityPostureComparisonCard({ comparison }) {
+  return (
+    <GlassCard className={`lite-security-card lite-security-comparison-card lite-security-comparison-${comparison.tone || 'neutral'}`}>
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon"><RefreshCw className="h-5 w-5" /></div>
+        <span className="lite-security-soft-badge">Compared with last check</span>
+      </div>
+      <h2>{comparison.available ? 'Posture comparison' : 'Compared with last check'}</h2>
+      <p>{comparison.summary}</p>
+      {comparison.available ? (
+        <div className="lite-security-comparison-grid" aria-label="Security posture comparison">
+          <div><span>Score:</span><strong>{comparison.scoreLabel}</strong></div>
+          <div><span>New</span><strong>{comparison.newLabel}</strong></div>
+          <div><span>Resolved</span><strong>{comparison.resolvedLabel}</strong></div>
+          <div><span>Still present</span><strong>{comparison.stillPresentLabel}</strong></div>
+        </div>
+      ) : null}
+    </GlassCard>
+  );
+}
+
+function SecurityScanQualityCard({ quality }) {
+  return (
+    <GlassCard className={`lite-security-card lite-security-scan-quality-card lite-security-scan-quality-${quality.status}`}>
+      <div className="lite-security-card-head">
+        <div className="lite-security-icon"><Activity className="h-5 w-5" /></div>
+        <span className="lite-security-soft-badge">Scan quality</span>
+      </div>
+      <h2>{quality.title}</h2>
+      <p>{quality.detail}</p>
+      <div className="lite-security-quality-chips" aria-label="Scan quality reasons">
+        {quality.chips.map((chip) => (
+          <span key={chip.label} className={`lite-security-quality-chip lite-security-quality-${chip.tone || 'neutral'}`}>{chip.label}</span>
+        ))}
+      </div>
+    </GlassCard>
+  );
+}
+
 export default function SecurityScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.security, []);
   const [result, setResult] = useState(null);
@@ -811,6 +1139,10 @@ export default function SecurityScreen() {
     ? 'Partial check completed. Available evidence was saved.'
     : data?.summary || 'Pocket Lab is checking the current safety state.';
   const healthBanner = deriveSecurityHealthBanner(data, null, allReviewFindings);
+  const latestEvidenceReceipt = deriveLatestEvidenceReceipt(data, { evidence, evidenceRefs, latestHistory, toolNames, sbomSaved });
+  const scanQuality = deriveScanQuality(data, latestEvidenceReceipt, executionSteps);
+  const lastKnownGood = deriveLastKnownGood(data, allReviewFindings);
+  const postureComparison = deriveSecurityPostureComparison(data);
   const remediationContext = { data, lastRun, evidence, evidenceRefs, toolResults };
   const trustSignals = [
     {
@@ -1018,6 +1350,12 @@ export default function SecurityScreen() {
 
       <SecurityHealthBanner banner={healthBanner} />
 
+      <section className="lite-security-insight-grid" aria-label="Security evidence and posture summaries">
+        <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} />
+        <SecurityLastKnownGoodCard marker={lastKnownGood} />
+        <SecurityPostureComparisonCard comparison={postureComparison} />
+      </section>
+
       <section className="lite-security-assurance-grid" aria-label="Security assurances">
         {trustSignals.map((item) => {
           const Icon = item.icon;
@@ -1088,6 +1426,8 @@ export default function SecurityScreen() {
           ))}
         </div>
       </GlassCard>
+
+      <SecurityScanQualityCard quality={scanQuality} />
 
       {(securityHistory.length || findingDelta.summary) ? (
         <section className="lite-security-history-grid" aria-label="Security history and change summary">
