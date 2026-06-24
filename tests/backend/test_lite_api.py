@@ -5,6 +5,13 @@ import pytest
 from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_dir
 
 
+def _lite_ui_source() -> str:
+    return "\n".join(
+        path.read_text()
+        for path in sorted(Path("src/lite").glob("Lite*.jsx"))
+    )
+
+
 @pytest.fixture(autouse=True)
 def isolate_lite_runtime_state_per_test(tmp_path):
     ensure_runtime_path()
@@ -160,7 +167,7 @@ def test_lite_fleet_returns_role_metadata_and_latest_invite_without_raw_token_ha
 def test_lite_devices_ui_does_not_expose_raw_invite_internals():
     from pathlib import Path
 
-    ui = Path("src/lite/LiteApp.jsx").read_text()
+    ui = _lite_ui_source()
     forbidden = [
         "Tailscale API key",
         "tailnet token",
@@ -1068,7 +1075,7 @@ def test_lite_restart_agent_reports_stopped_agent_progress(tmp_path):
 
 
 def test_lite_ui_has_error_boundary_and_safe_restart_steps():
-    ui = Path("src/lite/LiteApp.jsx").read_text()
+    ui = _lite_ui_source()
     assert "LiteErrorBoundary" in ui
     assert "Pocket Lab needs a moment" in ui
     assert "safeRestartSteps" in ui
@@ -1076,7 +1083,7 @@ def test_lite_ui_has_error_boundary_and_safe_restart_steps():
 
 
 def test_lite_devices_ui_has_enterprise_polish_without_top_duplicate_refresh():
-    ui = Path("src/lite/LiteApp.jsx").read_text()
+    ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
 
     assert "Self-hosted workspace" in ui
