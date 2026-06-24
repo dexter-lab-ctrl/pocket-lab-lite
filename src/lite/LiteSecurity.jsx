@@ -1058,76 +1058,109 @@ export function deriveScanQuality(securityData, evidenceReceipt, executionSteps 
   };
 }
 
-function SecurityEvidenceReceiptSummary({ receipt, onOpen }) {
+
+function SecurityCollapseToggle({ label, collapsed, onToggle, controls }) {
   return (
-    <GlassCard className={`lite-security-card lite-security-receipt-summary-card lite-security-receipt-${receipt.status}`}>
-      <div className="lite-security-card-head">
+    <button
+      type="button"
+      className="lite-security-collapse-toggle"
+      aria-expanded={!collapsed}
+      aria-controls={controls}
+      onClick={onToggle}
+    >
+      <span>{collapsed ? 'Show' : 'Collapse'}</span>
+      <span aria-hidden="true">{collapsed ? '+' : '−'}</span>
+      <span className="sr-only"> {label}</span>
+    </button>
+  );
+}
+
+function SecurityEvidenceReceiptSummary({ receipt, onOpen, collapsed = false, onToggle }) {
+  const bodyId = 'lite-security-latest-evidence-body';
+  return (
+    <GlassCard className={`lite-security-card lite-security-receipt-summary-card lite-security-receipt-${receipt.status} ${collapsed ? 'lite-security-card-collapsed' : ''}`}>
+      <div className="lite-security-card-head lite-security-card-head-collapsible">
         <div className="lite-security-icon"><FileCheck className="h-5 w-5" /></div>
         <span className="lite-security-soft-badge">{receipt.title}</span>
+        <SecurityCollapseToggle label="Latest evidence" collapsed={collapsed} onToggle={onToggle} controls={bodyId} />
       </div>
-      <h2>Latest evidence</h2>
-      <p>{receipt.summary}</p>
-      <div className="lite-security-receipt-summary-grid" aria-label="Latest evidence receipt summary">
-        <div><span>Run ID</span><strong>{receipt.available ? receipt.shortRunId : receipt.runLabel}</strong></div>
-        <div><span>Tools</span><strong>{receipt.available ? receipt.toolsLabel : 'Not recorded'}</strong></div>
-        <div><span>Files</span><strong>{receipt.fileCountLabel}</strong></div>
-        <div><span>SBOM</span><strong>{receipt.sbomLabel}</strong></div>
-        <div aria-label="Secrets: Hidden"><span>Secrets</span><strong>Secrets: {receipt.secretsLabel}</strong></div>
+      <div id={bodyId} className="lite-security-collapsible-body" hidden={collapsed}>
+        <h2>Latest evidence</h2>
+        <p>{receipt.summary}</p>
+        <div className="lite-security-receipt-summary-grid" aria-label="Latest evidence receipt summary">
+          <div><span>Run ID</span><strong>{receipt.available ? receipt.shortRunId : receipt.runLabel}</strong></div>
+          <div><span>Tools</span><strong>{receipt.available ? receipt.toolsLabel : 'Not recorded'}</strong></div>
+          <div><span>Files</span><strong>{receipt.fileCountLabel}</strong></div>
+          <div><span>SBOM</span><strong>{receipt.sbomLabel}</strong></div>
+          <div aria-label="Secrets: Hidden"><span>Secrets</span><strong>Secrets: {receipt.secretsLabel}</strong></div>
+        </div>
+        <LiteButton tone="secondary" onClick={onOpen}>{receipt.available ? 'View Evidence Receipt' : 'Run Safety Check first'}</LiteButton>
       </div>
-      <LiteButton tone="secondary" onClick={onOpen}>{receipt.available ? 'View Evidence Receipt' : 'Run Safety Check first'}</LiteButton>
     </GlassCard>
   );
 }
 
-function SecurityLastKnownGoodCard({ marker }) {
+function SecurityLastKnownGoodCard({ marker, collapsed = false, onToggle }) {
+  const bodyId = 'lite-security-last-known-good-body';
   return (
-    <GlassCard className="lite-security-card lite-security-known-good-card">
-      <div className="lite-security-card-head">
+    <GlassCard className={`lite-security-card lite-security-known-good-card ${collapsed ? 'lite-security-card-collapsed' : ''}`}>
+      <div className="lite-security-card-head lite-security-card-head-collapsible">
         <div className="lite-security-icon"><ShieldCheck className="h-5 w-5" /></div>
         <span className="lite-security-soft-badge">Last known good</span>
+        <SecurityCollapseToggle label="Last known good" collapsed={collapsed} onToggle={onToggle} controls={bodyId} />
       </div>
-      <h2>{marker.completedAtLabel}</h2>
-      <p>{marker.available ? marker.summary : 'Run a successful safety check to establish a baseline.'}</p>
-      {marker.currentPartialNote ? <div className="lite-security-quality-note lite-security-quality-review">{marker.currentPartialNote}</div> : null}
-      {marker.historicalWarning ? <div className="lite-security-quality-note lite-security-quality-danger">{marker.historicalWarning}</div> : null}
+      <div id={bodyId} className="lite-security-collapsible-body" hidden={collapsed}>
+        <h2>{marker.completedAtLabel}</h2>
+        <p>{marker.available ? marker.summary : 'Run a successful safety check to establish a baseline.'}</p>
+        {marker.currentPartialNote ? <div className="lite-security-quality-note lite-security-quality-review">{marker.currentPartialNote}</div> : null}
+        {marker.historicalWarning ? <div className="lite-security-quality-note lite-security-quality-danger">{marker.historicalWarning}</div> : null}
+      </div>
     </GlassCard>
   );
 }
 
-function SecurityPostureComparisonCard({ comparison }) {
+function SecurityPostureComparisonCard({ comparison, collapsed = false, onToggle }) {
+  const bodyId = 'lite-security-posture-comparison-body';
   return (
-    <GlassCard className={`lite-security-card lite-security-comparison-card lite-security-comparison-${comparison.tone || 'neutral'}`}>
-      <div className="lite-security-card-head">
+    <GlassCard className={`lite-security-card lite-security-comparison-card lite-security-comparison-${comparison.tone || 'neutral'} ${collapsed ? 'lite-security-card-collapsed' : ''}`}>
+      <div className="lite-security-card-head lite-security-card-head-collapsible">
         <div className="lite-security-icon"><RefreshCw className="h-5 w-5" /></div>
         <span className="lite-security-soft-badge">Compared with last check</span>
+        <SecurityCollapseToggle label="Compared with last check" collapsed={collapsed} onToggle={onToggle} controls={bodyId} />
       </div>
-      <h2>{comparison.available ? 'Posture comparison' : 'Compared with last check'}</h2>
-      <p>{comparison.summary}</p>
-      {comparison.available ? (
-        <div className="lite-security-comparison-grid" aria-label="Security posture comparison">
-          <div><span>Score:</span><strong>{comparison.scoreLabel}</strong></div>
-          <div><span>New</span><strong>{comparison.newLabel}</strong></div>
-          <div><span>Resolved</span><strong>{comparison.resolvedLabel}</strong></div>
-          <div><span>Still present</span><strong>{comparison.stillPresentLabel}</strong></div>
-        </div>
-      ) : null}
+      <div id={bodyId} className="lite-security-collapsible-body" hidden={collapsed}>
+        <h2>{comparison.available ? 'Posture comparison' : 'Compared with last check'}</h2>
+        <p>{comparison.summary}</p>
+        {comparison.available ? (
+          <div className="lite-security-comparison-grid" aria-label="Security posture comparison">
+            <div><span>Score:</span><strong>{comparison.scoreLabel}</strong></div>
+            <div><span>New</span><strong>{comparison.newLabel}</strong></div>
+            <div><span>Resolved</span><strong>{comparison.resolvedLabel}</strong></div>
+            <div><span>Still present</span><strong>{comparison.stillPresentLabel}</strong></div>
+          </div>
+        ) : null}
+      </div>
     </GlassCard>
   );
 }
 
-function SecurityScanQualityCard({ quality }) {
+function SecurityScanQualityCard({ quality, collapsed = false, onToggle }) {
+  const bodyId = 'lite-security-scan-quality-body';
   return (
-    <GlassCard className={`lite-security-card lite-security-scan-quality-card lite-security-scan-quality-${quality.status}`}>
-      <div className="lite-security-card-head">
+    <GlassCard className={`lite-security-card lite-security-scan-quality-card lite-security-scan-quality-${quality.status} ${collapsed ? 'lite-security-card-collapsed' : ''}`}>
+      <div className="lite-security-card-head lite-security-card-head-collapsible">
         <div className="lite-security-icon"><Activity className="h-5 w-5" /></div>
         <span className="lite-security-soft-badge">Scan quality</span>
+        <SecurityCollapseToggle label="Scan quality" collapsed={collapsed} onToggle={onToggle} controls={bodyId} />
       </div>
-      <h2>{quality.title}</h2>
-      <p>{quality.detail}</p>
-      <div className="lite-security-quality-chips" aria-label="Scan quality reasons">
-        {quality.chips.map((chip) => (
-          <span key={chip.label} className={`lite-security-quality-chip lite-security-quality-${chip.tone || 'neutral'}`}>{chip.label}</span>
-        ))}
+      <div id={bodyId} className="lite-security-collapsible-body" hidden={collapsed}>
+        <h2>{quality.title}</h2>
+        <p>{quality.detail}</p>
+        <div className="lite-security-quality-chips" aria-label="Scan quality reasons">
+          {quality.chips.map((chip) => (
+            <span key={chip.label} className={`lite-security-quality-chip lite-security-quality-${chip.tone || 'neutral'}`}>{chip.label}</span>
+          ))}
+        </div>
       </div>
     </GlassCard>
   );
@@ -1143,6 +1176,7 @@ export default function SecurityScreen() {
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [receiptCopied, setReceiptCopied] = useState(false);
   const [coverageExpanded, setCoverageExpanded] = useState(false);
+  const [collapsedSecurityCards, setCollapsedSecurityCards] = useState({});
   const [progressNow, setProgressNow] = useState(() => Date.now());
   const [remediationFinding, setRemediationFinding] = useState(null);
   const [selectedFinding, setSelectedFinding] = useState(null);
@@ -1513,9 +1547,9 @@ export default function SecurityScreen() {
       <SecurityHealthBanner banner={healthBanner} />
 
       <section className="lite-security-insight-grid" aria-label="Security evidence and posture summaries">
-        <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} />
-        <SecurityLastKnownGoodCard marker={lastKnownGood} />
-        <SecurityPostureComparisonCard comparison={postureComparison} />
+        <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} collapsed={securityCardCollapsed('latestEvidence')} onToggle={() => toggleSecurityCard('latestEvidence')} />
+        <SecurityLastKnownGoodCard marker={lastKnownGood} collapsed={securityCardCollapsed('lastKnownGood')} onToggle={() => toggleSecurityCard('lastKnownGood')} />
+        <SecurityPostureComparisonCard comparison={postureComparison} collapsed={securityCardCollapsed('postureComparison')} onToggle={() => toggleSecurityCard('postureComparison')} />
       </section>
 
       {(evidence || evidenceError || evidenceLoading) ? (
@@ -1627,8 +1661,8 @@ export default function SecurityScreen() {
         />
       ) : null}
 
-      <GlassCard className={`lite-security-card lite-security-execution-card ${executionTimelineLive ? 'lite-security-execution-card-live' : ''}`}>
-        <div className="lite-security-card-head">
+      <GlassCard className={`lite-security-card lite-security-execution-card ${executionTimelineLive ? 'lite-security-execution-card-live' : ''} ${securityCardCollapsed('executionTimeline') ? 'lite-security-card-collapsed' : ''}`}>
+        <div className="lite-security-card-head lite-security-card-head-collapsible">
           <div className="lite-security-icon">
             <Activity className="h-5 w-5" />
           </div>
@@ -1636,7 +1670,9 @@ export default function SecurityScreen() {
           <span className={`lite-security-live-chip ${executionTimelineLive ? 'lite-security-live-chip-active' : ''}`}>
             {executionTimelineLive ? 'Live' : 'Last run'}
           </span>
+          <SecurityCollapseToggle label="Execution timeline" collapsed={securityCardCollapsed('executionTimeline')} onToggle={() => toggleSecurityCard('executionTimeline')} controls="lite-security-execution-timeline-body" />
         </div>
+        <div id="lite-security-execution-timeline-body" className="lite-security-collapsible-body" hidden={securityCardCollapsed('executionTimeline')}>
         <h2>Per-tool check path</h2>
         <p>Security checks move through FastAPI, the backend worker, Lynis, Trivy, and sanitized evidence.</p>
         <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgressAligned} aria-label="Security execution progress">
@@ -1666,19 +1702,22 @@ export default function SecurityScreen() {
             </div>
           ))}
         </div>
+        </div>
       </GlassCard>
 
-      <SecurityScanQualityCard quality={scanQuality} />
+      <SecurityScanQualityCard quality={scanQuality} collapsed={securityCardCollapsed('scanQuality')} onToggle={() => toggleSecurityCard('scanQuality')} />
 
       {(securityHistory.length || findingDelta.summary) ? (
         <section className="lite-security-history-grid" aria-label="Security history and change summary">
-          <GlassCard className="lite-security-card lite-security-history-card">
-            <div className="lite-security-card-head">
+          <GlassCard className={`lite-security-card lite-security-history-card ${securityCardCollapsed('securityHistory') ? 'lite-security-card-collapsed' : ''}`}>
+            <div className="lite-security-card-head lite-security-card-head-collapsible">
               <div className="lite-security-icon">
                 <Activity className="h-5 w-5" />
               </div>
               <span className="lite-security-soft-badge">Security history</span>
+              <SecurityCollapseToggle label="Security history" collapsed={securityCardCollapsed('securityHistory')} onToggle={() => toggleSecurityCard('securityHistory')} controls="lite-security-history-body" />
             </div>
+            <div id="lite-security-history-body" className="lite-security-collapsible-body" hidden={securityCardCollapsed('securityHistory')}>
             <h2>Trend timeline</h2>
             <p>Recent checks show whether the safety score is improving, stable, or needs attention.</p>
             <div className="lite-security-trend-summary">
@@ -1713,6 +1752,7 @@ export default function SecurityScreen() {
                   </div>
                 );
               })}
+            </div>
             </div>
           </GlassCard>
 
@@ -1858,14 +1898,16 @@ export default function SecurityScreen() {
           )}
         </GlassCard>
 
-        <GlassCard className="lite-security-card lite-security-dashboard-card">
-          <div className="lite-security-card-head">
+        <GlassCard className={`lite-security-card lite-security-dashboard-card ${securityCardCollapsed('protectionDashboard') ? 'lite-security-card-collapsed' : ''}`}>
+          <div className="lite-security-card-head lite-security-card-head-collapsible">
             <div className="lite-security-icon">
               <FileCheck className="h-5 w-5" />
             </div>
             <span className="lite-security-soft-badge">Protection dashboard</span>
+            <SecurityCollapseToggle label="Protection dashboard" collapsed={securityCardCollapsed('protectionDashboard')} onToggle={() => toggleSecurityCard('protectionDashboard')} controls="lite-security-protection-dashboard-body" />
           </div>
 
+          <div id="lite-security-protection-dashboard-body" className="lite-security-collapsible-body" hidden={securityCardCollapsed('protectionDashboard')}>
           <h2>Local protection summary</h2>
           <p>
             Lynis checks host readiness. Trivy checks dependency, config, secret-like findings, and saves SBOM evidence.
@@ -1888,6 +1930,7 @@ export default function SecurityScreen() {
                 <p>{item.title || item.summary}</p>
               </div>
             ))}
+          </div>
           </div>
         </GlassCard>
       </div>

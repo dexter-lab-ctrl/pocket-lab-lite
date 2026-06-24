@@ -1206,6 +1206,40 @@ def test_lite_security_ui_has_mobile_first_finding_detail_modal():
     assert "onOpenEvidence" not in ui
     assert "@media (max-width: 720px)" in css
 
+
+def test_lite_security_ui_has_collapsible_summary_cards():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+
+    assert "SecurityCollapseToggle" in ui
+    assert "Collapse" in ui
+    assert "Show" in ui
+    assert "collapsedSecurityCards" in ui
+    assert "lite-security-collapse-toggle" in ui
+    assert "lite-security-collapsible-body" in ui
+    assert "lite-security-card-collapsed" in ui
+    assert "Latest evidence" in ui
+    assert "Last known good" in ui
+    assert "Compared with last check" in ui
+    assert "Execution timeline" in ui
+    assert "Scan quality" in ui
+    assert "Security history" in ui
+    assert "Protection dashboard" in ui
+    assert "lite-security-latest-evidence-body" in ui
+    assert "lite-security-last-known-good-body" in ui
+    assert "lite-security-posture-comparison-body" in ui
+    assert "lite-security-execution-timeline-body" in ui
+    assert "lite-security-scan-quality-body" in ui
+    assert "lite-security-history-body" in ui
+    assert "lite-security-protection-dashboard-body" in ui
+    assert "aria-expanded" in ui
+    assert "aria-controls" in ui
+    assert "lite-security-collapse-toggle" in css
+    assert "lite-security-collapsible-body" in css
+    assert "lite-security-card-collapsed" in css
+    assert "prefers-reduced-motion" in css
+
+
 def test_lite_security_ui_preserves_backend_owned_boundaries():
     ui = _lite_ui_source().lower()
 
