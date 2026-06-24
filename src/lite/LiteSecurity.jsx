@@ -1496,7 +1496,7 @@ export default function SecurityScreen() {
           ) : null}
           <div className="lite-security-actions">
             <LiteButton onClick={scan} disabled={scanInProgress} haptic>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
-            <LiteButton onClick={showEvidence} tone="secondary">{evidence ? 'Hide Evidence' : evidenceLoading ? 'Opening...' : 'Evidence'}</LiteButton>
+            <LiteButton onClick={showEvidence} tone="secondary">{evidenceLoading ? 'Opening...' : (evidence || evidenceError) ? 'Hide Evidence' : 'Evidence'}</LiteButton>
           </div>
         </div>
 
@@ -1524,6 +1524,85 @@ export default function SecurityScreen() {
         <SecurityLastKnownGoodCard marker={lastKnownGood} />
         <SecurityPostureComparisonCard comparison={postureComparison} />
       </section>
+
+      {(evidence || evidenceError || evidenceLoading) ? (
+        <section className="lite-security-evidence-dropdown" aria-label="Sanitized security evidence receipt" aria-live="polite">
+          <GlassCard className="lite-security-card lite-security-evidence-panel" role="region" aria-label="Sanitized security evidence">
+            <div className="lite-security-card-head">
+              <div className="lite-security-icon">
+                <FileCheck className="h-5 w-5" />
+              </div>
+              <span className="lite-security-soft-badge">Sanitized evidence</span>
+              <button type="button" className="lite-security-evidence-close" onClick={closeEvidencePanel} aria-label="Close evidence details">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <h2>{evidenceError ? 'Evidence not ready' : evidenceLoading ? 'Opening evidence...' : 'Evidence details'}</h2>
+            {evidenceError ? <p>{evidenceError}</p> : null}
+            {evidenceLoading ? <p>Pocket Lab is opening the sanitized evidence summary for the latest safety check.</p> : null}
+            {evidence ? (
+              <>
+              <div className="lite-security-evidence-summary">
+                <div>
+                  <span>Run</span>
+                  <strong>{shortRunId(evidence?.run?.run_id || lastRun?.run_id)}</strong>
+                </div>
+                <div>
+                  <span>Status</span>
+                  <strong>{evidence?.run?.status || 'unknown'}</strong>
+                </div>
+                <div>
+                  <span>Score</span>
+                  <strong>{evidence?.score ?? safetyScore}</strong>
+                </div>
+                <div>
+                  <span>Findings</span>
+                  <strong>{evidenceFindings.length}</strong>
+                </div>
+              </div>
+
+              <div className="lite-security-evidence-tools">
+                {['lynis', 'trivy'].map((tool) => {
+                  const item = toolResults?.[tool] || {};
+                  return (
+                    <div key={tool}>
+                      <strong>{tool}</strong>
+                      <span>{item.status || 'recorded'}</span>
+                      <p>{tool === 'trivy' && item.sbom_saved ? 'SBOM saved and findings normalized.' : 'Output normalized before display.'}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {evidenceReceipt ? (
+                <div className="lite-security-receipt-card">
+                  <div>
+                    <span>Evidence receipt</span>
+                    <strong>{shortRunId(evidenceReceipt.run_id)}</strong>
+                    <p>Sanitized receipt for support, audit review, or your own records.</p>
+                  </div>
+                  <div className="lite-security-receipt-grid">
+                    <div><span>Status</span><strong>{evidenceReceipt.status}</strong></div>
+                    <div><span>Duration</span><strong>{formatSecurityDuration(evidenceReceipt.duration_seconds)}</strong></div>
+                    <div><span>Tools</span><strong>{evidenceReceipt.tools.length}</strong></div>
+                    <div><span>SBOM</span><strong>{evidenceReceipt.sbom_saved ? 'Saved' : 'Not saved'}</strong></div>
+                  </div>
+                  <LiteButton tone="secondary" onClick={copyEvidenceReceipt}>{receiptCopied ? 'Copied' : 'Copy Receipt'}</LiteButton>
+                </div>
+              ) : null}
+
+              <div className="lite-security-evidence-files">
+                {currentEvidenceRefs.slice(0, 6).map((ref) => (
+                  <code key={ref}>{String(ref).split('/').slice(-1)[0]}</code>
+                ))}
+              </div>
+              <p className="lite-security-evidence-note">Raw scanner output and sensitive values stay hidden. This panel shows only sanitized evidence metadata.</p>
+            </>
+          ) : null}
+          </GlassCard>
+        </section>
+      ) : null}
 
       <section className="lite-security-assurance-grid" aria-label="Security assurances">
         {trustSignals.map((item) => {
@@ -1806,84 +1885,12 @@ export default function SecurityScreen() {
         </GlassCard>
       </div>
 
-      {(evidence || evidenceError || evidenceLoading) ? (
-        <div className="lite-security-evidence-modal-backdrop" role="presentation" onClick={closeEvidencePanel}>
-          <GlassCard className="lite-security-card lite-security-evidence-panel" role="dialog" aria-modal="true" aria-label="Sanitized security evidence" onClick={(event) => event.stopPropagation()}>
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon">
-                <FileCheck className="h-5 w-5" />
-              </div>
-              <span className="lite-security-soft-badge">Sanitized evidence</span>
-              <button type="button" className="lite-security-evidence-close" onClick={closeEvidencePanel} aria-label="Close evidence details">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <h2>{evidenceError ? 'Evidence not ready' : evidenceLoading ? 'Opening evidence...' : 'Evidence details'}</h2>
-            {evidenceError ? <p>{evidenceError}</p> : null}
-            {evidenceLoading ? <p>Pocket Lab is opening the sanitized evidence summary for the latest safety check.</p> : null}
-            {evidence ? (
-              <>
-              <div className="lite-security-evidence-summary">
-                <div>
-                  <span>Run</span>
-                  <strong>{shortRunId(evidence?.run?.run_id || lastRun?.run_id)}</strong>
-                </div>
-                <div>
-                  <span>Status</span>
-                  <strong>{evidence?.run?.status || 'unknown'}</strong>
-                </div>
-                <div>
-                  <span>Score</span>
-                  <strong>{evidence?.score ?? safetyScore}</strong>
-                </div>
-                <div>
-                  <span>Findings</span>
-                  <strong>{evidenceFindings.length}</strong>
-                </div>
-              </div>
-
-              <div className="lite-security-evidence-tools">
-                {['lynis', 'trivy'].map((tool) => {
-                  const item = toolResults?.[tool] || {};
-                  return (
-                    <div key={tool}>
-                      <strong>{tool}</strong>
-                      <span>{item.status || 'recorded'}</span>
-                      <p>{tool === 'trivy' && item.sbom_saved ? 'SBOM saved and findings normalized.' : 'Output normalized before display.'}</p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {evidenceReceipt ? (
-                <div className="lite-security-receipt-card">
-                  <div>
-                    <span>Evidence receipt</span>
-                    <strong>{shortRunId(evidenceReceipt.run_id)}</strong>
-                    <p>Sanitized receipt for support, audit review, or your own records.</p>
-                  </div>
-                  <div className="lite-security-receipt-grid">
-                    <div><span>Status</span><strong>{evidenceReceipt.status}</strong></div>
-                    <div><span>Duration</span><strong>{formatSecurityDuration(evidenceReceipt.duration_seconds)}</strong></div>
-                    <div><span>Tools</span><strong>{evidenceReceipt.tools.length}</strong></div>
-                    <div><span>SBOM</span><strong>{evidenceReceipt.sbom_saved ? 'Saved' : 'Not saved'}</strong></div>
-                  </div>
-                  <LiteButton tone="secondary" onClick={copyEvidenceReceipt}>{receiptCopied ? 'Copied' : 'Copy Receipt'}</LiteButton>
-                </div>
-              ) : null}
-
-              <div className="lite-security-evidence-files">
-                {currentEvidenceRefs.slice(0, 6).map((ref) => (
-                  <code key={ref}>{String(ref).split('/').slice(-1)[0]}</code>
-                ))}
-              </div>
-              <p className="lite-security-evidence-note">Raw scanner output and sensitive values stay hidden. This panel shows only sanitized evidence metadata.</p>
-            </>
-          ) : null}
-          </GlassCard>
-        </div>
-      ) : null}
+      <SecurityFindingDetailModal
+        finding={selectedFinding}
+        context={remediationContext}
+        onClose={closeFindingDetails}
+        onOpenEvidence={openEvidenceFromFindingDetails}
+      />
 
       <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} />
 
