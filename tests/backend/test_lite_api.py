@@ -1129,3 +1129,44 @@ def test_lite_device_connection_lines_render_on_stacked_mobile_layout():
     assert "top: calc(-1rem - 1px)" in css
     assert "repeating-linear-gradient(180deg" in css
     assert "display: none" not in css.split("@media (max-width: 1100px)")[-1]
+
+
+def test_lite_security_ui_has_remediation_guidance_and_health_banner():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+
+    assert "What should I do?" in ui
+    assert "Safe to ignore?" in ui
+    assert "Expected" in ui
+    assert "Recheck" in ui
+    assert "Action needed" in ui
+    assert "Review recommended" in ui
+    assert "Your Pocket Lab looks safe" in ui
+    assert "Mostly safe, recheck recommended" in ui
+    assert "Review needed" in ui
+    assert "Safety check did not finish" in ui
+    assert "Run your first safety check" in ui
+    assert "lite-security-remediation-drawer" in ui
+    assert "lite-security-health-banner" in ui
+    assert "lite-security-action-indicator" in ui
+    assert "lite-security-remediation-drawer" in css
+    assert "lite-security-health-banner" in css
+    assert "@media (max-width: 720px)" in css
+
+
+def test_lite_security_ui_preserves_backend_owned_boundaries():
+    ui = _lite_ui_source().lower()
+
+    forbidden = [
+        "nats.connect(",
+        "new websocket",
+        "child_process",
+        "exec(",
+        "shell command",
+        "run commands or change your device. any future fix action must stay backend-owned".replace(". any", ". Any").lower(),
+    ]
+    for term in forbidden[:4]:
+        assert term not in ui
+    assert "frontend never" not in ui
+    assert "this guidance does not run commands or change your device" in ui
+    assert "backend-owned" in ui

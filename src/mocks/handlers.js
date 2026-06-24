@@ -10,6 +10,7 @@ const controlPlane = () => {
 };
 const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
 const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
+
 const normalizeLiteDeviceName = (value) => String(value || '')
   .trim()
   .toLowerCase()
