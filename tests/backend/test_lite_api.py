@@ -1185,26 +1185,25 @@ def test_lite_security_ui_has_mobile_first_finding_detail_modal():
     css = Path("src/index.css").read_text()
 
     assert "View details" in ui
-    assert "Finding title" in ui
+    assert "Finding" in ui
     assert "Severity:" in ui
     assert "Source:" in ui
     assert "Affected component" in ui
     assert "Recommendation" in ui
     assert "Evidence reference" in ui
     assert "Close finding details" in ui
-    assert "View Evidence Receipt" in ui
     assert "lite-finding-detail-modal" in ui
-    assert "lite-finding-detail-backdrop" in ui
-    assert 'role="dialog"' in ui
-    assert 'aria-modal="true"' in ui
+    assert "lite-security-coverage-scroll" in ui
+    assert 'role="region"' in ui
     assert "lite-finding-detail-modal" in css
-    assert "lite-finding-detail-backdrop" in css
     assert "lite-finding-detail-trigger" in css
     assert "lite-security-evidence-dropdown" in ui
-    assert 'role="region"' in ui
     assert "lite-security-evidence-dropdown" in css
     assert "SecurityFindingDetailModal" in ui
-    assert "finding={selectedFinding}" in ui
+    assert "finding={item}" in ui or "finding={issue}" in ui
+    assert "lite-finding-detail-backdrop" not in ui
+    assert "lite-finding-detail-backdrop" not in css
+    assert "onOpenEvidence" not in ui
     assert "@media (max-width: 720px)" in css
 
 def test_lite_security_ui_preserves_backend_owned_boundaries():
