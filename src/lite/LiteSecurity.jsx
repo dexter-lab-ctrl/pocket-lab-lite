@@ -347,6 +347,327 @@ function SecurityCoverageMatrixCard({ expanded, onToggle }) {
   );
 }
 
+
+const SECURITY_ACTION_TONES = new Set(['safe', 'review', 'danger', 'neutral']);
+
+function textIncludes(value, needles) {
+  const text = String(value || '').toLowerCase();
+  return needles.some((needle) => text.includes(needle));
+}
+
+function findingCategory(finding) {
+  return String(finding?.category || finding?.type || finding?.source_type || '').toLowerCase();
+}
+
+function findingSeverity(finding) {
+  return String(finding?.severity || finding?.level || '').toLowerCase();
+}
+
+function findingReviewText(finding) {
+  return [
+    finding?.id,
+    finding?.category,
+    finding?.type,
+    finding?.source,
+    finding?.summary,
+    finding?.title,
+    finding?.recommendation,
+    finding?.status,
+    finding?.detail,
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+export function classifyFindingAction(finding, context = {}) {
+  const category = findingCategory(finding);
+  const severity = findingSeverity(finding);
+  const text = findingReviewText(finding);
+  const status = String(finding?.status || context?.lastRun?.status || '').toLowerCase();
+  const highRisk = ['critical', 'high'].includes(severity);
+  const mediumRisk = severity === 'medium';
+  const timeoutLike = isSecurityTimeoutFinding(finding)
+    || textIncludes(text, ['timeout', 'timed out', 'partial', 'did not finish'])
+    || ['timeout', 'timed_out', 'partial', 'review'].includes(status);
+
+  if (category === 'protected_runtime_secret') {
+    return {
+      label: 'Expected',
+      tone: 'safe',
+      summary: 'Protected runtime secret is locked down server-side.',
+    };
+  }
+
+  if (category === 'missing_tool') {
+    return {
+      label: 'Action needed',
+      tone: 'danger',
+      summary: 'A required safety tool is missing on this device.',
+    };
+  }
+
+  if (highRisk || category === 'secret_exposure') {
+    return {
+      label: 'Action needed',
+      tone: 'danger',
+      summary: 'This item needs attention before confidence can be high.',
+    };
+  }
+
+  if (category === 'dependency_vulnerability') {
+    return mediumRisk
+      ? { label: 'Action needed', tone: 'danger', summary: 'A dependency should be updated through the normal Pocket Lab flow.' }
+      : { label: 'Review recommended', tone: 'review', summary: 'Review this dependency and update if appropriate.' };
+  }
+
+  if (category === 'misconfiguration') {
+    return ['critical', 'high', 'medium'].includes(severity)
+      ? { label: 'Action needed', tone: 'danger', summary: 'A local setting may need a safer configuration.' }
+      : { label: 'Review recommended', tone: 'review', summary: 'Review this local setting when convenient.' };
+  }
+
+  if (category === 'host_hardening' && timeoutLike) {
+    return {
+      label: 'Recheck',
+      tone: 'review',
+      summary: 'Lynis timeout needs another run.',
+    };
+  }
+
+  if (timeoutLike) {
+    return {
+      label: 'Recheck',
+      tone: 'review',
+      summary: 'The check was partial, so another run is recommended.',
+    };
+  }
+
+  if (mediumRisk) {
+    return {
+      label: 'Action needed',
+      tone: 'danger',
+      summary: 'This item should be reviewed and fixed when possible.',
+    };
+  }
+
+  return {
+    label: 'Review recommended',
+    tone: 'neutral',
+    summary: 'Review this item and run another safety check after changes.',
+  };
+}
+
+export function buildSecurityRemediation(finding, context = {}) {
+  const category = findingCategory(finding);
+  const action = classifyFindingAction(finding, context);
+  const text = findingReviewText(finding);
+  const timeoutLike = isSecurityTimeoutFinding(finding)
+    || textIncludes(text, ['timeout', 'timed out', 'partial', 'did not finish']);
+
+  if (category === 'protected_runtime_secret') {
+    return {
+      title: 'Protected runtime secret',
+      action,
+      happened: 'Pocket Lab found a backend runtime secret in a protected server-side file.',
+      means: 'This can be expected when the file is locked down and never displayed in the browser.',
+      recommended: 'Keep file permissions restricted. Do not copy this file into public repos or frontend assets.',
+      risk: 'Expected if locked down server-side.',
+    };
+  }
+
+  if (timeoutLike || (category === 'host_hardening' && action.label === 'Recheck')) {
+    return {
+      title: 'Partial host-readiness check',
+      action,
+      happened: 'The host-readiness check did not finish before the timeout.',
+      means: 'This is usually caused by device speed, battery state, or Termux limits.',
+      recommended: 'Run the check again while charging. If this happens often, increase the Lynis timeout.',
+      risk: 'Recheck recommended. Not evidence of compromise.',
+    };
+  }
+
+  if (category === 'missing_tool') {
+    return {
+      title: 'Safety tool missing',
+      action,
+      happened: 'A required safety tool was not available on this device.',
+      means: 'Pocket Lab could not complete that part of the safety check.',
+      recommended: 'Re-run the Lite bootstrap or install the missing tool through the backend-supported setup path.',
+      risk: 'Action needed before confidence can be high.',
+    };
+  }
+
+  if (category === 'dependency_vulnerability') {
+    return {
+      title: 'Dependency needs review',
+      action,
+      happened: 'Trivy found a dependency with a known vulnerability.',
+      means: 'A package or dependency may need an update.',
+      recommended: 'Update through Pocket Lab’s normal release/bootstrap workflow, then run another safety check.',
+      risk: findingSeverity(finding) === 'low' ? 'Review recommended.' : 'Action needed, especially for high or critical severity.',
+    };
+  }
+
+  if (category === 'secret_exposure') {
+    return {
+      title: 'Secret-like value found',
+      action,
+      happened: 'Trivy found a secret-like value in a scanned path.',
+      means: 'A sensitive value may be stored somewhere it should not be.',
+      recommended: 'Keep the value hidden, rotate it through the backend/Identity flow if needed, and verify it is not in frontend assets or public repos.',
+      risk: 'Action needed.',
+    };
+  }
+
+  if (category === 'misconfiguration' || category === 'host_hardening') {
+    return {
+      title: 'Configuration review',
+      action,
+      happened: 'Trivy or Lynis found a configuration concern.',
+      means: 'A local setting may be weaker than recommended.',
+      recommended: 'Review the specific item, apply a backend-supported fix if available, then re-run the check.',
+      risk: ['critical', 'high', 'medium'].includes(findingSeverity(finding)) ? 'Action needed.' : 'Review recommended.',
+    };
+  }
+
+  return {
+    title: 'Review item',
+    action,
+    happened: 'Pocket Lab found an item that needs review.',
+    means: 'The check needs operator review before it should be considered resolved.',
+    recommended: 'Review the finding details and run another safety check after making changes.',
+    risk: action.label === 'Action needed' ? 'Action needed.' : 'Review recommended.',
+  };
+}
+
+function securityHasEvidence(data, evidenceRefs = []) {
+  const refs = Array.isArray(evidenceRefs) ? evidenceRefs : [];
+  return refs.length > 0
+    || Number(data?.last_run?.evidence_count || data?.evidence_count || 0) > 0
+    || Boolean(data?.last_run?.evidence_saved)
+    || Boolean(data?.last_run?.sbom_saved)
+    || Boolean(data?.evidence_saved);
+}
+
+export function deriveSecurityHealthBanner(securityData, confidence, findings = []) {
+  const lastRun = securityData?.last_run || null;
+  const runStatus = String(lastRun?.status || securityData?.scan_progress?.status || securityData?.status || '').toLowerCase();
+  const evidenceRefs = Array.isArray(securityData?.evidence_refs) ? securityData.evidence_refs : [];
+  const evidenceSaved = securityHasEvidence(securityData, evidenceRefs);
+  const allFindings = Array.isArray(findings) ? findings : [];
+  const criticalHighCount = Number(lastRun?.critical_count || 0) + Number(lastRun?.high_count || 0)
+    + allFindings.filter((item) => ['critical', 'high'].includes(findingSeverity(item))).length;
+  const actionNeeded = allFindings.some((item) => classifyFindingAction(item, { lastRun, securityData }).label === 'Action needed');
+  const partial = Boolean(lastRun?.partial_results)
+    || String(confidence?.label || '').toLowerCase().includes('medium')
+    || runStatus.includes('partial')
+    || allFindings.some((item) => classifyFindingAction(item, { lastRun, securityData }).label === 'Recheck');
+  const terminal = ['succeeded', 'success', 'healthy', 'degraded', 'partial', 'failed', 'error'].some((status) => runStatus.includes(status));
+
+  if (!lastRun) {
+    return {
+      tone: 'neutral',
+      title: 'Run your first safety check',
+      body: 'Pocket Lab will check this device locally and save sanitized evidence.',
+    };
+  }
+
+  if (runStatus.includes('failed') || runStatus.includes('error') || (terminal && !evidenceSaved)) {
+    return {
+      tone: 'danger',
+      title: 'Safety check did not finish',
+      body: 'Pocket Lab could not complete the check. Run it again when the device is online and charging.',
+    };
+  }
+
+  if (criticalHighCount > 0 || actionNeeded) {
+    return {
+      tone: 'danger',
+      title: 'Review needed',
+      body: 'Pocket Lab found items that need attention. Evidence was saved with sensitive values hidden.',
+    };
+  }
+
+  if (partial) {
+    return {
+      tone: 'review',
+      title: 'Mostly safe, recheck recommended',
+      body: 'Available evidence was saved. Some host-readiness checks did not finish.',
+    };
+  }
+
+  return {
+    tone: 'safe',
+    title: 'Your Pocket Lab looks safe',
+    body: 'No critical or high-risk issues were found. Evidence was saved for review.',
+  };
+}
+
+function SecurityActionIndicator({ action }) {
+  const tone = SECURITY_ACTION_TONES.has(action?.tone) ? action.tone : 'neutral';
+  return (
+    <span className={`lite-security-action-indicator lite-security-action-${tone}`} aria-label={`Safe to ignore? ${action?.label || 'Review recommended'}. ${action?.summary || ''}`}>
+      <span>Safe to ignore?</span>
+      <strong>{action?.label || 'Review recommended'}</strong>
+    </span>
+  );
+}
+
+function SecurityHealthBanner({ banner }) {
+  return (
+    <section className={`lite-security-health-banner lite-security-health-${banner.tone}`} aria-label="Security Health banner">
+      <div>
+        <span className="lite-security-health-kicker">Security Health</span>
+        <h2>{banner.title}</h2>
+        <p>{banner.body}</p>
+      </div>
+    </section>
+  );
+}
+
+function SecurityRemediationDrawer({ finding, context, onClose }) {
+  if (!finding) return null;
+  const remediation = buildSecurityRemediation(finding, context);
+  const detail = finding?.recommendation || finding?.summary || finding?.title || 'Review this item and keep Pocket Lab protected.';
+  return (
+    <div className="lite-security-remediation-backdrop" role="presentation" onClick={onClose}>
+      <aside className="lite-security-remediation-drawer" role="dialog" aria-modal="true" aria-labelledby="lite-security-remediation-title" onClick={(event) => event.stopPropagation()}>
+        <div className="lite-security-remediation-head">
+          <div>
+            <span className="lite-security-soft-badge">What should I do?</span>
+            <h2 id="lite-security-remediation-title">{remediation.title}</h2>
+          </div>
+          <button type="button" className="lite-security-evidence-close" onClick={onClose} aria-label="Close remediation guidance">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <SecurityActionIndicator action={remediation.action} />
+        <div className="lite-security-remediation-summary">
+          <strong>{securityFindingLabel(finding)}</strong>
+          <p>{detail}</p>
+        </div>
+        <div className="lite-security-remediation-sections">
+          <section>
+            <h3>What happened</h3>
+            <p>{remediation.happened}</p>
+          </section>
+          <section>
+            <h3>What it means</h3>
+            <p>{remediation.means}</p>
+          </section>
+          <section>
+            <h3>Recommended action</h3>
+            <p>{remediation.recommended}</p>
+          </section>
+          <section>
+            <h3>Risk</h3>
+            <p>{remediation.risk}</p>
+          </section>
+        </div>
+        <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
+      </aside>
+    </div>
+  );
+}
+
 export default function SecurityScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.security, []);
   const [result, setResult] = useState(null);
@@ -358,6 +679,7 @@ export default function SecurityScreen() {
   const [receiptCopied, setReceiptCopied] = useState(false);
   const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [progressNow, setProgressNow] = useState(() => Date.now());
+  const [remediationFinding, setRemediationFinding] = useState(null);
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -373,6 +695,7 @@ export default function SecurityScreen() {
     { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
   ];
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const allReviewFindings = [...criticalIssues, ...reviewItems];
   const evidenceRun = evidence?.run || null;
   const toolResults = evidenceRun?.tool_results || lastRun?.tool_results || data?.tool_results || {};
   const currentEvidenceRefs = Array.from(new Set([
@@ -487,6 +810,8 @@ export default function SecurityScreen() {
   const safetyScoreSummary = lastRun?.partial_results
     ? 'Partial check completed. Available evidence was saved.'
     : data?.summary || 'Pocket Lab is checking the current safety state.';
+  const healthBanner = deriveSecurityHealthBanner(data, null, allReviewFindings);
+  const remediationContext = { data, lastRun, evidence, evidenceRefs, toolResults };
   const trustSignals = [
     {
       icon: Server,
@@ -529,6 +854,17 @@ export default function SecurityScreen() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [evidence, evidenceError, evidenceLoading]);
+
+  React.useEffect(() => {
+    if (!remediationFinding) return undefined;
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setRemediationFinding(null);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [remediationFinding]);
 
   function scheduleSecurityRefresh() {
     refresh();
@@ -592,6 +928,15 @@ export default function SecurityScreen() {
     } finally {
       setEvidenceLoading(false);
     }
+  }
+
+  function openRemediation(finding) {
+    triggerHapticFeedback(6);
+    setRemediationFinding(finding);
+  }
+
+  function closeRemediation() {
+    setRemediationFinding(null);
   }
 
   return (
@@ -670,6 +1015,8 @@ export default function SecurityScreen() {
           <SecurityConfidenceCard confidence={securityConfidence} />
         </div>
       </section>
+
+      <SecurityHealthBanner banner={healthBanner} />
 
       <section className="lite-security-assurance-grid" aria-label="Security assurances">
         {trustSignals.map((item) => {
@@ -865,28 +1212,42 @@ export default function SecurityScreen() {
 
           {criticalIssues.length ? (
             <div className="lite-security-issue-list">
-              {criticalIssues.slice(0, 4).map((issue) => (
-                <div key={issue.id || issue.summary} className="lite-security-issue">
-                  <strong>{issue.summary || 'Critical issue found'}</strong>
-                  <p>{issue.recommendation || 'Review this item and apply the recommended fix.'}</p>
-                </div>
-              ))}
+              {criticalIssues.slice(0, 4).map((issue) => {
+                const action = classifyFindingAction(issue, remediationContext);
+                return (
+                  <div key={issue.id || issue.summary} className="lite-security-issue">
+                    <div className="lite-security-finding-head">
+                      <strong>{issue.summary || 'Critical issue found'}</strong>
+                      <SecurityActionIndicator action={action} />
+                    </div>
+                    <p>{issue.recommendation || 'Review this item and apply the recommended fix.'}</p>
+                    <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(issue)}>What should I do?</button>
+                  </div>
+                );
+              })}
             </div>
           ) : null}
 
           {reviewItems.length ? (
             <div className="lite-security-review-list">
-              {reviewItems.slice(0, 4).map((item) => (
-                <div key={item.id || item.summary} className="lite-security-review-item">
-                  <span className={`lite-security-severity lite-security-severity-${securityFindingTone(item.severity)}`}>
-                    {item.severity || 'review'}
-                  </span>
-                  <div>
-                    <strong>{securityFindingLabel(item)}</strong>
-                    <p>{item.recommendation || item.summary || 'Review this item and keep the workspace protected.'}</p>
+              {reviewItems.slice(0, 4).map((item) => {
+                const action = classifyFindingAction(item, remediationContext);
+                return (
+                  <div key={item.id || item.summary} className="lite-security-review-item">
+                    <span className={`lite-security-severity lite-security-severity-${securityFindingTone(item.severity)}`}>
+                      {item.severity || 'review'}
+                    </span>
+                    <div>
+                      <div className="lite-security-finding-head">
+                        <strong>{securityFindingLabel(item)}</strong>
+                        <SecurityActionIndicator action={action} />
+                      </div>
+                      <p>{item.recommendation || item.summary || 'Review this item and keep the workspace protected.'}</p>
+                      <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="lite-security-safe-panel">
@@ -1008,6 +1369,8 @@ export default function SecurityScreen() {
           </GlassCard>
         </div>
       ) : null}
+
+      <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} />
 
       <ResultNotice result={result} error={actionError} />
     </>
