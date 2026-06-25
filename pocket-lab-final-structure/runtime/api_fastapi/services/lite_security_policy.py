@@ -32,7 +32,7 @@ EXCLUDED_DIRS = [
     ".cache",
     "tmp",
     "temp",
-    "logs",
+    "logs"
 ]
 
 SENSITIVE_KEY_RE = re.compile(
@@ -74,7 +74,7 @@ SECRET_VALUE_REPLACEMENTS = [
     re.compile(r"(secret\s*[=:]\s*)[^\s'\"<>]+", re.IGNORECASE),
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.IGNORECASE | re.DOTALL),
     re.compile(r"tskey-[A-Za-z0-9_-]+", re.IGNORECASE),
-    re.compile(r"s\.[A-Za-z0-9]{20,}"),
+    re.compile(r"s\.[A-Za-z0-9]{20,}")
 ]
 
 
@@ -102,21 +102,6 @@ COMPONENT_RULES = (
 )
 
 GUIDANCE = [
-    {
-        "step": 1,
-        "title": "Check local readiness",
-        "summary": "Pocket Lab reviews local security and dependency posture.",
-    },
-    {
-        "step": 2,
-        "title": "Summarize what changed",
-        "summary": "New issues are compared against the last safety check.",
-    },
-    {
-        "step": 3,
-        "title": "Show clear next steps",
-        "summary": "Only actionable items are shown.",
-    },
 ]
 
 
@@ -139,7 +124,7 @@ def default_scan_roots(root: Path | None = None) -> list[Path]:
         base / "requirements.txt",
         base / "requirements-dev.txt",
         base / "Taskfile.yml",
-        base / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts",
+        base / "pocket-lab-final-structure" / "pocket-lab-bootstrap-production-scripts-patched" / "scripts"
     ]
     return [item for item in candidates if item.exists()]
 

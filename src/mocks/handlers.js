@@ -53,7 +53,7 @@ const mockLiteSecurityPayload = () => {
       { key: 'worker_picked_up', title: 'Worker picked it up', detail: 'The backend worker started the check.', status: 'completed' },
       { key: 'lynis_host_check', title: 'Lynis host check', detail: 'Host readiness checks completed.', status: 'completed' },
       { key: 'trivy_dependency_secret_check', title: 'Trivy dependency & secret check', detail: 'Dependency, config, secret-like, and SBOM checks completed.', status: 'completed' },
-      { key: 'evidence_saved', title: 'Evidence saved', detail: 'Sanitized evidence files ready.', status: 'completed' },
+      { key: 'evidence_saved', title: 'Evidence saved', detail: 'Sanitized evidence files ready.', status: 'completed' }
     ],
     checks_reviewed: 2,
     items_to_review: 0,
@@ -63,11 +63,11 @@ const mockLiteSecurityPayload = () => {
       'security/evidence/security-mock-001/summary.json',
       'security/evidence/security-mock-001/lynis-normalized.json',
       'security/evidence/security-mock-001/trivy-normalized.json',
-      'security/evidence/security-mock-001/sbom.cdx.json',
+      'security/evidence/security-mock-001/sbom.cdx.json'
     ],
     history: [
       { run_id: 'security-mock-001', status: 'succeeded', score: 100, started_at: new Date(now - 3 * 60 * 1000).toISOString(), completed_at: new Date(now - 2 * 60 * 1000).toISOString(), duration_seconds: 60, items_to_review: 0, evidence_count: 4, sbom_saved: true },
-      { run_id: 'security-mock-000', status: 'succeeded', score: 96, started_at: new Date(now - 24 * 60 * 60 * 1000).toISOString(), completed_at: new Date(now - 24 * 60 * 60 * 1000 + 120000).toISOString(), duration_seconds: 120, items_to_review: 1, evidence_count: 4, sbom_saved: true },
+      { run_id: 'security-mock-000', status: 'succeeded', score: 96, started_at: new Date(now - 24 * 60 * 60 * 1000).toISOString(), completed_at: new Date(now - 24 * 60 * 60 * 1000 + 120000).toISOString(), duration_seconds: 120, items_to_review: 1, evidence_count: 4, sbom_saved: true }
     ],
     finding_delta: {
       baseline: 'compared',
@@ -82,9 +82,6 @@ const mockLiteSecurityPayload = () => {
       still_present: [],
     },
     guidance: [
-      { step: 1, title: 'Check local readiness', summary: 'Pocket Lab reviews local security and dependency posture.' },
-      { step: 2, title: 'Summarize what changed', summary: 'New issues are compared against the last safety check.' },
-      { step: 3, title: 'Show clear next steps', summary: 'Only actionable items are shown.' },
     ],
     updated_at: new Date(now).toISOString(),
   };
@@ -123,7 +120,7 @@ const mockLiteSecurityPayload = () => {
       items_to_review: 2,
       findings: [
         { id: 'dep-cve', source: 'trivy', category: 'dependency_vulnerability', severity: 'high', summary: 'Dependency has a known vulnerability.', recommendation: 'Update through Pocket Lab’s normal release/bootstrap workflow.' },
-        { id: 'secret-like', source: 'trivy', category: 'secret_exposure', severity: 'medium', summary: 'Secret-like value found in a scanned path.', recommendation: 'Rotate through the backend Identity flow if needed.' },
+        { id: 'secret-like', source: 'trivy', category: 'secret_exposure', severity: 'medium', summary: 'Secret-like value found in a scanned path.', recommendation: 'Rotate through the backend Identity flow if needed.' }
       ],
     };
   }
@@ -200,7 +197,7 @@ const mockLiteDevices = () => [
     role: 'compute',
     role_label: 'App Host',
     capabilities: ['Run apps', 'Report device health'],
-  },
+  }
 ];
 
 export const handlers = [
@@ -237,12 +234,12 @@ export const handlers = [
       { name: 'Worker Execution', status: 'healthy', summary: 'Worker heartbeat sampler is active' },
       { name: 'App Catalog', status: 'healthy', summary: '2 catalog items available' },
       { name: 'Identity & Access', status: 'healthy', summary: 'Vault is ready' },
-      { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' },
+      { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' }
     ],
   })),
   http.get('/api/lite/catalog', () => HttpResponse.json({ items: [
     { id: 'gitea', name: 'Gitea', status: 'available', summary: 'Local source store for app catalog workflows', installed: false },
-    { id: 'vault', name: 'Vault', status: 'available', summary: 'Passwords and access protection', installed: true },
+    { id: 'vault', name: 'Vault', status: 'available', summary: 'Passwords and access protection', installed: true }
   ], count: 2, updated_at: new Date().toISOString() })),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
   http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
@@ -252,7 +249,7 @@ export const handlers = [
     count: mockLiteDevices().length,
     roles: [
       { role: 'compute', role_label: 'App Host', description: 'Runs apps and services for your Pocket Lab.' },
-      { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' },
+      { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' }
     ],
     latest_invite: null,
     updated_at: new Date().toISOString(),
@@ -268,10 +265,10 @@ export const handlers = [
     last_backup_time: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
     last_verification_result: 'not_verified',
     backup_history: [
-      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
+      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' }
     ],
     available_restore_points: [
-      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' },
+      { backup_id: 'mock-backup-001', created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(), engine: 'restic', verification_status: 'not_verified', included_file_count: 6, summary: 'Backup created with 6 safe item(s). Evidence saved.' }
     ],
     latest_restore_preview: { preview_id: 'mock-preview-001', backup_id: 'mock-backup-001', status: 'ready', change_count: 2 },
     pre_restore_checkpoint: { status: 'not_created', summary: 'A checkpoint will be created automatically before restore changes local state.' },
@@ -298,7 +295,7 @@ export const handlers = [
     change_count: 2,
     changes: [
       { relative_path: 'state/fleet_agents.json', action: 'would_overwrite', target: 'Lite state' },
-      { relative_path: 'backup-metadata/scope.json', action: 'metadata_only', target: 'Backup metadata' },
+      { relative_path: 'backup-metadata/scope.json', action: 'metadata_only', target: 'Backup metadata' }
     ],
     summary: 'Preview ready. Restore execution remains disabled until Increment 4.',
   })),
@@ -414,5 +411,5 @@ export const handlers = [
       return HttpResponse.json({ detail: 'NATS/JetStream worker execution is required; write action paused.' }, { status: 503 });
     }
     return HttpResponse.json({ accepted: true, job_id: `mock-${operation}-001`, operation, correlation_id: 'mock-correlation-001' }, { status: 202 });
-  }),
+  })
 ];
