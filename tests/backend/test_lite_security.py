@@ -31,7 +31,7 @@ def test_lite_security_default_state_is_stable():
     assert payload["last_run"] is None
     assert payload["checks_reviewed"] == 0
     assert payload["critical_issues"] == []
-    assert len(payload["guidance"]) == 3
+    assert payload["guidance"] == []
 
 
 def test_lite_security_check_queues_worker_command(monkeypatch):
