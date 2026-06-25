@@ -1177,6 +1177,15 @@ export default function SecurityScreen() {
   const [receiptCopied, setReceiptCopied] = useState(false);
   const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [collapsedSecurityCards, setCollapsedSecurityCards] = useState({});
+
+  const isSecurityCardCollapsed = (key) => Boolean(collapsedSecurityCards[key]);
+
+  const toggleSecurityCard = (key) => {
+    setCollapsedSecurityCards((current) => ({
+      ...current,
+      [key]: !current[key],
+    }));
+  };
   const [progressNow, setProgressNow] = useState(() => Date.now());
   const [remediationFinding, setRemediationFinding] = useState(null);
   const [selectedFinding, setSelectedFinding] = useState(null);
