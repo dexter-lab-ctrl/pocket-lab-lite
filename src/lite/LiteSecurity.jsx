@@ -1200,9 +1200,7 @@ export default function SecurityScreen() {
   const componentPosture = Array.isArray(data?.component_posture) ? data.component_posture : [];
   const healthyComponents = componentPosture.filter((item) => normalizeBackendState(item?.status) === 'ready').length;
   const guidance = Array.isArray(data?.guidance) && data.guidance.length ? data.guidance : [
-    { step: 1, title: '', summary: 'Pocket Lab reviews local security and dependency posture.' },
-    { step: 2, title: '', summary: 'New issues are compared against the last safety check.' },
-    { step: 3, title: '', summary: 'Only actionable items are shown.' },
+
   ];
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const allReviewFindings = [...criticalIssues, ...reviewItems];
