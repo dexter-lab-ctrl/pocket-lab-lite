@@ -226,21 +226,36 @@ export const handlers = [
     overall: 'healthy',
     checked_at: new Date().toISOString(),
     device: { name: 'pocket-lab-lite', mode: 'lite', resource_profile: 'low-power' },
-    summary: { apps_available: 2, devices_known: 1, security_findings: 0, nats_connected: true, jetstream_enabled: true, live_sampler_running: true },
+    summary: { apps_available: 1, devices_known: 1, security_findings: 0, nats_connected: true, jetstream_enabled: true, live_sampler_running: true },
     telemetry: { status: 'healthy', cpu_temp_c: 42, cpu_usage_percent: 12, free_space_mb: 256000, memory_usage_mb: 512 },
     services: [
       { name: 'Control API', status: 'healthy', summary: 'Pocket Lab Lite API is serving local control-plane requests' },
       { name: 'Command Bus', status: 'healthy', summary: 'NATS / JetStream is ready for worker-owned operations' },
       { name: 'Worker Execution', status: 'healthy', summary: 'Worker heartbeat sampler is active' },
-      { name: 'App Catalog', status: 'healthy', summary: '2 catalog items available' },
+      { name: 'App Catalog', status: 'healthy', summary: 'PhotoPrism is available for the Server Host' },
       { name: 'Identity & Access', status: 'healthy', summary: 'Vault is ready' },
       { name: 'Device Fleet', status: 'healthy', summary: '1 device record known to Pocket Lab Lite' }
     ],
   })),
-  http.get('/api/lite/catalog', () => HttpResponse.json({ items: [
-    { id: 'gitea', name: 'Gitea', status: 'available', summary: 'Local source store for app catalog workflows', installed: false },
-    { id: 'vault', name: 'Vault', status: 'available', summary: 'Passwords and access protection', installed: true }
-  ], count: 2, updated_at: new Date().toISOString() })),
+  http.get('/api/lite/catalog', () => {
+    const ready = scenario() === 'catalog-ready';
+    const installing = scenario() === 'catalog-installing';
+    const app = {
+      id: 'photoprism', name: 'PhotoPrism', category: 'Photos',
+      summary: 'Private photo library for your self-hosted workspace.',
+      status: ready ? 'ready' : installing ? 'installing' : 'not_installed',
+      install_state: ready ? 'installed' : installing ? 'installing' : 'available',
+      installed: ready,
+      target: { default_node_id: 'pocket-lab-lite-server', supported_roles: ['server'], eligible_devices: [{ node_id: 'pocket-lab-lite-server', name: 'Pocket Lab Lite Server', status: 'online', eligible: true, reason: 'Ready to install' }] },
+      actions: { install: !ready && !installing, open: ready, details: true, retry: false, remove: false },
+      runtime: { route: '/apps/photoprism/', url: ready ? '/apps/photoprism/' : null, health: ready ? 'healthy' : installing ? 'installing' : 'not_installed', version: ready ? 'detected-or-unknown' : null },
+      access: { https_ready: true, route_ready: ready, open_url: ready ? '/apps/photoprism/' : null, message: ready ? 'PhotoPrism is ready over secure access.' : 'Install PhotoPrism to enable secure app access.' },
+      progress: installing ? { step: 'Preparing PhotoPrism runtime', current: 2, total: 7, message: 'Setting up the app environment.' } : null,
+      last_operation: installing ? { operation_id: 'app-photoprism-mock', status: 'running', updated_at: new Date().toISOString(), message: 'PhotoPrism install is running.' } : ready ? { operation_id: 'app-photoprism-mock', status: 'succeeded', updated_at: new Date().toISOString(), message: 'PhotoPrism is ready.' } : null,
+      evidence_refs: ready ? ['catalog/evidence/app-photoprism-mock/summary.json'] : [],
+    };
+    return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() });
+  }),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
   http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
   http.get('/api/lite/fleet', () => HttpResponse.json({
@@ -301,7 +316,7 @@ export const handlers = [
   })),
   http.post('/api/lite/catalog/install', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
-    return HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-install-${body.app_id || 'app'}` }, { status: 202 });
+    return HttpResponse.json({ accepted: true, status: 'queued', operation_id: 'app-photoprism-mock', app_id: body.app_id || 'photoprism', target_node_id: body.target_node_id || 'pocket-lab-lite-server', message: 'PhotoPrism install started.' }, { status: 202 });
   }),
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
   http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Safety check queued. Pocket Lab will scan local security posture and dependency risks.' }, { status: 202 })),

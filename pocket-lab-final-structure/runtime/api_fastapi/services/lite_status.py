@@ -9,7 +9,7 @@ from .. import deps
 from .fleet_registry import fleet_health_snapshot, merged_fleet_nodes, normalize_node_id
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
-from . import lite_backup, lite_invites, lite_security as lite_security_service
+from . import lite_backup, lite_catalog as lite_catalog_service, lite_invites, lite_security as lite_security_service
 
 LITE_MODE = "lite"
 
@@ -189,7 +189,7 @@ async def build_lite_status() -> dict[str, Any]:
     gitea = _find_health_service(engine, "gitea")
     mariadb_socket = _mysql_socket_available()
 
-    catalog_items = deps.core.build_catalog_view()
+    catalog_items_count = lite_catalog_service.catalog_apps_count()
     fleet = fleet_health_snapshot()
     fleet_nodes = merged_fleet_nodes()
     opa_evaluations = deps.core.build_opa_evaluations()
@@ -228,8 +228,8 @@ async def build_lite_status() -> dict[str, Any]:
         ),
         _service(
             "App Catalog",
-            "healthy" if catalog_items else "degraded",
-            f"{len(catalog_items)} catalog item(s) available" if catalog_items else "Catalog is empty or not refreshed yet",
+            "healthy" if catalog_items_count else "degraded",
+            f"{catalog_items_count} app available" if catalog_items_count else "Catalog is empty or not refreshed yet",
         ),
         _service(
             "Identity & Access",
@@ -290,7 +290,7 @@ async def build_lite_status() -> dict[str, Any]:
         "device": device,
         "services": services,
         "summary": {
-            "apps_available": len(catalog_items),
+            "apps_available": catalog_items_count,
             "devices_known": len(fleet_nodes),
             "security_findings": len(blocked_findings),
             "nats_connected": bool(bus.get("connected")),
@@ -524,20 +524,7 @@ def _merge_lite_device(existing: dict[str, Any], incoming: dict[str, Any]) -> di
 
 
 def lite_catalog() -> dict[str, Any]:
-    items = deps.core.build_catalog_view()
-    simple_items: list[dict[str, Any]] = []
-    for item in items:
-        name = _text(item.get("name") or item.get("title") or item.get("id") or "App")
-        simple_items.append(
-            {
-                "id": _text(item.get("id") or item.get("slug") or name).lower().replace(" ", "-"),
-                "name": name,
-                "status": _status(item.get("status", "available"), default="available"),
-                "summary": _text(item.get("summary") or item.get("description") or "Ready to install and manage"),
-                "installed": bool(item.get("installed", False)),
-            }
-        )
-    return {"items": simple_items, "count": len(simple_items), "updated_at": deps.now_utc_iso()}
+    return lite_catalog_service.catalog_payload()
 
 
 def lite_identity() -> dict[str, Any]:

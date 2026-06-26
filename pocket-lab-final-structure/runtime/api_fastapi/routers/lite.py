@@ -11,14 +11,15 @@ from pydantic import BaseModel, Field
 
 from .. import deps
 from ..schemas.operations import OperationRequest
-from ..services.action_queue import submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_backup, lite_invites, lite_status, lite_security
+from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
+from ..services import fleet_registry, lite_backup, lite_catalog, lite_invites, lite_status, lite_security
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
 
 class LiteCatalogInstallRequest(BaseModel):
-    app_id: str = Field(default="", description="Catalog app or blueprint id")
+    app_id: str = Field(default="", description="Catalog app id")
+    target_node_id: str | None = Field(default=None, description="Target Lite device id. PhotoPrism is server-host only in this release.")
     version: str | None = None
     dry_run: bool = False
     requested_by: str | None = None
@@ -153,7 +154,7 @@ async def get_lite_status(request: Request) -> dict[str, Any]:
 @router.get("/catalog")
 def get_lite_catalog(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_status.lite_catalog()
+    return lite_catalog.catalog_payload(request)
 
 
 @router.post("/catalog/install", status_code=202)
@@ -162,18 +163,43 @@ async def install_lite_catalog_item(payload: LiteCatalogInstallRequest, request:
     app_ref = (payload.app_id or "").strip()
     if not app_ref:
         raise HTTPException(status_code=400, detail="Choose an app to install.")
-    params = {**payload.params, "app_id": app_ref}
+    params = {**payload.params}
     if payload.version:
         params["version"] = payload.version
-    if payload.requested_by:
-        params["requested_by"] = payload.requested_by
-    op, raw = _operation_payload(
-        "deploy_blueprint",
-        {"type": "catalog", "ref": app_ref},
-        params,
+
+    command = lite_catalog.install_command(
+        app_ref,
+        payload.target_node_id,
+        requested_by=payload.requested_by,
         dry_run=payload.dry_run,
+        params=params,
     )
-    return await submit_operation_command(op, raw)
+    if command.get("already_installed"):
+        return lite_catalog.already_installed_response(command)
+
+    await ensure_worker_execution_ready()
+    lite_catalog.record_install_queued(command)
+    try:
+        queued = await submit_domain_command(
+            lite_catalog.COMMAND_SUBJECT,
+            "lite.catalog.install.requested",
+            command,
+            trace_id=command["operation_id"],
+        )
+    except Exception:
+        lite_catalog.discard_operation(command["operation_id"])
+        raise
+    queued.update(
+        {
+            "accepted": True,
+            "status": "queued",
+            "operation_id": command["operation_id"],
+            "app_id": lite_catalog.PHOTOPRISM_APP_ID,
+            "target_node_id": command["target_node_id"],
+            "message": "PhotoPrism install started.",
+        }
+    )
+    return queued
 
 
 @router.post("/catalog/remove", status_code=501)

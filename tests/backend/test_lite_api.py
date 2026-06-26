@@ -37,7 +37,63 @@ def test_lite_catalog_endpoint_registered():
     assert response.status_code == 200
     payload = response.json()
     assert "items" in payload
+    assert "apps" in payload
+    assert "access" in payload
     assert "count" in payload
+    app = payload["apps"][0]
+    assert app["id"] == "photoprism"
+    assert app["name"] == "PhotoPrism"
+    assert app["category"] == "Photos"
+    assert app["target"]["default_node_id"] == "pocket-lab-lite-server"
+    assert app["target"]["supported_roles"] == ["server"]
+    assert app["actions"]["install"] is True
+    assert app["actions"]["remove"] is False
+    assert app["runtime"]["route"] == "/apps/photoprism/"
+    assert app["access"]["open_url"] is None
+    assert "key" not in response.text.lower()
+    assert "password" not in response.text.lower()
+
+
+def test_lite_catalog_install_validates_app_and_target_before_queue():
+    unknown = client().post("/api/lite/catalog/install", json={"app_id": "vault"})
+    assert unknown.status_code == 400
+    assert "PhotoPrism" in unknown.text
+
+    remote = client().post("/api/lite/catalog/install", json={"app_id": "photoprism", "target_node_id": "other-device"})
+    assert remote.status_code == 409
+    assert "Server Host" in remote.text
+
+
+def test_lite_catalog_worker_subject_registered():
+    ensure_runtime_path()
+    from api_fastapi.services import domain_commands, lite_catalog
+
+    assert lite_catalog.COMMAND_SUBJECT in domain_commands.supported_subjects()
+
+
+def test_lite_catalog_ui_is_https_aware_and_server_owned():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+
+    assert "PhotoPrism" in ui
+    assert "Secure access ready" in ui
+    assert "Remote access not ready" in ui
+    assert "Server Host" in ui
+    assert "target_node_id" in ui
+    assert "lite-catalog-progress" in ui
+    assert "Remove" not in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "lite-catalog-access-card" in css
+
+
+def test_lite_caddy_generator_supports_app_route_registry():
+    script = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
+
+    assert "write_caddy_app_routes" in script
+    assert "handle_path {path}*" in script
+    assert "POCKETLAB_LITE_APP_ROUTES" in script
+    assert "--caddy-only" in script
+    assert "caddy validate --config" in script
+    assert "tailscale-status.XXXXXX.json" in script
 
 
 def test_lite_read_summary_endpoints_registered():
