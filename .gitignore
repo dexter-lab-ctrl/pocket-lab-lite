@@ -42,3 +42,8 @@ dist.zip
 .DS_Store
 Thumbs.db
 .vscode/*.local.json
+
+# Pocket Lab Lite local Tailscale HTTPS certs - never commit
+.pocket_lab/tailscale-certs/
+*.ts.net.crt
+*.ts.net.key

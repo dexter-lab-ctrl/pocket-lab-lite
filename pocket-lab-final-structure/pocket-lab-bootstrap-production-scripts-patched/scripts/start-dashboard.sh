@@ -176,64 +176,108 @@ EOF
   export POCKETLAB_NATS_CONFIG="$nats_config"
 }
 
-write_caddyfile(){
-  local fqdn loki_route
-  fqdn="$(get_ts_fqdn || true)"
-  loki_route=""
-  if ! is_lite_profile; then
-    loki_route="$loki_route"
-  fi
-  log INFO "Writing Caddyfile idempotently"
-  if [[ -n "$fqdn" && ! is_lite_profile ]]; then
-    cat <<EOF | atomic_write "$CADDYFILE" 0644
-$fqdn {
-  tls {
-    get_certificate tailscale
-  }
-  encode gzip zstd
-  header Strict-Transport-Security "max-age=31536000; includeSubDomains"
-  header X-Content-Type-Options "nosniff"
-  header X-Frame-Options "DENY"
-  header Referrer-Policy "no-referrer"
 
-  handle /health {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /ready {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /healthz {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /api/* {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /openapi.json {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /docs* {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /redoc* {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /ws/* {
-    reverse_proxy 127.0.0.1:${API_PORT}
-  }
-  handle /gitea/* {
-    reverse_proxy 127.0.0.1:3030
-  }
-$loki_route
-  handle {
-    root * ${PWA_DIR}
-    try_files {path} /index.html
-    file_server
-  }
-}
-EOF
+pocketlab_lite_detect_tailscale_fqdn() {
+  local status_file
+  status_file="$(mktemp)"
+
+  if command -v tailscale-cli >/dev/null 2>&1; then
+    if ! tailscale-cli status --json > "$status_file" 2>/dev/null; then
+      rm -f "$status_file"
+      return 1
+    fi
+  elif command -v tailscale >/dev/null 2>&1; then
+    if ! tailscale status --json > "$status_file" 2>/dev/null; then
+      rm -f "$status_file"
+      return 1
+    fi
   else
-    cat <<EOF | atomic_write "$CADDYFILE" 0644
-:${DASH_PORT} {
+    rm -f "$status_file"
+    return 1
+  fi
+
+  python3 - "$status_file" <<'PYTAILSCALE'
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except Exception:
+    raise SystemExit(1)
+
+fqdn = ((data.get("Self") or {}).get("DNSName") or "").strip().rstrip(".")
+if not fqdn.endswith(".ts.net"):
+    raise SystemExit(1)
+
+print(fqdn)
+PYTAILSCALE
+
+  local rc=$?
+  rm -f "$status_file"
+  return "$rc"
+}
+
+pocketlab_lite_cert_needs_refresh() {
+  local cert_path="$1"
+
+  if [[ ! -s "$cert_path" ]]; then
+    return 0
+  fi
+
+  if command -v openssl >/dev/null 2>&1; then
+    if ! openssl x509 -checkend 1209600 -noout -in "$cert_path" >/dev/null 2>&1; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+pocketlab_lite_prepare_tailscale_cert() {
+  local fqdn="$1"
+  local cert_dir="$HOME/.pocket_lab/tailscale-certs"
+  local cert_path="$cert_dir/${fqdn}.crt"
+  local key_path="$cert_dir/${fqdn}.key"
+
+  if [[ -z "$fqdn" ]]; then
+    return 1
+  fi
+
+  if ! command -v tailscale-cli >/dev/null 2>&1; then
+    return 1
+  fi
+
+  mkdir -p "$cert_dir"
+  chmod 700 "$cert_dir"
+
+  if pocketlab_lite_cert_needs_refresh "$cert_path" || [[ ! -s "$key_path" ]]; then
+    (
+      cd "$HOME"
+      rm -f "$HOME/${fqdn}.crt" "$HOME/${fqdn}.key"
+      tailscale-cli cert "$fqdn" >/dev/null
+      mv -f "$HOME/${fqdn}.crt" "$cert_path"
+      mv -f "$HOME/${fqdn}.key" "$key_path"
+      chmod 644 "$cert_path"
+      chmod 600 "$key_path"
+    ) || return 1
+  fi
+
+  [[ -s "$cert_path" && -s "$key_path" ]]
+}
+
+write_caddy_site() {
+  local site_label="$1"
+  local tls_block="${2:-}"
+
+  printf '%s {\n' "$site_label"
+
+  if [[ -n "$tls_block" ]]; then
+    printf '%b\n' "$tls_block"
+    printf '  header Strict-Transport-Security "max-age=31536000; includeSubDomains"\n'
+  fi
+
+  cat <<EOF
   encode gzip zstd
   header X-Content-Type-Options "nosniff"
   header X-Frame-Options "DENY"
@@ -266,7 +310,7 @@ EOF
   handle /gitea/* {
     reverse_proxy 127.0.0.1:3030
   }
-$loki_route
+
   handle {
     root * ${PWA_DIR}
     try_files {path} /index.html
@@ -274,9 +318,54 @@ $loki_route
   }
 }
 EOF
-  fi
-  caddy validate --config "$CADDYFILE" >/dev/null
 }
+
+write_caddyfile(){
+  local fqdn tailscale_fqdn cert_dir tls_block
+  log INFO "Writing Caddyfile idempotently"
+
+  if is_lite_profile; then
+    tailscale_fqdn=""
+    tls_block=""
+
+    if tailscale_fqdn="$(pocketlab_lite_detect_tailscale_fqdn)"; then
+      if pocketlab_lite_prepare_tailscale_cert "$tailscale_fqdn"; then
+        cert_dir="$HOME/.pocket_lab/tailscale-certs"
+        tls_block="  tls ${cert_dir}/${tailscale_fqdn}.crt ${cert_dir}/${tailscale_fqdn}.key"
+        log INFO "Tailscale HTTPS enabled for ${tailscale_fqdn}"
+      else
+        log WARN "Tailscale HTTPS cert could not be prepared; keeping local :${DASH_PORT} listener only"
+        tailscale_fqdn=""
+      fi
+    else
+      log WARN "Tailscale FQDN not detected; keeping local :${DASH_PORT} listener only"
+      tailscale_fqdn=""
+    fi
+
+    {
+      write_caddy_site ":${DASH_PORT}"
+      if [[ -n "$tailscale_fqdn" && -n "$tls_block" ]]; then
+        write_caddy_site "$tailscale_fqdn" "$tls_block"
+      fi
+    } | atomic_write "$CADDYFILE" 0644
+    return
+  fi
+
+  fqdn="$(get_ts_fqdn || true)"
+  if [[ -n "$fqdn" ]]; then
+    {
+      write_caddy_site "$fqdn" "  tls {
+    get_certificate tailscale
+  }"
+    } | atomic_write "$CADDYFILE" 0644
+  else
+    {
+      write_caddy_site ":${DASH_PORT}"
+    } | atomic_write "$CADDYFILE" 0644
+  fi
+}
+
+
 write_hardware_daemon(){
   log INFO "Writing Android-compatible telemetry daemon"
   cat > "$HARDWARE_DAEMON" <<'PYD'
