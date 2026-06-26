@@ -6,6 +6,7 @@ SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 
 parse_start_dashboard_args(){
+  export POCKETLAB_RENDER_CADDY_ONLY="${POCKETLAB_RENDER_CADDY_ONLY:-0}"
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
       --profile)
@@ -22,6 +23,10 @@ parse_start_dashboard_args(){
       --lite)
         export POCKETLAB_PROFILE="lite"
         export POCKETLAB_LITE=1
+        shift
+        ;;
+      --caddy-only)
+        export POCKETLAB_RENDER_CADDY_ONLY=1
         shift
         ;;
       *)
@@ -178,8 +183,10 @@ EOF
 
 
 pocketlab_lite_detect_tailscale_fqdn() {
-  local status_file
-  status_file="$(mktemp)"
+  local status_file tmp_base
+  tmp_base="${TMPDIR:-$HOME/tmp}"
+  mkdir -p "$tmp_base"
+  status_file="$(mktemp "$tmp_base/tailscale-status.XXXXXX.json")"
 
   if command -v tailscale-cli >/dev/null 2>&1; then
     if ! tailscale-cli status --json > "$status_file" 2>/dev/null; then
@@ -266,6 +273,49 @@ pocketlab_lite_prepare_tailscale_cert() {
   [[ -s "$cert_path" && -s "$key_path" ]]
 }
 
+
+write_caddy_app_routes() {
+  local routes_file="${POCKETLAB_LITE_APP_ROUTES:-${POCKETLAB_STATE_DIR:-$STATE_DIR}/app_routes.json}"
+
+  [[ -s "$routes_file" ]] || return 0
+  command -v python3 >/dev/null 2>&1 || return 0
+
+  python3 - "$routes_file" <<'PYCADDYROUTES'
+import json
+import re
+import sys
+from pathlib import Path
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except Exception:
+    raise SystemExit(0)
+for route in data.get("routes", []):
+    if not isinstance(route, dict) or not route.get("enabled"):
+        continue
+    app_id = str(route.get("app_id") or "")
+    path = str(route.get("path") or "")
+    upstream = str(route.get("upstream") or "")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", app_id):
+        continue
+    if not path.startswith("/apps/") or not path.endswith("/"):
+        continue
+    if ".." in path or "//" in path:
+        continue
+    if not re.fullmatch(r"(127\.0\.0\.1|localhost):[0-9]{2,5}", upstream):
+        continue
+    print(f"  handle_path {path}* {{")
+    print(f"    reverse_proxy {upstream}")
+    print("  }")
+    print("")
+PYCADDYROUTES
+}
+
+validate_caddyfile() {
+  if command -v caddy >/dev/null 2>&1; then
+    caddy validate --config "$CADDYFILE" >/dev/null
+  fi
+}
+
 write_caddy_site() {
   local site_label="$1"
   local tls_block="${2:-}"
@@ -311,6 +361,11 @@ write_caddy_site() {
     reverse_proxy 127.0.0.1:3030
   }
 
+EOF
+
+  write_caddy_app_routes
+
+  cat <<EOF
   handle {
     root * ${PWA_DIR}
     try_files {path} /index.html
@@ -522,6 +577,7 @@ start_pm2_daemons(){
     log WARN "Pocket Lab node agent not started; this control plane will not publish NATS fleet heartbeats"
   fi
   POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-api "$API_SERVER" --interpreter python3 --update-env
+  validate_caddyfile
   pm2_start_or_restart caddy-proxy caddy -- run --config "$CADDYFILE"
   if is_lite_profile; then
     POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_start_or_restart pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
@@ -544,7 +600,25 @@ start_pm2_daemons(){
   fi
   pm2 save >/dev/null || true
 }
+start_caddy_only(){
+  SCRIPT_NAME="start-dashboard.sh"
+  acquire_lock "$SCRIPT_NAME"
+  ensure_root_dirs
+  require_termux
+  require_cmd python3 caddy pm2
+  start_tailscale_if_missing
+  write_caddyfile
+  validate_caddyfile
+  pm2_start_or_restart caddy-proxy caddy -- run --config "$CADDYFILE"
+  pm2 save >/dev/null || true
+  log INFO "Caddy proxy configuration is updated and safe to rerun"
+}
+
 main(){
+  if [[ "${POCKETLAB_RENDER_CADDY_ONLY:-0}" == "1" ]]; then
+    start_caddy_only
+    return
+  fi
   SCRIPT_NAME="start-dashboard.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_termux; require_cmd python3 caddy curl pm2 jq nats-server
   ensure_assets; start_tailscale_if_missing; write_hardware_daemon; write_caddyfile; write_observability_configs; start_pm2_daemons; verify_lite_remote_nats; mark_done dashboard_ready
   log INFO "Dashboard/control-plane services are ready and safe to rerun"

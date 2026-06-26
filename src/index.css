@@ -8499,3 +8499,22 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Pocket Lab Lite App Catalog — PhotoPrism route/progress polish */
+.theme-pocket-lite-daylight .lite-ready-dot-warning { background: #f59e0b; box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.12); }
+.theme-pocket-lite-daylight .lite-catalog-access-card { display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1rem; }
+.theme-pocket-lite-daylight .lite-catalog-access-icon { display: grid; flex: 0 0 auto; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 1rem; background: rgba(219, 234, 254, 0.8); color: #2563eb; }
+.theme-pocket-lite-daylight .lite-catalog-access-card strong, .theme-pocket-lite-daylight .lite-catalog-last-op strong, .theme-pocket-lite-daylight .lite-catalog-progress strong { color: #0f172a; font-weight: 950; }
+.theme-pocket-lite-daylight .lite-catalog-access-card p, .theme-pocket-lite-daylight .lite-catalog-last-op p, .theme-pocket-lite-daylight .lite-catalog-progress p { margin-top: 0.25rem; color: #64748b; font-size: 0.9rem; line-height: 1.55; }
+.theme-pocket-lite-daylight .lite-catalog-app-card { min-height: 28rem; }
+.theme-pocket-lite-daylight .lite-catalog-card-title-row { display: flex; justify-content: space-between; gap: 0.75rem; }
+.theme-pocket-lite-daylight .lite-catalog-category { margin-top: 1rem !important; color: #2563eb !important; font-size: 0.72rem !important; font-weight: 950 !important; letter-spacing: 0.16em; line-height: 1 !important; text-transform: uppercase; }
+.theme-pocket-lite-daylight .lite-catalog-meta-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.theme-pocket-lite-daylight .lite-catalog-meta-grid span { align-items: center; gap: 0.35rem; max-width: 100%; white-space: normal; }
+.theme-pocket-lite-daylight .lite-catalog-progress, .theme-pocket-lite-daylight .lite-catalog-last-op { margin-top: 1rem; padding: 0.85rem; border: 1px solid rgba(148, 163, 184, 0.22); border-radius: 1rem; background: rgba(248, 250, 252, 0.86); }
+.theme-pocket-lite-daylight .lite-catalog-progress > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.theme-pocket-lite-daylight .lite-catalog-progress > div:first-child span { color: #64748b; font-size: 0.8rem; font-weight: 900; }
+.theme-pocket-lite-daylight .lite-catalog-progress-bar { overflow: hidden; height: 0.5rem; margin-top: 0.75rem; border-radius: 999px; background: rgba(203, 213, 225, 0.65); }
+.theme-pocket-lite-daylight .lite-catalog-progress-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #06b6d4); transition: width 220ms ease; }
+.theme-pocket-lite-daylight .lite-catalog-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+@media (max-width: 760px) { .theme-pocket-lite-daylight .lite-catalog-access-card, .theme-pocket-lite-daylight .lite-catalog-actions { align-items: stretch; flex-direction: column; } }

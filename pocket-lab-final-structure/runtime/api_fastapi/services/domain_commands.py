@@ -461,6 +461,58 @@ async def handle_vault_dynamic_secret(command: Dict[str, Any]) -> Dict[str, Any]
     return result
 
 
+async def handle_lite_catalog_install(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    app_id = str(command.get("app_id") or "photoprism")
+    await _publish(
+        "pocketlab.events.lite.catalog.install_started",
+        "lite.catalog.install_started",
+        {"command_id": command_id, "app_id": app_id, "target_node_id": command.get("target_node_id")},
+        trace_id=command_id,
+    )
+    from . import lite_catalog
+
+    try:
+        result = await asyncio.to_thread(lite_catalog.run_install, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.catalog.install_failed",
+            "lite.catalog.install_failed",
+            {"command_id": command_id, "app_id": app_id, "error": str(exc)},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.catalog.install_failed",
+            "lite.catalog.install_failed",
+            {"command_id": command_id, "app_id": app_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+
+    status = str(result.get("status") or "unknown")
+    event_subject = "pocketlab.events.lite.catalog.install_completed" if status == "succeeded" else "pocketlab.events.lite.catalog.install_failed"
+    event_type = "lite.catalog.install_completed" if status == "succeeded" else "lite.catalog.install_failed"
+    await _publish(
+        event_subject,
+        event_type,
+        {
+            "command_id": command_id,
+            "operation_id": result.get("operation_id") or command_id,
+            "app_id": app_id,
+            "status": status,
+            "evidence_refs": result.get("evidence_refs") or [],
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.catalog.install_completed" if status == "succeeded" else "pocketlab.audit.lite.catalog.install_failed",
+        event_type,
+        {"command_id": command_id, "app_id": app_id, "status": status},
+        trace_id=command_id,
+    )
+    return result
+
+
 async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     await _publish(
@@ -796,6 +848,7 @@ async def handle_lite_security_scan(command: Dict[str, Any]) -> Dict[str, Any]:
 
 
 HANDLERS = {
+    "pocketlab.commands.lite.catalog.install": handle_lite_catalog_install,
     "pocketlab.commands.catalog.refresh": handle_catalog_refresh,
     "pocketlab.commands.drift.scan": handle_drift_scan,
     "pocketlab.commands.drift.rescan": handle_drift_scan,
