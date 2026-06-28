@@ -301,14 +301,6 @@ export default function CatalogScreen() {
         </div>
       </section>
 
-      {featuredApp ? (
-        <section className="lite-catalog-featured" aria-label="Featured app">
-          {renderAppCard(featuredApp, true)}
-        </section>
-      ) : null}
-
-      <GlassCard className="lite-catalog-access-card"><div className="lite-catalog-access-icon"><ShieldCheck className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure access ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Apps open from the current Pocket Lab address when they are ready.'}</p></div></GlassCard>
-
       <div className="lite-catalog-toolbar">
         <div className="lite-catalog-search-wrap"><Search className="h-5 w-5" /><input className="lite-catalog-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps" aria-label="Search apps" /></div>
         <div className="lite-catalog-filter-pills" role="tablist" aria-label="Filter apps">
@@ -318,6 +310,18 @@ export default function CatalogScreen() {
         </div>
         <p>{filteredApps.length} shown</p>
       </div>
+
+      <GlassCard className="lite-catalog-access-card"><div className="lite-catalog-access-icon is-secure"><ShieldCheck className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure access ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Apps open from the current Pocket Lab address when they are ready.'}</p></div></GlassCard>
+
+      {featuredApp ? (
+        <section className="lite-catalog-featured" aria-label="Featured app">
+          {renderAppCard(featuredApp, true)}
+        </section>
+      ) : null}
+
+      
+
+      
 
       {error ? <StateSurface tone="degraded" title="Catalog needs a moment" description={error} className="mb-5" /> : null}
       {loading ? <CatalogSkeletons /> : null}
