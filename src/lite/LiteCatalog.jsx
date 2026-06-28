@@ -256,20 +256,6 @@ export default function CatalogScreen() {
     const openUrl = resolveAppOpenUrl(app);
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
 
-      const insecureAppCount = apps.filter((app) => {
-    const accessState = app?.access || {};
-    const appStatus = String(app?.status || app?.health || '').toLowerCase();
-    return (
-      accessState.https_ready === false ||
-      accessState.route_ready === false ||
-      accessState.open === false ||
-      appStatus === 'unhealthy' ||
-      appStatus === 'error' ||
-      appStatus === 'blocked'
-    );
-  }).length;
-  const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
-
 return (
       <GlassCard
         key={app.id}
@@ -323,7 +309,23 @@ return (
   const selectedCanInstall = Boolean(selectedApp?.actions?.install) && !selectedInstalling;
   const selectedCanOpen = Boolean(selectedApp?.actions?.open && selectedOpenUrl);
 
-  return (
+    const insecureAppCount = apps.filter((app) => {
+    const accessState = app?.access || {};
+    const appStatus = String(app?.status || app?.health || '').toLowerCase();
+
+    return (
+      accessState.https_ready === false ||
+      accessState.route_ready === false ||
+      accessState.open === false ||
+      appStatus === 'unhealthy' ||
+      appStatus === 'error' ||
+      appStatus === 'blocked'
+    );
+  }).length;
+
+  const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
+
+return (
     <>
       <PageHeader
         eyebrow="Apps"
