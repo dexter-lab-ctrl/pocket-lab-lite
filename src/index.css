@@ -8543,39 +8543,6 @@ textarea {
   box-shadow: 0 10px 26px rgba(37, 99, 235, 0.11);
 }
 
-.theme-pocket-lite-daylight .lite-catalog-route-flow {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-top: 1.1rem;
-  color: #2563eb;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-flow span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.38rem;
-  padding: 0.44rem 0.62rem;
-  border: 1px solid rgba(37, 99, 235, 0.16);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-  font-size: 0.76rem;
-  font-weight: 950;
-  letter-spacing: -0.01em;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-flow i {
-  display: block;
-  width: 1.65rem;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.15), rgba(6, 182, 212, 0.72), rgba(37, 99, 235, 0.15));
-  background-size: 200% 100%;
-  animation: lite-catalog-route-pulse 1.9s linear infinite;
-}
-
 .theme-pocket-lite-daylight .lite-catalog-counts > div {
   transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
@@ -8606,25 +8573,6 @@ textarea {
   border-radius: 999px;
   background: radial-gradient(circle, rgba(16, 185, 129, 0.22), transparent 68%);
   pointer-events: none;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-top: 0.65rem;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-chips span {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.34rem 0.55rem;
-  border: 1px solid rgba(37, 99, 235, 0.14);
-  border-radius: 999px;
-  background: rgba(239, 246, 255, 0.82);
-  color: #1d4ed8;
-  font-size: 0.74rem;
-  font-weight: 900;
 }
 
 .theme-pocket-lite-daylight .lite-catalog-card {
@@ -8663,60 +8611,6 @@ textarea {
 
 .theme-pocket-lite-daylight .lite-catalog-app-card.is-installing {
   border-color: rgba(37, 99, 235, 0.28);
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-badge {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: 0.38rem;
-  max-width: 13rem;
-  padding: 0.44rem 0.62rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 999px;
-  background: rgba(248, 250, 252, 0.9);
-  color: #64748b;
-  font-size: 0.76rem;
-  font-weight: 950;
-  line-height: 1.15;
-  text-align: left;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-badge.is-ready {
-  border-color: rgba(16, 185, 129, 0.22);
-  background: rgba(236, 253, 245, 0.94);
-  color: #047857;
-  animation: lite-catalog-ready-pop 420ms ease both;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-preview {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding: 0.78rem 0.85rem;
-  border: 1px solid rgba(37, 99, 235, 0.13);
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(239, 246, 255, 0.92), rgba(240, 253, 250, 0.78));
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-preview span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.42rem;
-  color: #1d4ed8;
-  font-size: 0.78rem;
-  font-weight: 950;
-  word-break: break-word;
-}
-
-.theme-pocket-lite-daylight .lite-catalog-route-preview small {
-  color: #64748b;
-  font-size: 0.74rem;
-  font-weight: 850;
-  line-height: 1.35;
-  text-align: right;
 }
 
 .theme-pocket-lite-daylight .lite-catalog-progress-bar span {
@@ -8760,35 +8654,9 @@ textarea {
 }
 
 @media (max-width: 760px) {
-  .theme-pocket-lite-daylight .lite-catalog-route-flow {
-    align-items: flex-start;
-  }
-
-  .theme-pocket-lite-daylight .lite-catalog-route-flow i {
-    opacity: 0;
-    inline-size: 0;
-    overflow: hidden;
-  }
-
-  .theme-pocket-lite-daylight .lite-catalog-card-title-row,
-  .theme-pocket-lite-daylight .lite-catalog-route-preview {
-    flex-direction: column;
-  }
-
-  .theme-pocket-lite-daylight .lite-catalog-route-badge,
-  .theme-pocket-lite-daylight .lite-catalog-route-preview small {
-    max-width: none;
-    text-align: left;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .theme-pocket-lite-daylight .lite-catalog-hero::before,
-  .theme-pocket-lite-daylight .lite-catalog-route-flow i,
-  .theme-pocket-lite-daylight .lite-catalog-progress-bar span::after,
-  .theme-pocket-lite-daylight .lite-catalog-route-badge.is-ready {
-    animation: none !important;
-  }
 
   .theme-pocket-lite-daylight .lite-catalog-card,
   .theme-pocket-lite-daylight .lite-catalog-counts > div,

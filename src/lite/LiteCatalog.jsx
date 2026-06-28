@@ -26,18 +26,7 @@ function lastOperationText(app) {
   return `${op.message || 'Latest install status is available.'}${when}`;
 }
 
-function routeModeLabel(access) {
-  const mode = String(access?.route_mode || '').toLowerCase();
-  if (mode.includes('tailscale')) return 'Tailscale HTTPS';
-  if (access?.https_ready) return 'Secure route';
-  return 'Local route';
-}
 
-function routeReadinessLabel(app) {
-  if (app?.access?.route_ready) return 'Route ready';
-  if (app?.status === 'installing') return 'Preparing route';
-  return app?.access?.message || 'Open is not ready yet';
-}
 
 function progressPercent(progress) {
   if (!progress) return 0;
@@ -47,9 +36,6 @@ function progressPercent(progress) {
   return Math.min(100, Math.max(0, (current / total) * 100));
 }
 
-function isRouteReady(app) {
-  return Boolean(app?.actions?.open && app?.access?.route_ready && resolveAppOpenUrl(app));
-}
 
 
 function resolveAppOpenUrl(item) {
@@ -122,7 +108,7 @@ export default function CatalogScreen() {
         </div>
         <div className="lite-catalog-counts" aria-label="Catalog summary"><div><span>Available</span><strong>{apps.length}</strong></div><div><span>Ready</span><strong>{readyCount}</strong></div><div><span>Working</span><strong>{installingCount}</strong></div><div><span>Review</span><strong>{attentionCount}</strong></div></div>
       </section>
-      <GlassCard className={access.https_ready ? 'lite-catalog-access-card is-ready' : 'lite-catalog-access-card'}><div className="lite-catalog-access-icon"><LockKeyhole className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure same-origin Open is ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Secure access ready. Pocket Lab checks whether the private HTTPS route is ready before enabling Open.'}</p><div className="lite-catalog-route-chips"><span>{routeModeLabel(access)}</span><span>/apps/* protected from PWA fallback</span></div></div></GlassCard>
+      <GlassCard className="lite-catalog-access-card"><div className="lite-catalog-access-icon"><LockKeyhole className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure access ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Secure access ready. Pocket Lab checks whether the private HTTPS route is ready before enabling Open.'}</p></div></GlassCard>
       <div className="lite-catalog-toolbar"><div className="lite-catalog-search-wrap"><Search className="h-5 w-5" /><input className="lite-catalog-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps" aria-label="Search apps" /></div><p>{filteredApps.length} shown</p></div>
       {error ? <StateSurface tone="degraded" title="Catalog needs a moment" description={error} className="mb-5" /> : null}
       {loading ? <LoadingCard label="Loading apps..." /> : null}
@@ -160,10 +146,7 @@ export default function CatalogScreen() {
                 <span>{app?.runtime?.health ? `Health: ${app.runtime.health}` : 'Health: not installed'}</span>
                 <span>{app?.evidence_refs?.length ? `${app.evidence_refs.length} evidence file(s)` : 'Evidence appears after install'}</span>
               </div>
-              <div className="lite-catalog-route-preview">
-                <span><Route className="h-4 w-4" /> {app?.runtime?.route || '/apps/photoprism/'}</span>
-                <small>{routeReady ? 'Same-origin route checked live' : 'Backend enables Open after route checks pass'}</small>
-              </div>
+              
               {progress ? <div className="lite-catalog-progress" aria-label="Install progress"><div><strong>{progress.step || 'Working'}</strong><span>{progress.current || 1}/{progress.total || 7}</span></div><p>{progress.message || 'Preparing the app.'}</p><div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div></div> : null}
               <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
               <div className="lite-catalog-actions">
