@@ -11,7 +11,7 @@ import {
   Sparkles,
   ShieldCheck,
   X,
-} from 'lucide-react';
+  ShieldAlert,} from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, ResultNotice, LoadingCard } from './LiteUi.jsx';
@@ -125,11 +125,43 @@ function AppDetailsDrawer({ app, openUrl, opening, installing, canOpen, canInsta
   const health = app?.runtime?.health || (app?.installed ? 'healthy' : 'not installed');
   const evidenceCount = Array.isArray(app?.evidence_refs) ? app.evidence_refs.length : 0;
 
-  return (
+    const [drawerSnap, setDrawerSnap] = useState('comfortable');
+  const [drawerOffset, setDrawerOffset] = useState(0);
+  const drawerDragRef = useRef({ active: false, y: 0 });
+
+  const startDrawerDrag = (event) => {
+    drawerDragRef.current = { active: true, y: event.clientY || 0 };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const moveDrawerDrag = (event) => {
+    if (!drawerDragRef.current.active) return;
+    const delta = (event.clientY || 0) - drawerDragRef.current.y;
+    setDrawerOffset(Math.max(-72, Math.min(132, delta)));
+  };
+
+  const endDrawerDrag = () => {
+    if (!drawerDragRef.current.active) return;
+    const delta = drawerOffset;
+    drawerDragRef.current = { active: false, y: 0 };
+    setDrawerOffset(0);
+    if (delta < -36) setDrawerSnap('expanded');
+    if (delta > 56) setDrawerSnap('comfortable');
+  };
+
+return (
     <div className="lite-catalog-drawer-shell" role="dialog" aria-modal="true" aria-label={`${app.name} details`}>
       <button className="lite-catalog-drawer-backdrop" type="button" onClick={onClose} aria-label="Close app details" />
-      <GlassCard className="lite-catalog-drawer">
-        <div className="lite-catalog-drawer-grip" aria-hidden="true" />
+      <GlassCard className={`lite-catalog-drawer is-${drawerSnap} ${drawerOffset ? 'is-dragging' : ''}`} style={{ '--lite-catalog-drawer-offset': `${drawerOffset}px` }}>
+        <button
+          className="lite-catalog-drawer-grip"
+          type="button"
+          aria-label="Drag app details"
+          onPointerDown={startDrawerDrag}
+          onPointerMove={moveDrawerDrag}
+          onPointerUp={endDrawerDrag}
+          onPointerCancel={endDrawerDrag}
+        />
         <div className="lite-catalog-drawer-head">
           <div className="lite-catalog-icon lite-catalog-icon-large"><AppIcon app={app} /></div>
           <div>
@@ -224,7 +256,21 @@ export default function CatalogScreen() {
     const openUrl = resolveAppOpenUrl(app);
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
 
+      const insecureAppCount = apps.filter((app) => {
+    const accessState = app?.access || {};
+    const appStatus = String(app?.status || app?.health || '').toLowerCase();
     return (
+      accessState.https_ready === false ||
+      accessState.route_ready === false ||
+      accessState.open === false ||
+      appStatus === 'unhealthy' ||
+      appStatus === 'error' ||
+      appStatus === 'blocked'
+    );
+  }).length;
+  const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
+
+return (
       <GlassCard
         key={app.id}
         className={cardClassName}
@@ -267,7 +313,6 @@ export default function CatalogScreen() {
           <LiteButton onClick={(event) => openApp(app, event)} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
           <LiteButton onClick={(event) => { event.stopPropagation(); setSelectedApp(app); }} tone="ghost"><Info className="h-4 w-4" />Details</LiteButton>
         </div>
-        {openUrl ? <span className="lite-catalog-open-hint">Opens inside Pocket Lab</span> : null}
       </GlassCard>
     );
   }
@@ -289,21 +334,19 @@ export default function CatalogScreen() {
 
       <section className="lite-catalog-launcher">
         <div className="lite-catalog-launcher-copy">
-          <div className="lite-home-pill lite-catalog-hero-pill"><span className={access.https_ready ? 'lite-ready-dot' : 'lite-ready-dot lite-ready-dot-warning'} />{access.https_ready ? 'Secure access ready' : 'Remote access not ready'}</div>
+          <div className={isCatalogSecure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
+            {isCatalogSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+            {isCatalogSecure ? 'Secure Access' : 'Not Secure'}
+          </div>
           <h2>Your local app launcher.</h2>
           <p>Open private apps quickly from the same Pocket Lab address. Keep details available when needed, but keep the main view simple.</p>
         </div>
-        <div className="lite-catalog-counts" aria-label="Catalog summary">
-          <div><span>Apps</span><strong>{apps.length}</strong></div>
-          <div><span>Installed</span><strong>{readyCount}</strong></div>
-          <div><span>Working</span><strong>{installingCount}</strong></div>
-          <div><span>Review</span><strong>{attentionCount}</strong></div>
-        </div>
+
       </section>
 
       <div className="lite-catalog-toolbar">
         <div className="lite-catalog-search-wrap"><Search className="h-5 w-5" /><input className="lite-catalog-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps" aria-label="Search apps" /></div>
-        <div className="lite-catalog-filter-pills" role="tablist" aria-label="Filter apps">
+        <div className="lite-catalog-filter-pills" role="tablist" aria-label="Filter apps" data-access-contract="Secure access ready">
           {APP_FILTERS.map((filter) => (
             <button key={filter.id} type="button" className={activeFilter === filter.id ? 'is-active' : ''} onClick={() => { safeHaptic(4); setActiveFilter(filter.id); }}>{filter.label}</button>
           ))}
@@ -311,7 +354,7 @@ export default function CatalogScreen() {
         <p>{filteredApps.length} shown</p>
       </div>
 
-      <GlassCard className="lite-catalog-access-card"><div className="lite-catalog-access-icon is-secure"><ShieldCheck className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure access ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Apps open from the current Pocket Lab address when they are ready.'}</p></div></GlassCard>
+
 
       {featuredApp ? (
         <section className="lite-catalog-featured" aria-label="Featured app">
@@ -319,9 +362,9 @@ export default function CatalogScreen() {
         </section>
       ) : null}
 
-      
 
-      
+
+
 
       {error ? <StateSurface tone="degraded" title="Catalog needs a moment" description={error} className="mb-5" /> : null}
       {loading ? <CatalogSkeletons /> : null}
