@@ -89,7 +89,8 @@ def test_lite_caddy_generator_supports_app_route_registry():
     script = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
 
     assert "write_caddy_app_routes" in script
-    assert "handle_path {path}*" in script
+    assert "handle {path}*" in script
+    assert "handle_path {path}*" not in script
     assert "POCKETLAB_LITE_APP_ROUTES" in script
     assert "--caddy-only" in script
     assert "caddy validate --config" in script

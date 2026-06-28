@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_backup, lite_catalog, lite_invites, lite_status, lite_security
+from ..services import fleet_registry, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -154,7 +154,7 @@ async def get_lite_status(request: Request) -> dict[str, Any]:
 @router.get("/catalog")
 def get_lite_catalog(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_catalog.catalog_payload(request)
+    return lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(request))
 
 
 @router.post("/catalog/install", status_code=202)

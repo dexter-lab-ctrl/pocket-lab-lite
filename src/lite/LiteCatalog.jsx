@@ -26,6 +26,33 @@ function lastOperationText(app) {
   return `${op.message || 'Latest install status is available.'}${when}`;
 }
 
+
+function resolveAppOpenUrl(item) {
+  const raw =
+    item?.access?.open_url ||
+    item?.runtime?.url ||
+    item?.runtime?.route ||
+    '';
+
+  if (!raw) return '';
+
+  try {
+    const url = new URL(raw, window.location.origin);
+    if (!url.pathname.startsWith('/apps/')) {
+      return '';
+    }
+    return url.toString();
+  } catch {
+    return '';
+  }
+}
+
+function openCatalogApp(item) {
+  const target = resolveAppOpenUrl(item);
+  if (!target) return;
+  window.location.assign(target);
+}
+
 export default function CatalogScreen() {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
   const [query, setQuery] = useState('');
@@ -50,7 +77,6 @@ export default function CatalogScreen() {
       refresh();
     } catch (err) { setActionError(err.message); } finally { setBusyId(null); }
   }
-  function openApp(app) { const openUrl = app?.access?.open_url || app?.runtime?.url; if (openUrl) window.location.assign(openUrl); }
   return (
     <>
       <PageHeader eyebrow="Apps" title="App Catalog" description="Install useful apps for your self-hosted workspace. App setup is handled by the Server Host and opened through secure access when ready." actions={<LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Refresh</LiteButton>} />
@@ -67,10 +93,10 @@ export default function CatalogScreen() {
           const status = String(app.status || 'not_installed').toLowerCase();
           const installing = status === 'installing' || busyId === app.id;
           const canInstall = Boolean(app?.actions?.install) && !installing;
-          const canOpen = Boolean(app?.actions?.open && app?.access?.open_url);
+          const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
           const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
           const progress = app?.progress;
-          return <GlassCard key={app.id} className="lite-catalog-card lite-catalog-app-card"><div className="lite-catalog-card-top"><div className="lite-catalog-icon"><LayoutGrid className="h-5 w-5" /></div><StatusBadge status={appTone(status)}>{appLabel(app)}</StatusBadge></div><div className="lite-catalog-card-title-row"><div><p className="lite-catalog-category">{app.category || 'App'}</p><h2>{app.name}</h2></div></div><p>{app.summary}</p><div className="lite-catalog-meta lite-catalog-meta-grid"><span><Server className="h-4 w-4" /> {targetName}</span><span>{app?.runtime?.health ? `Health: ${app.runtime.health}` : 'Health: not installed'}</span><span>{app?.access?.route_ready ? 'Route ready' : app?.access?.message || 'Route not ready'}</span><span>{app?.evidence_refs?.length ? `${app.evidence_refs.length} evidence file(s)` : 'Evidence appears after install'}</span></div>{progress ? <div className="lite-catalog-progress" aria-label="Install progress"><div><strong>{progress.step || 'Working'}</strong><span>{progress.current || 1}/{progress.total || 7}</span></div><p>{progress.message || 'Preparing the app.'}</p><div className="lite-catalog-progress-bar"><span style={{ width: `${Math.min(100, Math.max(0, ((progress.current || 1) / (progress.total || 7)) * 100))}%` }} /></div></div> : null}<div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div><div className="lite-catalog-actions"><LiteButton onClick={() => install(app)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : status === 'ready' ? 'Installed' : 'Install'}</LiteButton><LiteButton onClick={() => openApp(app)} disabled={!canOpen} tone={canOpen ? 'secondary' : 'ghost'}><ExternalLink className="h-4 w-4" />Open</LiteButton></div></GlassCard>;
+          return <GlassCard key={app.id} className="lite-catalog-card lite-catalog-app-card"><div className="lite-catalog-card-top"><div className="lite-catalog-icon"><LayoutGrid className="h-5 w-5" /></div><StatusBadge status={appTone(status)}>{appLabel(app)}</StatusBadge></div><div className="lite-catalog-card-title-row"><div><p className="lite-catalog-category">{app.category || 'App'}</p><h2>{app.name}</h2></div></div><p>{app.summary}</p><div className="lite-catalog-meta lite-catalog-meta-grid"><span><Server className="h-4 w-4" /> {targetName}</span><span>{app?.runtime?.health ? `Health: ${app.runtime.health}` : 'Health: not installed'}</span><span>{app?.access?.route_ready ? 'Route ready' : app?.access?.message || 'Route not ready'}</span><span>{app?.evidence_refs?.length ? `${app.evidence_refs.length} evidence file(s)` : 'Evidence appears after install'}</span></div>{progress ? <div className="lite-catalog-progress" aria-label="Install progress"><div><strong>{progress.step || 'Working'}</strong><span>{progress.current || 1}/{progress.total || 7}</span></div><p>{progress.message || 'Preparing the app.'}</p><div className="lite-catalog-progress-bar"><span style={{ width: `${Math.min(100, Math.max(0, ((progress.current || 1) / (progress.total || 7)) * 100))}%` }} /></div></div> : null}<div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div><div className="lite-catalog-actions"><LiteButton onClick={() => install(app)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : status === 'ready' ? 'Installed' : 'Install'}</LiteButton><LiteButton onClick={() => openCatalogApp(app)} disabled={!canOpen} tone={canOpen ? 'secondary' : 'ghost'}><ExternalLink className="h-4 w-4" />Open</LiteButton></div></GlassCard>;
         })}
       </div>
       {!loading && filteredApps.length === 0 ? <StateSurface tone="empty" title={query ? 'No matching apps' : 'No apps yet'} description={query ? 'Try a different search term.' : 'Refresh the catalog after setup.'} /> : null}

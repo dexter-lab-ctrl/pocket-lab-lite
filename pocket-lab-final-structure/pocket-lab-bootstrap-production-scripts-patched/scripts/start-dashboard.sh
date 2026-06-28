@@ -303,7 +303,7 @@ for route in data.get("routes", []):
         continue
     if not re.fullmatch(r"(127\.0\.0\.1|localhost):[0-9]{2,5}", upstream):
         continue
-    print(f"  handle_path {path}* {{")
+    print(f"  handle {path}* {{")
     print(f"    reverse_proxy {upstream}")
     print("  }")
     print("")
@@ -578,7 +578,7 @@ start_pm2_daemons(){
   fi
   POCKETLAB_NATS_REQUIRED=1 POCKETLAB_NATS_REQUIRE_JETSTREAM=1 POCKETLAB_NATS_JETSTREAM=1 POCKETLAB_WORKER_EXECUTION=worker POCKETLAB_NATS_USER="$POCKETLAB_NATS_API_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_API_PASSWORD" POCKETLAB_AGENT_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_AGENT_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-fastapi POCKETLAB_COMMAND_MAX_DELIVER="${POCKETLAB_COMMAND_MAX_DELIVER:-5}" POCKETLAB_COMMAND_ACK_WAIT_SECONDS="${POCKETLAB_COMMAND_ACK_WAIT_SECONDS:-60}" pm2_start_or_restart pocket-api "$API_SERVER" --interpreter python3 --update-env
   validate_caddyfile
-  pm2_start_or_restart caddy-proxy caddy -- run --config "$CADDYFILE"
+  pm2_start_or_restart caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   if is_lite_profile; then
     POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS="${POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS:-45}" POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS="${POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS:-120}" pm2_start_or_restart pocketlab-core-supervisor "$CORE_SUPERVISOR_SERVER" --interpreter python3 --update-env
     log INFO "Lite profile: started Pocket Lab Lite core supervisor"
@@ -609,7 +609,7 @@ start_caddy_only(){
   start_tailscale_if_missing
   write_caddyfile
   validate_caddyfile
-  pm2_start_or_restart caddy-proxy caddy -- run --config "$CADDYFILE"
+  pm2_start_or_restart caddy-proxy "$(command -v caddy)" -- run --config "$CADDYFILE"
   pm2 save >/dev/null || true
   log INFO "Caddy proxy configuration is updated and safe to rerun"
 }
