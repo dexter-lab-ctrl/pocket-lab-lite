@@ -98,17 +98,80 @@ ENV
   chmod 600 "$ENV_FILE" 2>/dev/null || true
 }
 start_photoprism_pm2(){ require_cmd pm2; local command="exec proot-distro login ubuntu -- bash -lc 'set -a; source \"$ENV_FILE\"; set +a; exec photoprism start'"; pm2 delete "$PROCESS_NAME" >/dev/null 2>&1 || true; pm2 start bash --name "$PROCESS_NAME" -- -lc "$command" >/dev/null || fail_safe "Could not start the PhotoPrism PM2 process."; pm2 save >/dev/null 2>&1 || true; }
-refresh_caddy_if_possible(){ local start_dashboard="$SCRIPT_DIR/../start-dashboard.sh"; [[ -f "$start_dashboard" ]] || return 0; POCKETLAB_RENDER_CADDY_ONLY=1 bash "$start_dashboard" --profile lite --caddy-only >/dev/null 2>&1 || log WARN "Caddy route refresh did not complete; PhotoPrism local health will still be checked"; }
-wait_for_local_health(){ for _ in $(seq 1 90); do curl -fsS "http://127.0.0.1:2342/api/v1/status" >/dev/null 2>&1 || curl -fsS "http://127.0.0.1:2342/" >/dev/null 2>&1 && return 0; sleep 2; done; return 1; }
-check_route_health(){ [[ -z "$SECURE_ORIGIN" ]] && { echo unknown; return 0; }; curl -fsS "$SECURE_ORIGIN$ROUTE_PATH" >/dev/null 2>&1 && echo healthy || echo unknown; }
+refresh_caddy_if_possible(){
+  local helper="$SCRIPT_DIR/restart-caddy-proxy.sh"
+  if [[ -x "$helper" ]]; then
+    "$helper" || log WARN "Caddy route refresh did not complete; PhotoPrism local health will still be checked"
+    return 0
+  fi
+
+  require_cmd pm2
+  require_cmd caddy
+  caddy validate --config "$HOME/pocket-lab-lite/caddy/Caddyfile" >/dev/null 2>&1 || {
+    log WARN "Caddyfile validation failed; PhotoPrism local health will still be checked"
+    return 0
+  }
+  pm2 delete caddy-proxy >/dev/null 2>&1 || true
+  pm2 start "$(command -v caddy)" --name caddy-proxy -- run --config "$HOME/pocket-lab-lite/caddy/Caddyfile" >/dev/null 2>&1 || {
+    log WARN "Caddy route refresh did not complete; PhotoPrism local health will still be checked"
+    return 0
+  }
+  sleep 3
+}
+wait_for_local_health(){
+  for _ in $(seq 1 90); do
+    curl -fsS "http://127.0.0.1:2342/apps/photoprism/api/v1/status" >/dev/null 2>&1 && return 0
+    curl -fsS "http://127.0.0.1:2342/apps/photoprism/" >/dev/null 2>&1 && return 0
+    sleep 2
+  done
+  return 1
+}
+check_route_health(){
+  if curl -fsS "http://127.0.0.1:8443/apps/photoprism/api/v1/status" >/dev/null 2>&1; then
+    echo healthy
+    return 0
+  fi
+  if curl -fsS "http://127.0.0.1:8443/apps/photoprism/" >/dev/null 2>&1; then
+    echo healthy
+    return 0
+  fi
+  [[ -z "$SECURE_ORIGIN" ]] && { echo unknown; return 0; }
+  curl -fsS "$SECURE_ORIGIN$ROUTE_PATH" >/dev/null 2>&1 && echo healthy || echo unknown
+}
 
 main(){
   [[ "$APP_ID" == "photoprism" ]] || fail_safe "Unsupported Lite app requested."
-  require_termux; require_cmd python3 curl tar
-  local url version route_health; url="$(arch_package_url)" || fail_safe "PhotoPrism package is not available for this architecture."
-  ensure_ubuntu_ready; install_photoprism_inside_ubuntu "$url"; ensure_env_file; write_route_registry; start_photoprism_pm2; refresh_caddy_if_possible
+  require_termux
+  require_cmd python3 curl tar
+
+  local url version route_health
+  url="$(arch_package_url)" || fail_safe "PhotoPrism package is not available for this architecture."
+
+  if curl -fsS "http://127.0.0.1:2342/apps/photoprism/api/v1/status" >/dev/null 2>&1; then
+    ensure_env_file
+    write_route_registry
+    refresh_caddy_if_possible
+    wait_for_local_health || fail_safe "PhotoPrism did not pass local health checks after startup."
+    version="$(photoprism_version)"
+    route_health="$(check_route_health)"
+    mark_route_health "$route_health"
+    write_summary "succeeded" "PhotoPrism is ready." "${version:-detected-or-unknown}" "healthy" "$route_health"
+    log INFO "PhotoPrism is already running. Credentials remain stored only on the server host."
+    return 0
+  fi
+
+  ensure_ubuntu_ready
+  install_photoprism_inside_ubuntu "$url"
+  ensure_env_file
+  write_route_registry
+  start_photoprism_pm2
+  refresh_caddy_if_possible
   wait_for_local_health || fail_safe "PhotoPrism did not pass local health checks after startup."
-  version="$(photoprism_version)"; route_health="$(check_route_health)"; mark_route_health "$route_health"; write_summary "succeeded" "PhotoPrism is ready." "${version:-detected-or-unknown}" "healthy" "$route_health"
+
+  version="$(photoprism_version)"
+  route_health="$(check_route_health)"
+  mark_route_health "$route_health"
+  write_summary "succeeded" "PhotoPrism is ready." "${version:-detected-or-unknown}" "healthy" "$route_health"
   log INFO "PhotoPrism is ready. Credentials remain stored only on the server host."
 }
 main "$@"

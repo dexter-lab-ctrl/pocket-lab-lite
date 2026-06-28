@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       workbox: {
-        navigateFallbackDenylist: [/^\/api/, /^\/terminal/]
+        navigateFallbackDenylist: [/^\/api/, /^\/terminal/, /^\/apps\//, /^\/gitea\//, /^\/docs/, /^\/openapi\.json/]
       },
       manifest: {
         id: '/pocketlab-admin/',
