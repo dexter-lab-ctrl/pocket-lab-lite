@@ -9,6 +9,7 @@ import {
   Search,
   Server,
   Sparkles,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
@@ -306,7 +307,7 @@ export default function CatalogScreen() {
         </section>
       ) : null}
 
-      <GlassCard className="lite-catalog-access-card"><div className="lite-catalog-access-icon"><Sparkles className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure access ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Apps open from the current Pocket Lab address when they are ready.'}</p></div></GlassCard>
+      <GlassCard className="lite-catalog-access-card"><div className="lite-catalog-access-icon"><ShieldCheck className="h-5 w-5" /></div><div><strong>{access.https_ready ? 'Secure access ready' : 'Open waits for secure access'}</strong><p>{access.message || 'Apps open from the current Pocket Lab address when they are ready.'}</p></div></GlassCard>
 
       <div className="lite-catalog-toolbar">
         <div className="lite-catalog-search-wrap"><Search className="h-5 w-5" /><input className="lite-catalog-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps" aria-label="Search apps" /></div>
