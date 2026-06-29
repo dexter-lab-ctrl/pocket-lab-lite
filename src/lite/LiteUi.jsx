@@ -67,6 +67,12 @@ export function appWorkspaceEmbedAllowed(item) {
   const access = item?.access || {};
   const workspace = item?.workspace || {};
   const runtime = item?.runtime || {};
+  const embedOrigin = String(access.embed_origin || workspace.embed_origin || runtime.embed_origin || '').trim();
+
+  if (embedOrigin) {
+    if (typeof window === 'undefined') return false;
+    if (window.location.origin !== embedOrigin) return false;
+  }
 
   return Boolean(
     item?.embedAllowed === true ||

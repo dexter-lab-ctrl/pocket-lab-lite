@@ -1327,3 +1327,85 @@ def test_lite_security_ui_preserves_backend_owned_boundaries():
     assert "frontend never" not in ui
     assert "this guidance does not run commands or change your device" in ui
     assert "backend-owned" in ui
+
+
+def test_lite_caddy_generator_adds_portal_only_photoprism_embed_policy():
+    script = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
+
+    assert "@pocketlab_non_app_routes" in script
+    assert "header @pocketlab_non_app_routes X-Frame-Options \"DENY\"" in script
+    assert "write_caddy_app_routes \"https://${site_label}\"" in script
+    assert "header -X-Frame-Options" in script
+    assert "header_down -X-Frame-Options" in script
+    assert "header_down -Content-Security-Policy" in script
+    assert "frame-ancestors 'self' {portal_origin}" in script
+    assert "https://[A-Za-z0-9.-]+\\.ts\\.net" in script
+    assert "pocket-lab-3.abc.ts.net" not in script
+
+
+def test_lite_catalog_readiness_marks_photoprism_embeddable_only_when_policy_exists(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_catalog_live
+
+    caddyfile = tmp_path / "Caddyfile"
+    caddyfile.write_text(
+        """
+:8443 {
+  @pocketlab_non_app_routes {
+    not path /apps/*
+  }
+  header @pocketlab_non_app_routes X-Frame-Options "DENY"
+  handle /apps/photoprism/* {
+    reverse_proxy 127.0.0.1:2342
+  }
+}
+portal.example.ts.net {
+  handle /apps/photoprism/* {
+    header -X-Frame-Options
+    header Content-Security-Policy "frame-ancestors 'self' https://portal.example.ts.net"
+    reverse_proxy 127.0.0.1:2342 {
+      header_down -X-Frame-Options
+      header_down -Content-Security-Policy
+    }
+  }
+}
+"""
+    )
+    monkeypatch.setenv("POCKETLAB_CADDYFILE", str(caddyfile))
+    assert lite_catalog_live._photoprism_embed_origin_from_caddyfile() == "https://portal.example.ts.net"
+
+    payload = {
+        "apps": [
+            {
+                "id": "photoprism",
+                "name": "PhotoPrism",
+                "status": "ready",
+                "install_state": "installed",
+                "installed": True,
+                "runtime": {"health": "healthy"},
+                "actions": {"open": False},
+                "access": {},
+            }
+        ],
+        "items": [],
+    }
+    monkeypatch.setattr(lite_catalog_live, "_photoprism_route_ready", lambda: True)
+
+    hydrated = lite_catalog_live.hydrate_catalog(payload)
+    app = hydrated["apps"][0]
+    assert app["access"]["route_ready"] is True
+    assert app["access"]["open_url"] == "/apps/photoprism/"
+    assert app["access"]["embed_allowed"] is True
+    assert app["access"]["embed_policy"] == "portal_only"
+    assert app["access"]["embed_origin"] == "https://portal.example.ts.net"
+    assert app["workspace"]["mode"] == "embed"
+    assert app["runtime"]["embed_allowed"] is True
+
+
+def test_lite_workspace_embed_helper_requires_matching_origin_when_declared():
+    ui = _lite_ui_source()
+
+    assert "embed_origin" in ui
+    assert "window.location.origin !== embedOrigin" in ui
+    assert "return false" in ui
+    assert "access.embed_allowed === true" in ui

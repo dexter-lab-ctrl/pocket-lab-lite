@@ -275,12 +275,13 @@ pocketlab_lite_prepare_tailscale_cert() {
 
 
 write_caddy_app_routes() {
+  local portal_origin="${1:-}"
   local routes_file="${POCKETLAB_LITE_APP_ROUTES:-${POCKETLAB_STATE_DIR:-$STATE_DIR}/app_routes.json}"
 
   [[ -s "$routes_file" ]] || return 0
   command -v python3 >/dev/null 2>&1 || return 0
 
-  python3 - "$routes_file" <<'PYCADDYROUTES'
+  python3 - "$routes_file" "$portal_origin" <<'PYCADDYROUTES'
 import json
 import re
 import sys
@@ -289,6 +290,8 @@ try:
     data = json.loads(Path(sys.argv[1]).read_text())
 except Exception:
     raise SystemExit(0)
+portal_origin = str(sys.argv[2] if len(sys.argv) > 2 else "")
+portal_embed_ready = bool(re.fullmatch(r"https://[A-Za-z0-9.-]+\.ts\.net", portal_origin))
 for route in data.get("routes", []):
     if not isinstance(route, dict) or not route.get("enabled"):
         continue
@@ -304,7 +307,15 @@ for route in data.get("routes", []):
     if not re.fullmatch(r"(127\.0\.0\.1|localhost):[0-9]{2,5}", upstream):
         continue
     print(f"  handle {path}* {{")
-    print(f"    reverse_proxy {upstream}")
+    if app_id == "photoprism" and portal_embed_ready:
+        print("    header -X-Frame-Options")
+        print(f"    header Content-Security-Policy \"frame-ancestors 'self' {portal_origin}\"")
+        print(f"    reverse_proxy {upstream} {{")
+        print("      header_down -X-Frame-Options")
+        print("      header_down -Content-Security-Policy")
+        print("    }")
+    else:
+        print(f"    reverse_proxy {upstream}")
     print("  }")
     print("")
 PYCADDYROUTES
@@ -330,7 +341,10 @@ write_caddy_site() {
   cat <<EOF
   encode gzip zstd
   header X-Content-Type-Options "nosniff"
-  header X-Frame-Options "DENY"
+  @pocketlab_non_app_routes {
+    not path /apps/*
+  }
+  header @pocketlab_non_app_routes X-Frame-Options "DENY"
   header Referrer-Policy "no-referrer"
 
   handle /health {
@@ -363,7 +377,11 @@ write_caddy_site() {
 
 EOF
 
-  write_caddy_app_routes
+  if [[ -n "$tls_block" && "$site_label" == *.ts.net ]]; then
+    write_caddy_app_routes "https://${site_label}"
+  else
+    write_caddy_app_routes
+  fi
 
   cat <<EOF
   handle {
