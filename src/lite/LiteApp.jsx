@@ -379,12 +379,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
         onNavigate={navigateFromWorkspace}
       />
 
-      <nav className="lite-workspace-bottom-nav" aria-label="Pocket Lab Lite workspace navigation">
-        <button type="button" onClick={() => navigateFromWorkspace('home')}>Home</button>
-        <button type="button" onClick={() => navigateFromWorkspace('catalog')}>Apps</button>
-        <button type="button" onClick={() => navigateFromWorkspace('devices')}>Devices</button>
-        <button type="button" onClick={openSwitcher}>Switch</button>
-      </nav>
     </section>
   );
 }
