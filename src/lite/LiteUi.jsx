@@ -63,6 +63,24 @@ export function resolveSafeAppOpenPath(itemOrUrl) {
   }
 }
 
+export function appWorkspaceEmbedAllowed(item) {
+  const access = item?.access || {};
+  const workspace = item?.workspace || {};
+  const runtime = item?.runtime || {};
+
+  return Boolean(
+    item?.embedAllowed === true ||
+    access.embed_allowed === true ||
+    access.workspace_embed === true ||
+    access.workspace_embeddable === true ||
+    access.frame_allowed === true ||
+    workspace.embed_allowed === true ||
+    workspace.embeddable === true ||
+    workspace.mode === 'embed' ||
+    runtime.embed_allowed === true
+  );
+}
+
 export function roleLabel(value) {
   return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
 }
