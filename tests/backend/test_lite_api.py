@@ -1402,6 +1402,20 @@ portal.example.ts.net {
     assert app["runtime"]["embed_allowed"] is True
 
 
+
+
+def test_lite_workspace_trusts_embeddable_catalog_contract_without_timeout_probe():
+    ui = Path("src/lite/LiteApp.jsx").read_text()
+
+    assert "frameLoadedRef.current = true" in ui
+    assert "setFrameReady(true)" in ui
+    assert "onError={() => {" in ui
+    assert "setFrameFallback(true)" in ui
+    assert "contentDocument" not in ui
+    assert "documentRef" not in ui
+    assert "hasLoadedContent" not in ui
+    assert "2500" not in ui
+
 def test_lite_workspace_embed_helper_requires_matching_origin_when_declared():
     ui = _lite_ui_source()
 

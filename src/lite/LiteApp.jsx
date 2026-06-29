@@ -100,16 +100,9 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
 
     if (!openUrl || !embedAllowed) {
       setFrameFallback(true);
-      return undefined;
     }
 
-    const timer = window.setTimeout(() => {
-      if (!frameLoadedRef.current) {
-        setFrameFallback(true);
-      }
-    }, 2500);
-
-    return () => window.clearTimeout(timer);
+    return undefined;
   }, [embedAllowed, openUrl]);
 
   const openFullScreen = () => {
@@ -158,29 +151,15 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
               src={openUrl}
               title={frameTitle}
               className="lite-workspace-frame"
-              onLoad={(event) => {
+              onLoad={() => {
                 frameLoadedRef.current = true;
-
-                window.setTimeout(() => {
-                  try {
-                    const documentRef = event.currentTarget.contentDocument;
-                    const hasLoadedContent = Boolean(documentRef?.body && (documentRef.body.children.length || documentRef.body.textContent.trim()));
-                    if (!hasLoadedContent) {
-                      setFrameFallback(true);
-                      setFrameReady(false);
-                      return;
-                    }
-                  } catch (_error) {
-                    setFrameFallback(true);
-                    setFrameReady(false);
-                    return;
-                  }
-
-                  setFrameReady(true);
-                  setFrameFallback(false);
-                }, 80);
+                setFrameReady(true);
+                setFrameFallback(false);
               }}
-              onError={() => setFrameFallback(true)}
+              onError={() => {
+                setFrameReady(false);
+                setFrameFallback(true);
+              }}
             />
           </div>
         ) : (
