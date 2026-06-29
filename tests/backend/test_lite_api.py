@@ -107,6 +107,13 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "No apps installed yet" in ui
     assert "lite-catalog-empty-state" in ui
     assert "lite-catalog-actions" in css
+    assert "has-phone-install" in ui
+    assert "has-phone-install" in css
+    assert "Install to phone" in ui
+    assert "canInstallAppToPhone" in ui
+    assert "Use your browser menu to install it on this phone." in ui
+    assert "Smartphone" in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Add to phone" not in ui
     assert "isStandalonePwa" in ui
     assert "navigator.vibrate" in ui
 

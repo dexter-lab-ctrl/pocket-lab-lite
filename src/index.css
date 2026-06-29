@@ -9330,12 +9330,20 @@ textarea {
   padding-top: 1rem;
 }
 
+.theme-pocket-lite-daylight .lite-catalog-actions.has-phone-install {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.22fr) minmax(0, 1.2fr);
+}
+
 .theme-pocket-lite-daylight .lite-catalog-actions .pocket-button {
   width: 100%;
   min-height: 2.65rem;
   justify-content: center;
   text-align: center;
   white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-actions.has-phone-install .pocket-button {
+  padding-inline: 0.72rem;
 }
 
 .theme-pocket-lite-daylight .lite-catalog-actions .pocket-button:disabled {
@@ -9390,8 +9398,16 @@ textarea {
     grid-template-columns: 1fr 1fr;
   }
 
+  .theme-pocket-lite-daylight .lite-catalog-actions.has-phone-install {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .theme-pocket-lite-daylight .lite-catalog-actions .pocket-button:first-child {
     grid-column: 1 / -1;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-actions.has-phone-install .pocket-button:first-child {
+    grid-column: auto;
   }
 
   .theme-pocket-lite-daylight .lite-catalog-actions .pocket-button {
