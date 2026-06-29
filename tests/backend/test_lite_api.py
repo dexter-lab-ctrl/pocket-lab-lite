@@ -1407,7 +1407,7 @@ portal.example.ts.net {
 def test_lite_workspace_trusts_embeddable_catalog_contract_without_timeout_probe():
     ui = Path("src/lite/LiteApp.jsx").read_text()
 
-    assert "frameLoadedRef.current = true" in ui
+    assert "frameLoadedRef" not in ui
     assert "setFrameReady(true)" in ui
     assert "onError={() => {" in ui
     assert "setFrameFallback(true)" in ui
@@ -1415,6 +1415,28 @@ def test_lite_workspace_trusts_embeddable_catalog_contract_without_timeout_probe
     assert "documentRef" not in ui
     assert "hasLoadedContent" not in ui
     assert "2500" not in ui
+
+def test_lite_workspace_quick_switcher_has_accessible_safe_controls():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+
+    assert "WorkspaceQuickSwitcher" in ui
+    assert "lite-workspace-quick-switcher" in ui
+    assert "Open Pocket Lab switcher" in ui
+    assert "Current app" in ui
+    assert "Switch workspace" in ui
+    assert "Back to Apps" in ui
+    assert "Open full screen" in ui
+    assert "aria-modal=\"true\"" in ui
+    assert "event.key !== 'Escape'" in ui
+    assert "firstActionRef.current.focus" in ui
+    assert "triggerRef?.current?.focus" in ui
+    assert "pocketlab:workspace:lastTab" in ui
+    assert "window.localStorage.setItem('pocketlab:workspace:lastTab'" in ui
+    assert "resolveSafeAppOpenPath" in ui
+    assert "lite-workspace-switcher-fab" in css
+    assert "env(safe-area-inset-bottom)" in css
+    assert "@media (max-width: 767px)" in css
 
 def test_lite_workspace_embed_helper_requires_matching_origin_when_declared():
     ui = _lite_ui_source()

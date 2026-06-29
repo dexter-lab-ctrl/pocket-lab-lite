@@ -9028,10 +9028,10 @@ textarea {
   background: rgba(241, 245, 249, 0.88);
   color: #1e293b;
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
 
 .theme-pocket-lite-daylight .lite-workspace-more-button:hover {
@@ -9207,6 +9207,205 @@ textarea {
   transform: scale(0.98);
 }
 
+.theme-pocket-lite-daylight .lite-workspace-switcher-trigger {
+  gap: 0.45rem;
+  padding: 0 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-switcher-trigger span {
+  line-height: 1;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-switcher-fab {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1.2rem, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: inline-flex;
+  min-height: 3.15rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(37, 99, 235, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #ffffff;
+  box-shadow: 0 20px 54px rgba(15, 23, 42, 0.3);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 950;
+  padding: 0 1rem;
+  backdrop-filter: blur(18px);
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-switcher-fab:hover {
+  background: rgba(30, 41, 59, 0.96);
+  box-shadow: 0 24px 62px rgba(37, 99, 235, 0.24);
+}
+
+.theme-pocket-lite-daylight .lite-workspace-switcher-fab:active {
+  transform: scale(0.98);
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.18);
+  cursor: default;
+  pointer-events: auto;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher {
+  position: absolute;
+  top: max(5.5rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 7rem);
+  overflow-y: auto;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.7rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.26);
+  color: #0f172a;
+  outline: none;
+  padding: 1rem;
+  pointer-events: auto;
+  backdrop-filter: blur(24px);
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-head p,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more > span,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-current > span {
+  margin: 0;
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-head h2 {
+  margin: 0.25rem 0 0;
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-close {
+  display: inline-flex;
+  min-height: 2.45rem;
+  min-width: 2.45rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.95rem;
+  background: rgba(241, 245, 249, 0.84);
+  color: #334155;
+  cursor: pointer;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-current {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(255, 255, 255, 0.9));
+  padding: 0.9rem;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-current strong {
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more > div {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs button,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1.05rem;
+  background: rgba(248, 250, 252, 0.92);
+  color: #1e293b;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 950;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button:first-child {
+  background: rgba(219, 234, 254, 0.9);
+  border-color: rgba(37, 99, 235, 0.2);
+  color: #1d4ed8;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button:hover:not(:disabled),
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs button:hover,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more button:hover {
+  border-color: rgba(37, 99, 235, 0.28);
+  background: rgba(239, 246, 255, 0.98);
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button:active:not(:disabled),
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs button:active,
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more button:active {
+  transform: scale(0.98);
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more {
+  margin-top: 0.95rem;
+}
+
+.theme-pocket-lite-daylight .lite-workspace-quick-switcher-more > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 @media (max-width: 767px) {
   .theme-pocket-lite-daylight .lite-workspace-shell {
     gap: 0.65rem;
@@ -9256,20 +9455,54 @@ textarea {
     pointer-events: auto;
     visibility: visible;
   }
-}
 
-@media (min-width: 768px) {
-  .theme-pocket-lite-daylight .lite-workspace-actions .lite-workspace-more-button {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
+  .theme-pocket-lite-daylight .lite-workspace-switcher-fab {
+    right: auto;
+    left: 50%;
+    bottom: max(4.95rem, calc(env(safe-area-inset-bottom) + 4.95rem));
+    transform: translateX(-50%);
+  }
+
+  .theme-pocket-lite-daylight .lite-workspace-switcher-fab:active {
+    transform: translateX(-50%) scale(0.98);
+  }
+
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher {
+    top: auto;
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    left: max(0.75rem, env(safe-area-inset-left));
+    width: auto;
+    max-height: min(78dvh, 38rem);
+    border-radius: 1.65rem 1.65rem 1.25rem 1.25rem;
+    padding: 0.95rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs,
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-more > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button,
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs button,
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-more button {
+    min-height: 3.25rem;
   }
 }
+
 
 @media (prefers-reduced-motion: reduce) {
   .theme-pocket-lite-daylight .lite-workspace-more-button,
   .theme-pocket-lite-daylight .lite-workspace-nav-strip button,
-  .theme-pocket-lite-daylight .lite-workspace-bottom-nav button {
+  .theme-pocket-lite-daylight .lite-workspace-bottom-nav button,
+  .theme-pocket-lite-daylight .lite-workspace-switcher-fab,
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button,
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-tabs button,
+  .theme-pocket-lite-daylight .lite-workspace-quick-switcher-more button {
     transition: none;
   }
 }
