@@ -93,6 +93,19 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-home-pill lite-catalog-hero-pill is-secure" in ui
     assert "Remove" not in Path("src/lite/LiteCatalog.jsx").read_text()
     assert "lite-catalog-access-card" in css
+    assert "HeartPulse" in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Clock3" not in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "lite-catalog-status-badge" in ui
+    assert "lite-catalog-trust-marker" in ui
+    assert "Self-hosted app" in ui
+    assert "/apps/photoprism/favicon.ico" in ui
+    assert "lite-catalog-attention-reason" in ui
+    assert "Open is not ready yet. Pocket Lab is still checking the app route." in ui
+    assert "No apps installed yet" in ui
+    assert "lite-catalog-empty-state" in ui
+    assert "lite-catalog-actions" in css
+    assert "isStandalonePwa" in ui
+    assert "navigator.vibrate" in ui
 
 
 def test_lite_caddy_generator_supports_app_route_registry():
