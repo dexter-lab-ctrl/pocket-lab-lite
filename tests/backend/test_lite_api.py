@@ -1156,6 +1156,20 @@ def test_lite_security_ui_has_confidence_trust_boundary_and_coverage_matrix():
     assert "security-partial" in mocks
     assert "security-low" in mocks
 
+
+def test_lite_app_workspace_fails_closed_when_apps_are_not_embeddable():
+    ui = _lite_ui_source()
+
+    assert "appWorkspaceEmbedAllowed" in ui
+    assert "item?.embedAllowed === true" in ui
+    assert "access.embed_allowed === true" in ui
+    assert "runtime.embed_allowed === true" in ui
+    assert "This app opens full screen for safety." in ui
+    assert "preserved the app's own security settings" in ui
+    assert "setFrameFallback(true)" in ui
+    assert "showFrame" in ui
+
+
 def test_lite_ui_has_error_boundary_and_safe_restart_steps():
     ui = _lite_ui_source()
     assert "LiteErrorBoundary" in ui

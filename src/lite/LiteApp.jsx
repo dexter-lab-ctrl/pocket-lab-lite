@@ -24,6 +24,7 @@ import {
   LiteButton,
   NAV_ITEMS,
   StatusBadge,
+  appWorkspaceEmbedAllowed,
   backendBadgeStatus,
   backendLabel,
   resolveSafeAppOpenPath,
@@ -79,10 +80,12 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
   const catalogApp = useMemo(() => findWorkspaceApp(apps, workspace?.appId), [apps, workspace?.appId]);
   const app = catalogApp || workspace || {};
   const openUrl = resolveSafeAppOpenPath(catalogApp) || resolveSafeAppOpenPath(workspace?.openUrl || '');
+  const embedAllowed = appWorkspaceEmbedAllowed(catalogApp || workspace);
   const displayName = app?.name || workspace?.name || 'App workspace';
   const rawStatus = app?.status || (openUrl ? 'ready' : 'checking');
   const statusLabel = appWorkspaceStatusLabel(rawStatus);
   const frameTitle = `${displayName} inside Pocket Lab Lite`;
+  const showFrame = Boolean(openUrl && embedAllowed && !frameFallback);
 
   useEffect(() => {
     const onFocus = () => refresh();
@@ -95,7 +98,7 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
     setFrameReady(false);
     setFrameFallback(false);
 
-    if (!openUrl) {
+    if (!openUrl || !embedAllowed) {
       setFrameFallback(true);
       return undefined;
     }
@@ -104,10 +107,10 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
       if (!frameLoadedRef.current) {
         setFrameFallback(true);
       }
-    }, 7000);
+    }, 2500);
 
     return () => window.clearTimeout(timer);
-  }, [openUrl]);
+  }, [embedAllowed, openUrl]);
 
   const openFullScreen = () => {
     if (!openUrl) return;
@@ -148,17 +151,34 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
       </nav>
 
       <GlassCard className="lite-workspace-frame-card">
-        {!frameFallback && openUrl ? (
+        {showFrame ? (
           <div className={`lite-workspace-frame-wrap ${frameReady ? 'is-ready' : ''}`}>
             {!frameReady ? <div className="lite-workspace-frame-loading" role="status">Opening app workspace…</div> : null}
             <iframe
               src={openUrl}
               title={frameTitle}
               className="lite-workspace-frame"
-              onLoad={() => {
+              onLoad={(event) => {
                 frameLoadedRef.current = true;
-                setFrameReady(true);
-                setFrameFallback(false);
+
+                window.setTimeout(() => {
+                  try {
+                    const documentRef = event.currentTarget.contentDocument;
+                    const hasLoadedContent = Boolean(documentRef?.body && (documentRef.body.children.length || documentRef.body.textContent.trim()));
+                    if (!hasLoadedContent) {
+                      setFrameFallback(true);
+                      setFrameReady(false);
+                      return;
+                    }
+                  } catch (_error) {
+                    setFrameFallback(true);
+                    setFrameReady(false);
+                    return;
+                  }
+
+                  setFrameReady(true);
+                  setFrameFallback(false);
+                }, 80);
               }}
               onError={() => setFrameFallback(true)}
             />
@@ -166,8 +186,8 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
         ) : (
           <div className="lite-workspace-fallback" role="status">
             <div className="lite-workspace-fallback-icon"><ExternalLink className="h-6 w-6" /></div>
-            <h2>This app needs full-screen view.</h2>
-            <p>Pocket Lab kept your tabs available. Open the app full screen when it cannot be shown safely inside the workspace.</p>
+            <h2>This app opens full screen for safety.</h2>
+            <p>This app does not allow being shown inside another page. Pocket Lab kept your tabs available and preserved the app's own security settings.</p>
             <div className="lite-workspace-fallback-actions">
               <LiteButton onClick={openFullScreen} tone="primary" disabled={!openUrl}><Maximize2 className="h-4 w-4" />Open full screen</LiteButton>
               <LiteButton onClick={onBackToApps} tone="secondary"><ArrowLeft className="h-4 w-4" />Back to Apps</LiteButton>
@@ -240,6 +260,7 @@ function LiteAppShell() {
       name: app?.name || app?.title || 'App workspace',
       openUrl: resolveSafeAppOpenPath(openUrl || app),
       status: app?.status || 'ready',
+      embedAllowed: appWorkspaceEmbedAllowed(app),
       fromTab: active || 'catalog',
     });
     setActive('catalog');
