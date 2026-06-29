@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   CheckCircle2,
-  Clock3,
+  HeartPulse,
   ExternalLink,
   Image as ImageIcon,
   RefreshCw,
@@ -23,12 +23,27 @@ const APP_FILTERS = [
   { id: 'attention', label: 'Needs attention' },
 ];
 
+function isStandalonePwa() {
+  try {
+    return window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone === true;
+  } catch {
+    return false;
+  }
+}
+
 function safeHaptic(duration = 8) {
   try {
+    if (!isStandalonePwa()) return;
     navigator.vibrate?.(duration);
   } catch {
-    // Optional browser feedback only.
+    // Optional PWA-only browser feedback.
   }
+}
+
+function handleCatalogPointerDown(event) {
+  const target = event.target?.closest?.('button, a, [role="button"]');
+  if (!target || target.getAttribute?.('aria-disabled') === 'true' || target.disabled) return;
+  safeHaptic(6);
 }
 
 function appTone(status) {
@@ -67,7 +82,44 @@ function resolveAppOpenUrl(item) {
   return resolveSafeAppOpenPath(item);
 }
 
-function AppIcon() {
+function isAppInstalled(app) {
+  const status = String(app?.status || '').toLowerCase();
+  return Boolean(app?.installed || status === 'ready' || status === 'installed');
+}
+
+function isPhotoPrismApp(app) {
+  return String(app?.id || '').toLowerCase() === 'photoprism' || String(app?.name || '').toLowerCase() === 'photoprism';
+}
+
+function attentionReason(app, canOpen) {
+  const status = String(app?.status || app?.health || '').toLowerCase();
+  const health = String(app?.runtime?.health || '').toLowerCase();
+  const access = app?.access || {};
+
+  if (access.https_ready === false) return 'Remote access is not ready. Use the server device or check remote access health.';
+  if (!isAppInstalled(app) && !canOpen) return 'Install this app to make Open available.';
+  if (!canOpen || access.route_ready === false || app?.actions?.open === false) return 'Open is not ready yet. Pocket Lab is still checking the app route.';
+  if (['needs_attention', 'unavailable', 'failed', 'error', 'blocked'].includes(status) || ['unhealthy', 'failed', 'error'].includes(health)) {
+    return 'App needs attention. The app has not reported a healthy status yet.';
+  }
+  if (['installing', 'queued', 'running'].includes(status)) return 'Setting up. Pocket Lab is preparing this app.';
+  return '';
+}
+
+function AppIcon({ app }) {
+  const [failed, setFailed] = useState(false);
+
+  if (isPhotoPrismApp(app) && !failed) {
+    return (
+      <img
+        src="/apps/photoprism/favicon.ico"
+        alt=""
+        aria-hidden="true"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
   return <ImageIcon className="h-6 w-6" />;
 }
 
@@ -114,7 +166,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function install(app, event) {
     event?.stopPropagation?.();
     if (!app) return;
-    safeHaptic(8);
     setBusyId(app.id);
     setResult({ status: 'queued', message: `${app.name || 'App'} install started.` });
     setActionError(null);
@@ -135,7 +186,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     event?.stopPropagation?.();
     const target = resolveAppOpenUrl(app);
     if (!target) return;
-    safeHaptic(6);
     setOpeningId(app.id);
     window.setTimeout(() => {
       setOpeningId(null);
@@ -151,7 +201,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     event?.stopPropagation?.();
     const target = resolveAppOpenUrl(app);
     if (!target) return;
-    safeHaptic(6);
     window.location.assign(target);
   }
 
@@ -161,7 +210,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const opening = openingId === app.id;
     const canInstall = Boolean(app?.actions?.install) && !installing;
     const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
+    const installed = isAppInstalled(app);
     const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
+    const reason = attentionReason(app, canOpen);
     const progress = app?.progress;
     const percent = Math.min(100, Math.max(0, ((progress?.current || 1) / (progress?.total || 7)) * 100));
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
@@ -173,7 +224,7 @@ return (
       >
         <div className="lite-catalog-card-top">
           <div className="lite-catalog-icon"><AppIcon app={app} /></div>
-          <StatusBadge status={appTone(status)}>{appLabel(app)}</StatusBadge>
+          <StatusBadge status={appTone(status)} className="lite-catalog-status-badge">{appLabel(app)}</StatusBadge>
         </div>
         <div className="lite-catalog-card-title-row">
           <div>
@@ -182,11 +233,23 @@ return (
           </div>
         </div>
         <p>{app.summary}</p>
+        {installed ? (
+          <div className="lite-catalog-trust-marker" aria-label="Self-hosted app">
+            <ShieldCheck className="h-4 w-4" />
+            <span>Self-hosted app</span>
+          </div>
+        ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {canOpen ? 'Ready' : app?.access?.message || 'Available after install'}</span>
-          <span><Clock3 className="h-4 w-4" /> {app?.runtime?.health ? `Health: ${app.runtime.health}` : 'Health: not installed'}</span>
+          <span><HeartPulse className="h-4 w-4" /> {app?.runtime?.health ? `Health: ${app.runtime.health}` : 'Health: not installed'}</span>
         </div>
+        {reason ? (
+          <div className="lite-catalog-attention-reason">
+            <strong>{installed ? (canOpen ? 'Status note' : 'Attention') : 'Setup'}</strong>
+            <p>{reason}</p>
+          </div>
+        ) : null}
         {progress ? (
           <div className="lite-catalog-progress" aria-label="Install progress">
             <div><strong>{progress.step || 'Working'}</strong><span>{progress.current || 1}/{progress.total || 7}</span></div>
@@ -221,7 +284,7 @@ return (
   const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
 
 return (
-    <>
+    <div className="lite-catalog-screen" onPointerDown={handleCatalogPointerDown}>
       <PageHeader
         eyebrow="Apps"
         title="App Catalog"
@@ -241,7 +304,7 @@ return (
         <div className="lite-catalog-search-wrap"><Search className="h-5 w-5" /><input className="lite-catalog-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps" aria-label="Search apps" /></div>
         <div className="lite-catalog-filter-pills" role="tablist" aria-label="Filter apps" data-access-contract="Secure access ready">
           {APP_FILTERS.map((filter) => (
-            <button key={filter.id} type="button" className={activeFilter === filter.id ? 'is-active' : ''} onClick={() => { safeHaptic(4); setActiveFilter(filter.id); }}>{filter.label}</button>
+            <button key={filter.id} type="button" className={activeFilter === filter.id ? 'is-active' : ''} onClick={() => setActiveFilter(filter.id)}>{filter.label}</button>
           ))}
         </div>
         <p>{filteredApps.length} shown</p>
@@ -267,9 +330,18 @@ return (
         {filteredApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
       </div>
 
-      {!loading && filteredApps.length === 0 ? <StateSurface tone="empty" title={query ? 'No matching apps' : 'No apps yet'} description={query ? 'Try a different search term.' : 'Refresh the catalog after setup.'} /> : null}
+      {!loading && filteredApps.length === 0 ? (
+        <GlassCard className="lite-catalog-empty-state">
+          <div className="lite-catalog-empty-icon"><ImageIcon className="h-5 w-5" /></div>
+          <div>
+            <h2>{query ? 'No matching apps' : apps.length ? 'No apps in this view' : 'No apps installed yet'}</h2>
+            <p>{query ? 'Try another search or clear the filter.' : apps.length ? 'Choose another filter to see more apps.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
+          </div>
+          <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Check again</LiteButton>
+        </GlassCard>
+      ) : null}
       <ResultNotice result={result} error={actionError} />
 
-    </>
+    </div>
   );
 }
