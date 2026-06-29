@@ -8618,6 +8618,27 @@ textarea {
 }
 
 
+
+.theme-pocket-lite-daylight .lite-catalog-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  min-width: min(100%, 18rem);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-hero-actions .pocket-button {
+  min-height: 2.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-hero-actions .lite-catalog-hero-pill {
+  min-height: 2.65rem;
+  white-space: nowrap;
+}
+
 .theme-pocket-lite-daylight .lite-catalog-hero-pill {
   display: inline-flex;
   align-items: center;
@@ -8640,6 +8661,23 @@ textarea {
   color: #b91c1c;
 }
 
+
+
+@media (max-width: 640px) {
+  .theme-pocket-lite-daylight .lite-catalog-hero-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-hero-actions .lite-catalog-hero-pill {
+    flex: 0 1 auto;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-hero-actions .pocket-button {
+    flex: 1 1 8rem;
+    justify-content: center;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .theme-pocket-lite-daylight .lite-catalog-card,
@@ -9226,6 +9264,16 @@ textarea {
   border-radius: 0.65rem;
   object-fit: contain;
   filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.12));
+}
+
+
+.theme-pocket-lite-daylight .lite-catalog-icon img.lite-catalog-app-icon-img {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0.95rem;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 10px 18px rgba(79, 70, 229, 0.18));
 }
 
 .theme-pocket-lite-daylight .lite-catalog-trust-marker {
