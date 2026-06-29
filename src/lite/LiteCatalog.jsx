@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CheckCircle2,
   Clock3,
@@ -223,7 +223,7 @@ return (
   );
 }
 
-export default function CatalogScreen({ onOpenWorkspace }) {
+export default function CatalogScreen({ onOpenWorkspace, focusAppId, onFocusHandled }) {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
@@ -236,6 +236,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
+
+  useEffect(() => {
+    if (!focusAppId || !apps.length) return;
+    const focused = apps.find((app) => String(app?.id || '').toLowerCase() === String(focusAppId).toLowerCase());
+    if (!focused) return;
+    setActiveFilter('all');
+    setSelectedApp(focused);
+    onFocusHandled?.();
+  }, [apps, focusAppId, onFocusHandled]);
 
   const filteredApps = useMemo(() => {
     const value = query.trim().toLowerCase();

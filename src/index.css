@@ -9168,6 +9168,23 @@ textarea {
 
 
 
+
+.theme-pocket-lite-daylight .workspace-app-status-chip {
+  display: inline-flex;
+  min-height: 2.25rem;
+  max-width: min(100%, 24rem);
+  align-items: center;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 999px;
+  background: rgba(239, 246, 255, 0.78);
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 950;
+  padding: 0 0.75rem;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
 .theme-pocket-lite-daylight .lite-workspace-switcher-trigger {
   gap: 0.45rem;
   min-height: 2.55rem;
@@ -9380,7 +9397,8 @@ textarea {
     visibility: visible;
   }
 
-  .theme-pocket-lite-daylight .lite-workspace-switcher-trigger {
+  
+.theme-pocket-lite-daylight .lite-workspace-switcher-trigger {
     min-height: 2.35rem;
     min-width: auto;
     border-radius: 999px;
@@ -9408,6 +9426,36 @@ textarea {
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
+  }
+
+  .theme-pocket-lite-daylight .workspace-app-status-chip {
+    max-width: 100%;
+    min-height: 2.2rem;
+    font-size: 0.76rem;
+    padding: 0 0.68rem;
+  }
+
+  .theme-pocket-lite-daylight .workspace-app-status-panel {
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .theme-pocket-lite-daylight .workspace-app-status-head {
+    align-items: center;
+  }
+
+  .theme-pocket-lite-daylight .workspace-app-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-pocket-lite-daylight .workspace-app-status-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .workspace-app-status-actions button {
+    min-height: 3rem;
+    width: 100%;
   }
 
   .theme-pocket-lite-daylight .lite-workspace-frame-card,
@@ -9449,6 +9497,8 @@ textarea {
 
 
 @media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .workspace-app-status-chip,
+  .theme-pocket-lite-daylight .workspace-app-status-actions button,
   .theme-pocket-lite-daylight .lite-workspace-more-button,
   .theme-pocket-lite-daylight .lite-workspace-nav-strip button,
   .theme-pocket-lite-daylight .lite-workspace-quick-switcher-actions button,
