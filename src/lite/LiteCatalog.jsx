@@ -9,6 +9,7 @@ import {
   Server,
   ShieldCheck,
   ShieldAlert,
+  Smartphone,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
@@ -89,6 +90,10 @@ function isAppInstalled(app) {
 
 function isPhotoPrismApp(app) {
   return String(app?.id || '').toLowerCase() === 'photoprism' || String(app?.name || '').toLowerCase() === 'photoprism';
+}
+
+function canInstallAppToPhone(app) {
+  return Boolean(isPhotoPrismApp(app) && isAppInstalled(app) && resolveAppOpenUrl(app));
 }
 
 function attentionReason(app, canOpen) {
@@ -205,6 +210,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     window.location.assign(target);
   }
 
+  function installAppToPhone(app, event) {
+    event?.stopPropagation?.();
+    const target = resolveAppOpenUrl(app);
+    if (!canInstallAppToPhone(app) || !target) return;
+    setResult({
+      accepted: true,
+      summary: `Opening ${app?.name || 'this app'} full screen. Use your browser menu to install it on this phone.`,
+    });
+    window.setTimeout(() => window.location.assign(target), 160);
+  }
+
   function renderAppCard(app, featured = false) {
     const status = String(app.status || 'not_installed').toLowerCase();
     const installing = status === 'installing' || busyId === app.id;
@@ -212,11 +228,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const canInstall = Boolean(app?.actions?.install) && !installing;
     const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
     const installed = isAppInstalled(app);
+    const canInstallPhone = Boolean(canOpen && canInstallAppToPhone(app));
     const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
     const reason = attentionReason(app, canOpen);
     const progress = app?.progress;
     const percent = Math.min(100, Math.max(0, ((progress?.current || 1) / (progress?.total || 7)) * 100));
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
+    const actionsClassName = `lite-catalog-actions ${canInstallPhone ? 'has-phone-install' : ''}`;
 
 return (
       <GlassCard
@@ -259,10 +277,13 @@ return (
           </div>
         ) : null}
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
-        <div className="lite-catalog-actions">
+        <div className={actionsClassName}>
           <LiteButton onClick={(event) => install(app, event)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : status === 'ready' ? 'Installed' : 'Install'}</LiteButton>
           <LiteButton onClick={(event) => openApp(app, event)} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
           <LiteButton onClick={(event) => openAppFullScreen(app, event)} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
+          {canInstallPhone ? (
+            <LiteButton onClick={(event) => installAppToPhone(app, event)} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
+          ) : null}
         </div>
       </GlassCard>
     );
