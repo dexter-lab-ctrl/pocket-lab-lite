@@ -70,11 +70,171 @@ function appWorkspaceStatusLabel(status) {
   });
 }
 
-function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenFullScreen }) {
+function workspaceSwitcherTabLabel(item) {
+  if (item.id === 'catalog') return 'Apps';
+  if (item.id === 'identity') return 'Identity';
+  return item.label;
+}
+
+function WorkspaceQuickSwitcher({
+  open,
+  triggerRef,
+  appName,
+  rawStatus,
+  statusLabel,
+  openUrl,
+  onClose,
+  onBackToApps,
+  onOpenFullScreen,
+  onNavigate,
+}) {
+  const panelRef = useRef(null);
+  const firstActionRef = useRef(null);
+  const primaryTabs = useMemo(
+    () => NAV_ITEMS.filter((item) => ['home', 'catalog', 'devices', 'security', 'recovery'].includes(item.id)),
+    [],
+  );
+  const moreTabs = useMemo(
+    () => NAV_ITEMS.filter((item) => !['home', 'catalog', 'devices', 'security', 'recovery'].includes(item.id)),
+    [],
+  );
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const focusTimer = window.setTimeout(() => {
+      if (firstActionRef.current?.focus) {
+        firstActionRef.current.focus();
+        return;
+      }
+      panelRef.current?.focus?.();
+    }, 0);
+
+    const closeOnEscape = (event) => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      onClose();
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', closeOnEscape);
+      window.setTimeout(() => triggerRef?.current?.focus?.(), 0);
+    };
+  }, [open, onClose, triggerRef]);
+
+  if (!open) return null;
+
+  const rememberSafeLastTab = (tabId) => {
+    try {
+      window.localStorage.setItem('pocketlab:workspace:lastTab', String(tabId || ''));
+    } catch {
+      // Non-sensitive UI preference only; ignore private-mode storage failures.
+    }
+  };
+
+  const selectTab = (tabId) => {
+    rememberSafeLastTab(tabId);
+    onClose();
+    onNavigate(tabId);
+  };
+
+  const backToApps = () => {
+    rememberSafeLastTab('catalog');
+    onClose();
+    onBackToApps();
+  };
+
+  const openAppFullScreen = () => {
+    if (!openUrl) return;
+    onClose();
+    onOpenFullScreen(openUrl);
+  };
+
+  return (
+    <div className="lite-workspace-quick-switcher-layer" role="presentation">
+      <button
+        type="button"
+        className="lite-workspace-quick-switcher-backdrop"
+        onClick={onClose}
+        aria-label="Close Pocket Lab switcher"
+      />
+      <section
+        ref={panelRef}
+        className="lite-workspace-quick-switcher"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lite-workspace-quick-switcher-title"
+        tabIndex={-1}
+      >
+        <div className="lite-workspace-quick-switcher-head">
+          <div>
+            <p>Pocket Lab</p>
+            <h2 id="lite-workspace-quick-switcher-title">Switch workspace</h2>
+          </div>
+          <button type="button" className="lite-workspace-quick-switcher-close" onClick={onClose} aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="lite-workspace-quick-switcher-current" aria-label="Current app">
+          <span>Current app</span>
+          <strong>{appName}</strong>
+          <StatusBadge status={backendBadgeStatus(rawStatus)}>{statusLabel}</StatusBadge>
+        </div>
+
+        <div className="lite-workspace-quick-switcher-actions">
+          <button ref={firstActionRef} type="button" onClick={backToApps}>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Apps</span>
+          </button>
+          <button type="button" onClick={openAppFullScreen} disabled={!openUrl}>
+            <Maximize2 className="h-4 w-4" />
+            <span>Open full screen</span>
+          </button>
+        </div>
+
+        <div className="lite-workspace-quick-switcher-tabs" aria-label="Pocket Lab tabs">
+          {primaryTabs.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button key={item.id} type="button" onClick={() => selectTab(item.id)}>
+                <Icon className="h-4 w-4" />
+                <span>{workspaceSwitcherTabLabel(item)}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {moreTabs.length ? (
+          <div className="lite-workspace-quick-switcher-more">
+            <span>More</span>
+            <div>
+              {moreTabs.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button key={item.id} type="button" onClick={() => selectTab(item.id)}>
+                    <Icon className="h-4 w-4" />
+                    <span>{workspaceSwitcherTabLabel(item)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+      </section>
+    </div>
+  );
+}
+
+function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScreen }) {
   const { data, refresh } = useLiteResource(liteApi.catalog, [workspace?.appId]);
   const [frameReady, setFrameReady] = useState(false);
   const [frameFallback, setFrameFallback] = useState(false);
-  const frameLoadedRef = useRef(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const switcherTriggerRef = useRef(null);
+  const lastSwitcherTriggerRef = useRef(null);
 
   const apps = useMemo(() => data?.apps || data?.items || [], [data]);
   const catalogApp = useMemo(() => findWorkspaceApp(apps, workspace?.appId), [apps, workspace?.appId]);
@@ -94,7 +254,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
   }, [refresh]);
 
   useEffect(() => {
-    frameLoadedRef.current = false;
     setFrameReady(false);
     setFrameFallback(false);
 
@@ -110,7 +269,17 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
     onOpenFullScreen(openUrl);
   };
 
+  const openSwitcher = (event) => {
+    lastSwitcherTriggerRef.current = event?.currentTarget || switcherTriggerRef.current;
+    setSwitcherOpen(true);
+  };
+
+  const closeSwitcher = () => {
+    setSwitcherOpen(false);
+  };
+
   const navigateFromWorkspace = (tabId) => {
+    closeSwitcher();
     onNavigate(tabId);
   };
 
@@ -127,7 +296,18 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
         <div className="lite-workspace-actions">
           <LiteButton onClick={onBackToApps} tone="secondary"><ArrowLeft className="h-4 w-4" />Back to Apps</LiteButton>
           <LiteButton onClick={openFullScreen} tone="primary" disabled={!openUrl}><Maximize2 className="h-4 w-4" />Open full screen</LiteButton>
-          <button type="button" className="lite-workspace-more-button" onClick={onMore} aria-label="Open Pocket Lab tabs"><MoreHorizontal className="h-5 w-5" /></button>
+          <button
+            ref={switcherTriggerRef}
+            type="button"
+            className="lite-workspace-more-button lite-workspace-switcher-trigger"
+            onClick={openSwitcher}
+            aria-label="Open Pocket Lab switcher"
+            aria-haspopup="dialog"
+            aria-expanded={switcherOpen}
+          >
+            <MoreHorizontal className="h-5 w-5" />
+            <span>Switch</span>
+          </button>
         </div>
       </div>
 
@@ -152,7 +332,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
               title={frameTitle}
               className="lite-workspace-frame"
               onLoad={() => {
-                frameLoadedRef.current = true;
                 setFrameReady(true);
                 setFrameFallback(false);
               }}
@@ -175,11 +354,36 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenF
         )}
       </GlassCard>
 
+      <button
+        type="button"
+        className="lite-workspace-switcher-fab"
+        onClick={openSwitcher}
+        aria-label="Open Pocket Lab switcher"
+        aria-haspopup="dialog"
+        aria-expanded={switcherOpen}
+      >
+        <MoreHorizontal className="h-4 w-4" />
+        <span>Pocket Lab</span>
+      </button>
+
+      <WorkspaceQuickSwitcher
+        open={switcherOpen}
+        triggerRef={lastSwitcherTriggerRef}
+        appName={displayName}
+        rawStatus={rawStatus}
+        statusLabel={statusLabel}
+        openUrl={openUrl}
+        onClose={closeSwitcher}
+        onBackToApps={onBackToApps}
+        onOpenFullScreen={onOpenFullScreen}
+        onNavigate={navigateFromWorkspace}
+      />
+
       <nav className="lite-workspace-bottom-nav" aria-label="Pocket Lab Lite workspace navigation">
         <button type="button" onClick={() => navigateFromWorkspace('home')}>Home</button>
         <button type="button" onClick={() => navigateFromWorkspace('catalog')}>Apps</button>
         <button type="button" onClick={() => navigateFromWorkspace('devices')}>Devices</button>
-        <button type="button" onClick={onMore}>More</button>
+        <button type="button" onClick={openSwitcher}>Switch</button>
       </nav>
     </section>
   );
@@ -269,7 +473,6 @@ function LiteAppShell() {
       workspace={workspaceApp}
       onBackToApps={() => closeWorkspaceToTab('catalog')}
       onNavigate={navigateToTab}
-      onMore={() => setMenuOpen(true)}
       onOpenFullScreen={openFullScreen}
     />
   ) : ({
