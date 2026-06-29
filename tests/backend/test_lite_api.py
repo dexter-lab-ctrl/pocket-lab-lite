@@ -1434,11 +1434,12 @@ def test_lite_workspace_quick_switcher_has_accessible_safe_controls():
     assert "pocketlab:workspace:lastTab" in ui
     assert "window.localStorage.setItem('pocketlab:workspace:lastTab'" in ui
     assert "resolveSafeAppOpenPath" in ui
-    assert "lite-workspace-switcher-fab" in css
+    assert "lite-workspace-switcher-fab" not in ui
+    assert "lite-workspace-switcher-fab" not in css
     assert "lite-workspace-bottom-nav" not in ui
     assert "lite-workspace-bottom-nav" not in css
     assert "calc(1rem + env(safe-area-inset-bottom))" in css
-    assert "bottom: max(0.85rem, calc(env(safe-area-inset-bottom) + 0.85rem))" in css
+    assert "<span>Switch</span>" in ui
     assert "@media (max-width: 767px)" in css
 
 def test_lite_workspace_embed_helper_requires_matching_origin_when_declared():
