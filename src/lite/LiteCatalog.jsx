@@ -88,6 +88,33 @@ function CatalogSkeletons() {
   );
 }
 
+
+function friendlyHealthLabel(value) {
+  const health = String(value || '').toLowerCase();
+  if (['healthy', 'ready', 'running'].includes(health)) return 'Healthy';
+  if (['installing', 'queued', 'starting'].includes(health)) return 'Setting up';
+  if (['unhealthy', 'failed', 'error', 'blocked'].includes(health)) return 'Needs attention';
+  if (['not installed', 'not_installed'].includes(health)) return 'Not installed';
+  return health ? health.replace(/_/g, ' ') : 'Checking';
+}
+
+function drawerAccessLabel(app, canOpen) {
+  if (canOpen) return 'Open is ready';
+  if (app?.access?.https_ready === false) return 'Remote access not ready';
+  if (app?.access?.message) return app.access.message;
+  if (app?.installed || String(app?.status || '').toLowerCase() === 'ready') return 'Checking app route';
+  return 'Available after install';
+}
+
+function drawerSetupSteps(app, canOpen, installing) {
+  const installed = Boolean(app?.installed || String(app?.status || '').toLowerCase() === 'ready');
+  return [
+    { id: 'install', label: 'Install', state: installed || canOpen ? 'done' : installing ? 'current' : 'pending' },
+    { id: 'check', label: 'Check', state: installing ? 'pending' : installed || canOpen ? 'done' : 'current' },
+    { id: 'open', label: 'Open', state: canOpen ? 'done' : installed ? 'current' : 'pending' },
+  ];
+}
+
 function DetailRow({ label, value }) {
   if (!value) return null;
   return (
@@ -103,6 +130,13 @@ function AppDetailsDrawer({ app, openUrl, opening, installing, canOpen, canInsta
   const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
   const health = app?.runtime?.health || (app?.installed ? 'healthy' : 'not installed');
   const evidenceCount = Array.isArray(app?.evidence_refs) ? app.evidence_refs.length : 0;
+  const statusLabel = appLabel(app);
+  const healthLabel = friendlyHealthLabel(health);
+  const accessLabel = drawerAccessLabel(app, canOpen);
+  const setupSteps = drawerSetupSteps(app, canOpen, installing);
+  const categoryLabel = app?.category || 'Self-hosted app';
+  const latestText = lastOperationText(app);
+  const evidenceLabel = evidenceCount === 1 ? '1 safety record' : evidenceCount ? `${evidenceCount} safety records` : 'Saved after install';
 
   const [drawerSnap, setDrawerSnap] = useState('comfortable');
   const [drawerOffset, setDrawerOffset] = useState(0);
@@ -198,19 +232,48 @@ return (
         >
           <span aria-hidden="true" />
         </button>
-        <div className="lite-catalog-drawer-summary">
-          <div>
-            <p>{app?.name || app?.title || 'App details'}</p>
-            <span>{appLabel(app)}</span>
+        <div className="lite-catalog-drawer-hero">
+          <div className="lite-catalog-drawer-app-icon" aria-hidden="true"><AppIcon app={app} /></div>
+          <div className="lite-catalog-drawer-title-block">
+            <span className="lite-catalog-drawer-kicker">{categoryLabel}</span>
+            <h2>{app?.name || app?.title || 'App details'}</h2>
+            <p>{app?.summary || 'Local app managed by Pocket Lab.'}</p>
           </div>
-          <strong>{canOpen ? 'Ready' : 'Needs attention'}</strong>
+          <strong className={canOpen ? 'lite-catalog-drawer-ready-chip' : 'lite-catalog-drawer-ready-chip is-waiting'}>
+            {canOpen ? 'Ready' : 'Needs attention'}
+          </strong>
         </div>
+
+        <div className="lite-catalog-drawer-snapshot" aria-label="App snapshot">
+          <div>
+            <span>Access</span>
+            <strong>{accessLabel}</strong>
+          </div>
+          <div>
+            <span>Runs on</span>
+            <strong>{targetName}</strong>
+          </div>
+          <div>
+            <span>Safety</span>
+            <strong>{evidenceLabel}</strong>
+          </div>
+        </div>
+
+        <div className="lite-catalog-drawer-path" aria-label="App readiness">
+          {setupSteps.map((step) => (
+            <div key={step.id} className={`lite-catalog-drawer-step is-${step.state}`}>
+              <span aria-hidden="true" />
+              <strong>{step.label}</strong>
+            </div>
+          ))}
+        </div>
+
         <div className="lite-catalog-detail-grid">
-          <DetailRow label="Status" value={appLabel(app)} />
-          <DetailRow label="Runs on" value={targetName} />
-          <DetailRow label="Health" value={health} />
-          <DetailRow label="Address" value={openUrl || app?.runtime?.route || app?.access?.open_url || 'Available after install'} />
-          <DetailRow label="Evidence" value={evidenceCount ? `${evidenceCount} file(s)` : 'Saved after install'} />
+          <DetailRow label="Status" value={statusLabel} />
+          <DetailRow label="Health" value={healthLabel} />
+          <DetailRow label="Access" value={accessLabel} />
+          <DetailRow label="Latest" value={latestText} />
+          <DetailRow label="Evidence" value={evidenceLabel} />
         </div>
         <div className="lite-catalog-detail-note"><Info className="h-4 w-4" />Open keeps Pocket Lab controls nearby. Full screen still opens the app route directly.</div>
         <div className={`lite-catalog-drawer-actions is-${drawerSnap}`}>
