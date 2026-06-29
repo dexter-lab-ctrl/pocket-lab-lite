@@ -36,6 +36,33 @@ export const NAV_ITEMS = [
   { id: 'recovery', label: 'Recovery', icon: Database },
 ];
 
+
+
+export function resolveSafeAppOpenPath(itemOrUrl) {
+  const raw = typeof itemOrUrl === 'string'
+    ? itemOrUrl
+    : itemOrUrl?.access?.open_url || itemOrUrl?.runtime?.url || itemOrUrl?.runtime?.route || '';
+  const trimmed = String(raw || '').trim();
+
+  if (!trimmed || trimmed.startsWith('//') || /^[a-z][a-z0-9+.-]*:/i.test(trimmed)) {
+    return '';
+  }
+
+  if (!trimmed.startsWith('/apps/')) {
+    return '';
+  }
+
+  try {
+    const url = new URL(trimmed, window.location.origin);
+    if (url.origin !== window.location.origin || !url.pathname.startsWith('/apps/')) {
+      return '';
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (_error) {
+    return '';
+  }
+}
+
 export function roleLabel(value) {
   return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
 }

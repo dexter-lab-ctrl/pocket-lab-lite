@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ArrowLeft,
   Download,
+  ExternalLink,
+  Maximize2,
   Menu,
+  MoreHorizontal,
   WifiOff,
   X,
 } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
-import { useLiteStatus } from '../hooks/useLiteStatus.js';
+import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
+import { liteApi } from '../lib/liteApi.js';
 import HomeScreen from './LiteHome.jsx';
 import CatalogScreen from './LiteCatalog.jsx';
 import IdentityScreen from './LiteIdentity.jsx';
@@ -14,7 +19,172 @@ import SecurityScreen from './LiteSecurity.jsx';
 import DevicesScreen from './LiteDevices.jsx';
 import RulesScreen from './LiteRules.jsx';
 import RecoveryScreen from './LiteRecovery.jsx';
-import { GlassCard, LiteButton, NAV_ITEMS } from './LiteUi.jsx';
+import {
+  GlassCard,
+  LiteButton,
+  NAV_ITEMS,
+  StatusBadge,
+  backendBadgeStatus,
+  backendLabel,
+  resolveSafeAppOpenPath,
+} from './LiteUi.jsx';
+
+function currentWorkspaceFromLocation() {
+  if (typeof window === 'undefined') return null;
+  const match = window.location.pathname.match(/^\/app-workspace\/([^/]+)\/?$/);
+  if (!match) return null;
+  const appId = decodeURIComponent(match[1] || '').trim();
+  if (!appId) return null;
+  return {
+    appId,
+    name: 'App workspace',
+    openUrl: '',
+    status: 'checking',
+    fromTab: 'catalog',
+  };
+}
+
+function workspacePathForApp(appId) {
+  const safeId = encodeURIComponent(String(appId || '').trim());
+  return safeId ? `/app-workspace/${safeId}` : '/app-workspace/app';
+}
+
+function pushPocketLabPath(path) {
+  if (typeof window === 'undefined' || !window.history?.pushState) return;
+  if (window.location.pathname === path) return;
+  window.history.pushState({ pocketLabLitePath: path }, '', path);
+}
+
+function findWorkspaceApp(apps, appId) {
+  const wanted = String(appId || '').toLowerCase();
+  return apps.find((app) => String(app?.id || '').toLowerCase() === wanted) || null;
+}
+
+function appWorkspaceStatusLabel(status) {
+  return backendLabel(status, {
+    ready: 'Ready',
+    review: 'Needs attention',
+    danger: 'Needs attention',
+    checking: 'Checking',
+  });
+}
+
+function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onMore, onOpenFullScreen }) {
+  const { data, refresh } = useLiteResource(liteApi.catalog, [workspace?.appId]);
+  const [frameReady, setFrameReady] = useState(false);
+  const [frameFallback, setFrameFallback] = useState(false);
+  const frameLoadedRef = useRef(false);
+
+  const apps = useMemo(() => data?.apps || data?.items || [], [data]);
+  const catalogApp = useMemo(() => findWorkspaceApp(apps, workspace?.appId), [apps, workspace?.appId]);
+  const app = catalogApp || workspace || {};
+  const openUrl = resolveSafeAppOpenPath(catalogApp) || resolveSafeAppOpenPath(workspace?.openUrl || '');
+  const displayName = app?.name || workspace?.name || 'App workspace';
+  const rawStatus = app?.status || (openUrl ? 'ready' : 'checking');
+  const statusLabel = appWorkspaceStatusLabel(rawStatus);
+  const frameTitle = `${displayName} inside Pocket Lab Lite`;
+
+  useEffect(() => {
+    const onFocus = () => refresh();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [refresh]);
+
+  useEffect(() => {
+    frameLoadedRef.current = false;
+    setFrameReady(false);
+    setFrameFallback(false);
+
+    if (!openUrl) {
+      setFrameFallback(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      if (!frameLoadedRef.current) {
+        setFrameFallback(true);
+      }
+    }, 7000);
+
+    return () => window.clearTimeout(timer);
+  }, [openUrl]);
+
+  const openFullScreen = () => {
+    if (!openUrl) return;
+    onOpenFullScreen(openUrl);
+  };
+
+  const navigateFromWorkspace = (tabId) => {
+    onNavigate(tabId);
+  };
+
+  return (
+    <section className="lite-workspace-shell" aria-label={`${displayName} workspace`}>
+      <div className="lite-workspace-bar">
+        <div className="lite-workspace-title-block">
+          <p className="lite-workspace-eyebrow">Pocket Lab Lite · Self-hosted workspace</p>
+          <div className="lite-workspace-heading-row">
+            <h1>{displayName}</h1>
+            <StatusBadge status={backendBadgeStatus(rawStatus)}>{statusLabel}</StatusBadge>
+          </div>
+        </div>
+        <div className="lite-workspace-actions">
+          <LiteButton onClick={onBackToApps} tone="secondary"><ArrowLeft className="h-4 w-4" />Back to Apps</LiteButton>
+          <LiteButton onClick={openFullScreen} tone="primary" disabled={!openUrl}><Maximize2 className="h-4 w-4" />Open full screen</LiteButton>
+          <button type="button" className="lite-workspace-more-button" onClick={onMore} aria-label="Open Pocket Lab tabs"><MoreHorizontal className="h-5 w-5" /></button>
+        </div>
+      </div>
+
+      <nav className="lite-workspace-nav-strip" aria-label="Pocket Lab Lite tabs while app is open">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button key={item.id} type="button" onClick={() => navigateFromWorkspace(item.id)}>
+              <Icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <GlassCard className="lite-workspace-frame-card">
+        {!frameFallback && openUrl ? (
+          <div className={`lite-workspace-frame-wrap ${frameReady ? 'is-ready' : ''}`}>
+            {!frameReady ? <div className="lite-workspace-frame-loading" role="status">Opening app workspace…</div> : null}
+            <iframe
+              src={openUrl}
+              title={frameTitle}
+              className="lite-workspace-frame"
+              onLoad={() => {
+                frameLoadedRef.current = true;
+                setFrameReady(true);
+                setFrameFallback(false);
+              }}
+              onError={() => setFrameFallback(true)}
+            />
+          </div>
+        ) : (
+          <div className="lite-workspace-fallback" role="status">
+            <div className="lite-workspace-fallback-icon"><ExternalLink className="h-6 w-6" /></div>
+            <h2>This app needs full-screen view.</h2>
+            <p>Pocket Lab kept your tabs available. Open the app full screen when it cannot be shown safely inside the workspace.</p>
+            <div className="lite-workspace-fallback-actions">
+              <LiteButton onClick={openFullScreen} tone="primary" disabled={!openUrl}><Maximize2 className="h-4 w-4" />Open full screen</LiteButton>
+              <LiteButton onClick={onBackToApps} tone="secondary"><ArrowLeft className="h-4 w-4" />Back to Apps</LiteButton>
+            </div>
+          </div>
+        )}
+      </GlassCard>
+
+      <nav className="lite-workspace-bottom-nav" aria-label="Pocket Lab Lite workspace navigation">
+        <button type="button" onClick={() => navigateFromWorkspace('home')}>Home</button>
+        <button type="button" onClick={() => navigateFromWorkspace('catalog')}>Apps</button>
+        <button type="button" onClick={() => navigateFromWorkspace('devices')}>Devices</button>
+        <button type="button" onClick={onMore}>More</button>
+      </nav>
+    </section>
+  );
+}
 
 class LiteErrorBoundary extends React.Component {
   constructor(props) {
@@ -49,22 +219,73 @@ class LiteErrorBoundary extends React.Component {
 
 function LiteAppShell() {
   const [active, setActive] = useState('home');
+  const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
   const [menuOpen, setMenuOpen] = useState(false);
   const online = useOnlineStatus();
   const { status, loading, error, refresh } = useLiteStatus();
 
-  const content = {
+  useEffect(() => {
+    const syncWorkspaceFromHistory = () => {
+      setWorkspaceApp(currentWorkspaceFromLocation());
+    };
+    window.addEventListener('popstate', syncWorkspaceFromHistory);
+    return () => window.removeEventListener('popstate', syncWorkspaceFromHistory);
+  }, []);
+
+  const openWorkspace = (app, openUrl) => {
+    const appId = app?.id || app?.app_id;
+    if (!appId || !resolveSafeAppOpenPath(openUrl || app)) return;
+    setWorkspaceApp({
+      appId,
+      name: app?.name || app?.title || 'App workspace',
+      openUrl: resolveSafeAppOpenPath(openUrl || app),
+      status: app?.status || 'ready',
+      fromTab: active || 'catalog',
+    });
+    setActive('catalog');
+    setMenuOpen(false);
+    pushPocketLabPath(workspacePathForApp(appId));
+  };
+
+  const closeWorkspaceToTab = (tabId = 'catalog') => {
+    setWorkspaceApp(null);
+    setActive(tabId);
+    setMenuOpen(false);
+    pushPocketLabPath('/');
+  };
+
+  const openFullScreen = (openUrl) => {
+    const target = resolveSafeAppOpenPath(openUrl);
+    if (!target) return;
+    window.location.assign(target);
+  };
+
+  const navigateToTab = (tabId) => {
+    closeWorkspaceToTab(tabId);
+  };
+
+  const content = workspaceApp ? (
+    <LiteAppWorkspace
+      workspace={workspaceApp}
+      onBackToApps={() => closeWorkspaceToTab('catalog')}
+      onNavigate={navigateToTab}
+      onMore={() => setMenuOpen(true)}
+      onOpenFullScreen={openFullScreen}
+    />
+  ) : ({
     home: <HomeScreen status={status} loading={loading} error={error} refresh={refresh} onNavigate={setActive} />,
-    catalog: <CatalogScreen />,
+    catalog: <CatalogScreen onOpenWorkspace={openWorkspace} />,
     identity: <IdentityScreen />,
     security: <SecurityScreen />,
     devices: <DevicesScreen />,
     rules: <RulesScreen />,
     recovery: <RecoveryScreen />,
-  }[active];
+  }[active]);
+
+  const shellClassName = `pocket-app-shell theme-pocket-lite-daylight lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
 
   return (
-    <div className="pocket-app-shell theme-pocket-lite-daylight lite-motion-system">
+    <div className={shellClassName}>
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
 
@@ -111,7 +332,7 @@ function LiteAppShell() {
           const Icon = item.icon;
           const isActive = active === item.id;
           return (
-            <button key={item.id} type="button" onClick={() => setActive(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
+            <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : setActive(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon h-5 w-5" />
             </button>
           );
@@ -131,7 +352,7 @@ function LiteAppShell() {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <button key={item.id} type="button" onClick={() => { setActive(item.id); setMenuOpen(false); }} className="mobile-more-item nav-active-rail-item">
+              <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : (setActive(item.id), setMenuOpen(false))} className="mobile-more-item nav-active-rail-item">
                 <Icon className="nav-active-rail-icon h-5 w-5" />
                 <span>{item.label}</span>
               </button>
@@ -140,7 +361,7 @@ function LiteAppShell() {
         </div>
       </aside>
 
-      <main id="pocket-lite-main" key={active} className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
+      <main id="pocket-lite-main" key={workspaceApp ? `workspace-${workspaceApp.appId}` : active} className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
         {content}
       </main>
     </div>

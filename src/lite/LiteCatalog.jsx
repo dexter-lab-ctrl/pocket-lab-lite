@@ -8,15 +8,14 @@ import {
   RefreshCw,
   Search,
   Server,
-  Sparkles,
   ShieldCheck,
-  X,
-  ShieldAlert,} from 'lucide-react';
+  ShieldAlert,
+} from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, ResultNotice, LoadingCard } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, ResultNotice, LoadingCard, resolveSafeAppOpenPath } from './LiteUi.jsx';
 
-const PHOTOPRISM_ICON_URL = 'https://dl.photoprism.app/icons/app.svg';
+const KNOWN_APP_NAMES = ['PhotoPrism'];
 
 const APP_FILTERS = [
   { id: 'all', label: 'All' },
@@ -66,30 +65,10 @@ function lastOperationText(app) {
 }
 
 function resolveAppOpenUrl(item) {
-  const raw =
-    item?.access?.open_url ||
-    item?.runtime?.url ||
-    item?.runtime?.route ||
-    '';
-
-  if (!raw) return '';
-
-  try {
-    const url = new URL(raw, window.location.origin);
-    if (!url.pathname.startsWith('/apps/')) {
-      return '';
-    }
-    return url.toString();
-  } catch {
-    return '';
-  }
+  return resolveSafeAppOpenPath(item);
 }
 
-function AppIcon({ app }) {
-  const isPhotoPrism = String(app?.id || '').toLowerCase() === 'photoprism' || String(app?.name || '').toLowerCase().includes('photoprism');
-  if (isPhotoPrism) {
-    return <img src={PHOTOPRISM_ICON_URL} alt="" loading="lazy" decoding="async" />;
-  }
+function AppIcon() {
   return <ImageIcon className="h-6 w-6" />;
 }
 
@@ -119,7 +98,7 @@ function DetailRow({ label, value }) {
   );
 }
 
-function AppDetailsDrawer({ app, openUrl, opening, installing, canOpen, canInstall, onClose, onOpen, onInstall }) {
+function AppDetailsDrawer({ app, openUrl, opening, installing, canOpen, canInstall, onClose, onOpen, onOpenFullScreen, onInstall }) {
   if (!app) return null;
   const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
   const health = app?.runtime?.health || (app?.installed ? 'healthy' : 'not installed');
@@ -230,20 +209,21 @@ return (
           <DetailRow label="Status" value={appLabel(app)} />
           <DetailRow label="Runs on" value={targetName} />
           <DetailRow label="Health" value={health} />
-          <DetailRow label="Address" value={openUrl ? '/apps/photoprism/' : app?.runtime?.route || app?.access?.open_url || 'Available after install'} />
+          <DetailRow label="Address" value={openUrl || app?.runtime?.route || app?.access?.open_url || 'Available after install'} />
           <DetailRow label="Evidence" value={evidenceCount ? `${evidenceCount} file(s)` : 'Saved after install'} />
         </div>
-        <div className="lite-catalog-detail-note"><Info className="h-4 w-4" />Open uses the current Pocket Lab address and stays inside the private app route.</div>
+        <div className="lite-catalog-detail-note"><Info className="h-4 w-4" />Open keeps Pocket Lab controls nearby. Full screen still opens the app route directly.</div>
         <div className={`lite-catalog-drawer-actions is-${drawerSnap}`}>
           <button className="lite-catalog-action lite-catalog-action-primary" type="button" onClick={onInstall} disabled={!canInstall}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : app?.installed || app?.status === 'ready' ? 'Installed' : 'Install'}</button>
           <button className="lite-catalog-action lite-catalog-action-primary" type="button" onClick={onOpen} disabled={!canOpen}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</button>
+          <button className="lite-catalog-action lite-catalog-action-secondary" type="button" onClick={onOpenFullScreen} disabled={!canOpen}>Open full screen</button>
         </div>
       </GlassCard>
     </div>
   );
 }
 
-export default function CatalogScreen() {
+export default function CatalogScreen({ onOpenWorkspace }) {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
@@ -255,7 +235,7 @@ export default function CatalogScreen() {
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
-  const featuredApp = apps.find((app) => String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
+  const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
 
   const filteredApps = useMemo(() => {
     const value = query.trim().toLowerCase();
@@ -266,9 +246,6 @@ export default function CatalogScreen() {
     });
   }, [apps, activeFilter, query]);
 
-  const readyCount = apps.filter((app) => app.status === 'ready' || app.installed).length;
-  const installingCount = apps.filter((app) => app.status === 'installing').length;
-  const attentionCount = apps.filter((app) => ['needs_attention', 'unavailable'].includes(String(app.status || ''))).length;
 
   async function install(app, event) {
     event?.stopPropagation?.();
@@ -296,7 +273,22 @@ export default function CatalogScreen() {
     if (!target) return;
     safeHaptic(6);
     setOpeningId(app.id);
-    window.setTimeout(() => window.location.assign(target), 160);
+    window.setTimeout(() => {
+      setOpeningId(null);
+      if (typeof onOpenWorkspace === 'function') {
+        onOpenWorkspace(app, target);
+        return;
+      }
+      window.location.assign(target);
+    }, 120);
+  }
+
+  function openAppFullScreen(app, event) {
+    event?.stopPropagation?.();
+    const target = resolveAppOpenUrl(app);
+    if (!target) return;
+    safeHaptic(6);
+    window.location.assign(target);
   }
 
   function renderAppCard(app, featured = false) {
@@ -443,6 +435,7 @@ return (
         canInstall={selectedCanInstall}
         onClose={() => setSelectedApp(null)}
         onOpen={(event) => openApp(selectedApp, event)}
+        onOpenFullScreen={(event) => openAppFullScreen(selectedApp, event)}
         onInstall={(event) => install(selectedApp, event)}
       />
     </>
