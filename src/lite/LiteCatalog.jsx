@@ -172,12 +172,12 @@ function AppDetailsDrawer({ app, openUrl, opening, installing, canOpen, canInsta
       return;
     }
 
-    if (delta > 86 && drawerSnap === 'comfortable') {
+    if (delta > 92 && drawerSnap === 'comfortable') {
       onClose?.();
       return;
     }
 
-    if (delta > 64) {
+    if (delta > 58) {
       setDrawerSnap('comfortable');
       return;
     }
@@ -219,6 +219,13 @@ return (
         >
           <span aria-hidden="true" />
         </button>
+        <div className="lite-catalog-drawer-summary">
+          <div>
+            <p>{app?.name || app?.title || 'App details'}</p>
+            <span>{appLabel(app)}</span>
+          </div>
+          <strong>{canOpen ? 'Ready' : 'Needs attention'}</strong>
+        </div>
         <div className="lite-catalog-detail-grid">
           <DetailRow label="Status" value={appLabel(app)} />
           <DetailRow label="Runs on" value={targetName} />
@@ -227,9 +234,9 @@ return (
           <DetailRow label="Evidence" value={evidenceCount ? `${evidenceCount} file(s)` : 'Saved after install'} />
         </div>
         <div className="lite-catalog-detail-note"><Info className="h-4 w-4" />Open uses the current Pocket Lab address and stays inside the private app route.</div>
-        <div className="lite-catalog-drawer-actions">
-          <LiteButton onClick={onInstall} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : app?.installed || app?.status === 'ready' ? 'Installed' : 'Install'}</LiteButton>
-          <LiteButton onClick={onOpen} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
+        <div className={`lite-catalog-drawer-actions is-${drawerSnap}`}>
+          <button className="lite-catalog-action lite-catalog-action-primary" type="button" onClick={onInstall} disabled={!canInstall}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : app?.installed || app?.status === 'ready' ? 'Installed' : 'Install'}</button>
+          <button className="lite-catalog-action lite-catalog-action-primary" type="button" onClick={onOpen} disabled={!canOpen}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</button>
         </div>
       </GlassCard>
     </div>
