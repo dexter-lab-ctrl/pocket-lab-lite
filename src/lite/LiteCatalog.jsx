@@ -112,7 +112,8 @@ function AppIcon({ app }) {
   if (isPhotoPrismApp(app) && !failed) {
     return (
       <img
-        src="/apps/photoprism/favicon.ico"
+        src="/assets/apps/photoprism.svg"
+        className="lite-catalog-app-icon-img"
         alt=""
         aria-hidden="true"
         onError={() => setFailed(true)}
@@ -290,13 +291,13 @@ return (
         title="App Catalog"
         description="Install and open local apps from your Pocket Lab. App setup is handled by the Server Host."
         actions={(
-          <>
+          <div className="lite-catalog-hero-actions">
             <div className={isCatalogSecure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
               {isCatalogSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
               {isCatalogSecure ? 'Secure Access' : 'Not Secure'}
             </div>
             <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Refresh</LiteButton>
-          </>
+          </div>
         )}
       />
 

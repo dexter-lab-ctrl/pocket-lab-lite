@@ -98,7 +98,10 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-catalog-status-badge" in ui
     assert "lite-catalog-trust-marker" in ui
     assert "Self-hosted app" in ui
-    assert "/apps/photoprism/favicon.ico" in ui
+    assert "/assets/apps/photoprism.svg" in ui
+    assert Path("public/assets/apps/photoprism.svg").exists()
+    assert "lite-catalog-hero-actions" in ui
+    assert "lite-catalog-hero-actions" in css
     assert "lite-catalog-attention-reason" in ui
     assert "Open is not ready yet. Pocket Lab is still checking the app route." in ui
     assert "No apps installed yet" in ui
