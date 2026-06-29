@@ -87,6 +87,103 @@ export function appWorkspaceEmbedAllowed(item) {
   );
 }
 
+
+
+function workspaceAppValue(value) {
+  return String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+export function appWorkspaceStatusSummary(app, openPath = '') {
+  const access = app?.access || {};
+  const actions = app?.actions || {};
+  const runtime = app?.runtime || {};
+  const progress = app?.progress || {};
+  const status = workspaceAppValue(app?.status || app?.install_state || runtime.health);
+  const health = workspaceAppValue(runtime.health || app?.health);
+  const hasSafeOpen = Boolean(openPath);
+  const routeReady = access.route_ready !== false;
+  const actionOpenReady = actions.open !== false;
+  const httpsReady = access.https_ready !== false;
+
+  if (!httpsReady) {
+    return {
+      state: 'remote_access_not_ready',
+      label: 'Remote access not ready',
+      tone: 'degraded',
+      accessLabel: 'Remote access not ready',
+      healthLabel: health ? backendLabel(health) : 'Checking',
+      summary: 'Pocket Lab is still running. Secure access is not ready for this app yet.',
+    };
+  }
+
+  if (!hasSafeOpen || !routeReady || !actionOpenReady) {
+    return {
+      state: 'open_not_ready',
+      label: 'Open is not ready',
+      tone: 'degraded',
+      accessLabel: 'Open is not ready yet',
+      healthLabel: health ? backendLabel(health) : 'Checking',
+      summary: access.message || progress.message || 'Pocket Lab is still running. The app route is not ready yet.',
+    };
+  }
+
+  if (['installing', 'running', 'queued', 'working', 'pending'].includes(status)) {
+    return {
+      state: 'setting_up',
+      label: 'Setting up',
+      tone: 'working',
+      accessLabel: 'Open is getting ready',
+      healthLabel: health ? backendLabel(health) : 'Checking',
+      summary: progress.message || 'Pocket Lab is setting up this app.',
+    };
+  }
+
+  if (['needs_attention', 'degraded', 'unhealthy', 'failed', 'error', 'blocked', 'unavailable'].includes(status)
+    || ['degraded', 'unhealthy', 'failed', 'error', 'blocked', 'unavailable'].includes(health)) {
+    return {
+      state: 'needs_attention',
+      label: 'Needs attention',
+      tone: 'degraded',
+      accessLabel: hasSafeOpen ? 'Open is available' : 'Open is not ready yet',
+      healthLabel: 'Needs attention',
+      summary: progress.message || access.message || 'Pocket Lab is still running. This app needs attention.',
+    };
+  }
+
+  if (status === 'not_installed') {
+    return {
+      state: 'not_installed',
+      label: 'Not installed',
+      tone: 'degraded',
+      accessLabel: 'Open is not ready yet',
+      healthLabel: 'Not installed',
+      summary: 'Install this app from the App Catalog before opening it.',
+    };
+  }
+
+  if (['ready', 'healthy', 'installed', 'success', 'succeeded'].includes(status)
+    || ['ready', 'healthy', 'online', 'success'].includes(health)
+    || app?.installed === true) {
+    return {
+      state: 'ready',
+      label: 'Ready',
+      tone: 'healthy',
+      accessLabel: 'Open is ready',
+      healthLabel: 'Healthy',
+      summary: access.message || 'This app is ready.',
+    };
+  }
+
+  return {
+    state: 'checking',
+    label: 'Checking',
+    tone: 'unknown',
+    accessLabel: hasSafeOpen ? 'Open is available' : 'Open is not ready yet',
+    healthLabel: health ? backendLabel(health) : 'Checking',
+    summary: progress.message || access.message || 'Pocket Lab is checking this app.',
+  };
+}
+
 export function roleLabel(value) {
   return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
 }

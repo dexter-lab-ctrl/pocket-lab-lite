@@ -1164,7 +1164,7 @@ def test_lite_app_workspace_fails_closed_when_apps_are_not_embeddable():
     assert "item?.embedAllowed === true" in ui
     assert "access.embed_allowed === true" in ui
     assert "runtime.embed_allowed === true" in ui
-    assert "This app opens full screen for safety." in ui
+    assert "This app needs full-screen view." in ui
     assert "preserved the app's own security settings" in ui
     assert "setFrameFallback(true)" in ui
     assert "showFrame" in ui
@@ -1441,6 +1441,52 @@ def test_lite_workspace_quick_switcher_has_accessible_safe_controls():
     assert "calc(1rem + env(safe-area-inset-bottom))" in css
     assert "<span>Switch</span>" in ui
     assert "@media (max-width: 767px)" in css
+
+
+
+def test_lite_workspace_app_status_and_recovery_are_frontend_safe():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+
+    assert "appWorkspaceStatusSummary" in ui
+    assert "workspace-app-status-chip" in ui
+    assert "workspace-app-status-panel" in ui
+    assert "Current app" in ui
+    assert "Open is not ready" in ui
+    assert "Remote access not ready" in ui
+    assert "This app needs attention." in ui
+    assert "Pocket Lab is still running." in ui
+    assert "Check again" in ui
+    assert "Trying again" in ui
+    assert "View app details" in ui
+    assert "Evidence saved:" in ui
+    assert "workspaceLastUpdateLabel" in ui
+    assert "setInterval(() => refresh(), 45000)" in ui
+    assert "focusAppId" in ui
+    assert "setSelectedApp(focused)" in ui
+    assert "workspace-app-status-panel" in css
+    assert "workspace-app-status-actions" in css
+    assert "workspace-app-status-chip" in css
+    assert "prefers-reduced-motion" in css
+    assert "window.location.assign(target)" in ui
+    assert "resolveSafeAppOpenPath" in ui
+
+    forbidden = [
+        "nats.connect(",
+        "new WebSocket",
+        "child_process",
+        "exec(",
+        "pm2 ",
+        "runtime.process}",
+        "operation_id}",
+        "command_id}",
+    ]
+    lower_ui = ui.lower()
+    for term in forbidden[:4]:
+        assert term.lower() not in lower_ui
+    for term in forbidden[4:]:
+        assert term not in ui
+
 
 def test_lite_workspace_embed_helper_requires_matching_origin_when_declared():
     ui = _lite_ui_source()
