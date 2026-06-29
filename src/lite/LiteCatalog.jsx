@@ -125,28 +125,79 @@ function AppDetailsDrawer({ app, openUrl, opening, installing, canOpen, canInsta
   const health = app?.runtime?.health || (app?.installed ? 'healthy' : 'not installed');
   const evidenceCount = Array.isArray(app?.evidence_refs) ? app.evidence_refs.length : 0;
 
-    const [drawerSnap, setDrawerSnap] = useState('comfortable');
+  const [drawerSnap, setDrawerSnap] = useState('comfortable');
   const [drawerOffset, setDrawerOffset] = useState(0);
-  const drawerDragRef = useRef({ active: false, y: 0 });
+  const drawerDragRef = useRef({ active: false, pointerId: null, startY: 0, lastY: 0 });
 
   const startDrawerDrag = (event) => {
-    drawerDragRef.current = { active: true, y: event.clientY || 0 };
+    if (event.button !== undefined && event.button !== 0) return;
+
+    drawerDragRef.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startY: event.clientY || 0,
+      lastY: event.clientY || 0,
+    };
+
+    setDrawerOffset(0);
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    event.preventDefault?.();
   };
 
   const moveDrawerDrag = (event) => {
-    if (!drawerDragRef.current.active) return;
-    const delta = (event.clientY || 0) - drawerDragRef.current.y;
-    setDrawerOffset(Math.max(-72, Math.min(132, delta)));
+    const dragState = drawerDragRef.current;
+    if (!dragState.active) return;
+    if (dragState.pointerId !== null && event.pointerId !== dragState.pointerId) return;
+
+    const currentY = event.clientY || 0;
+    const delta = currentY - dragState.startY;
+
+    drawerDragRef.current = { ...dragState, lastY: currentY };
+    setDrawerOffset(Math.max(-96, Math.min(180, delta)));
+    event.preventDefault?.();
   };
 
-  const endDrawerDrag = () => {
-    if (!drawerDragRef.current.active) return;
+  const finishDrawerDrag = (event) => {
+    const dragState = drawerDragRef.current;
+    if (!dragState.active) return;
+
     const delta = drawerOffset;
-    drawerDragRef.current = { active: false, y: 0 };
+    drawerDragRef.current = { active: false, pointerId: null, startY: 0, lastY: 0 };
     setDrawerOffset(0);
-    if (delta < -36) setDrawerSnap('expanded');
-    if (delta > 56) setDrawerSnap('comfortable');
+
+    event?.currentTarget?.releasePointerCapture?.(dragState.pointerId);
+
+    if (delta < -42) {
+      setDrawerSnap('expanded');
+      return;
+    }
+
+    if (delta > 86 && drawerSnap === 'comfortable') {
+      onClose?.();
+      return;
+    }
+
+    if (delta > 64) {
+      setDrawerSnap('comfortable');
+      return;
+    }
+
+    setDrawerSnap((current) => current);
+  };
+
+  const toggleDrawerSnap = () => {
+    setDrawerSnap((current) => (current === 'expanded' ? 'comfortable' : 'expanded'));
+  };
+
+  const handleDrawerGripKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleDrawerSnap();
+    }
+
+    if (event.key === 'Escape') {
+      onClose?.();
+    }
   };
 
 return (
@@ -156,21 +207,18 @@ return (
         <button
           className="lite-catalog-drawer-grip"
           type="button"
-          aria-label="Drag app details"
+          aria-label={drawerSnap === 'expanded' ? 'Collapse app details' : 'Expand app details'}
+          aria-expanded={drawerSnap === 'expanded'}
+          onClick={toggleDrawerSnap}
+          onKeyDown={handleDrawerGripKeyDown}
           onPointerDown={startDrawerDrag}
           onPointerMove={moveDrawerDrag}
-          onPointerUp={endDrawerDrag}
-          onPointerCancel={endDrawerDrag}
-        />
-        <div className="lite-catalog-drawer-head">
-          <div className="lite-catalog-icon lite-catalog-icon-large"><AppIcon app={app} /></div>
-          <div>
-            <p className="lite-catalog-category">{app.category || 'Local app'}</p>
-            <h2>{app.name}</h2>
-            <p>{app.summary}</p>
-          </div>
-          <button className="lite-catalog-drawer-close" type="button" onClick={onClose} aria-label="Close app details"><X className="h-5 w-5" /></button>
-        </div>
+          onPointerUp={finishDrawerDrag}
+          onPointerCancel={finishDrawerDrag}
+          onLostPointerCapture={finishDrawerDrag}
+        >
+          <span aria-hidden="true" />
+        </button>
         <div className="lite-catalog-detail-grid">
           <DetailRow label="Status" value={appLabel(app)} />
           <DetailRow label="Runs on" value={targetName} />
