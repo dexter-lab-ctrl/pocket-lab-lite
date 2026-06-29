@@ -5,7 +5,6 @@ import {
   ExternalLink,
   Maximize2,
   Menu,
-  MoreHorizontal,
   WifiOff,
   X,
 } from 'lucide-react';
@@ -305,7 +304,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
             aria-haspopup="dialog"
             aria-expanded={switcherOpen}
           >
-            <MoreHorizontal className="h-5 w-5" />
             <span>Switch</span>
           </button>
         </div>
@@ -353,18 +351,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
           </div>
         )}
       </GlassCard>
-
-      <button
-        type="button"
-        className="lite-workspace-switcher-fab"
-        onClick={openSwitcher}
-        aria-label="Open Pocket Lab switcher"
-        aria-haspopup="dialog"
-        aria-expanded={switcherOpen}
-      >
-        <MoreHorizontal className="h-4 w-4" />
-        <span>Pocket Lab</span>
-      </button>
 
       <WorkspaceQuickSwitcher
         open={switcherOpen}
