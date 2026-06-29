@@ -81,15 +81,18 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "Server Host" in ui
     assert "target_node_id" in ui
     assert "lite-catalog-progress" in ui
-    assert "lite-catalog-drawer-hero" in ui
-    assert "lite-catalog-drawer-snapshot" in ui
-    assert "lite-catalog-drawer-path" in ui
-    assert "Open is ready" in ui
-    assert "safety record" in ui
+    assert "lite-catalog-launcher" not in ui
+    assert "lite-catalog-launcher" not in css
+    assert "lite-catalog-drawer" not in ui
+    assert "lite-catalog-drawer" not in css
+    assert "Details" not in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Ready to open" not in ui
+    assert "Ready to open" not in css
+    assert ">Ready<" in ui or "'Ready'" in ui
+    assert "Open full screen" in ui
+    assert "lite-home-pill lite-catalog-hero-pill is-secure" in ui
     assert "Remove" not in Path("src/lite/LiteCatalog.jsx").read_text()
     assert "lite-catalog-access-card" in css
-    assert "lite-catalog-current-pulse" in css
-    assert "lite-catalog-drawer-step" in css
 
 
 def test_lite_caddy_generator_supports_app_route_registry():
