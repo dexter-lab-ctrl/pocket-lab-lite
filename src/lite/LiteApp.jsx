@@ -3,16 +3,14 @@ import {
   ArrowLeft,
   Download,
   ExternalLink,
-  Info,
   Maximize2,
   Menu,
-  RefreshCw,
   WifiOff,
   X,
 } from 'lucide-react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
-import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { liteApi } from '../lib/liteApi.js';
 import HomeScreen from './LiteHome.jsx';
 import CatalogScreen from './LiteCatalog.jsx';
 import IdentityScreen from './LiteIdentity.jsx';
@@ -26,7 +24,6 @@ import {
   NAV_ITEMS,
   StatusBadge,
   appWorkspaceEmbedAllowed,
-  appWorkspaceStatusSummary,
   backendBadgeStatus,
   backendLabel,
   resolveSafeAppOpenPath,
@@ -72,22 +69,6 @@ function appWorkspaceStatusLabel(status) {
   });
 }
 
-function workspaceEvidenceLabel(app) {
-  const count = Array.isArray(app?.evidence_refs) ? app.evidence_refs.length : 0;
-  if (!count) return 'No safety record yet';
-  return `${count} safety record${count === 1 ? '' : 's'}`;
-}
-
-function workspaceLastUpdateLabel(app, catalogUpdatedAt) {
-  const value = app?.last_operation?.updated_at || app?.updated_at || catalogUpdatedAt;
-  if (!value) return 'Just now';
-  return formatLiteTime(value);
-}
-
-function workspaceProgressMessage(app, summary) {
-  return app?.progress?.message || app?.last_operation?.message || summary?.summary || 'Pocket Lab is checking this app.';
-}
-
 function workspaceSwitcherTabLabel(item) {
   if (item.id === 'catalog') return 'Apps';
   if (item.id === 'identity') return 'Identity';
@@ -100,17 +81,11 @@ function WorkspaceQuickSwitcher({
   appName,
   rawStatus,
   statusLabel,
-  statusSummary,
   openUrl,
-  checkingAgain,
-  lastCheckedLabel,
   onClose,
   onBackToApps,
   onOpenFullScreen,
   onNavigate,
-  onCheckAgain,
-  onViewAppDetails,
-  onShowAppStatus,
 }) {
   const panelRef = useRef(null);
   const firstActionRef = useRef(null);
@@ -204,10 +179,8 @@ function WorkspaceQuickSwitcher({
 
         <div className="lite-workspace-quick-switcher-current" aria-label="Current app">
           <span>Current app</span>
-          <strong>{appName} · {statusLabel}</strong>
-          <StatusBadge status={statusSummary?.tone || backendBadgeStatus(rawStatus)}>{statusSummary?.accessLabel || statusLabel}</StatusBadge>
-          <p>{workspaceProgressMessage(null, statusSummary)}</p>
-          <small>Last update: {lastCheckedLabel}</small>
+          <strong>{appName}</strong>
+          <StatusBadge status={backendBadgeStatus(rawStatus)}>{statusLabel}</StatusBadge>
         </div>
 
         <div className="lite-workspace-quick-switcher-actions">
@@ -215,21 +188,9 @@ function WorkspaceQuickSwitcher({
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Apps</span>
           </button>
-          <button type="button" onClick={onViewAppDetails}>
-            <Info className="h-4 w-4" />
-            <span>View app details</span>
-          </button>
-          <button type="button" onClick={onCheckAgain} aria-live="polite">
-            <RefreshCw className="h-4 w-4" />
-            <span>{checkingAgain ? 'Trying again' : 'Check again'}</span>
-          </button>
-          <button type="button" onClick={onShowAppStatus}>
-            <Info className="h-4 w-4" />
-            <span>App status</span>
-          </button>
           <button type="button" onClick={openAppFullScreen} disabled={!openUrl}>
             <Maximize2 className="h-4 w-4" />
-            <span>{openUrl ? 'Open full screen' : 'Open is not ready yet'}</span>
+            <span>Open full screen</span>
           </button>
         </div>
 
@@ -266,72 +227,11 @@ function WorkspaceQuickSwitcher({
   );
 }
 
-
-function WorkspaceAppStatusPanel({
-  appName,
-  statusLabel,
-  statusSummary,
-  progressMessage,
-  lastCheckedLabel,
-  evidenceLabel,
-  openUrl,
-  checkingAgain,
-  onCheckAgain,
-  onViewAppDetails,
-  onBackToApps,
-  onOpenFullScreen,
-}) {
-  const openFullScreen = () => {
-    if (!openUrl) return;
-    onOpenFullScreen(openUrl);
-  };
-
-  return (
-    <GlassCard className={`workspace-app-status-panel workspace-app-status-${statusSummary?.state || 'checking'}`}>
-      <div className="workspace-app-status-head">
-        <div>
-          <span>Current app</span>
-          <h2>{appName}</h2>
-        </div>
-        <StatusBadge status={statusSummary?.tone || 'unknown'}>{statusLabel}</StatusBadge>
-      </div>
-      <div className="workspace-app-status-grid" aria-label="Current app status">
-        <div>
-          <span>Status</span>
-          <strong>{statusLabel}</strong>
-        </div>
-        <div>
-          <span>Access</span>
-          <strong>{statusSummary?.accessLabel || 'Checking'}</strong>
-        </div>
-        <div>
-          <span>Health</span>
-          <strong>{statusSummary?.healthLabel || 'Checking'}</strong>
-        </div>
-        <div>
-          <span>Last update</span>
-          <strong>{lastCheckedLabel}</strong>
-        </div>
-      </div>
-      <p className="workspace-app-status-message">{progressMessage}</p>
-      <p className="workspace-app-status-evidence">Evidence saved: {evidenceLabel}</p>
-      <div className="workspace-app-status-actions">
-        <button type="button" onClick={onCheckAgain} aria-live="polite">{checkingAgain ? 'Trying again' : 'Check again'}</button>
-        <button type="button" onClick={onViewAppDetails}>View app details</button>
-        <button type="button" onClick={onBackToApps}>Back to Apps</button>
-        <button type="button" onClick={openFullScreen} disabled={!openUrl}>{openUrl ? 'Open full screen' : 'Open is not ready yet'}</button>
-      </div>
-    </GlassCard>
-  );
-}
-
-function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScreen, onViewAppDetails }) {
+function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScreen }) {
   const { data, refresh } = useLiteResource(liteApi.catalog, [workspace?.appId]);
   const [frameReady, setFrameReady] = useState(false);
   const [frameFallback, setFrameFallback] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [statusPanelOpen, setStatusPanelOpen] = useState(false);
-  const [checkingAgain, setCheckingAgain] = useState(false);
   const switcherTriggerRef = useRef(null);
   const lastSwitcherTriggerRef = useRef(null);
 
@@ -341,30 +241,16 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
   const openUrl = resolveSafeAppOpenPath(catalogApp) || resolveSafeAppOpenPath(workspace?.openUrl || '');
   const embedAllowed = appWorkspaceEmbedAllowed(catalogApp || workspace);
   const displayName = app?.name || workspace?.name || 'App workspace';
-  const statusSummary = appWorkspaceStatusSummary(app, openUrl);
-  const rawStatus = statusSummary.state || app?.status || (openUrl ? 'ready' : 'checking');
-  const statusLabel = statusSummary.label || appWorkspaceStatusLabel(rawStatus);
-  const progressMessage = workspaceProgressMessage(app, statusSummary);
-  const evidenceLabel = workspaceEvidenceLabel(app);
-  const lastCheckedLabel = workspaceLastUpdateLabel(app, data?.updated_at);
+  const rawStatus = app?.status || (openUrl ? 'ready' : 'checking');
+  const statusLabel = appWorkspaceStatusLabel(rawStatus);
   const frameTitle = `${displayName} inside Pocket Lab Lite`;
-  const statusBlocksFrame = ['open_not_ready', 'remote_access_not_ready', 'not_installed'].includes(statusSummary.state);
-  const showFrame = Boolean(openUrl && embedAllowed && !frameFallback && !statusBlocksFrame);
+  const showFrame = Boolean(openUrl && embedAllowed && !frameFallback);
 
   useEffect(() => {
     const onFocus = () => refresh();
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, [refresh]);
-
-  useEffect(() => {
-    if (!['setting_up', 'needs_attention', 'open_not_ready', 'remote_access_not_ready'].includes(statusSummary.state)) {
-      return undefined;
-    }
-
-    const timer = window.setInterval(() => refresh(), 45000);
-    return () => window.clearInterval(timer);
-  }, [refresh, statusSummary.state]);
 
   useEffect(() => {
     setFrameReady(false);
@@ -376,19 +262,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
 
     return undefined;
   }, [embedAllowed, openUrl]);
-
-  const checkAgain = async () => {
-    setCheckingAgain(true);
-    try {
-      await refresh();
-    } finally {
-      window.setTimeout(() => setCheckingAgain(false), 300);
-    }
-  };
-
-  const viewAppDetails = () => {
-    onViewAppDetails?.(workspace?.appId);
-  };
 
   const openFullScreen = () => {
     if (!openUrl) return;
@@ -416,15 +289,7 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
           <p className="lite-workspace-eyebrow">Pocket Lab Lite · Self-hosted workspace</p>
           <div className="lite-workspace-heading-row">
             <h1>{displayName}</h1>
-            <button
-              type="button"
-              className="workspace-app-status-chip"
-              onClick={() => setStatusPanelOpen((current) => !current)}
-              aria-expanded={statusPanelOpen}
-              aria-label={`View app status for ${displayName}`}
-            >
-              <span>{displayName} · {statusLabel}</span>
-            </button>
+            <StatusBadge status={backendBadgeStatus(rawStatus)}>{statusLabel}</StatusBadge>
           </div>
         </div>
         <div className="lite-workspace-actions">
@@ -456,23 +321,6 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
         })}
       </nav>
 
-      {statusPanelOpen || statusSummary.state !== 'ready' ? (
-        <WorkspaceAppStatusPanel
-          appName={displayName}
-          statusLabel={statusLabel}
-          statusSummary={statusSummary}
-          progressMessage={progressMessage}
-          lastCheckedLabel={lastCheckedLabel}
-          evidenceLabel={evidenceLabel}
-          openUrl={openUrl}
-          checkingAgain={checkingAgain}
-          onCheckAgain={checkAgain}
-          onViewAppDetails={viewAppDetails}
-          onBackToApps={onBackToApps}
-          onOpenFullScreen={onOpenFullScreen}
-        />
-      ) : null}
-
       <GlassCard className="lite-workspace-frame-card">
         {showFrame ? (
           <div className={`lite-workspace-frame-wrap ${frameReady ? 'is-ready' : ''}`}>
@@ -494,21 +342,10 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
         ) : (
           <div className="lite-workspace-fallback" role="status">
             <div className="lite-workspace-fallback-icon"><ExternalLink className="h-6 w-6" /></div>
-            {statusBlocksFrame ? (
-              <>
-                <h2>This app needs attention.</h2>
-                <p>Pocket Lab is still running. {statusSummary.summary || 'The app route is not ready yet.'}</p>
-              </>
-            ) : (
-              <>
-                <h2>This app needs full-screen view.</h2>
-                <p>This app does not allow being shown inside another page. Pocket Lab kept your tabs available and preserved the app's own security settings.</p>
-              </>
-            )}
+            <h2>This app opens full screen for safety.</h2>
+            <p>This app does not allow being shown inside another page. Pocket Lab kept your tabs available and preserved the app's own security settings.</p>
             <div className="lite-workspace-fallback-actions">
-              {statusBlocksFrame ? <LiteButton onClick={checkAgain} tone="secondary">{checkingAgain ? 'Trying again' : 'Check again'}</LiteButton> : null}
-              <LiteButton onClick={viewAppDetails} tone="secondary"><Info className="h-4 w-4" />View app details</LiteButton>
-              <LiteButton onClick={openFullScreen} tone="primary" disabled={!openUrl}><Maximize2 className="h-4 w-4" />{openUrl ? 'Open full screen' : 'Open is not ready yet'}</LiteButton>
+              <LiteButton onClick={openFullScreen} tone="primary" disabled={!openUrl}><Maximize2 className="h-4 w-4" />Open full screen</LiteButton>
               <LiteButton onClick={onBackToApps} tone="secondary"><ArrowLeft className="h-4 w-4" />Back to Apps</LiteButton>
             </div>
           </div>
@@ -521,17 +358,11 @@ function LiteAppWorkspace({ workspace, onBackToApps, onNavigate, onOpenFullScree
         appName={displayName}
         rawStatus={rawStatus}
         statusLabel={statusLabel}
-        statusSummary={statusSummary}
         openUrl={openUrl}
-        checkingAgain={checkingAgain}
-        lastCheckedLabel={lastCheckedLabel}
         onClose={closeSwitcher}
         onBackToApps={onBackToApps}
         onOpenFullScreen={onOpenFullScreen}
         onNavigate={navigateFromWorkspace}
-        onCheckAgain={checkAgain}
-        onViewAppDetails={viewAppDetails}
-        onShowAppStatus={() => setStatusPanelOpen(true)}
       />
 
     </section>
@@ -572,7 +403,6 @@ class LiteErrorBoundary extends React.Component {
 function LiteAppShell() {
   const [active, setActive] = useState('home');
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
-  const [catalogFocusAppId, setCatalogFocusAppId] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const online = useOnlineStatus();
   const { status, loading, error, refresh } = useLiteStatus();
@@ -608,13 +438,6 @@ function LiteAppShell() {
     pushPocketLabPath('/');
   };
 
-  const viewWorkspaceAppDetails = (appId) => {
-    if (appId) {
-      setCatalogFocusAppId(appId);
-    }
-    closeWorkspaceToTab('catalog');
-  };
-
   const openFullScreen = (openUrl) => {
     const target = resolveSafeAppOpenPath(openUrl);
     if (!target) return;
@@ -631,11 +454,10 @@ function LiteAppShell() {
       onBackToApps={() => closeWorkspaceToTab('catalog')}
       onNavigate={navigateToTab}
       onOpenFullScreen={openFullScreen}
-      onViewAppDetails={viewWorkspaceAppDetails}
     />
   ) : ({
     home: <HomeScreen status={status} loading={loading} error={error} refresh={refresh} onNavigate={setActive} />,
-    catalog: <CatalogScreen onOpenWorkspace={openWorkspace} focusAppId={catalogFocusAppId} onFocusHandled={() => setCatalogFocusAppId(null)} />,
+    catalog: <CatalogScreen onOpenWorkspace={openWorkspace} />,
     identity: <IdentityScreen />,
     security: <SecurityScreen />,
     devices: <DevicesScreen />,
