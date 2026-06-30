@@ -11,6 +11,32 @@ const controlPlane = () => {
 const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
 const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
 
+
+const mockAppLifecycleProfiles = () => [{
+  app_id: 'photoprism',
+  name: 'PhotoPrism',
+  installed: true,
+  status: scenario() === 'lifecycle-attention' ? 'review' : 'ready',
+  summary: scenario() === 'lifecycle-attention' ? 'PhotoPrism needs attention.' : 'PhotoPrism is ready, protected, and recoverable.',
+  host_device: { id: 'pocket-lab-lite-server', name: 'Pocket Lab Lite Server', label: 'Runs on Server Phone', status: 'online' },
+  storage: { status: 'connected', summary: 'Media connected', mapping_count: 1, labels: ['Phone photos'] },
+  security: { status: 'protected', summary: 'Protected app', evidence_status: 'saved', last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
+  backup: { status: 'ready', summary: 'Backup ready', default_mode: 'config_only', media: 'excluded', target_available: true, target_ready: true },
+  recovery: { status: 'review', summary: 'Restore preview not ready', preview_available: false, restore_available: false },
+  attention: scenario() === 'lifecycle-attention' ? [{ id: 'backup_target_missing', area: 'backup', severity: 'review', title: 'Backup target not ready', summary: 'Join a storage device to save app backups elsewhere.' }] : [],
+  actions: {
+    open: { enabled: true, label: 'Open', url: '/apps/photoprism/' },
+    open_full_screen: { enabled: true, label: 'Open full screen', url: '/apps/photoprism/' },
+    install_to_phone: { enabled: true, label: 'Install to phone', url: '/apps/photoprism/' },
+    connect_photos: { enabled: true, label: 'Connect photos' },
+    check_app: { enabled: false, label: 'Check app', reason: 'Use Run Safety Check for the current device-wide scan.' },
+    backup_app: { enabled: true, label: 'Back up app' },
+    preview_restore: { enabled: false, label: 'Preview restore', reason: 'No verified app backup yet' },
+  },
+  evidence: { status: 'saved', summary: 'Safety and recovery records saved', security_count: 1, backup_count: 1 },
+  updated_at: new Date().toISOString(),
+}];
+
 const mockProtectedApps = () => [{
   app_id: 'photoprism',
   name: 'PhotoPrism',
@@ -113,6 +139,7 @@ const mockLiteSecurityPayload = () => {
     ],
     protected_apps: mockProtectedApps(),
     app_security_profiles: { status: 'healthy', apps: mockProtectedApps(), count: mockProtectedApps().length },
+    app_lifecycle_profiles: { status: 'healthy', apps: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length },
     updated_at: new Date(now).toISOString(),
   };
 
@@ -309,9 +336,13 @@ export const handlers = [
       storage: { status: 'not_connected', summary: 'No media folders connected', mappings: [], count: 0, default_target: 'import', safe_modes: ['read_only', 'read_write'] },
       security_profile: { status: 'ready', label: 'Protected app', summary: 'Security profile available.' },
       backup_profile: { status: 'ready', label: 'Backup ready', summary: 'Config protected. Media excluded by default.', media: 'Media excluded' },
+      lifecycle: mockAppLifecycleProfiles()[0],
+      lifecycle_summary: { status: 'ready', summary: 'PhotoPrism is ready, protected, and recoverable.', host: 'Runs on Server Phone', storage: 'Media connected', security: 'Protected app', backup: 'Backup ready', attention_count: 0 },
     };
     return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() });
   }),
+  http.get('/api/lite/apps/lifecycle', () => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() })),
+  http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
   http.get('/api/lite/apps/photoprism/storage-mappings', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', mappings: [], count: 0, summary: 'No media folders connected yet.' })),
   http.post('/api/lite/apps/photoprism/storage-mappings', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
@@ -380,6 +411,7 @@ export const handlers = [
     actions: ['backup_now', 'verify_backup', 'preview_restore', 'restore_latest'],
     app_backups: mockAppBackups(),
     app_backup_profiles: { status: 'healthy', apps: mockAppBackups(), count: mockAppBackups().length },
+    app_lifecycle_profiles: { status: 'healthy', apps: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length },
     planned_actions: [],
     updated_at: new Date().toISOString(),
   })),

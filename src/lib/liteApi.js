@@ -41,6 +41,8 @@ function postJson(path, body = {}) {
 export const liteApi = {
   status: () => readJson('/api/lite/status'),
   catalog: () => readJson('/api/lite/catalog'),
+  appLifecycle: () => readJson('/api/lite/apps/lifecycle'),
+  appLifecycleProfile: (appId = 'photoprism') => readJson(`/api/lite/apps/lifecycle/${encodeURIComponent(appId)}`),
   identity: () => readJson('/api/lite/identity'),
   security: () => readJson('/api/lite/security'),
   securityApps: () => readJson('/api/lite/security/apps'),

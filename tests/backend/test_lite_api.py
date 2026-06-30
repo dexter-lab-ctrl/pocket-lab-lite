@@ -1727,3 +1727,97 @@ def test_lite_app_security_and_backup_ui_source_is_present():
     assert "lite-recovery-app-profiles" in css
     assert "child_process" not in ui
     assert "nats.connect" not in ui
+
+
+def test_lite_unified_app_lifecycle_profile_is_sanitized_and_complete():
+    response = client().get("/api/lite/apps/lifecycle")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["count"] == 1
+    profile = payload["apps"][0]
+    assert profile["app_id"] == "photoprism"
+    assert profile["name"] == "PhotoPrism"
+    assert profile["status"] in {"ready", "checking", "review", "needs_attention", "offline", "unavailable", "unknown"}
+    assert "summary" in profile
+    assert profile["host_device"]["label"] == "Runs on Server Phone"
+    assert "storage" in profile
+    assert "security" in profile
+    assert "backup" in profile
+    assert "recovery" in profile
+    assert "actions" in profile
+    assert "attention" in profile
+    assert "evidence" in profile
+    actions = profile["actions"]
+    assert actions["open"]["label"] == "Open"
+    assert actions["open_full_screen"]["label"] == "Open full screen"
+    assert actions["install_to_phone"]["label"] == "Install to phone"
+    assert actions["connect_photos"]["label"] == "Connect photos"
+    assert actions["backup_app"]["label"] == "Back up app"
+    assert actions["preview_restore"]["enabled"] is False
+    assert "reason" in actions["preview_restore"]
+    assert "/apps/photoprism/" in response.text or actions["open"].get("enabled") is False
+    lowered = response.text.lower()
+    for forbidden in ("password", "private_key", "vault_token", "nats_password", "restic_password", "scanner raw output"):
+        assert forbidden not in lowered
+    assert "source_path" not in response.text
+    assert "summary.json" not in response.text
+
+
+def test_lite_unified_app_lifecycle_detail_and_unsupported_app():
+    response = client().get("/api/lite/apps/lifecycle/photoprism")
+    assert response.status_code == 200
+    profile = response.json()
+    assert profile["app_id"] == "photoprism"
+    assert profile["host_device"]["id"] == "pocket-lab-lite-server"
+    assert profile["storage"]["mapping_count"] >= 0
+    assert profile["security"]["summary"]
+    assert profile["backup"]["summary"]
+    assert profile["evidence"]["summary"]
+
+    unsupported = client().get("/api/lite/apps/lifecycle/vault")
+    assert unsupported.status_code == 404
+
+
+def test_lite_catalog_is_hydrated_with_unified_lifecycle_summary():
+    response = client().get("/api/lite/catalog")
+    assert response.status_code == 200
+    app = response.json()["apps"][0]
+    assert app["id"] == "photoprism"
+    assert "lifecycle" in app
+    assert "lifecycle_summary" in app
+    lifecycle = app["lifecycle"]
+    assert lifecycle["app_id"] == "photoprism"
+    assert lifecycle["host_device"]["label"] == "Runs on Server Phone"
+    assert "actions" in lifecycle
+    assert lifecycle["actions"]["preview_restore"]["enabled"] is False
+
+
+def test_lite_security_and_recovery_include_lifecycle_profiles():
+    security = client().get("/api/lite/security")
+    assert security.status_code == 200
+    assert security.json()["app_lifecycle_profiles"]["apps"][0]["app_id"] == "photoprism"
+
+    recovery = client().get("/api/lite/recovery")
+    assert recovery.status_code == 200
+    assert recovery.json()["app_lifecycle_profiles"]["apps"][0]["app_id"] == "photoprism"
+
+
+def test_lite_unified_lifecycle_ui_source_is_present():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "Unified App Lifecycle" in ui
+    assert "apps/lifecycle" in Path("src/lib/liteApi.js").read_text()
+    assert "Media connected" in ui
+    assert "Media not connected" in ui
+    assert "Protected app" in ui
+    assert "Backup ready" in ui
+    assert "Runs on Server Phone" in ui
+    assert "Needs attention" in ui
+    assert "lite-catalog-lifecycle-panel" in css
+    assert "lite-security-app-lifecycle" in css
+    assert "lite-recovery-app-lifecycle" in css
+    assert "child_process" not in ui
+    assert "nats.connect" not in ui
+    assert "exec(" not in ui
+    assert "subprocess" not in ui

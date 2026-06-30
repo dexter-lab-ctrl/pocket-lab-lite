@@ -1346,6 +1346,8 @@ export default function SecurityScreen() {
     : Array.isArray(data?.app_security_profiles?.apps)
       ? data.app_security_profiles.apps
       : [];
+  const lifecycleProfiles = Array.isArray(data?.app_lifecycle_profiles?.apps) ? data.app_lifecycle_profiles.apps : [];
+  const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
 
 
   React.useEffect(() => {
@@ -1596,7 +1598,9 @@ export default function SecurityScreen() {
         </div>
         {protectedApps.length ? (
           <div className="lite-security-app-grid">
-            {protectedApps.map((app) => (
+            {protectedApps.map((app) => {
+              const lifecycle = lifecycleByApp.get(app.app_id) || app.lifecycle;
+              return (
               <GlassCard key={app.app_id || app.name} className="lite-security-card lite-security-app-card">
                 <div className="lite-security-card-head">
                   <div className="lite-security-icon">
@@ -1606,6 +1610,13 @@ export default function SecurityScreen() {
                 </div>
                 <h3>{app.name || 'Self-hosted app'}</h3>
                 <p>{app.summary || 'App security profile is available.'}</p>
+                {lifecycle ? (
+                  <div className="lite-security-app-lifecycle">
+                    <span>{lifecycle?.security?.summary || 'Protected app'}</span>
+                    <span>{lifecycle?.backup?.summary || 'Backup ready'}</span>
+                    <span>{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
+                  </div>
+                ) : null}
                 <div className="lite-security-app-checks">
                   {(app.checks || []).slice(0, 4).map((check) => (
                     <span key={check.id || check.label}>
@@ -1623,7 +1634,8 @@ export default function SecurityScreen() {
                   <LiteButton tone="ghost" onClick={showEvidence}>View evidence</LiteButton>
                 </div>
               </GlassCard>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <StateSurface

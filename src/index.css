@@ -9678,3 +9678,103 @@ textarea {
     justify-content: center;
   }
 }
+
+/* Unified App Lifecycle status */
+.lite-catalog-lifecycle-panel,
+.lite-security-app-lifecycle,
+.lite-recovery-app-lifecycle {
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  background: rgba(239, 246, 255, 0.72);
+  border-radius: 1.1rem;
+}
+
+.lite-catalog-lifecycle-panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  margin-top: 0.85rem;
+}
+
+.lite-catalog-lifecycle-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.lite-catalog-lifecycle-head span,
+.lite-catalog-lifecycle-actions span,
+.lite-catalog-lifecycle-attention span,
+.lite-security-app-lifecycle span,
+.lite-recovery-app-lifecycle span {
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.lite-catalog-lifecycle-head strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.lite-catalog-lifecycle-chips,
+.lite-catalog-lifecycle-actions,
+.lite-security-app-lifecycle,
+.lite-recovery-app-lifecycle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.lite-catalog-lifecycle-chips span,
+.lite-catalog-lifecycle-actions span,
+.lite-security-app-lifecycle span,
+.lite-recovery-app-lifecycle span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  padding: 0.38rem 0.55rem;
+  line-height: 1.2;
+}
+
+.lite-catalog-lifecycle-actions span.is-disabled {
+  opacity: 0.72;
+  background: rgba(248, 250, 252, 0.85);
+}
+
+.lite-catalog-lifecycle-attention {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.lite-catalog-lifecycle-attention span {
+  display: grid;
+  gap: 0.12rem;
+  border-left: 3px solid rgba(245, 158, 11, 0.75);
+  background: rgba(255, 251, 235, 0.86);
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.lite-catalog-lifecycle-attention strong {
+  color: #92400e;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .lite-catalog-lifecycle-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lite-catalog-lifecycle-chips span,
+  .lite-catalog-lifecycle-actions span,
+  .lite-security-app-lifecycle span,
+  .lite-recovery-app-lifecycle span {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
