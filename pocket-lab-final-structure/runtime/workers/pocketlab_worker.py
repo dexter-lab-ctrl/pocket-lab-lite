@@ -213,9 +213,14 @@ async def command_callback(msg: Any) -> None:
             from api_fastapi.services.runbook_commands import reject_runbook_command  # type: ignore
 
             await reject_runbook_command(command, publish)
-        elif subject == "pocketlab.commands.operation.execute" or str(
-            command.get("operation") or ""
-        ):
+        elif subject == "pocketlab.commands.operation.execute":
+            await execute_operation_command(command)
+        elif subject.startswith("pocketlab.commands."):
+            # Domain commands may carry an ``operation`` field for lifecycle context.
+            # Route by subject first so Lite app/media commands are handled by their
+            # domain handlers instead of the generic operation runner.
+            await execute_domain_command(subject, command)
+        elif str(command.get("operation") or ""):
             await execute_operation_command(command)
         else:
             await execute_domain_command(subject, command)
@@ -325,9 +330,11 @@ async def main_async() -> int:
             from api_fastapi.services.runbook_commands import reject_runbook_command  # type: ignore
 
             await reject_runbook_command(command, publish)
-        elif subject == "pocketlab.commands.operation.execute" or command.get(
-            "operation"
-        ):
+        elif subject == "pocketlab.commands.operation.execute":
+            await execute_operation_command(command)
+        elif subject.startswith("pocketlab.commands."):
+            await execute_domain_command(subject, command)
+        elif command.get("operation"):
             await execute_operation_command(command)
         else:
             await execute_domain_command(subject, command)

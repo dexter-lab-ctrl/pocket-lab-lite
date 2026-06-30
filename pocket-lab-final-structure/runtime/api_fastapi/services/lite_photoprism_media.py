@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 import shlex
 import shutil
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +18,7 @@ from . import lite_app_storage
 PHOTOPRISM_APP_ID = "photoprism"
 MEDIA_ACTIONS = {"import_photos", "index_photos"}
 MEDIA_COMMAND_SUBJECT = "pocketlab.commands.lite.app.media"
+STALE_OPERATION_SECONDS = int(os.environ.get("POCKETLAB_LITE_MEDIA_STALE_SECONDS", "1800"))
 
 _SECRET_MARKERS = (
     "token",
@@ -33,6 +36,22 @@ _SECRET_MARKERS = (
 
 def _now() -> str:
     return deps.now_utc_iso()
+
+def _parse_ts(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        text = str(value).replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _utc_now_dt() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def _state_path() -> Path:
@@ -172,13 +191,64 @@ def _public_operation(operation: dict[str, Any] | None) -> dict[str, Any] | None
         "mapping_count": int(operation.get("mapping_count") or 0),
         "evidence_status": _safe_text(operation.get("evidence_status"), "pending"),
     }
-    if operation.get("evidence_ref"):
+    if operation.get("evidence_ref") and payload.get("evidence_status") not in {"failed", "not_ready"}:
         payload["evidence_status"] = "saved"
     return payload
 
 
+def _operation_is_stale(operation: dict[str, Any], *, now: datetime | None = None) -> bool:
+    status = str(operation.get("status") or "").lower()
+    if status not in {"queued", "running"}:
+        return False
+    started = _parse_ts(operation.get("started_at") or operation.get("updated_at"))
+    if started is None:
+        return False
+    now = now or _utc_now_dt()
+    return (now - started).total_seconds() >= STALE_OPERATION_SECONDS
+
+
+def reconcile_stale_operations(app_id: str = PHOTOPRISM_APP_ID) -> int:
+    """Close stale queued/running media operations without deleting evidence.
+
+    This only updates Pocket Lab's local state/evidence. It does not execute shell
+    commands, touch PhotoPrism runtime files, or mutate user media.
+    """
+    _validate_app_id(app_id)
+    state = _read_state()
+    app_state = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {})
+    operations = app_state.get("operations") if isinstance(app_state.get("operations"), dict) else {}
+    if not operations:
+        return 0
+    now_dt = _utc_now_dt()
+    now = now_dt.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    changed = 0
+    for action, operation in list(operations.items()):
+        if not isinstance(operation, dict) or not _operation_is_stale(operation, now=now_dt):
+            continue
+        operation["status"] = "failed"
+        operation["summary"] = f"{_operation_label(str(operation.get('action_id') or action))} timed out before worker completion. Please retry after checking worker command handling."
+        operation["completed_at"] = now
+        operation["updated_at"] = now
+        operation["evidence_status"] = "failed"
+        operation["evidence_ref"] = f"apps/photoprism/media/{operation.get('operation_id') or _operation_id(str(operation.get('action_id') or action))}.json"
+        _append_evidence(operation)
+        changed += 1
+    if changed:
+        app_state["updated_at"] = now
+        state["updated_at"] = now
+        _write_state(state)
+    return changed
+
+
+def record_operation_failure(command: dict[str, Any], error: Any) -> dict[str, Any]:
+    action = validate_action_id(command.get("action_id") or command.get("operation"))
+    summary = _sanitize_output(str(error)) or f"{_operation_label(action)} failed safely."
+    return record_operation(command, status="failed", summary=summary)
+
+
 def media_status(app_id: str = PHOTOPRISM_APP_ID) -> dict[str, Any]:
     _validate_app_id(app_id)
+    reconcile_stale_operations(app_id)
     state = _read_state()
     app_state = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {})
     operations = app_state.get("operations") if isinstance(app_state.get("operations"), dict) else {}

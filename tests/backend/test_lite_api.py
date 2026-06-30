@@ -1,3 +1,5 @@
+import asyncio
+import json
 from pathlib import Path
 
 import pytest
@@ -1958,6 +1960,106 @@ def test_lite_app_action_center_worker_subject_registered():
     from api_fastapi.services import domain_commands, lite_photoprism_media
 
     assert lite_photoprism_media.MEDIA_COMMAND_SUBJECT in domain_commands.supported_subjects()
+
+
+def test_lite_worker_routes_media_commands_by_subject_before_generic_operation(monkeypatch):
+    ensure_runtime_path()
+    from workers import pocketlab_worker
+
+    domain_calls: list[tuple[str, dict]] = []
+    operation_calls: list[dict] = []
+    acked: list[bool] = []
+
+    async def fake_domain(subject, command):
+        domain_calls.append((subject, command))
+
+    async def fake_operation(command):
+        operation_calls.append(command)
+
+    async def fake_ack(msg):
+        acked.append(True)
+
+    monkeypatch.setattr(pocketlab_worker, "execute_domain_command", fake_domain)
+    monkeypatch.setattr(pocketlab_worker, "execute_operation_command", fake_operation)
+    monkeypatch.setattr(pocketlab_worker.BUS, "delivery_attempt", lambda msg: 1)
+    monkeypatch.setattr(pocketlab_worker.BUS, "ack_message", fake_ack)
+
+    class Message:
+        subject = "pocketlab.commands.lite.app.media"
+        data = json.dumps(
+            {
+                "data": {
+                    "command_id": "photoprism-media-unit",
+                    "app_id": "photoprism",
+                    "action_id": "import_photos",
+                    "operation": "import_photos",
+                }
+            }
+        ).encode("utf-8")
+
+    asyncio.run(pocketlab_worker.command_callback(Message()))
+
+    assert acked == [True]
+    assert operation_calls == []
+    assert domain_calls
+    subject, command = domain_calls[0]
+    assert subject == "pocketlab.commands.lite.app.media"
+    assert command["operation"] == "import_photos"
+
+
+def test_lite_media_domain_failure_marks_operation_failed(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import domain_commands, lite_photoprism_media
+
+    published: list[tuple[str, str, dict]] = []
+
+    async def fake_publish(subject, event_type, data, *, trace_id=None):
+        published.append((subject, event_type, data))
+
+    def fail_execute(command):
+        raise RuntimeError("Unsupported operation: import_photos")
+
+    monkeypatch.setattr(domain_commands, "_publish", fake_publish)
+    monkeypatch.setattr(lite_photoprism_media, "execute_media_operation", fail_execute)
+
+    command = {
+        "command_id": "photoprism-media-failed-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }
+    result = asyncio.run(domain_commands.handle_lite_app_media(command))
+
+    assert result["status"] == "failed"
+    state = lite_photoprism_media.media_status("photoprism")
+    assert state["operation_running"] is False
+    assert state["last_import"]["status"] == "failed"
+    assert "Unsupported operation" in state["last_import"]["summary"]
+    assert any(item[0] == "pocketlab.events.lite.app.media.failed" for item in published)
+
+
+def test_lite_media_status_reconciles_stale_running_operation(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    monkeypatch.setattr(lite_photoprism_media, "STALE_OPERATION_SECONDS", 0)
+    command = {
+        "command_id": "photoprism-media-stale-unit",
+        "app_id": "photoprism",
+        "action_id": "index_photos",
+        "operation": "index_photos",
+        "mapping_count": 1,
+    }
+    queued = lite_photoprism_media.record_operation(command, status="queued")
+    assert queued["status"] == "queued"
+
+    status = lite_photoprism_media.media_status("photoprism")
+
+    assert status["operation_running"] is False
+    assert status["last_index"]["status"] == "failed"
+    assert "timed out" in status["last_index"]["summary"].lower()
+    assert status["evidence"]["count"] >= 1
 
 
 def test_lite_app_action_center_ui_source_is_present():

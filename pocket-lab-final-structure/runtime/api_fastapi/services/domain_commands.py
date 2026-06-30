@@ -862,19 +862,32 @@ async def handle_lite_app_media(command: Dict[str, Any]) -> Dict[str, Any]:
     try:
         result = await asyncio.to_thread(lite_photoprism_media.execute_media_operation, command)
     except Exception as exc:
+        operation = lite_photoprism_media.record_operation_failure(command, exc)
         await _publish(
             "pocketlab.events.lite.app.media.failed",
             "lite.app.media.failed",
-            {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": "failed"},
+            {
+                "command_id": command_id,
+                "app_id": app_id,
+                "action_id": action_id,
+                "status": "failed",
+                "summary": operation.get("summary") or "PhotoPrism media action failed safely.",
+            },
             trace_id=command_id,
         )
         await _publish(
             "pocketlab.audit.lite.app.media.failed",
             "lite.app.media.failed",
-            {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": "failed"},
+            {
+                "command_id": command_id,
+                "app_id": app_id,
+                "action_id": action_id,
+                "status": "failed",
+                "evidence_status": operation.get("evidence_status") or "failed",
+            },
             trace_id=command_id,
         )
-        raise
+        return {"status": "failed", "app_id": app_id, "action_id": action_id, "operation": operation}
 
     status = str(result.get("status") or "unknown")
     event_subject = "pocketlab.events.lite.app.media.completed" if status == "succeeded" else "pocketlab.events.lite.app.media.updated"
