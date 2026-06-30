@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_storage, lite_backup, lite_catalog, lite_catalog_live, lite_security
+from . import lite_app_storage, lite_backup, lite_catalog, lite_catalog_live, lite_security, lite_app_backup_targets
 
 SUPPORTED_APP_IDS = {"photoprism"}
 APP_NAMES = {"photoprism": "PhotoPrism"}
@@ -94,19 +94,22 @@ def _mapping_summary() -> dict[str, Any]:
 
 
 def _backup_target_summary(app: dict[str, Any]) -> dict[str, Any]:
-    ready = app.get("ready_device_capabilities") if isinstance(app.get("ready_device_capabilities"), dict) else {}
-    available = app.get("available_device_capabilities") if isinstance(app.get("available_device_capabilities"), dict) else {}
-    ready_count = int(ready.get("backup_target") or 0)
-    available_count = int(available.get("backup_target") or 0)
-    count = ready_count or available_count
-    return {
-        "available": count > 0,
-        "ready": ready_count > 0,
-        "count": count,
-        "ready_count": ready_count,
-        "label": "Backup Target available" if count else "No backup target yet",
-        "summary": "Storage device ready for backups" if ready_count else ("Backup target known but not ready" if count else "Join a storage device to save app backups elsewhere."),
-    }
+    try:
+        return lite_app_backup_targets.backup_target_summary("photoprism")
+    except Exception:
+        ready = app.get("ready_device_capabilities") if isinstance(app.get("ready_device_capabilities"), dict) else {}
+        available = app.get("available_device_capabilities") if isinstance(app.get("available_device_capabilities"), dict) else {}
+        ready_count = int(ready.get("backup_target") or 0)
+        available_count = int(available.get("backup_target") or 0)
+        count = ready_count or available_count
+        return {
+            "available": count > 0,
+            "ready": ready_count > 0,
+            "count": count,
+            "ready_count": ready_count,
+            "label": "Backup target available" if count else "No backup target yet",
+            "summary": "Storage device ready for backups" if ready_count else ("Backup target known but not ready" if count else "Join a storage device to save app backups elsewhere."),
+        }
 
 
 def _check(check_id: str, label: str, status: str, summary: str) -> dict[str, str]:
@@ -190,6 +193,8 @@ def photoprism_backup_profile() -> dict[str, Any]:
             "connected_folder_count": int(mappings.get("count") or 0),
         },
         "backup_target": target,
+        "backup_target_summary": target,
+        "backup_targets": target.get("targets", []) if isinstance(target, dict) else [],
         "evidence": _evidence_summary("recovery"),
         "storage_mappings": {
             "count": int(mappings.get("count") or 0),

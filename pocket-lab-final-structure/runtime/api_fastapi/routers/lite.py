@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup_targets, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -75,6 +75,12 @@ class LiteAppRestoreRequest(BaseModel):
 
 class LiteAppActionRequest(BaseModel):
     reason: str | None = None
+    target_device_id: str | None = None
+    confirm: bool = False
+    preserve_media: bool = True
+    preserve_backups: bool = True
+    preserve_evidence: bool = True
+    preserve_storage_mappings: bool = True
 
 
 class LiteAddDeviceRequest(BaseModel):
@@ -213,7 +219,7 @@ def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
 @router.post("/apps/{app_id}/actions/{action_id}")
 async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    action = lite_app_actions.prepare_action(app_id, action_id, reason=payload.reason)
+    action = lite_app_actions.prepare_action(app_id, action_id, payload=payload.model_dump())
     kind = action.get("kind")
 
     if kind in {"url", "guidance"}:
@@ -281,6 +287,42 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "evidence": {"status": "pending", "summary": "Media evidence pending"},
         })
         return submitted
+
+    if kind == "install_app":
+        command = action["command"]
+        await ensure_worker_execution_ready()
+        lite_catalog.record_install_queued(command)
+        try:
+            queued = await submit_domain_command(
+                lite_catalog.COMMAND_SUBJECT,
+                "lite.catalog.install.requested",
+                command,
+                trace_id=command["operation_id"],
+            )
+        except Exception:
+            lite_catalog.discard_operation(command["operation_id"])
+            raise
+        queued.update({
+            "accepted": True,
+            "status": "queued",
+            "app_id": "photoprism",
+            "action_id": "install_app",
+            "operation_id": command["operation_id"],
+            "summary": "PhotoPrism install started.",
+        })
+        return queued
+
+    if kind == "backup_to_storage_not_implemented":
+        raise HTTPException(status_code=501, detail=action["response"])
+
+    if kind == "remove_not_implemented":
+        raise HTTPException(status_code=501, detail=action["response"])
+
+    if kind == "update_not_implemented":
+        raise HTTPException(status_code=501, detail=action["response"])
+
+    if kind == "repair_not_implemented":
+        raise HTTPException(status_code=501, detail=action["response"])
 
     raise HTTPException(
         status_code=501,
@@ -575,11 +617,37 @@ def get_lite_recovery(request: Request) -> dict[str, Any]:
     state = lite_status.lite_recovery()
     profiles = lite_app_profiles.app_backup_profiles()
     lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
+    targets = lite_app_backup_targets.backup_targets()
     state["app_backups"] = profiles.get("apps", [])
     state["app_backup_profiles"] = profiles
     state["app_lifecycle_profiles"] = lifecycle
+    state["backup_targets"] = targets.get("targets", [])
+    state["backup_target_profiles"] = targets
     return state
 
+
+
+
+@router.get("/recovery/backup-targets")
+def get_lite_backup_targets(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_backup_targets.backup_targets()
+
+
+@router.get("/recovery/apps/{app_id}/backup-targets")
+def get_lite_recovery_app_backup_targets(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_backup_targets.app_backup_targets(app_id)
+
+
+@router.post("/recovery/apps/{app_id}/backup-to-target", status_code=501)
+def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_backup_targets.backup_to_storage_not_implemented(
+        app_id,
+        payload.target_device_id,
+        reason=payload.reason,
+    )
 
 @router.get("/recovery/apps")
 def get_lite_recovery_apps(request: Request) -> dict[str, Any]:

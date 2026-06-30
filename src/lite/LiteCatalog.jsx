@@ -232,6 +232,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [openingId, setOpeningId] = useState(null);
   const [storageBusy, setStorageBusy] = useState('');
   const [actionBusyKey, setActionBusyKey] = useState('');
+  const [removeConfirmApp, setRemoveConfirmApp] = useState(null);
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -356,7 +357,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }
 
 
-  async function runLifecycleAction(app, actionId, event) {
+  async function runLifecycleAction(app, actionId, event, extraPayload = {}) {
     event?.stopPropagation?.();
     if (!isPhotoPrismApp(app) || !actionId) return;
     const busyKey = `${app.id}:${actionId}`;
@@ -364,7 +365,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setActionError(null);
     setResult({ status: 'queued', summary: 'Sending app action to Pocket Lab...' });
     try {
-      const response = await liteApi.runAppAction(app.id || 'photoprism', actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}` });
+      const response = await liteApi.runAppAction(app.id || 'photoprism', actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload });
       setResult(response);
       refresh();
       window.setTimeout(refresh, 700);
@@ -375,6 +376,21 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     } finally {
       setActionBusyKey('');
     }
+  }
+
+
+  async function confirmRemoveApp(app, event) {
+    event?.stopPropagation?.();
+    if (!app) return;
+    await runLifecycleAction(app, 'remove_app', event, {
+      confirm: true,
+      reason: 'user confirmed app removal from App Catalog',
+      preserve_media: true,
+      preserve_backups: true,
+      preserve_evidence: true,
+      preserve_storage_mappings: true,
+    });
+    setRemoveConfirmApp(null);
   }
 
   function renderAppCard(app, featured = false) {
@@ -399,6 +415,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
     const indexPhotosAction = lifecycleAction(lifecycle, 'index_photos');
     const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
+    const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
+    const installAppAction = lifecycleAction(lifecycle, 'install_app');
+    const updateAppAction = lifecycleAction(lifecycle, 'update_app');
+    const repairAppAction = lifecycleAction(lifecycle, 'repair_app');
+    const removeAppAction = lifecycleAction(lifecycle, 'remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
 
     return (
@@ -477,11 +498,29 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'preview_restore', event)} disabled={previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`} title={lifecycleActionReason(previewRestoreAction)}>
                   Preview restore
                 </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id })} disabled={backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`} title={lifecycleActionReason(backupToStorageAction)}>
+                  Back up to storage device
+                </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'install_app', event)} disabled={installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`} title={lifecycleActionReason(installAppAction)}>
+                  Install
+                </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'update_app', event)} disabled={updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`} title={lifecycleActionReason(updateAppAction)}>
+                  Update
+                </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'repair_app', event)} disabled={repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`} title={lifecycleActionReason(repairAppAction)}>
+                  Repair
+                </LiteButton>
+                <LiteButton tone="danger" onClick={(event) => { event?.stopPropagation?.(); setRemoveConfirmApp(app); }} disabled={removeAppAction.enabled === false} title={lifecycleActionReason(removeAppAction)}>
+                  Remove app
+                </LiteButton>
               </div>
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
                 {indexPhotosAction.enabled === false ? <span>Index photos: {lifecycleActionReason(indexPhotosAction)}</span> : null}
                 {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
+                {backupToStorageAction.enabled === false ? <span>Back up to storage device: {lifecycleActionReason(backupToStorageAction)}</span> : null}
+                {updateAppAction.enabled === false ? <span>Update: {lifecycleActionReason(updateAppAction)}</span> : null}
+                {repairAppAction.enabled === false ? <span>Repair: {lifecycleActionReason(repairAppAction)}</span> : null}
               </div>
             </div>
           </div>
@@ -631,6 +670,24 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Check again</LiteButton>
         </GlassCard>
       ) : null}
+      {removeConfirmApp ? (
+        <GlassCard className="lite-catalog-remove-confirm" role="dialog" aria-label="Confirm remove">
+          <div>
+            <span>Confirm remove</span>
+            <h2>Remove PhotoPrism?</h2>
+            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Evidence saved.</p>
+          </div>
+          <div className="lite-catalog-remove-confirm-grid">
+            <span><strong>What will happen</strong>Remove app runtime and route after backend support is enabled.</span>
+            <span><strong>What will not happen</strong>Your photo files and backups will not be deleted by default.</span>
+          </div>
+          <div className="lite-catalog-remove-confirm-actions">
+            <LiteButton tone="danger" onClick={(event) => confirmRemoveApp(removeConfirmApp, event)}>Confirm remove</LiteButton>
+            <LiteButton tone="secondary" onClick={() => setRemoveConfirmApp(null)}>Cancel</LiteButton>
+          </div>
+        </GlassCard>
+      ) : null}
+
       <ResultNotice result={result} error={actionError} />
 
     </div>
