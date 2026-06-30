@@ -130,6 +130,8 @@ export default function RecoveryScreen() {
     : Array.isArray(data?.app_backup_profiles?.apps)
       ? data.app_backup_profiles.apps
       : [];
+  const lifecycleProfiles = Array.isArray(data?.app_lifecycle_profiles?.apps) ? data.app_lifecycle_profiles.apps : [];
+  const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
 
   const shortId = (value) => {
     const text = String(value || '');
@@ -406,7 +408,9 @@ export default function RecoveryScreen() {
         </div>
         {appBackups.length ? (
           <div className="lite-recovery-app-grid">
-            {appBackups.map((app) => (
+            {appBackups.map((app) => {
+              const lifecycle = lifecycleByApp.get(app.app_id) || app.lifecycle;
+              return (
               <GlassCard key={app.app_id || app.name} className="lite-recovery-card lite-recovery-app-card">
                 <div className="lite-recovery-card-head">
                   <div className="lite-recovery-mini-icon">
@@ -416,6 +420,13 @@ export default function RecoveryScreen() {
                 </div>
                 <h3>{app.name || 'Self-hosted app'}</h3>
                 <p>{app.summary || 'App backup profile is available.'}</p>
+                {lifecycle ? (
+                  <div className="lite-recovery-app-lifecycle">
+                    <span>{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
+                    <span>{lifecycle?.storage?.mapping_count > 0 ? 'Media connected' : 'Media not connected'}</span>
+                    <span>{lifecycle?.backup?.summary || 'Backup ready'}</span>
+                  </div>
+                ) : null}
                 <div className="lite-recovery-app-facts">
                   <span><strong>Config protected</strong><em>{(app.included || []).slice(0, 3).join(' · ') || 'App metadata'}</em></span>
                   <span><strong>Media excluded</strong><em>{app?.media?.summary || 'Media can be large. Add media backup when a storage device is ready.'}</em></span>
@@ -430,7 +441,8 @@ export default function RecoveryScreen() {
                 </div>
                 <p className="lite-recovery-app-note">{app?.evidence?.summary || 'Evidence appears after an app backup.'}</p>
               </GlassCard>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <StateSurface

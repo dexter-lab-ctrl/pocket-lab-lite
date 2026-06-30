@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_profiles, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
+from ..services import fleet_registry, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -184,8 +184,20 @@ async def get_lite_status(request: Request) -> dict[str, Any]:
 @router.get("/catalog")
 def get_lite_catalog(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(request))
+    return lite_app_lifecycle.hydrate_catalog_lifecycle(lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(request)))
 
+
+
+@router.get("/apps/lifecycle")
+def get_lite_app_lifecycle_profiles(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_lifecycle.app_lifecycle_profiles()
+
+
+@router.get("/apps/lifecycle/{app_id}")
+def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_lifecycle.app_lifecycle_profile(app_id)
 
 
 
@@ -292,8 +304,10 @@ def get_lite_security(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
     state = lite_security.current_state()
     profiles = lite_app_profiles.app_security_profiles()
+    lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
     state["protected_apps"] = profiles.get("apps", [])
     state["app_security_profiles"] = profiles
+    state["app_lifecycle_profiles"] = lifecycle
     return state
 
 
@@ -470,8 +484,10 @@ def get_lite_recovery(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
     state = lite_status.lite_recovery()
     profiles = lite_app_profiles.app_backup_profiles()
+    lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
     state["app_backups"] = profiles.get("apps", [])
     state["app_backup_profiles"] = profiles
+    state["app_lifecycle_profiles"] = lifecycle
     return state
 
 
