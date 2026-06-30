@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
+from ..services import fleet_registry, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -30,6 +30,16 @@ class LiteCatalogRemoveRequest(BaseModel):
     app_id: str = Field(default="", description="Catalog app or blueprint id")
     confirm: bool = False
     requested_by: str | None = None
+
+
+class LitePhotoPrismStorageMappingRequest(BaseModel):
+    source_type: Literal["phone_media", "managed_media", "storage_device"] = "phone_media"
+    label: str | None = None
+    source_path: str = Field(default="", description="Approved Pocket Lab media folder path")
+    target: Literal["import", "originals"] = "import"
+    mode: Literal["read_only", "read_write"] = "read_only"
+    device_id: str | None = None
+    device_name: str | None = None
 
 
 class LiteIdentityRotateRequest(BaseModel):
@@ -155,6 +165,26 @@ async def get_lite_status(request: Request) -> dict[str, Any]:
 def get_lite_catalog(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
     return lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(request))
+
+
+
+
+@router.get("/apps/photoprism/storage-mappings")
+def get_photoprism_storage_mappings(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_storage.list_mappings("photoprism")
+
+
+@router.post("/apps/photoprism/storage-mappings", status_code=201)
+def create_photoprism_storage_mapping(payload: LitePhotoPrismStorageMappingRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_storage.create_mapping(payload.model_dump())
+
+
+@router.delete("/apps/photoprism/storage-mappings/{mapping_id}")
+def delete_photoprism_storage_mapping(mapping_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_storage.delete_mapping("photoprism", mapping_id)
 
 
 @router.post("/catalog/install", status_code=202)

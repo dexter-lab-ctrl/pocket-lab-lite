@@ -329,6 +329,13 @@ def upsert_agent(
         merged["health"] = data["health"]
     if isinstance(data.get("capabilities"), list):
         merged["capabilities"] = data["capabilities"]
+    if isinstance(data.get("storage"), dict):
+        merged["storage"] = data["storage"]
+    if isinstance(data.get("media_roots"), list):
+        merged["media_roots"] = data["media_roots"]
+    for storage_key in ("available_gb", "free_storage_gb", "storage_available_gb"):
+        if data.get(storage_key) is not None:
+            merged[storage_key] = data.get(storage_key)
     if data.get("auth_token_hash"):
         merged["auth_token_hash"] = data.get("auth_token_hash")
     agents[node_id] = merged
@@ -406,6 +413,11 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "agent_version": agent.get("agent_version"),
                 "telemetry": agent.get("telemetry") or {},
                 "health": agent.get("health") or {},
+                "storage": agent.get("storage") or {},
+                "media_roots": agent.get("media_roots") or [],
+                "available_gb": agent.get("available_gb"),
+                "free_storage_gb": agent.get("free_storage_gb"),
+                "storage_available_gb": agent.get("storage_available_gb"),
                 "supervisor_status": agent.get("supervisor_status"),
                 "agent_process": agent.get("agent_process"),
                 "agent_process_status": agent.get("agent_process_status"),

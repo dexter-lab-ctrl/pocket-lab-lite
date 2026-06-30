@@ -34,6 +34,7 @@ import {
   findDeviceNameConflict,
   deviceDuplicateMessage,
   deviceStatusLabel,
+  deviceCapabilityLabels,
   copyTextToClipboard,
   serviceTone,
   normalizeBackendState,
@@ -577,6 +578,21 @@ export default function DevicesScreen() {
                       </div>
                     ) : null}
                   </div>
+
+                  {deviceCapabilityLabels(device).length ? (
+                    <div className="lite-device-capability-chips" aria-label="Device capabilities">
+                      {deviceCapabilityLabels(device).map((label) => (
+                        <span key={label}>{label}</span>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {device?.storage ? (
+                    <div className="lite-device-storage-summary">
+                      <strong>{device.storage.ready ? 'Storage ready' : 'Storage not ready'}</strong>
+                      <span>{device.storage.available_gb ? `${device.storage.available_gb} GB available` : device.storage.summary || 'Storage status will appear after the device reports it.'}</span>
+                    </div>
+                  ) : null}
 
                   {canRestartDeviceAgent(device) || canRemoveDevice(device) ? (
                     <div className="lite-device-actions">

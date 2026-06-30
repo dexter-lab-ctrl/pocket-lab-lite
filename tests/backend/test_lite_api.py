@@ -1482,3 +1482,123 @@ def test_lite_workspace_embed_helper_requires_matching_origin_when_declared():
     assert "window.location.origin !== embedOrigin" in ui
     assert "return false" in ui
     assert "access.embed_allowed === true" in ui
+
+
+def test_lite_photoprism_storage_mappings_are_state_backed_and_sanitized():
+    api = client()
+    created = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone photos",
+            "source_path": "~/storage/shared/DCIM",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert created.status_code == 201
+    payload = created.json()
+    assert payload["status"] == "created"
+    mapping = payload["mapping"]
+    assert mapping["label"] == "Phone photos"
+    assert mapping["mode_label"] == "Read-only"
+    assert mapping["pending_apply"] is True
+    assert "source_path" not in mapping
+    assert "/data/data" not in created.text
+    assert "password" not in created.text.lower()
+
+    listed = api.get("/api/lite/apps/photoprism/storage-mappings")
+    assert listed.status_code == 200
+    assert listed.json()["count"] == 1
+
+    duplicate = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Duplicate",
+            "source_path": "~/storage/shared/DCIM",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert duplicate.status_code == 409
+    duplicate_payload = duplicate.json()
+    duplicate_detail = duplicate_payload.get("detail") if isinstance(duplicate_payload.get("detail"), dict) else duplicate_payload
+    assert duplicate_detail["status"] == "duplicate_mapping"
+
+    deleted = api.delete(f"/api/lite/apps/photoprism/storage-mappings/{mapping['mapping_id']}")
+    assert deleted.status_code == 200
+    assert deleted.json()["status"] == "deleted"
+
+
+def test_lite_photoprism_storage_mapping_rejects_sensitive_paths():
+    api = client()
+    response = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Secrets",
+            "source_path": "~/.ssh",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert response.status_code == 422
+    assert "protected" in response.text or "approved" in response.text
+
+
+def test_lite_catalog_includes_storage_and_device_capability_summary():
+    api = client()
+    api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Pictures",
+            "source_path": "~/storage/shared/Pictures",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    payload = api.get("/api/lite/catalog").json()
+    app = payload["apps"][0]
+    assert app["host_device_id"] == "pocket-lab-lite-server"
+    assert app["host_device_name"]
+    assert app["storage"]["count"] == 1
+    assert app["storage"]["mappings"][0]["label"] == "Pictures"
+    assert app["device_relationships"]["media_from"]
+    assert "media_storage" in app["available_device_capabilities"]
+
+
+def test_lite_fleet_adds_app_aware_device_capabilities(tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    fleet_registry.upsert_agent(
+        {
+            "node_id": "storage-phone-1",
+            "name": "Storage Phone",
+            "role": "storage",
+            "status": "online",
+            "storage": {"available_gb": 92, "media_roots": ["Pictures", "DCIM"]},
+        },
+        event_type="fleet.node_heartbeat",
+    )
+    payload = client().get("/api/lite/fleet").json()
+    storage = next(item for item in payload["devices"] if item["id"] == "storage-phone-1")
+    assert storage["capabilities"] == ["media_storage", "backup_target"]
+    assert "Storage Node" in storage["capability_labels"]
+    assert storage["storage"]["available_gb"] == 92
+    assert payload["capability_summary"]["available_device_capabilities"]["media_storage"] == 1
+
+
+def test_lite_storage_and_capability_ui_is_present():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "Media folders" in ui
+    assert "Connect photos" in ui
+    assert "Use phone photos" in ui
+    assert "Use storage device" in ui
+    assert "Storage devices:" in ui
+    assert "deviceCapabilityLabels" in ui
+    assert "lite-catalog-storage-panel" in css
+    assert "lite-device-capability-chips" in css

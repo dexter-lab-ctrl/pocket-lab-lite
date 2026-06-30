@@ -3,6 +3,9 @@ import {
   CheckCircle2,
   HeartPulse,
   ExternalLink,
+  FolderOpen,
+  FolderPlus,
+  HardDrive,
   Image as ImageIcon,
   RefreshCw,
   Search,
@@ -96,6 +99,32 @@ function canInstallAppToPhone(app) {
   return Boolean(isPhotoPrismApp(app) && isAppInstalled(app) && resolveAppOpenUrl(app));
 }
 
+function storageMappings(app) {
+  const mappings = app?.storage?.mappings;
+  return Array.isArray(mappings) ? mappings : [];
+}
+
+function storageMediaSummary(app) {
+  const mappings = storageMappings(app);
+  if (!mappings.length) return 'Not connected';
+  return mappings
+    .map((mapping) => `${mapping.label || mapping.source_label || 'Media folder'} · ${mapping.mode_label || 'Read-only'}`)
+    .slice(0, 2)
+    .join(', ');
+}
+
+function storageDeviceCount(app) {
+  const value = app?.device_relationships?.storage_devices_available
+    ?? app?.available_device_capabilities?.media_storage
+    ?? 0;
+  return Number.isFinite(Number(value)) ? Number(value) : 0;
+}
+
+function firstStorageDevice(app) {
+  const devices = Array.isArray(app?.storage_devices) ? app.storage_devices : [];
+  return devices.find((device) => device?.ready) || devices[0] || null;
+}
+
 function attentionReason(app, canOpen) {
   const status = String(app?.status || app?.health || '').toLowerCase();
   const health = String(app?.runtime?.health || '').toLowerCase();
@@ -154,6 +183,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [openingId, setOpeningId] = useState(null);
+  const [storageBusy, setStorageBusy] = useState('');
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -221,6 +251,62 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     window.setTimeout(() => window.location.assign(target), 160);
   }
 
+
+  async function connectStorage(app, preset, event) {
+    event?.stopPropagation?.();
+    if (!isPhotoPrismApp(app)) return;
+    const storageDevice = firstStorageDevice(app);
+    const presets = {
+      phone_pictures: {
+        label: 'Pictures',
+        source_type: 'phone_media',
+        source_path: '~/storage/shared/Pictures',
+        target: 'import',
+        mode: 'read_only',
+      },
+      phone_camera: {
+        label: 'Phone photos',
+        source_type: 'phone_media',
+        source_path: '~/storage/shared/DCIM',
+        target: 'import',
+        mode: 'read_only',
+      },
+      storage_device: {
+        label: storageDevice?.name || 'Storage device',
+        source_type: 'storage_device',
+        source_path: '~/.pocket_lab/lite/media',
+        target: 'import',
+        mode: 'read_only',
+        device_id: storageDevice?.id,
+        device_name: storageDevice?.name,
+      },
+    };
+    if (preset === 'storage_device' && !storageDevice) {
+      setActionError('Join a storage device first, then connect it here.');
+      return;
+    }
+    const payload = presets[preset];
+    if (!payload) return;
+    setStorageBusy(`${app.id}:${preset}`);
+    setActionError(null);
+    setResult({ status: 'queued', summary: 'Connecting media folder...' });
+    try {
+      const response = await liteApi.connectPhotoPrismStorage(payload);
+      setResult(response);
+      refresh();
+      window.setTimeout(refresh, 700);
+    } catch (err) {
+      const detail = err?.payload?.detail;
+      if (detail?.status === 'duplicate_mapping') {
+        setResult({ status: 'already_connected', summary: detail.summary || 'This media folder is already connected.' });
+      } else {
+        setActionError(err.message);
+      }
+    } finally {
+      setStorageBusy('');
+    }
+  }
+
   function renderAppCard(app, featured = false) {
     const status = String(app.status || 'not_installed').toLowerCase();
     const installing = status === 'installing' || busyId === app.id;
@@ -236,7 +322,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = `lite-catalog-actions ${canInstallPhone ? 'has-phone-install' : ''}`;
 
-return (
+    return (
       <GlassCard
         key={app.id}
         className={cardClassName}
@@ -276,6 +362,47 @@ return (
             <div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div>
           </div>
         ) : null}
+        {isPhotoPrismApp(app) ? (
+          <div className="lite-catalog-storage-panel">
+            <div className="lite-catalog-storage-head">
+              <div>
+                <span>Media folders</span>
+                <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
+              </div>
+              <FolderOpen className="h-5 w-5" />
+            </div>
+            <div className="lite-catalog-storage-facts">
+              <span><Server className="h-4 w-4" /> Runs on {app?.host_device_name || targetName}</span>
+              <span><FolderPlus className="h-4 w-4" /> Media from: {storageMappings(app).length ? app?.storage?.summary || storageMediaSummary(app) : 'Not connected'}</span>
+              <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
+            </div>
+            {storageMappings(app).length ? (
+              <div className="lite-catalog-storage-chips">
+                {storageMappings(app).map((mapping) => (
+                  <span key={mapping.mapping_id || mapping.label}>
+                    {mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>
+            )}
+            <div className="lite-catalog-storage-actions">
+              <LiteButton tone="secondary" onClick={(event) => connectStorage(app, 'phone_pictures', event)} disabled={Boolean(storageBusy)}>
+                <FolderPlus className="h-4 w-4" />{storageBusy === `${app.id}:phone_pictures` ? 'Connecting...' : 'Connect photos'}
+              </LiteButton>
+              <LiteButton tone="secondary" onClick={(event) => connectStorage(app, 'phone_camera', event)} disabled={Boolean(storageBusy)}>
+                Use phone photos
+              </LiteButton>
+              <LiteButton tone="ghost" onClick={(event) => connectStorage(app, 'storage_device', event)} disabled={Boolean(storageBusy) || storageDeviceCount(app) < 1}>
+                Use storage device
+              </LiteButton>
+            </div>
+            {storageDeviceCount(app) < 1 ? (
+              <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
+            ) : null}
+          </div>
+        ) : null}
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
         <div className={actionsClassName}>
           <LiteButton onClick={(event) => install(app, event)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : status === 'ready' ? 'Installed' : 'Install'}</LiteButton>
@@ -289,7 +416,7 @@ return (
     );
   }
 
-    const insecureAppCount = apps.filter((app) => {
+  const insecureAppCount = apps.filter((app) => {
     const accessState = app?.access || {};
     const appStatus = String(app?.status || app?.health || '').toLowerCase();
 
@@ -305,7 +432,7 @@ return (
 
   const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
 
-return (
+  return (
     <div className="lite-catalog-screen" onPointerDown={handleCatalogPointerDown}>
       <PageHeader
         eyebrow="Apps"

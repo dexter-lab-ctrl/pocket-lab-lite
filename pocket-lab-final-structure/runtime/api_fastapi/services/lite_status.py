@@ -9,7 +9,7 @@ from .. import deps
 from .fleet_registry import fleet_health_snapshot, merged_fleet_nodes, normalize_node_id
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
-from . import lite_backup, lite_catalog as lite_catalog_service, lite_invites, lite_security as lite_security_service
+from . import lite_backup, lite_catalog as lite_catalog_service, lite_device_capabilities, lite_invites, lite_security as lite_security_service
 
 LITE_MODE = "lite"
 
@@ -343,7 +343,8 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "connection": "online",
         "role": role_info["role"],
         "role_label": role_info["role_label"],
-        "capabilities": role_info["capabilities"],
+        "capabilities": lite_device_capabilities.capability_ids_for_role("server_host"),
+        "capability_labels": lite_device_capabilities.labels_for_capabilities(lite_device_capabilities.capability_ids_for_role("server_host")),
         "is_current": True,
         "source": "lite-server",
     }
@@ -486,13 +487,17 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "connection": _connection_label(status),
         "role": role_info["role"],
         "role_label": role_info["role_label"],
-        "capabilities": role_info["capabilities"],
+        "capabilities": lite_device_capabilities.capability_ids_for_role(role_info["role"]),
+        "capability_labels": lite_device_capabilities.labels_for_capabilities(lite_device_capabilities.capability_ids_for_role(role_info["role"])),
         "source": item.get("source") or "fleet",
         "agent_process_status": item.get("agent_process_status"),
         "supervisor_status": item.get("supervisor_status"),
         "last_supervisor_at": item.get("last_supervisor_at"),
         "supervisor_repair_count": item.get("supervisor_repair_count"),
         "last_supervisor_repair_at": item.get("last_supervisor_repair_at"),
+        "storage": item.get("storage") if isinstance(item.get("storage"), dict) else None,
+        "available_gb": item.get("available_gb") or item.get("free_storage_gb") or item.get("storage_available_gb"),
+        "media_roots": item.get("media_roots") if isinstance(item.get("media_roots"), list) else [],
     }
 
 
@@ -585,7 +590,7 @@ def lite_fleet() -> dict[str, Any]:
         devices_by_id[key] = _merge_lite_device(existing, device) if existing else device
 
     devices = sorted(
-        devices_by_id.values(),
+        (lite_device_capabilities.apply_device_capabilities(item) for item in devices_by_id.values()),
         key=lambda item: (0 if item.get("role") == "server_host" else 1, str(item.get("name") or "")),
     )
 
@@ -598,6 +603,7 @@ def lite_fleet() -> dict[str, Any]:
         "roles": lite_invites.lite_role_options(),
         "remote_access": remote_access,
         "latest_invite": lite_invites.latest_invite(),
+        "capability_summary": lite_device_capabilities.catalog_device_summary(devices),
         "updated_at": deps.now_utc_iso(),
     }
 
