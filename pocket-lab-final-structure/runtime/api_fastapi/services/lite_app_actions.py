@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from . import lite_app_lifecycle, lite_app_profiles, lite_photoprism_media
+from . import lite_app_backup_targets, lite_app_lifecycle, lite_app_profiles, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 SUPPORTED_ACTIONS = {
@@ -17,6 +17,11 @@ SUPPORTED_ACTIONS = {
     "preview_restore",
     "import_photos",
     "index_photos",
+    "backup_to_storage",
+    "install_app",
+    "update_app",
+    "repair_app",
+    "remove_app",
 }
 
 
@@ -72,13 +77,29 @@ def app_actions(app_id: str) -> dict[str, Any]:
     }
 
 
-def prepare_action(app_id: str, action_id: str, *, reason: str | None = None) -> dict[str, Any]:
+def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | None = None, reason: str | None = None) -> dict[str, Any]:
     _validate_app_id(app_id)
     action = validate_action_id(action_id)
+    payload = payload or {}
+    reason = payload.get("reason") if reason is None else reason
     profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
     action_profile = (profile.get("actions") or {}).get(action)
     if not isinstance(action_profile, dict):
         raise HTTPException(status_code=404, detail={"status": "unsupported_action", "summary": "Choose a supported PhotoPrism action."})
+
+    # Destructive and target-specific actions validate their own preconditions so
+    # callers get precise, safe reasons such as confirmation_required or target_not_ready.
+    if action == "remove_app":
+        response = lite_photoprism_lifecycle.remove_not_implemented(payload)
+        return {"kind": "remove_not_implemented", "response": response, "summary": response.get("summary")}
+
+    if action == "backup_to_storage":
+        response = lite_app_backup_targets.backup_to_storage_not_implemented(
+            "photoprism",
+            payload.get("target_device_id"),
+            reason=reason,
+        )
+        return {"kind": "backup_to_storage_not_implemented", "response": response, "summary": response.get("summary")}
 
     if not action_profile.get("enabled"):
         raise HTTPException(
@@ -121,6 +142,18 @@ def prepare_action(app_id: str, action_id: str, *, reason: str | None = None) ->
     if action in {"import_photos", "index_photos"}:
         command = lite_photoprism_media.media_command(action, reason=reason)
         return {"kind": "media", "command": command, "summary": action_profile.get("summary") or f"{action_profile.get('label')} queued."}
+
+    if action == "install_app":
+        command = lite_photoprism_lifecycle.install_command(reason=reason)
+        return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
+
+    if action == "update_app":
+        response = lite_photoprism_lifecycle.update_not_implemented(reason=reason)
+        return {"kind": "update_not_implemented", "response": response, "summary": response.get("summary")}
+
+    if action == "repair_app":
+        response = lite_photoprism_lifecycle.repair_not_implemented(reason=reason)
+        return {"kind": "repair_not_implemented", "response": response, "summary": response.get("summary")}
 
     raise HTTPException(
         status_code=501,

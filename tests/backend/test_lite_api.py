@@ -91,7 +91,8 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert ">Ready<" in ui or "'Ready'" in ui
     assert "Open full screen" in ui
     assert "lite-home-pill lite-catalog-hero-pill is-secure" in ui
-    assert "Remove" not in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Remove app" in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Confirm remove" in Path("src/lite/LiteCatalog.jsx").read_text()
     assert "lite-catalog-access-card" in css
     assert "HeartPulse" in Path("src/lite/LiteCatalog.jsx").read_text()
     assert "Clock3" not in Path("src/lite/LiteCatalog.jsx").read_text()
@@ -1825,23 +1826,22 @@ def test_lite_unified_lifecycle_ui_source_is_present():
 
 def _force_photoprism_installed_for_action_tests(monkeypatch):
     ensure_runtime_path()
-    from api_fastapi.services import lite_app_lifecycle
+    from api_fastapi.services import lite_app_lifecycle, lite_photoprism_lifecycle
 
-    monkeypatch.setattr(
-        lite_app_lifecycle,
-        "_catalog_app",
-        lambda app_id: {
-            "id": "photoprism",
-            "name": "PhotoPrism",
-            "installed": True,
-            "status": "ready",
-            "actions": {"open": True},
-            "access": {"open_url": "/apps/photoprism/", "route_ready": True},
-            "runtime": {"url": "/apps/photoprism/"},
-            "host_device_id": "pocket-lab-lite-server",
-            "host_device_name": "Pocket Lab Lite Server",
-        },
-    )
+    installed_app = {
+        "id": "photoprism",
+        "name": "PhotoPrism",
+        "installed": True,
+        "status": "ready",
+        "actions": {"open": True},
+        "access": {"open_url": "/apps/photoprism/", "route_ready": True},
+        "runtime": {"url": "/apps/photoprism/"},
+        "host_device_id": "pocket-lab-lite-server",
+        "host_device_name": "Pocket Lab Lite Server",
+    }
+
+    monkeypatch.setattr(lite_app_lifecycle, "_catalog_app", lambda app_id: dict(installed_app))
+    monkeypatch.setattr(lite_photoprism_lifecycle, "_catalog_app", lambda: dict(installed_app))
 
 
 def test_lite_app_action_center_lists_photoprism_readiness(monkeypatch):
@@ -1976,3 +1976,157 @@ def test_lite_app_action_center_ui_source_is_present():
     assert "photoprism import" not in ui.lower()
     assert "photoprism index" not in ui.lower()
     assert "subprocess" not in ui
+
+
+def test_lite_storage_backup_targets_endpoint_discovers_ready_storage(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setattr(
+        lite_status,
+        "lite_fleet",
+        lambda: {
+            "status": "healthy",
+            "devices": [
+                {
+                    "id": "pocket-lab-lite-server",
+                    "name": "Pocket Lab Lite Server",
+                    "role": "server_host",
+                    "connection": "online",
+                    "status": "healthy",
+                    "is_current": True,
+                    "capabilities": ["app_host", "compute", "security_scanner"],
+                },
+                {
+                    "id": "storage-phone-1",
+                    "name": "Storage Phone",
+                    "role": "storage",
+                    "connection": "online",
+                    "status": "healthy",
+                    "capabilities": ["media_storage", "backup_target"],
+                    "storage": {"available_gb": 42},
+                },
+            ],
+        },
+    )
+
+    response = client().get("/api/lite/recovery/backup-targets")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ready_count"] == 1
+    target = payload["targets"][0]
+    assert target["device_id"] == "storage-phone-1"
+    assert target["name"] == "Storage Phone"
+    assert target["ready"] is True
+    assert "backup_target" in target["capabilities"]
+    assert "password" not in response.text.lower()
+    assert "restic" not in response.text.lower()
+
+
+def test_lite_storage_backup_targets_rejects_offline_target(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_status
+
+    monkeypatch.setattr(
+        lite_status,
+        "lite_fleet",
+        lambda: {
+            "devices": [
+                {
+                    "id": "storage-phone-1",
+                    "name": "Storage Phone",
+                    "role": "storage",
+                    "connection": "offline",
+                    "status": "unhealthy",
+                    "capabilities": ["media_storage", "backup_target"],
+                    "storage": {"available_gb": 42},
+                }
+            ]
+        },
+    )
+
+    response = client().post(
+        "/api/lite/apps/photoprism/actions/backup_to_storage",
+        json={"target_device_id": "storage-phone-1", "reason": "test transfer"},
+    )
+    assert response.status_code == 409
+    payload = response.json().get("detail") or response.json()
+    assert payload["status"] == "target_not_ready"
+    assert "offline" in payload["summary"].lower()
+
+
+def test_lite_photoprism_action_center_includes_storage_and_lifecycle_actions(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().get("/api/lite/apps/photoprism/actions")
+    assert response.status_code == 200
+    actions = response.json()["actions"]
+    for action_id in (
+        "backup_to_storage",
+        "install_app",
+        "update_app",
+        "repair_app",
+        "remove_app",
+    ):
+        assert action_id in actions
+        assert "label" in actions[action_id]
+    assert actions["remove_app"]["requires_confirmation"] is True
+    assert actions["remove_app"]["risk"] == "destructive"
+    assert actions["update_app"]["enabled"] is False
+    assert "password" not in response.text.lower()
+    assert "backup_key" not in response.text.lower()
+
+
+def test_lite_remove_app_requires_confirmation_and_reason(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    missing_confirm = client().post(
+        "/api/lite/apps/photoprism/actions/remove_app",
+        json={"confirm": False, "reason": "validation should not remove"},
+    )
+    assert missing_confirm.status_code == 409
+    assert "confirmation_required" in missing_confirm.text
+
+    missing_reason = client().post(
+        "/api/lite/apps/photoprism/actions/remove_app",
+        json={"confirm": True},
+    )
+    assert missing_reason.status_code == 422
+    assert "reason_required" in missing_reason.text
+
+    confirmed = client().post(
+        "/api/lite/apps/photoprism/actions/remove_app",
+        json={"confirm": True, "reason": "user confirmed removal", "preserve_media": True, "preserve_backups": True, "preserve_evidence": True},
+    )
+    assert confirmed.status_code == 501
+    payload = confirmed.json().get("detail") or confirmed.json()
+    assert payload["status"] == "not_implemented"
+    assert payload["preserve_media"] is True
+    assert payload["preserve_backups"] is True
+    assert payload["preserve_evidence"] is True
+    assert "photo files" not in confirmed.text.lower() or "will not be deleted" not in confirmed.text.lower()
+    assert "password" not in confirmed.text.lower()
+
+
+def test_lite_storage_and_app_lifecycle_ui_source_is_present():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+    assert "Back up to storage device" in ui
+    assert "Saved to Storage Phone" in ui
+    assert "Remove app" in ui
+    assert "Confirm remove" in ui
+    assert "Your photo files and backups will not be deleted by default" in ui
+    assert "Repair" in ui
+    assert "Update" in ui
+    assert "backup-targets" in api
+    assert "backup_to_storage" in ui
+    assert "install_app" in ui
+    assert "remove_app" in ui
+    assert "repair_app" in ui
+    assert "update_app" in ui
+    assert "lite-catalog-remove-confirm" in css
+    assert "lite-recovery-backup-targets" in css
+    assert "child_process" not in ui
+    assert "nats.connect" not in ui
+    assert "rsync" not in ui.lower()
+    assert "scp" not in ui.lower()
+    assert "ssh " not in ui.lower()

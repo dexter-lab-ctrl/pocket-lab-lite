@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_media
+from . import lite_app_backup_targets, lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 _SAFE_ROUTE = "/apps/photoprism/"
@@ -179,14 +179,16 @@ def _backup_profile(backup: dict[str, Any]) -> dict[str, Any]:
     target = backup.get("backup_target") if isinstance(backup.get("backup_target"), dict) else {}
     media = backup.get("media") if isinstance(backup.get("media"), dict) else {}
     status = _normalize_lifecycle_status(backup.get("status"))
+    target_summary = backup.get("backup_target_summary") if isinstance(backup.get("backup_target_summary"), dict) else target
     return {
         "status": status,
         "summary": "Backup ready" if status == "ready" else _safe_text(backup.get("summary"), "Backup profile needs review."),
         "default_mode": _safe_label(backup.get("default_mode"), "config_only"),
         "media": _safe_label(media.get("default"), "excluded"),
-        "target_available": bool(target.get("ready") or target.get("available")),
-        "target_ready": bool(target.get("ready")),
-        "target_summary": _safe_text(target.get("summary") or target.get("label"), "Backup target not ready"),
+        "target_available": bool(target_summary.get("ready") or target_summary.get("available")),
+        "target_ready": bool(target_summary.get("ready")),
+        "target_summary": _safe_text(target_summary.get("summary") or target_summary.get("label"), "Backup target not ready"),
+        "target_label": _safe_label(target_summary.get("target_label"), "Storage device") if target_summary.get("target_label") else None,
     }
 
 
@@ -226,6 +228,41 @@ def _media_action_ready(installed: bool, route_enabled: bool, media: dict[str, A
     return True, None, "ready"
 
 
+def _backup_to_storage_action(backup: dict[str, Any]) -> dict[str, Any]:
+    try:
+        summary = lite_app_backup_targets.backup_target_summary("photoprism")
+    except Exception:
+        summary = {"ready": False, "summary": "Join a storage device to save app backups elsewhere.", "target_label": None}
+    ready = bool(summary.get("ready"))
+    label = "Back up to storage device"
+    reason = None if ready else _safe_text(summary.get("summary"), "Join a storage device to save app backups elsewhere.")
+    action = _action(
+        ready,
+        label,
+        reason=reason,
+        summary=f"Save PhotoPrism backup to {summary.get('target_label')}." if ready and summary.get("target_label") else "Save PhotoPrism backup to a joined storage device.",
+        status="ready" if ready else "not_ready",
+    )
+    action["requires_target"] = True
+    if summary.get("target_label"):
+        action["target_label"] = summary.get("target_label")
+    if ready:
+        action["warning"] = "Transfer worker must be enabled before Pocket Lab can save to the storage device."
+    return action
+
+
+def _photoprism_lifecycle_actions() -> dict[str, Any]:
+    try:
+        return lite_photoprism_lifecycle.action_readiness()
+    except Exception:
+        return {
+            "install_app": _action(False, "Install", reason="Install action status is not available."),
+            "update_app": _action(False, "Update", reason="Update check not ready yet."),
+            "repair_app": _action(False, "Repair", reason="Repair app is not ready yet."),
+            "remove_app": _action(False, "Remove app", reason="Remove app is not ready yet."),
+        }
+
+
 def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any]) -> dict[str, Any]:
     access = app.get("access") if isinstance(app.get("access"), dict) else {}
     actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
@@ -233,13 +270,14 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
     route_enabled = bool(actions.get("open") and open_url == _SAFE_ROUTE)
     backup_enabled = bool(installed)
     media_ready, media_reason, media_status = _media_action_ready(installed, route_enabled, media)
-    return {
+    action_payload = {
         "open": _action(route_enabled, "Open", url=_SAFE_ROUTE if route_enabled else None, reason=None if route_enabled else "Open is not ready yet."),
         "open_full_screen": _action(route_enabled, "Open full screen", url=_SAFE_ROUTE if route_enabled else None, reason=None if route_enabled else "Open full screen is not ready yet."),
         "install_to_phone": _action(route_enabled, "Install to phone", url=_SAFE_ROUTE if route_enabled else None, reason=None if route_enabled else "Install to phone is available after Open is ready."),
         "connect_photos": _action(installed, "Connect photos", reason=None if installed else "Install PhotoPrism first."),
         "check_app": _action(False, "Check app", reason="Use Run Safety Check for the current device-wide scan."),
         "backup_app": _action(backup_enabled, "Back up app", reason=None if backup_enabled else "Install PhotoPrism first."),
+        "backup_to_storage": _backup_to_storage_action(backup),
         "preview_restore": _action(bool(recovery.get("preview_available")), "Preview restore", reason=None if recovery.get("preview_available") else "No verified app backup yet"),
         "import_photos": _action(
             media_ready,
@@ -256,6 +294,8 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             status=media_status,
         ),
     }
+    action_payload.update(_photoprism_lifecycle_actions())
+    return action_payload
 
 
 def _attention(installed: bool, storage: dict[str, Any], security: dict[str, Any], backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any]) -> list[dict[str, str]]:
@@ -378,6 +418,8 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
         "storage": storage,
         "security": security,
         "backup": backup,
+        "backup_targets": lite_app_backup_targets.app_backup_targets("photoprism"),
+        "app_lifecycle": lite_photoprism_lifecycle.lifecycle_state(),
         "recovery": recovery,
         "media": media,
         "attention": attention,

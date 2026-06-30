@@ -9846,3 +9846,73 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.lite-catalog-remove-confirm {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+  border-color: rgba(251, 113, 133, 0.28);
+}
+
+.lite-catalog-remove-confirm > div:first-child > span,
+.lite-recovery-backup-targets .lite-recovery-section-heading span {
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.lite-catalog-remove-confirm h2 {
+  margin: 0.15rem 0 0.3rem;
+  font-size: 1.2rem;
+}
+
+.lite-catalog-remove-confirm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.lite-catalog-remove-confirm-grid span,
+.lite-recovery-target-card {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.lite-catalog-remove-confirm-grid strong,
+.lite-recovery-target-card strong {
+  color: rgba(248, 250, 252, 0.92);
+}
+
+.lite-catalog-remove-confirm-actions,
+.lite-recovery-target-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.lite-recovery-target-grid {
+  align-items: stretch;
+}
+
+.lite-recovery-target-card {
+  flex: 1 1 220px;
+}
+
+.lite-recovery-target-card em {
+  font-style: normal;
+  color: rgba(226, 232, 240, 0.68);
+}
+
+@media (max-width: 640px) {
+  .lite-catalog-remove-confirm-actions .pocket-button,
+  .lite-recovery-target-card {
+    width: 100%;
+  }
+}

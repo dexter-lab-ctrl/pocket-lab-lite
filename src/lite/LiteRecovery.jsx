@@ -132,6 +132,7 @@ export default function RecoveryScreen() {
       : [];
   const lifecycleProfiles = Array.isArray(data?.app_lifecycle_profiles?.apps) ? data.app_lifecycle_profiles.apps : [];
   const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
+  const backupTargets = Array.isArray(data?.backup_targets) ? data.backup_targets : [];
 
   const shortId = (value) => {
     const text = String(value || '');
@@ -398,6 +399,30 @@ export default function RecoveryScreen() {
         </div>
       </section>
 
+      <section className="lite-recovery-app-profiles lite-recovery-backup-targets" aria-label="Backup targets">
+        <div className="lite-recovery-section-heading">
+          <div>
+            <span>Backup targets</span>
+            <h2>Save to storage device</h2>
+            <p>Joined Storage Node devices can become app backup targets when they are online and ready.</p>
+          </div>
+        </div>
+        {backupTargets.length ? (
+          <div className="lite-recovery-target-grid">
+            {backupTargets.map((target) => (
+              <div className="lite-recovery-target-card" key={target.device_id || target.name}>
+                <strong>{target.name || 'Storage Phone'}</strong>
+                <em>{target.ready ? 'Backup Target · Ready' : target.reason || 'Backup target needs attention'}</em>
+                <span>{target.ready ? 'Used for app backups' : 'Not used for app backups yet'}</span>
+                {target.available_gb ? <span>{target.available_gb} GB available</span> : null}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <StateSurface tone="empty" title="No backup target yet" description="Join a storage device to save app backups elsewhere." />
+        )}
+      </section>
+
       <section className="lite-recovery-app-profiles" aria-label="App backups">
         <div className="lite-recovery-section-heading">
           <div>
@@ -432,6 +457,7 @@ export default function RecoveryScreen() {
                   <span><strong>Config protected</strong><em>{(app.included || []).slice(0, 3).join(' · ') || 'App metadata'}</em></span>
                   <span><strong>Media excluded</strong><em>{app?.media?.summary || 'Media can be large. Add media backup when a storage device is ready.'}</em></span>
                   <span><strong>Backup target</strong><em>{app?.backup_target?.label || 'No backup target yet'}</em></span>
+                  <span><strong>Back up to storage device</strong><em>{app?.backup_target?.target_label ? `Saved to ${app.backup_target.target_label}` : app?.backup_target?.summary || 'Saved to Storage Phone after a backup target is ready.'}</em></span>
                 </div>
                 <div className="lite-recovery-app-tags">
                   {(app.excluded || []).slice(0, 4).map((item) => <span key={item}>{item}</span>)}
