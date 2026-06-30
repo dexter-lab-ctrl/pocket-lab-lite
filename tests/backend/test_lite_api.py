@@ -1602,3 +1602,128 @@ def test_lite_storage_and_capability_ui_is_present():
     assert "deviceCapabilityLabels" in ui
     assert "lite-catalog-storage-panel" in css
     assert "lite-device-capability-chips" in css
+
+
+def test_lite_app_security_profiles_are_sanitized_and_photoprism_aware():
+    api = client()
+    response = api.get("/api/lite/security/apps")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["count"] == 1
+    profile = payload["apps"][0]
+    assert profile["app_id"] == "photoprism"
+    assert profile["name"] == "PhotoPrism"
+    assert {item["id"] for item in profile["checks"]} >= {
+        "route_safety",
+        "config_redaction",
+        "media_permissions",
+        "backup_readiness",
+    }
+    assert "source_path" not in response.text
+    assert "summary.json" not in response.text
+    assert "password" not in response.text.lower()
+    assert "secret" not in response.text.lower()
+
+    single = api.get("/api/lite/security/apps/photoprism")
+    assert single.status_code == 200
+    assert single.json()["app_id"] == "photoprism"
+
+    unsupported = api.get("/api/lite/security/apps/vault")
+    assert unsupported.status_code == 404
+
+
+def test_lite_app_security_check_is_safely_not_implemented():
+    response = client().post(
+        "/api/lite/security/apps/photoprism/check",
+        json={"reason": "manual app safety check"},
+    )
+    assert response.status_code == 501
+    payload = response.json()
+    assert payload["status"] == "not_implemented"
+    assert payload["accepted"] is False
+    assert payload["app_id"] == "photoprism"
+
+
+def test_lite_app_backup_profiles_are_sanitized_and_photoprism_aware():
+    api = client()
+    response = api.get("/api/lite/recovery/apps")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["count"] == 1
+    profile = payload["apps"][0]
+    assert profile["app_id"] == "photoprism"
+    assert "App config" in profile["included"]
+    assert "Storage mappings" in profile["included"]
+    assert "Original media" in profile["excluded"]
+    assert "Raw secrets" in profile["excluded"]
+    assert profile["media"]["default"] == "excluded"
+    assert "backup_target" in profile
+    assert "restic-password" not in response.text.lower()
+    assert "RESTIC_PASSWORD" not in response.text
+
+    single = api.get("/api/lite/recovery/apps/photoprism")
+    assert single.status_code == 200
+    assert single.json()["app_id"] == "photoprism"
+
+    unsupported = api.get("/api/lite/recovery/apps/vault")
+    assert unsupported.status_code == 404
+
+
+def test_lite_app_backup_queues_existing_worker_owned_backup(monkeypatch):
+    from api_fastapi.services.nats_bus import BUS
+
+    published: list[tuple[str, str, dict]] = []
+    BUS.connected = True
+    BUS.js = object()
+
+    async def fake_publish(subject, event_type, data=None, *, trace_id=None):
+        published.append((subject, event_type, data or {}))
+
+    monkeypatch.setattr(BUS, "publish_json", fake_publish)
+
+    response = client().post(
+        "/api/lite/recovery/apps/photoprism/backup",
+        json={"mode": "config_only", "reason": "manual app backup"},
+    )
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["accepted"] is True
+    assert payload["app_id"] == "photoprism"
+    assert payload["mode"] == "config_only"
+    assert payload["backup_id"].startswith("app-backup-photoprism-")
+    assert any(item[0] == "pocketlab.commands.lite.backup.create" for item in published)
+
+
+def test_lite_app_restore_endpoints_are_safe_until_explicit_restore_exists():
+    preview = client().post(
+        "/api/lite/recovery/apps/photoprism/restore/preview",
+        json={"backup_id": "latest", "reason": "manual app restore preview"},
+    )
+    assert preview.status_code == 501
+    assert preview.json()["status"] == "not_implemented"
+
+    restore = client().post(
+        "/api/lite/recovery/apps/photoprism/restore",
+        json={"backup_id": "latest", "preview_id": "preview", "confirm": True},
+    )
+    assert restore.status_code == 501
+    assert restore.json()["status"] == "not_implemented"
+
+
+def test_lite_app_security_and_backup_ui_source_is_present():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "Protected apps" in ui
+    assert "Check app" in ui
+    assert "View evidence" in ui
+    assert "App backups" in ui
+    assert "Back up app" in ui
+    assert "Media excluded" in ui
+    assert "Backup target" in ui
+    assert "Config protected" in ui
+    assert "lite-security-app-profiles" in css
+    assert "lite-recovery-app-profiles" in css
+    assert "child_process" not in ui
+    assert "nats.connect" not in ui

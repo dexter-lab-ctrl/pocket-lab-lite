@@ -1341,6 +1341,12 @@ export default function SecurityScreen() {
       summary: evidenceRefs.length ? `${evidenceRefs.length} sanitized evidence files` : 'Evidence appears after a completed check.',
     },
   ];
+  const protectedApps = Array.isArray(data?.protected_apps)
+    ? data.protected_apps
+    : Array.isArray(data?.app_security_profiles?.apps)
+      ? data.app_security_profiles.apps
+      : [];
+
 
   React.useEffect(() => {
     if (!scanInProgress) return undefined;
@@ -1409,6 +1415,27 @@ export default function SecurityScreen() {
     } catch (err) {
       setResult(null);
       setActionError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkProtectedApp(app) {
+    if (!app?.app_id) return;
+    setBusy(true);
+    setResult({ status: 'checking', summary: 'Check app request sent through Pocket Lab.' });
+    setActionError(null);
+    try {
+      const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
+      setResult(payload);
+      scheduleSecurityRefresh();
+    } catch (err) {
+      const payload = err?.payload || {};
+      if (err.status === 501 && payload?.status === 'not_implemented') {
+        setResult(payload);
+      } else {
+        setActionError(err.message);
+      }
     } finally {
       setBusy(false);
     }
@@ -1557,6 +1584,54 @@ export default function SecurityScreen() {
         <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} collapsed={isSecurityCardCollapsed('latestEvidence')} onToggle={() => toggleSecurityCard('latestEvidence')} />
         <SecurityLastKnownGoodCard marker={lastKnownGood} collapsed={isSecurityCardCollapsed('lastKnownGood')} onToggle={() => toggleSecurityCard('lastKnownGood')} />
         <SecurityPostureComparisonCard comparison={postureComparison} collapsed={isSecurityCardCollapsed('postureComparison')} onToggle={() => toggleSecurityCard('postureComparison')} />
+      </section>
+
+      <section className="lite-security-app-profiles" aria-label="Protected apps">
+        <div className="lite-security-section-heading">
+          <div>
+            <span>Protected apps</span>
+            <h2>App safety profiles</h2>
+            <p>PhotoPrism and future apps get their own safety summary without exposing raw evidence or secrets.</p>
+          </div>
+        </div>
+        {protectedApps.length ? (
+          <div className="lite-security-app-grid">
+            {protectedApps.map((app) => (
+              <GlassCard key={app.app_id || app.name} className="lite-security-card lite-security-app-card">
+                <div className="lite-security-card-head">
+                  <div className="lite-security-icon">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <StatusBadge status={backendBadgeStatus(app.status)}>{backendLabel(app.status, { ready: 'Ready', review: 'Needs review', danger: 'Needs attention', checking: 'Checking' })}</StatusBadge>
+                </div>
+                <h3>{app.name || 'Self-hosted app'}</h3>
+                <p>{app.summary || 'App security profile is available.'}</p>
+                <div className="lite-security-app-checks">
+                  {(app.checks || []).slice(0, 4).map((check) => (
+                    <span key={check.id || check.label}>
+                      <strong>{check.label}</strong>
+                      <em>{backendLabel(check.status, { ready: 'Ready', review: 'Needs review', danger: 'Needs attention', checking: 'Checking' })}</em>
+                    </span>
+                  ))}
+                </div>
+                <div className="lite-security-app-meta">
+                  <span>Last checked: {formatLiteTime(app.last_checked_at)}</span>
+                  <span>{app?.evidence?.summary || 'Evidence pending'}</span>
+                </div>
+                <div className="lite-security-app-actions">
+                  <LiteButton tone="secondary" onClick={() => checkProtectedApp(app)} disabled={busy}>Check app</LiteButton>
+                  <LiteButton tone="ghost" onClick={showEvidence}>View evidence</LiteButton>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        ) : (
+          <StateSurface
+            tone="empty"
+            title="No protected apps yet"
+            description="Install an app from Apps to include it in safety checks."
+          />
+        )}
       </section>
 
       {(evidence || evidenceError || evidenceLoading) ? (

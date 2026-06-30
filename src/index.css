@@ -9548,3 +9548,133 @@ textarea {
     justify-content: center;
   }
 }
+
+/* Lite app security and backup profiles */
+.lite-catalog-profile-markers,
+.lite-security-app-meta,
+.lite-recovery-app-tags,
+.lite-recovery-app-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.lite-catalog-profile-markers span,
+.lite-recovery-app-tags span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  background: rgba(34, 197, 94, 0.08);
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #166534;
+}
+
+.lite-security-app-profiles,
+.lite-recovery-app-profiles {
+  margin: 1rem 0;
+}
+
+.lite-security-section-heading,
+.lite-recovery-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.lite-security-section-heading span,
+.lite-recovery-section-heading span {
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0369a1;
+}
+
+.lite-security-section-heading h2,
+.lite-recovery-section-heading h2 {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+}
+
+.lite-security-section-heading p,
+.lite-recovery-section-heading p {
+  margin: 0.25rem 0 0;
+  color: var(--lite-muted, #64748b);
+}
+
+.lite-security-app-grid,
+.lite-recovery-app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.lite-security-app-card,
+.lite-recovery-app-card {
+  min-width: 0;
+}
+
+.lite-security-app-card h3,
+.lite-recovery-app-card h3 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.lite-security-app-checks,
+.lite-recovery-app-facts {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.9rem 0;
+}
+
+.lite-security-app-checks span,
+.lite-recovery-app-facts span {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.lite-security-app-checks strong,
+.lite-recovery-app-facts strong {
+  font-size: 0.86rem;
+}
+
+.lite-security-app-checks em,
+.lite-recovery-app-facts em,
+.lite-security-app-meta span,
+.lite-recovery-app-note {
+  color: var(--lite-muted, #64748b);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.lite-security-app-actions,
+.lite-recovery-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .lite-security-app-grid,
+  .lite-recovery-app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lite-security-app-actions .lite-button,
+  .lite-recovery-app-actions .lite-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
