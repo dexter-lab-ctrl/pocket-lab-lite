@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   CheckCircle2,
+  FileCheck,
   HeartPulse,
   ExternalLink,
   FolderOpen,
