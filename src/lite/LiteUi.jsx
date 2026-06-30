@@ -91,6 +91,25 @@ export function roleLabel(value) {
   return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
 }
 
+export const DEVICE_CAPABILITY_LABELS = {
+  app_host: 'App Host',
+  media_storage: 'Storage Node',
+  backup_target: 'Backup Target',
+  security_scanner: 'Security Scanner',
+  compute: 'Compute',
+};
+
+export function deviceCapabilityLabels(device) {
+  const explicit = Array.isArray(device?.capability_labels) ? device.capability_labels : [];
+  const fromIds = Array.isArray(device?.capabilities)
+    ? device.capabilities.map((item) => DEVICE_CAPABILITY_LABELS[item] || String(item || '').replace(/_/g, ' ')).filter(Boolean)
+    : [];
+  const labels = [...explicit, ...fromIds]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+  return [...new Set(labels)].slice(0, 5);
+}
+
 export function deviceConnectionLabel(device) {
   const connection = String(device?.connection || '').toLowerCase();
   const role = String(device?.role || '').toLowerCase();

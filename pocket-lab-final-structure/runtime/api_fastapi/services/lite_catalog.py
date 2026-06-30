@@ -158,6 +158,32 @@ def _target_model() -> dict[str, Any]:
     }
 
 
+def _device_capability_summary() -> dict[str, Any]:
+    # Import lazily to avoid a module-cycle during Lite status construction.
+    try:
+        from . import lite_status
+
+        fleet = lite_status.lite_fleet()
+        summary = fleet.get("capability_summary") if isinstance(fleet, dict) else {}
+        return summary if isinstance(summary, dict) else {}
+    except Exception:
+        return {}
+
+
+def _storage_summary() -> dict[str, Any]:
+    try:
+        from . import lite_app_storage
+
+        return lite_app_storage.catalog_storage_summary()
+    except Exception:
+        return {
+            "status": "not_connected",
+            "summary": "No media folders connected",
+            "mappings": [],
+            "count": 0,
+        }
+
+
 def _runtime_health_from_state(app: dict[str, Any]) -> str:
     runtime = app.get("runtime") if isinstance(app.get("runtime"), dict) else {}
     route = app.get("route") if isinstance(app.get("route"), dict) else {}
@@ -197,6 +223,15 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
     if not access.get("https_ready"):
         access_message = "Remote access not ready. PhotoPrism can be prepared, but Open stays disabled until HTTPS is ready."
 
+    device_summary = _device_capability_summary()
+    storage = _storage_summary()
+    storage_devices = device_summary.get("storage_devices") if isinstance(device_summary.get("storage_devices"), list) else []
+    available_capabilities = device_summary.get("available_device_capabilities") if isinstance(device_summary.get("available_device_capabilities"), dict) else {}
+    ready_capabilities = device_summary.get("ready_device_capabilities") if isinstance(device_summary.get("ready_device_capabilities"), dict) else {}
+    host_device_id = device_summary.get("host_device_id") or _server_node_id()
+    host_device_name = device_summary.get("host_device_name") or _server_name()
+    media_from = storage.get("summary") or "No media folders connected"
+
     return {
         "id": PHOTOPRISM_APP_ID,
         "name": "PhotoPrism",
@@ -212,6 +247,23 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
         "progress": app.get("progress") if isinstance(app.get("progress"), dict) else None,
         "last_operation": operation,
         "evidence_refs": app.get("evidence_refs") if isinstance(app.get("evidence_refs"), list) else [],
+        "host_device_id": host_device_id,
+        "host_device_name": host_device_name,
+        "connected_devices": [
+            {"id": item.get("device_id"), "name": item.get("device_name") or item.get("label"), "source_type": item.get("source_type")}
+            for item in storage.get("mappings", [])
+            if isinstance(item, dict) and item.get("source_type") == "storage_device"
+        ],
+        "available_device_capabilities": available_capabilities,
+        "ready_device_capabilities": ready_capabilities,
+        "device_relationships": {
+            "runs_on": host_device_name,
+            "media_from": media_from,
+            "storage_devices_available": int(available_capabilities.get("media_storage") or 0),
+            "storage_devices_ready": int(ready_capabilities.get("media_storage") or 0),
+        },
+        "storage_devices": storage_devices,
+        "storage": storage,
     }
 
 

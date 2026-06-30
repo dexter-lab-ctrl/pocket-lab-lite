@@ -174,7 +174,8 @@ const mockLiteDevices = () => [
     role: 'server_host',
     role_label: 'Server Host',
     is_current: true,
-    capabilities: ['Run control plane', 'Serve Lite UI'],
+    capabilities: ['app_host', 'compute', 'security_scanner'],
+    capability_labels: ['App Host', 'Compute', 'Security Scanner'],
   },
   {
     id: 'test-phone-2',
@@ -185,7 +186,8 @@ const mockLiteDevices = () => [
     remote_access: false,
     role: 'compute',
     role_label: 'App Host',
-    capabilities: ['Run apps', 'Report device health'],
+    capabilities: ['app_host', 'compute'],
+    capability_labels: ['App Host', 'Compute'],
   },
   {
     id: 'test-phone-4',
@@ -196,7 +198,21 @@ const mockLiteDevices = () => [
     remote_access: false,
     role: 'compute',
     role_label: 'App Host',
-    capabilities: ['Run apps', 'Report device health'],
+    capabilities: ['app_host', 'compute'],
+    capability_labels: ['App Host', 'Compute'],
+  },
+  {
+    id: 'storage-phone-1',
+    name: 'Storage Phone',
+    status: 'healthy',
+    connection: 'online',
+    last_seen: new Date().toISOString(),
+    remote_access: true,
+    role: 'storage',
+    role_label: 'Storage Node',
+    capabilities: ['media_storage', 'backup_target'],
+    capability_labels: ['Storage Node', 'Backup Target'],
+    storage: { ready: true, status: 'ready', available_gb: 92, media_roots: ['Pictures', 'DCIM'], summary: 'Storage device ready' },
   }
 ];
 
@@ -253,9 +269,42 @@ export const handlers = [
       progress: installing ? { step: 'Preparing PhotoPrism runtime', current: 2, total: 7, message: 'Setting up the app environment.' } : null,
       last_operation: installing ? { operation_id: 'app-photoprism-mock', status: 'running', updated_at: new Date().toISOString(), message: 'PhotoPrism install is running.' } : ready ? { operation_id: 'app-photoprism-mock', status: 'succeeded', updated_at: new Date().toISOString(), message: 'PhotoPrism is ready.' } : null,
       evidence_refs: ready ? ['catalog/evidence/app-photoprism-mock/summary.json'] : [],
+      host_device_id: 'pocket-lab-lite-server',
+      host_device_name: 'Pocket Lab Lite Server',
+      connected_devices: [],
+      available_device_capabilities: { app_host: 3, media_storage: 1, backup_target: 1, security_scanner: 1, compute: 3 },
+      ready_device_capabilities: { app_host: 2, media_storage: 1, backup_target: 1, security_scanner: 1, compute: 2 },
+      device_relationships: { runs_on: 'Pocket Lab Lite Server', media_from: 'No media folders connected', storage_devices_available: 1, storage_devices_ready: 1 },
+      storage_devices: [{ id: 'storage-phone-1', name: 'Storage Phone', ready: true, capability_labels: ['Storage Node', 'Backup Target'], storage: { available_gb: 92, media_roots: ['Pictures', 'DCIM'] } }],
+      storage: { status: 'not_connected', summary: 'No media folders connected', mappings: [], count: 0, default_target: 'import', safe_modes: ['read_only', 'read_write'] },
     };
     return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() });
   }),
+  http.get('/api/lite/apps/photoprism/storage-mappings', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', mappings: [], count: 0, summary: 'No media folders connected yet.' })),
+  http.post('/api/lite/apps/photoprism/storage-mappings', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    return HttpResponse.json({
+      status: 'created',
+      accepted: true,
+      app_id: 'photoprism',
+      mapping: {
+        mapping_id: 'map-mockmedia001',
+        label: body.label || 'Phone photos',
+        source_type: body.source_type || 'phone_media',
+        source_type_label: 'Phone photos',
+        source_path_summary: body.source_type === 'storage_device' ? 'Managed media' : 'Camera folder',
+        target: body.target || 'import',
+        target_label: 'Import folder',
+        mode: body.mode || 'read_only',
+        mode_label: 'Read-only',
+        status: 'pending_apply',
+        pending_apply: true,
+        requires_restart: true,
+      },
+      summary: 'Media folder connected. Pocket Lab will apply it safely through the app agent path.',
+    }, { status: 201 });
+  }),
+  http.delete('/api/lite/apps/photoprism/storage-mappings/:mappingId', ({ params }) => HttpResponse.json({ status: 'deleted', accepted: true, app_id: 'photoprism', mapping_id: params.mappingId, summary: 'Media folder disconnected.' })),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
   http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
   http.get('/api/lite/fleet', () => HttpResponse.json({
@@ -267,6 +316,14 @@ export const handlers = [
       { role: 'storage', role_label: 'Storage Node', description: 'Stores backups, files, or app data.' }
     ],
     latest_invite: null,
+    capability_summary: {
+      host_device_id: 'pocket-lab-lite-server',
+      host_device_name: 'Pocket Lab Lite Server',
+      available_device_capabilities: { app_host: 3, media_storage: 1, backup_target: 1, security_scanner: 1, compute: 3 },
+      ready_device_capabilities: { app_host: 2, media_storage: 1, backup_target: 1, security_scanner: 1, compute: 2 },
+      storage_devices_available: 1,
+      storage_devices_ready: 1,
+    },
     updated_at: new Date().toISOString(),
   })),
   http.get('/api/lite/policy', () => HttpResponse.json({ status: 'healthy', summary: 'Protection rules are available in advisory mode', protection_enabled: false, requires_confirmation: true, allowed_actions: ['install_app', 'add_device', 'run_safety_check', 'backup_now'] })),
