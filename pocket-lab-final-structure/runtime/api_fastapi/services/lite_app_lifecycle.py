@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live
+from . import lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 _SAFE_ROUTE = "/apps/photoprism/"
@@ -108,6 +108,18 @@ def _backup_payload() -> dict[str, Any]:
         return {"status": "unknown", "summary": "App backup status is not available yet.", "evidence": {"count": 0}}
 
 
+def _media_payload() -> dict[str, Any]:
+    try:
+        payload = lite_photoprism_media.media_status("photoprism")
+        return payload if isinstance(payload, dict) else {}
+    except Exception:
+        return {
+            "status": "unknown",
+            "summary": "PhotoPrism media status is not available yet.",
+            "mapping_count": 0,
+        }
+
+
 def _normalize_lifecycle_status(value: Any) -> str:
     raw = str(value or "unknown").strip().lower().replace("-", "_")
     if raw in {"ready", "healthy", "protected", "passed", "saved", "installed", "online"}:
@@ -189,21 +201,38 @@ def _recovery_profile(backup: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _action(enabled: bool, label: str, *, url: str | None = None, reason: str | None = None) -> dict[str, Any]:
+def _action(enabled: bool, label: str, *, url: str | None = None, reason: str | None = None, summary: str | None = None, status: str | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {"enabled": bool(enabled), "label": label}
     if url and url.startswith("/apps/"):
         payload["url"] = url
     if reason:
         payload["reason"] = _safe_text(reason, "Action not ready")
+    if summary:
+        payload["summary"] = _safe_text(summary, "Action status is available.")
+    if status:
+        payload["status"] = _safe_label(status, "available")
     return payload
 
 
-def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any]) -> dict[str, Any]:
+def _media_action_ready(installed: bool, route_enabled: bool, media: dict[str, Any]) -> tuple[bool, str | None, str]:
+    if not installed:
+        return False, "Install PhotoPrism first.", "unavailable"
+    if not route_enabled:
+        return False, "PhotoPrism is not ready yet.", "unavailable"
+    if media.get("operation_running"):
+        return False, "PhotoPrism media action is already running.", "running"
+    if int(media.get("mapping_count") or 0) < 1:
+        return False, "Connect a photo folder first.", "not_ready"
+    return True, None, "ready"
+
+
+def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any]) -> dict[str, Any]:
     access = app.get("access") if isinstance(app.get("access"), dict) else {}
     actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
     open_url = access.get("open_url") or (app.get("runtime") or {}).get("url")
     route_enabled = bool(actions.get("open") and open_url == _SAFE_ROUTE)
     backup_enabled = bool(installed)
+    media_ready, media_reason, media_status = _media_action_ready(installed, route_enabled, media)
     return {
         "open": _action(route_enabled, "Open", url=_SAFE_ROUTE if route_enabled else None, reason=None if route_enabled else "Open is not ready yet."),
         "open_full_screen": _action(route_enabled, "Open full screen", url=_SAFE_ROUTE if route_enabled else None, reason=None if route_enabled else "Open full screen is not ready yet."),
@@ -212,10 +241,24 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         "check_app": _action(False, "Check app", reason="Use Run Safety Check for the current device-wide scan."),
         "backup_app": _action(backup_enabled, "Back up app", reason=None if backup_enabled else "Install PhotoPrism first."),
         "preview_restore": _action(bool(recovery.get("preview_available")), "Preview restore", reason=None if recovery.get("preview_available") else "No verified app backup yet"),
+        "import_photos": _action(
+            media_ready,
+            "Import photos",
+            reason=media_reason,
+            summary="Import connected photos into PhotoPrism.",
+            status=media_status,
+        ),
+        "index_photos": _action(
+            media_ready,
+            "Index photos",
+            reason=media_reason,
+            summary="Update PhotoPrism with connected media.",
+            status=media_status,
+        ),
     }
 
 
-def _attention(installed: bool, storage: dict[str, Any], security: dict[str, Any], backup: dict[str, Any], recovery: dict[str, Any]) -> list[dict[str, str]]:
+def _attention(installed: bool, storage: dict[str, Any], security: dict[str, Any], backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any]) -> list[dict[str, str]]:
     items: list[dict[str, str]] = []
     if not installed:
         items.append({
@@ -250,6 +293,22 @@ def _attention(installed: bool, storage: dict[str, Any], security: dict[str, Any
             "title": "Backup target not ready",
             "summary": "Join a storage device to save app backups elsewhere.",
         })
+    if str(media.get("status") or "") in {"running"}:
+        items.append({
+            "id": "media_action_running",
+            "area": "media",
+            "severity": "info",
+            "title": "Indexing",
+            "summary": "PhotoPrism media action is running through Pocket Lab.",
+        })
+    if str(media.get("status") or "") in {"review"}:
+        items.append({
+            "id": "media_action_review",
+            "area": "media",
+            "severity": "review",
+            "title": "Photo action needs review",
+            "summary": "Check the latest media action before running it again.",
+        })
     if not recovery.get("preview_available"):
         items.append({
             "id": "restore_preview_not_ready",
@@ -271,17 +330,20 @@ def _overall_status(installed: bool, attention: list[dict[str, str]]) -> str:
     return "ready"
 
 
-def _evidence(security: dict[str, Any], backup: dict[str, Any]) -> dict[str, Any]:
+def _evidence(security: dict[str, Any], backup: dict[str, Any], media: dict[str, Any] | None = None) -> dict[str, Any]:
     sec = security.get("evidence") if isinstance(security.get("evidence"), dict) else {}
     rec = backup.get("evidence") if isinstance(backup.get("evidence"), dict) else {}
     security_count = int(sec.get("count") or 0)
     backup_count = int(rec.get("count") or 0)
-    total = security_count + backup_count
+    media_evidence = media.get("evidence") if isinstance(media, dict) and isinstance(media.get("evidence"), dict) else {}
+    media_count = int(media_evidence.get("count") or 0)
+    total = security_count + backup_count + media_count
     return {
         "status": "saved" if total else "pending",
-        "summary": "Safety and recovery records saved" if total else "Evidence pending",
+        "summary": "Safety, recovery, and media records saved" if total else "Evidence pending",
         "security_count": security_count,
         "backup_count": backup_count,
+        "media_count": media_count,
     }
 
 
@@ -290,13 +352,14 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
     storage_raw = _storage_payload()
     security_raw = _security_payload()
     backup_raw = _backup_payload()
+    media = _media_payload()
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
 
     storage = _storage_profile(storage_raw)
     security = _security_profile(security_raw)
     backup = _backup_profile(backup_raw)
     recovery = _recovery_profile(backup_raw)
-    attention = _attention(installed, storage, security, backup, recovery)
+    attention = _attention(installed, storage, security, backup, recovery, media)
     status = _overall_status(installed, attention)
     summary = (
         "PhotoPrism is ready, protected, and recoverable."
@@ -316,9 +379,10 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
         "security": security,
         "backup": backup,
         "recovery": recovery,
+        "media": media,
         "attention": attention,
-        "actions": _actions(app, installed, backup, recovery),
-        "evidence": _evidence(security_raw, backup_raw),
+        "actions": _actions(app, installed, backup, recovery, media),
+        "evidence": _evidence(security_raw, backup_raw, media),
         "updated_at": _now(),
     }
 
@@ -362,6 +426,8 @@ def hydrate_catalog_lifecycle(payload: dict[str, Any]) -> dict[str, Any]:
                     "storage": profile["storage"].get("summary"),
                     "security": profile["security"].get("summary"),
                     "backup": profile["backup"].get("summary"),
+                    "media": profile.get("media", {}).get("summary"),
+                    "last_indexed_at": profile.get("media", {}).get("last_indexed_at"),
                     "attention_count": len(profile.get("attention") or []),
                 }
     return payload

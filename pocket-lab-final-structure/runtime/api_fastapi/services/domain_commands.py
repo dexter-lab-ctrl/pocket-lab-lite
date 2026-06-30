@@ -847,6 +847,52 @@ async def handle_lite_security_scan(command: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+async def handle_lite_app_media(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    app_id = str(command.get("app_id") or "photoprism")
+    action_id = str(command.get("action_id") or command.get("operation") or "index_photos")
+    await _publish(
+        "pocketlab.events.lite.app.media.started",
+        "lite.app.media.started",
+        {"command_id": command_id, "app_id": app_id, "action_id": action_id},
+        trace_id=command_id,
+    )
+    from . import lite_photoprism_media
+
+    try:
+        result = await asyncio.to_thread(lite_photoprism_media.execute_media_operation, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.app.media.failed",
+            "lite.app.media.failed",
+            {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.app.media.failed",
+            "lite.app.media.failed",
+            {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+
+    status = str(result.get("status") or "unknown")
+    event_subject = "pocketlab.events.lite.app.media.completed" if status == "succeeded" else "pocketlab.events.lite.app.media.updated"
+    await _publish(
+        event_subject,
+        "lite.app.media.updated",
+        {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": status},
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.app.media.updated",
+        "lite.app.media.updated",
+        {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": status},
+        trace_id=command_id,
+    )
+    return result
+
+
 HANDLERS = {
     "pocketlab.commands.lite.catalog.install": handle_lite_catalog_install,
     "pocketlab.commands.catalog.refresh": handle_catalog_refresh,
@@ -873,6 +919,7 @@ HANDLERS = {
     "pocketlab.commands.vault.rotate": handle_vault_rotate,
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
+    "pocketlab.commands.lite.app.media": handle_lite_app_media,
     "pocketlab.commands.lite.backup.verify": handle_lite_backup_verify,
     "pocketlab.commands.lite.restore.preview": handle_lite_restore_preview,
     "pocketlab.commands.lite.restore.apply": handle_lite_restore_apply,

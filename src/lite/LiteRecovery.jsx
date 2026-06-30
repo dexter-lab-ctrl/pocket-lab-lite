@@ -424,6 +424,7 @@ export default function RecoveryScreen() {
                   <div className="lite-recovery-app-lifecycle">
                     <span>{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
                     <span>{lifecycle?.storage?.mapping_count > 0 ? 'Media connected' : 'Media not connected'}</span>
+                    <span>{lifecycle?.media?.last_indexed_at ? `Last indexed ${formatLiteTime(lifecycle.media.last_indexed_at)}` : lifecycle?.media?.summary || 'Last indexed not available yet'}</span>
                     <span>{lifecycle?.backup?.summary || 'Backup ready'}</span>
                   </div>
                 ) : null}
