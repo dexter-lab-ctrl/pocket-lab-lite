@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, ResultNotice, LoadingCard, resolveSafeAppOpenPath } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, ResultNotice, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 
 const KNOWN_APP_NAMES = ['PhotoPrism'];
 
@@ -112,6 +112,40 @@ function storageMediaSummary(app) {
     .map((mapping) => `${mapping.label || mapping.source_label || 'Media folder'} · ${mapping.mode_label || 'Read-only'}`)
     .slice(0, 2)
     .join(', ');
+}
+
+
+function lifecycleProfile(app) {
+  return app?.lifecycle || null;
+}
+
+function lifecycleAction(lifecycle, key) {
+  return lifecycle?.actions && typeof lifecycle.actions === 'object' ? lifecycle.actions[key] || {} : {};
+}
+
+function lifecycleStorageLabel(lifecycle, app) {
+  const storage = lifecycle?.storage || {};
+  if (storage.mapping_count > 0) return storage.summary || 'Media connected';
+  if (storageMappings(app).length) return app?.storage?.summary || 'Media connected';
+  return 'Media not connected';
+}
+
+function lifecycleSecurityLabel(lifecycle, app) {
+  const status = String(lifecycle?.security?.status || app?.security_profile?.status || '').toLowerCase();
+  if (status === 'protected' || status === 'ready') return 'Protected app';
+  return lifecycle?.security?.summary || app?.security_profile?.label || 'Check app';
+}
+
+function lifecycleBackupLabel(lifecycle, app) {
+  const backup = lifecycle?.backup || {};
+  if (backup.status === 'ready') return 'Backup ready';
+  if (backup.target_available === false) return 'Backup target not ready';
+  return backup.summary || app?.backup_profile?.label || 'Backup ready';
+}
+
+function lifecycleAttentionItems(lifecycle) {
+  const items = lifecycle?.attention;
+  return Array.isArray(items) ? items.slice(0, 3) : [];
 }
 
 function storageDeviceCount(app) {
@@ -322,6 +356,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const percent = Math.min(100, Math.max(0, ((progress?.current || 1) / (progress?.total || 7)) * 100));
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = `lite-catalog-actions ${canInstallPhone ? 'has-phone-install' : ''}`;
+    const lifecycle = lifecycleProfile(app);
+    const lifecycleAttention = lifecycleAttentionItems(lifecycle);
+    const connectPhotosAction = lifecycleAction(lifecycle, 'connect_photos');
+    const checkAppAction = lifecycleAction(lifecycle, 'check_app');
+    const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
 
     return (
       <GlassCard
@@ -349,6 +388,37 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
             <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
             <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
+          </div>
+        ) : null}
+        {installed && lifecycle ? (
+          <div className="lite-catalog-lifecycle-panel" aria-label="Unified App Lifecycle status">
+            <div className="lite-catalog-lifecycle-head">
+              <div>
+                <span>Unified App Lifecycle</span>
+                <strong>{lifecycle.status === 'ready' ? 'Ready' : lifecycle.status === 'review' ? 'Needs attention' : lifecycle.summary || 'Checking'}</strong>
+              </div>
+              <StatusBadge status={backendBadgeStatus(lifecycle.status)}>
+                {backendLabel(lifecycle.status, { ready: 'Ready', review: 'Needs attention', danger: 'Needs attention', checking: 'Checking' })}
+              </StatusBadge>
+            </div>
+            <div className="lite-catalog-lifecycle-chips">
+              <span><Server className="h-4 w-4" />{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
+              <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span>
+              <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span>
+              <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span>
+            </div>
+            {lifecycleAttention.length ? (
+              <div className="lite-catalog-lifecycle-attention">
+                {lifecycleAttention.map((item) => (
+                  <span key={item.id || item.title}><strong>{item.title || 'Needs attention'}</strong>{item.summary || 'Check again.'}</span>
+                ))}
+              </div>
+            ) : null}
+            <div className="lite-catalog-lifecycle-actions" aria-label="Safe app lifecycle actions">
+              <span className={connectPhotosAction.enabled === false ? 'is-disabled' : ''}>Connect photos{connectPhotosAction.reason ? ` · ${connectPhotosAction.reason}` : ''}</span>
+              <span className={checkAppAction.enabled === false ? 'is-disabled' : ''}>Check app{checkAppAction.reason ? ` · ${checkAppAction.reason}` : ''}</span>
+              <span className={backupAppAction.enabled === false ? 'is-disabled' : ''}>Back up app{backupAppAction.reason ? ` · ${backupAppAction.reason}` : ''}</span>
+            </div>
           </div>
         ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
