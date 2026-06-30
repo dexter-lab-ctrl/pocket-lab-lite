@@ -23,6 +23,7 @@ const mockAppLifecycleProfiles = () => [{
   security: { status: 'protected', summary: 'Protected app', evidence_status: 'saved', last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
   backup: { status: 'ready', summary: 'Backup ready', default_mode: 'config_only', media: 'excluded', target_available: true, target_ready: true },
   recovery: { status: 'review', summary: 'Restore preview not ready', preview_available: false, restore_available: false },
+  media: { status: 'ready', summary: 'Import ready', mapping_count: 1, labels: ['Phone photos'], last_indexed_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), evidence: { status: 'saved', count: 1, summary: '1 media record' } },
   attention: scenario() === 'lifecycle-attention' ? [{ id: 'backup_target_missing', area: 'backup', severity: 'review', title: 'Backup target not ready', summary: 'Join a storage device to save app backups elsewhere.' }] : [],
   actions: {
     open: { enabled: true, label: 'Open', url: '/apps/photoprism/' },
@@ -32,8 +33,10 @@ const mockAppLifecycleProfiles = () => [{
     check_app: { enabled: false, label: 'Check app', reason: 'Use Run Safety Check for the current device-wide scan.' },
     backup_app: { enabled: true, label: 'Back up app' },
     preview_restore: { enabled: false, label: 'Preview restore', reason: 'No verified app backup yet' },
+    import_photos: { enabled: true, label: 'Import photos', summary: 'Import connected photos into PhotoPrism.', status: 'ready' },
+    index_photos: { enabled: true, label: 'Index photos', summary: 'Update PhotoPrism with connected media.', status: 'ready' },
   },
-  evidence: { status: 'saved', summary: 'Safety and recovery records saved', security_count: 1, backup_count: 1 },
+  evidence: { status: 'saved', summary: 'Safety, recovery, and media records saved', security_count: 1, backup_count: 1, media_count: 1 },
   updated_at: new Date().toISOString(),
 }];
 
@@ -343,6 +346,17 @@ export const handlers = [
   }),
   http.get('/api/lite/apps/lifecycle', () => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
+  http.get('/api/lite/apps/photoprism/actions', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', name: 'PhotoPrism', summary: 'PhotoPrism Action Center is available.', actions: mockAppLifecycleProfiles()[0].actions, media: mockAppLifecycleProfiles()[0].media })),
+  http.post('/api/lite/apps/photoprism/actions/:actionId', ({ params }) => {
+    const actionId = String(params.actionId || '');
+    if (['import_photos', 'index_photos'].includes(actionId)) {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: actionId === 'import_photos' ? 'Import photos queued.' : 'Index photos queued.', evidence: { status: 'pending', summary: 'Media evidence pending' } }, { status: 202 });
+    }
+    if (actionId === 'backup_app') {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'PhotoPrism app backup queued.' }, { status: 202 });
+    }
+    return HttpResponse.json({ status: 'disabled', app_id: 'photoprism', action_id: actionId, summary: 'This action is not ready yet.' }, { status: 409 });
+  }),
   http.get('/api/lite/apps/photoprism/storage-mappings', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', mappings: [], count: 0, summary: 'No media folders connected yet.' })),
   http.post('/api/lite/apps/photoprism/storage-mappings', async ({ request }) => {
     const body = await request.json().catch(() => ({}));

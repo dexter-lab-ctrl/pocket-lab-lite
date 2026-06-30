@@ -1614,6 +1614,7 @@ export default function SecurityScreen() {
                   <div className="lite-security-app-lifecycle">
                     <span>{lifecycle?.security?.summary || 'Protected app'}</span>
                     <span>{lifecycle?.backup?.summary || 'Backup ready'}</span>
+                    <span>{lifecycle?.media?.last_indexed_at ? `Last indexed ${formatLiteTime(lifecycle.media.last_indexed_at)}` : lifecycle?.media?.summary || 'Last indexed not available yet'}</span>
                     <span>{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
                   </div>
                 ) : null}

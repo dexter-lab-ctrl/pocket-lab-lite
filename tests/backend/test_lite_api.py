@@ -1821,3 +1821,158 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     assert "nats.connect" not in ui
     assert "exec(" not in ui
     assert "subprocess" not in ui
+
+
+def _force_photoprism_installed_for_action_tests(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_lifecycle
+
+    monkeypatch.setattr(
+        lite_app_lifecycle,
+        "_catalog_app",
+        lambda app_id: {
+            "id": "photoprism",
+            "name": "PhotoPrism",
+            "installed": True,
+            "status": "ready",
+            "actions": {"open": True},
+            "access": {"open_url": "/apps/photoprism/", "route_ready": True},
+            "runtime": {"url": "/apps/photoprism/"},
+            "host_device_id": "pocket-lab-lite-server",
+            "host_device_name": "Pocket Lab Lite Server",
+        },
+    )
+
+
+def test_lite_app_action_center_lists_photoprism_readiness(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().get("/api/lite/apps/photoprism/actions")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["app_id"] == "photoprism"
+    actions = payload["actions"]
+    for action_id in (
+        "open",
+        "open_full_screen",
+        "install_to_phone",
+        "connect_photos",
+        "check_app",
+        "backup_app",
+        "preview_restore",
+        "import_photos",
+        "index_photos",
+    ):
+        assert action_id in actions
+        assert "label" in actions[action_id]
+    assert actions["import_photos"]["enabled"] is False
+    assert actions["index_photos"]["enabled"] is False
+    assert "Connect a photo folder first" in actions["import_photos"]["reason"]
+    assert "password" not in response.text.lower()
+    assert "photoprism_admin" not in response.text.lower()
+    assert "source_path" not in response.text
+    assert "photoprism import" not in response.text.lower()
+    assert "photoprism index" not in response.text.lower()
+
+
+def test_lite_app_action_center_rejects_invalid_app_and_action():
+    invalid_app = client().get("/api/lite/apps/vault/actions")
+    assert invalid_app.status_code == 404
+
+    invalid_action = client().post(
+        "/api/lite/apps/photoprism/actions/delete_everything",
+        json={"reason": "bad action"},
+    )
+    assert invalid_action.status_code == 404
+
+
+def test_lite_app_action_center_blocks_disabled_media_actions_without_mapping(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().post(
+        "/api/lite/apps/photoprism/actions/index_photos",
+        json={"reason": "manual index"},
+    )
+    assert response.status_code == 409
+    payload = response.json().get("detail") or response.json()
+    assert payload["status"] == "disabled"
+    assert payload["action_id"] == "index_photos"
+    assert "Connect a photo folder first" in payload["summary"]
+
+
+def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    from api_fastapi.services.nats_bus import BUS
+
+    mapping = client().post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone photos",
+            "source_path": "~/storage/shared/DCIM",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert mapping.status_code == 201
+
+    actions_response = client().get("/api/lite/apps/photoprism/actions")
+    assert actions_response.status_code == 200
+    actions = actions_response.json()["actions"]
+    assert actions["import_photos"]["enabled"] is True
+    assert actions["index_photos"]["enabled"] is True
+
+    lifecycle = client().get("/api/lite/apps/lifecycle/photoprism")
+    assert lifecycle.status_code == 200
+    lifecycle_payload = lifecycle.json()
+    assert lifecycle_payload["media"]["mapping_count"] == 1
+    assert lifecycle_payload["actions"]["import_photos"]["enabled"] is True
+    assert lifecycle_payload["actions"]["index_photos"]["enabled"] is True
+
+    published: list[tuple[str, str, dict]] = []
+    BUS.connected = True
+    BUS.js = object()
+
+    async def fake_publish(subject, event_type, data=None, *, trace_id=None):
+        published.append((subject, event_type, data or {}))
+
+    monkeypatch.setattr(BUS, "publish_json", fake_publish)
+
+    queued = client().post(
+        "/api/lite/apps/photoprism/actions/index_photos",
+        json={"reason": "manual photo index"},
+    )
+    assert queued.status_code == 200
+    payload = queued.json()
+    assert payload["accepted"] is True
+    assert payload["status"] == "queued"
+    assert payload["app_id"] == "photoprism"
+    assert payload["action_id"] == "index_photos"
+    assert payload["media_operation"]["status"] == "queued"
+    assert any(item[0] == "pocketlab.commands.lite.app.media" for item in published)
+    assert "photoprism index" not in queued.text.lower()
+    assert "password" not in queued.text.lower()
+
+
+def test_lite_app_action_center_worker_subject_registered():
+    ensure_runtime_path()
+    from api_fastapi.services import domain_commands, lite_photoprism_media
+
+    assert lite_photoprism_media.MEDIA_COMMAND_SUBJECT in domain_commands.supported_subjects()
+
+
+def test_lite_app_action_center_ui_source_is_present():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "Action Center" in ui
+    assert "Import photos" in ui
+    assert "Index photos" in ui
+    assert "Last indexed" in ui
+    assert "Connect a photo folder first" in ui
+    assert "runAppAction" in Path("src/lib/liteApi.js").read_text()
+    assert "apps/${encodeURIComponent(appId)}/actions" in Path("src/lib/liteApi.js").read_text()
+    assert "lite-catalog-action-center" in css
+    assert "child_process" not in ui
+    assert "nats.connect" not in ui
+    assert "photoprism import" not in ui.lower()
+    assert "photoprism index" not in ui.lower()
+    assert "subprocess" not in ui

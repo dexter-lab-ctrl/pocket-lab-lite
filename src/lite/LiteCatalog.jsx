@@ -148,6 +148,18 @@ function lifecycleAttentionItems(lifecycle) {
   return Array.isArray(items) ? items.slice(0, 3) : [];
 }
 
+function lifecycleMediaSummary(lifecycle) {
+  const media = lifecycle?.media || {};
+  if (media?.operation_running) return 'Indexing';
+  if (media?.last_indexed_at) return `Last indexed ${formatLiteTime(media.last_indexed_at)}`;
+  if (Number(media?.mapping_count || 0) > 0) return media.summary || 'Import ready';
+  return 'Connect a photo folder first';
+}
+
+function lifecycleActionReason(action) {
+  return action?.enabled === false ? action.reason || 'Action not ready yet.' : '';
+}
+
 function storageDeviceCount(app) {
   const value = app?.device_relationships?.storage_devices_available
     ?? app?.available_device_capabilities?.media_storage
@@ -219,6 +231,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [busyId, setBusyId] = useState(null);
   const [openingId, setOpeningId] = useState(null);
   const [storageBusy, setStorageBusy] = useState('');
+  const [actionBusyKey, setActionBusyKey] = useState('');
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -342,6 +355,28 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }
   }
 
+
+  async function runLifecycleAction(app, actionId, event) {
+    event?.stopPropagation?.();
+    if (!isPhotoPrismApp(app) || !actionId) return;
+    const busyKey = `${app.id}:${actionId}`;
+    setActionBusyKey(busyKey);
+    setActionError(null);
+    setResult({ status: 'queued', summary: 'Sending app action to Pocket Lab...' });
+    try {
+      const response = await liteApi.runAppAction(app.id || 'photoprism', actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}` });
+      setResult(response);
+      refresh();
+      window.setTimeout(refresh, 700);
+      window.setTimeout(refresh, 1800);
+    } catch (err) {
+      const detail = err?.payload?.detail;
+      setActionError(detail?.summary || err.message);
+    } finally {
+      setActionBusyKey('');
+    }
+  }
+
   function renderAppCard(app, featured = false) {
     const status = String(app.status || 'not_installed').toLowerCase();
     const installing = status === 'installing' || busyId === app.id;
@@ -361,6 +396,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const connectPhotosAction = lifecycleAction(lifecycle, 'connect_photos');
     const checkAppAction = lifecycleAction(lifecycle, 'check_app');
     const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
+    const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
+    const indexPhotosAction = lifecycleAction(lifecycle, 'index_photos');
+    const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
+    const mediaSummary = lifecycleMediaSummary(lifecycle);
 
     return (
       <GlassCard
@@ -414,10 +453,36 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 ))}
               </div>
             ) : null}
-            <div className="lite-catalog-lifecycle-actions" aria-label="Safe app lifecycle actions">
-              <span className={connectPhotosAction.enabled === false ? 'is-disabled' : ''}>Connect photos{connectPhotosAction.reason ? ` · ${connectPhotosAction.reason}` : ''}</span>
-              <span className={checkAppAction.enabled === false ? 'is-disabled' : ''}>Check app{checkAppAction.reason ? ` · ${checkAppAction.reason}` : ''}</span>
-              <span className={backupAppAction.enabled === false ? 'is-disabled' : ''}>Back up app{backupAppAction.reason ? ` · ${backupAppAction.reason}` : ''}</span>
+            <div className="lite-catalog-action-center" aria-label="Action Center">
+              <div className="lite-catalog-action-center-head">
+                <span>Action Center</span>
+                <strong>{mediaSummary}</strong>
+              </div>
+              <div className="lite-catalog-action-buttons">
+                <LiteButton tone="secondary" onClick={(event) => connectStorage(app, 'phone_camera', event)} disabled={connectPhotosAction.enabled === false || Boolean(storageBusy)} title={lifecycleActionReason(connectPhotosAction)}>
+                  <FolderPlus className="h-4 w-4" />{storageBusy === `${app.id}:phone_camera` ? 'Connecting...' : 'Connect photos'}
+                </LiteButton>
+                <LiteButton tone="secondary" onClick={(event) => runLifecycleAction(app, 'import_photos', event)} disabled={importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`} title={lifecycleActionReason(importPhotosAction)}>
+                  <RefreshCw className="h-4 w-4" />{actionBusyKey === `${app.id}:import_photos` ? 'Importing...' : 'Import photos'}
+                </LiteButton>
+                <LiteButton tone="secondary" onClick={(event) => runLifecycleAction(app, 'index_photos', event)} disabled={indexPhotosAction.enabled === false || actionBusyKey === `${app.id}:index_photos`} title={lifecycleActionReason(indexPhotosAction)}>
+                  <RefreshCw className="h-4 w-4" />{actionBusyKey === `${app.id}:index_photos` ? 'Indexing...' : 'Index photos'}
+                </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'backup_app', event)} disabled={backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`} title={lifecycleActionReason(backupAppAction)}>
+                  Back up app
+                </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'check_app', event)} disabled={checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`} title={lifecycleActionReason(checkAppAction)}>
+                  Check app
+                </LiteButton>
+                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'preview_restore', event)} disabled={previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`} title={lifecycleActionReason(previewRestoreAction)}>
+                  Preview restore
+                </LiteButton>
+              </div>
+              <div className="lite-catalog-action-reasons">
+                {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
+                {indexPhotosAction.enabled === false ? <span>Index photos: {lifecycleActionReason(indexPhotosAction)}</span> : null}
+                {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
+              </div>
             </div>
           </div>
         ) : null}

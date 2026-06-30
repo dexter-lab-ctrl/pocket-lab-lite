@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -71,6 +71,10 @@ class LiteAppRestoreRequest(BaseModel):
     backup_id: str | None = None
     preview_id: str | None = None
     confirm: bool = False
+
+
+class LiteAppActionRequest(BaseModel):
+    reason: str | None = None
 
 
 class LiteAddDeviceRequest(BaseModel):
@@ -199,6 +203,92 @@ def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> dict[str, A
     deps.require_auth(request)
     return lite_app_lifecycle.app_lifecycle_profile(app_id)
 
+
+@router.get("/apps/{app_id}/actions")
+def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_actions.app_actions(app_id)
+
+
+@router.post("/apps/{app_id}/actions/{action_id}")
+async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    action = lite_app_actions.prepare_action(app_id, action_id, reason=payload.reason)
+    kind = action.get("kind")
+
+    if kind in {"url", "guidance"}:
+        return {key: value for key, value in action.items() if key != "kind"}
+
+    if kind == "backup":
+        command = action["command"]
+        try:
+            submitted = await submit_domain_command(
+                lite_app_profiles.APP_BACKUP_SUBJECT,
+                "lite.backup.app_queued",
+                command,
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "status": "app_backup_queue_unavailable",
+                    "summary": "App backup request could not be queued because the local command bus is not reachable.",
+                    "detail": str(exc),
+                },
+            ) from exc
+        pending = lite_backup.record_backup_request(command)
+        submitted.update({
+            "accepted": True,
+            "status": submitted.get("status") or "queued",
+            "app_id": "photoprism",
+            "action_id": "backup_app",
+            "backup_id": command["backup_id"],
+            "mode": command["app_backup_mode"],
+            "pending_backup": pending,
+            "summary": "PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.",
+        })
+        return submitted
+
+    if kind == "media":
+        command = action["command"]
+        try:
+            submitted = await submit_domain_command(
+                lite_photoprism_media.MEDIA_COMMAND_SUBJECT,
+                "lite.app.media.queued",
+                command,
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "status": "media_action_queue_unavailable",
+                    "summary": "PhotoPrism media action could not be queued because the local command bus is not reachable.",
+                    "detail": str(exc),
+                },
+            ) from exc
+        operation = lite_photoprism_media.record_operation(command, status="queued")
+        submitted.update({
+            "accepted": True,
+            "status": submitted.get("status") or "queued",
+            "app_id": "photoprism",
+            "action_id": command["action_id"],
+            "media_operation": operation,
+            "summary": action.get("summary") or operation.get("summary") or "PhotoPrism media action queued.",
+            "evidence": {"status": "pending", "summary": "Media evidence pending"},
+        })
+        return submitted
+
+    raise HTTPException(
+        status_code=501,
+        detail={
+            "status": "not_implemented",
+            "summary": "This app action is not implemented yet.",
+        },
+    )
 
 
 @router.get("/apps/photoprism/storage-mappings")
