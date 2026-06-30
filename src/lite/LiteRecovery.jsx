@@ -125,6 +125,12 @@ export default function RecoveryScreen() {
   const healthValidation = lastRestore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
 
+  const appBackups = Array.isArray(data?.app_backups)
+    ? data.app_backups
+    : Array.isArray(data?.app_backup_profiles?.apps)
+      ? data.app_backup_profiles.apps
+      : [];
+
   const shortId = (value) => {
     const text = String(value || '');
     if (!text) return 'Not available';
@@ -234,6 +240,41 @@ export default function RecoveryScreen() {
       refresh();
     } catch (err) {
       setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function backUpApp(app) {
+    if (!app?.app_id) return;
+    setBusy(`app-backup:${app.app_id}`);
+    setBackupResult(null);
+    setActionError(null);
+    try {
+      setBackupResult(await liteApi.backupApp(app.app_id, { mode: app.default_mode || 'config_only', reason: 'manual app backup' }));
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function previewAppRestore(app) {
+    if (!app?.app_id) return;
+    setBusy(`app-preview:${app.app_id}`);
+    setPreviewResult(null);
+    setActionError(null);
+    try {
+      setPreviewResult(await liteApi.previewAppRestore(app.app_id, { reason: 'manual app restore preview' }));
+      refresh();
+    } catch (err) {
+      const payload = err?.payload || {};
+      if (err.status === 501 && payload?.status === 'not_implemented') {
+        setPreviewResult(payload);
+      } else {
+        setActionError(err.message);
+      }
     } finally {
       setBusy('');
     }
@@ -353,6 +394,51 @@ export default function RecoveryScreen() {
             <span style={{ width: `${restoreSteps.filter((step) => step.complete).length * 20}%` }} />
           </div>
         </div>
+      </section>
+
+      <section className="lite-recovery-app-profiles" aria-label="App backups">
+        <div className="lite-recovery-section-heading">
+          <div>
+            <span>App backups</span>
+            <h2>Protect self-hosted apps</h2>
+            <p>PhotoPrism app backups keep config and Pocket Lab metadata separate from large media files.</p>
+          </div>
+        </div>
+        {appBackups.length ? (
+          <div className="lite-recovery-app-grid">
+            {appBackups.map((app) => (
+              <GlassCard key={app.app_id || app.name} className="lite-recovery-card lite-recovery-app-card">
+                <div className="lite-recovery-card-head">
+                  <div className="lite-recovery-mini-icon">
+                    <FileCheck className="h-5 w-5" />
+                  </div>
+                  <StatusBadge status={backendBadgeStatus(app.status)}>{backendLabel(app.status, { ready: 'Backup ready', review: 'Needs attention', danger: 'Needs attention', checking: 'Checking' })}</StatusBadge>
+                </div>
+                <h3>{app.name || 'Self-hosted app'}</h3>
+                <p>{app.summary || 'App backup profile is available.'}</p>
+                <div className="lite-recovery-app-facts">
+                  <span><strong>Config protected</strong><em>{(app.included || []).slice(0, 3).join(' · ') || 'App metadata'}</em></span>
+                  <span><strong>Media excluded</strong><em>{app?.media?.summary || 'Media can be large. Add media backup when a storage device is ready.'}</em></span>
+                  <span><strong>Backup target</strong><em>{app?.backup_target?.label || 'No backup target yet'}</em></span>
+                </div>
+                <div className="lite-recovery-app-tags">
+                  {(app.excluded || []).slice(0, 4).map((item) => <span key={item}>{item}</span>)}
+                </div>
+                <div className="lite-recovery-app-actions">
+                  <LiteButton onClick={() => backUpApp(app)} disabled={Boolean(busy)}>{busy === `app-backup:${app.app_id}` ? 'Starting backup...' : 'Back up app'}</LiteButton>
+                  <LiteButton tone="secondary" onClick={() => previewAppRestore(app)} disabled={Boolean(busy)}>Preview restore</LiteButton>
+                </div>
+                <p className="lite-recovery-app-note">{app?.evidence?.summary || 'Evidence appears after an app backup.'}</p>
+              </GlassCard>
+            ))}
+          </div>
+        ) : (
+          <StateSurface
+            tone="empty"
+            title="No app backups yet"
+            description="Install an app from Apps to protect it here."
+          />
+        )}
       </section>
 
       <GlassCard className="lite-recovery-card lite-recovery-timeline-card">

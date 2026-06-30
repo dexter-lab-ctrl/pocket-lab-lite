@@ -264,6 +264,17 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
         },
         "storage_devices": storage_devices,
         "storage": storage,
+        "security_profile": {
+            "status": "ready" if status == "ready" else "checking",
+            "label": "Protected app" if status == "ready" else "Ready to check",
+            "summary": "Security profile available." if status == "ready" else "Run a safety check to create app evidence.",
+        },
+        "backup_profile": {
+            "status": "ready" if status == "ready" else "checking",
+            "label": "Backup ready" if status == "ready" else "Backup pending",
+            "summary": "Config protected. Media excluded by default.",
+            "media": "Media excluded",
+        },
     }
 
 

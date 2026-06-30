@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
+from ..services import fleet_registry, lite_app_profiles, lite_app_storage, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -51,6 +51,26 @@ class LiteIdentityRotateRequest(BaseModel):
 class LiteSecurityScanRequest(BaseModel):
     scope: str = "local"
     reason: str | None = None
+
+
+class LiteAppSecurityCheckRequest(BaseModel):
+    reason: str | None = None
+
+
+class LiteAppBackupRequest(BaseModel):
+    mode: Literal["config_only", "config_and_index", "full_with_media"] = "config_only"
+    reason: str | None = None
+
+
+class LiteAppRestorePreviewRequest(BaseModel):
+    backup_id: str | None = None
+    reason: str | None = None
+
+
+class LiteAppRestoreRequest(BaseModel):
+    backup_id: str | None = None
+    preview_id: str | None = None
+    confirm: bool = False
 
 
 class LiteAddDeviceRequest(BaseModel):
@@ -270,7 +290,11 @@ async def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Requ
 @router.get("/security")
 def get_lite_security(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_security.current_state()
+    state = lite_security.current_state()
+    profiles = lite_app_profiles.app_security_profiles()
+    state["protected_apps"] = profiles.get("apps", [])
+    state["app_security_profiles"] = profiles
+    return state
 
 
 @router.post("/security/check", status_code=202)
@@ -331,6 +355,24 @@ def get_lite_security_evidence(run_id: str, request: Request) -> dict[str, Any]:
     if not payload:
         raise HTTPException(status_code=404, detail="Security evidence not found.")
     return payload
+
+
+@router.get("/security/apps")
+def get_lite_security_apps(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_profiles.app_security_profiles()
+
+
+@router.get("/security/apps/{app_id}")
+def get_lite_security_app(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_profiles.app_security_profile(app_id)
+
+
+@router.post("/security/apps/{app_id}/check", status_code=501)
+def check_lite_security_app(app_id: str, payload: LiteAppSecurityCheckRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_profiles.app_security_check_not_implemented(app_id, reason=payload.reason)
 
 
 @router.get("/fleet")
@@ -426,7 +468,69 @@ async def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -
 @router.get("/recovery")
 def get_lite_recovery(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_status.lite_recovery()
+    state = lite_status.lite_recovery()
+    profiles = lite_app_profiles.app_backup_profiles()
+    state["app_backups"] = profiles.get("apps", [])
+    state["app_backup_profiles"] = profiles
+    return state
+
+
+@router.get("/recovery/apps")
+def get_lite_recovery_apps(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_profiles.app_backup_profiles()
+
+
+@router.get("/recovery/apps/{app_id}")
+def get_lite_recovery_app(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_profiles.app_backup_profile(app_id)
+
+
+@router.post("/recovery/apps/{app_id}/backup", status_code=202)
+async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    command = lite_app_profiles.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
+    try:
+        submitted = await submit_domain_command(
+            lite_app_profiles.APP_BACKUP_SUBJECT,
+            "lite.backup.app_queued",
+            command,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "app_backup_queue_unavailable",
+                "summary": "App backup request could not be queued because the local command bus is not reachable.",
+                "detail": str(exc),
+            },
+        ) from exc
+    pending = lite_backup.record_backup_request(command)
+    submitted.update({
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "app_id": "photoprism",
+        "backup_id": command["backup_id"],
+        "mode": command["app_backup_mode"],
+        "pending_backup": pending,
+        "summary": "PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.",
+    })
+    return submitted
+
+
+@router.post("/recovery/apps/{app_id}/restore/preview", status_code=501)
+def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_profiles.app_restore_preview_not_implemented(app_id)
+
+
+@router.post("/recovery/apps/{app_id}/restore", status_code=501)
+def restore_lite_app(app_id: str, payload: LiteAppRestoreRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_profiles.app_restore_not_implemented(app_id)
 
 
 @router.post("/recovery/backup", status_code=202)

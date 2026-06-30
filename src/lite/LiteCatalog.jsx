@@ -344,6 +344,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <span>Self-hosted app</span>
           </div>
         ) : null}
+        {installed ? (
+          <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
+            <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
+            <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
+          </div>
+        ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {canOpen ? 'Ready' : app?.access?.message || 'Available after install'}</span>

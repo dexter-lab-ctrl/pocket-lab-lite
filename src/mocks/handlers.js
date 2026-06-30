@@ -11,6 +11,34 @@ const controlPlane = () => {
 const healthPayload = () => scenario() === 'vault-sealed' ? healthVaultSealed : healthAllGreen;
 const observabilityPayload = () => scenario() === 'nats-down' || scenario() === 'worker-down' || scenario() === 'vault-sealed' ? observabilityRuntimeDegraded : observabilityRuntimeHealthy;
 
+const mockProtectedApps = () => [{
+  app_id: 'photoprism',
+  name: 'PhotoPrism',
+  status: 'ready',
+  summary: 'PhotoPrism is protected.',
+  last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+  checks: [
+    { id: 'route_safety', label: 'Secure app route', status: 'passed', summary: 'PhotoPrism opens through Pocket Lab.' },
+    { id: 'config_redaction', label: 'Config protected', status: 'passed', summary: 'Sensitive values are hidden.' },
+    { id: 'media_permissions', label: 'Media folder access', status: 'unknown', summary: 'No media folders connected yet.' },
+    { id: 'backup_readiness', label: 'Backup readiness', status: 'passed', summary: 'App config can be backed up.' },
+  ],
+  evidence: { status: 'saved', count: 1, summary: '1 safety record' },
+}];
+
+const mockAppBackups = () => [{
+  app_id: 'photoprism',
+  name: 'PhotoPrism',
+  status: 'ready',
+  summary: 'PhotoPrism config and app metadata are ready for backup.',
+  default_mode: 'config_only',
+  included: ['App config', 'App metadata', 'Storage mappings'],
+  excluded: ['Original media', 'Generated cache', 'Raw secrets'],
+  media: { default: 'excluded', summary: 'Media excluded. Your photo files can be large. Add media backup when a storage device is ready.' },
+  backup_target: { available: true, ready: true, count: 1, label: 'Backup Target available' },
+  evidence: { status: 'saved', count: 1, summary: '1 recovery record' },
+}];
+
 const mockLiteSecurityPayload = () => {
   const now = Date.now();
   const baseRun = {
@@ -83,6 +111,8 @@ const mockLiteSecurityPayload = () => {
     },
     guidance: [
     ],
+    protected_apps: mockProtectedApps(),
+    app_security_profiles: { status: 'healthy', apps: mockProtectedApps(), count: mockProtectedApps().length },
     updated_at: new Date(now).toISOString(),
   };
 
@@ -277,6 +307,8 @@ export const handlers = [
       device_relationships: { runs_on: 'Pocket Lab Lite Server', media_from: 'No media folders connected', storage_devices_available: 1, storage_devices_ready: 1 },
       storage_devices: [{ id: 'storage-phone-1', name: 'Storage Phone', ready: true, capability_labels: ['Storage Node', 'Backup Target'], storage: { available_gb: 92, media_roots: ['Pictures', 'DCIM'] } }],
       storage: { status: 'not_connected', summary: 'No media folders connected', mappings: [], count: 0, default_target: 'import', safe_modes: ['read_only', 'read_write'] },
+      security_profile: { status: 'ready', label: 'Protected app', summary: 'Security profile available.' },
+      backup_profile: { status: 'ready', label: 'Backup ready', summary: 'Config protected. Media excluded by default.', media: 'Media excluded' },
     };
     return HttpResponse.json({ status: 'healthy', access: { https_ready: true, secure_origin: 'https://pocket-lab-lite.example.ts.net', route_mode: 'tailscale_caddy', pwa_ready: true, message: 'Secure access is ready.' }, apps: [app], items: [app], count: 1, updated_at: new Date().toISOString() });
   }),
@@ -346,6 +378,8 @@ export const handlers = [
     pre_restore_checkpoint: { status: 'not_created', summary: 'A checkpoint will be created automatically before restore changes local state.' },
     last_restore: null,
     actions: ['backup_now', 'verify_backup', 'preview_restore', 'restore_latest'],
+    app_backups: mockAppBackups(),
+    app_backup_profiles: { status: 'healthy', apps: mockAppBackups(), count: mockAppBackups().length },
     planned_actions: [],
     updated_at: new Date().toISOString(),
   })),
@@ -376,6 +410,9 @@ export const handlers = [
     return HttpResponse.json({ accepted: true, status: 'queued', operation_id: 'app-photoprism-mock', app_id: body.app_id || 'photoprism', target_node_id: body.target_node_id || 'pocket-lab-lite-server', message: 'PhotoPrism install started.' }, { status: 202 });
   }),
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
+  http.get('/api/lite/security/apps', () => HttpResponse.json({ status: 'healthy', apps: mockProtectedApps(), items: mockProtectedApps(), count: mockProtectedApps().length })),
+  http.get('/api/lite/security/apps/photoprism', () => HttpResponse.json(mockProtectedApps()[0])),
+  http.post('/api/lite/security/apps/photoprism/check', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', summary: 'App-specific safety checks are prepared, but execution is not enabled yet. Use Run Safety Check for the current device-wide scan.' }, { status: 501 })),
   http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Safety check queued. Pocket Lab will scan local security posture and dependency risks.' }, { status: 202 })),
   http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 })),
   http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded' }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json'] })),
@@ -456,6 +493,10 @@ export const handlers = [
     }, { status: 202 });
   }),
   http.post('/api/lite/policy/apply', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-policy-apply' }, { status: 202 })),
+  http.get('/api/lite/recovery/apps', () => HttpResponse.json({ status: 'healthy', apps: mockAppBackups(), items: mockAppBackups(), count: mockAppBackups().length })),
+  http.get('/api/lite/recovery/apps/photoprism', () => HttpResponse.json(mockAppBackups()[0])),
+  http.post('/api/lite/recovery/apps/photoprism/backup', () => HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', backup_id: 'app-backup-photoprism-mock', mode: 'config_only', summary: 'PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.' }, { status: 202 })),
+  http.post('/api/lite/recovery/apps/photoprism/restore/preview', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', summary: 'Restore preview coming soon for app-specific recovery.' }, { status: 501 })),
   http.post('/api/lite/recovery/backup', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-backup-now', command_subject: 'pocketlab.commands.lite.backup.create' }, { status: 202 })),
   http.post('/api/lite/recovery/backups/:backupId/verify', ({ params }) => HttpResponse.json({ accepted: true, status: 'queued', job_id: `mock-verify-${params.backupId}`, command_subject: 'pocketlab.commands.lite.backup.verify', summary: 'Backup verification queued.' }, { status: 202 })),
   http.post('/api/lite/recovery/restore/preview', () => HttpResponse.json({ accepted: true, status: 'queued', job_id: 'mock-restore-preview', command_subject: 'pocketlab.commands.lite.restore.preview', summary: 'Restore preview queued.' }, { status: 202 })),
