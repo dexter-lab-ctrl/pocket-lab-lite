@@ -16,6 +16,18 @@ from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lit
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
+def _lite_payload_dict(payload):
+    """Return a request model as a dict on both Pydantic v1 and v2."""
+    if payload is None:
+        return {}
+    if isinstance(payload, dict):
+        return payload
+    if hasattr(payload, "model_dump"):
+        return payload.model_dump()
+    if hasattr(payload, "dict"):
+        return payload.dict()
+    return {}
+
 
 class LiteCatalogInstallRequest(BaseModel):
     app_id: str = Field(default="", description="Catalog app id")
@@ -219,7 +231,7 @@ def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
 @router.post("/apps/{app_id}/actions/{action_id}")
 async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    action = lite_app_actions.prepare_action(app_id, action_id, payload=payload.model_dump())
+    action = lite_app_actions.prepare_action(app_id, action_id, payload=_lite_payload_dict(payload))
     kind = action.get("kind")
 
     if kind in {"url", "guidance"}:
@@ -342,7 +354,7 @@ def get_photoprism_storage_mappings(request: Request) -> dict[str, Any]:
 @router.post("/apps/photoprism/storage-mappings", status_code=201)
 def create_photoprism_storage_mapping(payload: LitePhotoPrismStorageMappingRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return lite_app_storage.create_mapping(payload.model_dump())
+    return lite_app_storage.create_mapping(_lite_payload_dict(payload))
 
 
 @router.delete("/apps/photoprism/storage-mappings/{mapping_id}")
