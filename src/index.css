@@ -11390,3 +11390,371 @@ textarea {
     animation: none !important;
   }
 }
+
+/* Lite Catalog: premium Import Photos loading treatment */
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(14, 165, 233, 0.24);
+  background:
+    radial-gradient(circle at 16% 12%, rgba(56, 189, 248, 0.16), transparent 38%),
+    radial-gradient(circle at 86% 6%, rgba(129, 140, 248, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 249, 255, 0.88));
+  box-shadow:
+    0 1.25rem 3rem rgba(14, 165, 233, 0.13),
+    0 0.7rem 1.4rem rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running::before,
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running::before {
+  inset: -42% -18% auto auto;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(34, 211, 238, 0.22), transparent 64%),
+    radial-gradient(circle at 35% 35%, rgba(59, 130, 246, 0.2), transparent 54%);
+  filter: blur(0.18rem);
+  animation: liteCatalogImportPremiumAura 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running::after {
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.38) 34%, transparent 50%),
+    radial-gradient(circle at 18% 85%, rgba(45, 212, 191, 0.1), transparent 34%);
+  transform: translateX(-110%);
+  opacity: 0.72;
+  animation: liteCatalogImportPremiumCardSweep 3.4s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running > * {
+  position: relative;
+  z-index: 1;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .pocket-button {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(34, 211, 238, 0.28);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.26), transparent 24%),
+    linear-gradient(135deg, #2563eb, #0891b2 45%, #0f766e 100%);
+  box-shadow:
+    0 0.9rem 1.8rem rgba(14, 165, 233, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .pocket-button::before {
+  content: '';
+  position: absolute;
+  inset: -45% -20%;
+  background: conic-gradient(from 90deg, transparent, rgba(255, 255, 255, 0.34), transparent 34%, rgba(45, 212, 191, 0.2), transparent 62%);
+  animation: liteCatalogImportPremiumButtonPrism 2.6s linear infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-tile-icon svg {
+  animation: liteCatalogImportPremiumIconFloat 1.8s cubic-bezier(0.42, 0, 0.18, 1) infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-import-button-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.46rem;
+  min-width: 6.6rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-import-button-glyph,
+.theme-pocket-lite-daylight .lite-catalog-import-button-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.16rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-import-button-glyph i {
+  display: block;
+  width: 0.23rem;
+  height: 0.78rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0.6rem rgba(255, 255, 255, 0.62);
+  transform-origin: 50% 100%;
+  animation: liteCatalogImportPremiumGlyph 1.08s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-import-button-glyph i:nth-child(2) { animation-delay: 120ms; }
+.theme-pocket-lite-daylight .lite-catalog-import-button-glyph i:nth-child(3) { animation-delay: 240ms; }
+
+.theme-pocket-lite-daylight .lite-catalog-import-button-dots i {
+  display: block;
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  animation: liteCatalogImportPremiumDots 1.1s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-import-button-dots i:nth-child(2) { animation-delay: 140ms; }
+.theme-pocket-lite-daylight .lite-catalog-import-button-dots i:nth-child(3) { animation-delay: 280ms; }
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  height: auto;
+  min-height: 1.28rem;
+  margin-top: 0.12rem;
+  overflow: hidden;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(226, 232, 240, 0.48)),
+    rgba(219, 234, 254, 0.44);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -0.58rem 1.05rem rgba(15, 23, 42, 0.05),
+    0 0.65rem 1.4rem rgba(14, 165, 233, 0.1);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-depth,
+.theme-pocket-lite-daylight .lite-catalog-action-progress-fill,
+.theme-pocket-lite-daylight .lite-catalog-action-progress-aurora,
+.theme-pocket-lite-daylight .lite-catalog-action-progress-ripples,
+.theme-pocket-lite-daylight .lite-catalog-action-progress-comet,
+.theme-pocket-lite-daylight .lite-catalog-action-progress-status {
+  grid-area: 1 / 1;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-depth {
+  position: absolute;
+  inset: 0.18rem;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.05), transparent 14%, transparent 86%, rgba(15, 23, 42, 0.05)),
+    repeating-linear-gradient(90deg, rgba(14, 165, 233, 0.08) 0 1px, transparent 1px 0.9rem);
+  opacity: 0.62;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill {
+  position: relative;
+  display: block;
+  min-width: 2.7rem;
+  height: 100%;
+  min-height: 1.28rem;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 16% 38%, rgba(255, 255, 255, 0.72), transparent 16%),
+    linear-gradient(90deg, #1d4ed8 0%, #06b6d4 38%, #14b8a6 70%, #60a5fa 100%);
+  background-size: 240% 100%;
+  box-shadow:
+    0 0 1.2rem rgba(14, 165, 233, 0.42),
+    0 0 0.3rem rgba(45, 212, 191, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -0.48rem 0.9rem rgba(30, 64, 175, 0.18);
+  animation: liteCatalogImportPremiumLiquid 1.95s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress.is-indeterminate .lite-catalog-action-progress-fill {
+  animation: liteCatalogImportPremiumIndeterminate 2.05s cubic-bezier(0.66, 0, 0.34, 1) infinite, liteCatalogImportPremiumLiquid 1.8s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill::before,
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill::before {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.42), transparent 58%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0 12%, transparent 12% 28%, rgba(255, 255, 255, 0.18) 28% 40%, transparent 40% 100%);
+  background-size: auto, 1.15rem 1.15rem;
+  opacity: 0.66;
+  animation: liteCatalogImportPremiumStripes 1s linear infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill::after {
+  inset: 0.14rem 0.18rem auto 0.18rem;
+  height: 0.26rem;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.72), transparent);
+  filter: blur(0.02rem);
+  transform: translateX(-120%);
+  animation: liteCatalogImportPremiumShimmer 1.6s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-aurora {
+  position: absolute;
+  inset: -55% -20%;
+  background:
+    radial-gradient(circle at 22% 50%, rgba(255, 255, 255, 0.42), transparent 10%),
+    radial-gradient(circle at 45% 48%, rgba(34, 211, 238, 0.2), transparent 12%),
+    radial-gradient(circle at 70% 52%, rgba(45, 212, 191, 0.2), transparent 12%);
+  mix-blend-mode: screen;
+  opacity: 0.74;
+  animation: liteCatalogImportPremiumAurora 2.7s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-comet {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 2.8rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.92), rgba(125, 211, 252, 0.42), transparent);
+  filter: drop-shadow(0 0 0.7rem rgba(255, 255, 255, 0.82));
+  transform: translate(-140%, -50%);
+  animation: liteCatalogImportPremiumComet 1.9s cubic-bezier(0.22, 0.75, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-ripples {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-ripples i {
+  position: absolute;
+  top: 50%;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0.7rem rgba(255, 255, 255, 0.62), 0 0 1rem rgba(14, 165, 233, 0.28);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+  animation: liteCatalogImportPremiumRipples 2.15s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-ripples i:nth-child(1) { left: 24%; animation-delay: 0ms; }
+.theme-pocket-lite-daylight .lite-catalog-action-progress-ripples i:nth-child(2) { left: 52%; animation-delay: 460ms; }
+.theme-pocket-lite-daylight .lite-catalog-action-progress-ripples i:nth-child(3) { left: 78%; animation-delay: 920ms; }
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-status {
+  position: relative;
+  z-index: 7;
+  min-width: 0;
+  padding: 0.18rem 0.78rem;
+  color: rgba(15, 23, 42, 0.72);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.68);
+}
+
+@keyframes liteCatalogImportPremiumAura {
+  0%, 100% { opacity: 0.36; transform: translate3d(0, 0, 0) scale(0.92) rotate(0deg); }
+  50% { opacity: 0.82; transform: translate3d(-0.48rem, 0.32rem, 0) scale(1.08) rotate(12deg); }
+}
+
+@keyframes liteCatalogImportPremiumCardSweep {
+  0%, 28% { transform: translateX(-120%); opacity: 0; }
+  52% { opacity: 0.72; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+
+@keyframes liteCatalogImportPremiumButtonPrism {
+  from { transform: rotate(0deg) scale(1.04); }
+  to { transform: rotate(360deg) scale(1.04); }
+}
+
+@keyframes liteCatalogImportPremiumIconFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  38% { transform: translateY(-1.5px) rotate(6deg) scale(1.04); }
+  70% { transform: translateY(0.6px) rotate(-3deg) scale(0.99); }
+}
+
+@keyframes liteCatalogImportPremiumGlyph {
+  0%, 100% { transform: scaleY(0.62); opacity: 0.66; }
+  46% { transform: scaleY(1.08); opacity: 1; }
+}
+
+@keyframes liteCatalogImportPremiumDots {
+  0%, 100% { transform: translateY(0) scale(0.72); opacity: 0.44; }
+  45% { transform: translateY(-0.12rem) scale(1); opacity: 1; }
+}
+
+@keyframes liteCatalogImportPremiumShimmer {
+  0% { transform: translateX(-140%); opacity: 0; }
+  22% { opacity: 0.78; }
+  100% { transform: translateX(140%); opacity: 0; }
+}
+
+@keyframes liteCatalogImportPremiumLiquid {
+  0% { background-position: 0% 50%; filter: saturate(1) brightness(1); }
+  50% { background-position: 100% 50%; filter: saturate(1.18) brightness(1.06); }
+  100% { background-position: 240% 50%; filter: saturate(1) brightness(1); }
+}
+
+@keyframes liteCatalogImportPremiumIndeterminate {
+  0% { transform: translateX(-125%) scaleX(0.86); }
+  48% { transform: translateX(42%) scaleX(1.08); }
+  100% { transform: translateX(142%) scaleX(0.88); }
+}
+
+@keyframes liteCatalogImportPremiumStripes {
+  from { background-position: 0 0; }
+  to { background-position: 1.15rem 0; }
+}
+
+@keyframes liteCatalogImportPremiumAurora {
+  0%, 100% { transform: translateX(-8%) rotate(0deg); opacity: 0.48; }
+  50% { transform: translateX(8%) rotate(4deg); opacity: 0.82; }
+}
+
+@keyframes liteCatalogImportPremiumComet {
+  0% { left: 0%; opacity: 0; transform: translate(-145%, -50%) scaleX(0.72); }
+  18% { opacity: 1; }
+  62% { opacity: 0.96; }
+  100% { left: 100%; opacity: 0; transform: translate(18%, -50%) scaleX(1.06); }
+}
+
+@keyframes liteCatalogImportPremiumRipples {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
+  26% { opacity: 0.88; }
+  72% { opacity: 0.3; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running::before,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running::after,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .pocket-button::before,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-tile-icon svg,
+  .theme-pocket-lite-daylight .lite-catalog-import-button-glyph i,
+  .theme-pocket-lite-daylight .lite-catalog-import-button-dots i,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill::before,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-fill::after,
+  .theme-pocket-lite-daylight .lite-catalog-action-progress-aurora,
+  .theme-pocket-lite-daylight .lite-catalog-action-tile.is-import-running .lite-catalog-action-progress-comet,
+  .theme-pocket-lite-daylight .lite-catalog-action-progress-ripples i {
+    animation: none !important;
+  }
+}

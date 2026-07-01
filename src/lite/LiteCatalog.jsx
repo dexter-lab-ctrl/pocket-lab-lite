@@ -303,9 +303,17 @@ function PhotoPrismActionTile({
   const progressDisablesAction = progressState?.running;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
   const showProgress = Boolean(progressState?.running && actionId === 'import_photos');
+  const isImportRunning = Boolean(showProgress && actionId === 'import_photos');
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
+  const runningButtonLabel = isImportRunning ? (
+    <span className="lite-catalog-import-button-label">
+      <span className="lite-catalog-import-button-glyph" aria-hidden="true"><i /><i /><i /></span>
+      <span>Importing</span>
+      <span className="lite-catalog-import-button-dots" aria-hidden="true"><i /><i /><i /></span>
+    </span>
+  ) : busyActionLabel(actionId);
   return (
-    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
+    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
@@ -320,7 +328,7 @@ function PhotoPrismActionTile({
         disabled={isDisabled}
         title={title || reason || copy.description}
       >
-        {busy || progressState?.running ? busyActionLabel(actionId) : copy.label}
+        {busy || progressState?.running ? runningButtonLabel : copy.label}
       </LiteButton>
       {showProgress ? (
         <div
@@ -331,11 +339,12 @@ function PhotoPrismActionTile({
           aria-valuemax="100"
           aria-valuenow={progressState.indeterminate ? undefined : Math.round(progressState.percent || 0)}
         >
-          <span className="lite-catalog-action-progress-fill" style={{ width: progressState.indeterminate ? '46%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
-          <i className="lite-catalog-action-progress-sparkle" aria-hidden="true" />
-          <em className="lite-catalog-action-progress-glow" aria-hidden="true" />
+          <span className="lite-catalog-action-progress-depth" aria-hidden="true" />
+          <span className="lite-catalog-action-progress-fill" style={{ width: progressState.indeterminate ? '52%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
+          <span className="lite-catalog-action-progress-aurora" aria-hidden="true" />
+          <span className="lite-catalog-action-progress-ripples" aria-hidden="true"><i /><i /><i /></span>
           <b className="lite-catalog-action-progress-comet" aria-hidden="true" />
-          <span className="lite-catalog-action-progress-orbits" aria-hidden="true"><i /><i /><i /></span>
+          <span className="lite-catalog-action-progress-status">{progressLabel || 'PhotoPrism is importing photos.'}</span>
         </div>
       ) : null}
     </div>
