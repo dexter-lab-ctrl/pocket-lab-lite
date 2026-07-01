@@ -346,9 +346,13 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
     app_state = state["apps"].setdefault(PHOTOPRISM_APP_ID, {"operations": {}})
     operations = app_state.setdefault("operations", {})
     previous = operations.get(action) if isinstance(operations.get(action), dict) else {}
+    command_ref = str(command.get("command_id") or previous.get("operation_id") or _operation_id(action))
+    same_operation = str(previous.get("operation_id") or "") == command_ref
+    previous_for_operation = previous if same_operation else {}
+
     operation = {
-        **previous,
-        "operation_id": command.get("command_id") or previous.get("operation_id") or _operation_id(action),
+        **previous_for_operation,
+        "operation_id": command_ref,
         "app_id": PHOTOPRISM_APP_ID,
         "action_id": action,
         "status": status,
@@ -357,12 +361,17 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
         "evidence_status": "pending" if status in {"queued", "running"} else "saved",
         "updated_at": now,
     }
+
     if status in {"queued", "running"}:
-        operation.setdefault("started_at", now)
+        operation["started_at"] = previous_for_operation.get("started_at") or now
+        operation.pop("completed_at", None)
+        operation.pop("evidence_ref", None)
+
     if status in {"succeeded", "failed", "not_ready"}:
-        operation.setdefault("started_at", previous.get("started_at") or now)
+        operation["started_at"] = previous_for_operation.get("started_at") or now
         operation["completed_at"] = now
         operation["evidence_ref"] = f"apps/photoprism/media/{operation['operation_id']}.json"
+
     operations[action] = operation
     app_state["updated_at"] = now
     _write_state(state)
