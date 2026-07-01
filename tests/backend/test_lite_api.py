@@ -2575,3 +2575,159 @@ def test_lite_storage_and_app_lifecycle_ui_source_is_present():
     assert "rsync" not in ui.lower()
     assert "scp" not in ui.lower()
     assert "ssh " not in ui.lower()
+
+
+def test_lite_photoprism_media_optimizer_deduplicates_overlapping_mappings(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_storage, lite_photoprism_media
+
+    storage = tmp_path / "storage"
+    dcim = storage / "shared" / "DCIM"
+    pictures = storage / "shared" / "Pictures"
+    dcim.mkdir(parents=True)
+    pictures.mkdir(parents=True)
+    (dcim / "sample.jpg").write_text("fake image")
+    app_root = tmp_path / "photoprism"
+    env_file = app_root / "config" / "photoprism.env"
+    env_file.parent.mkdir(parents=True)
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+
+    for label, source_path in [
+        ("Camera folder", "~/storage/shared/DCIM"),
+        ("Pictures", "~/storage/shared/Pictures"),
+        ("Phone storage", "~/storage"),
+    ]:
+        created = client().post(
+            "/api/lite/apps/photoprism/storage-mappings",
+            json={
+                "source_type": "phone_media",
+                "label": label,
+                "source_path": source_path,
+                "target": "import",
+                "mode": "read_only",
+            },
+        )
+        assert created.status_code == 201
+
+    def resolve_source(source_path):
+        if source_path == "~/storage":
+            return storage
+        if source_path == "~/storage/shared/DCIM":
+            return dcim
+        if source_path == "~/storage/shared/Pictures":
+            return pictures
+        raise AssertionError(source_path)
+
+    class Completed:
+        returncode = 0
+        stdout = "import completed"
+        stderr = ""
+
+    calls = []
+
+    def fake_run(*args, **kwargs):
+        calls.append((args, kwargs))
+        return Completed()
+
+    monkeypatch.setattr(lite_photoprism_media, "_app_root", lambda: app_root)
+    monkeypatch.setattr(lite_photoprism_media, "_env_file", lambda: env_file)
+    monkeypatch.setattr(lite_app_storage, "resolve_mapping_source_path", resolve_source)
+    monkeypatch.setattr(lite_photoprism_media.shutil, "which", lambda name: "/usr/bin/proot-distro" if name == "proot-distro" else None)
+    monkeypatch.setattr(lite_photoprism_media.subprocess, "run", fake_run)
+
+    result = lite_photoprism_media.execute_media_operation({
+        "command_id": "photoprism-media-optimized-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 3,
+    })
+
+    assert result["status"] == "succeeded"
+    assert result["mapping_apply"]["mapping_apply" if False else "runtime_mapping_count"] == 1
+    assert result["mapping_apply"]["overlap_skipped_count"] == 2
+    links = list((app_root / "import" / "pocketlab-mappings").iterdir())
+    assert len([item for item in links if item.is_symlink()]) == 1
+    assert links[0].readlink() == storage
+    listed = client().get("/api/lite/apps/photoprism/storage-mappings").json()["mappings"]
+    assert {item["status"] for item in listed} == {"applied"}
+    assert all(item["pending_apply"] is False for item in listed)
+    assert calls
+
+
+def test_lite_photoprism_media_cancel_stops_running_operation_without_web_server(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-cancel-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }
+    queued = lite_photoprism_media.record_operation(command, status="queued")
+    assert queued["status"] == "queued"
+
+    calls: list[list[str]] = []
+
+    class Completed:
+        returncode = 0
+        stdout = "21400 photoprism import\n"
+        stderr = ""
+
+    def fake_run(args, **kwargs):
+        calls.append(list(args))
+        if args[:2] == ["pgrep", "-af"]:
+            return Completed()
+        class Empty:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+        return Empty()
+
+    monkeypatch.setattr(lite_photoprism_media.subprocess, "run", fake_run)
+    monkeypatch.setattr(lite_photoprism_media.time if hasattr(lite_photoprism_media, "time") else lite_photoprism_media, "sleep", lambda *_: None, raising=False)
+
+    result = lite_photoprism_media.cancel_media_action("photoprism", reason="user stopped long import")
+
+    assert result["status"] == "cancelled"
+    assert result["cancelled_operations"] == 1
+    assert result["processes"]["matched"] >= 1
+    assert any(call[:3] == ["pkill", "-TERM", "-f"] for call in calls)
+    assert not any("pocketlab-app-photoprism" in " ".join(call) for call in calls)
+    status = lite_photoprism_media.media_status("photoprism")
+    assert status["operation_running"] is False
+    assert status["last_import"]["status"] == "cancelled"
+    assert status["last_import"]["progress"]["bounded"] is True
+
+
+def test_lite_app_action_center_exposes_cancel_media_when_running(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-action-cancel-unit",
+        "app_id": "photoprism",
+        "action_id": "index_photos",
+        "operation": "index_photos",
+        "mapping_count": 1,
+    }
+    lite_photoprism_media.record_operation(command, status="running")
+
+    lifecycle = client().get("/api/lite/apps/lifecycle/photoprism")
+    assert lifecycle.status_code == 200
+    actions = lifecycle.json()["actions"]
+    assert actions["cancel_media"]["enabled"] is True
+    assert actions["cancel_media"]["label"] == "Stop photo action"
+
+    monkeypatch.setattr(lite_photoprism_media, "_stop_media_processes", lambda: {"status": "stopped", "matched": 1, "terminated": 1, "killed": 0})
+    cancelled = client().post(
+        "/api/lite/apps/photoprism/actions/cancel_media",
+        json={"reason": "stop test media action"},
+    )
+    assert cancelled.status_code == 200
+    payload = cancelled.json()
+    assert payload["status"] == "cancelled"
+    assert payload["accepted"] is True
+    assert payload["action_id"] == "cancel_media"

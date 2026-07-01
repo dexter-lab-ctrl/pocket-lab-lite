@@ -47,6 +47,11 @@ const PHOTO_PRISM_ACTION_COPY = {
     label: 'Index photos',
     description: 'Refresh PhotoPrism’s photo library.',
   },
+  cancel_media: {
+    eyebrow: 'Photo library',
+    label: 'Stop photo action',
+    description: 'Safely stop the current Import or Index job.',
+  },
   backup_app: {
     eyebrow: 'Recovery',
     label: 'Back up app',
@@ -119,6 +124,7 @@ function isActionBusy(app, actionId, busyKey) {
 function busyActionLabel(actionId) {
   if (actionId === 'import_photos') return 'Importing...';
   if (actionId === 'index_photos') return 'Indexing...';
+  if (actionId === 'cancel_media') return 'Stopping...';
   if (actionId === 'backup_app') return 'Backing up...';
   if (actionId === 'backup_to_storage') return 'Backing up...';
   if (actionId === 'check_app') return 'Checking...';
@@ -132,6 +138,7 @@ function busyActionLabel(actionId) {
 function PhotoPrismActionIcon({ actionId }) {
   if (actionId === 'connect_photos') return <FolderPlus className="h-4 w-4" />;
   if (actionId === 'import_photos' || actionId === 'index_photos') return <RefreshCw className="h-4 w-4" />;
+  if (actionId === 'cancel_media') return <X className="h-4 w-4" />;
   if (actionId === 'backup_app' || actionId === 'backup_to_storage' || actionId === 'preview_restore') return <FileCheck className="h-4 w-4" />;
   if (actionId === 'check_app') return <ShieldCheck className="h-4 w-4" />;
   if (actionId === 'install_app') return <Smartphone className="h-4 w-4" />;
@@ -199,6 +206,16 @@ function catalogActionNotice(result, error) {
       ...base,
       title: 'Library update started',
       message: 'Pocket Lab is refreshing PhotoPrism’s library.',
+    };
+  }
+
+  if (actionId === 'cancel_media') {
+    return {
+      ...base,
+      tone: status === 'idle' ? 'review' : 'success',
+      title: status === 'idle' ? 'Nothing running' : 'Photo action stopped',
+      message: result?.summary || 'Pocket Lab safely stopped the current PhotoPrism media action.',
+      timeoutMs: 8000,
     };
   }
 
@@ -1032,6 +1049,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
     const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
     const indexPhotosAction = lifecycleAction(lifecycle, 'index_photos');
+    const cancelMediaAction = lifecycleAction(lifecycle, 'cancel_media');
     const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
     const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
     const installAppAction = lifecycleAction(lifecycle, 'install_app');
@@ -1133,6 +1151,16 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 />
                 <PhotoPrismActionTile
                   app={app}
+                  actionId="cancel_media"
+                  action={cancelMediaAction}
+                  busyKey={actionBusyKey}
+                  tone="secondary"
+                  onClick={(event) => runLifecycleAction(app, 'cancel_media', event)}
+                  disabled={cancelMediaAction.enabled === false || actionBusyKey === `${app.id}:cancel_media`}
+                  title={lifecycleActionReason(cancelMediaAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
                   actionId="backup_app"
                   action={backupAppAction}
                   busyKey={actionBusyKey}
@@ -1215,6 +1243,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
                 {indexPhotosAction.enabled === false ? <span>Index photos: {lifecycleActionReason(indexPhotosAction)}</span> : null}
+                {cancelMediaAction.enabled === false && lifecycle?.media?.operation_running ? <span>Stop photo action: {lifecycleActionReason(cancelMediaAction)}</span> : null}
                 {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
                 {backupToStorageAction.enabled === false ? <span>Back up to storage device: {lifecycleActionReason(backupToStorageAction)}</span> : null}
                 {updateAppAction.enabled === false ? <span>Update: {lifecycleActionReason(updateAppAction)}</span> : null}
