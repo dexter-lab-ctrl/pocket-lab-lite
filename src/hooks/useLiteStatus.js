@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { liteApi } from '../lib/liteApi.js';
 
 const initialStatus = {
@@ -42,20 +42,29 @@ export function useLiteResource(loader, dependencies = []) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const inFlightRef = useRef(null);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await loader();
-      setData(result);
-      setError(null);
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Pocket Lab Lite could not load this area.');
-      return null;
-    } finally {
-      setLoading(false);
+    if (inFlightRef.current) {
+      return inFlightRef.current;
     }
+    setLoading(true);
+    const request = (async () => {
+      try {
+        const result = await loader();
+        setData(result);
+        setError(null);
+        return result;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Pocket Lab Lite could not load this area.');
+        return null;
+      } finally {
+        setLoading(false);
+        inFlightRef.current = null;
+      }
+    })();
+    inFlightRef.current = request;
+    return request;
   }, dependencies);
 
   useEffect(() => {
