@@ -306,10 +306,13 @@ function PhotoPrismActionTile({
   const isImportRunning = Boolean(showProgress && actionId === 'import_photos');
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const runningButtonLabel = isImportRunning ? (
-    <span className="lite-catalog-import-button-label">
-      <span className="lite-catalog-import-button-glyph" aria-hidden="true"><i /><i /><i /></span>
-      <span>Importing</span>
-      <span className="lite-catalog-import-button-dots" aria-hidden="true"><i /><i /><i /></span>
+    <span className="lite-catalog-import-flow-button">
+      <span className="lite-catalog-import-flow-button-stage" aria-hidden="true">
+        <span className="lite-catalog-import-flow-button-node is-storage"><i /></span>
+        <span className="lite-catalog-import-flow-button-line"><i /></span>
+        <span className="lite-catalog-import-flow-button-node is-prism"><i /></span>
+      </span>
+      <span className="lite-catalog-import-flow-button-copy">Importing</span>
     </span>
   ) : busyActionLabel(actionId);
   return (
@@ -342,7 +345,13 @@ function PhotoPrismActionTile({
           <span className="lite-catalog-action-progress-depth" aria-hidden="true" />
           <span className="lite-catalog-action-progress-fill" style={{ width: progressState.indeterminate ? '52%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
           <span className="lite-catalog-action-progress-aurora" aria-hidden="true" />
-          <span className="lite-catalog-action-progress-ripples" aria-hidden="true"><i /><i /><i /></span>
+          <span className="lite-catalog-import-flow-rail" aria-hidden="true">
+            <span className="lite-catalog-import-flow-rail-node is-storage"><i /></span>
+            <span className="lite-catalog-import-flow-rail-line"><i /></span>
+            <span className="lite-catalog-import-flow-rail-node is-worker"><i /></span>
+            <span className="lite-catalog-import-flow-rail-line"><i /></span>
+            <span className="lite-catalog-import-flow-rail-node is-prism"><i /></span>
+          </span>
           <b className="lite-catalog-action-progress-comet" aria-hidden="true" />
           <span className="lite-catalog-action-progress-status">{progressLabel || 'PhotoPrism is importing photos.'}</span>
         </div>
