@@ -331,24 +331,6 @@ function PhotoPrismStorageTile({ app, preset, busyKey, disabled, onClick }) {
   );
 }
 
-function PhotoPrismMediaMotion({ flow }) {
-  const active = flow.motion === 'active';
-  return (
-    <div className={`lite-catalog-media-flow-motion ${active ? 'is-active' : 'is-calm'}`} aria-hidden="true">
-      <div className="lite-catalog-media-flow-motion-track">
-        <span className="lite-catalog-media-flow-motion-dot is-phone" />
-        <span className="lite-catalog-media-flow-motion-trail"><i /></span>
-        <span className="lite-catalog-media-flow-motion-packet" />
-        <span className="lite-catalog-media-flow-motion-dot is-worker" />
-        <span className="lite-catalog-media-flow-motion-trail"><i /></span>
-        <span className="lite-catalog-media-flow-motion-dot is-prism" />
-        <span className="lite-catalog-media-flow-motion-spark is-one" />
-        <span className="lite-catalog-media-flow-motion-spark is-two" />
-      </div>
-    </div>
-  );
-}
-
 function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
   const flow = photoPrismMediaFlowState(lifecycle, busyKey);
   const steps = [
@@ -366,7 +348,6 @@ function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
         <p>{flow.summary}</p>
       </div>
       <div className="lite-catalog-media-flow-stage">
-        <PhotoPrismMediaMotion flow={flow} />
         <div className="lite-catalog-media-flow-visual" aria-hidden="true">
           {steps.map((step, index) => (
             <React.Fragment key={step.id}>
