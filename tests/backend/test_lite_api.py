@@ -2325,7 +2325,8 @@ def test_lite_media_domain_failure_marks_operation_failed(monkeypatch):
     state = lite_photoprism_media.media_status("photoprism")
     assert state["operation_running"] is False
     assert state["last_import"]["status"] == "failed"
-    assert "Unsupported operation" in state["last_import"]["summary"]
+    assert state["last_import"]["summary"] == "Import photos could not complete."
+    assert "Unsupported operation" not in state["last_import"]["summary"]
     assert any(item[0] == "pocketlab.events.lite.app.media.failed" for item in published)
 
 
@@ -2348,7 +2349,7 @@ def test_lite_media_status_reconciles_stale_running_operation(monkeypatch):
 
     assert status["operation_running"] is False
     assert status["last_index"]["status"] == "failed"
-    assert "timed out" in status["last_index"]["summary"].lower()
+    assert status["last_index"]["summary"] == "Index photos could not complete."
     assert status["evidence"]["count"] >= 1
 
 
@@ -2790,3 +2791,96 @@ def test_lite_photoprism_lifecycle_reconciles_orphaned_running_operation(monkeyp
     assert status["operation_running"] is False
     assert status["last_import"]["status"] == "cancelled"
     assert status["last_import"]["progress"]["phase"] == "cancelled"
+
+
+def test_lite_photoprism_media_failure_hides_app_owned_output(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_storage, lite_photoprism_media
+
+    storage = tmp_path / "storage"
+    dcim = storage / "shared" / "DCIM"
+    excluded = storage / "shared" / "Android" / "media" / "com.whatsapp" / "WhatsApp" / "Media" / "WhatsApp Documents"
+    dcim.mkdir(parents=True)
+    excluded.mkdir(parents=True)
+    app_root = tmp_path / "photoprism"
+    env_file = app_root / "config" / "photoprism.env"
+    env_file.parent.mkdir(parents=True)
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+
+    created = client().post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone storage",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert created.status_code == 201
+
+    class Completed:
+        returncode = 1
+        stdout = ""
+        stderr = (
+            "proot warning: can\'t sanitize binding \"/proc/self/fd/0\": No such file or directory\n"
+            'time="2026-07-01T14:16:13Z" level=error msg="index: could not create preview image for 2024/11/sample.pdf"'
+        )
+
+    monkeypatch.setattr(lite_photoprism_media, "_app_root", lambda: app_root)
+    monkeypatch.setattr(lite_photoprism_media, "_env_file", lambda: env_file)
+    monkeypatch.setattr(lite_app_storage, "resolve_mapping_source_path", lambda source_path: storage)
+    monkeypatch.setattr(lite_photoprism_media.shutil, "which", lambda name: "/usr/bin/proot-distro" if name == "proot-distro" else None)
+    monkeypatch.setattr(lite_photoprism_media.subprocess, "run", lambda *args, **kwargs: Completed())
+
+    result = lite_photoprism_media.execute_media_operation({
+        "command_id": "photoprism-media-output-hidden-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    })
+
+    assert result["status"] == "failed"
+    assert result["mapping_apply"]["runtime_roots_used"] == 1
+    assert result["mapping_apply"]["excluded_noisy_roots"] >= 1
+    status = lite_photoprism_media.media_status("photoprism")
+    public = status["last_import"]
+    assert public["status"] == "failed"
+    assert public["summary"] == "Import photos could not complete."
+    assert "proot warning" not in str(public).lower()
+    assert "sample.pdf" not in str(public).lower()
+    state = lite_photoprism_media._read_state()
+    stored = state["apps"]["photoprism"]["operations"]["import_photos"]
+    assert stored["summary"] == "Import photos could not complete."
+    assert stored["app_output_hidden"] is True
+    evidence = lite_photoprism_media._read_json(lite_photoprism_media._evidence_path(), {})
+    latest = evidence["events"][0]
+    assert latest["summary"] == "Import photos could not complete."
+    assert latest["app_output_hidden"] is True
+    assert latest["details_owner"] == "photoprism"
+    assert "proot warning" not in str(latest).lower()
+    assert "sample.pdf" not in str(latest).lower()
+
+
+def test_lite_photoprism_media_status_sanitizes_existing_noisy_summaries(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-existing-noisy-unit",
+        "app_id": "photoprism",
+        "action_id": "index_photos",
+        "operation": "index_photos",
+        "mapping_count": 1,
+    }
+    lite_photoprism_media.record_operation(command, status="failed", summary='time="2026-07-01" level=error msg="could not create preview image for 2024/11/sample.pdf"')
+
+    status = lite_photoprism_media.media_status("photoprism")
+
+    assert status["last_index"]["summary"] == "Index photos could not complete."
+    assert "sample.pdf" not in str(status).lower()
+    state = lite_photoprism_media._read_state()
+    stored = state["apps"]["photoprism"]["operations"]["index_photos"]
+    assert stored["summary"] == "Index photos could not complete."
+    assert stored["app_output_hidden"] is True

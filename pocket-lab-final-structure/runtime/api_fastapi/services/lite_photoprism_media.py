@@ -161,6 +161,56 @@ def _operation_summary(action_id: str, status: str) -> str:
     return f"{label} status is available."
 
 
+_APP_LOG_MARKERS = (
+    "proot warning",
+    "level=",
+    "time=\"",
+    "exiftool",
+    "libx264",
+    "transcod",
+    "could not create preview",
+    "invalid time offset",
+    "vision:",
+    "faces:",
+    "moments:",
+)
+
+
+def _looks_like_app_log(value: Any) -> bool:
+    text = str(value or "")
+    if not text:
+        return False
+    lowered = text.lower()
+    if "\n" in text or "\r" in text:
+        return True
+    if any(marker in lowered for marker in _APP_LOG_MARKERS):
+        return True
+    # Avoid turning Pocket Lab Lite into an app-specific log parser. File-level
+    # media details belong in the app logs/UI, not the Lite lifecycle summary.
+    if re.search(r"\b\d{4}/\d{2}/[^\s]+\.(jpe?g|png|webp|mp4|mov|pdf|heic)\b", lowered):
+        return True
+    return False
+
+
+def _lite_summary(action_id: str, status: str, supplied: Any = None) -> str:
+    status = str(status or "unknown").strip().lower()
+    if status in {"queued", "running", "succeeded", "failed", "cancelled", "timed_out"}:
+        return _operation_summary(action_id, "failed" if status == "timed_out" else status)
+    if status == "not_ready":
+        if supplied and not _looks_like_app_log(supplied):
+            return _safe_text(supplied, _operation_summary(action_id, status))
+        return _operation_summary(action_id, status)
+    if supplied and not _looks_like_app_log(supplied):
+        return _safe_text(supplied, _operation_summary(action_id, status))
+    return _operation_summary(action_id, status)
+
+
+def _details_owner_note(status: str) -> str:
+    if str(status or "").lower() in {"failed", "succeeded"}:
+        return "App-specific media details stay in PhotoPrism logs and UI."
+    return "Pocket Lab Lite tracks job state, safety, and evidence."
+
+
 def _read_state() -> dict[str, Any]:
     payload = _read_json(_state_path(), {})
     if not isinstance(payload, dict):
@@ -176,6 +226,40 @@ def _read_state() -> dict[str, Any]:
 def _write_state(payload: dict[str, Any]) -> None:
     payload["updated_at"] = _now()
     _write_json(_state_path(), payload)
+
+
+def sanitize_stored_media_summaries(app_id: str = PHOTOPRISM_APP_ID) -> int:
+    """Replace app-owned log snippets in local state with Lite summaries.
+
+    This is intentionally shallow. Pocket Lab Lite is a control plane, not a
+    PhotoPrism log parser. App-specific media details remain in PhotoPrism logs
+    and UI; Lite state keeps bounded job status and sanitized evidence only.
+    """
+    _validate_app_id(app_id)
+    state = _read_state()
+    app_state = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {})
+    operations = app_state.get("operations") if isinstance(app_state.get("operations"), dict) else {}
+    changed = 0
+    for action, operation in list(operations.items()):
+        if action not in MEDIA_ACTIONS or not isinstance(operation, dict):
+            continue
+        action_id = str(operation.get("action_id") or action)
+        status = str(operation.get("status") or "unknown").lower()
+        summary = operation.get("summary")
+        if _looks_like_app_log(summary):
+            operation["summary"] = _operation_summary(action_id, status)
+            operation["app_output_hidden"] = True
+            operation["details_owner"] = "photoprism"
+            operation["details_note"] = _details_owner_note(status)
+            changed += 1
+        progress = operation.get("progress") if isinstance(operation.get("progress"), dict) else None
+        if progress and _looks_like_app_log(progress.get("step")):
+            progress["step"] = _operation_summary(action_id, status)
+            changed += 1
+    if changed:
+        app_state["updated_at"] = _now()
+        _write_state(state)
+    return changed
 
 
 def _mappings() -> dict[str, Any]:
@@ -214,7 +298,7 @@ def _public_operation(operation: dict[str, Any] | None) -> dict[str, Any] | None
         "action_id": action_id,
         "label": _operation_label(action_id),
         "status": status,
-        "summary": _safe_text(operation.get("summary"), _operation_summary(action_id, status)),
+        "summary": _lite_summary(action_id, status, operation.get("summary")),
         "started_at": operation.get("started_at"),
         "completed_at": operation.get("completed_at"),
         "mapping_count": int(operation.get("mapping_count") or 0),
@@ -222,7 +306,7 @@ def _public_operation(operation: dict[str, Any] | None) -> dict[str, Any] | None
         "phase": _safe_text(operation.get("phase"), progress.get("phase") or status),
         "progress": {
             "phase": _safe_text(progress.get("phase") or operation.get("phase"), status),
-            "step": _safe_text(progress.get("step"), _operation_summary(action_id, status)),
+            "step": _lite_summary(action_id, status, progress.get("step")),
             "current": int(progress.get("current") or 1),
             "total": int(progress.get("total") or 5),
             "percent": max(0, min(100, int(progress.get("percent") or 0))),
@@ -330,7 +414,7 @@ def reconcile_stale_operations(app_id: str = PHOTOPRISM_APP_ID) -> int:
         if not isinstance(operation, dict) or not _operation_is_stale(operation, now=now_dt):
             continue
         operation["status"] = "failed"
-        operation["summary"] = f"{_operation_label(str(operation.get('action_id') or action))} timed out before worker completion. Please retry after checking worker command handling."
+        operation["summary"] = f"{_operation_label(str(operation.get('action_id') or action))} reached its bounded timeout."
         operation["completed_at"] = now
         operation["updated_at"] = now
         operation["evidence_status"] = "failed"
@@ -346,12 +430,12 @@ def reconcile_stale_operations(app_id: str = PHOTOPRISM_APP_ID) -> int:
 
 def record_operation_failure(command: dict[str, Any], error: Any) -> dict[str, Any]:
     action = validate_action_id(command.get("action_id") or command.get("operation"))
-    summary = _sanitize_output(str(error)) or f"{_operation_label(action)} failed safely."
-    return record_operation(command, status="failed", summary=summary)
+    return record_operation(command, status="failed", summary=_operation_summary(action, "failed"))
 
 
 def media_status(app_id: str = PHOTOPRISM_APP_ID) -> dict[str, Any]:
     _validate_app_id(app_id)
+    sanitize_stored_media_summaries(app_id)
     reconcile_stale_operations(app_id)
     reconcile_orphaned_running_operations(app_id)
     state = _read_state()
@@ -465,13 +549,16 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
         "app_id": PHOTOPRISM_APP_ID,
         "action_id": action,
         "status": status,
-        "summary": _safe_text(summary, _operation_summary(action, status)),
+        "summary": _lite_summary(action, status, summary),
         "mapping_count": int(command.get("mapping_count") or mapping_count() or 0),
         "runtime_mappings_used": int(command.get("runtime_mappings_used") or previous_for_operation.get("runtime_mappings_used") or 0),
         "skipped_overlapping_mappings": int(command.get("skipped_overlapping_mappings") or previous_for_operation.get("skipped_overlapping_mappings") or 0),
         "runtime_roots_used": int(command.get("runtime_roots_used") or previous_for_operation.get("runtime_roots_used") or command.get("runtime_mappings_used") or 0),
         "excluded_noisy_roots": int(command.get("excluded_noisy_roots") or previous_for_operation.get("excluded_noisy_roots") or 0),
         "evidence_status": "pending" if status in {"queued", "running"} else "saved",
+        "app_output_hidden": bool(command.get("app_output_hidden") or _looks_like_app_log(summary)),
+        "details_owner": "photoprism",
+        "details_note": _details_owner_note(status),
         "updated_at": now,
     }
 
@@ -484,7 +571,7 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
     if progress:
         operation["progress"] = {
             "phase": _safe_text(progress.get("phase"), status),
-            "step": _safe_text(progress.get("step"), _operation_summary(action, status)),
+            "step": _lite_summary(action, status, progress.get("step")),
             "current": int(progress.get("current") or 1),
             "total": int(progress.get("total") or 5),
             "percent": max(0, min(100, int(progress.get("percent") or 0))),
@@ -520,7 +607,7 @@ def _append_evidence(operation: dict[str, Any]) -> dict[str, Any]:
         "started_at": operation.get("started_at"),
         "completed_at": operation.get("completed_at"),
         "media_mappings": int(operation.get("mapping_count") or 0),
-        "summary": _safe_text(operation.get("summary"), _operation_summary(action, str(operation.get("status") or "unknown"))),
+        "summary": _lite_summary(action, str(operation.get("status") or "unknown"), operation.get("summary")),
         "phase": _safe_text(operation.get("phase"), str(operation.get("status") or "unknown")),
         "runtime_mappings_used": int(operation.get("runtime_mappings_used") or 0),
         "skipped_overlapping_mappings": int(operation.get("skipped_overlapping_mappings") or 0),
@@ -528,6 +615,9 @@ def _append_evidence(operation: dict[str, Any]) -> dict[str, Any]:
         "excluded_noisy_roots": int(operation.get("excluded_noisy_roots") or 0),
         "bounded": True,
         "timeout_seconds": MEDIA_COMMAND_TIMEOUT_SECONDS,
+        "app_output_hidden": bool(operation.get("app_output_hidden") or _looks_like_app_log(operation.get("summary"))),
+        "details_owner": "photoprism",
+        "details_note": _details_owner_note(str(operation.get("status") or "unknown")),
         "sensitive_values_hidden": True,
     }
     events.insert(0, event)
@@ -1010,6 +1100,11 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
         operation = record_operation(success_command, status="succeeded", summary=_operation_summary(action, "succeeded"))
         return {"status": "succeeded", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": "applied", "applied_count": int(apply_result.get("applied_count") or 0), "ready_count": int(apply_result.get("ready_count") or 0), "runtime_mapping_count": int(apply_result.get("runtime_mapping_count") or 0), "runtime_roots_used": int(apply_result.get("runtime_roots_used") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0), "overlap_skipped_count": int(apply_result.get("overlap_skipped_count") or 0), "excluded_noisy_roots": int(apply_result.get("excluded_noisy_roots") or 0)}}
 
-    summary = _sanitize_output(completed.stderr or completed.stdout) or f"{_operation_label(action)} failed safely."
-    operation = record_operation(_command_with_progress(command, "failed", "PhotoPrism media job failed safely.", 5), status="failed", summary=summary)
-    return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": str(apply_result.get("status") or "unknown"), "applied_count": int(apply_result.get("applied_count") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0)}}
+    failed_command = _command_with_progress(command, "failed", "PhotoPrism media job could not complete.", 5)
+    failed_command["runtime_mappings_used"] = int(apply_result.get("runtime_mapping_count") or 0)
+    failed_command["runtime_roots_used"] = int(apply_result.get("runtime_roots_used") or 0)
+    failed_command["skipped_overlapping_mappings"] = int(apply_result.get("overlap_skipped_count") or 0)
+    failed_command["excluded_noisy_roots"] = int(apply_result.get("excluded_noisy_roots") or 0)
+    failed_command["app_output_hidden"] = bool(completed.stderr or completed.stdout)
+    operation = record_operation(failed_command, status="failed", summary=_operation_summary(action, "failed"))
+    return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": str(apply_result.get("status") or "unknown"), "applied_count": int(apply_result.get("applied_count") or 0), "ready_count": int(apply_result.get("ready_count") or 0), "runtime_mapping_count": int(apply_result.get("runtime_mapping_count") or 0), "runtime_roots_used": int(apply_result.get("runtime_roots_used") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0), "overlap_skipped_count": int(apply_result.get("overlap_skipped_count") or 0), "excluded_noisy_roots": int(apply_result.get("excluded_noisy_roots") or 0)}}
