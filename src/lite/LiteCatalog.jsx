@@ -207,19 +207,132 @@ function PhotoPrismStorageTile({ app, preset, busyKey, disabled, onClick }) {
   );
 }
 
-function PhotoPrismMediaLottie({ running = false }) {
+function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
+  const flow = photoPrismMediaFlowState(lifecycle, busyKey);
+  const steps = [
+    { id: 'phone', label: 'Phone photos', icon: <Smartphone className="h-4 w-4" /> },
+    { id: 'worker', label: 'Pocket Lab', icon: <RefreshCw className="h-4 w-4" /> },
+    { id: 'prism', label: 'PhotoPrism', icon: <ImageIcon className="h-4 w-4" /> },
+    { id: 'backup', label: 'Storage', icon: <HardDrive className="h-4 w-4" /> },
+  ];
+
   return (
-    <div className={`lite-catalog-media-lottie ${running ? 'is-running' : ''}`} aria-hidden="true">
-      <span className="lite-catalog-media-lottie-node is-phone"><Smartphone className="h-4 w-4" /></span>
-      <span className="lite-catalog-media-lottie-line"><i /></span>
-      <span className="lite-catalog-media-lottie-orb is-one" />
-      <span className="lite-catalog-media-lottie-orb is-two" />
-      <span className="lite-catalog-media-lottie-node is-lab"><RefreshCw className="h-4 w-4" /></span>
-      <span className="lite-catalog-media-lottie-line"><i /></span>
-      <span className="lite-catalog-media-lottie-orb is-three" />
-      <span className="lite-catalog-media-lottie-node is-prism"><ImageIcon className="h-4 w-4" /></span>
+    <div className={`lite-catalog-media-flow-card is-${flow.state}`} aria-label={flow.ariaLabel}>
+      <div className="lite-catalog-media-flow-copy">
+        <span>{flow.eyebrow}</span>
+        <strong>{flow.title}</strong>
+        <p>{flow.summary}</p>
+      </div>
+      <div className="lite-catalog-media-flow-visual" aria-hidden="true">
+        {steps.map((step, index) => (
+          <React.Fragment key={step.id}>
+            {index > 0 ? <span className={`lite-catalog-media-flow-line is-${step.id}`}><i /></span> : null}
+            <span className={`lite-catalog-media-flow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
+              {step.icon}
+              <small>{step.label}</small>
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+      <span className="lite-catalog-media-flow-badge">{flow.badge}</span>
     </div>
   );
+}
+
+function photoPrismMediaFlowState(lifecycle, busyKey = '') {
+  const media = lifecycle?.media || {};
+  const backup = lifecycle?.backup || {};
+  const backupTargets = lifecycle?.backup_targets || {};
+  const mappingCount = Number(media?.mapping_count || lifecycle?.storage?.mapping_count || 0);
+  const storageConnected = mappingCount > 0 || lifecycle?.storage?.status === 'connected';
+  const lastImport = media?.last_import || {};
+  const lastIndex = media?.last_index || {};
+  const importStatus = String(lastImport?.status || '').toLowerCase();
+  const indexStatus = String(lastIndex?.status || '').toLowerCase();
+  const actionBusy = String(busyKey || '').includes('import_photos') || String(busyKey || '').includes('index_photos');
+  const operationRunning = Boolean(media?.operation_running || actionBusy);
+  const importing = operationRunning && ['queued', 'running'].includes(importStatus);
+  const indexing = operationRunning && ['queued', 'running'].includes(indexStatus);
+  const failed = ['failed', 'timed_out'].includes(importStatus) || ['failed', 'timed_out'].includes(indexStatus) || media?.status === 'review';
+  const succeeded = ['succeeded'].includes(importStatus) || ['succeeded'].includes(indexStatus) || media?.evidence?.status === 'saved';
+  const backupTargetReady = Boolean(backup?.target_ready || backupTargets?.ready_count > 0);
+  const backupMissing = storageConnected && !backupTargetReady;
+
+  if (!storageConnected) {
+    return {
+      state: 'idle',
+      eyebrow: 'PhotoPrism flow',
+      title: 'Connect photos to start',
+      summary: 'Choose phone photos or a storage device before importing.',
+      badge: 'Connect photos',
+      ariaLabel: 'PhotoPrism media flow idle. Connect photos to start.',
+      activeNodes: [],
+      doneNodes: [],
+    };
+  }
+
+  if (importing) {
+    return {
+      state: 'importing',
+      eyebrow: 'PhotoPrism flow',
+      title: 'Importing photos',
+      summary: 'Pocket Lab is bringing connected photos into PhotoPrism.',
+      badge: 'Working',
+      ariaLabel: 'PhotoPrism media flow importing photos through Pocket Lab.',
+      activeNodes: ['phone', 'worker', 'prism'],
+      doneNodes: ['phone'],
+    };
+  }
+
+  if (indexing || actionBusy) {
+    return {
+      state: 'indexing',
+      eyebrow: 'PhotoPrism flow',
+      title: 'Updating library',
+      summary: 'Pocket Lab is refreshing PhotoPrism with connected media.',
+      badge: 'Indexing',
+      ariaLabel: 'PhotoPrism media flow updating the PhotoPrism library.',
+      activeNodes: ['worker', 'prism'],
+      doneNodes: ['phone'],
+    };
+  }
+
+  if (failed) {
+    return {
+      state: 'review',
+      eyebrow: 'PhotoPrism flow',
+      title: 'Photo action needs review',
+      summary: 'Check the latest media action before running it again.',
+      badge: 'Needs review',
+      ariaLabel: 'PhotoPrism media flow needs review.',
+      activeNodes: ['worker'],
+      doneNodes: ['phone'],
+    };
+  }
+
+  if (backupMissing) {
+    return {
+      state: succeeded ? 'succeeded' : 'connected',
+      eyebrow: 'PhotoPrism flow',
+      title: succeeded ? 'Photo library updated' : 'Phone photos connected',
+      summary: 'Add a storage device when you are ready to save app backups elsewhere.',
+      badge: succeeded ? 'Done' : 'Connected',
+      ariaLabel: 'PhotoPrism media flow connected. Backup target is not ready yet.',
+      activeNodes: ['phone', 'worker', 'prism'],
+      doneNodes: succeeded ? ['phone', 'worker', 'prism'] : ['phone'],
+    };
+  }
+
+  return {
+    state: succeeded ? 'succeeded' : 'connected',
+    eyebrow: 'PhotoPrism flow',
+    title: succeeded ? 'Photo library updated' : 'Phone photos connected',
+    summary: succeeded ? 'PhotoPrism is ready with saved media evidence.' : 'PhotoPrism is ready to import or index connected media.',
+    badge: succeeded ? 'Done' : 'Connected',
+    ariaLabel: 'PhotoPrism media flow ready.',
+    activeNodes: ['phone', 'worker', 'prism', ...(backupTargetReady ? ['backup'] : [])],
+    doneNodes: succeeded ? ['phone', 'worker', 'prism'] : ['phone'],
+  };
 }
 
 
@@ -675,7 +788,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   <span>Action Center</span>
                   <strong>{mediaSummary}</strong>
                 </div>
-                <PhotoPrismMediaLottie running={Boolean(lifecycle?.media?.operation_running || actionBusyKey)} />
+                <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
               </div>
               <div className="lite-catalog-action-buttons">
                 <PhotoPrismActionTile
