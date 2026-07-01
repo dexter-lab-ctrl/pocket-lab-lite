@@ -10670,7 +10670,7 @@ textarea {
   height: 100%;
   min-width: 0.65rem;
   border-radius: inherit;
-  background: linear-gradient(90deg, #2563eb, #38bdf8, #2563eb);
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.88), rgba(56, 189, 248, 0.92), rgba(37, 99, 235, 0.88));
   background-size: 180% 100%;
   transition: width 420ms ease;
   animation: liteCatalogActionProgress 1.2s ease-in-out infinite;

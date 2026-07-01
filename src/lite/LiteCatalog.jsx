@@ -151,11 +151,12 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
     || (actionId === 'cancel_media' && media?.operation_running)
     || ['queued', 'running'].includes(operationStatus)
   );
-  if (!isRunning && !operation?.progress) return null;
+  if (!isRunning) return null;
   const progress = operation?.progress || {};
   const rawPercent = Number(progress?.percent);
   let percent = Number.isFinite(rawPercent) ? rawPercent : isRunning ? 12 : 0;
   if (isRunning && percent < 8) percent = 8;
+  if (isRunning && percent >= 100) percent = 92;
   percent = Math.min(100, Math.max(0, percent));
   return {
     running: isRunning,
@@ -340,7 +341,7 @@ function PhotoPrismActionTile({
   const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
   const progressDisablesAction = progressState?.running && actionId !== 'cancel_media';
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
-  const showProgress = Boolean(progressState && ['import_photos', 'index_photos'].includes(actionId));
+  const showProgress = Boolean(progressState?.running && ['import_photos', 'index_photos'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   return (
     <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
@@ -871,12 +872,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [result, actionError]);
 
   useEffect(() => {
-    if (!hasRunningPhotoPrismMedia(apps)) return undefined;
+    const busyMediaAction = /:(import_photos|index_photos|cancel_media)$/.test(actionBusyKey || '');
+    if (!busyMediaAction && !hasRunningPhotoPrismMedia(apps)) return undefined;
     const timer = window.setInterval(() => {
       refresh();
-    }, 2500);
+    }, 4000);
     return () => window.clearInterval(timer);
-  }, [apps, refresh]);
+  }, [actionBusyKey, apps, refresh]);
 
   function dismissActionNotice() {
     setResult(null);
