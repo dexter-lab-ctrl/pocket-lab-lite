@@ -10676,6 +10676,18 @@ textarea {
   animation: liteCatalogActionProgress 1.2s ease-in-out infinite;
 }
 
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress.is-indeterminate > span {
+  width: 42%;
+  animation: liteCatalogActionIndeterminate 1.25s ease-in-out infinite;
+}
+
+@keyframes liteCatalogActionIndeterminate {
+  0% { transform: translateX(-115%); }
+  55% { transform: translateX(85%); }
+  100% { transform: translateX(240%); }
+}
+
 @keyframes liteCatalogActionProgress {
   0% { background-position: 0% 50%; }
   100% { background-position: 180% 50%; }

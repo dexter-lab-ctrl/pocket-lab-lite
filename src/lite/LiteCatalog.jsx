@@ -44,8 +44,8 @@ const PHOTO_PRISM_ACTION_COPY = {
   },
   index_photos: {
     eyebrow: 'Photo library',
-    label: 'Index photos',
-    description: 'Refresh PhotoPrism’s photo library.',
+    label: 'Refresh library',
+    description: 'Quickly refresh PhotoPrism when something changed.',
   },
   cancel_media: {
     eyebrow: 'Photo library',
@@ -123,7 +123,7 @@ function isActionBusy(app, actionId, busyKey) {
 
 function busyActionLabel(actionId) {
   if (actionId === 'import_photos') return 'Importing...';
-  if (actionId === 'index_photos') return 'Indexing...';
+  if (actionId === 'index_photos') return 'Refreshing...';
   if (actionId === 'cancel_media') return 'Stopping...';
   if (actionId === 'backup_app') return 'Backing up...';
   if (actionId === 'backup_to_storage') return 'Backing up...';
@@ -161,6 +161,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
   return {
     running: isRunning,
     percent,
+    indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing'),
     phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
     step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : ''),
   };
@@ -240,10 +241,18 @@ function catalogActionNotice(result, error) {
   }
 
   if (actionId === 'index_photos') {
+    if (status === 'skipped' || result?.fast_forwarded) {
+      return {
+        ...base,
+        title: 'Library already fresh',
+        message: result?.summary || 'Nothing changed since the last successful refresh.',
+        timeoutMs: 8000,
+      };
+    }
     return {
       ...base,
-      title: 'Library update started',
-      message: 'Pocket Lab is refreshing PhotoPrism’s library.',
+      title: 'Library refresh started',
+      message: 'Pocket Lab is asking PhotoPrism to refresh the library.',
     };
   }
 
@@ -362,8 +371,15 @@ function PhotoPrismActionTile({
         {busy || (progressState?.running && actionId !== 'cancel_media') ? busyActionLabel(actionId) : copy.label}
       </LiteButton>
       {showProgress ? (
-        <div className="lite-catalog-action-progress" role="progressbar" aria-label={`${copy.label} progress`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(progressState.percent || 0)}>
-          <span style={{ width: `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
+        <div
+          className={`lite-catalog-action-progress ${progressState.indeterminate ? 'is-indeterminate' : ''}`}
+          role="progressbar"
+          aria-label={`${copy.label} progress`}
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={progressState.indeterminate ? undefined : Math.round(progressState.percent || 0)}
+        >
+          <span style={{ width: progressState.indeterminate ? '42%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
         </div>
       ) : null}
     </div>

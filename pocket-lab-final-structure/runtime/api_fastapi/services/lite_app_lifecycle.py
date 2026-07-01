@@ -288,9 +288,9 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         ),
         "index_photos": _action(
             media_ready,
-            "Index photos",
+            "Refresh library",
             reason=media_reason,
-            summary="Update PhotoPrism with connected media.",
+            summary="Quickly refresh PhotoPrism when Pocket Lab knows something changed.",
             status=media_status,
         ),
         "cancel_media": _action(
