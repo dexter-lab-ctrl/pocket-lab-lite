@@ -70,6 +70,11 @@ def _env_file() -> Path:
     return _app_root() / "config" / "photoprism.env"
 
 
+def _mapping_root_for_target(target: str) -> Path:
+    base = _app_root() / ("originals" if target == "originals" else "import")
+    return base / "pocketlab-mappings"
+
+
 def _read_json(path: Path, default: Any) -> Any:
     return deps.core.read_json_file(path, default)
 
@@ -398,6 +403,115 @@ def _sanitize_output(text: str) -> str:
     return cleaned[-500:]
 
 
+
+def _mapping_slug(mapping_id: Any) -> str:
+    raw = str(mapping_id or "mapping").strip().lower()
+    safe = re.sub(r"[^a-z0-9._-]+", "-", raw).strip("-._")
+    if not safe.startswith("map-"):
+        safe = f"map-{hashlib.sha256(raw.encode('utf-8')).hexdigest()[:14]}"
+    return safe[:80]
+
+
+def _clear_stale_mapping_links(active_targets: set[Path]) -> None:
+    for root in {_mapping_root_for_target("import"), _mapping_root_for_target("originals")}:
+        try:
+            root.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            continue
+        try:
+            children = list(root.iterdir())
+        except OSError:
+            continue
+        for child in children:
+            if child in active_targets:
+                continue
+            # Only remove links/files created inside Pocket Lab's mapping area.
+            # Do not recursively delete directories because user media must never
+            # be removed by mapping apply.
+            try:
+                if child.is_symlink() or child.is_file():
+                    child.unlink()
+            except OSError:
+                continue
+
+
+def _apply_storage_mappings_for_media(action: str) -> dict[str, Any]:
+    """Apply backend-approved PhotoPrism mappings before Import/Index.
+
+    The apply step creates sanitized symlink entries under PhotoPrism's managed
+    import/originals mapping directory. This keeps the browser out of filesystem
+    access, avoids copying user media, and keeps evidence limited to friendly
+    labels/counts.
+    """
+
+    mappings = lite_app_storage.runtime_mappings(PHOTOPRISM_APP_ID)
+    applied_ids: list[str] = []
+    skipped: list[dict[str, str]] = []
+    active_targets: set[Path] = set()
+
+    for mapping in mappings:
+        mapping_id = str(mapping.get("mapping_id") or "")
+        source_path = str(mapping.get("source_path") or "")
+        target = str(mapping.get("target") or "import")
+        mode = str(mapping.get("mode") or "read_only")
+        label = _safe_text(mapping.get("label") or mapping.get("source_label"), "Media folder")
+
+        if mode != "read_only" and target == "import":
+            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "read-only import mappings are required"})
+            continue
+
+        try:
+            source = lite_app_storage.resolve_mapping_source_path(source_path)
+        except Exception:
+            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source path was not approved"})
+            continue
+
+        try:
+            if not source.exists() or not source.is_dir() or not os.access(source, os.R_OK):
+                skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source folder is not ready"})
+                continue
+        except OSError:
+            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source folder is not readable"})
+            continue
+
+        mapping_root = _mapping_root_for_target(target)
+        mapping_root.mkdir(parents=True, exist_ok=True)
+        link_path = mapping_root / _mapping_slug(mapping_id)
+        active_targets.add(link_path)
+
+        try:
+            if link_path.is_symlink() or link_path.is_file():
+                current = link_path.readlink() if link_path.is_symlink() else None
+                if current is not None and str(current) == str(source):
+                    applied_ids.append(mapping_id)
+                    continue
+                link_path.unlink()
+            elif link_path.exists():
+                skipped.append({"mapping_id": mapping_id, "label": label, "reason": "managed mapping path is occupied"})
+                continue
+            os.symlink(source, link_path, target_is_directory=True)
+            applied_ids.append(mapping_id)
+        except OSError:
+            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "mapping could not be applied"})
+
+    _clear_stale_mapping_links(active_targets)
+
+    if applied_ids:
+        lite_app_storage.mark_mappings_applied(
+            PHOTOPRISM_APP_ID,
+            applied_ids,
+            reason=f"{_operation_label(action)} worker apply",
+        )
+
+    return {
+        "status": "applied" if applied_ids else "not_ready",
+        "applied_count": len(applied_ids),
+        "skipped_count": len(skipped),
+        "mapping_count": len(mappings),
+        "skipped": skipped[:6],
+    }
+
+
 def _photoprism_cli_command(action: str) -> str:
     if action == "import_photos":
         return "photoprism import"
@@ -434,6 +548,25 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
         operation = record_operation(command, status="failed", summary=reason)
         return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation}
 
+    apply_result = _apply_storage_mappings_for_media(action)
+    if int(apply_result.get("applied_count") or 0) < 1:
+        skipped = apply_result.get("skipped") if isinstance(apply_result.get("skipped"), list) else []
+        reason = "Connected photo storage is not ready yet."
+        if skipped and isinstance(skipped[0], dict):
+            reason = str(skipped[0].get("reason") or reason)
+        operation = record_operation(command, status="failed", summary=f"{_operation_label(action)} could not apply connected storage: {reason}")
+        return {
+            "status": "failed",
+            "app_id": PHOTOPRISM_APP_ID,
+            "action_id": action,
+            "operation": operation,
+            "mapping_apply": {
+                "status": "not_ready",
+                "applied_count": 0,
+                "skipped_count": int(apply_result.get("skipped_count") or 0),
+            },
+        }
+
     env_file = shlex.quote(str(_env_file()))
     cli = _photoprism_cli_command(action)
     script = f"set -Eeuo pipefail; set -a; source {env_file}; set +a; {cli}"
@@ -447,12 +580,12 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
         )
     except subprocess.TimeoutExpired:
         operation = record_operation(command, status="failed", summary=f"{_operation_label(action)} timed out safely.")
-        return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation}
+        return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": str(apply_result.get("status") or "unknown"), "applied_count": int(apply_result.get("applied_count") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0)}}
 
     if completed.returncode == 0:
         operation = record_operation(command, status="succeeded", summary=_operation_summary(action, "succeeded"))
-        return {"status": "succeeded", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation}
+        return {"status": "succeeded", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": "applied", "applied_count": int(apply_result.get("applied_count") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0)}}
 
     summary = _sanitize_output(completed.stderr or completed.stdout) or f"{_operation_label(action)} failed safely."
     operation = record_operation(command, status="failed", summary=summary)
-    return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation}
+    return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": str(apply_result.get("status") or "unknown"), "applied_count": int(apply_result.get("applied_count") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0)}}
