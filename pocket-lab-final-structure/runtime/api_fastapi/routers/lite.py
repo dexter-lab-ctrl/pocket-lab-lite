@@ -300,6 +300,15 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         })
         return submitted
 
+    if kind == "media_fast_forward":
+        response = action.get("response") if isinstance(action.get("response"), dict) else {}
+        response.setdefault("accepted", True)
+        response.setdefault("status", "skipped")
+        response.setdefault("app_id", "photoprism")
+        response.setdefault("action_id", "index_photos")
+        response.setdefault("fast_forwarded", True)
+        return response
+
     if kind == "cancel_media":
         response = action.get("response") if isinstance(action.get("response"), dict) else {}
         response.setdefault("accepted", True)

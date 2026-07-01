@@ -140,6 +140,11 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         command = lite_app_profiles.app_backup_command("photoprism", mode="config_only", reason=reason)
         return {"kind": "backup", "command": command, "summary": "PhotoPrism app backup queued."}
 
+    if action == "index_photos":
+        fast_forwarded = lite_photoprism_media.quick_index_fast_forward(reason=reason)
+        if fast_forwarded:
+            return {"kind": "media_fast_forward", "response": fast_forwarded, "summary": fast_forwarded.get("summary")}
+
     if action in {"import_photos", "index_photos"}:
         command = lite_photoprism_media.media_command(action, reason=reason)
         return {"kind": "media", "command": command, "summary": action_profile.get("summary") or f"{action_profile.get('label')} queued."}

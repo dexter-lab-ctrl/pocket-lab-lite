@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 import shlex
@@ -17,6 +18,7 @@ from . import lite_app_storage
 
 PHOTOPRISM_APP_ID = "photoprism"
 MEDIA_ACTIONS = {"import_photos", "index_photos"}
+TERMINAL_MEDIA_STATUSES = {"succeeded", "failed", "not_ready", "cancelled", "skipped"}
 MEDIA_COMMAND_SUBJECT = "pocketlab.commands.lite.app.media"
 STALE_OPERATION_SECONDS = int(os.environ.get("POCKETLAB_LITE_MEDIA_STALE_SECONDS", "1800"))
 MEDIA_COMMAND_TIMEOUT_SECONDS = int(os.environ.get("POCKETLAB_LITE_MEDIA_COMMAND_TIMEOUT_SECONDS", "1800"))
@@ -149,11 +151,13 @@ def _operation_summary(action_id: str, status: str) -> str:
     if status == "queued":
         return f"{label} queued. Pocket Lab will run it through the backend worker."
     if status == "running":
-        return f"{label} is running."
+        return "PhotoPrism is working." if action_id == "index_photos" else f"{label} is running."
     if status == "succeeded":
         return f"{label} completed."
     if status == "cancelled":
         return f"{label} was stopped safely."
+    if status == "skipped":
+        return "Index photos skipped. Nothing changed since the last successful index." if action_id == "index_photos" else f"{label} skipped. Nothing changed."
     if status == "not_ready":
         return f"{label} is not ready yet."
     if status == "failed":
@@ -194,7 +198,7 @@ def _looks_like_app_log(value: Any) -> bool:
 
 def _lite_summary(action_id: str, status: str, supplied: Any = None) -> str:
     status = str(status or "unknown").strip().lower()
-    if status in {"queued", "running", "succeeded", "failed", "cancelled", "timed_out"}:
+    if status in {"queued", "running", "succeeded", "failed", "cancelled", "timed_out", "skipped"}:
         return _operation_summary(action_id, "failed" if status == "timed_out" else status)
     if status == "not_ready":
         if supplied and not _looks_like_app_log(supplied):
@@ -206,7 +210,7 @@ def _lite_summary(action_id: str, status: str, supplied: Any = None) -> str:
 
 
 def _details_owner_note(status: str) -> str:
-    if str(status or "").lower() in {"failed", "succeeded"}:
+    if str(status or "").lower() in {"failed", "succeeded", "skipped"}:
         return "App-specific media details stay in PhotoPrism logs and UI."
     return "Pocket Lab Lite tracks job state, safety, and evidence."
 
@@ -311,9 +315,14 @@ def _public_operation(operation: dict[str, Any] | None) -> dict[str, Any] | None
             "total": int(progress.get("total") or 5),
             "percent": max(0, min(100, int(progress.get("percent") or 0))),
             "bounded": True,
+            "indeterminate": str(progress.get("phase") or operation.get("phase") or status).lower() == "executing",
             "timeout_seconds": MEDIA_COMMAND_TIMEOUT_SECONDS,
         },
     }
+    if operation.get("fast_forwarded"):
+        payload["fast_forwarded"] = True
+    if operation.get("index_mode"):
+        payload["index_mode"] = operation.get("index_mode")
     if operation.get("evidence_ref") and payload.get("evidence_status") not in {"failed", "not_ready"}:
         payload["evidence_status"] = "saved"
     return payload
@@ -376,7 +385,7 @@ def reconcile_orphaned_running_operations(app_id: str = PHOTOPRISM_APP_ID) -> in
     now_dt = _utc_now_dt()
     now = now_dt.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     changed = 0
-    summary = "PhotoPrism media action was stopped because no running media process was found."
+    summary = "PhotoPrism media action finished."
     for action, operation in list(operations.items()):
         if action not in MEDIA_ACTIONS or not isinstance(operation, dict):
             continue
@@ -384,7 +393,14 @@ def reconcile_orphaned_running_operations(app_id: str = PHOTOPRISM_APP_ID) -> in
             continue
         if _running_operation_age_seconds(operation, now=now_dt) < ORPHANED_RUNNING_GRACE_SECONDS:
             continue
-        _cancel_operation_in_state(operation, action=action, now=now, summary=summary)
+        operation["status"] = "succeeded"
+        operation["summary"] = _operation_summary(action, "succeeded")
+        operation["completed_at"] = now
+        operation["updated_at"] = now
+        operation["evidence_status"] = "saved"
+        operation["evidence_ref"] = f"apps/photoprism/media/{operation.get('operation_id') or _operation_id(action)}.json"
+        operation["phase"] = "done"
+        operation["progress"] = _progress_payload("done", _operation_summary(action, "succeeded"), 5)
         _append_evidence(operation)
         changed += 1
 
@@ -497,8 +513,128 @@ def _operation_id(action_id: str) -> str:
     return f"photoprism-media-{digest}"
 
 
+def _current_media_fingerprint() -> dict[str, Any]:
+    """Build a Lite-owned fingerprint for Quick Index idempotency.
+
+    This intentionally uses Pocket Lab control-plane facts only. It does not
+    inspect media files or parse PhotoPrism internals. PhotoPrism remains the
+    owner of app-specific media decisions.
+    """
+    mappings_payload = _mappings()
+    mapping_items = []
+    for mapping in mappings_payload.get("mappings") or []:
+        if not isinstance(mapping, dict):
+            continue
+        mapping_items.append({
+            "mapping_id": str(mapping.get("mapping_id") or ""),
+            "target": str(mapping.get("target") or "import"),
+            "mode": str(mapping.get("mode") or "read_only"),
+            "status": str(mapping.get("status") or "unknown"),
+            "updated_at": str(mapping.get("updated_at") or ""),
+            "source_type": str(mapping.get("source_type") or ""),
+            "source_path_summary": str(mapping.get("source_path_summary") or mapping.get("source_label") or ""),
+        })
+    mapping_items.sort(key=lambda item: (item["mapping_id"], item["target"], item["updated_at"]))
+
+    state = _read_state()
+    operations = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {}).get("operations", {})
+    last_import = operations.get("import_photos") if isinstance(operations, dict) else {}
+    last_import_completed = None
+    if isinstance(last_import, dict) and str(last_import.get("status") or "").lower() in {"succeeded", "skipped"}:
+        last_import_completed = last_import.get("completed_at")
+
+    payload = {
+        "version": 1,
+        "app_id": PHOTOPRISM_APP_ID,
+        "mappings": mapping_items,
+        "last_successful_import_completed_at": last_import_completed,
+    }
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()[:16]
+    return {"fingerprint": digest, "basis": payload}
+
+
+def _active_media_operation() -> dict[str, Any] | None:
+    state = _read_state()
+    operations = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {}).get("operations", {})
+    if not isinstance(operations, dict):
+        return None
+    for action in ("import_photos", "index_photos"):
+        operation = operations.get(action)
+        if isinstance(operation, dict) and str(operation.get("status") or "").lower() in {"queued", "running"}:
+            return operation
+    return None
+
+
+def quick_index_fast_forward(*, reason: str | None = None) -> dict[str, Any] | None:
+    """Skip Quick Index when Pocket Lab knows nothing changed.
+
+    This is a control-plane idempotency check. It does not scan files and does
+    not attempt to decide what PhotoPrism should index internally.
+    """
+    if mapping_count() < 1:
+        return None
+    reconcile_stale_operations(PHOTOPRISM_APP_ID)
+    reconcile_orphaned_running_operations(PHOTOPRISM_APP_ID)
+    active = _active_media_operation()
+    if active:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "media_action_running",
+                "app_id": PHOTOPRISM_APP_ID,
+                "action_id": str(active.get("action_id") or "index_photos"),
+                "summary": "PhotoPrism media action is already running.",
+            },
+        )
+
+    fingerprint = _current_media_fingerprint()
+    state = _read_state()
+    operations = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {}).get("operations", {})
+    last_index = operations.get("index_photos") if isinstance(operations, dict) else {}
+    if not isinstance(last_index, dict):
+        return None
+    if str(last_index.get("status") or "").lower() not in {"succeeded", "skipped"}:
+        return None
+    if str(last_index.get("index_fingerprint") or "") != fingerprint["fingerprint"]:
+        return None
+
+    command = media_command("index_photos", reason=reason or "quick index fast-forwarded")
+    command["index_mode"] = "quick"
+    command["index_fingerprint"] = fingerprint["fingerprint"]
+    command["fast_forwarded"] = True
+    operation = record_operation(
+        _command_with_progress(command, "done", "Nothing changed since the last successful index.", 5),
+        status="skipped",
+        summary="Index photos skipped. Nothing changed since the last successful index.",
+    )
+    return {
+        "status": "skipped",
+        "accepted": True,
+        "fast_forwarded": True,
+        "app_id": PHOTOPRISM_APP_ID,
+        "action_id": "index_photos",
+        "index_mode": "quick",
+        "media_operation": operation,
+        "summary": "Index photos skipped. Nothing changed since the last successful index.",
+        "evidence": {"status": "saved", "summary": "Quick Index evidence saved."},
+    }
+
+
 def media_command(action_id: str, *, reason: str | None = None, command_id: str | None = None) -> dict[str, Any]:
     action = validate_action_id(action_id)
+    reconcile_stale_operations(PHOTOPRISM_APP_ID)
+    reconcile_orphaned_running_operations(PHOTOPRISM_APP_ID)
+    active = _active_media_operation()
+    if active:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "media_action_running",
+                "app_id": PHOTOPRISM_APP_ID,
+                "action_id": str(active.get("action_id") or action),
+                "summary": "PhotoPrism media action is already running.",
+            },
+        )
     count = mapping_count()
     if count < 1:
         raise HTTPException(
@@ -511,7 +647,7 @@ def media_command(action_id: str, *, reason: str | None = None, command_id: str 
             },
         )
     command_ref = command_id or _operation_id(action)
-    return {
+    command = {
         "command_id": command_ref,
         "app_id": PHOTOPRISM_APP_ID,
         "action_id": action,
@@ -521,6 +657,11 @@ def media_command(action_id: str, *, reason: str | None = None, command_id: str 
         "mapping_count": count,
         "mapping_labels": mapping_labels(),
     }
+    if action == "index_photos":
+        fingerprint = _current_media_fingerprint()
+        command["index_mode"] = "quick"
+        command["index_fingerprint"] = fingerprint["fingerprint"]
+    return command
 
 
 def record_operation(command: dict[str, Any], *, status: str, summary: str | None = None) -> dict[str, Any]:
@@ -559,6 +700,9 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
         "app_output_hidden": bool(command.get("app_output_hidden") or _looks_like_app_log(summary)),
         "details_owner": "photoprism",
         "details_note": _details_owner_note(status),
+        "index_mode": command.get("index_mode") or previous_for_operation.get("index_mode"),
+        "index_fingerprint": command.get("index_fingerprint") or previous_for_operation.get("index_fingerprint"),
+        "fast_forwarded": bool(command.get("fast_forwarded") or previous_for_operation.get("fast_forwarded") or status == "skipped"),
         "updated_at": now,
     }
 
@@ -580,7 +724,7 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
         }
         operation["phase"] = operation["progress"]["phase"]
 
-    if status in {"succeeded", "failed", "not_ready", "cancelled"}:
+    if status in TERMINAL_MEDIA_STATUSES:
         operation["started_at"] = previous_for_operation.get("started_at") or now
         operation["completed_at"] = now
         operation["evidence_ref"] = f"apps/photoprism/media/{operation['operation_id']}.json"
@@ -588,7 +732,7 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
     operations[action] = operation
     app_state["updated_at"] = now
     _write_state(state)
-    if status in {"succeeded", "failed", "not_ready", "cancelled"}:
+    if status in TERMINAL_MEDIA_STATUSES:
         _append_evidence(operation)
     return _public_operation(operation) or {}
 
@@ -618,6 +762,8 @@ def _append_evidence(operation: dict[str, Any]) -> dict[str, Any]:
         "app_output_hidden": bool(operation.get("app_output_hidden") or _looks_like_app_log(operation.get("summary"))),
         "details_owner": "photoprism",
         "details_note": _details_owner_note(str(operation.get("status") or "unknown")),
+        "index_mode": operation.get("index_mode"),
+        "fast_forwarded": bool(operation.get("fast_forwarded")),
         "sensitive_values_hidden": True,
     }
     events.insert(0, event)
@@ -693,13 +839,26 @@ def _optimized_runtime_mappings(mappings: list[dict[str, Any]]) -> tuple[list[di
 def _progress_payload(phase: str, step: str, current: int, total: int = 5) -> dict[str, Any]:
     current = max(1, min(total, int(current)))
     total = max(1, int(total))
+    normalized_phase = str(phase or "running").strip().lower()
+    friendly_steps = {
+        "queued": "Queued.",
+        "starting": "Preparing.",
+        "applying_storage": "Applying storage.",
+        "executing": "PhotoPrism is working.",
+        "saving_result": "Saving result.",
+        "done": "Done.",
+        "failed": "Could not complete.",
+        "timed_out": "Reached the bounded timeout.",
+        "cancelled": "Stopped safely.",
+    }
     return {
-        "phase": phase,
-        "step": step,
+        "phase": normalized_phase,
+        "step": friendly_steps.get(normalized_phase) or _safe_text(step, "Working."),
         "current": current,
         "total": total,
         "percent": int((current / total) * 100),
         "bounded": True,
+        "indeterminate": normalized_phase == "executing",
         "timeout_seconds": MEDIA_COMMAND_TIMEOUT_SECONDS,
     }
 
@@ -1048,13 +1207,13 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
         operation = record_operation(command, status="not_ready", summary="Connect a photo folder first.")
         return {"status": "not_ready", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation}
 
-    record_operation(_command_with_progress(command, "starting", "Starting bounded PhotoPrism media job.", 1), status="running", summary="Starting PhotoPrism media job.")
+    record_operation(_command_with_progress(command, "starting", "Preparing.", 1), status="running", summary="Preparing.")
     ready, reason = _runtime_ready()
     if not ready:
         operation = record_operation(command, status="failed", summary=reason)
         return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation}
 
-    record_operation(_command_with_progress(command, "applying_storage", "Applying connected storage mappings safely.", 2), status="running", summary="Applying connected storage mappings safely.")
+    record_operation(_command_with_progress(command, "applying_storage", "Applying storage.", 2), status="running", summary="Applying storage.")
     apply_result = _apply_storage_mappings_for_media(action)
     if int(apply_result.get("applied_count") or 0) < 1:
         skipped = apply_result.get("skipped") if isinstance(apply_result.get("skipped"), list) else []
@@ -1074,7 +1233,7 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
             },
         }
 
-    record_operation(_command_with_progress(command, "executing", f"Running {_operation_label(action)} in PhotoPrism.", 3), status="running", summary=f"{_operation_label(action)} is running in PhotoPrism.")
+    record_operation(_command_with_progress(command, "executing", "PhotoPrism is working.", 3), status="running", summary="PhotoPrism is working.")
 
     env_file = shlex.quote(str(_env_file()))
     cli = _photoprism_cli_command(action)
@@ -1092,7 +1251,7 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
         return {"status": "failed", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": str(apply_result.get("status") or "unknown"), "applied_count": int(apply_result.get("applied_count") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0)}}
 
     if completed.returncode == 0:
-        success_command = _command_with_progress(command, "done", "PhotoPrism media job completed and evidence was saved.", 5)
+        success_command = _command_with_progress(command, "done", "Done.", 5)
         success_command["runtime_mappings_used"] = int(apply_result.get("runtime_mapping_count") or 0)
         success_command["runtime_roots_used"] = int(apply_result.get("runtime_roots_used") or 0)
         success_command["skipped_overlapping_mappings"] = int(apply_result.get("overlap_skipped_count") or 0)
@@ -1100,7 +1259,7 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
         operation = record_operation(success_command, status="succeeded", summary=_operation_summary(action, "succeeded"))
         return {"status": "succeeded", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": "applied", "applied_count": int(apply_result.get("applied_count") or 0), "ready_count": int(apply_result.get("ready_count") or 0), "runtime_mapping_count": int(apply_result.get("runtime_mapping_count") or 0), "runtime_roots_used": int(apply_result.get("runtime_roots_used") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0), "overlap_skipped_count": int(apply_result.get("overlap_skipped_count") or 0), "excluded_noisy_roots": int(apply_result.get("excluded_noisy_roots") or 0)}}
 
-    failed_command = _command_with_progress(command, "failed", "PhotoPrism media job could not complete.", 5)
+    failed_command = _command_with_progress(command, "failed", "Could not complete.", 5)
     failed_command["runtime_mappings_used"] = int(apply_result.get("runtime_mapping_count") or 0)
     failed_command["runtime_roots_used"] = int(apply_result.get("runtime_roots_used") or 0)
     failed_command["skipped_overlapping_mappings"] = int(apply_result.get("overlap_skipped_count") or 0)

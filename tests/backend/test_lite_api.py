@@ -2789,8 +2789,8 @@ def test_lite_photoprism_lifecycle_reconciles_orphaned_running_operation(monkeyp
 
     status = lite_photoprism_media.media_status("photoprism")
     assert status["operation_running"] is False
-    assert status["last_import"]["status"] == "cancelled"
-    assert status["last_import"]["progress"]["phase"] == "cancelled"
+    assert status["last_import"]["status"] == "succeeded"
+    assert status["last_import"]["progress"]["phase"] == "done"
 
 
 def test_lite_photoprism_media_failure_hides_app_owned_output(tmp_path, monkeypatch):
@@ -2884,3 +2884,134 @@ def test_lite_photoprism_media_status_sanitizes_existing_noisy_summaries(monkeyp
     stored = state["apps"]["photoprism"]["operations"]["index_photos"]
     assert stored["summary"] == "Index photos could not complete."
     assert stored["app_output_hidden"] is True
+
+
+def test_lite_photoprism_quick_index_fast_forwards_when_control_state_unchanged(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    mappings = {
+        "count": 1,
+        "mappings": [
+            {
+                "mapping_id": "map-phone-storage",
+                "target": "import",
+                "mode": "read_only",
+                "status": "applied",
+                "updated_at": "2026-07-01T10:00:00Z",
+                "source_type": "phone_media",
+                "source_path_summary": "Phone storage",
+            }
+        ],
+    }
+    monkeypatch.setattr(lite_photoprism_media, "_mappings", lambda: mappings)
+    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
+
+    import_command = {
+        "command_id": "photoprism-media-import-success",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }
+    lite_photoprism_media.record_operation(import_command, status="succeeded")
+
+    index_command = lite_photoprism_media.media_command("index_photos", reason="first quick index")
+    lite_photoprism_media.record_operation(index_command, status="succeeded")
+
+    result = lite_photoprism_media.quick_index_fast_forward(reason="second quick index")
+
+    assert result is not None
+    assert result["status"] == "skipped"
+    assert result["fast_forwarded"] is True
+    assert result["media_operation"]["status"] == "skipped"
+    assert result["media_operation"]["fast_forwarded"] is True
+    assert result["media_operation"]["index_mode"] == "quick"
+    assert "Nothing changed" in result["summary"]
+
+
+def test_lite_photoprism_quick_index_does_not_fast_forward_when_mapping_changes(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    mapping_state = {
+        "count": 1,
+        "mappings": [
+            {
+                "mapping_id": "map-phone-storage",
+                "target": "import",
+                "mode": "read_only",
+                "status": "applied",
+                "updated_at": "2026-07-01T10:00:00Z",
+                "source_type": "phone_media",
+                "source_path_summary": "Phone storage",
+            }
+        ],
+    }
+    monkeypatch.setattr(lite_photoprism_media, "_mappings", lambda: mapping_state)
+    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
+
+    lite_photoprism_media.record_operation({
+        "command_id": "photoprism-media-import-success-change",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }, status="succeeded")
+    index_command = lite_photoprism_media.media_command("index_photos", reason="first quick index")
+    lite_photoprism_media.record_operation(index_command, status="succeeded")
+
+    mapping_state["mappings"][0]["updated_at"] = "2026-07-01T11:00:00Z"
+
+    assert lite_photoprism_media.quick_index_fast_forward(reason="mapping changed") is None
+    command = lite_photoprism_media.media_command("index_photos", reason="mapping changed")
+    assert command["index_mode"] == "quick"
+    assert command["index_fingerprint"] != index_command["index_fingerprint"]
+
+
+def test_lite_photoprism_orphaned_running_index_reconciles_to_finished(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
+    command = {
+        "command_id": "photoprism-media-orphaned-index",
+        "app_id": "photoprism",
+        "action_id": "index_photos",
+        "operation": "index_photos",
+        "mapping_count": 1,
+        "progress": lite_photoprism_media._progress_payload("executing", "PhotoPrism is working.", 3),
+    }
+    lite_photoprism_media.record_operation(command, status="running")
+    state = lite_photoprism_media._read_state()
+    operation = state["apps"]["photoprism"]["operations"]["index_photos"]
+    operation["started_at"] = "2026-07-01T00:00:00Z"
+    operation["updated_at"] = "2026-07-01T00:00:00Z"
+    lite_photoprism_media._write_state(state)
+
+    changed = lite_photoprism_media.reconcile_orphaned_running_operations("photoprism")
+    status = lite_photoprism_media.media_status("photoprism")
+
+    assert changed == 1
+    assert status["operation_running"] is False
+    assert status["last_index"]["status"] == "succeeded"
+    assert status["last_index"]["summary"] == "Index photos completed."
+
+
+def test_lite_photoprism_executing_progress_is_indeterminate():
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-progress-wording",
+        "app_id": "photoprism",
+        "action_id": "index_photos",
+        "operation": "index_photos",
+        "mapping_count": 1,
+        "progress": lite_photoprism_media._progress_payload("executing", "PhotoPrism is working.", 3),
+    }
+    operation = lite_photoprism_media.record_operation(command, status="running", summary="PhotoPrism is working.")
+
+    assert operation["summary"] == "PhotoPrism is working."
+    assert operation["progress"]["step"] == "PhotoPrism is working."
+    assert operation["progress"]["indeterminate"] is True
