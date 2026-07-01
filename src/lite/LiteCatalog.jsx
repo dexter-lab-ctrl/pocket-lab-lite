@@ -135,6 +135,43 @@ function busyActionLabel(actionId) {
   return 'Working...';
 }
 
+
+function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
+  const media = lifecycle?.media || {};
+  const operation = actionId === 'index_photos'
+    ? media?.last_index
+    : actionId === 'import_photos'
+      ? media?.last_import
+      : actionId === 'cancel_media'
+        ? (media?.last_import?.status === 'running' || media?.last_import?.status === 'queued' ? media?.last_import : media?.last_index)
+        : null;
+  const operationStatus = String(operation?.status || '').toLowerCase();
+  const isRunning = Boolean(
+    busy
+    || (actionId === 'cancel_media' && media?.operation_running)
+    || ['queued', 'running'].includes(operationStatus)
+  );
+  if (!isRunning && !operation?.progress) return null;
+  const progress = operation?.progress || {};
+  const rawPercent = Number(progress?.percent);
+  let percent = Number.isFinite(rawPercent) ? rawPercent : isRunning ? 12 : 0;
+  if (isRunning && percent < 8) percent = 8;
+  percent = Math.min(100, Math.max(0, percent));
+  return {
+    running: isRunning,
+    percent,
+    phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
+    step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : ''),
+  };
+}
+
+function hasRunningPhotoPrismMedia(apps) {
+  return (Array.isArray(apps) ? apps : []).some((app) => (
+    isPhotoPrismApp(app)
+    && Boolean(lifecycleProfile(app)?.media?.operation_running)
+  ));
+}
+
 function PhotoPrismActionIcon({ actionId }) {
   if (actionId === 'connect_photos') return <FolderPlus className="h-4 w-4" />;
   if (actionId === 'import_photos' || actionId === 'index_photos') return <RefreshCw className="h-4 w-4" />;
@@ -291,6 +328,7 @@ function PhotoPrismActionTile({
   actionId,
   action,
   busyKey,
+  progress,
   tone = 'secondary',
   onClick,
   disabled = false,
@@ -298,16 +336,20 @@ function PhotoPrismActionTile({
 }) {
   const copy = actionCopy(actionId);
   const busy = isActionBusy(app, actionId, busyKey) || (actionId === 'connect_photos' && busyKey === `${app?.id}:phone_storage`);
+  const progressState = progress || null;
   const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
-  const isDisabled = Boolean(disabled || action?.enabled === false || busy);
+  const progressDisablesAction = progressState?.running && actionId !== 'cancel_media';
+  const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
+  const showProgress = Boolean(progressState && ['import_photos', 'index_photos'].includes(actionId));
+  const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   return (
-    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
+    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
           <span>{copy.eyebrow}</span>
           <strong>{copy.label}</strong>
-          <p>{reason || copy.description}</p>
+          <p>{progressLabel || reason || copy.description}</p>
         </div>
       </div>
       <LiteButton
@@ -316,8 +358,13 @@ function PhotoPrismActionTile({
         disabled={isDisabled}
         title={title || reason || copy.description}
       >
-        {busy ? busyActionLabel(actionId) : copy.label}
+        {busy || (progressState?.running && actionId !== 'cancel_media') ? busyActionLabel(actionId) : copy.label}
       </LiteButton>
+      {showProgress ? (
+        <div className="lite-catalog-action-progress" role="progressbar" aria-label={`${copy.label} progress`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(progressState.percent || 0)}>
+          <span style={{ width: `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -823,6 +870,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     return () => window.clearTimeout(timer);
   }, [result, actionError]);
 
+  useEffect(() => {
+    if (!hasRunningPhotoPrismMedia(apps)) return undefined;
+    const timer = window.setInterval(() => {
+      refresh();
+    }, 2500);
+    return () => window.clearInterval(timer);
+  }, [apps, refresh]);
+
   function dismissActionNotice() {
     setResult(null);
     setActionError(null);
@@ -1050,6 +1105,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
     const indexPhotosAction = lifecycleAction(lifecycle, 'index_photos');
     const cancelMediaAction = lifecycleAction(lifecycle, 'cancel_media');
+    const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
+    const indexProgress = actionProgressFromLifecycle(lifecycle, 'index_photos', actionBusyKey === `${app.id}:index_photos`);
+    const cancelProgress = actionProgressFromLifecycle(lifecycle, 'cancel_media', actionBusyKey === `${app.id}:cancel_media`);
     const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
     const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
     const installAppAction = lifecycleAction(lifecycle, 'install_app');
@@ -1134,6 +1192,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="import_photos"
                   action={importPhotosAction}
                   busyKey={actionBusyKey}
+                  progress={importProgress}
                   tone="secondary"
                   onClick={(event) => runLifecycleAction(app, 'import_photos', event)}
                   disabled={importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`}
@@ -1144,6 +1203,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="index_photos"
                   action={indexPhotosAction}
                   busyKey={actionBusyKey}
+                  progress={indexProgress}
                   tone="secondary"
                   onClick={(event) => runLifecycleAction(app, 'index_photos', event)}
                   disabled={indexPhotosAction.enabled === false || actionBusyKey === `${app.id}:index_photos`}
@@ -1154,6 +1214,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="cancel_media"
                   action={cancelMediaAction}
                   busyKey={actionBusyKey}
+                  progress={cancelProgress}
                   tone="secondary"
                   onClick={(event) => runLifecycleAction(app, 'cancel_media', event)}
                   disabled={cancelMediaAction.enabled === false || actionBusyKey === `${app.id}:cancel_media`}
