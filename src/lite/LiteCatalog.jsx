@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
   FileCheck,
@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   RefreshCw,
   Search,
+  X,
   Server,
   ShieldCheck,
   ShieldAlert,
@@ -19,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, ResultNotice, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 
 const KNOWN_APP_NAMES = ['PhotoPrism'];
 
@@ -149,6 +150,129 @@ function PhotoPrismStorageIcon({ preset }) {
   if (preset === 'phone_camera' || preset === 'phone_pictures') return <Camera className="h-4 w-4" />;
   if (preset === 'storage_device') return <HardDrive className="h-4 w-4" />;
   return <FolderPlus className="h-4 w-4" />;
+}
+
+function catalogActionReference(result) {
+  return result?.command_id || result?.job_id || result?.backup_id || result?.run_id || result?.mapping_id || '';
+}
+
+function catalogActionNotice(result, error) {
+  if (error) {
+    return {
+      key: `error:${error}`,
+      tone: 'danger',
+      title: 'Needs attention',
+      message: error,
+      persistent: true,
+    };
+  }
+
+  if (!result) return null;
+
+  const status = String(result?.status || '').toLowerCase();
+  const actionId = String(result?.action_id || result?.operation || '').toLowerCase();
+  const reference = catalogActionReference(result);
+  const base = {
+    key: `${status || 'result'}:${actionId || reference || result?.summary || result?.message || Date.now()}`,
+    tone: 'success',
+    title: 'Request sent safely',
+    message: result?.summary || result?.message || 'Pocket Lab accepted the request.',
+    reference,
+    timeoutMs: 5000,
+    persistent: false,
+  };
+
+  if (status === 'already_connected' || status === 'duplicate_mapping') {
+    return {
+      ...base,
+      tone: 'review',
+      title: 'Already connected',
+      message: result?.summary || 'This media folder is already connected to PhotoPrism.',
+      timeoutMs: 8000,
+    };
+  }
+
+  if (actionId === 'import_photos') {
+    return {
+      ...base,
+      title: 'Import started',
+      message: 'Pocket Lab is bringing connected photos into PhotoPrism.',
+    };
+  }
+
+  if (actionId === 'index_photos') {
+    return {
+      ...base,
+      title: 'Library update started',
+      message: 'Pocket Lab is refreshing PhotoPrism’s library.',
+    };
+  }
+
+  if (actionId === 'backup_app' || String(reference).startsWith('app-backup-photoprism')) {
+    return {
+      ...base,
+      title: 'Backup started',
+      message: 'Pocket Lab is saving PhotoPrism settings and safe app records.',
+    };
+  }
+
+  const summary = String(result?.summary || result?.message || '').toLowerCase();
+  if (summary.includes('media folder connected') || summary.includes('phone photos connected') || summary.includes('storage connected')) {
+    return {
+      ...base,
+      title: 'Phone photos connected',
+      message: 'PhotoPrism can now look there. Run Import photos or Index photos to update your library.',
+    };
+  }
+
+  if (result?.accepted || status === 'queued') {
+    return {
+      ...base,
+      message: 'Pocket Lab queued this through the control plane.',
+    };
+  }
+
+  return base;
+}
+
+function AppCatalogResultNotice({ result, error, onDismiss }) {
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const notice = catalogActionNotice(result, error);
+  if (!notice) return null;
+
+  const toneClass = notice.tone === 'danger'
+    ? 'is-danger'
+    : notice.tone === 'review'
+      ? 'is-review'
+      : 'is-success';
+
+  return (
+    <div className={`lite-catalog-action-notice ${toneClass}`} role={notice.tone === 'danger' ? 'alert' : 'status'} aria-live={notice.tone === 'danger' ? 'assertive' : 'polite'}>
+      <div className="lite-catalog-action-notice-main">
+        <span className="lite-catalog-action-notice-dot" aria-hidden="true" />
+        <div>
+          <strong>{notice.title}</strong>
+          <p>{notice.message}</p>
+        </div>
+      </div>
+      <div className="lite-catalog-action-notice-actions">
+        {notice.reference ? (
+          <button type="button" className="lite-catalog-action-notice-detail" onClick={() => setReceiptOpen((open) => !open)}>
+            {receiptOpen ? 'Hide receipt' : 'Receipt'}
+          </button>
+        ) : null}
+        <button type="button" className="lite-catalog-action-notice-close" onClick={onDismiss} aria-label="Dismiss App Catalog message">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      {receiptOpen && notice.reference ? (
+        <div className="lite-catalog-action-notice-reference">
+          <span>Reference</span>
+          <code>{notice.reference}</code>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function PhotoPrismActionTile({
@@ -582,6 +706,21 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     });
   }, [apps, activeFilter, query]);
 
+  useEffect(() => {
+    const notice = catalogActionNotice(result, actionError);
+    if (!notice || notice.persistent) return undefined;
+    const timer = window.setTimeout(() => {
+      setResult(null);
+      setActionError(null);
+    }, notice.timeoutMs || 5000);
+    return () => window.clearTimeout(timer);
+  }, [result, actionError]);
+
+  function dismissActionNotice() {
+    setResult(null);
+    setActionError(null);
+  }
+
 
   async function install(app, event) {
     event?.stopPropagation?.();
@@ -682,7 +821,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     } catch (err) {
       const detail = err?.payload?.detail;
       if (detail?.status === 'duplicate_mapping') {
-        setResult({ status: 'already_connected', summary: detail.summary || 'This media folder is already connected.' });
+        setResult({ status: 'already_connected', summary: detail.summary || 'This media folder is already connected to PhotoPrism.' });
       } else {
         setActionError(err.message);
       }
@@ -698,10 +837,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const busyKey = `${app.id}:${actionId}`;
     setActionBusyKey(busyKey);
     setActionError(null);
-    setResult({ status: 'queued', summary: 'Sending app action to Pocket Lab...' });
+    setResult({ status: 'queued', action_id: actionId, summary: 'Sending app action to Pocket Lab...' });
     try {
       const response = await liteApi.runAppAction(app.id || 'photoprism', actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload });
-      setResult(response);
+      setResult({ action_id: actionId, ...response });
       refresh();
       window.setTimeout(refresh, 700);
       window.setTimeout(refresh, 1800);
@@ -1115,7 +1254,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         </GlassCard>
       ) : null}
 
-      <ResultNotice result={result} error={actionError} />
+      <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />
 
     </div>
   );
