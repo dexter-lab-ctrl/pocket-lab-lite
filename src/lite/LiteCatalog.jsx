@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import Lottie from 'lottie-react';
 import {
   CheckCircle2,
   FileCheck,
@@ -207,6 +208,121 @@ function PhotoPrismStorageTile({ app, preset, busyKey, disabled, onClick }) {
   );
 }
 
+const PHOTO_PRISM_MEDIA_FLOW_LOTTIE = {
+  v: '5.7.6',
+  fr: 30,
+  ip: 0,
+  op: 90,
+  w: 260,
+  h: 110,
+  nm: 'Pocket Lab PhotoPrism media flow',
+  ddd: 0,
+  assets: [],
+  layers: [
+    {
+      ddd: 0,
+      ind: 1,
+      ty: 4,
+      nm: 'soft flow trail',
+      sr: 1,
+      ks: {
+        o: { a: 0, k: 70 },
+        r: { a: 0, k: 0 },
+        p: { a: 0, k: [130, 55, 0] },
+        a: { a: 0, k: [0, 0, 0] },
+        s: { a: 0, k: [100, 100, 100] },
+      },
+      ao: 0,
+      shapes: [
+        {
+          ty: 'sh',
+          nm: 'flow path',
+          ks: {
+            a: 0,
+            k: {
+              i: [[0, 0], [-28, 0], [-18, 0], [-22, 0]],
+              o: [[22, 0], [18, 0], [28, 0], [0, 0]],
+              v: [[-94, 0], [-34, -24], [36, 24], [94, 0]],
+              c: false,
+            },
+          },
+        },
+        { ty: 'st', c: { a: 0, k: [0.145, 0.388, 0.921, 1] }, o: { a: 0, k: 34 }, w: { a: 0, k: 8 }, lc: 2, lj: 2, nm: 'trail stroke' },
+        { ty: 'tm', s: { a: 1, k: [{ t: 0, s: [0], e: [52] }, { t: 45, s: [52], e: [100] }, { t: 90, s: [0] }] }, e: { a: 1, k: [{ t: 0, s: [18], e: [100] }, { t: 45, s: [100], e: [100] }, { t: 90, s: [18] }] }, o: { a: 0, k: 0 }, nm: 'trail trim' },
+      ],
+      ip: 0,
+      op: 90,
+      st: 0,
+      bm: 0,
+    },
+    {
+      ddd: 0,
+      ind: 2,
+      ty: 4,
+      nm: 'media packet',
+      sr: 1,
+      ks: {
+        o: { a: 1, k: [{ t: 0, s: [40], e: [100] }, { t: 18, s: [100], e: [100] }, { t: 72, s: [100], e: [40] }, { t: 90, s: [40] }] },
+        r: { a: 1, k: [{ t: 0, s: [0], e: [8] }, { t: 45, s: [8], e: [-8] }, { t: 90, s: [0] }] },
+        p: { a: 1, k: [{ t: 0, s: [36, 55, 0], e: [130, 34, 0] }, { t: 45, s: [130, 34, 0], e: [224, 55, 0] }, { t: 90, s: [36, 55, 0] }] },
+        a: { a: 0, k: [0, 0, 0] },
+        s: { a: 1, k: [{ t: 0, s: [82, 82, 100], e: [112, 112, 100] }, { t: 45, s: [112, 112, 100], e: [96, 96, 100] }, { t: 90, s: [82, 82, 100] }] },
+      },
+      ao: 0,
+      shapes: [
+        { ty: 'el', p: { a: 0, k: [0, 0] }, s: { a: 0, k: [20, 20] }, nm: 'packet dot' },
+        { ty: 'fl', c: { a: 0, k: [0.055, 0.647, 0.914, 1] }, o: { a: 0, k: 100 }, nm: 'packet fill' },
+      ],
+      ip: 0,
+      op: 90,
+      st: 0,
+      bm: 0,
+    },
+    {
+      ddd: 0,
+      ind: 3,
+      ty: 4,
+      nm: 'photo sparkle',
+      sr: 1,
+      ks: {
+        o: { a: 1, k: [{ t: 0, s: [24], e: [84] }, { t: 38, s: [84], e: [36] }, { t: 90, s: [24] }] },
+        r: { a: 1, k: [{ t: 0, s: [0], e: [180] }, { t: 90, s: [360] }] },
+        p: { a: 0, k: [205, 32, 0] },
+        a: { a: 0, k: [0, 0, 0] },
+        s: { a: 1, k: [{ t: 0, s: [74, 74, 100], e: [118, 118, 100] }, { t: 45, s: [118, 118, 100], e: [74, 74, 100] }, { t: 90, s: [74, 74, 100] }] },
+      },
+      ao: 0,
+      shapes: [
+        {
+          ty: 'sh',
+          nm: 'spark path',
+          ks: { a: 0, k: { i: [[0, 0], [0, 0], [0, 0], [0, 0]], o: [[0, 0], [0, 0], [0, 0], [0, 0]], v: [[0, -8], [3, -1], [10, 0], [3, 1], [0, 8], [-3, 1], [-10, 0], [-3, -1]], c: true } },
+        },
+        { ty: 'fl', c: { a: 0, k: [0.486, 0.227, 0.929, 1] }, o: { a: 0, k: 100 }, nm: 'spark fill' },
+      ],
+      ip: 0,
+      op: 90,
+      st: 0,
+      bm: 0,
+    },
+  ],
+};
+
+function PhotoPrismMediaLottie({ flow }) {
+  const active = flow.motion === 'active';
+  return (
+    <div className={`lite-catalog-media-flow-lottie ${active ? 'is-active' : 'is-calm'}`} aria-hidden="true">
+      <Lottie
+        animationData={PHOTO_PRISM_MEDIA_FLOW_LOTTIE}
+        autoplay={active}
+        loop={active}
+        initialSegment={active ? undefined : [36, 38]}
+        rendererSettings={{ preserveAspectRatio: 'xMidYMid meet' }}
+      />
+    </div>
+  );
+}
+
 function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
   const flow = photoPrismMediaFlowState(lifecycle, busyKey);
   const steps = [
@@ -217,22 +333,25 @@ function PhotoPrismMediaFlowCard({ lifecycle, busyKey = '' }) {
   ];
 
   return (
-    <div className={`lite-catalog-media-flow-card is-${flow.state}`} aria-label={flow.ariaLabel}>
+    <div className={`lite-catalog-media-flow-card is-${flow.state} motion-${flow.motion}`} aria-label={flow.ariaLabel}>
       <div className="lite-catalog-media-flow-copy">
         <span>{flow.eyebrow}</span>
         <strong>{flow.title}</strong>
         <p>{flow.summary}</p>
       </div>
-      <div className="lite-catalog-media-flow-visual" aria-hidden="true">
-        {steps.map((step, index) => (
-          <React.Fragment key={step.id}>
-            {index > 0 ? <span className={`lite-catalog-media-flow-line is-${step.id}`}><i /></span> : null}
-            <span className={`lite-catalog-media-flow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
-              {step.icon}
-              <small>{step.label}</small>
-            </span>
-          </React.Fragment>
-        ))}
+      <div className="lite-catalog-media-flow-stage">
+        <PhotoPrismMediaLottie flow={flow} />
+        <div className="lite-catalog-media-flow-visual" aria-hidden="true">
+          {steps.map((step, index) => (
+            <React.Fragment key={step.id}>
+              {index > 0 ? <span className={`lite-catalog-media-flow-line is-${step.id}`}><i /></span> : null}
+              <span className={`lite-catalog-media-flow-node is-${step.id} ${flow.activeNodes.includes(step.id) ? 'is-active' : ''} ${flow.doneNodes.includes(step.id) ? 'is-done' : ''}`}>
+                {step.icon}
+                <small>{step.label}</small>
+              </span>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
       <span className="lite-catalog-media-flow-badge">{flow.badge}</span>
     </div>
@@ -266,6 +385,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
       summary: 'Choose phone photos or a storage device before importing.',
       badge: 'Connect photos',
       ariaLabel: 'PhotoPrism media flow idle. Connect photos to start.',
+      motion: 'calm',
       activeNodes: [],
       doneNodes: [],
     };
@@ -279,6 +399,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
       summary: 'Pocket Lab is bringing connected photos into PhotoPrism.',
       badge: 'Working',
       ariaLabel: 'PhotoPrism media flow importing photos through Pocket Lab.',
+      motion: 'active',
       activeNodes: ['phone', 'worker', 'prism'],
       doneNodes: ['phone'],
     };
@@ -292,6 +413,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
       summary: 'Pocket Lab is refreshing PhotoPrism with connected media.',
       badge: 'Indexing',
       ariaLabel: 'PhotoPrism media flow updating the PhotoPrism library.',
+      motion: 'active',
       activeNodes: ['worker', 'prism'],
       doneNodes: ['phone'],
     };
@@ -305,7 +427,8 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
       summary: 'Check the latest media action before running it again.',
       badge: 'Needs review',
       ariaLabel: 'PhotoPrism media flow needs review.',
-      activeNodes: ['worker'],
+      motion: 'attention',
+      activeNodes: [],
       doneNodes: ['phone'],
     };
   }
@@ -318,7 +441,8 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
       summary: 'Add a storage device when you are ready to save app backups elsewhere.',
       badge: succeeded ? 'Done' : 'Connected',
       ariaLabel: 'PhotoPrism media flow connected. Backup target is not ready yet.',
-      activeNodes: ['phone', 'worker', 'prism'],
+      motion: succeeded ? 'calm' : 'ready',
+      activeNodes: [],
       doneNodes: succeeded ? ['phone', 'worker', 'prism'] : ['phone'],
     };
   }
@@ -330,8 +454,9 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
     summary: succeeded ? 'PhotoPrism is ready with saved media evidence.' : 'PhotoPrism is ready to import or index connected media.',
     badge: succeeded ? 'Done' : 'Connected',
     ariaLabel: 'PhotoPrism media flow ready.',
-    activeNodes: ['phone', 'worker', 'prism', ...(backupTargetReady ? ['backup'] : [])],
-    doneNodes: succeeded ? ['phone', 'worker', 'prism'] : ['phone'],
+    motion: succeeded ? 'calm' : 'ready',
+    activeNodes: [],
+    doneNodes: succeeded ? ['phone', 'worker', 'prism', ...(backupTargetReady ? ['backup'] : [])] : ['phone'],
   };
 }
 
