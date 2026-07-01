@@ -345,6 +345,12 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
     )
 
 
+@router.get("/apps/photoprism/storage-preview")
+def get_photoprism_storage_preview(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_storage.photoprism_storage_preview()
+
+
 @router.get("/apps/photoprism/storage-mappings")
 def get_photoprism_storage_mappings(request: Request) -> dict[str, Any]:
     deps.require_auth(request)

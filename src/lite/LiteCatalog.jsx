@@ -90,16 +90,10 @@ const PHOTO_PRISM_ACTION_COPY = {
 };
 
 const PHOTO_PRISM_STORAGE_COPY = {
-  phone_pictures: {
-    eyebrow: 'Photo source',
-    label: 'Connect photos',
-    description: 'Choose where PhotoPrism should look for pictures.',
-    busyLabel: 'Connecting...',
-  },
-  phone_camera: {
+  phone_storage: {
     eyebrow: 'This phone',
     label: 'Use phone photos',
-    description: 'Use photos from this phone, such as Camera/DCIM.',
+    description: 'Use photos from this phone.',
     busyLabel: 'Connecting...',
   },
   storage_device: {
@@ -147,7 +141,7 @@ function PhotoPrismActionIcon({ actionId }) {
 }
 
 function PhotoPrismStorageIcon({ preset }) {
-  if (preset === 'phone_camera' || preset === 'phone_pictures') return <Camera className="h-4 w-4" />;
+  if (preset === 'phone_storage') return <Camera className="h-4 w-4" />;
   if (preset === 'storage_device') return <HardDrive className="h-4 w-4" />;
   return <FolderPlus className="h-4 w-4" />;
 }
@@ -286,7 +280,7 @@ function PhotoPrismActionTile({
   title,
 }) {
   const copy = actionCopy(actionId);
-  const busy = isActionBusy(app, actionId, busyKey) || (actionId === 'connect_photos' && busyKey === `${app?.id}:phone_camera`);
+  const busy = isActionBusy(app, actionId, busyKey) || (actionId === 'connect_photos' && busyKey === `${app?.id}:phone_storage`);
   const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
   const isDisabled = Boolean(disabled || action?.enabled === false || busy);
   return (
@@ -327,6 +321,117 @@ function PhotoPrismStorageTile({ app, preset, busyKey, disabled, onClick }) {
       <LiteButton tone={preset === 'storage_device' ? 'ghost' : 'secondary'} onClick={onClick} disabled={disabled}>
         {busy ? copy.busyLabel : copy.label}
       </LiteButton>
+    </div>
+  );
+}
+
+function previewStatusText(preview) {
+  const status = String(preview?.status || '').toLowerCase();
+  if (status === 'ready') return 'Ready';
+  if (status === 'not_ready') return 'Storage not ready';
+  return 'Checking';
+}
+
+function PhotoPrismStoragePreviewSheet({
+  preview,
+  loading,
+  error,
+  connecting,
+  onClose,
+  onConfirm,
+  onRetry,
+}) {
+  const ready = String(preview?.status || '').toLowerCase() === 'ready' && preview?.connect_payload;
+  const notReady = String(preview?.status || '').toLowerCase() === 'not_ready';
+  const folders = Array.isArray(preview?.subfolders) ? preview.subfolders : [];
+
+  return (
+    <div className="lite-catalog-storage-preview-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className="lite-catalog-storage-preview-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lite-catalog-storage-preview-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="lite-catalog-storage-preview-head">
+          <div>
+            <span>Connect photos</span>
+            <h2 id="lite-catalog-storage-preview-title">Choose where PhotoPrism should look for pictures.</h2>
+            <p>PhotoPrism will look for pictures in this phone’s storage.</p>
+          </div>
+          <button type="button" className="lite-catalog-storage-preview-close" onClick={onClose} aria-label="Cancel Connect photos">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="lite-catalog-storage-preview-root" aria-label="Phone storage mapping">
+          <div>
+            <span>Phone storage</span>
+            <strong>{preview?.root || '~/storage'}</strong>
+          </div>
+          <span>{previewStatusText(preview)}</span>
+          <span>Read-only</span>
+        </div>
+
+        <div className="lite-catalog-storage-preview-note">
+          <strong>Photos are not moved by this step.</strong>
+          <p>PhotoPrism will look in ~/storage. You can run Import photos or Index photos after connecting storage.</p>
+        </div>
+
+        <div className="lite-catalog-storage-preview-list-head">
+          <div>
+            <span>Visible folders</span>
+            <strong>Included with phone storage</strong>
+          </div>
+          <p>These folders are shown for clarity. Pocket Lab connects the whole phone storage folder.</p>
+        </div>
+
+        {loading ? (
+          <div className="lite-catalog-storage-preview-list" aria-label="Loading visible folders">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="lite-catalog-storage-preview-row is-skeleton">
+                <span />
+                <span />
+                <span />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="lite-catalog-storage-preview-empty is-error" role="alert">
+            <strong>Storage preview needs a moment</strong>
+            <p>{error}</p>
+            <LiteButton type="button" tone="secondary" onClick={onRetry}>Try again</LiteButton>
+          </div>
+        ) : notReady ? (
+          <div className="lite-catalog-storage-preview-empty" role="status">
+            <strong>Phone storage is not ready yet.</strong>
+            <p>{preview?.reason || 'Run termux-setup-storage in Termux and allow storage access.'}</p>
+          </div>
+        ) : folders.length ? (
+          <div className="lite-catalog-storage-preview-list" aria-label="Visible folders included with phone storage">
+            {folders.map((folder) => (
+              <div key={folder.path_summary || folder.name} className="lite-catalog-storage-preview-row">
+                <span>{folder.name}</span>
+                <span>{folder.kind || 'Folder'}</span>
+                <strong>Included</strong>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="lite-catalog-storage-preview-empty" role="status">
+            <strong>No visible folders yet.</strong>
+            <p>Pocket Lab can still connect the whole phone storage folder if Android storage access is ready.</p>
+          </div>
+        )}
+
+        <div className="lite-catalog-storage-preview-actions">
+          <LiteButton tone="primary" onClick={onConfirm} disabled={!ready || loading || connecting}>
+            {connecting ? 'Connecting...' : 'Use phone storage'}
+          </LiteButton>
+          <LiteButton tone="secondary" onClick={onClose} disabled={connecting}>Cancel</LiteButton>
+        </div>
+      </section>
     </div>
   );
 }
@@ -673,6 +778,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storageBusy, setStorageBusy] = useState('');
   const [actionBusyKey, setActionBusyKey] = useState('');
   const [removeConfirmApp, setRemoveConfirmApp] = useState(null);
+  const [storagePreviewApp, setStoragePreviewApp] = useState(null);
+  const [storagePreview, setStoragePreview] = useState(null);
+  const [storagePreviewLoading, setStoragePreviewLoading] = useState(false);
+  const [storagePreviewError, setStoragePreviewError] = useState(null);
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -756,25 +865,79 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }
 
 
+  async function refreshPhotoPrismState() {
+    await Promise.allSettled([
+      liteApi.photoprismStorageMappings(),
+      liteApi.appLifecycleProfile('photoprism'),
+      liteApi.appActions('photoprism'),
+    ]);
+    await refresh();
+  }
+
+  async function loadStoragePreview() {
+    setStoragePreviewLoading(true);
+    setStoragePreviewError(null);
+    try {
+      setStoragePreview(await liteApi.photoprismStoragePreview());
+    } catch (err) {
+      setStoragePreviewError(err.message || 'Pocket Lab could not check phone storage.');
+    } finally {
+      setStoragePreviewLoading(false);
+    }
+  }
+
+  async function openPhoneStoragePreview(app, event) {
+    event?.stopPropagation?.();
+    if (!isPhotoPrismApp(app)) return;
+    setStoragePreviewApp(app);
+    setStoragePreview(null);
+    await loadStoragePreview();
+  }
+
+  function closeStoragePreview(force = false) {
+    if (storageBusy && !force) return;
+    setStoragePreviewApp(null);
+    setStoragePreview(null);
+    setStoragePreviewError(null);
+    setStoragePreviewLoading(false);
+  }
+
+  async function connectPhoneStorageFromPreview() {
+    const app = storagePreviewApp;
+    if (!isPhotoPrismApp(app) || !storagePreview?.connect_payload) return;
+    setStorageBusy(`${app.id}:phone_storage`);
+    setActionError(null);
+    setResult({ status: 'queued', summary: 'Connecting phone storage...' });
+    try {
+      const response = await liteApi.connectPhotoPrismStorage(storagePreview.connect_payload);
+      setResult({ ...response, summary: 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos or Index photos to update your library.' });
+      closeStoragePreview(true);
+      await refreshPhotoPrismState();
+      window.setTimeout(refresh, 700);
+      window.setTimeout(refresh, 1800);
+    } catch (err) {
+      const detail = err?.payload?.detail;
+      if (detail?.status === 'duplicate_mapping') {
+        setResult({ status: 'already_connected', summary: detail.summary || 'Phone storage is already connected to PhotoPrism.' });
+        closeStoragePreview(true);
+        await refreshPhotoPrismState();
+      } else {
+        setActionError(detail?.summary || err.message);
+      }
+    } finally {
+      setStorageBusy('');
+    }
+  }
+
   async function connectStorage(app, preset, event) {
     event?.stopPropagation?.();
     if (!isPhotoPrismApp(app)) return;
+    if (preset === 'phone_storage') {
+      await openPhoneStoragePreview(app, event);
+      return;
+    }
     const storageDevice = firstStorageDevice(app);
     const presets = {
-      phone_pictures: {
-        label: 'Pictures',
-        source_type: 'phone_media',
-        source_path: '~/storage/shared/Pictures',
-        target: 'import',
-        mode: 'read_only',
-      },
-      phone_camera: {
-        label: 'Phone photos',
-        source_type: 'phone_media',
-        source_path: '~/storage/shared/DCIM',
-        target: 'import',
-        mode: 'read_only',
-      },
       storage_device: {
         label: storageDevice?.name || 'Storage device',
         source_type: 'storage_device',
@@ -797,7 +960,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     try {
       const response = await liteApi.connectPhotoPrismStorage(payload);
       setResult(response);
-      refresh();
+      await refreshPhotoPrismState();
       window.setTimeout(refresh, 700);
     } catch (err) {
       const detail = err?.payload?.detail;
@@ -944,7 +1107,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   action={connectPhotosAction}
                   busyKey={storageBusy || actionBusyKey}
                   tone="secondary"
-                  onClick={(event) => connectStorage(app, 'phone_camera', event)}
+                  onClick={(event) => openPhoneStoragePreview(app, event)}
                   disabled={connectPhotosAction.enabled === false || Boolean(storageBusy)}
                   title={lifecycleActionReason(connectPhotosAction)}
                 />
@@ -1106,17 +1269,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <div className="lite-catalog-storage-actions">
               <PhotoPrismStorageTile
                 app={app}
-                preset="phone_pictures"
+                preset="phone_storage"
                 busyKey={storageBusy}
                 disabled={Boolean(storageBusy)}
-                onClick={(event) => connectStorage(app, 'phone_pictures', event)}
-              />
-              <PhotoPrismStorageTile
-                app={app}
-                preset="phone_camera"
-                busyKey={storageBusy}
-                disabled={Boolean(storageBusy)}
-                onClick={(event) => connectStorage(app, 'phone_camera', event)}
+                onClick={(event) => connectStorage(app, 'phone_storage', event)}
               />
               <PhotoPrismStorageTile
                 app={app}
@@ -1233,6 +1389,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <LiteButton tone="secondary" onClick={() => setRemoveConfirmApp(null)}>Cancel</LiteButton>
           </div>
         </GlassCard>
+      ) : null}
+
+      {storagePreviewApp ? (
+        <PhotoPrismStoragePreviewSheet
+          preview={storagePreview}
+          loading={storagePreviewLoading}
+          error={storagePreviewError}
+          connecting={Boolean(storageBusy)}
+          onClose={closeStoragePreview}
+          onConfirm={connectPhoneStorageFromPreview}
+          onRetry={loadStoragePreview}
+        />
       ) : null}
 
       <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />

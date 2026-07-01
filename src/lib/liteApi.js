@@ -65,6 +65,7 @@ export const liteApi = {
   recoveryBackup: (backupId = 'latest') => readJson(`/api/lite/recovery/backups/${encodeURIComponent(backupId)}`),
   recoveryReceipt: (backupId = 'latest') => readJson(`/api/lite/recovery/receipts/${encodeURIComponent(backupId)}`),
   installApp: (appId, options = {}) => postJson('/api/lite/catalog/install', { app_id: appId, ...options }),
+  photoprismStoragePreview: () => readJson('/api/lite/apps/photoprism/storage-preview'),
   photoprismStorageMappings: () => readJson('/api/lite/apps/photoprism/storage-mappings'),
   connectPhotoPrismStorage: (payload = {}) => postJson('/api/lite/apps/photoprism/storage-mappings', payload),
   disconnectPhotoPrismStorage: (mappingId) => readJson(`/api/lite/apps/photoprism/storage-mappings/${encodeURIComponent(mappingId || '')}`, { method: 'DELETE' }),

@@ -1550,6 +1550,186 @@ def test_lite_photoprism_storage_mapping_rejects_sensitive_paths():
     assert "protected" in response.text or "approved" in response.text
 
 
+
+def test_lite_photoprism_storage_preview_is_shallow_sanitized_and_read_only(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_storage
+
+    root = tmp_path / "storage"
+    root.mkdir()
+    for name in ["downloads", "movies", "music", "pictures", "dcim"]:
+        (root / name).mkdir()
+    android_shared = tmp_path / "android-shared"
+    android_shared.mkdir()
+    (root / "shared").symlink_to(android_shared, target_is_directory=True)
+    (root / ".ssh").mkdir()
+    (root / "downloads" / "nested").mkdir()
+    (root / "pictures" / "photo.jpg").write_text("not read by preview")
+
+    monkeypatch.setattr(lite_app_storage, "_phone_storage_root", lambda: root)
+
+    response = client().get("/api/lite/apps/photoprism/storage-preview")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ready"
+    assert payload["root"] == "~/storage"
+    assert payload["root_label"] == "Phone storage"
+    assert payload["connect_payload"] == {
+        "source_type": "phone_media",
+        "label": "Phone storage",
+        "source_path": "~/storage",
+        "target": "import",
+        "mode": "read_only",
+    }
+    names = [item["name"] for item in payload["subfolders"]]
+    assert names[:4] == ["shared", "dcim", "pictures", "movies"]
+    assert "downloads" in names
+    assert "music" in names
+    assert ".ssh" not in names
+    assert "nested" not in response.text
+    assert "photo.jpg" not in response.text
+    assert str(tmp_path) not in response.text
+    assert "/storage/emulated/0" not in response.text
+    assert "/data/data" not in response.text
+    assert all(item["path_summary"].startswith("~/storage/") for item in payload["subfolders"])
+    assert all(item.get("included") is True for item in payload["subfolders"])
+    assert all("select" not in item for item in payload["subfolders"])
+
+
+def test_lite_photoprism_storage_preview_reports_not_ready_when_missing(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_storage
+
+    monkeypatch.setattr(lite_app_storage, "_phone_storage_root", lambda: tmp_path / "missing-storage")
+
+    response = client().get("/api/lite/apps/photoprism/storage-preview")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "not_ready"
+    assert payload["root"] == "~/storage"
+    assert payload["subfolders"] == []
+    assert payload["connect_payload"] is None
+    assert "termux-setup-storage" in payload["reason"]
+    assert "/data/data" not in response.text
+
+
+def test_lite_photoprism_whole_phone_storage_mapping_is_precisely_allowed():
+    api = client()
+    created = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone storage",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert created.status_code == 201
+    assert "Choose a phone photos, pictures, downloads, or managed media folder" not in created.text
+    payload = created.json()
+    assert payload["mapping"]["label"] == "Phone storage"
+    assert payload["mapping"]["source_path_summary"] == "Phone storage"
+    assert payload["mapping"]["mode"] == "read_only"
+    assert "source_path" not in payload["mapping"]
+    assert "/data/data" not in created.text
+
+    read_write = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Bad",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_write",
+        },
+    )
+    assert read_write.status_code == 422
+    assert "read-only" in read_write.text
+
+    wrong_target = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Bad",
+            "source_path": "~/storage",
+            "target": "originals",
+            "mode": "read_only",
+        },
+    )
+    assert wrong_target.status_code == 422
+
+    wrong_source_type = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "managed_media",
+            "label": "Bad",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert wrong_source_type.status_code == 422
+
+
+def test_lite_photoprism_storage_mapping_still_rejects_private_and_system_paths():
+    api = client()
+    unsafe_paths = [
+        "~",
+        "~/",
+        "~/.ssh",
+        "~/.pocket_lab",
+        "~/.pocketlab-lite-agent.env",
+        "~/pocket-lab-lite",
+        "~/storage/../.ssh",
+        "~/storage;cat",
+        "/data/data",
+        "/proc",
+        "/sys",
+        "/dev",
+        "/etc",
+        "/root",
+    ]
+    for unsafe_path in unsafe_paths:
+        response = api.post(
+            "/api/lite/apps/photoprism/storage-mappings",
+            json={
+                "source_type": "phone_media",
+                "label": "Unsafe",
+                "source_path": unsafe_path,
+                "target": "import",
+                "mode": "read_only",
+            },
+        )
+        assert response.status_code == 422, unsafe_path
+
+
+def test_lite_photoprism_connect_photos_preview_ui_contract_is_present():
+    ui = Path("src/lite/LiteCatalog.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+
+    assert "Connect photos" in ui
+    assert "Use phone storage" in ui
+    assert "Visible folders" in ui
+    assert "PhotoPrism will look for pictures in this phone’s storage" in ui
+    assert "These folders are shown for clarity" in ui
+    assert "Photos are not moved by this step" in ui
+    assert "Run Import photos or Index photos" in ui
+    assert "photoprismStoragePreview" in api
+    assert "/api/lite/apps/photoprism/storage-preview" in api
+    assert "lite-catalog-storage-preview-sheet" in ui
+    assert "lite-catalog-storage-preview-sheet" in css
+    assert 'aria-modal="true"' in ui
+    assert 'type="checkbox"' not in ui
+    assert "selectedFolders" not in ui
+    assert "folderPicker" not in ui
+    assert "multiSelect" not in ui
+    assert "phone_pictures" not in ui
+    assert "phone_camera" not in ui
+
 def test_lite_catalog_includes_storage_and_device_capability_summary():
     api = client()
     api.post(
