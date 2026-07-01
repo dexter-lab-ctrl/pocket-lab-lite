@@ -420,6 +420,89 @@ def create_mapping(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def runtime_mappings(app_id: str = PHOTOPRISM_APP_ID) -> list[dict[str, Any]]:
+    """Return raw-but-validated mapping records for backend/worker apply only.
+
+    This helper is intentionally not used by public API responses because it
+    includes internal source_path values. Callers must keep output out of the
+    browser/API surface and evidence should use only friendly summaries.
+    """
+
+    if str(app_id).strip().lower() != PHOTOPRISM_APP_ID:
+        raise HTTPException(status_code=404, detail="PhotoPrism storage mappings are the first supported app mapping.")
+    payload = _state()
+    mappings = payload.get("apps", {}).get(PHOTOPRISM_APP_ID, {}).get("mappings", [])
+    safe: list[dict[str, Any]] = []
+    for item in mappings:
+        if not isinstance(item, dict):
+            continue
+        source_type = _normalize_enum(item.get("source_type"), SUPPORTED_SOURCE_TYPES, "source type")
+        target = _normalize_enum(item.get("target"), SUPPORTED_TARGETS, "target", default="import")
+        mode = _normalize_enum(item.get("mode"), SUPPORTED_MODES, "mode", default="read_only")
+        source_path, path_label = _validate_source_path(source_type, item.get("source_path"), target=target, mode=mode)
+        safe.append({
+            **item,
+            "source_type": source_type,
+            "source_path": source_path,
+            "source_path_summary": item.get("source_path_summary") or path_label,
+            "source_label": item.get("source_label") or item.get("label") or path_label,
+            "target": target,
+            "mode": mode,
+        })
+    return safe
+
+
+def resolve_mapping_source_path(source_path: str) -> Path:
+    """Resolve an already-validated Pocket Lab mapping path for worker use.
+
+    The returned path is local to the server host. It must not be returned to
+    the frontend or included in public evidence.
+    """
+
+    normalized = _normalize_posix_path(str(source_path or ""))
+    _reject_sensitive_path(normalized)
+    # Reuse the precise allowlist. Source type/target/mode only matter for the
+    # whole-phone-storage special case; use the strict read-only import shape.
+    if normalized == PHONE_STORAGE_ROOT:
+        _validate_source_path("phone_media", normalized, target="import", mode="read_only")
+    elif not any(_is_path_same_or_child(normalized, root) for root, _label, _source_types in _ALLOWED_ROOTS):
+        raise HTTPException(status_code=422, detail="Use a Pocket Lab approved media folder path.")
+    rel = normalized[2:] if normalized.startswith("~/") else normalized
+    return Path.home() / rel
+
+
+def mark_mappings_applied(app_id: str, mapping_ids: list[str], *, reason: str = "media action apply") -> dict[str, Any]:
+    if str(app_id).strip().lower() != PHOTOPRISM_APP_ID:
+        raise HTTPException(status_code=404, detail="PhotoPrism storage mappings are the first supported app mapping.")
+    wanted = {str(item) for item in mapping_ids if item}
+    if not wanted:
+        return {"status": "unchanged", "app_id": PHOTOPRISM_APP_ID, "applied_count": 0}
+    state = _state()
+    mappings = state["apps"][PHOTOPRISM_APP_ID].setdefault("mappings", [])
+    now = _now()
+    applied: list[dict[str, Any]] = []
+    for item in mappings:
+        if not isinstance(item, dict) or item.get("mapping_id") not in wanted:
+            continue
+        item["status"] = "applied"
+        item["pending_apply"] = False
+        item["requires_restart"] = False
+        item["applied_at"] = now
+        item["updated_at"] = now
+        item["apply_reason"] = reason[:120]
+        applied.append(item)
+    if applied:
+        _write_state(state)
+        for item in applied:
+            _append_audit("pocketlab.audit.apps.storage_mapping.applied", item)
+    return {
+        "status": "applied" if applied else "unchanged",
+        "app_id": PHOTOPRISM_APP_ID,
+        "applied_count": len(applied),
+        "mapping_ids": [item.get("mapping_id") for item in applied],
+    }
+
+
 def delete_mapping(app_id: str, mapping_id: str) -> dict[str, Any]:
     if str(app_id).strip().lower() != PHOTOPRISM_APP_ID:
         raise HTTPException(status_code=404, detail="PhotoPrism storage mappings are the first supported app mapping.")

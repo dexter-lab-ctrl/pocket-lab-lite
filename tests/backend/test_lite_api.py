@@ -2187,6 +2187,114 @@ def test_lite_worker_routes_media_commands_by_subject_before_generic_operation(m
     assert command["operation"] == "import_photos"
 
 
+def test_lite_media_worker_applies_storage_mappings_before_photoprism_cli(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_storage, lite_photoprism_media
+
+    source = tmp_path / "phone-storage"
+    source.mkdir()
+    (source / "sample.jpg").write_text("fake image")
+    app_root = tmp_path / "photoprism"
+    env_file = app_root / "config" / "photoprism.env"
+    env_file.parent.mkdir(parents=True)
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+
+    created = client().post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone storage",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert created.status_code == 201
+    mapping_id = created.json()["mapping"]["mapping_id"]
+
+    calls = []
+
+    class Completed:
+        returncode = 0
+        stdout = "import completed"
+        stderr = ""
+
+    def fake_run(*args, **kwargs):
+        calls.append((args, kwargs))
+        return Completed()
+
+    monkeypatch.setattr(lite_photoprism_media, "_app_root", lambda: app_root)
+    monkeypatch.setattr(lite_photoprism_media, "_env_file", lambda: env_file)
+    monkeypatch.setattr(lite_app_storage, "resolve_mapping_source_path", lambda source_path: source)
+    monkeypatch.setattr(lite_photoprism_media.shutil, "which", lambda name: "/usr/bin/proot-distro" if name == "proot-distro" else None)
+    monkeypatch.setattr(lite_photoprism_media.subprocess, "run", fake_run)
+
+    result = lite_photoprism_media.execute_media_operation({
+        "command_id": "photoprism-media-apply-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    })
+
+    assert result["status"] == "succeeded"
+    assert result["mapping_apply"]["applied_count"] == 1
+    link_path = app_root / "import" / "pocketlab-mappings" / mapping_id
+    assert link_path.is_symlink()
+    assert link_path.readlink() == source
+    assert calls
+    assert "photoprism import" in calls[0][0][0][-1]
+
+    listed = client().get("/api/lite/apps/photoprism/storage-mappings").json()["mappings"]
+    assert listed[0]["status"] == "applied"
+    assert listed[0]["pending_apply"] is False
+    assert listed[0]["requires_restart"] is False
+    assert "source_path" not in listed[0]
+
+
+def test_lite_media_worker_fails_safely_when_mapping_source_not_ready(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_storage, lite_photoprism_media
+
+    app_root = tmp_path / "photoprism"
+    env_file = app_root / "config" / "photoprism.env"
+    env_file.parent.mkdir(parents=True)
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+
+    created = client().post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone storage",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert created.status_code == 201
+
+    calls = []
+    monkeypatch.setattr(lite_photoprism_media, "_app_root", lambda: app_root)
+    monkeypatch.setattr(lite_photoprism_media, "_env_file", lambda: env_file)
+    monkeypatch.setattr(lite_app_storage, "resolve_mapping_source_path", lambda source_path: tmp_path / "missing")
+    monkeypatch.setattr(lite_photoprism_media.shutil, "which", lambda name: "/usr/bin/proot-distro" if name == "proot-distro" else None)
+    monkeypatch.setattr(lite_photoprism_media.subprocess, "run", lambda *args, **kwargs: calls.append((args, kwargs)))
+
+    result = lite_photoprism_media.execute_media_operation({
+        "command_id": "photoprism-media-missing-source",
+        "app_id": "photoprism",
+        "action_id": "index_photos",
+        "operation": "index_photos",
+        "mapping_count": 1,
+    })
+
+    assert result["status"] == "failed"
+    assert result["mapping_apply"]["status"] == "not_ready"
+    assert calls == []
+    listed = client().get("/api/lite/apps/photoprism/storage-mappings").json()["mappings"]
+    assert listed[0]["pending_apply"] is True
+
+
 def test_lite_media_domain_failure_marks_operation_failed(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import domain_commands, lite_photoprism_media
