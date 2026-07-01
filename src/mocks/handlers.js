@@ -366,6 +366,20 @@ export const handlers = [
     }
     return HttpResponse.json({ status: 'disabled', app_id: 'photoprism', action_id: actionId, summary: 'This action is not ready yet.' }, { status: 409 });
   }),
+  http.get('/api/lite/apps/photoprism/storage-preview', () => HttpResponse.json({
+    status: 'ready',
+    root: '~/storage',
+    root_label: 'Phone storage',
+    summary: 'PhotoPrism can look for pictures in this phone’s storage.',
+    subfolders: [
+      { name: 'shared', path_summary: '~/storage/shared', kind: 'Android shared storage', included: true, photo_likely: true },
+      { name: 'dcim', path_summary: '~/storage/dcim', kind: 'Camera photos', included: true, photo_likely: true },
+      { name: 'pictures', path_summary: '~/storage/pictures', kind: 'Pictures', included: true, photo_likely: true },
+      { name: 'downloads', path_summary: '~/storage/downloads', kind: 'Downloads', included: true, photo_likely: true },
+      { name: 'movies', path_summary: '~/storage/movies', kind: 'Videos', included: true, photo_likely: true },
+    ],
+    connect_payload: { source_type: 'phone_media', label: 'Phone storage', source_path: '~/storage', target: 'import', mode: 'read_only' },
+  })),
   http.get('/api/lite/apps/photoprism/storage-mappings', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', mappings: [], count: 0, summary: 'No media folders connected yet.' })),
   http.post('/api/lite/apps/photoprism/storage-mappings', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
@@ -378,7 +392,7 @@ export const handlers = [
         label: body.label || 'Phone photos',
         source_type: body.source_type || 'phone_media',
         source_type_label: 'Phone photos',
-        source_path_summary: body.source_type === 'storage_device' ? 'Managed media' : 'Camera folder',
+        source_path_summary: body.source_path === '~/storage' ? 'Phone storage' : body.source_type === 'storage_device' ? 'Managed media' : 'Camera folder',
         target: body.target || 'import',
         target_label: 'Import folder',
         mode: body.mode || 'read_only',
@@ -387,7 +401,7 @@ export const handlers = [
         pending_apply: true,
         requires_restart: true,
       },
-      summary: 'Media folder connected. Pocket Lab will apply it safely through the app agent path.',
+      summary: body.source_path === '~/storage' ? 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos or Index photos to update your library.' : 'Media folder connected. Pocket Lab will apply it safely through the app agent path.',
     }, { status: 201 });
   }),
   http.delete('/api/lite/apps/photoprism/storage-mappings/:mappingId', ({ params }) => HttpResponse.json({ status: 'deleted', accepted: true, app_id: 'photoprism', mapping_id: params.mappingId, summary: 'Media folder disconnected.' })),

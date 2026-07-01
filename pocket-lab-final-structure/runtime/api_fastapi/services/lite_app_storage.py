@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import re
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from fastapi import HTTPException
@@ -13,6 +14,9 @@ PHOTOPRISM_APP_ID = "photoprism"
 SUPPORTED_SOURCE_TYPES = {"phone_media", "managed_media", "storage_device"}
 SUPPORTED_TARGETS = {"import", "originals"}
 SUPPORTED_MODES = {"read_only", "read_write"}
+
+PHONE_STORAGE_ROOT = "~/storage"
+MAX_STORAGE_PREVIEW_FOLDERS = 30
 
 SOURCE_TYPE_LABELS = {
     "phone_media": "Phone photos",
@@ -29,6 +33,7 @@ MODE_LABELS = {
 }
 
 _ALLOWED_ROOTS = [
+    (PHONE_STORAGE_ROOT, "Phone storage", {"phone_media"}),
     ("~/storage/shared/DCIM", "Camera folder", {"phone_media", "storage_device"}),
     ("~/storage/shared/Pictures", "Pictures", {"phone_media", "storage_device"}),
     ("~/storage/shared/Movies", "Movies", {"phone_media", "storage_device"}),
@@ -105,10 +110,18 @@ def _reject_sensitive_path(path: str) -> None:
             raise HTTPException(status_code=422, detail="This folder is protected and cannot be connected to PhotoPrism.")
 
 
-def _validate_source_path(source_type: str, source_path: Any) -> tuple[str, str]:
+def _validate_source_path(source_type: str, source_path: Any, target: str = "import", mode: str = "read_only") -> tuple[str, str]:
     normalized = _normalize_posix_path(str(source_path or ""))
     _reject_sensitive_path(normalized)
+
+    if normalized == PHONE_STORAGE_ROOT:
+        if source_type == "phone_media" and target == "import" and mode == "read_only":
+            return normalized, "Phone storage"
+        raise HTTPException(status_code=422, detail="Phone storage can only be connected as a read-only PhotoPrism import source.")
+
     for root, label, source_types in _ALLOWED_ROOTS:
+        if root == PHONE_STORAGE_ROOT:
+            continue
         if source_type in source_types and _is_path_same_or_child(normalized, root):
             if normalized == root:
                 return normalized, label
@@ -116,7 +129,7 @@ def _validate_source_path(source_type: str, source_path: Any) -> tuple[str, str]
             suffix = normalized[len(root):].strip("/")
             short_suffix = suffix.split("/", 1)[0] if suffix else ""
             return normalized, f"{label} / {short_suffix}" if short_suffix else label
-    raise HTTPException(status_code=422, detail="Choose a phone photos, pictures, downloads, or managed media folder.")
+    raise HTTPException(status_code=422, detail="Choose phone storage, phone photos, pictures, downloads, or managed media.")
 
 
 def _state() -> dict[str, Any]:
@@ -200,6 +213,136 @@ def _append_audit(event_type: str, mapping: dict[str, Any]) -> dict[str, Any]:
     _write_json(_audit_path(), audit)
     return event
 
+_STORAGE_PREVIEW_KIND_LABELS = {
+    "shared": "Android shared storage",
+    "dcim": "Camera photos",
+    "pictures": "Pictures",
+    "movies": "Videos",
+    "downloads": "Downloads",
+    "music": "Music",
+    "external-1": "External storage",
+}
+
+_STORAGE_PREVIEW_PHOTO_LIKELY = {"shared", "dcim", "pictures", "movies", "downloads"}
+_STORAGE_PREVIEW_ORDER = ["shared", "dcim", "pictures", "movies", "downloads", "music", "external-1"]
+_STORAGE_PREVIEW_BLOCKED_NAMES = {
+    ".ssh",
+    ".pocket_lab",
+    ".pocketlab",
+    "pocket-lab-lite",
+    "proc",
+    "sys",
+    "dev",
+    "data",
+    "root",
+    "etc",
+}
+
+
+def _phone_storage_root() -> Path:
+    return Path.home() / "storage"
+
+
+def _preview_sort_key(item: dict[str, Any]) -> tuple[int, str]:
+    name = str(item.get("name") or "").lower()
+    try:
+        return (_STORAGE_PREVIEW_ORDER.index(name), name)
+    except ValueError:
+        return (len(_STORAGE_PREVIEW_ORDER), name)
+
+
+def _safe_preview_child_name(name: str) -> str | None:
+    cleaned = str(name or "").strip()
+    if not cleaned or cleaned.startswith("."):
+        return None
+    lowered = cleaned.lower()
+    if lowered in _STORAGE_PREVIEW_BLOCKED_NAMES:
+        return None
+    if ".." in PurePosixPath(cleaned).parts:
+        return None
+    if any(token in cleaned for token in ("`", "$", "|", ";", "&&", "||", "<", ">", "\x00", "/", "\\")):
+        return None
+    safe = re.sub(r"[^A-Za-z0-9._ -]+", "", cleaned).strip()
+    return safe[:80] or None
+
+
+def photoprism_storage_preview() -> dict[str, Any]:
+    """Return a shallow, sanitized preview of Termux ~/storage for PhotoPrism.
+
+    This endpoint is intentionally read-only and bounded. It lists only direct
+    visible child directories under ~/storage and never returns resolved Android
+    paths, file names, recursive counts, or secret/private directories.
+    """
+
+    root = _phone_storage_root()
+    base = {
+        "root": PHONE_STORAGE_ROOT,
+        "root_label": "Phone storage",
+    }
+
+    try:
+        ready = root.exists() and root.is_dir() and os.access(root, os.R_OK)
+    except OSError:
+        ready = False
+
+    if not ready:
+        return {
+            **base,
+            "status": "not_ready",
+            "summary": "Phone storage is not ready yet.",
+            "reason": "Run termux-setup-storage in Termux and allow storage access.",
+            "subfolders": [],
+            "connect_payload": None,
+        }
+
+    subfolders: list[dict[str, Any]] = []
+    try:
+        children = list(root.iterdir())
+    except OSError:
+        return {
+            **base,
+            "status": "not_ready",
+            "summary": "Phone storage is not ready yet.",
+            "reason": "Pocket Lab could not read ~/storage. Run termux-setup-storage and allow storage access.",
+            "subfolders": [],
+            "connect_payload": None,
+        }
+
+    for child in children:
+        if len(subfolders) >= MAX_STORAGE_PREVIEW_FOLDERS:
+            break
+        safe_name = _safe_preview_child_name(child.name)
+        if not safe_name:
+            continue
+        try:
+            if not child.is_dir():
+                continue
+        except OSError:
+            continue
+        lowered = safe_name.lower()
+        subfolders.append({
+            "name": safe_name,
+            "path_summary": f"{PHONE_STORAGE_ROOT}/{safe_name}",
+            "kind": _STORAGE_PREVIEW_KIND_LABELS.get(lowered, "Folder"),
+            "included": True,
+            "photo_likely": lowered in _STORAGE_PREVIEW_PHOTO_LIKELY,
+        })
+
+    subfolders.sort(key=_preview_sort_key)
+    return {
+        **base,
+        "status": "ready",
+        "summary": "PhotoPrism can look for pictures in this phone’s storage.",
+        "subfolders": subfolders[:MAX_STORAGE_PREVIEW_FOLDERS],
+        "connect_payload": {
+            "source_type": "phone_media",
+            "label": "Phone storage",
+            "source_path": PHONE_STORAGE_ROOT,
+            "target": "import",
+            "mode": "read_only",
+        },
+    }
+
 
 def list_mappings(app_id: str = PHOTOPRISM_APP_ID) -> dict[str, Any]:
     if str(app_id).strip().lower() != PHOTOPRISM_APP_ID:
@@ -224,7 +367,7 @@ def create_mapping(payload: dict[str, Any]) -> dict[str, Any]:
     source_type = _normalize_enum(payload.get("source_type"), SUPPORTED_SOURCE_TYPES, "source type")
     target = _normalize_enum(payload.get("target"), SUPPORTED_TARGETS, "target", default="import")
     mode = _normalize_enum(payload.get("mode"), SUPPORTED_MODES, "mode", default="read_only")
-    source_path, path_label = _validate_source_path(source_type, payload.get("source_path"))
+    source_path, path_label = _validate_source_path(source_type, payload.get("source_path"), target=target, mode=mode)
     mapping_id = _mapping_id(source_type, source_path, target)
 
     state = _state()
