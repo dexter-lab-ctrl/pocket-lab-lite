@@ -460,15 +460,14 @@ def media_status(app_id: str = PHOTOPRISM_APP_ID) -> dict[str, Any]:
     mappings = _mappings()
     count = int(mappings.get("count") or 0)
     last_import = _public_operation(operations.get("import_photos"))
-    last_index = _public_operation(operations.get("index_photos"))
-    running = any(
-        isinstance(item, dict) and str(item.get("status") or "").lower() in {"queued", "running"}
-        for item in operations.values()
-    )
-    failed = any(
-        isinstance(item, dict) and str(item.get("status") or "").lower() in {"failed", "not_ready"}
-        for item in operations.values()
-    )
+    # Pocket Lab Lite intentionally does not manage PhotoPrism indexing.
+    # Historical index records may exist from older builds, but they should not
+    # keep the Lite App Catalog in a running/review state. PhotoPrism owns
+    # indexing, preview generation, face detection, and media-specific details.
+    last_index = None
+    import_operation = operations.get("import_photos") if isinstance(operations.get("import_photos"), dict) else {}
+    running = str(import_operation.get("status") or "").lower() in {"queued", "running"}
+    failed = str(import_operation.get("status") or "").lower() in {"failed", "not_ready"}
     if running:
         status = "running"
         summary = "PhotoPrism media action is running."
@@ -477,18 +476,20 @@ def media_status(app_id: str = PHOTOPRISM_APP_ID) -> dict[str, Any]:
         summary = "Connect a photo folder first."
     elif failed:
         status = "review"
-        summary = "PhotoPrism media needs attention."
+        summary = "Import photos needs attention."
     else:
         status = "ready"
-        summary = "Import ready."
+        summary = "Import ready. PhotoPrism handles library indexing."
     return {
         "status": status,
         "summary": summary,
         "mapping_count": count,
         "labels": mapping_labels(),
         "last_import": last_import,
-        "last_index": last_index,
-        "last_indexed_at": (last_index or {}).get("completed_at") if last_index else None,
+        "last_index": None,
+        "last_indexed_at": None,
+        "indexing_owner": "photoprism",
+        "indexing_summary": "PhotoPrism handles library indexing.",
         "last_imported_at": (last_import or {}).get("completed_at") if last_import else None,
         "operation_running": running,
         "evidence": media_evidence_summary(),

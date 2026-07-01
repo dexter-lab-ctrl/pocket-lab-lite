@@ -1301,7 +1301,7 @@ def test_lite_security_ui_has_mobile_first_finding_detail_modal():
     assert "Close finding details" in ui
     assert "lite-finding-detail-modal" in ui
     assert "lite-security-coverage-scroll" in ui
-    assert 'role="region"' in ui
+    assert 'aria-modal="true"' in ui
     assert "lite-finding-detail-modal" in css
     assert "lite-finding-detail-trigger" in css
     assert "lite-security-evidence-dropdown" in ui
@@ -1717,12 +1717,14 @@ def test_lite_photoprism_connect_photos_preview_ui_contract_is_present():
     assert "PhotoPrism will look for pictures in this phone’s storage" in ui
     assert "These folders are shown for clarity" in ui
     assert "Photos are not moved by this step" in ui
-    assert "Run Import photos or Index photos" in ui
+    assert "Run Import photos" in ui
+    assert "Index photos" not in ui
     assert "photoprismStoragePreview" in api
     assert "/api/lite/apps/photoprism/storage-preview" in api
     assert "lite-catalog-storage-preview-sheet" in ui
     assert "lite-catalog-storage-preview-sheet" in css
-    assert 'aria-modal="true"' in ui
+    assert 'role="region"' in ui
+    assert "lite-catalog-storage-preview-anchor" in ui
     assert 'type="checkbox"' not in ui
     assert "selectedFolders" not in ui
     assert "folderPicker" not in ui
@@ -2043,12 +2045,12 @@ def test_lite_app_action_center_lists_photoprism_readiness(monkeypatch):
         "backup_app",
         "preview_restore",
         "import_photos",
-        "index_photos",
     ):
         assert action_id in actions
         assert "label" in actions[action_id]
     assert actions["import_photos"]["enabled"] is False
-    assert actions["index_photos"]["enabled"] is False
+    assert "index_photos" not in actions
+    assert "cancel_media" not in actions
     assert "Connect a photo folder first" in actions["import_photos"]["reason"]
     assert "password" not in response.text.lower()
     assert "photoprism_admin" not in response.text.lower()
@@ -2071,14 +2073,20 @@ def test_lite_app_action_center_rejects_invalid_app_and_action():
 def test_lite_app_action_center_blocks_disabled_media_actions_without_mapping(monkeypatch):
     _force_photoprism_installed_for_action_tests(monkeypatch)
     response = client().post(
-        "/api/lite/apps/photoprism/actions/index_photos",
-        json={"reason": "manual index"},
+        "/api/lite/apps/photoprism/actions/import_photos",
+        json={"reason": "manual import"},
     )
     assert response.status_code == 409
     payload = response.json().get("detail") or response.json()
     assert payload["status"] == "disabled"
-    assert payload["action_id"] == "index_photos"
+    assert payload["action_id"] == "import_photos"
     assert "Connect a photo folder first" in payload["summary"]
+
+    removed = client().post(
+        "/api/lite/apps/photoprism/actions/index_photos",
+        json={"reason": "manual index"},
+    )
+    assert removed.status_code == 404
 
 
 def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(monkeypatch):
@@ -2101,14 +2109,16 @@ def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(m
     assert actions_response.status_code == 200
     actions = actions_response.json()["actions"]
     assert actions["import_photos"]["enabled"] is True
-    assert actions["index_photos"]["enabled"] is True
+    assert "index_photos" not in actions
+    assert "cancel_media" not in actions
 
     lifecycle = client().get("/api/lite/apps/lifecycle/photoprism")
     assert lifecycle.status_code == 200
     lifecycle_payload = lifecycle.json()
     assert lifecycle_payload["media"]["mapping_count"] == 1
     assert lifecycle_payload["actions"]["import_photos"]["enabled"] is True
-    assert lifecycle_payload["actions"]["index_photos"]["enabled"] is True
+    assert "index_photos" not in lifecycle_payload["actions"]
+    assert "cancel_media" not in lifecycle_payload["actions"]
 
     published: list[tuple[str, str, dict]] = []
     BUS.connected = True
@@ -2120,15 +2130,15 @@ def test_lite_app_action_center_enables_media_actions_after_mapping_and_queues(m
     monkeypatch.setattr(BUS, "publish_json", fake_publish)
 
     queued = client().post(
-        "/api/lite/apps/photoprism/actions/index_photos",
-        json={"reason": "manual photo index"},
+        "/api/lite/apps/photoprism/actions/import_photos",
+        json={"reason": "manual photo import"},
     )
     assert queued.status_code == 200
     payload = queued.json()
     assert payload["accepted"] is True
     assert payload["status"] == "queued"
     assert payload["app_id"] == "photoprism"
-    assert payload["action_id"] == "index_photos"
+    assert payload["action_id"] == "import_photos"
     assert payload["media_operation"]["status"] == "queued"
     assert any(item[0] == "pocketlab.commands.lite.app.media" for item in published)
     assert "photoprism index" not in queued.text.lower()
@@ -2285,8 +2295,8 @@ def test_lite_media_worker_fails_safely_when_mapping_source_not_ready(tmp_path, 
     result = lite_photoprism_media.execute_media_operation({
         "command_id": "photoprism-media-missing-source",
         "app_id": "photoprism",
-        "action_id": "index_photos",
-        "operation": "index_photos",
+        "action_id": "import_photos",
+        "operation": "import_photos",
         "mapping_count": 1,
     })
 
@@ -2338,8 +2348,8 @@ def test_lite_media_status_reconciles_stale_running_operation(monkeypatch):
     command = {
         "command_id": "photoprism-media-stale-unit",
         "app_id": "photoprism",
-        "action_id": "index_photos",
-        "operation": "index_photos",
+        "action_id": "import_photos",
+        "operation": "import_photos",
         "mapping_count": 1,
     }
     queued = lite_photoprism_media.record_operation(command, status="queued")
@@ -2348,8 +2358,8 @@ def test_lite_media_status_reconciles_stale_running_operation(monkeypatch):
     status = lite_photoprism_media.media_status("photoprism")
 
     assert status["operation_running"] is False
-    assert status["last_index"]["status"] == "failed"
-    assert status["last_index"]["summary"] == "Index photos could not complete."
+    assert status["last_import"]["status"] == "failed"
+    assert status["last_import"]["summary"] == "Import photos could not complete."
     assert status["evidence"]["count"] >= 1
 
 
@@ -2413,8 +2423,9 @@ def test_lite_app_action_center_ui_source_is_present():
     css = Path("src/index.css").read_text()
     assert "Action Center" in ui
     assert "Import photos" in ui
-    assert "Index photos" in ui
-    assert "Last indexed" in ui
+    assert "Index photos" not in ui
+    assert "Stop photo action" not in ui
+    assert "Last import" in ui
     assert "Connect a photo folder first" in ui
     assert "runAppAction" in Path("src/lib/liteApi.js").read_text()
     assert "apps/${encodeURIComponent(appId)}/actions" in Path("src/lib/liteApi.js").read_text()
@@ -2712,15 +2723,15 @@ def test_lite_photoprism_media_cancel_stops_running_operation_without_web_server
     assert status["last_import"]["progress"]["bounded"] is True
 
 
-def test_lite_app_action_center_exposes_cancel_media_when_running(monkeypatch):
+def test_lite_app_action_center_does_not_expose_cancel_or_index(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_photoprism_media
 
     command = {
-        "command_id": "photoprism-media-action-cancel-unit",
+        "command_id": "photoprism-media-action-import-unit",
         "app_id": "photoprism",
-        "action_id": "index_photos",
-        "operation": "index_photos",
+        "action_id": "import_photos",
+        "operation": "import_photos",
         "mapping_count": 1,
     }
     lite_photoprism_media.record_operation(command, status="running")
@@ -2728,19 +2739,14 @@ def test_lite_app_action_center_exposes_cancel_media_when_running(monkeypatch):
     lifecycle = client().get("/api/lite/apps/lifecycle/photoprism")
     assert lifecycle.status_code == 200
     actions = lifecycle.json()["actions"]
-    assert actions["cancel_media"]["enabled"] is True
-    assert actions["cancel_media"]["label"] == "Stop photo action"
+    assert "cancel_media" not in actions
+    assert "index_photos" not in actions
 
-    monkeypatch.setattr(lite_photoprism_media, "_stop_media_processes", lambda: {"status": "stopped", "matched": 1, "terminated": 1, "killed": 0, "remaining": 0})
     cancelled = client().post(
         "/api/lite/apps/photoprism/actions/cancel_media",
         json={"reason": "stop test media action"},
     )
-    assert cancelled.status_code == 200
-    payload = cancelled.json()
-    assert payload["status"] == "cancelled"
-    assert payload["accepted"] is True
-    assert payload["action_id"] == "cancel_media"
+    assert cancelled.status_code == 404
 
 
 def test_lite_photoprism_cancel_blocks_late_worker_updates(monkeypatch):
@@ -2870,104 +2876,39 @@ def test_lite_photoprism_media_status_sanitizes_existing_noisy_summaries(monkeyp
     command = {
         "command_id": "photoprism-media-existing-noisy-unit",
         "app_id": "photoprism",
-        "action_id": "index_photos",
-        "operation": "index_photos",
+        "action_id": "import_photos",
+        "operation": "import_photos",
         "mapping_count": 1,
     }
     lite_photoprism_media.record_operation(command, status="failed", summary='time="2026-07-01" level=error msg="could not create preview image for 2024/11/sample.pdf"')
 
     status = lite_photoprism_media.media_status("photoprism")
 
-    assert status["last_index"]["summary"] == "Index photos could not complete."
+    assert status["last_import"]["summary"] == "Import photos could not complete."
     assert "sample.pdf" not in str(status).lower()
     state = lite_photoprism_media._read_state()
-    stored = state["apps"]["photoprism"]["operations"]["index_photos"]
-    assert stored["summary"] == "Index photos could not complete."
+    stored = state["apps"]["photoprism"]["operations"]["import_photos"]
+    assert stored["summary"] == "Import photos could not complete."
     assert stored["app_output_hidden"] is True
 
 
-def test_lite_photoprism_quick_index_fast_forwards_when_control_state_unchanged(monkeypatch):
+def test_lite_photoprism_index_is_app_owned_and_not_public_lite_action(monkeypatch):
     ensure_runtime_path()
     from api_fastapi.services import lite_photoprism_media
 
-    mappings = {
-        "count": 1,
-        "mappings": [
-            {
-                "mapping_id": "map-phone-storage",
-                "target": "import",
-                "mode": "read_only",
-                "status": "applied",
-                "updated_at": "2026-07-01T10:00:00Z",
-                "source_type": "phone_media",
-                "source_path_summary": "Phone storage",
-            }
-        ],
-    }
-    monkeypatch.setattr(lite_photoprism_media, "_mappings", lambda: mappings)
-    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
-
-    import_command = {
-        "command_id": "photoprism-media-import-success",
+    command = {
+        "command_id": "photoprism-media-historical-index",
         "app_id": "photoprism",
-        "action_id": "import_photos",
-        "operation": "import_photos",
+        "action_id": "index_photos",
+        "operation": "index_photos",
         "mapping_count": 1,
     }
-    lite_photoprism_media.record_operation(import_command, status="succeeded")
+    lite_photoprism_media.record_operation(command, status="running")
+    status = lite_photoprism_media.media_status("photoprism")
 
-    index_command = lite_photoprism_media.media_command("index_photos", reason="first quick index")
-    lite_photoprism_media.record_operation(index_command, status="succeeded")
-
-    result = lite_photoprism_media.quick_index_fast_forward(reason="second quick index")
-
-    assert result is not None
-    assert result["status"] == "skipped"
-    assert result["fast_forwarded"] is True
-    assert result["media_operation"]["status"] == "skipped"
-    assert result["media_operation"]["fast_forwarded"] is True
-    assert result["media_operation"]["index_mode"] == "quick"
-    assert "Nothing changed" in result["summary"]
-
-
-def test_lite_photoprism_quick_index_does_not_fast_forward_when_mapping_changes(monkeypatch):
-    ensure_runtime_path()
-    from api_fastapi.services import lite_photoprism_media
-
-    mapping_state = {
-        "count": 1,
-        "mappings": [
-            {
-                "mapping_id": "map-phone-storage",
-                "target": "import",
-                "mode": "read_only",
-                "status": "applied",
-                "updated_at": "2026-07-01T10:00:00Z",
-                "source_type": "phone_media",
-                "source_path_summary": "Phone storage",
-            }
-        ],
-    }
-    monkeypatch.setattr(lite_photoprism_media, "_mappings", lambda: mapping_state)
-    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
-
-    lite_photoprism_media.record_operation({
-        "command_id": "photoprism-media-import-success-change",
-        "app_id": "photoprism",
-        "action_id": "import_photos",
-        "operation": "import_photos",
-        "mapping_count": 1,
-    }, status="succeeded")
-    index_command = lite_photoprism_media.media_command("index_photos", reason="first quick index")
-    lite_photoprism_media.record_operation(index_command, status="succeeded")
-
-    mapping_state["mappings"][0]["updated_at"] = "2026-07-01T11:00:00Z"
-
-    assert lite_photoprism_media.quick_index_fast_forward(reason="mapping changed") is None
-    command = lite_photoprism_media.media_command("index_photos", reason="mapping changed")
-    assert command["index_mode"] == "quick"
-    assert command["index_fingerprint"] != index_command["index_fingerprint"]
-
+    assert status["operation_running"] is False
+    assert status["last_index"] is None
+    assert status["indexing_owner"] == "photoprism"
 
 def test_lite_photoprism_orphaned_running_index_reconciles_to_finished(monkeypatch):
     ensure_runtime_path()
@@ -2994,8 +2935,8 @@ def test_lite_photoprism_orphaned_running_index_reconciles_to_finished(monkeypat
 
     assert changed == 1
     assert status["operation_running"] is False
-    assert status["last_index"]["status"] == "succeeded"
-    assert status["last_index"]["summary"] == "Index photos completed."
+    assert status["last_index"] is None
+    assert status["indexing_owner"] == "photoprism"
 
 
 def test_lite_photoprism_executing_progress_is_indeterminate():
@@ -3005,13 +2946,13 @@ def test_lite_photoprism_executing_progress_is_indeterminate():
     command = {
         "command_id": "photoprism-media-progress-wording",
         "app_id": "photoprism",
-        "action_id": "index_photos",
-        "operation": "index_photos",
+        "action_id": "import_photos",
+        "operation": "import_photos",
         "mapping_count": 1,
-        "progress": lite_photoprism_media._progress_payload("executing", "PhotoPrism is working.", 3),
+        "progress": lite_photoprism_media._progress_payload("executing", "Import photos is running.", 3),
     }
-    operation = lite_photoprism_media.record_operation(command, status="running", summary="PhotoPrism is working.")
+    operation = lite_photoprism_media.record_operation(command, status="running", summary="Import photos is running.")
 
-    assert operation["summary"] == "PhotoPrism is working."
-    assert operation["progress"]["step"] == "PhotoPrism is working."
+    assert operation["summary"] == "Import photos is running."
+    assert operation["progress"]["step"] == "Import photos is running."
     assert operation["progress"]["indeterminate"] is True
