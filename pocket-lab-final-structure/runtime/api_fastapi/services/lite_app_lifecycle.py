@@ -283,22 +283,8 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             media_ready,
             "Import photos",
             reason=media_reason,
-            summary="Import connected photos into PhotoPrism.",
+            summary="Import connected photos into PhotoPrism. PhotoPrism handles library indexing.",
             status=media_status,
-        ),
-        "index_photos": _action(
-            media_ready,
-            "Refresh library",
-            reason=media_reason,
-            summary="Quickly refresh PhotoPrism when Pocket Lab knows something changed.",
-            status=media_status,
-        ),
-        "cancel_media": _action(
-            str(media.get("status") or "") == "running",
-            "Stop photo action",
-            reason=None if str(media.get("status") or "") == "running" else "No PhotoPrism media action is running.",
-            summary="Safely stop the current photo action.",
-            status="running" if str(media.get("status") or "") == "running" else "idle",
         ),
     }
     action_payload.update(_photoprism_lifecycle_actions())
@@ -345,8 +331,8 @@ def _attention(installed: bool, storage: dict[str, Any], security: dict[str, Any
             "id": "media_action_running",
             "area": "media",
             "severity": "info",
-            "title": "Indexing",
-            "summary": "PhotoPrism media action is running through Pocket Lab.",
+            "title": "Importing photos",
+            "summary": "Pocket Lab is importing connected photos. PhotoPrism handles library indexing.",
         })
     if str(media.get("status") or "") in {"review"}:
         items.append({

@@ -10988,3 +10988,135 @@ textarea {
     animation: none;
   }
 }
+
+/* Lite App Catalog: inline phone storage card and import-only progress polish */
+.theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: -0.15rem 0 0.35rem;
+  scroll-margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor .lite-catalog-storage-preview-sheet {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  border-color: rgba(37, 99, 235, 0.2);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(219, 234, 254, 0.9), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.98));
+  box-shadow: 0 1rem 2.4rem rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.65) inset;
+  animation: liteCatalogStoragePreviewInline 180ms cubic-bezier(0.2, 0.82, 0.2, 1) both;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor .lite-catalog-storage-preview-list {
+  min-height: 0;
+  max-height: min(14rem, 36dvh);
+  padding-right: 0.2rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor .lite-catalog-storage-preview-list-head {
+  padding: 0.72rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor .lite-catalog-storage-preview-actions {
+  position: static;
+  padding-top: 0.35rem;
+  background: transparent;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.has-progress {
+  border-color: rgba(14, 165, 233, 0.32);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(186, 230, 253, 0.5), transparent 28%),
+    linear-gradient(180deg, rgba(240, 249, 255, 0.98), rgba(255, 255, 255, 0.94));
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress {
+  height: 0.46rem;
+  background: rgba(203, 213, 225, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-fill {
+  position: relative;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.95), rgba(45, 212, 191, 0.95), rgba(37, 99, 235, 0.95));
+  background-size: 260% 100%;
+  box-shadow: 0 0 1rem rgba(14, 165, 233, 0.35);
+  animation: liteCatalogImportWave 1.35s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-sparkle,
+.theme-pocket-lite-daylight .lite-catalog-action-progress-glow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-sparkle {
+  left: 0.35rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0.8rem rgba(255, 255, 255, 0.9), 0 0 1.2rem rgba(14, 165, 233, 0.45);
+  animation: liteCatalogImportSparkle 1.55s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress-glow {
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58), transparent);
+  mix-blend-mode: screen;
+  animation: liteCatalogImportGlow 1.7s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-progress.is-indeterminate .lite-catalog-action-progress-fill {
+  width: 46%;
+  animation: liteCatalogActionIndeterminate 1.28s ease-in-out infinite, liteCatalogImportWave 1.2s ease-in-out infinite;
+}
+
+@media (max-width: 520px) {
+  .theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor {
+    margin-top: -0.1rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor .lite-catalog-storage-preview-sheet {
+    gap: 0.58rem;
+    padding: 0.8rem;
+    border-radius: 1.1rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-storage-preview-anchor .lite-catalog-storage-preview-list {
+    max-height: 11.5rem;
+  }
+}
+
+@keyframes liteCatalogStoragePreviewInline {
+  from { opacity: 0; transform: translateY(-0.45rem) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes liteCatalogImportWave {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 260% 50%; }
+}
+
+@keyframes liteCatalogImportSparkle {
+  0% { left: 0.35rem; opacity: 0; transform: translateY(-50%) scale(0.8); }
+  18% { opacity: 1; }
+  76% { opacity: 1; }
+  100% { left: calc(100% - 0.8rem); opacity: 0; transform: translateY(-50%) scale(1.15); }
+}
+
+@keyframes liteCatalogImportGlow {
+  0% { transform: translateX(-120%); opacity: 0; }
+  30% { opacity: 0.85; }
+  100% { transform: translateX(120%); opacity: 0; }
+}

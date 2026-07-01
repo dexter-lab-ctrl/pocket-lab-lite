@@ -42,16 +42,6 @@ const PHOTO_PRISM_ACTION_COPY = {
     label: 'Import photos',
     description: 'Bring connected photos into PhotoPrism.',
   },
-  index_photos: {
-    eyebrow: 'Photo library',
-    label: 'Refresh library',
-    description: 'Quickly refresh PhotoPrism when something changed.',
-  },
-  cancel_media: {
-    eyebrow: 'Photo library',
-    label: 'Stop photo action',
-    description: 'Safely stop the current Import or Index job.',
-  },
   backup_app: {
     eyebrow: 'Recovery',
     label: 'Back up app',
@@ -123,8 +113,6 @@ function isActionBusy(app, actionId, busyKey) {
 
 function busyActionLabel(actionId) {
   if (actionId === 'import_photos') return 'Importing...';
-  if (actionId === 'index_photos') return 'Refreshing...';
-  if (actionId === 'cancel_media') return 'Stopping...';
   if (actionId === 'backup_app') return 'Backing up...';
   if (actionId === 'backup_to_storage') return 'Backing up...';
   if (actionId === 'check_app') return 'Checking...';
@@ -137,33 +125,24 @@ function busyActionLabel(actionId) {
 
 
 function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
+  if (actionId !== 'import_photos') return null;
   const media = lifecycle?.media || {};
-  const operation = actionId === 'index_photos'
-    ? media?.last_index
-    : actionId === 'import_photos'
-      ? media?.last_import
-      : actionId === 'cancel_media'
-        ? (media?.last_import?.status === 'running' || media?.last_import?.status === 'queued' ? media?.last_import : media?.last_index)
-        : null;
+  const operation = media?.last_import || null;
   const operationStatus = String(operation?.status || '').toLowerCase();
-  const isRunning = Boolean(
-    busy
-    || (actionId === 'cancel_media' && media?.operation_running)
-    || ['queued', 'running'].includes(operationStatus)
-  );
+  const isRunning = Boolean(busy || ['queued', 'running'].includes(operationStatus));
   if (!isRunning) return null;
   const progress = operation?.progress || {};
   const rawPercent = Number(progress?.percent);
-  let percent = Number.isFinite(rawPercent) ? rawPercent : isRunning ? 12 : 0;
-  if (isRunning && percent < 8) percent = 8;
-  if (isRunning && percent >= 100) percent = 92;
-  percent = Math.min(100, Math.max(0, percent));
+  let percent = Number.isFinite(rawPercent) ? rawPercent : 18;
+  if (percent < 10) percent = 10;
+  if (percent >= 100) percent = 88;
+  percent = Math.min(92, Math.max(10, percent));
   return {
     running: isRunning,
     percent,
-    indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing'),
+    indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing' || operationStatus === 'running'),
     phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
-    step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : ''),
+    step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : 'Importing photos...'),
   };
 }
 
@@ -176,8 +155,7 @@ function hasRunningPhotoPrismMedia(apps) {
 
 function PhotoPrismActionIcon({ actionId }) {
   if (actionId === 'connect_photos') return <FolderPlus className="h-4 w-4" />;
-  if (actionId === 'import_photos' || actionId === 'index_photos') return <RefreshCw className="h-4 w-4" />;
-  if (actionId === 'cancel_media') return <X className="h-4 w-4" />;
+  if (actionId === 'import_photos') return <RefreshCw className="h-4 w-4" />;
   if (actionId === 'backup_app' || actionId === 'backup_to_storage' || actionId === 'preview_restore') return <FileCheck className="h-4 w-4" />;
   if (actionId === 'check_app') return <ShieldCheck className="h-4 w-4" />;
   if (actionId === 'install_app') return <Smartphone className="h-4 w-4" />;
@@ -240,32 +218,6 @@ function catalogActionNotice(result, error) {
     };
   }
 
-  if (actionId === 'index_photos') {
-    if (status === 'skipped' || result?.fast_forwarded) {
-      return {
-        ...base,
-        title: 'Library already fresh',
-        message: result?.summary || 'Nothing changed since the last successful refresh.',
-        timeoutMs: 8000,
-      };
-    }
-    return {
-      ...base,
-      title: 'Library refresh started',
-      message: 'Pocket Lab is asking PhotoPrism to refresh the library.',
-    };
-  }
-
-  if (actionId === 'cancel_media') {
-    return {
-      ...base,
-      tone: status === 'idle' ? 'review' : 'success',
-      title: status === 'idle' ? 'Nothing running' : 'Photo action stopped',
-      message: result?.summary || 'Pocket Lab safely stopped the current PhotoPrism media action.',
-      timeoutMs: 8000,
-    };
-  }
-
   if (actionId === 'backup_app' || String(reference).startsWith('app-backup-photoprism')) {
     return {
       ...base,
@@ -279,7 +231,7 @@ function catalogActionNotice(result, error) {
     return {
       ...base,
       title: 'Phone photos connected',
-      message: 'PhotoPrism can now look there. Run Import photos or Index photos to update your library.',
+      message: 'PhotoPrism can now look there. Run Import photos to update your library.',
     };
   }
 
@@ -348,9 +300,9 @@ function PhotoPrismActionTile({
   const busy = isActionBusy(app, actionId, busyKey) || (actionId === 'connect_photos' && busyKey === `${app?.id}:phone_storage`);
   const progressState = progress || null;
   const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
-  const progressDisablesAction = progressState?.running && actionId !== 'cancel_media';
+  const progressDisablesAction = progressState?.running;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
-  const showProgress = Boolean(progressState?.running && ['import_photos', 'index_photos'].includes(actionId));
+  const showProgress = Boolean(progressState?.running && actionId === 'import_photos');
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   return (
     <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
@@ -368,7 +320,7 @@ function PhotoPrismActionTile({
         disabled={isDisabled}
         title={title || reason || copy.description}
       >
-        {busy || (progressState?.running && actionId !== 'cancel_media') ? busyActionLabel(actionId) : copy.label}
+        {busy || progressState?.running ? busyActionLabel(actionId) : copy.label}
       </LiteButton>
       {showProgress ? (
         <div
@@ -379,7 +331,9 @@ function PhotoPrismActionTile({
           aria-valuemax="100"
           aria-valuenow={progressState.indeterminate ? undefined : Math.round(progressState.percent || 0)}
         >
-          <span style={{ width: progressState.indeterminate ? '42%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
+          <span className="lite-catalog-action-progress-fill" style={{ width: progressState.indeterminate ? '46%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
+          <i className="lite-catalog-action-progress-sparkle" aria-hidden="true" />
+          <em className="lite-catalog-action-progress-glow" aria-hidden="true" />
         </div>
       ) : null}
     </div>
@@ -427,13 +381,10 @@ function PhotoPrismStoragePreviewSheet({
   const folders = Array.isArray(preview?.subfolders) ? preview.subfolders : [];
 
   return (
-    <div className="lite-catalog-storage-preview-backdrop" role="presentation" onClick={onClose}>
       <section
         className="lite-catalog-storage-preview-sheet"
-        role="dialog"
-        aria-modal="true"
+        role="region"
         aria-labelledby="lite-catalog-storage-preview-title"
-        onClick={(event) => event.stopPropagation()}
       >
         <div className="lite-catalog-storage-preview-head">
           <div>
@@ -457,7 +408,7 @@ function PhotoPrismStoragePreviewSheet({
 
         <div className="lite-catalog-storage-preview-note">
           <strong>Photos are not moved by this step.</strong>
-          <p>PhotoPrism will look in ~/storage. You can run Import photos or Index photos after connecting storage.</p>
+          <p>PhotoPrism will look in ~/storage. Run Import photos after connecting storage. PhotoPrism handles indexing inside the app.</p>
         </div>
 
         <div className="lite-catalog-storage-preview-list-head">
@@ -513,7 +464,6 @@ function PhotoPrismStoragePreviewSheet({
           <LiteButton tone="secondary" onClick={onClose} disabled={connecting}>Cancel</LiteButton>
         </div>
       </section>
-    </div>
   );
 }
 
@@ -558,15 +508,12 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
   const mappingCount = Number(media?.mapping_count || lifecycle?.storage?.mapping_count || 0);
   const storageConnected = mappingCount > 0 || lifecycle?.storage?.status === 'connected';
   const lastImport = media?.last_import || {};
-  const lastIndex = media?.last_index || {};
   const importStatus = String(lastImport?.status || '').toLowerCase();
-  const indexStatus = String(lastIndex?.status || '').toLowerCase();
-  const actionBusy = String(busyKey || '').includes('import_photos') || String(busyKey || '').includes('index_photos');
+  const actionBusy = String(busyKey || '').includes('import_photos');
   const operationRunning = Boolean(media?.operation_running || actionBusy);
   const importing = operationRunning && ['queued', 'running'].includes(importStatus);
-  const indexing = operationRunning && ['queued', 'running'].includes(indexStatus);
-  const failed = ['failed', 'timed_out'].includes(importStatus) || ['failed', 'timed_out'].includes(indexStatus) || media?.status === 'review';
-  const succeeded = ['succeeded'].includes(importStatus) || ['succeeded'].includes(indexStatus) || media?.evidence?.status === 'saved';
+  const failed = ['failed', 'timed_out'].includes(importStatus) || media?.status === 'review';
+  const succeeded = ['succeeded'].includes(importStatus) || media?.evidence?.status === 'saved';
   const backupTargetReady = Boolean(backup?.target_ready || backupTargets?.ready_count > 0);
   const backupMissing = storageConnected && !backupTargetReady;
 
@@ -594,20 +541,6 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
       ariaLabel: 'PhotoPrism media flow importing photos through Pocket Lab.',
       motion: 'active',
       activeNodes: ['phone', 'worker', 'prism'],
-      doneNodes: ['phone'],
-    };
-  }
-
-  if (indexing || actionBusy) {
-    return {
-      state: 'indexing',
-      eyebrow: 'PhotoPrism flow',
-      title: 'Updating library',
-      summary: 'Pocket Lab is refreshing PhotoPrism with connected media.',
-      badge: 'Indexing',
-      ariaLabel: 'PhotoPrism media flow updating the PhotoPrism library.',
-      motion: 'active',
-      activeNodes: ['worker', 'prism'],
       doneNodes: ['phone'],
     };
   }
@@ -644,7 +577,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
     state: succeeded ? 'succeeded' : 'connected',
     eyebrow: 'PhotoPrism flow',
     title: succeeded ? 'Photo library updated' : 'Phone photos connected',
-    summary: succeeded ? 'PhotoPrism is ready with saved media evidence.' : 'PhotoPrism is ready to import or index connected media.',
+    summary: succeeded ? 'PhotoPrism is ready with saved media evidence.' : 'PhotoPrism is ready to import connected media.',
     badge: succeeded ? 'Done' : 'Connected',
     ariaLabel: 'PhotoPrism media flow ready.',
     motion: succeeded ? 'calm' : 'ready',
@@ -776,8 +709,8 @@ function lifecycleAttentionItems(lifecycle) {
 
 function lifecycleMediaSummary(lifecycle) {
   const media = lifecycle?.media || {};
-  if (media?.operation_running) return 'Indexing';
-  if (media?.last_indexed_at) return `Last indexed ${formatLiteTime(media.last_indexed_at)}`;
+  if (media?.operation_running) return 'Importing photos';
+  if (media?.last_imported_at) return `Last import ${formatLiteTime(media.last_imported_at)}`;
   if (Number(media?.mapping_count || 0) > 0) return media.summary || 'Import ready';
   return 'Connect a photo folder first';
 }
@@ -888,7 +821,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [result, actionError]);
 
   useEffect(() => {
-    const busyMediaAction = /:(import_photos|index_photos|cancel_media)$/.test(actionBusyKey || '');
+    const busyMediaAction = /:import_photos$/.test(actionBusyKey || '');
     if (!busyMediaAction && !hasRunningPhotoPrismMedia(apps)) return undefined;
     const timer = window.setInterval(() => {
       refresh();
@@ -1000,7 +933,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setResult({ status: 'queued', summary: 'Connecting phone storage...' });
     try {
       const response = await liteApi.connectPhotoPrismStorage(storagePreview.connect_payload);
-      setResult({ ...response, summary: 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos or Index photos to update your library.' });
+      setResult({ ...response, summary: 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos to update your library.' });
       closeStoragePreview(true);
       await refreshPhotoPrismState();
       window.setTimeout(refresh, 700);
@@ -1121,11 +1054,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const checkAppAction = lifecycleAction(lifecycle, 'check_app');
     const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
     const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
-    const indexPhotosAction = lifecycleAction(lifecycle, 'index_photos');
-    const cancelMediaAction = lifecycleAction(lifecycle, 'cancel_media');
     const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
-    const indexProgress = actionProgressFromLifecycle(lifecycle, 'index_photos', actionBusyKey === `${app.id}:index_photos`);
-    const cancelProgress = actionProgressFromLifecycle(lifecycle, 'cancel_media', actionBusyKey === `${app.id}:cancel_media`);
     const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
     const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
     const installAppAction = lifecycleAction(lifecycle, 'install_app');
@@ -1205,6 +1134,19 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   disabled={connectPhotosAction.enabled === false || Boolean(storageBusy)}
                   title={lifecycleActionReason(connectPhotosAction)}
                 />
+                {storagePreviewApp?.id === app.id ? (
+                  <div className="lite-catalog-storage-preview-anchor">
+                    <PhotoPrismStoragePreviewSheet
+                      preview={storagePreview}
+                      loading={storagePreviewLoading}
+                      error={storagePreviewError}
+                      connecting={Boolean(storageBusy)}
+                      onClose={closeStoragePreview}
+                      onConfirm={connectPhoneStorageFromPreview}
+                      onRetry={loadStoragePreview}
+                    />
+                  </div>
+                ) : null}
                 <PhotoPrismActionTile
                   app={app}
                   actionId="import_photos"
@@ -1215,28 +1157,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   onClick={(event) => runLifecycleAction(app, 'import_photos', event)}
                   disabled={importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`}
                   title={lifecycleActionReason(importPhotosAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="index_photos"
-                  action={indexPhotosAction}
-                  busyKey={actionBusyKey}
-                  progress={indexProgress}
-                  tone="secondary"
-                  onClick={(event) => runLifecycleAction(app, 'index_photos', event)}
-                  disabled={indexPhotosAction.enabled === false || actionBusyKey === `${app.id}:index_photos`}
-                  title={lifecycleActionReason(indexPhotosAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="cancel_media"
-                  action={cancelMediaAction}
-                  busyKey={actionBusyKey}
-                  progress={cancelProgress}
-                  tone="secondary"
-                  onClick={(event) => runLifecycleAction(app, 'cancel_media', event)}
-                  disabled={cancelMediaAction.enabled === false || actionBusyKey === `${app.id}:cancel_media`}
-                  title={lifecycleActionReason(cancelMediaAction)}
                 />
                 <PhotoPrismActionTile
                   app={app}
@@ -1321,8 +1241,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               </div>
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
-                {indexPhotosAction.enabled === false ? <span>Index photos: {lifecycleActionReason(indexPhotosAction)}</span> : null}
-                {cancelMediaAction.enabled === false && lifecycle?.media?.operation_running ? <span>Stop photo action: {lifecycleActionReason(cancelMediaAction)}</span> : null}
                 {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
                 {backupToStorageAction.enabled === false ? <span>Back up to storage device: {lifecycleActionReason(backupToStorageAction)}</span> : null}
                 {updateAppAction.enabled === false ? <span>Update: {lifecycleActionReason(updateAppAction)}</span> : null}
@@ -1497,18 +1415,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <LiteButton tone="secondary" onClick={() => setRemoveConfirmApp(null)}>Cancel</LiteButton>
           </div>
         </GlassCard>
-      ) : null}
-
-      {storagePreviewApp ? (
-        <PhotoPrismStoragePreviewSheet
-          preview={storagePreview}
-          loading={storagePreviewLoading}
-          error={storagePreviewError}
-          connecting={Boolean(storageBusy)}
-          onClose={closeStoragePreview}
-          onConfirm={connectPhoneStorageFromPreview}
-          onRetry={loadStoragePreview}
-        />
       ) : null}
 
       <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />
