@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   FileCheck,
   HeartPulse,
+  Camera,
   ExternalLink,
   FolderOpen,
   FolderPlus,
@@ -14,6 +15,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Smartphone,
+  Trash2,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
@@ -27,6 +29,199 @@ const APP_FILTERS = [
   { id: 'available', label: 'Available' },
   { id: 'attention', label: 'Needs attention' },
 ];
+
+const PHOTO_PRISM_ACTION_COPY = {
+  connect_photos: {
+    eyebrow: 'Photo source',
+    label: 'Connect photos',
+    description: 'Choose where PhotoPrism should look for pictures.',
+  },
+  import_photos: {
+    eyebrow: 'Photo library',
+    label: 'Import photos',
+    description: 'Bring connected photos into PhotoPrism.',
+  },
+  index_photos: {
+    eyebrow: 'Photo library',
+    label: 'Index photos',
+    description: 'Refresh PhotoPrism’s photo library.',
+  },
+  backup_app: {
+    eyebrow: 'Recovery',
+    label: 'Back up app',
+    description: 'Save PhotoPrism settings, mappings, and safe app records.',
+  },
+  check_app: {
+    eyebrow: 'Safety',
+    label: 'Check app',
+    description: 'Check PhotoPrism safety and app protection.',
+  },
+  preview_restore: {
+    eyebrow: 'Recovery',
+    label: 'Preview restore',
+    description: 'Review what would be restored before making changes.',
+  },
+  backup_to_storage: {
+    eyebrow: 'Recovery',
+    label: 'Back up to storage device',
+    description: 'Save the app backup to another joined storage device.',
+  },
+  install_app: {
+    eyebrow: 'App setup',
+    label: 'Install',
+    description: 'Set up PhotoPrism.',
+  },
+  update_app: {
+    eyebrow: 'App setup',
+    label: 'Update',
+    description: 'Update PhotoPrism after safety checks.',
+  },
+  repair_app: {
+    eyebrow: 'Recovery',
+    label: 'Repair',
+    description: 'Fix PhotoPrism routing, health, or setup issues.',
+  },
+  remove_app: {
+    eyebrow: 'Danger zone',
+    label: 'Remove app',
+    description: 'Remove PhotoPrism while preserving photos, backups, and evidence by default.',
+  },
+};
+
+const PHOTO_PRISM_STORAGE_COPY = {
+  phone_pictures: {
+    eyebrow: 'Photo source',
+    label: 'Connect photos',
+    description: 'Choose where PhotoPrism should look for pictures.',
+    busyLabel: 'Connecting...',
+  },
+  phone_camera: {
+    eyebrow: 'This phone',
+    label: 'Use phone photos',
+    description: 'Use photos from this phone, such as Camera/DCIM.',
+    busyLabel: 'Connecting...',
+  },
+  storage_device: {
+    eyebrow: 'Joined device',
+    label: 'Use storage device',
+    description: 'Use photos from another joined storage device.',
+    busyLabel: 'Connecting...',
+  },
+};
+
+function actionCopy(actionId) {
+  return PHOTO_PRISM_ACTION_COPY[actionId] || {
+    eyebrow: 'Action',
+    label: actionId.replace(/_/g, ' '),
+    description: 'Pocket Lab will run this safely through the backend.',
+  };
+}
+
+function isActionBusy(app, actionId, busyKey) {
+  return busyKey === `${app?.id}:${actionId}`;
+}
+
+function busyActionLabel(actionId) {
+  if (actionId === 'import_photos') return 'Importing...';
+  if (actionId === 'index_photos') return 'Indexing...';
+  if (actionId === 'backup_app') return 'Backing up...';
+  if (actionId === 'backup_to_storage') return 'Backing up...';
+  if (actionId === 'check_app') return 'Checking...';
+  if (actionId === 'preview_restore') return 'Preparing...';
+  if (actionId === 'install_app') return 'Installing...';
+  if (actionId === 'update_app') return 'Updating...';
+  if (actionId === 'repair_app') return 'Repairing...';
+  return 'Working...';
+}
+
+function PhotoPrismActionIcon({ actionId }) {
+  if (actionId === 'connect_photos') return <FolderPlus className="h-4 w-4" />;
+  if (actionId === 'import_photos' || actionId === 'index_photos') return <RefreshCw className="h-4 w-4" />;
+  if (actionId === 'backup_app' || actionId === 'backup_to_storage' || actionId === 'preview_restore') return <FileCheck className="h-4 w-4" />;
+  if (actionId === 'check_app') return <ShieldCheck className="h-4 w-4" />;
+  if (actionId === 'install_app') return <Smartphone className="h-4 w-4" />;
+  if (actionId === 'update_app' || actionId === 'repair_app') return <HeartPulse className="h-4 w-4" />;
+  if (actionId === 'remove_app') return <Trash2 className="h-4 w-4" />;
+  return <CheckCircle2 className="h-4 w-4" />;
+}
+
+function PhotoPrismStorageIcon({ preset }) {
+  if (preset === 'phone_camera' || preset === 'phone_pictures') return <Camera className="h-4 w-4" />;
+  if (preset === 'storage_device') return <HardDrive className="h-4 w-4" />;
+  return <FolderPlus className="h-4 w-4" />;
+}
+
+function PhotoPrismActionTile({
+  app,
+  actionId,
+  action,
+  busyKey,
+  tone = 'secondary',
+  onClick,
+  disabled = false,
+  title,
+}) {
+  const copy = actionCopy(actionId);
+  const busy = isActionBusy(app, actionId, busyKey) || (actionId === 'connect_photos' && busyKey === `${app?.id}:phone_camera`);
+  const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
+  const isDisabled = Boolean(disabled || action?.enabled === false || busy);
+  return (
+    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
+      <div className="lite-catalog-action-tile-copy">
+        <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
+        <div>
+          <span>{copy.eyebrow}</span>
+          <strong>{copy.label}</strong>
+          <p>{reason || copy.description}</p>
+        </div>
+      </div>
+      <LiteButton
+        tone={tone}
+        onClick={onClick}
+        disabled={isDisabled}
+        title={title || reason || copy.description}
+      >
+        {busy ? busyActionLabel(actionId) : copy.label}
+      </LiteButton>
+    </div>
+  );
+}
+
+function PhotoPrismStorageTile({ app, preset, busyKey, disabled, onClick }) {
+  const copy = PHOTO_PRISM_STORAGE_COPY[preset];
+  const busy = busyKey === `${app?.id}:${preset}`;
+  return (
+    <div className={`lite-catalog-storage-tile ${disabled ? 'is-disabled' : ''}`}>
+      <div className="lite-catalog-storage-tile-copy">
+        <span className="lite-catalog-storage-tile-icon"><PhotoPrismStorageIcon preset={preset} /></span>
+        <div>
+          <span>{copy.eyebrow}</span>
+          <strong>{copy.label}</strong>
+          <p>{copy.description}</p>
+        </div>
+      </div>
+      <LiteButton tone={preset === 'storage_device' ? 'ghost' : 'secondary'} onClick={onClick} disabled={disabled}>
+        {busy ? copy.busyLabel : copy.label}
+      </LiteButton>
+    </div>
+  );
+}
+
+function PhotoPrismMediaLottie({ running = false }) {
+  return (
+    <div className={`lite-catalog-media-lottie ${running ? 'is-running' : ''}`} aria-hidden="true">
+      <span className="lite-catalog-media-lottie-node is-phone"><Smartphone className="h-4 w-4" /></span>
+      <span className="lite-catalog-media-lottie-line"><i /></span>
+      <span className="lite-catalog-media-lottie-orb is-one" />
+      <span className="lite-catalog-media-lottie-orb is-two" />
+      <span className="lite-catalog-media-lottie-node is-lab"><RefreshCw className="h-4 w-4" /></span>
+      <span className="lite-catalog-media-lottie-line"><i /></span>
+      <span className="lite-catalog-media-lottie-orb is-three" />
+      <span className="lite-catalog-media-lottie-node is-prism"><ImageIcon className="h-4 w-4" /></span>
+    </div>
+  );
+}
+
 
 function isStandalonePwa() {
   try {
@@ -476,43 +671,123 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
             <div className="lite-catalog-action-center" aria-label="Action Center">
               <div className="lite-catalog-action-center-head">
-                <span>Action Center</span>
-                <strong>{mediaSummary}</strong>
+                <div>
+                  <span>Action Center</span>
+                  <strong>{mediaSummary}</strong>
+                </div>
+                <PhotoPrismMediaLottie running={Boolean(lifecycle?.media?.operation_running || actionBusyKey)} />
               </div>
               <div className="lite-catalog-action-buttons">
-                <LiteButton tone="secondary" onClick={(event) => connectStorage(app, 'phone_camera', event)} disabled={connectPhotosAction.enabled === false || Boolean(storageBusy)} title={lifecycleActionReason(connectPhotosAction)}>
-                  <FolderPlus className="h-4 w-4" />{storageBusy === `${app.id}:phone_camera` ? 'Connecting...' : 'Connect photos'}
-                </LiteButton>
-                <LiteButton tone="secondary" onClick={(event) => runLifecycleAction(app, 'import_photos', event)} disabled={importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`} title={lifecycleActionReason(importPhotosAction)}>
-                  <RefreshCw className="h-4 w-4" />{actionBusyKey === `${app.id}:import_photos` ? 'Importing...' : 'Import photos'}
-                </LiteButton>
-                <LiteButton tone="secondary" onClick={(event) => runLifecycleAction(app, 'index_photos', event)} disabled={indexPhotosAction.enabled === false || actionBusyKey === `${app.id}:index_photos`} title={lifecycleActionReason(indexPhotosAction)}>
-                  <RefreshCw className="h-4 w-4" />{actionBusyKey === `${app.id}:index_photos` ? 'Indexing...' : 'Index photos'}
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'backup_app', event)} disabled={backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`} title={lifecycleActionReason(backupAppAction)}>
-                  Back up app
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'check_app', event)} disabled={checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`} title={lifecycleActionReason(checkAppAction)}>
-                  Check app
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'preview_restore', event)} disabled={previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`} title={lifecycleActionReason(previewRestoreAction)}>
-                  Preview restore
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id })} disabled={backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`} title={lifecycleActionReason(backupToStorageAction)}>
-                  Back up to storage device
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'install_app', event)} disabled={installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`} title={lifecycleActionReason(installAppAction)}>
-                  Install
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'update_app', event)} disabled={updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`} title={lifecycleActionReason(updateAppAction)}>
-                  Update
-                </LiteButton>
-                <LiteButton tone="ghost" onClick={(event) => runLifecycleAction(app, 'repair_app', event)} disabled={repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`} title={lifecycleActionReason(repairAppAction)}>
-                  Repair
-                </LiteButton>
-                <LiteButton tone="danger" onClick={(event) => { event?.stopPropagation?.(); setRemoveConfirmApp(app); }} disabled={removeAppAction.enabled === false} title={lifecycleActionReason(removeAppAction)}>
-                  Remove app
-                </LiteButton>
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="connect_photos"
+                  action={connectPhotosAction}
+                  busyKey={storageBusy || actionBusyKey}
+                  tone="secondary"
+                  onClick={(event) => connectStorage(app, 'phone_camera', event)}
+                  disabled={connectPhotosAction.enabled === false || Boolean(storageBusy)}
+                  title={lifecycleActionReason(connectPhotosAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="import_photos"
+                  action={importPhotosAction}
+                  busyKey={actionBusyKey}
+                  tone="secondary"
+                  onClick={(event) => runLifecycleAction(app, 'import_photos', event)}
+                  disabled={importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`}
+                  title={lifecycleActionReason(importPhotosAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="index_photos"
+                  action={indexPhotosAction}
+                  busyKey={actionBusyKey}
+                  tone="secondary"
+                  onClick={(event) => runLifecycleAction(app, 'index_photos', event)}
+                  disabled={indexPhotosAction.enabled === false || actionBusyKey === `${app.id}:index_photos`}
+                  title={lifecycleActionReason(indexPhotosAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="backup_app"
+                  action={backupAppAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'backup_app', event)}
+                  disabled={backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`}
+                  title={lifecycleActionReason(backupAppAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="check_app"
+                  action={checkAppAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'check_app', event)}
+                  disabled={checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`}
+                  title={lifecycleActionReason(checkAppAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="preview_restore"
+                  action={previewRestoreAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'preview_restore', event)}
+                  disabled={previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`}
+                  title={lifecycleActionReason(previewRestoreAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="backup_to_storage"
+                  action={backupToStorageAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id })}
+                  disabled={backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`}
+                  title={lifecycleActionReason(backupToStorageAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="install_app"
+                  action={installAppAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'install_app', event)}
+                  disabled={installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`}
+                  title={lifecycleActionReason(installAppAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="update_app"
+                  action={updateAppAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'update_app', event)}
+                  disabled={updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`}
+                  title={lifecycleActionReason(updateAppAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="repair_app"
+                  action={repairAppAction}
+                  busyKey={actionBusyKey}
+                  tone="ghost"
+                  onClick={(event) => runLifecycleAction(app, 'repair_app', event)}
+                  disabled={repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`}
+                  title={lifecycleActionReason(repairAppAction)}
+                />
+                <PhotoPrismActionTile
+                  app={app}
+                  actionId="remove_app"
+                  action={removeAppAction}
+                  busyKey={actionBusyKey}
+                  tone="danger"
+                  onClick={(event) => { event?.stopPropagation?.(); setRemoveConfirmApp(app); }}
+                  disabled={removeAppAction.enabled === false}
+                  title={lifecycleActionReason(removeAppAction)}
+                />
               </div>
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
@@ -569,15 +844,27 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>
             )}
             <div className="lite-catalog-storage-actions">
-              <LiteButton tone="secondary" onClick={(event) => connectStorage(app, 'phone_pictures', event)} disabled={Boolean(storageBusy)}>
-                <FolderPlus className="h-4 w-4" />{storageBusy === `${app.id}:phone_pictures` ? 'Connecting...' : 'Connect photos'}
-              </LiteButton>
-              <LiteButton tone="secondary" onClick={(event) => connectStorage(app, 'phone_camera', event)} disabled={Boolean(storageBusy)}>
-                Use phone photos
-              </LiteButton>
-              <LiteButton tone="ghost" onClick={(event) => connectStorage(app, 'storage_device', event)} disabled={Boolean(storageBusy) || storageDeviceCount(app) < 1}>
-                Use storage device
-              </LiteButton>
+              <PhotoPrismStorageTile
+                app={app}
+                preset="phone_pictures"
+                busyKey={storageBusy}
+                disabled={Boolean(storageBusy)}
+                onClick={(event) => connectStorage(app, 'phone_pictures', event)}
+              />
+              <PhotoPrismStorageTile
+                app={app}
+                preset="phone_camera"
+                busyKey={storageBusy}
+                disabled={Boolean(storageBusy)}
+                onClick={(event) => connectStorage(app, 'phone_camera', event)}
+              />
+              <PhotoPrismStorageTile
+                app={app}
+                preset="storage_device"
+                busyKey={storageBusy}
+                disabled={Boolean(storageBusy) || storageDeviceCount(app) < 1}
+                onClick={(event) => connectStorage(app, 'storage_device', event)}
+              />
             </div>
             {storageDeviceCount(app) < 1 ? (
               <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
