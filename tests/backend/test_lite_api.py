@@ -2350,6 +2350,61 @@ def test_lite_media_status_reconciles_stale_running_operation(monkeypatch):
     assert status["evidence"]["count"] >= 1
 
 
+def test_lite_media_new_command_resets_previous_operation_timestamps(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    times = iter([
+        "2026-07-01T00:00:00Z",
+        "2026-07-01T00:00:01Z",
+        "2026-07-01T00:00:05Z",
+        "2026-07-01T00:00:06Z",
+        "2026-07-01T00:00:07Z",
+        "2026-07-01T12:40:00Z",
+        "2026-07-01T12:40:01Z",
+    ])
+
+    def fake_now():
+        try:
+            return next(times)
+        except StopIteration:
+            return "2026-07-01T12:40:02Z"
+
+    monkeypatch.setattr(lite_photoprism_media, "_now", fake_now)
+
+    old_command = {
+        "command_id": "photoprism-media-old-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }
+    new_command = {
+        "command_id": "photoprism-media-new-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 3,
+    }
+
+    lite_photoprism_media.record_operation(old_command, status="queued")
+    old_done = lite_photoprism_media.record_operation(old_command, status="succeeded")
+    assert old_done["completed_at"] == "2026-07-01T00:00:05Z"
+
+    new_queued = lite_photoprism_media.record_operation(new_command, status="queued")
+    assert new_queued["status"] == "queued"
+    assert new_queued["started_at"] == "2026-07-01T12:40:00Z"
+    assert new_queued["completed_at"] is None
+    assert new_queued["evidence_status"] == "pending"
+
+    state = lite_photoprism_media._read_state()
+    stored = state["apps"]["photoprism"]["operations"]["import_photos"]
+    assert stored["operation_id"] == "photoprism-media-new-unit"
+    assert stored["started_at"] == "2026-07-01T12:40:00Z"
+    assert "completed_at" not in stored
+    assert "evidence_ref" not in stored
+
+
 def test_lite_app_action_center_ui_source_is_present():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
