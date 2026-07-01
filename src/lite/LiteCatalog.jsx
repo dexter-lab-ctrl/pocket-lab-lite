@@ -334,6 +334,8 @@ function PhotoPrismActionTile({
           <span className="lite-catalog-action-progress-fill" style={{ width: progressState.indeterminate ? '46%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
           <i className="lite-catalog-action-progress-sparkle" aria-hidden="true" />
           <em className="lite-catalog-action-progress-glow" aria-hidden="true" />
+          <b className="lite-catalog-action-progress-comet" aria-hidden="true" />
+          <span className="lite-catalog-action-progress-orbits" aria-hidden="true"><i /><i /><i /></span>
         </div>
       ) : null}
     </div>
@@ -372,9 +374,11 @@ function PhotoPrismStoragePreviewSheet({
   loading,
   error,
   connecting,
+  notice,
   onClose,
   onConfirm,
   onRetry,
+  onDismissNotice,
 }) {
   const ready = String(preview?.status || '').toLowerCase() === 'ready' && preview?.connect_payload;
   const notReady = String(preview?.status || '').toLowerCase() === 'not_ready';
@@ -463,6 +467,18 @@ function PhotoPrismStoragePreviewSheet({
           </LiteButton>
           <LiteButton tone="secondary" onClick={onClose} disabled={connecting}>Cancel</LiteButton>
         </div>
+        {notice ? (
+          <div className={`lite-catalog-storage-preview-inline-notice is-${notice.tone || 'review'}`} role={notice.tone === 'danger' ? 'alert' : 'status'} aria-live={notice.tone === 'danger' ? 'assertive' : 'polite'}>
+            <span className="lite-catalog-storage-preview-inline-dot" aria-hidden="true" />
+            <div>
+              <strong>{notice.title || 'Storage update'}</strong>
+              <p>{notice.message || 'Pocket Lab recorded the storage update.'}</p>
+            </div>
+            <button type="button" onClick={onDismissNotice} aria-label="Dismiss storage message">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : null}
       </section>
   );
 }
@@ -796,6 +812,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreview, setStoragePreview] = useState(null);
   const [storagePreviewLoading, setStoragePreviewLoading] = useState(false);
   const [storagePreviewError, setStoragePreviewError] = useState(null);
+  const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -819,6 +836,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }, notice.timeoutMs || 5000);
     return () => window.clearTimeout(timer);
   }, [result, actionError]);
+
+  useEffect(() => {
+    if (!storagePreviewNotice) return undefined;
+    const timer = window.setTimeout(() => setStoragePreviewNotice(null), storagePreviewNotice.timeoutMs || 6200);
+    return () => window.clearTimeout(timer);
+  }, [storagePreviewNotice]);
 
   useEffect(() => {
     const busyMediaAction = /:import_photos$/.test(actionBusyKey || '');
@@ -900,6 +923,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function loadStoragePreview() {
     setStoragePreviewLoading(true);
     setStoragePreviewError(null);
+    setStoragePreviewNotice(null);
     try {
       setStoragePreview(await liteApi.photoprismStoragePreview());
     } catch (err) {
@@ -914,6 +938,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     if (!isPhotoPrismApp(app)) return;
     setStoragePreviewApp(app);
     setStoragePreview(null);
+    setStoragePreviewNotice(null);
     await loadStoragePreview();
   }
 
@@ -923,6 +948,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setStoragePreview(null);
     setStoragePreviewError(null);
     setStoragePreviewLoading(false);
+    setStoragePreviewNotice(null);
   }
 
   async function connectPhoneStorageFromPreview() {
@@ -930,6 +956,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     if (!isPhotoPrismApp(app) || !storagePreview?.connect_payload) return;
     setStorageBusy(`${app.id}:phone_storage`);
     setActionError(null);
+    setStoragePreviewNotice(null);
     setResult({ status: 'queued', summary: 'Connecting phone storage...' });
     try {
       const response = await liteApi.connectPhotoPrismStorage(storagePreview.connect_payload);
@@ -941,11 +968,22 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     } catch (err) {
       const detail = err?.payload?.detail;
       if (detail?.status === 'duplicate_mapping') {
-        setResult({ status: 'already_connected', summary: detail.summary || 'Phone storage is already connected to PhotoPrism.' });
-        closeStoragePreview(true);
+        setResult(null);
+        setStoragePreviewNotice({
+          tone: 'review',
+          title: 'Already connected',
+          message: detail.summary || 'Phone storage is already connected to PhotoPrism.',
+          timeoutMs: 6500,
+        });
         await refreshPhotoPrismState();
       } else {
-        setActionError(detail?.summary || err.message);
+        setStoragePreviewNotice({
+          tone: 'danger',
+          title: 'Could not connect storage',
+          message: detail?.summary || err.message || 'Pocket Lab could not connect phone storage.',
+          timeoutMs: 8500,
+        });
+        setActionError(null);
       }
     } finally {
       setStorageBusy('');
@@ -1141,9 +1179,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                       loading={storagePreviewLoading}
                       error={storagePreviewError}
                       connecting={Boolean(storageBusy)}
+                      notice={storagePreviewNotice}
                       onClose={closeStoragePreview}
                       onConfirm={connectPhoneStorageFromPreview}
                       onRetry={loadStoragePreview}
+                      onDismissNotice={() => setStoragePreviewNotice(null)}
                     />
                   </div>
                 ) : null}
