@@ -2239,9 +2239,11 @@ def test_lite_media_worker_applies_storage_mappings_before_photoprism_cli(tmp_pa
 
     assert result["status"] == "succeeded"
     assert result["mapping_apply"]["applied_count"] == 1
-    link_path = app_root / "import" / "pocketlab-mappings" / mapping_id
-    assert link_path.is_symlink()
-    assert link_path.readlink() == source
+    links = list((app_root / "import" / "pocketlab-mappings").iterdir())
+    symlinks = [item for item in links if item.is_symlink()]
+    assert len(symlinks) == 1
+    assert symlinks[0].name.startswith(mapping_id)
+    assert symlinks[0].readlink() == source
     assert calls
     assert "photoprism import" in calls[0][0][0][-1]
 
@@ -2584,9 +2586,12 @@ def test_lite_photoprism_media_optimizer_deduplicates_overlapping_mappings(tmp_p
     storage = tmp_path / "storage"
     dcim = storage / "shared" / "DCIM"
     pictures = storage / "shared" / "Pictures"
+    noisy_docs = storage / "shared" / "Android" / "media" / "com.whatsapp" / "WhatsApp" / "Media" / "WhatsApp Documents"
     dcim.mkdir(parents=True)
     pictures.mkdir(parents=True)
+    noisy_docs.mkdir(parents=True)
     (dcim / "sample.jpg").write_text("fake image")
+    (noisy_docs / "ND4812.pdf").write_text("not a photo")
     app_root = tmp_path / "photoprism"
     env_file = app_root / "config" / "photoprism.env"
     env_file.parent.mkdir(parents=True)
@@ -2644,11 +2649,15 @@ def test_lite_photoprism_media_optimizer_deduplicates_overlapping_mappings(tmp_p
     })
 
     assert result["status"] == "succeeded"
-    assert result["mapping_apply"]["mapping_apply" if False else "runtime_mapping_count"] == 1
+    assert result["mapping_apply"]["runtime_mapping_count"] == 1
+    assert result["mapping_apply"]["runtime_roots_used"] == 2
     assert result["mapping_apply"]["overlap_skipped_count"] == 2
-    links = list((app_root / "import" / "pocketlab-mappings").iterdir())
-    assert len([item for item in links if item.is_symlink()]) == 1
-    assert links[0].readlink() == storage
+    assert result["mapping_apply"]["excluded_noisy_roots"] >= 1
+    links = sorted((app_root / "import" / "pocketlab-mappings").iterdir())
+    symlinks = [item for item in links if item.is_symlink()]
+    assert len(symlinks) == 2
+    assert {item.readlink() for item in symlinks} == {dcim, pictures}
+    assert not any(item.readlink() == noisy_docs for item in symlinks)
     listed = client().get("/api/lite/apps/photoprism/storage-mappings").json()["mappings"]
     assert {item["status"] for item in listed} == {"applied"}
     assert all(item["pending_apply"] is False for item in listed)
@@ -2721,7 +2730,7 @@ def test_lite_app_action_center_exposes_cancel_media_when_running(monkeypatch):
     assert actions["cancel_media"]["enabled"] is True
     assert actions["cancel_media"]["label"] == "Stop photo action"
 
-    monkeypatch.setattr(lite_photoprism_media, "_stop_media_processes", lambda: {"status": "stopped", "matched": 1, "terminated": 1, "killed": 0})
+    monkeypatch.setattr(lite_photoprism_media, "_stop_media_processes", lambda: {"status": "stopped", "matched": 1, "terminated": 1, "killed": 0, "remaining": 0})
     cancelled = client().post(
         "/api/lite/apps/photoprism/actions/cancel_media",
         json={"reason": "stop test media action"},
@@ -2731,3 +2740,53 @@ def test_lite_app_action_center_exposes_cancel_media_when_running(monkeypatch):
     assert payload["status"] == "cancelled"
     assert payload["accepted"] is True
     assert payload["action_id"] == "cancel_media"
+
+
+def test_lite_photoprism_cancel_blocks_late_worker_updates(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-late-cancel-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }
+    lite_photoprism_media.record_operation(command, status="running")
+    monkeypatch.setattr(lite_photoprism_media, "_stop_media_processes", lambda: {"status": "stopped", "matched": 2, "terminated": 2, "killed": 2, "remaining": 0})
+
+    cancelled = lite_photoprism_media.cancel_media_action("photoprism", reason="user stopped import")
+    assert cancelled["status"] == "cancelled"
+    assert cancelled["processes"]["remaining"] == 0
+
+    late = lite_photoprism_media.record_operation(command, status="failed", summary="late worker failure after cancel")
+    assert late["status"] == "cancelled"
+    status = lite_photoprism_media.media_status("photoprism")
+    assert status["operation_running"] is False
+    assert status["last_import"]["status"] == "cancelled"
+
+
+def test_lite_photoprism_lifecycle_reconciles_orphaned_running_operation(monkeypatch):
+    ensure_runtime_path()
+    from datetime import datetime, timedelta, timezone
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-orphaned-unit",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+    }
+    lite_photoprism_media.record_operation(command, status="running")
+    state = lite_photoprism_media._read_state()
+    old = (datetime.now(timezone.utc) - timedelta(seconds=120)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    state["apps"]["photoprism"]["operations"]["import_photos"]["started_at"] = old
+    lite_photoprism_media._write_state(state)
+    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
+
+    status = lite_photoprism_media.media_status("photoprism")
+    assert status["operation_running"] is False
+    assert status["last_import"]["status"] == "cancelled"
+    assert status["last_import"]["progress"]["phase"] == "cancelled"

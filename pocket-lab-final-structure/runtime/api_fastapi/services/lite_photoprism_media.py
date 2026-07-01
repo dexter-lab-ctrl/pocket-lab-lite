@@ -20,7 +20,26 @@ MEDIA_ACTIONS = {"import_photos", "index_photos"}
 MEDIA_COMMAND_SUBJECT = "pocketlab.commands.lite.app.media"
 STALE_OPERATION_SECONDS = int(os.environ.get("POCKETLAB_LITE_MEDIA_STALE_SECONDS", "1800"))
 MEDIA_COMMAND_TIMEOUT_SECONDS = int(os.environ.get("POCKETLAB_LITE_MEDIA_COMMAND_TIMEOUT_SECONDS", "1800"))
-_MEDIA_CANCEL_PATTERN = r"photoprism (import|index)"
+ORPHANED_RUNNING_GRACE_SECONDS = int(os.environ.get("POCKETLAB_LITE_MEDIA_ORPHANED_GRACE_SECONDS", "60"))
+_MEDIA_CANCEL_PATTERN = r"photoprism (import|index)|exiftool .*pocketlab-mappings|perl .*/exiftool .*pocketlab-mappings"
+_PHONE_STORAGE_MEDIA_ROOTS = (
+    ("dcim", "Camera photos"),
+    ("pictures", "Pictures"),
+    ("movies", "Videos"),
+    ("shared/DCIM", "Camera photos"),
+    ("shared/Pictures", "Pictures"),
+    ("shared/Movies", "Videos"),
+)
+_PHONE_STORAGE_EXCLUDED_ROOTS = (
+    ("shared/Android", "Android app data"),
+    ("shared/Download", "Downloads and documents"),
+    ("shared/Downloads", "Downloads and documents"),
+    ("shared/Documents", "Documents"),
+    ("shared/WhatsApp/Media/WhatsApp Documents", "WhatsApp documents"),
+    ("shared/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Documents", "WhatsApp documents"),
+    ("downloads", "Downloads and documents"),
+    ("documents", "Documents"),
+)
 
 _SECRET_MARKERS = (
     "token",
@@ -227,6 +246,71 @@ def _operation_is_stale(operation: dict[str, Any], *, now: datetime | None = Non
     return (now - started).total_seconds() >= STALE_OPERATION_SECONDS
 
 
+def _running_operation_age_seconds(operation: dict[str, Any], *, now: datetime | None = None) -> float:
+    started = _parse_ts(operation.get("started_at") or operation.get("updated_at"))
+    if started is None:
+        return 0.0
+    now = now or _utc_now_dt()
+    return max(0.0, (now - started).total_seconds())
+
+
+def _cancel_operation_in_state(
+    operation: dict[str, Any],
+    *,
+    action: str,
+    now: str,
+    summary: str,
+) -> dict[str, Any]:
+    operation["status"] = "cancelled"
+    operation["summary"] = _safe_text(summary, _operation_summary(action, "cancelled"))
+    operation["completed_at"] = now
+    operation["updated_at"] = now
+    operation["evidence_status"] = "saved"
+    operation["evidence_ref"] = f"apps/photoprism/media/{operation.get('operation_id') or _operation_id(action)}.json"
+    operation["phase"] = "cancelled"
+    operation["progress"] = _progress_payload("cancelled", "Photo action stopped safely.", 5)
+    return operation
+
+
+def reconcile_orphaned_running_operations(app_id: str = PHOTOPRISM_APP_ID) -> int:
+    """Close running media state when no PhotoPrism media process exists.
+
+    This protects the Lite UI from staying in a false running state after a
+    cancel, worker restart, or child process exit. A short grace window avoids
+    racing the worker while it is applying mappings before the CLI starts.
+    """
+    _validate_app_id(app_id)
+    if _matching_media_process_count() > 0:
+        return 0
+
+    state = _read_state()
+    app_state = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {})
+    operations = app_state.get("operations") if isinstance(app_state.get("operations"), dict) else {}
+    if not operations:
+        return 0
+
+    now_dt = _utc_now_dt()
+    now = now_dt.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    changed = 0
+    summary = "PhotoPrism media action was stopped because no running media process was found."
+    for action, operation in list(operations.items()):
+        if action not in MEDIA_ACTIONS or not isinstance(operation, dict):
+            continue
+        if str(operation.get("status") or "").lower() != "running":
+            continue
+        if _running_operation_age_seconds(operation, now=now_dt) < ORPHANED_RUNNING_GRACE_SECONDS:
+            continue
+        _cancel_operation_in_state(operation, action=action, now=now, summary=summary)
+        _append_evidence(operation)
+        changed += 1
+
+    if changed:
+        app_state["updated_at"] = now
+        state["updated_at"] = now
+        _write_state(state)
+    return changed
+
+
 def reconcile_stale_operations(app_id: str = PHOTOPRISM_APP_ID) -> int:
     """Close stale queued/running media operations without deleting evidence.
 
@@ -269,6 +353,7 @@ def record_operation_failure(command: dict[str, Any], error: Any) -> dict[str, A
 def media_status(app_id: str = PHOTOPRISM_APP_ID) -> dict[str, Any]:
     _validate_app_id(app_id)
     reconcile_stale_operations(app_id)
+    reconcile_orphaned_running_operations(app_id)
     state = _read_state()
     app_state = state.get("apps", {}).get(PHOTOPRISM_APP_ID, {})
     operations = app_state.get("operations") if isinstance(app_state.get("operations"), dict) else {}
@@ -364,6 +449,15 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
     command_ref = str(command.get("command_id") or previous.get("operation_id") or _operation_id(action))
     same_operation = str(previous.get("operation_id") or "") == command_ref
     previous_for_operation = previous if same_operation else {}
+    if (
+        same_operation
+        and str(previous.get("status") or "").lower() == "cancelled"
+        and status in {"running", "failed", "succeeded"}
+    ):
+        # A late worker result from a cancelled command must not flip the UI
+        # back to running/failed/succeeded after the user stopped it. New
+        # commands have a new operation_id and are unaffected.
+        return _public_operation(previous) or {}
 
     operation = {
         **previous_for_operation,
@@ -375,6 +469,8 @@ def record_operation(command: dict[str, Any], *, status: str, summary: str | Non
         "mapping_count": int(command.get("mapping_count") or mapping_count() or 0),
         "runtime_mappings_used": int(command.get("runtime_mappings_used") or previous_for_operation.get("runtime_mappings_used") or 0),
         "skipped_overlapping_mappings": int(command.get("skipped_overlapping_mappings") or previous_for_operation.get("skipped_overlapping_mappings") or 0),
+        "runtime_roots_used": int(command.get("runtime_roots_used") or previous_for_operation.get("runtime_roots_used") or command.get("runtime_mappings_used") or 0),
+        "excluded_noisy_roots": int(command.get("excluded_noisy_roots") or previous_for_operation.get("excluded_noisy_roots") or 0),
         "evidence_status": "pending" if status in {"queued", "running"} else "saved",
         "updated_at": now,
     }
@@ -428,6 +524,8 @@ def _append_evidence(operation: dict[str, Any]) -> dict[str, Any]:
         "phase": _safe_text(operation.get("phase"), str(operation.get("status") or "unknown")),
         "runtime_mappings_used": int(operation.get("runtime_mappings_used") or 0),
         "skipped_overlapping_mappings": int(operation.get("skipped_overlapping_mappings") or 0),
+        "runtime_roots_used": int(operation.get("runtime_roots_used") or operation.get("runtime_mappings_used") or 0),
+        "excluded_noisy_roots": int(operation.get("excluded_noisy_roots") or 0),
         "bounded": True,
         "timeout_seconds": MEDIA_COMMAND_TIMEOUT_SECONDS,
         "sensitive_values_hidden": True,
@@ -520,6 +618,65 @@ def _command_with_progress(command: dict[str, Any], phase: str, step: str, curre
     return {**command, "progress": _progress_payload(phase, step, current, total)}
 
 
+def _media_root_slug(name: str) -> str:
+    safe = re.sub(r"[^a-z0-9._-]+", "-", str(name or "media").strip().lower()).strip("-._")
+    return safe[:48] or "media"
+
+
+def _readable_directory(path: Path) -> bool:
+    try:
+        return path.exists() and path.is_dir() and os.access(path, os.R_OK)
+    except OSError:
+        return False
+
+
+def _focused_phone_storage_sources(source_path: str, source: Path) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Return media-focused runtime roots for the user-visible ~/storage mapping.
+
+    The Lite UI still exposes a single friendly "Phone storage" mapping, but
+    the worker should not hand all of Android shared storage to PhotoPrism. On
+    phones this can drag in app data, downloads, documents, PDFs, and chat
+    exports. Instead, use photo/video-heavy roots and record sanitized excluded
+    categories for evidence.
+    """
+    if str(source_path or "").strip() != lite_app_storage.PHONE_STORAGE_ROOT:
+        return ([{"path": source, "suffix": "", "label": "Media folder"}], [])
+
+    roots: list[dict[str, Any]] = []
+    excluded: list[dict[str, str]] = []
+    seen_realpaths: set[str] = set()
+
+    for relative, label in _PHONE_STORAGE_MEDIA_ROOTS:
+        candidate = source / relative
+        if not _readable_directory(candidate):
+            continue
+        try:
+            real = str(candidate.resolve())
+        except OSError:
+            real = str(candidate)
+        if real in seen_realpaths:
+            continue
+        seen_realpaths.add(real)
+        roots.append({
+            "path": candidate,
+            "suffix": _media_root_slug(relative),
+            "label": label,
+        })
+
+    for relative, label in _PHONE_STORAGE_EXCLUDED_ROOTS:
+        candidate = source / relative
+        if _readable_directory(candidate):
+            excluded.append({"label": label, "reason": "excluded from PhotoPrism import runtime plan"})
+
+    # If Android exposes a non-standard layout and none of the focused roots
+    # exist, fall back to the root rather than making a valid mapping unusable.
+    # This fallback is explicit in evidence through excluded_noisy_roots=0.
+    if not roots:
+        roots.append({"path": source, "suffix": "phone-storage", "label": "Phone storage"})
+
+    return roots, excluded[:8]
+
+
 def _clear_stale_mapping_links(active_targets: set[Path]) -> None:
     for root in {_mapping_root_for_target("import"), _mapping_root_for_target("originals")}:
         try:
@@ -547,9 +704,9 @@ def _apply_storage_mappings_for_media(action: str) -> dict[str, Any]:
     """Apply backend-approved PhotoPrism mappings before Import/Index.
 
     The apply step creates sanitized symlink entries under PhotoPrism's managed
-    import/originals mapping directory. This keeps the browser out of filesystem
-    access, avoids copying user media, and keeps evidence limited to friendly
-    labels/counts.
+    import/originals mapping directory. For the user-visible ~/storage mapping,
+    the worker expands to media-focused roots so PhotoPrism does not crawl noisy
+    Android/document folders such as WhatsApp Documents or Downloads.
     """
 
     connected_mappings = lite_app_storage.runtime_mappings(PHOTOPRISM_APP_ID)
@@ -557,7 +714,9 @@ def _apply_storage_mappings_for_media(action: str) -> dict[str, Any]:
     applied_ids: list[str] = []
     covered_ids = [item["mapping_id"] for item in optimized_skipped if item.get("mapping_id")]
     skipped: list[dict[str, str]] = [*optimized_skipped]
+    excluded_noisy_roots: list[dict[str, str]] = []
     active_targets: set[Path] = set()
+    runtime_roots_used = 0
 
     for mapping in mappings:
         mapping_id = str(mapping.get("mapping_id") or "")
@@ -576,33 +735,50 @@ def _apply_storage_mappings_for_media(action: str) -> dict[str, Any]:
             skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source path was not approved"})
             continue
 
-        try:
-            if not source.exists() or not source.is_dir() or not os.access(source, os.R_OK):
-                skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source folder is not ready"})
-                continue
-        except OSError:
-            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source folder is not readable"})
+        if not _readable_directory(source):
+            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "source folder is not ready"})
             continue
 
-        mapping_root = _mapping_root_for_target(target)
-        mapping_root.mkdir(parents=True, exist_ok=True)
-        link_path = mapping_root / _mapping_slug(mapping_id)
-        active_targets.add(link_path)
+        runtime_sources, excluded = _focused_phone_storage_sources(source_path, source)
+        excluded_noisy_roots.extend(excluded)
+        mapping_applied = False
 
-        try:
-            if link_path.is_symlink() or link_path.is_file():
-                current = link_path.readlink() if link_path.is_symlink() else None
-                if current is not None and str(current) == str(source):
-                    applied_ids.append(mapping_id)
-                    continue
-                link_path.unlink()
-            elif link_path.exists():
-                skipped.append({"mapping_id": mapping_id, "label": label, "reason": "managed mapping path is occupied"})
+        for index, runtime_source in enumerate(runtime_sources):
+            runtime_path = runtime_source["path"]
+            if not _readable_directory(runtime_path):
                 continue
-            os.symlink(source, link_path, target_is_directory=True)
+
+            suffix = str(runtime_source.get("suffix") or "")
+            slug = _mapping_slug(mapping_id)
+            if suffix:
+                slug = f"{slug}-{suffix}"[:96]
+
+            mapping_root = _mapping_root_for_target(target)
+            mapping_root.mkdir(parents=True, exist_ok=True)
+            link_path = mapping_root / slug
+            active_targets.add(link_path)
+
+            try:
+                if link_path.is_symlink() or link_path.is_file():
+                    current = link_path.readlink() if link_path.is_symlink() else None
+                    if current is not None and str(current) == str(runtime_path):
+                        mapping_applied = True
+                        runtime_roots_used += 1
+                        continue
+                    link_path.unlink()
+                elif link_path.exists():
+                    skipped.append({"mapping_id": mapping_id, "label": label, "reason": "managed mapping path is occupied"})
+                    continue
+                os.symlink(runtime_path, link_path, target_is_directory=True)
+                mapping_applied = True
+                runtime_roots_used += 1
+            except OSError:
+                skipped.append({"mapping_id": mapping_id, "label": label, "reason": "mapping could not be applied"})
+
+        if mapping_applied:
             applied_ids.append(mapping_id)
-        except OSError:
-            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "mapping could not be applied"})
+        elif runtime_sources:
+            skipped.append({"mapping_id": mapping_id, "label": label, "reason": "no readable media-focused runtime roots were available"})
 
     _clear_stale_mapping_links(active_targets)
 
@@ -619,12 +795,14 @@ def _apply_storage_mappings_for_media(action: str) -> dict[str, Any]:
         "applied_count": len(applied_ids),
         "ready_count": len(ready_ids),
         "runtime_mapping_count": len(mappings),
+        "runtime_roots_used": runtime_roots_used,
         "skipped_count": len(skipped),
         "overlap_skipped_count": len(optimized_skipped),
+        "excluded_noisy_roots": len(excluded_noisy_roots),
         "mapping_count": len(connected_mappings),
         "skipped": skipped[:6],
+        "excluded": excluded_noisy_roots[:6],
     }
-
 
 def _photoprism_cli_command(action: str) -> str:
     if action == "import_photos":
@@ -643,7 +821,7 @@ def _runtime_ready() -> tuple[bool, str]:
 
 
 
-def _matching_media_process_count() -> int:
+def _matching_media_process_lines() -> list[str]:
     try:
         found = subprocess.run(
             ["pgrep", "-af", _MEDIA_CANCEL_PATTERN],
@@ -653,10 +831,22 @@ def _matching_media_process_count() -> int:
             timeout=5,
         )
     except Exception:
-        return 0
+        return []
     if found.returncode not in {0, 1}:
-        return 0
-    return len([line for line in (found.stdout or "").splitlines() if line.strip()])
+        return []
+    lines = []
+    for line in (found.stdout or "").splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        if "pgrep -af" in text or "pkill" in text:
+            continue
+        lines.append(text)
+    return lines
+
+
+def _matching_media_process_count() -> int:
+    return len(_matching_media_process_lines())
 
 
 def _stop_media_processes() -> dict[str, Any]:
@@ -674,7 +864,10 @@ def _stop_media_processes() -> dict[str, Any]:
 
     try:
         import time
-        time.sleep(3)
+        for _ in range(5):
+            time.sleep(1)
+            if _matching_media_process_count() < 1:
+                break
     except Exception:
         pass
 
@@ -685,12 +878,22 @@ def _stop_media_processes() -> dict[str, Any]:
             killed = remaining if kill.returncode in {0, 1} else 0
         except Exception:
             killed = 0
+        try:
+            import time
+            for _ in range(5):
+                time.sleep(1)
+                if _matching_media_process_count() < 1:
+                    break
+        except Exception:
+            pass
 
+    after = _matching_media_process_count()
     return {
-        "status": "stopped" if terminated or killed else "unknown",
+        "status": "stopped" if after < 1 and (terminated or killed or before) else "unknown",
         "matched": before,
         "terminated": terminated,
         "killed": killed,
+        "remaining": after,
     }
 
 
@@ -709,21 +912,20 @@ def cancel_media_action(app_id: str = PHOTOPRISM_APP_ID, *, reason: str | None =
     operations = app_state.setdefault("operations", {})
     changed: list[dict[str, Any]] = []
     summary = _safe_text(reason, "PhotoPrism media action was stopped safely.")
+    now = _now()
     for action, operation in list(operations.items()):
         if action not in MEDIA_ACTIONS or not isinstance(operation, dict):
             continue
         if str(operation.get("status") or "").lower() not in {"queued", "running"}:
             continue
-        command = {
-            "command_id": operation.get("operation_id"),
-            "app_id": PHOTOPRISM_APP_ID,
-            "action_id": action,
-            "operation": action,
-            "mapping_count": operation.get("mapping_count") or mapping_count(),
-            "progress": _progress_payload("cancelled", "Media action stopped safely.", 5),
-        }
-        public = record_operation(command, status="cancelled", summary=summary)
-        changed.append(public)
+        _cancel_operation_in_state(operation, action=action, now=now, summary=summary)
+        _append_evidence(operation)
+        changed.append(_public_operation(operation) or {})
+
+    if changed:
+        app_state["updated_at"] = now
+        state["updated_at"] = now
+        _write_state(state)
 
     return {
         "status": "cancelled" if changed or int(stop_result.get("matched") or 0) > 0 else "idle",
@@ -735,6 +937,7 @@ def cancel_media_action(app_id: str = PHOTOPRISM_APP_ID, *, reason: str | None =
             "matched": int(stop_result.get("matched") or 0),
             "terminated": int(stop_result.get("terminated") or 0),
             "killed": int(stop_result.get("killed") or 0),
+            "remaining": int(stop_result.get("remaining") or 0),
         },
         "summary": "PhotoPrism media action stopped safely." if changed or int(stop_result.get("matched") or 0) > 0 else "No PhotoPrism media action was running.",
         "evidence": {"status": "saved", "summary": "Cancel evidence saved." if changed else "No running media action found."},
@@ -801,9 +1004,11 @@ def execute_media_operation(command: dict[str, Any]) -> dict[str, Any]:
     if completed.returncode == 0:
         success_command = _command_with_progress(command, "done", "PhotoPrism media job completed and evidence was saved.", 5)
         success_command["runtime_mappings_used"] = int(apply_result.get("runtime_mapping_count") or 0)
+        success_command["runtime_roots_used"] = int(apply_result.get("runtime_roots_used") or 0)
         success_command["skipped_overlapping_mappings"] = int(apply_result.get("overlap_skipped_count") or 0)
+        success_command["excluded_noisy_roots"] = int(apply_result.get("excluded_noisy_roots") or 0)
         operation = record_operation(success_command, status="succeeded", summary=_operation_summary(action, "succeeded"))
-        return {"status": "succeeded", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": "applied", "applied_count": int(apply_result.get("applied_count") or 0), "ready_count": int(apply_result.get("ready_count") or 0), "runtime_mapping_count": int(apply_result.get("runtime_mapping_count") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0), "overlap_skipped_count": int(apply_result.get("overlap_skipped_count") or 0)}}
+        return {"status": "succeeded", "app_id": PHOTOPRISM_APP_ID, "action_id": action, "operation": operation, "mapping_apply": {"status": "applied", "applied_count": int(apply_result.get("applied_count") or 0), "ready_count": int(apply_result.get("ready_count") or 0), "runtime_mapping_count": int(apply_result.get("runtime_mapping_count") or 0), "runtime_roots_used": int(apply_result.get("runtime_roots_used") or 0), "skipped_count": int(apply_result.get("skipped_count") or 0), "overlap_skipped_count": int(apply_result.get("overlap_skipped_count") or 0), "excluded_noisy_roots": int(apply_result.get("excluded_noisy_roots") or 0)}}
 
     summary = _sanitize_output(completed.stderr or completed.stdout) or f"{_operation_label(action)} failed safely."
     operation = record_operation(_command_with_progress(command, "failed", "PhotoPrism media job failed safely.", 5), status="failed", summary=summary)
