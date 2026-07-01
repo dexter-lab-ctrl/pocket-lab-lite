@@ -293,6 +293,13 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             summary="Update PhotoPrism with connected media.",
             status=media_status,
         ),
+        "cancel_media": _action(
+            str(media.get("status") or "") == "running",
+            "Stop photo action",
+            reason=None if str(media.get("status") or "") == "running" else "No PhotoPrism media action is running.",
+            summary="Safely stop the current photo action.",
+            status="running" if str(media.get("status") or "") == "running" else "idle",
+        ),
     }
     action_payload.update(_photoprism_lifecycle_actions())
     return action_payload

@@ -300,6 +300,14 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         })
         return submitted
 
+    if kind == "cancel_media":
+        response = action.get("response") if isinstance(action.get("response"), dict) else {}
+        response.setdefault("accepted", True)
+        response.setdefault("status", "cancelled")
+        response.setdefault("app_id", "photoprism")
+        response.setdefault("action_id", "cancel_media")
+        return response
+
     if kind == "install_app":
         command = action["command"]
         await ensure_worker_execution_ready()

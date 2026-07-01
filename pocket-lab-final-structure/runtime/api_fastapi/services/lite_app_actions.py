@@ -17,6 +17,7 @@ SUPPORTED_ACTIONS = {
     "preview_restore",
     "import_photos",
     "index_photos",
+    "cancel_media",
     "backup_to_storage",
     "install_app",
     "update_app",
@@ -142,6 +143,10 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
     if action in {"import_photos", "index_photos"}:
         command = lite_photoprism_media.media_command(action, reason=reason)
         return {"kind": "media", "command": command, "summary": action_profile.get("summary") or f"{action_profile.get('label')} queued."}
+
+    if action == "cancel_media":
+        response = lite_photoprism_media.cancel_media_action("photoprism", reason=reason)
+        return {"kind": "cancel_media", "response": response, "summary": response.get("summary")}
 
     if action == "install_app":
         command = lite_photoprism_lifecycle.install_command(reason=reason)
