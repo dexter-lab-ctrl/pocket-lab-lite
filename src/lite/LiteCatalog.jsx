@@ -313,12 +313,23 @@ function PhotoPrismMediaLottie({ flow }) {
   return (
     <div className={`lite-catalog-media-flow-lottie ${active ? 'is-active' : 'is-calm'}`} aria-hidden="true">
       <Lottie
+        className="lite-catalog-media-flow-lottie-player"
         animationData={PHOTO_PRISM_MEDIA_FLOW_LOTTIE}
         autoplay={active}
         loop={active}
-        initialSegment={active ? undefined : [36, 38]}
+        initialSegment={active ? undefined : [0, 1]}
         rendererSettings={{ preserveAspectRatio: 'xMidYMid meet' }}
       />
+      <div className="lite-catalog-media-flow-lottie-fallback">
+        <span className="lite-catalog-media-flow-lottie-dot is-phone" />
+        <span className="lite-catalog-media-flow-lottie-trail"><i /></span>
+        <span className="lite-catalog-media-flow-lottie-packet" />
+        <span className="lite-catalog-media-flow-lottie-dot is-worker" />
+        <span className="lite-catalog-media-flow-lottie-trail"><i /></span>
+        <span className="lite-catalog-media-flow-lottie-dot is-prism" />
+        <span className="lite-catalog-media-flow-lottie-spark is-one" />
+        <span className="lite-catalog-media-flow-lottie-spark is-two" />
+      </div>
     </div>
   );
 }
