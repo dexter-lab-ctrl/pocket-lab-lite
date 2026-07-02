@@ -44,6 +44,7 @@ export const liteApi = {
   appLifecycle: () => readJson('/api/lite/apps/lifecycle'),
   appLifecycleProfile: (appId = 'photoprism') => readJson(`/api/lite/apps/lifecycle/${encodeURIComponent(appId)}`),
   appActions: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/actions`),
+  appEvidence: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/evidence`),
   runAppAction: (appId = 'photoprism', actionId, payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/actions/${encodeURIComponent(actionId || '')}`, payload),
   identity: () => readJson('/api/lite/identity'),
   security: () => readJson('/api/lite/security'),

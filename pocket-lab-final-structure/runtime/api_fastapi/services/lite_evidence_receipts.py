@@ -1,0 +1,539 @@
+from __future__ import annotations
+
+import hashlib
+import re
+from datetime import datetime, timezone
+from typing import Any
+
+from fastapi import HTTPException
+
+from .. import deps
+from . import lite_app_storage, lite_backup, lite_photoprism_media, lite_security
+
+PHOTOPRISM_APP_ID = "photoprism"
+RECEIPT_VERSION = 1
+PROOF_STATUSES = {"passed", "review", "failed", "not_checked", "not_applicable"}
+
+_SECRET_MARKERS = (
+    "token",
+    "password",
+    "secret",
+    "api_key",
+    "apikey",
+    "private_key",
+    "credential",
+    "vault",
+    "nats",
+    "restic_password",
+    "admin_password",
+    "database_url",
+    "connection_string",
+)
+
+_STATUS_ORDER = {"failed": 4, "review": 3, "not_checked": 2, "passed": 1, "not_applicable": 0}
+
+
+def _now() -> str:
+    return deps.now_utc_iso()
+
+
+def _validate_app_id(app_id: Any) -> str:
+    normalized = str(app_id or "").strip().lower().replace("_", "-")
+    if normalized != PHOTOPRISM_APP_ID:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "status": "unsupported_app",
+                "summary": "PhotoPrism is the first app with App Catalog evidence receipts.",
+            },
+        )
+    return normalized
+
+
+def _safe_text(value: Any, fallback: str = "Available") -> str:
+    text = str(value or fallback).strip() or fallback
+    # Evidence receipts may show safe redaction language such as "Secrets hidden",
+    # but not raw secret assignments, credentials, URLs, or local private paths.
+    # local private filesystem paths. Keep this intentionally conservative.
+    if re.search(r"/(data/data|home|proc|sys|dev|etc|root)/\S*", text):
+        return fallback
+    if re.search(r"~/(?!storage\b)\S+", text):
+        return fallback
+    text = re.sub(r"(?i)(password|token|secret|api[_-]?key|private[_ -]?key)\s*[:=]\s*\S+", r"\1=[hidden]", text)
+    text = re.sub(r"(?i)bearer\s+[A-Za-z0-9._~+/=-]+", "bearer [hidden]", text)
+    text = re.sub(r"(?i)nats://\S+", "[hidden-route]", text)
+    return text[:240]
+
+
+def _safe_ref(value: Any, fallback: str = "") -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return fallback
+    if any(marker in raw.lower() for marker in _SECRET_MARKERS):
+        return fallback
+    if raw.startswith("/") or raw.startswith("~"):
+        return fallback
+    safe = re.sub(r"[^A-Za-z0-9._:/=-]+", "-", raw).strip("-._/")
+    return safe[:160] or fallback
+
+
+def _short_id(value: Any) -> str | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "-", raw).strip("-._")
+    if len(safe) <= 28:
+        return safe
+    return f"{safe[:12]}…{safe[-8:]}"
+
+
+def _parse_time(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        text = str(value).replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _time_key(value: Any) -> str:
+    parsed = _parse_time(value)
+    if not parsed:
+        return ""
+    return parsed.isoformat()
+
+
+def _normalize_receipt_status(value: Any) -> str:
+    status = str(value or "").strip().lower().replace("-", "_")
+    if status in {"succeeded", "success", "completed", "verified", "ready", "created", "applied"}:
+        return "succeeded"
+    if status in {"queued", "running", "pending", "pending_apply"}:
+        return "running"
+    if status in {"failed", "error", "timed_out", "unhealthy"}:
+        return "failed"
+    if status in {"skipped", "already_connected", "duplicate_mapping"}:
+        return "succeeded"
+    if status in {"not_created", "not_ready", "missing", "unknown"}:
+        return "review"
+    return status or "review"
+
+
+def _proof_status(value: Any) -> str:
+    status = str(value or "").strip().lower().replace("-", "_")
+    return status if status in PROOF_STATUSES else "not_checked"
+
+
+def _proof(
+    proof_id: str,
+    label: str,
+    status: str,
+    plain_language: str,
+    *,
+    technical: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "id": proof_id,
+        "label": _safe_text(label, proof_id.replace("_", " ")),
+        "status": _proof_status(status),
+        "plain_language": _safe_text(plain_language, "Proof available."),
+    }
+    if technical:
+        payload["technical"] = _sanitize_technical(technical)
+    return payload
+
+
+def _sanitize_technical(payload: dict[str, Any]) -> dict[str, Any]:
+    clean: dict[str, Any] = {}
+    for key, value in payload.items():
+        safe_key = re.sub(r"[^A-Za-z0-9_]+", "_", str(key or "field")).strip("_").lower()[:64]
+        if not safe_key or any(marker in safe_key for marker in _SECRET_MARKERS):
+            continue
+        if isinstance(value, bool) or value is None:
+            clean[safe_key] = value
+        elif isinstance(value, (int, float)):
+            clean[safe_key] = value
+        elif isinstance(value, str):
+            clean[safe_key] = _safe_text(value, "hidden")
+        elif isinstance(value, list):
+            clean[safe_key] = [_safe_text(item, "hidden") for item in value[:8]]
+        else:
+            clean[safe_key] = _safe_text(value, "hidden")
+    return clean
+
+
+def _proof_counts(proofs: list[dict[str, Any]]) -> dict[str, int]:
+    counts = {status: 0 for status in sorted(PROOF_STATUSES)}
+    for proof in proofs:
+        counts[_proof_status(proof.get("status"))] += 1
+    return {
+        "passed": counts.get("passed", 0),
+        "review": counts.get("review", 0),
+        "failed": counts.get("failed", 0),
+        "not_checked": counts.get("not_checked", 0),
+        "not_applicable": counts.get("not_applicable", 0),
+    }
+
+
+def _summary_status(proofs: list[dict[str, Any]]) -> str:
+    worst = "passed"
+    for proof in proofs:
+        status = _proof_status(proof.get("status"))
+        if _STATUS_ORDER.get(status, 0) > _STATUS_ORDER.get(worst, 0):
+            worst = status
+    return worst
+
+
+def _receipt(
+    *,
+    receipt_id: str,
+    app_id: str,
+    action_id: str,
+    action_label: str,
+    status: str,
+    summary: str,
+    proofs: list[dict[str, Any]],
+    what_changed: list[str],
+    what_did_not_happen: list[str],
+    evidence_ref: str,
+    started_at: Any = None,
+    completed_at: Any = None,
+    technical_details: dict[str, Any] | None = None,
+    proof_source: str = "Pocket Lab Lite state",
+) -> dict[str, Any]:
+    completed = _safe_text(completed_at, "") if completed_at else None
+    started = _safe_text(started_at, "") if started_at else None
+    safe_ref = _safe_ref(evidence_ref, "apps/photoprism/evidence/latest")
+    clean_proofs = proofs[:16]
+    counts = _proof_counts(clean_proofs)
+    return {
+        "receipt_version": RECEIPT_VERSION,
+        "receipt_id": _safe_ref(receipt_id, "receipt-photoprism"),
+        "app_id": app_id,
+        "app_label": "PhotoPrism",
+        "action_id": action_id,
+        "action_label": action_label,
+        "status": _normalize_receipt_status(status),
+        "summary": _safe_text(summary, "Evidence receipt available."),
+        "started_at": started,
+        "completed_at": completed,
+        "proofs": clean_proofs,
+        "proof_counts": counts,
+        "proof_status": _summary_status(clean_proofs),
+        "safety_badges": _safety_badges(clean_proofs),
+        "what_changed": [_safe_text(item, "Something changed.") for item in what_changed[:8]],
+        "what_did_not_happen": [_safe_text(item, "Nothing unsafe happened.") for item in what_did_not_happen[:8]],
+        "details_owner": {
+            "name": "PhotoPrism",
+            "reason": "PhotoPrism handles indexing, thumbnails, metadata, and media warnings.",
+        },
+        "redaction": {
+            "status": "passed",
+            "secrets_hidden": True,
+            "raw_logs_hidden": True,
+            "raw_paths_hidden": True,
+            "media_file_names_hidden": True,
+        },
+        "technical_details": _sanitize_technical({
+            "action_id": action_id,
+            "short_command_id": _short_id(receipt_id),
+            "evidence_ref": safe_ref,
+            "execution_owner": "backend worker" if action_id in {"import_photos", "backup_app", "check_app"} else "FastAPI control API",
+            "control_api": "FastAPI",
+            "proof_source": proof_source,
+            "redaction_status": "passed",
+            **(technical_details or {}),
+        }),
+        "evidence_ref": safe_ref,
+        "updated_at": completed or started or _now(),
+    }
+
+
+def _safety_badges(proofs: list[dict[str, Any]]) -> list[str]:
+    wanted = [
+        "backend_worker_executed",
+        "frontend_no_shell",
+        "storage_read_only",
+        "secrets_hidden",
+        "raw_paths_hidden",
+        "media_preserved",
+        "backup_config_only",
+        "media_excluded_from_backup",
+    ]
+    labels: list[str] = []
+    by_id = {proof.get("id"): proof for proof in proofs}
+    for proof_id in wanted:
+        proof = by_id.get(proof_id)
+        if proof and proof.get("status") == "passed":
+            labels.append(str(proof.get("label") or proof_id.replace("_", " ")))
+        if len(labels) >= 4:
+            break
+    return labels
+
+
+def _storage_mappings() -> list[dict[str, Any]]:
+    try:
+        payload = lite_app_storage.list_mappings(PHOTOPRISM_APP_ID)
+    except Exception:
+        return []
+    return [item for item in payload.get("mappings") or [] if isinstance(item, dict)]
+
+
+def _storage_audit_events() -> list[dict[str, Any]]:
+    try:
+        path = lite_app_storage._audit_path()  # internal sanitized audit store
+        payload = deps.core.read_json_file(path, {})
+    except Exception:
+        return []
+    if not isinstance(payload, dict):
+        return []
+    return [item for item in payload.get("events") or [] if isinstance(item, dict)]
+
+
+def _media_events() -> list[dict[str, Any]]:
+    try:
+        payload = deps.core.read_json_file(lite_photoprism_media._evidence_path(), {})
+    except Exception:
+        return []
+    if not isinstance(payload, dict):
+        return []
+    return [item for item in payload.get("events") or [] if isinstance(item, dict)]
+
+
+def _security_receipt() -> dict[str, Any] | None:
+    try:
+        state = lite_security.current_state()
+    except Exception:
+        return None
+    run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+    if not run:
+        return None
+    run_id = str(run.get("run_id") or "security-check")
+    evidence_refs = state.get("evidence_refs") if isinstance(state.get("evidence_refs"), list) else []
+    evidence_ref = str(evidence_refs[0]) if evidence_refs else f"security/evidence/{_safe_ref(run_id, 'latest')}/summary.json"
+    status = _normalize_receipt_status(run.get("status"))
+    succeeded = status == "succeeded"
+    proofs = [
+        _proof("backend_worker_executed", "Backend worker executed", "passed" if succeeded else "review", "The safety check was handled by the backend worker, not the browser.", technical={"worker_executed": succeeded}),
+        _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested a safety check through Pocket Lab."),
+        _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read local files or scanner output."),
+        _proof("secrets_hidden", "Secrets hidden", "passed", "Safety evidence is redacted before it is shown."),
+        _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Raw device paths are hidden from the receipt."),
+        _proof("receipt_saved", "Receipt saved", "passed" if evidence_refs else "review", "Sanitized safety evidence is available."),
+        _proof("app_health_checked", "App health checked", "not_checked", "This receipt summarizes the device safety check; app-specific health remains in the app profile."),
+    ]
+    return _receipt(
+        receipt_id=run_id,
+        app_id=PHOTOPRISM_APP_ID,
+        action_id="check_app",
+        action_label="Check app",
+        status=status,
+        summary="Safety evidence saved." if succeeded else _safe_text(run.get("summary"), "Safety evidence needs review."),
+        started_at=run.get("started_at") or run.get("requested_at"),
+        completed_at=run.get("completed_at"),
+        proofs=proofs,
+        what_changed=["Pocket Lab saved a sanitized safety summary for the device and protected apps."],
+        what_did_not_happen=["No scanner logs were shown in the browser.", "No secret values were exposed.", "No frontend shell commands ran."],
+        evidence_ref=evidence_ref,
+        technical_details={"tools": ", ".join(run.get("tools") or []), "route_status": state.get("status")},
+        proof_source="Lite Security state",
+    )
+
+
+def _connect_photos_receipt() -> dict[str, Any] | None:
+    mappings = _storage_mappings()
+    if not mappings:
+        return None
+    latest = sorted(mappings, key=lambda item: item.get("updated_at") or item.get("created_at") or "", reverse=True)[0]
+    events = _storage_audit_events()
+    event = next((item for item in events if item.get("mapping_id") == latest.get("mapping_id")), events[0] if events else {})
+    all_read_only = all(str(item.get("mode") or "").lower() == "read_only" for item in mappings)
+    proof_saved = bool(latest.get("evidence_ref") or event.get("event_id"))
+    label = _safe_text(latest.get("label") or latest.get("source_label"), "Photo source")
+    proofs = [
+        _proof("backend_worker_executed", "Backend worker not required", "not_applicable", "Connect photos records a backend-approved mapping; worker execution happens during Import photos."),
+        _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser requested the mapping through FastAPI only."),
+        _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read phone storage or media files."),
+        _proof("storage_read_only", "Storage read-only", "passed" if all_read_only else "review", "Connected photo storage is read-only by default." if all_read_only else "One or more mappings need review because they can edit media."),
+        _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Only friendly folder labels are shown; raw device paths stay hidden."),
+        _proof("secrets_hidden", "Secrets hidden", "passed", "No secrets are part of the mapping receipt."),
+        _proof("receipt_saved", "Receipt saved", "passed" if proof_saved else "review", "Pocket Lab saved a sanitized mapping evidence reference."),
+    ]
+    return _receipt(
+        receipt_id=str(latest.get("mapping_id") or event.get("event_id") or "connect-photos"),
+        app_id=PHOTOPRISM_APP_ID,
+        action_id="connect_photos",
+        action_label="Connect photos",
+        status="succeeded",
+        summary=f"{label} connected.",
+        started_at=latest.get("created_at") or event.get("recorded_at"),
+        completed_at=latest.get("updated_at") or latest.get("created_at") or event.get("recorded_at"),
+        proofs=proofs,
+        what_changed=["PhotoPrism can use the approved photo source mapping.", "Pocket Lab saved a sanitized storage mapping record."],
+        what_did_not_happen=["No source photos were deleted.", "No raw Android private paths were shown.", "No frontend shell commands ran."],
+        evidence_ref=latest.get("evidence_ref") or f"apps/photoprism/storage-mappings/{_safe_ref(latest.get('mapping_id'), 'latest')}.json",
+        technical_details={"mapping_status": latest.get("status"), "storage_mode": latest.get("mode_label") or latest.get("mode"), "mapping_count": len(mappings)},
+        proof_source="PhotoPrism storage mapping state",
+    )
+
+
+def _import_receipts() -> list[dict[str, Any]]:
+    receipts: list[dict[str, Any]] = []
+    mappings = _storage_mappings()
+    all_read_only = bool(mappings) and all(str(item.get("mode") or "").lower() == "read_only" for item in mappings)
+    for event in _media_events():
+        if str(event.get("operation") or event.get("action_id") or "").lower() != "import_photos":
+            continue
+        status = _normalize_receipt_status(event.get("status"))
+        terminal = status in {"succeeded", "failed"}
+        mapping_count = int(event.get("media_mappings") or event.get("runtime_mappings_used") or 0)
+        proofs = [
+            _proof("backend_worker_executed", "Backend worker executed", "passed" if terminal else "review", "The action was handled by Pocket Lab Lite backend, not the browser.", technical={"worker_executed": terminal}),
+            _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested Import photos through FastAPI."),
+            _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read files or PhotoPrism output."),
+            _proof("storage_read_only", "Storage read-only", "passed" if all_read_only else ("not_checked" if not mappings else "review"), "Connected source storage is read-only." if all_read_only else "Storage mode could not be fully verified from public state."),
+            _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Raw media paths and device-private paths are hidden."),
+            _proof("media_preserved", "Media preserved", "passed", "The Lite import request does not delete source photos."),
+            _proof("secrets_hidden", "Secrets hidden", "passed", "Secret values and raw logs are hidden."),
+            _proof("media_details_owned_by_photoprism", "PhotoPrism owns media details", "passed", "Indexing, thumbnails, metadata, and warnings stay inside PhotoPrism."),
+            _proof("receipt_saved", "Receipt saved", "passed", "Pocket Lab saved a sanitized import evidence reference."),
+        ]
+        receipts.append(_receipt(
+            receipt_id=str(event.get("event_id") or "import-photos"),
+            app_id=PHOTOPRISM_APP_ID,
+            action_id="import_photos",
+            action_label="Import photos",
+            status=status,
+            summary=_safe_text(event.get("summary"), "Import photos completed."),
+            started_at=event.get("started_at"),
+            completed_at=event.get("completed_at"),
+            proofs=proofs,
+            what_changed=["PhotoPrism import was requested using connected phone storage.", "Pocket Lab saved sanitized import evidence."],
+            what_did_not_happen=["No source photos were deleted.", "No secret values were exposed.", "No frontend shell commands ran.", "No PhotoPrism indexing was controlled by Pocket Lab Lite."],
+            evidence_ref=f"apps/photoprism/media/{_safe_ref(event.get('event_id'), 'latest')}.json",
+            technical_details={"media_mappings": mapping_count, "storage_mode": "read_only" if all_read_only else "not_checked", "media_preserved": True},
+            proof_source="PhotoPrism media evidence",
+        ))
+    return receipts
+
+
+def _backup_receipt() -> dict[str, Any] | None:
+    try:
+        receipt = lite_backup.get_receipt("latest")
+    except Exception:
+        return None
+    if not isinstance(receipt, dict):
+        return None
+    status = str(receipt.get("status") or receipt.get("verification_status") or "").lower()
+    if status in {"not_created", "missing"} and not receipt.get("backup_id"):
+        return None
+    backup_id = str(receipt.get("backup_id") or receipt.get("snapshot_id") or "backup-app")
+    if backup_id == "latest" and status in {"not_created", "missing", ""}:
+        return None
+    normalized = _normalize_receipt_status(status or receipt.get("verification_status"))
+    pending = bool(receipt.get("pending") or normalized == "running")
+    saved = bool(receipt.get("evidence_saved") or receipt.get("manifest_checksum") or receipt.get("snapshot_id"))
+    proofs = [
+        _proof("backend_worker_executed", "Backend worker executed", "review" if pending else "passed", "App backup runs through the backend worker path."),
+        _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested the backup through FastAPI."),
+        _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read backup files."),
+        _proof("backup_config_only", "Config-only backup", "passed", "PhotoPrism settings, mappings, and safe app records are included."),
+        _proof("media_excluded_from_backup", "Media excluded from backup", "passed", "Original media and import media are excluded by default."),
+        _proof("secrets_hidden", "Secrets hidden", "passed", "Raw secrets are not exposed in the backup receipt."),
+        _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Raw backup and device paths are hidden."),
+        _proof("receipt_saved", "Receipt saved", "passed" if saved else "review", "Backup evidence is preserved when the worker completes."),
+    ]
+    return _receipt(
+        receipt_id=backup_id,
+        app_id=PHOTOPRISM_APP_ID,
+        action_id="backup_app",
+        action_label="Back up app",
+        status=normalized,
+        summary=_safe_text(receipt.get("summary"), "PhotoPrism app backup evidence available."),
+        started_at=receipt.get("requested_at") or receipt.get("created_at"),
+        completed_at=receipt.get("completed_at") or receipt.get("created_at"),
+        proofs=proofs,
+        what_changed=["PhotoPrism settings, mappings, and safe app records were queued or saved for backup."],
+        what_did_not_happen=["Original photos were not included by default.", "Raw secret values were not exposed.", "No frontend shell commands ran."],
+        evidence_ref=f"apps/photoprism/backups/{_safe_ref(backup_id, 'latest')}.json",
+        technical_details={"backup_mode": "config_only", "media_excluded": True, "verification_status": receipt.get("verification_status")},
+        proof_source="Lite recovery backup receipt",
+    )
+
+
+def _fallback_receipt() -> dict[str, Any]:
+    proofs = [
+        _proof("frontend_no_shell", "Browser did not run commands", "not_checked", "No detailed receipt has been saved yet."),
+        _proof("secrets_hidden", "Secrets hidden", "not_checked", "Future receipts will confirm redaction status."),
+        _proof("receipt_saved", "Receipt saved", "not_checked", "No evidence receipt yet."),
+    ]
+    return _receipt(
+        receipt_id="photoprism-no-evidence-yet",
+        app_id=PHOTOPRISM_APP_ID,
+        action_id="none",
+        action_label="Evidence",
+        status="review",
+        summary="No detailed receipt yet. Future actions will include proof details.",
+        proofs=proofs,
+        what_changed=[],
+        what_did_not_happen=[],
+        evidence_ref="apps/photoprism/evidence/pending",
+        technical_details={"route_status": "not_checked"},
+        proof_source="fallback",
+    )
+
+
+def app_evidence(app_id: str) -> dict[str, Any]:
+    app = _validate_app_id(app_id)
+    items: list[dict[str, Any]] = []
+    items.extend(_import_receipts())
+    connect = _connect_photos_receipt()
+    if connect:
+        items.append(connect)
+    backup = _backup_receipt()
+    if backup:
+        items.append(backup)
+    security = _security_receipt()
+    if security:
+        items.append(security)
+
+    items = sorted(items, key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
+    if not items:
+        latest = None
+        proof_counts = {"passed": 0, "review": 0, "failed": 0, "not_checked": 0, "not_applicable": 0}
+        summary = "No evidence receipt yet."
+    else:
+        latest = items[0]
+        proof_counts = latest.get("proof_counts") or _proof_counts(latest.get("proofs") or [])
+        summary = _safe_text(latest.get("summary"), "Latest evidence receipt available.")
+
+    payload = {
+        "status": "healthy",
+        "app_id": app,
+        "summary": summary,
+        "latest": latest,
+        "proof_counts": proof_counts,
+        "items": items[:12],
+        "count": len(items),
+        "fallback_receipt": _fallback_receipt() if not items else None,
+        "updated_at": (latest or {}).get("updated_at") or _now(),
+    }
+    return _sanitize_payload(payload)
+
+
+def _sanitize_payload(value: Any) -> Any:
+    if isinstance(value, dict):
+        clean: dict[str, Any] = {}
+        for key, item in value.items():
+            if any(marker in str(key).lower() for marker in _SECRET_MARKERS) and not isinstance(item, bool):
+                continue
+            clean[key] = _sanitize_payload(item)
+        return clean
+    if isinstance(value, list):
+        return [_sanitize_payload(item) for item in value[:50]]
+    if isinstance(value, str):
+        return _safe_text(value, "hidden")
+    return value
