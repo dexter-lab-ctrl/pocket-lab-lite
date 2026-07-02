@@ -2994,6 +2994,20 @@ def test_lite_app_evidence_endpoint_handles_missing_receipts_safely():
     assert "api_key" not in text
 
 
+def test_lite_app_evidence_exposes_action_state_receipts_without_making_them_latest():
+    response = client().get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["latest"] is None
+    assert payload["items"] == []
+    assert payload["by_action"]["open"]["backend_trace"]["execution_owner"] == "Browser navigation"
+    assert payload["by_action"]["install_app"]["backend_trace"]["summary"]
+    assert payload["by_action"]["remove_app"]["what_did_not_happen"]
+    assert "No backend command was queued" in response.text
+    assert "password" not in response.text.lower()
+    assert "nats://" not in response.text.lower()
+
+
 def test_lite_app_evidence_import_receipt_has_safe_proofs():
     ensure_runtime_path()
     api = client()
@@ -3043,6 +3057,8 @@ def test_lite_app_evidence_import_receipt_has_safe_proofs():
     assert latest["redaction"]["raw_logs_hidden"] is True
     assert latest["redaction"]["raw_paths_hidden"] is True
     assert latest["technical_details"]["control_api"] == "FastAPI"
+    assert latest["backend_trace"]["execution_owner"] == "Backend worker"
+    assert latest["operator_summary"]
     text = response.text.lower()
     assert "/data/data" not in text
     assert "nats://" not in text
@@ -3070,6 +3086,9 @@ def test_lite_app_catalog_ui_has_evidence_receipt_surface():
     assert "What changed" in ui
     assert "What did not happen" in ui
     assert "Technical details" in ui
+    assert "Backend trace" in ui
+    assert "What Pocket Lab did" in ui
+    assert "Duplicates hidden" in ui
     assert "No evidence receipt yet" in ui
     assert "lite-catalog-evidence-card" in css
     assert "lite-evidence-modal" in css
@@ -3173,6 +3192,8 @@ def test_lite_app_update_receipt_surfaces_in_app_evidence(monkeypatch):
     assert "update_app" in action_ids
     assert payload["latest"]["action_id"] == "update_app"
     assert "No update was installed" in response.text
+    assert payload["latest"]["backend_trace"]["execution_owner"] == "Backend worker"
+    assert "backend_trace" in payload["by_action"]["update_app"]
     assert "nats://" not in response.text.lower()
     assert "/data/data" not in response.text.lower()
 
@@ -3336,6 +3357,8 @@ def test_lite_app_repair_receipt_has_safe_proofs(monkeypatch):
     assert response.status_code == 200
     latest = response.json()["latest"]
     assert latest["action_id"] == "repair_app"
+    assert latest["backend_trace"]["execution_owner"] == "Backend worker"
+    assert "duplicate_events_hidden" in latest["backend_trace"]
     proof_ids = {item["id"] for item in latest["proofs"]}
     assert {
         "backend_worker_executed",
@@ -3555,6 +3578,8 @@ def test_lite_app_evidence_exposes_latest_receipt_and_by_action(monkeypatch):
     assert payload["evidence_ref"].startswith("apps/photoprism/update/")
     assert payload["by_action"]["update_app"]["receipt_id"] == result["operation_id"]
     assert payload["latest_by_action"]["update_app"]["proofs"]
+    assert payload["by_action"]["open"]["backend_trace"]["execution_owner"] == "Browser navigation"
+    assert payload["by_action"]["remove_app"]["backend_trace"]["summary"]
     assert "password" not in response.text.lower()
     assert "nats://" not in response.text.lower()
 

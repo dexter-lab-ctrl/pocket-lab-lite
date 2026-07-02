@@ -992,6 +992,36 @@ function evidenceTechnicalEntries(receipt) {
     }));
 }
 
+function receiptOperatorSummary(receipt) {
+  return Array.isArray(receipt?.operator_summary) ? receipt.operator_summary.filter(Boolean).slice(0, 6) : [];
+}
+
+function receiptBackendTrace(receipt) {
+  const trace = receipt?.backend_trace && typeof receipt.backend_trace === 'object' ? receipt.backend_trace : null;
+  if (!trace) return null;
+  const steps = Array.isArray(trace.steps) ? trace.steps.filter(Boolean).slice(0, 8) : [];
+  const events = Array.isArray(trace.events) ? trace.events.filter(Boolean).slice(0, 8) : [];
+  return { ...trace, steps, events };
+}
+
+function traceStatusLabel(status) {
+  const value = String(status || '').toLowerCase();
+  if (['succeeded', 'passed', 'completed', 'ready'].includes(value)) return 'Done';
+  if (['failed', 'error'].includes(value)) return 'Needs attention';
+  if (['running', 'queued'].includes(value)) return 'Working';
+  if (['review', 'not_checked'].includes(value)) return 'Review';
+  return 'Recorded';
+}
+
+function traceStatusClass(status) {
+  const value = String(status || '').toLowerCase();
+  if (['succeeded', 'passed', 'completed', 'ready'].includes(value)) return 'is-passed';
+  if (['failed', 'error'].includes(value)) return 'is-failed';
+  if (['running', 'queued'].includes(value)) return 'is-checking';
+  if (['review', 'not_checked'].includes(value)) return 'is-review';
+  return 'is-muted';
+}
+
 function PhotoPrismEvidenceCard({ evidence, loading, error, onViewReceipt }) {
   const receipt = evidenceReceiptFromPayload(evidence);
   const proofs = Array.isArray(receipt?.proofs) ? receipt.proofs : [];
@@ -1053,6 +1083,8 @@ function PhotoPrismEvidenceReceiptModal({ receipt, onClose, inline = false }) {
   const changed = Array.isArray(receipt.what_changed) ? receipt.what_changed : [];
   const didNotHappen = Array.isArray(receipt.what_did_not_happen) ? receipt.what_did_not_happen : [];
   const details = evidenceTechnicalEntries(receipt);
+  const operatorSummary = receiptOperatorSummary(receipt);
+  const backendTrace = receiptBackendTrace(receipt);
 
   const wrapperProps = inline
     ? { className: 'lite-evidence-modal-inline', role: 'region', 'aria-label': `${receipt.action_label || 'PhotoPrism'} evidence receipt` }
@@ -1081,6 +1113,13 @@ function PhotoPrismEvidenceReceiptModal({ receipt, onClose, inline = false }) {
         <div className="lite-evidence-modal-status">
           <span>Status</span>
           <strong>{evidenceStatusLabel(receipt.status)}</strong>
+        </div>
+
+        <div className="lite-evidence-section lite-evidence-plain-story">
+          <div className="lite-evidence-section-title"><span>What Pocket Lab did</span><strong>Plain language</strong></div>
+          {operatorSummary.length ? operatorSummary.map((item) => (
+            <p key={item} className="lite-evidence-line"><CheckCircle2 className="h-4 w-4" />{item}</p>
+          )) : <p className="lite-evidence-muted">Pocket Lab saved this receipt so the action can be reviewed safely.</p>}
         </div>
 
         <div className="lite-evidence-section">
@@ -1124,6 +1163,32 @@ function PhotoPrismEvidenceReceiptModal({ receipt, onClose, inline = false }) {
           <div className="lite-evidence-section-title"><span>details owner</span><strong>{receipt?.details_owner?.name || 'PhotoPrism'}</strong></div>
           <p>{receipt?.details_owner?.reason || 'PhotoPrism handles indexing, thumbnails, metadata, and media warnings.'}</p>
         </div>
+
+        {backendTrace ? (
+          <details className="lite-evidence-backend-trace" open={!inline}>
+            <summary>Backend trace</summary>
+            <p className="lite-evidence-muted">{backendTrace.summary || 'Backend trace is available.'}</p>
+            <div className="lite-evidence-trace-meta">
+              <span><strong>Owner</strong>{backendTrace.execution_owner || 'Pocket Lab'}</span>
+              {backendTrace.worker ? <span><strong>Worker</strong>{backendTrace.worker}</span> : null}
+              {backendTrace.command_subject ? <span><strong>Command</strong>{backendTrace.command_subject}</span> : null}
+              <span><strong>Events</strong>{Number(backendTrace.unique_event_count || 0)} unique</span>
+              {backendTrace.duplicate_events_hidden ? <span><strong>Duplicates hidden</strong>{Number(backendTrace.duplicate_event_rows_hidden || 0)}</span> : null}
+            </div>
+            <div className="lite-evidence-trace-list">
+              {(backendTrace.steps.length ? backendTrace.steps : backendTrace.events).map((step, index) => (
+                <article key={`${step.label || 'trace'}-${index}`} className={`lite-evidence-trace-step ${traceStatusClass(step.status)}`}>
+                  <span aria-hidden="true" />
+                  <div>
+                    <strong>{step.label || 'Backend event recorded'}</strong>
+                    <p>{step.plain_language || step.source || 'Pocket Lab recorded this step.'}</p>
+                  </div>
+                  <em>{traceStatusLabel(step.status)}</em>
+                </article>
+              ))}
+            </div>
+          </details>
+        ) : null}
 
         <details className="lite-evidence-technical">
           <summary>Technical details</summary>

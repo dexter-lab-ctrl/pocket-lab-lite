@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import hashlib
 import re
 from datetime import datetime, timezone
@@ -8,7 +9,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup, lite_app_operations, lite_app_storage, lite_app_update, lite_backup, lite_photoprism_media, lite_security
+from . import lite_app_actions, lite_app_backup, lite_app_operations, lite_app_storage, lite_app_update, lite_backup, lite_photoprism_media, lite_security
 
 PHOTOPRISM_APP_ID = "photoprism"
 RECEIPT_VERSION = 1
@@ -203,12 +204,15 @@ def _receipt(
     completed_at: Any = None,
     technical_details: dict[str, Any] | None = None,
     proof_source: str = "Pocket Lab Lite state",
+    backend_trace: dict[str, Any] | None = None,
+    operator_summary: list[str] | None = None,
 ) -> dict[str, Any]:
     completed = _safe_text(completed_at, "") if completed_at else None
     started = _safe_text(started_at, "") if started_at else None
     safe_ref = _safe_ref(evidence_ref, "apps/photoprism/evidence/latest")
     clean_proofs = proofs[:16]
     counts = _proof_counts(clean_proofs)
+    story_lines = operator_summary if operator_summary else [summary, *what_changed[:2], *what_did_not_happen[:2]]
     return {
         "receipt_version": RECEIPT_VERSION,
         "receipt_id": _safe_ref(receipt_id, "receipt-photoprism"),
@@ -223,6 +227,8 @@ def _receipt(
         "proofs": clean_proofs,
         "proof_counts": counts,
         "proof_status": _summary_status(clean_proofs),
+        "operator_summary": [_safe_text(item, "Receipt detail available.") for item in story_lines[:6]],
+        "backend_trace": backend_trace or _backend_trace_for_action(action_id, receipt_id, execution_owner="backend_worker" if action_id in {"import_photos", "backup_app", "check_app", "repair_app", "update_app", "preview_restore"} else "fastapi"),
         "safety_badges": _safety_badges(clean_proofs),
         "what_changed": [_safe_text(item, "Something changed.") for item in what_changed[:8]],
         "what_did_not_happen": [_safe_text(item, "Nothing unsafe happened.") for item in what_did_not_happen[:8]],
@@ -280,6 +286,300 @@ def _safety_badges(proofs: list[dict[str, Any]]) -> list[str]:
             break
     return labels
 
+
+
+ACTION_STORY: dict[str, dict[str, Any]] = {
+    "open": {
+        "label": "Open",
+        "owner": "browser_navigation",
+        "summary": "Pocket Lab opened PhotoPrism through the same secure app route.",
+        "what_changed": ["The browser navigated to PhotoPrism through Pocket Lab."],
+        "what_did_not_happen": ["No backend command was queued.", "No worker action ran.", "No app files or photos were changed."],
+    },
+    "open_full_screen": {
+        "label": "Open full screen",
+        "owner": "browser_navigation",
+        "summary": "Pocket Lab opened PhotoPrism in a full browser tab.",
+        "what_changed": ["The browser opened the same PhotoPrism route in a focused view."],
+        "what_did_not_happen": ["No backend command was queued.", "No worker action ran.", "No app files or photos were changed."],
+    },
+    "install_to_phone": {
+        "label": "Install to phone",
+        "owner": "browser_navigation",
+        "summary": "The browser can add PhotoPrism as a phone shortcut when supported.",
+        "what_changed": ["Pocket Lab exposed install guidance for the browser/PWA."],
+        "what_did_not_happen": ["No backend command was queued.", "No worker action ran.", "No app runtime was changed."],
+    },
+    "backup_to_storage": {
+        "label": "Back up to storage device",
+        "owner": "backend_worker",
+        "summary": "This action is paused until a storage device is joined.",
+        "what_changed": [],
+        "what_did_not_happen": ["No backup was copied to another device.", "No worker command was queued.", "No secret values were exposed."],
+    },
+    "install_app": {
+        "label": "Install",
+        "owner": "backend_worker",
+        "summary": "PhotoPrism is already installed, so install is paused.",
+        "what_changed": [],
+        "what_did_not_happen": ["No install command was queued.", "No app files were replaced.", "No service was restarted."],
+    },
+    "remove_app": {
+        "label": "Remove app",
+        "owner": "backend_worker",
+        "summary": "Remove is confirmation-gated and execution is not enabled yet.",
+        "what_changed": [],
+        "what_did_not_happen": ["PhotoPrism was not removed.", "Photo files were not deleted.", "Backups and evidence were preserved.", "No worker command was queued without confirmation."],
+    },
+}
+
+EVENT_LABELS = {
+    "command.queued": "Command recorded",
+    "lite.app.operation.queued": "Request accepted",
+    "lite.app.backup.queued": "Backup request accepted",
+    "lite.app.restore.preview_queued": "Preview request accepted",
+    "lite.app.update.check_queued": "Update readiness queued",
+    "lite.app.media.queued": "Media action queued",
+    "command.worker_claimed": "Worker picked it up",
+    "lite.app.safety.started": "Check app started",
+    "lite.app.repair.started": "Repair started",
+    "lite.app.update.check_started": "Update readiness started",
+    "lite.app.backup.started": "Backup started",
+    "lite.app.restore.preview_started": "Restore preview started",
+    "lite.app.media.started": "Import started",
+    "lite.app.safety.updated": "Check app completed",
+    "lite.app.repair.updated": "Repair completed",
+    "lite.app.update.check_completed": "Update readiness completed",
+    "lite.app.backup.completed": "Backup completed",
+    "lite.app.restore.preview_completed": "Restore preview completed",
+    "lite.app.media.completed": "Import completed",
+    "command.succeeded": "Command completed",
+    "command.failed": "Command failed",
+}
+
+OWNER_LABELS = {
+    "browser_navigation": "Browser navigation",
+    "fastapi": "FastAPI control API",
+    "backend_worker": "Backend worker",
+    "backend worker": "Backend worker",
+}
+
+
+def _state_dir():
+    return deps.core.SETTINGS.state_dir
+
+
+def _read_json(path, default: Any) -> Any:
+    try:
+        return deps.core.read_json_file(path, default)
+    except Exception:
+        return default
+
+
+def _read_workflow_events(operation_id: Any) -> tuple[list[dict[str, Any]], int]:
+    op_id = str(operation_id or "").strip()
+    if not op_id:
+        return [], 0
+    path = _state_dir() / "workflows" / "events" / "workflow_events.jsonl"
+    if not path.exists():
+        return [], 0
+    rows: list[dict[str, Any]] = []
+    duplicate_rows = 0
+    seen: set[str] = set()
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                if op_id not in line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except Exception:
+                    continue
+                data = event.get("data") if isinstance(event.get("data"), dict) else {}
+                if op_id not in {
+                    str(event.get("trace_id") or ""),
+                    str(event.get("workflow_id") or ""),
+                    str(data.get("command_id") or ""),
+                    str(data.get("operation_id") or ""),
+                    str(data.get("job_id") or ""),
+                    str(data.get("preview_id") or ""),
+                    str(data.get("backup_id") or ""),
+                }:
+                    continue
+                event_id = str(event.get("id") or hashlib.sha256(line.encode("utf-8")).hexdigest()[:16])
+                if event_id in seen:
+                    duplicate_rows += 1
+                    continue
+                seen.add(event_id)
+                rows.append(event)
+    except Exception:
+        return [], 0
+    rows.sort(key=lambda item: (str(item.get("time") or ""), str(item.get("type") or ""), str(item.get("subject") or "")))
+    return rows[:12], duplicate_rows
+
+
+def _command_journal_entry(operation_id: Any) -> dict[str, Any]:
+    op_id = str(operation_id or "").strip()
+    if not op_id:
+        return {}
+    payload = _read_json(_state_dir() / "workflows" / "commands" / "command_journal.json", {})
+    if not isinstance(payload, dict):
+        return {}
+    for root_key in ("commands", "command_journal"):
+        root = payload.get(root_key)
+        if isinstance(root, dict) and isinstance(root.get(op_id), dict):
+            return root[op_id]
+    entry = payload.get(op_id)
+    return entry if isinstance(entry, dict) else {}
+
+
+def _workflow_projection(operation_id: Any) -> dict[str, Any]:
+    op_id = str(operation_id or "").strip()
+    if not op_id:
+        return {}
+    payload = _read_json(_state_dir() / "workflows" / "projections" / "workflow_projections.json", {})
+    if not isinstance(payload, dict):
+        return {}
+    for root_key in ("workflows", "projections"):
+        root = payload.get(root_key)
+        if isinstance(root, dict) and isinstance(root.get(op_id), dict):
+            return root[op_id]
+    entry = payload.get(op_id)
+    return entry if isinstance(entry, dict) else {}
+
+
+def _trace_event_label(event: dict[str, Any]) -> str:
+    event_type = str(event.get("type") or "").strip()
+    subject = str(event.get("subject") or "").strip()
+    if subject.startswith("pocketlab.audit."):
+        return "Audit evidence saved"
+    if event_type in EVENT_LABELS:
+        return EVENT_LABELS[event_type]
+    if "completed" in event_type:
+        return "Action completed"
+    if "started" in event_type:
+        return "Action started"
+    if "queued" in event_type:
+        return "Request queued"
+    return event_type.replace(".", " ").replace("_", " ").title() or "Backend event"
+
+
+def _backend_trace_events(operation_id: Any) -> tuple[list[dict[str, Any]], int]:
+    rows, duplicate_rows = _read_workflow_events(operation_id)
+    events: list[dict[str, Any]] = []
+    for event in rows:
+        data = event.get("data") if isinstance(event.get("data"), dict) else {}
+        subject = _safe_ref(event.get("subject"), "")
+        command_subject = _safe_ref(data.get("command_subject") or event.get("subject"), "")
+        events.append({
+            "time": _safe_text(event.get("time"), ""),
+            "label": _trace_event_label(event),
+            "status": _normalize_receipt_status(data.get("status") or event.get("status") or event.get("type")),
+            "source": _safe_text(event.get("source"), "Pocket Lab"),
+            "event_type": _safe_ref(event.get("type"), "backend_event"),
+            "subject": subject,
+            "command_subject": command_subject,
+            "worker": _safe_text(data.get("worker"), "") if data.get("worker") else None,
+        })
+    return events, duplicate_rows
+
+
+def _backend_trace_for_action(action_id: str, operation_id: Any = None, *, execution_owner: str = "backend_worker") -> dict[str, Any]:
+    op_id = str(operation_id or "").strip()
+    owner = OWNER_LABELS.get(str(execution_owner or "").replace(" ", "_"), OWNER_LABELS.get(str(execution_owner or ""), "Backend worker"))
+    journal = _command_journal_entry(op_id)
+    projection = _workflow_projection(op_id)
+    events, duplicate_rows = _backend_trace_events(op_id)
+    command = journal.get("command") if isinstance(journal.get("command"), dict) else {}
+    command_subject = _safe_ref(journal.get("subject") or projection.get("command_subject") or command.get("command_subject"), "")
+    worker = next((event.get("worker") for event in events if event.get("worker")), None)
+    if execution_owner == "browser_navigation":
+        summary = "This action opened PhotoPrism in the browser. No backend command or worker action was needed."
+        steps = [
+            {"label": "Browser opened PhotoPrism", "status": "passed", "plain_language": "The browser used the same Pocket Lab app route."},
+            {"label": "No command queued", "status": "passed", "plain_language": "Opening the app does not run a backend command."},
+        ]
+    elif action_id in {"backup_to_storage", "install_app", "remove_app"} and not events:
+        summary = "This action is safety-gated. Pocket Lab did not queue backend work."
+        steps = [
+            {"label": "Safety gate checked", "status": "passed", "plain_language": "Pocket Lab checked whether this action can start safely."},
+            {"label": "No command queued", "status": "passed", "plain_language": "No worker command was created for this receipt."},
+        ]
+    elif events:
+        summary = "Pocket Lab accepted the request, the backend worker handled it, and sanitized evidence was saved."
+        steps = [
+            {"label": item.get("label"), "status": item.get("status"), "plain_language": _safe_text(f"{item.get('label')} by {item.get('source')}", "Backend event recorded.")} for item in events[:8]
+        ]
+    else:
+        summary = "Pocket Lab has receipt details, but no workflow events were found for this action."
+        steps = [
+            {"label": "Receipt available", "status": "review", "plain_language": "Receipt state was found, but workflow trace was not linked."},
+        ]
+    return {
+        "summary": _safe_text(summary, "Backend trace available."),
+        "execution_owner": owner,
+        "operation_id": _safe_ref(op_id, "") or None,
+        "command_subject": command_subject or None,
+        "worker": worker,
+        "status": _normalize_receipt_status(projection.get("status") or (events[-1].get("status") if events else None) or "review"),
+        "workflow_status": _safe_text(projection.get("status"), "") if projection else None,
+        "workflow_event_count": projection.get("event_count") if isinstance(projection.get("event_count"), int) else len(events),
+        "unique_event_count": len(events),
+        "duplicate_events_hidden": duplicate_rows > 0,
+        "duplicate_event_rows_hidden": duplicate_rows,
+        "events": events,
+        "steps": steps,
+    }
+
+
+def _static_action_receipts(existing_actions: set[str]) -> list[dict[str, Any]]:
+    receipts: list[dict[str, Any]] = []
+    try:
+        actions_payload = lite_app_actions.app_actions(PHOTOPRISM_APP_ID)
+        actions = actions_payload.get("actions") if isinstance(actions_payload.get("actions"), dict) else {}
+    except Exception:
+        actions = {}
+    for action_id, story in ACTION_STORY.items():
+        if action_id in existing_actions:
+            continue
+        action = actions.get(action_id) if isinstance(actions.get(action_id), dict) else {}
+        enabled = bool(action.get("enabled", False))
+        disabled_reason = action.get("disabled_reason") or action.get("reason")
+        owner = str(action.get("execution_owner") or story.get("owner") or "backend_worker")
+        status = "succeeded" if owner == "browser_navigation" and enabled else "review"
+        if action_id in {"backup_to_storage", "install_app", "remove_app"}:
+            status = "review"
+        proofs = [
+            _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser did not execute shell commands."),
+            _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read app files, storage, logs, or secrets."),
+            _proof("no_command_queued", "No command queued", "passed" if owner == "browser_navigation" or not enabled else "not_applicable", "No backend command was required or started for this receipt."),
+            _proof("safety_gate_checked", "Safety gate checked", "passed" if disabled_reason or action_id == "remove_app" else "not_applicable", _safe_text(disabled_reason, "Pocket Lab checked whether the action can start safely.")),
+            _proof("secrets_hidden", "Secrets hidden", "passed", "Secret values are hidden."),
+            _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Raw device paths are hidden."),
+        ]
+        receipts.append(_receipt(
+            receipt_id=f"photoprism-{action_id}-state",
+            app_id=PHOTOPRISM_APP_ID,
+            action_id=action_id,
+            action_label=str(story.get("label") or action.get("label") or action_id.replace("_", " ").title()),
+            status=status,
+            summary=_safe_text(disabled_reason or story.get("summary"), "Action state is available."),
+            proofs=proofs,
+            what_changed=story.get("what_changed") or [],
+            what_did_not_happen=story.get("what_did_not_happen") or [],
+            evidence_ref=f"apps/photoprism/actions/{action_id}/state.json",
+            technical_details={
+                "action_id": action_id,
+                "execution_owner": owner,
+                "enabled": enabled,
+                "disabled_reason": disabled_reason or "",
+                "command_queued": False,
+            },
+            proof_source="App Catalog action contract",
+            backend_trace=_backend_trace_for_action(action_id, f"photoprism-{action_id}-state", execution_owner=owner),
+            operator_summary=[_safe_text(disabled_reason or story.get("summary"), "Action state is available.")],
+        ))
+    return receipts
 
 def _storage_mappings() -> list[dict[str, Any]]:
     try:
@@ -723,18 +1023,22 @@ def app_evidence(app_id: str) -> dict[str, Any]:
     if security:
         items.append(security)
 
-    items = sorted(items, key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
-    if not items:
+    evidence_items = sorted(items, key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
+    existing_action_ids = {str(item.get("action_id") or "") for item in evidence_items if isinstance(item, dict)}
+    action_state_items = _static_action_receipts(existing_action_ids)
+    all_action_items = [*evidence_items, *action_state_items]
+
+    if not evidence_items:
         latest = None
         proof_counts = {"passed": 0, "review": 0, "failed": 0, "not_checked": 0, "not_applicable": 0}
         summary = "No evidence receipt yet."
     else:
-        latest = items[0]
+        latest = evidence_items[0]
         proof_counts = latest.get("proof_counts") or _proof_counts(latest.get("proofs") or [])
         summary = _safe_text(latest.get("summary"), "Latest evidence receipt available.")
 
     by_action: dict[str, dict[str, Any]] = {}
-    for item in items:
+    for item in all_action_items:
         action_id = str(item.get("action_id") or "").strip()
         if action_id and action_id not in by_action:
             by_action[action_id] = item
@@ -750,10 +1054,11 @@ def app_evidence(app_id: str) -> dict[str, Any]:
         "action_label": (latest or {}).get("action_label"),
         "evidence_ref": (latest or {}).get("evidence_ref"),
         "proof_counts": proof_counts,
-        "items": items[:12],
+        "items": evidence_items[:12],
         "by_action": by_action,
         "latest_by_action": by_action,
-        "count": len(items),
+        "action_receipts": by_action,
+        "count": len(evidence_items),
         "fallback_receipt": _fallback_receipt() if not items else None,
         "updated_at": (latest or {}).get("updated_at") or _now(),
     }
