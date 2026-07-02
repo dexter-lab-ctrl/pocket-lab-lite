@@ -2024,7 +2024,7 @@ def test_lite_unified_lifecycle_ui_source_is_present():
 
 def _force_photoprism_installed_for_action_tests(monkeypatch):
     ensure_runtime_path()
-    from api_fastapi.services import lite_app_lifecycle, lite_photoprism_lifecycle, lite_photoprism_media
+    from api_fastapi.services import lite_app_lifecycle, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media
 
     installed_app = {
         "id": "photoprism",
@@ -2039,6 +2039,8 @@ def _force_photoprism_installed_for_action_tests(monkeypatch):
     }
 
     monkeypatch.setattr(lite_app_lifecycle, "_catalog_app", lambda app_id: dict(installed_app))
+    monkeypatch.setattr(lite_app_update, "_catalog_app", lambda app_id: dict(installed_app))
+    lite_app_update._write_state({"pending_update_check": None, "latest_update_check": None})
     monkeypatch.setattr(lite_photoprism_lifecycle, "_catalog_app", lambda: dict(installed_app))
     monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
 
@@ -2545,7 +2547,9 @@ def test_lite_photoprism_action_center_includes_storage_and_lifecycle_actions(mo
         assert "label" in actions[action_id]
     assert actions["remove_app"]["requires_confirmation"] is True
     assert actions["remove_app"]["risk"] == "destructive"
-    assert actions["update_app"]["enabled"] is False
+    assert actions["update_app"]["enabled"] is True
+    assert actions["update_app"].get("readiness_only") is True
+    assert actions["update_app"].get("apply_supported") is False
     assert "password" not in response.text.lower()
     assert "backup_key" not in response.text.lower()
 
@@ -3088,6 +3092,125 @@ def test_lite_app_safety_repair_actions_are_enabled_when_installed(monkeypatch):
     assert "nats://" not in response.text.lower()
 
 
+def test_lite_app_update_status_is_readiness_only(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().get("/api/lite/apps/photoprism/update")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["app_id"] == "photoprism"
+    assert payload["update_check_supported"] is True
+    assert payload["update_apply_supported"] is False
+    assert payload["actions"]["update_app"]["enabled"] is True
+    assert payload["actions"]["apply_update"]["enabled"] is False
+    assert "No update check has run yet" in payload["readiness"]["summary"]
+    assert "nats://" not in response.text.lower()
+    assert "/data/data" not in response.text.lower()
+    assert "password" not in response.text.lower()
+
+
+def test_lite_app_update_action_builds_worker_command_and_queued_state(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_actions, lite_app_update
+
+    action = lite_app_actions.prepare_action(
+        "photoprism",
+        "update_app",
+        payload={"reason": "manual update readiness check"},
+    )
+    assert action["kind"] == "update_check"
+    assert action["subject"] == lite_app_update.APP_UPDATE_CHECK_SUBJECT
+    command = action["command"]
+    assert command["action_id"] == "update_app"
+    assert command["readiness_only"] is True
+    pending = lite_app_update.record_update_request(command)
+    assert pending["status"] == "queued"
+    assert pending["progress"]["bounded"] is True
+    assert "Update check queued" in pending["progress"]["step"]
+    assert "nats://" not in json.dumps(pending).lower()
+
+
+def test_lite_app_update_readiness_receipt_is_sanitized(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_update
+
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    result = lite_app_update.create_update_readiness(command)
+    assert result["action_id"] == "update_app"
+    assert result["apply_supported"] is False
+    assert result["update_available"] == "unknown"
+    assert result["readiness"] in {"review", "ready", "blocked"}
+    receipt = lite_app_update.update_receipt("photoprism", result["operation_id"])
+    assert receipt is not None
+    proof_ids = {item["id"] for item in receipt["proofs"]}
+    assert "no_update_applied" in proof_ids
+    assert "backup_freshness_checked" in proof_ids
+    assert "restore_preview_checked" in proof_ids
+    assert "rollback_readiness_checked" in proof_ids
+    assert "app_health_checked" in proof_ids
+    assert receipt["redaction"]["secrets_hidden"] is True
+    text = json.dumps(receipt).lower()
+    assert "no update was installed" in text
+    assert "nats://" not in text
+    assert "/data/data" not in text
+    assert "password=" not in text
+    assert "token=" not in text
+
+
+def test_lite_app_update_receipt_surfaces_in_app_evidence(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_update
+
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    lite_app_update.create_update_readiness(command)
+    response = client().get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    action_ids = {item.get("action_id") for item in payload.get("items", [])}
+    assert "update_app" in action_ids
+    assert payload["latest"]["action_id"] == "update_app"
+    assert "No update was installed" in response.text
+    assert "nats://" not in response.text.lower()
+    assert "/data/data" not in response.text.lower()
+
+
+def test_lite_app_update_apply_stays_disabled(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().post(
+        "/api/lite/apps/photoprism/update/apply",
+        json={"reason": "attempt apply"},
+    )
+    assert response.status_code == 409
+    payload = response.json()
+    assert payload["status"] == "disabled"
+    assert payload["accepted"] is False
+    assert payload["update_apply_supported"] is False
+
+
+def test_lite_app_update_unknown_app_is_safe():
+    response = client().get("/api/lite/apps/vault/update")
+    assert response.status_code == 404
+    assert "PhotoPrism is the first app" in response.text
+
+
+def test_lite_app_update_frontend_source_is_readiness_only():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "Check whether PhotoPrism is ready for a safe update." in ui
+    assert "Update Readiness Conveyor" in ui
+    assert "lite-catalog-update-conveyor" in css
+    assert "Checking version, backup, route, rollback, and safety proof" in ui
+    assert "No update will be applied" in ui
+    assert "Index photos" not in ui
+    assert "Refresh library" not in ui
+    assert "Stop photo" not in ui
+    assert "nats.connect" not in ui
+    assert "exec(" not in ui
+
+
 def test_lite_app_safety_and_repair_worker_subjects_registered():
     ensure_runtime_path()
     from api_fastapi.services import domain_commands, lite_app_operations
@@ -3095,6 +3218,7 @@ def test_lite_app_safety_and_repair_worker_subjects_registered():
     subjects = domain_commands.supported_subjects()
     assert lite_app_operations.SAFETY_SUBJECT in subjects
     assert lite_app_operations.REPAIR_SUBJECT in subjects
+    assert "pocketlab.commands.lite.app.update.check" in subjects
 
 
 def test_lite_app_check_app_builds_worker_command_and_queued_state(monkeypatch):

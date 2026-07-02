@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -76,6 +76,10 @@ class LiteAppBackupRequest(BaseModel):
 
 class LiteAppRestorePreviewRequest(BaseModel):
     backup_id: str | None = None
+    reason: str | None = None
+
+
+class LiteAppUpdateRequest(BaseModel):
     reason: str | None = None
 
 
@@ -232,6 +236,27 @@ def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
 def get_lite_app_evidence(app_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
     return lite_evidence_receipts.app_evidence(app_id)
+
+
+@router.get("/apps/{app_id}/update")
+def get_lite_app_update_status(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_update.update_status(app_id)
+
+
+@router.get("/apps/{app_id}/update/receipts/{operation_id}")
+def get_lite_app_update_receipt(app_id: str, operation_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    receipt = lite_app_update.update_receipt(app_id, operation_id)
+    if not receipt:
+        raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "Update readiness receipt was not found."})
+    return receipt
+
+
+@router.post("/apps/{app_id}/update/apply", status_code=409)
+def apply_lite_app_update(app_id: str, payload: LiteAppUpdateRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_update.apply_update_disabled(app_id)
 
 
 @router.get("/apps/{app_id}/backup")
@@ -421,6 +446,38 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         })
         return submitted
 
+    if kind == "update_check":
+        command = action["command"]
+        subject = action.get("subject") or lite_app_update.APP_UPDATE_CHECK_SUBJECT
+        await ensure_worker_execution_ready()
+        pending = lite_app_update.record_update_request(command)
+        try:
+            submitted = await submit_domain_command(
+                subject,
+                "lite.app.update.check_queued",
+                command,
+                trace_id=command.get("command_id"),
+            )
+        except Exception:
+            state = lite_app_update._read_state()
+            if isinstance(state.get("pending_update_check"), dict) and state["pending_update_check"].get("command_id") == command.get("command_id"):
+                state["pending_update_check"] = None
+                lite_app_update._write_state(state)
+            raise
+        submitted.update({
+            "accepted": True,
+            "status": submitted.get("status") or "queued",
+            "app_id": "photoprism",
+            "action_id": "update_app",
+            "operation_id": command["operation_id"],
+            "command_id": command["command_id"],
+            "pending_update_check": pending,
+            "summary": "Checking PhotoPrism update readiness.",
+            "progress": pending.get("progress") or {"phase": "queued", "step": "Update check queued.", "bounded": True},
+            "evidence": {"status": "pending", "summary": "Evidence pending."},
+        })
+        return submitted
+
     if kind == "media":
         command = action["command"]
         try:
@@ -527,9 +584,6 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         raise HTTPException(status_code=501, detail=action["response"])
 
     if kind == "remove_not_implemented":
-        raise HTTPException(status_code=501, detail=action["response"])
-
-    if kind == "update_not_implemented":
         raise HTTPException(status_code=501, detail=action["response"])
 
     if kind == "repair_not_implemented":

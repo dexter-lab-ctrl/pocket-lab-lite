@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup, lite_app_operations, lite_app_storage, lite_backup, lite_photoprism_media, lite_security
+from . import lite_app_backup, lite_app_operations, lite_app_storage, lite_app_update, lite_backup, lite_photoprism_media, lite_security
 
 PHOTOPRISM_APP_ID = "photoprism"
 RECEIPT_VERSION = 1
@@ -242,7 +242,7 @@ def _receipt(
             "action_id": action_id,
             "short_command_id": _short_id(receipt_id),
             "evidence_ref": safe_ref,
-            "execution_owner": "backend worker" if action_id in {"import_photos", "backup_app", "check_app", "repair_app"} else "FastAPI control API",
+            "execution_owner": "backend worker" if action_id in {"import_photos", "backup_app", "check_app", "repair_app", "update_app"} else "FastAPI control API",
             "control_api": "FastAPI",
             "proof_source": proof_source,
             "redaction_status": "passed",
@@ -257,6 +257,12 @@ def _safety_badges(proofs: list[dict[str, Any]]) -> list[str]:
     wanted = [
         "backend_worker_executed",
         "frontend_no_shell",
+        "no_update_applied",
+        "update_source_checked",
+        "app_health_checked",
+        "backup_freshness_checked",
+        "restore_preview_checked",
+        "rollback_readiness_checked",
         "storage_read_only",
         "secrets_hidden",
         "raw_paths_hidden",
@@ -459,6 +465,56 @@ def _backup_receipt() -> dict[str, Any] | None:
 
 
 
+def _update_receipt() -> dict[str, Any] | None:
+    try:
+        receipt = lite_app_update.update_receipt(PHOTOPRISM_APP_ID, "latest")
+    except Exception:
+        return None
+    if not isinstance(receipt, dict):
+        return None
+    proofs = [
+        _proof(
+            str(item.get("id") or "proof"),
+            str(item.get("label") or "Proof"),
+            str(item.get("status") or "not_checked"),
+            str(item.get("plain_language") or item.get("summary") or "Proof available."),
+        )
+        for item in (receipt.get("proofs") or [])
+        if isinstance(item, dict)
+    ]
+    return _receipt(
+        receipt_id=receipt.get("receipt_id") or receipt.get("operation_id") or "update-app",
+        app_id=PHOTOPRISM_APP_ID,
+        action_id="update_app",
+        action_label="Update",
+        status=receipt.get("status") or "review",
+        summary=_safe_text(receipt.get("summary"), "Update readiness checked. No update was applied."),
+        started_at=receipt.get("started_at"),
+        completed_at=receipt.get("completed_at"),
+        proofs=proofs,
+        what_changed=receipt.get("what_changed") or ["Pocket Lab Lite checked whether PhotoPrism is ready for a safe update."],
+        what_did_not_happen=receipt.get("what_did_not_happen") or [
+            "No update was installed.",
+            "No files were replaced.",
+            "No database was changed.",
+            "No photos were changed.",
+            "No services were restarted.",
+            "No secret values were exposed.",
+        ],
+        evidence_ref=receipt.get("evidence_ref") or f"apps/photoprism/update/{_safe_ref(receipt.get('receipt_id'), 'latest')}.json",
+        technical_details=receipt.get("technical_details") if isinstance(receipt.get("technical_details"), dict) else {
+            "action_id": "update_app",
+            "execution_owner": "backend worker",
+            "apply_supported": False,
+            "raw_logs": "hidden",
+            "raw_paths": "hidden",
+            "secret_values": "hidden",
+        },
+        proof_source="App Catalog update-readiness receipt",
+    )
+
+
+
 
 def _operation_receipts() -> list[dict[str, Any]]:
     receipts: list[dict[str, Any]] = []
@@ -599,6 +655,9 @@ def app_evidence(app_id: str) -> dict[str, Any]:
     backup = _backup_receipt()
     if backup:
         items.append(backup)
+    update = _update_receipt()
+    if update:
+        items.append(update)
     security = _security_receipt()
     if security:
         items.append(security)
