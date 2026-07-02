@@ -1117,20 +1117,58 @@ def _safe_add_receipts(items: list[dict[str, Any]], loader) -> None:
         items.append(loaded)
 
 
+def _safe_add_first_receipt(items: list[dict[str, Any]], loader) -> None:
+    """Add at most one receipt from a potentially large source.
+
+    The App Catalog evidence endpoint runs on low-power Android/Termux hosts.
+    It must return quickly, so the main response should not expand large
+    historical evidence stores or scan the workflow journal inline. Detailed
+    trace can be added later through a dedicated per-receipt endpoint.
+    """
+    try:
+        loaded = loader()
+    except Exception:
+        return
+    if isinstance(loaded, list):
+        candidates = [item for item in loaded if isinstance(item, dict)]
+        candidates.sort(key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
+        if candidates:
+            items.append(candidates[0])
+    elif isinstance(loaded, dict):
+        items.append(loaded)
+
+
+def _without_heavy_trace(item: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        return item
+    action_id = str(item.get("action_id") or "")
+    owner = str((item.get("technical_details") or {}).get("execution_owner") or "backend_worker")
+    if action_id in {"open", "open_full_screen", "install_to_phone"}:
+        owner = "browser_navigation"
+    elif action_id == "connect_photos":
+        owner = "fastapi"
+    # Keep the main evidence endpoint bounded. Do not scan workflow_events.jsonl
+    # here; the phone can have a large journal and the UI needs receipts first.
+    item["backend_trace"] = _minimal_backend_trace_for_action(action_id, _trace_operation_id(item) or item.get("receipt_id"), execution_owner=owner)
+    return item
+
+
 def app_evidence(app_id: str) -> dict[str, Any]:
     app = _validate_app_id(app_id)
     items: list[dict[str, Any]] = []
-    _safe_add_receipts(items, _operation_receipts)
-    _safe_add_receipts(items, _import_receipts)
-    _safe_add_receipts(items, _connect_photos_receipt)
-    _safe_add_receipts(items, _backup_receipt)
-    _safe_add_receipts(items, _restore_preview_receipt)
-    _safe_add_receipts(items, _update_receipt)
-    _safe_add_receipts(items, _security_receipt)
 
-    evidence_items = sorted(items, key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
+    # Add one current receipt per source. This keeps /evidence responsive even
+    # when historical media evidence or workflow event journals are large.
+    _safe_add_first_receipt(items, _operation_receipts)
+    _safe_add_first_receipt(items, _import_receipts)
+    _safe_add_first_receipt(items, _connect_photos_receipt)
+    _safe_add_first_receipt(items, _backup_receipt)
+    _safe_add_first_receipt(items, _restore_preview_receipt)
+    _safe_add_first_receipt(items, _update_receipt)
+
+    evidence_items = sorted(items, key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)[:8]
     existing_action_ids = {str(item.get("action_id") or "") for item in evidence_items if isinstance(item, dict)}
-    action_state_items = _static_action_receipts(existing_action_ids)
+    action_state_items = _static_action_receipts(existing_action_ids)[:8]
     all_action_items = [*evidence_items, *action_state_items]
 
     if not evidence_items:
@@ -1138,7 +1176,7 @@ def app_evidence(app_id: str) -> dict[str, Any]:
         proof_counts = {"passed": 0, "review": 0, "failed": 0, "not_checked": 0, "not_applicable": 0}
         summary = "No evidence receipt yet."
     else:
-        latest = evidence_items[0]
+        latest = _without_heavy_trace(evidence_items[0])
         proof_counts = latest.get("proof_counts") or _proof_counts(latest.get("proofs") or [])
         summary = _safe_text(latest.get("summary"), "Latest evidence receipt available.")
 
@@ -1146,12 +1184,7 @@ def app_evidence(app_id: str) -> dict[str, Any]:
     for item in all_action_items:
         action_id = str(item.get("action_id") or "").strip()
         if action_id and action_id not in by_action:
-            by_action[action_id] = item
-
-    for action_id, item in list(by_action.items()):
-        by_action[action_id] = _enrich_backend_trace(item)
-    if latest:
-        latest = _enrich_backend_trace(latest)
+            by_action[action_id] = _without_heavy_trace(item)
 
     payload = {
         "status": "healthy",
@@ -1164,7 +1197,7 @@ def app_evidence(app_id: str) -> dict[str, Any]:
         "action_label": (latest or {}).get("action_label"),
         "evidence_ref": (latest or {}).get("evidence_ref"),
         "proof_counts": proof_counts,
-        "items": evidence_items[:12],
+        "items": evidence_items,
         "by_action": by_action,
         "latest_by_action": by_action,
         "action_receipts": by_action,
