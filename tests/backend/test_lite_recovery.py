@@ -441,3 +441,59 @@ def test_lite_restore_service_restart_and_health_helpers(monkeypatch):
     result = lite_backup._validate_lite_api_health()
     assert result["status"] == "passed"
     assert result["recovery_status"] == "healthy"
+
+
+def test_lite_app_backup_and_restore_preview_are_preview_only(tmp_path, monkeypatch):
+    _install_fake_restic(tmp_path, monkeypatch)
+    from api_fastapi import deps
+    from api_fastapi.services import lite_app_backup, lite_app_backup_targets
+
+    monkeypatch.setattr(
+        lite_app_backup_targets,
+        "backup_target_summary",
+        lambda _app_id="photoprism": {
+            "ready": False,
+            "summary": "Join a storage device to save app backups elsewhere.",
+            "target_label": None,
+            "targets": [],
+        },
+    )
+
+    deps.core.write_json_file(
+        deps.settings().state_dir / "catalog.json",
+        {"apps": [{"id": "photoprism", "status": "ready"}]},
+    )
+    deps.core.write_json_file(
+        deps.settings().state_dir / "fleet_agents.json",
+        {"agents": {"server": {"status": "healthy"}}},
+    )
+
+    command = lite_app_backup.app_backup_command("photoprism", mode="config_only", reason="unit-test app backup")
+    backup = lite_app_backup.create_app_backup(command)
+    assert backup["status"] in {"succeeded", "review"}
+    assert backup["app_id"] == "photoprism"
+    assert backup["backup_id"].startswith("app-backup-photoprism-")
+    assert backup["media_included"] is False
+    assert backup["restore_apply_supported"] is False
+
+    status = lite_app_backup.app_backup_status("photoprism")
+    assert status["latest_backup"]["backup_id"] == backup["backup_id"]
+    assert status["restore_apply_supported"] is False
+    assert status["actions"]["preview_restore"]["enabled"] is True
+    assert status["actions"]["backup_to_storage_device"]["enabled"] is False
+
+    preview_command = lite_app_backup.app_restore_preview_command(
+        "photoprism",
+        backup_id="latest",
+        reason="unit-test preview",
+    )
+    preview = lite_app_backup.create_app_restore_preview(preview_command)
+    assert preview["status"] == "ready"
+    assert preview["preview_only"] is True
+    assert preview["restore_allowed"] is False
+    assert preview["restore_apply_supported"] is False
+    assert preview["destructive"] is False
+    assert any(item["id"] == "app_config" for item in preview["would_restore"])
+    assert any(item["id"] == "original_media" for item in preview["would_preserve"])
+    assert "/data/data" not in json.dumps(preview)
+    assert "restic-password" not in json.dumps(preview).lower()

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup_targets, lite_app_operations, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -234,6 +234,116 @@ def get_lite_app_evidence(app_id: str, request: Request) -> dict[str, Any]:
     return lite_evidence_receipts.app_evidence(app_id)
 
 
+@router.get("/apps/{app_id}/backup")
+def get_lite_app_backup_status(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_backup.app_backup_status(app_id)
+
+
+@router.post("/apps/{app_id}/backup", status_code=202)
+async def start_lite_app_backup(app_id: str, payload: LiteAppBackupRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    command = lite_app_backup.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
+    try:
+        submitted = await submit_domain_command(
+            lite_app_backup.APP_BACKUP_CREATE_SUBJECT,
+            "lite.app.backup.queued",
+            command,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "app_backup_queue_unavailable",
+                "summary": "App backup request could not be queued because the local command bus is not reachable.",
+                "detail": str(exc),
+            },
+        ) from exc
+    pending = lite_app_backup.record_backup_request(command)
+    submitted.update({
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "app_id": "photoprism",
+        "action_id": "backup_app",
+        "backup_id": command["backup_id"],
+        "mode": command["app_backup_mode"],
+        "pending_backup": pending,
+        "summary": "Backing up PhotoPrism app settings.",
+        "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
+        "evidence": {"status": "pending", "summary": "Evidence pending."},
+    })
+    return submitted
+
+
+@router.get("/apps/{app_id}/backups")
+def list_lite_app_backups(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_app_backup.list_app_backups(app_id)
+
+
+@router.get("/apps/{app_id}/backups/{backup_id}/receipt")
+def get_lite_app_backup_receipt(app_id: str, backup_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    receipt = lite_app_backup.app_backup_receipt(app_id, backup_id)
+    if not receipt:
+        raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "App backup receipt was not found."})
+    return receipt
+
+
+@router.post("/apps/{app_id}/restore/preview", status_code=202)
+async def start_lite_app_restore_preview(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.backup_id or "latest", reason=payload.reason)
+    try:
+        submitted = await submit_domain_command(
+            lite_app_backup.APP_RESTORE_PREVIEW_SUBJECT,
+            "lite.app.restore.preview_queued",
+            command,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "app_restore_preview_queue_unavailable",
+                "summary": "Restore preview could not be queued because the local command bus is not reachable.",
+                "detail": str(exc),
+            },
+        ) from exc
+    pending = lite_app_backup.record_restore_preview_request(command)
+    submitted.update({
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "app_id": "photoprism",
+        "action_id": "preview_restore",
+        "backup_id": command["backup_id"],
+        "preview_id": command["preview_id"],
+        "pending_restore_preview": pending,
+        "summary": "Preparing PhotoPrism restore preview.",
+        "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
+        "evidence": {"status": "pending", "summary": "Evidence pending."},
+    })
+    return submitted
+
+
+@router.get("/apps/{app_id}/restore/previews/{preview_id}")
+def get_lite_app_restore_preview(app_id: str, preview_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    preview = lite_app_backup.get_app_restore_preview(app_id, preview_id)
+    if not preview:
+        raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "App restore preview was not found."})
+    return preview
+
+
+@router.post("/apps/{app_id}/backup/storage-device")
+def start_lite_app_backup_to_storage_device(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_app_backup.backup_to_storage_readiness(app_id, payload.target_device_id, reason=payload.reason)
+
+
 @router.post("/apps/{app_id}/actions/{action_id}")
 async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
@@ -247,8 +357,8 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         command = action["command"]
         try:
             submitted = await submit_domain_command(
-                lite_app_profiles.APP_BACKUP_SUBJECT,
-                "lite.backup.app_queued",
+                lite_app_backup.APP_BACKUP_CREATE_SUBJECT,
+                "lite.app.backup.queued",
                 command,
             )
         except HTTPException:
@@ -262,7 +372,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
                     "detail": str(exc),
                 },
             ) from exc
-        pending = lite_backup.record_backup_request(command)
+        pending = lite_app_backup.record_backup_request(command)
         submitted.update({
             "accepted": True,
             "status": submitted.get("status") or "queued",
@@ -271,7 +381,43 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "backup_id": command["backup_id"],
             "mode": command["app_backup_mode"],
             "pending_backup": pending,
-            "summary": "PhotoPrism app backup queued. Config and app metadata are included; media remains excluded unless a supported media backup mode is enabled.",
+            "summary": "Backing up PhotoPrism app settings.",
+            "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
+            "evidence": {"status": "pending", "summary": "Evidence pending."},
+        })
+        return submitted
+
+    if kind == "restore_preview":
+        command = action["command"]
+        try:
+            submitted = await submit_domain_command(
+                lite_app_backup.APP_RESTORE_PREVIEW_SUBJECT,
+                "lite.app.restore.preview_queued",
+                command,
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "status": "app_restore_preview_queue_unavailable",
+                    "summary": "Restore preview could not be queued because the local command bus is not reachable.",
+                    "detail": str(exc),
+                },
+            ) from exc
+        pending = lite_app_backup.record_restore_preview_request(command)
+        submitted.update({
+            "accepted": True,
+            "status": submitted.get("status") or "queued",
+            "app_id": "photoprism",
+            "action_id": "preview_restore",
+            "backup_id": command["backup_id"],
+            "preview_id": command["preview_id"],
+            "pending_restore_preview": pending,
+            "summary": "Preparing PhotoPrism restore preview.",
+            "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
+            "evidence": {"status": "pending", "summary": "Evidence pending."},
         })
         return submitted
 
@@ -373,6 +519,9 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "summary": "PhotoPrism install started.",
         })
         return queued
+
+    if kind == "backup_to_storage_readiness":
+        return action["response"]
 
     if kind == "backup_to_storage_not_implemented":
         raise HTTPException(status_code=501, detail=action["response"])
@@ -708,10 +857,10 @@ def get_lite_recovery_app_backup_targets(app_id: str, request: Request) -> dict[
     return lite_app_backup_targets.app_backup_targets(app_id)
 
 
-@router.post("/recovery/apps/{app_id}/backup-to-target", status_code=501)
+@router.post("/recovery/apps/{app_id}/backup-to-target")
 def backup_lite_app_to_target(app_id: str, payload: LiteAppActionRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return lite_app_backup_targets.backup_to_storage_not_implemented(
+    return lite_app_backup.backup_to_storage_readiness(
         app_id,
         payload.target_device_id,
         reason=payload.reason,
@@ -732,11 +881,11 @@ def get_lite_recovery_app(app_id: str, request: Request) -> dict[str, Any]:
 @router.post("/recovery/apps/{app_id}/backup", status_code=202)
 async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    command = lite_app_profiles.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
+    command = lite_app_backup.app_backup_command(app_id, mode=payload.mode, reason=payload.reason)
     try:
         submitted = await submit_domain_command(
-            lite_app_profiles.APP_BACKUP_SUBJECT,
-            "lite.backup.app_queued",
+            lite_app_backup.APP_BACKUP_CREATE_SUBJECT,
+            "lite.app.backup.queued",
             command,
         )
     except HTTPException:
@@ -750,7 +899,7 @@ async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: R
                 "detail": str(exc),
             },
         ) from exc
-    pending = lite_backup.record_backup_request(command)
+    pending = lite_app_backup.record_backup_request(command)
     submitted.update({
         "accepted": True,
         "status": submitted.get("status") or "queued",
@@ -763,10 +912,29 @@ async def backup_lite_app(app_id: str, payload: LiteAppBackupRequest, request: R
     return submitted
 
 
-@router.post("/recovery/apps/{app_id}/restore/preview", status_code=501)
-def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
+@router.post("/recovery/apps/{app_id}/restore/preview", status_code=202)
+async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return lite_app_profiles.app_restore_preview_not_implemented(app_id)
+    command = lite_app_backup.app_restore_preview_command(app_id, backup_id=payload.backup_id or "latest", reason=payload.reason)
+    submitted = await submit_domain_command(
+        lite_app_backup.APP_RESTORE_PREVIEW_SUBJECT,
+        "lite.app.restore.preview_queued",
+        command,
+    )
+    pending = lite_app_backup.record_restore_preview_request(command)
+    submitted.update({
+        "accepted": True,
+        "status": submitted.get("status") or "queued",
+        "app_id": "photoprism",
+        "action_id": "preview_restore",
+        "backup_id": command["backup_id"],
+        "preview_id": command["preview_id"],
+        "pending_restore_preview": pending,
+        "summary": "Preparing PhotoPrism restore preview.",
+        "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
+        "evidence": {"status": "pending", "summary": "Evidence pending."},
+    })
+    return submitted
 
 
 @router.post("/recovery/apps/{app_id}/restore", status_code=501)

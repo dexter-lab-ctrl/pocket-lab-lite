@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_operations, lite_app_storage, lite_backup, lite_photoprism_media, lite_security
+from . import lite_app_backup, lite_app_operations, lite_app_storage, lite_backup, lite_photoprism_media, lite_security
 
 PHOTOPRISM_APP_ID = "photoprism"
 RECEIPT_VERSION = 1
@@ -423,45 +423,38 @@ def _import_receipts() -> list[dict[str, Any]]:
 
 def _backup_receipt() -> dict[str, Any] | None:
     try:
-        receipt = lite_backup.get_receipt("latest")
+        receipt = lite_app_backup.app_backup_receipt(PHOTOPRISM_APP_ID, "latest")
     except Exception:
         return None
     if not isinstance(receipt, dict):
         return None
-    status = str(receipt.get("status") or receipt.get("verification_status") or "").lower()
-    if status in {"not_created", "missing"} and not receipt.get("backup_id"):
+    if receipt.get("status") == "not_created":
         return None
-    backup_id = str(receipt.get("backup_id") or receipt.get("snapshot_id") or "backup-app")
-    if backup_id == "latest" and status in {"not_created", "missing", ""}:
-        return None
-    normalized = _normalize_receipt_status(status or receipt.get("verification_status"))
-    pending = bool(receipt.get("pending") or normalized == "running")
-    saved = bool(receipt.get("evidence_saved") or receipt.get("manifest_checksum") or receipt.get("snapshot_id"))
     proofs = [
-        _proof("backend_worker_executed", "Backend worker executed", "review" if pending else "passed", "App backup runs through the backend worker path."),
-        _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested the backup through FastAPI."),
-        _proof("browser_no_file_access", "Browser did not access files", "passed", "The browser did not read backup files."),
-        _proof("backup_config_only", "Config-only backup", "passed", "PhotoPrism settings, mappings, and safe app records are included."),
-        _proof("media_excluded_from_backup", "Media excluded from backup", "passed", "Original media and import media are excluded by default."),
-        _proof("secrets_hidden", "Secrets hidden", "passed", "Raw secrets are not exposed in the backup receipt."),
-        _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Raw backup and device paths are hidden."),
-        _proof("receipt_saved", "Receipt saved", "passed" if saved else "review", "Backup evidence is preserved when the worker completes."),
+        _proof(
+            str(item.get("id") or "proof"),
+            str(item.get("label") or "Proof"),
+            str(item.get("status") or "not_checked"),
+            str(item.get("plain_language") or "Proof available."),
+        )
+        for item in (receipt.get("proofs") or [])
+        if isinstance(item, dict)
     ]
     return _receipt(
-        receipt_id=backup_id,
+        receipt_id=receipt.get("receipt_id") or receipt.get("backup_id") or "backup-app",
         app_id=PHOTOPRISM_APP_ID,
         action_id="backup_app",
         action_label="Back up app",
-        status=normalized,
+        status=receipt.get("status"),
         summary=_safe_text(receipt.get("summary"), "PhotoPrism app backup evidence available."),
-        started_at=receipt.get("requested_at") or receipt.get("created_at"),
-        completed_at=receipt.get("completed_at") or receipt.get("created_at"),
+        started_at=receipt.get("started_at"),
+        completed_at=receipt.get("completed_at"),
         proofs=proofs,
-        what_changed=["PhotoPrism settings, mappings, and safe app records were queued or saved for backup."],
-        what_did_not_happen=["Original photos were not included by default.", "Raw secret values were not exposed.", "No frontend shell commands ran."],
-        evidence_ref=f"apps/photoprism/backups/{_safe_ref(backup_id, 'latest')}.json",
-        technical_details={"backup_mode": "config_only", "media_excluded": True, "verification_status": receipt.get("verification_status")},
-        proof_source="Lite recovery backup receipt",
+        what_changed=receipt.get("what_changed") or ["PhotoPrism settings, mappings, and safe app records were saved for backup."],
+        what_did_not_happen=receipt.get("what_did_not_happen") or ["Original photos were not included by default.", "Raw secret values were not exposed.", "No frontend shell commands ran."],
+        evidence_ref=receipt.get("evidence_ref") or f"apps/photoprism/backups/{_safe_ref(receipt.get('backup_id'), 'latest')}.json",
+        technical_details=receipt.get("technical_details") if isinstance(receipt.get("technical_details"), dict) else {"backup_mode": "config_only", "media_excluded": True},
+        proof_source="App Catalog backup receipt",
     )
 
 

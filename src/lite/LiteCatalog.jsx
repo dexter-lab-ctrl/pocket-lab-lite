@@ -113,10 +113,10 @@ function isActionBusy(app, actionId, busyKey) {
 
 function busyActionLabel(actionId) {
   if (actionId === 'import_photos') return 'Importing...';
-  if (actionId === 'backup_app') return 'Backing up...';
-  if (actionId === 'backup_to_storage') return 'Backing up...';
+  if (actionId === 'backup_app') return 'Backing up app…';
+  if (actionId === 'backup_to_storage') return 'Saving app backup…';
   if (actionId === 'check_app') return 'Checking app…';
-  if (actionId === 'preview_restore') return 'Preparing...';
+  if (actionId === 'preview_restore') return 'Preparing restore preview…';
   if (actionId === 'install_app') return 'Installing...';
   if (actionId === 'update_app') return 'Updating...';
   if (actionId === 'repair_app') return 'Repairing app…';
@@ -144,6 +144,27 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
       step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : 'Importing photos...'),
       steps: progress?.steps || [],
+    };
+  }
+
+  if (['backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId)) {
+    if (!busy) return null;
+    const step = actionId === 'backup_app'
+      ? 'Pocket Lab is saving PhotoPrism settings, mappings, and safe app records.'
+      : actionId === 'preview_restore'
+        ? 'Pocket Lab is preparing a preview-only restore plan.'
+        : 'Pocket Lab is checking storage-device readiness.';
+    return {
+      running: true,
+      percent: actionId === 'preview_restore' ? 28 : 20,
+      indeterminate: true,
+      phase: 'queued',
+      step,
+      steps: [
+        { id: 'request_accepted', label: 'Request accepted', status: 'completed' },
+        { id: 'worker_picked_up', label: 'Worker picked it up', status: 'active' },
+        { id: 'receipt_pending', label: 'Evidence pending', status: 'waiting' },
+      ],
     };
   }
 
@@ -267,6 +288,16 @@ function catalogActionNotice(result, error) {
     };
   }
 
+  if (actionId === 'preview_restore') {
+    return {
+      ...base,
+      tone: 'review',
+      title: 'Restore preview started',
+      message: 'Pocket Lab is preparing a preview-only restore plan. Restore apply stays disabled.',
+      persistent: true,
+    };
+  }
+
   const summary = String(result?.summary || result?.message || '').toLowerCase();
   if (summary.includes('media folder connected') || summary.includes('phone photos connected') || summary.includes('storage connected')) {
     return {
@@ -343,9 +374,10 @@ function PhotoPrismActionTile({
   const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
   const progressDisablesAction = progressState?.running;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
-  const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app'].includes(actionId));
+  const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId));
   const isImportRunning = Boolean(showProgress && actionId === 'import_photos');
   const isSafetyRepairRunning = Boolean(showProgress && ['check_app', 'repair_app'].includes(actionId));
+  const isRecoveryRunning = Boolean(showProgress && ['backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const runningButtonLabel = isImportRunning ? (
     <span className="lite-catalog-import-flow-button">
@@ -358,7 +390,7 @@ function PhotoPrismActionTile({
     </span>
   ) : busyActionLabel(actionId);
   return (
-    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${isSafetyRepairRunning ? 'is-safety-repair-running' : ''} ${actionId === 'check_app' ? 'is-check-app' : ''} ${actionId === 'repair_app' ? 'is-repair-app' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
+    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${isSafetyRepairRunning ? 'is-safety-repair-running' : ''} ${isRecoveryRunning ? 'is-recovery-running' : ''} ${actionId === 'check_app' ? 'is-check-app' : ''} ${actionId === 'repair_app' ? 'is-repair-app' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
@@ -395,8 +427,8 @@ function PhotoPrismActionTile({
             <span className="lite-catalog-import-flow-rail-node is-prism"><i /></span>
           </span>
           <b className="lite-catalog-action-progress-comet" aria-hidden="true" />
-          <span className="lite-catalog-action-progress-status">{progressLabel || (actionId === 'check_app' ? 'Checking app…' : actionId === 'repair_app' ? 'Repairing app…' : 'PhotoPrism is importing photos.')}</span>
-          {isSafetyRepairRunning ? (
+          <span className="lite-catalog-action-progress-status">{progressLabel || (actionId === 'check_app' ? 'Checking app…' : actionId === 'repair_app' ? 'Repairing app…' : actionId === 'backup_app' ? 'Backing up app…' : actionId === 'preview_restore' ? 'Preparing restore preview…' : 'PhotoPrism is importing photos.')}</span>
+          {(isSafetyRepairRunning || isRecoveryRunning) ? (
             <span className="lite-catalog-app-operation-steps" aria-label={`${copy.label} progress steps`}>
               {(progressState?.steps?.length ? progressState.steps : [
                 { id: 'request_accepted', label: 'Request accepted', status: 'completed' },
@@ -1380,6 +1412,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
     const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
     const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
+    const backupAppProgress = actionProgressFromLifecycle(lifecycle, 'backup_app', actionBusyKey === `${app.id}:backup_app`);
+    const previewRestoreProgress = actionProgressFromLifecycle(lifecycle, 'preview_restore', actionBusyKey === `${app.id}:preview_restore`);
+    const backupToStorageProgress = actionProgressFromLifecycle(lifecycle, 'backup_to_storage', actionBusyKey === `${app.id}:backup_to_storage`);
     const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
     const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
     const installAppAction = lifecycleAction(lifecycle, 'install_app');
@@ -1490,6 +1525,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="backup_app"
                   action={backupAppAction}
                   busyKey={actionBusyKey}
+                  progress={backupAppProgress}
                   tone="ghost"
                   onClick={(event) => runLifecycleAction(app, 'backup_app', event)}
                   disabled={backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`}
@@ -1511,6 +1547,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="preview_restore"
                   action={previewRestoreAction}
                   busyKey={actionBusyKey}
+                  progress={previewRestoreProgress}
                   tone="ghost"
                   onClick={(event) => runLifecycleAction(app, 'preview_restore', event)}
                   disabled={previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`}
@@ -1521,6 +1558,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="backup_to_storage"
                   action={backupToStorageAction}
                   busyKey={actionBusyKey}
+                  progress={backupToStorageProgress}
                   tone="ghost"
                   onClick={(event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id })}
                   disabled={backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`}

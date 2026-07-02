@@ -1878,16 +1878,30 @@ def test_lite_app_backup_queues_existing_worker_owned_backup(monkeypatch):
     assert payload["app_id"] == "photoprism"
     assert payload["mode"] == "config_only"
     assert payload["backup_id"].startswith("app-backup-photoprism-")
-    assert any(item[0] == "pocketlab.commands.lite.backup.create" for item in published)
+    assert any(item[0] == "pocketlab.commands.lite.app.backup.create" for item in published)
 
 
 def test_lite_app_restore_endpoints_are_safe_until_explicit_restore_exists():
+    status = client().get("/api/lite/apps/photoprism/backup")
+    assert status.status_code == 200
+    status_payload = status.json()
+    assert status_payload["restore_preview_supported"] is True
+    assert status_payload["restore_apply_supported"] is False
+    assert status_payload["actions"]["preview_restore"]["enabled"] is False
+
     preview = client().post(
+        "/api/lite/apps/photoprism/restore/preview",
+        json={"backup_id": "latest", "reason": "manual app restore preview"},
+    )
+    assert preview.status_code == 409
+    assert preview.json()["status"] == "no_verified_app_backup"
+
+    recovery_preview = client().post(
         "/api/lite/recovery/apps/photoprism/restore/preview",
         json={"backup_id": "latest", "reason": "manual app restore preview"},
     )
-    assert preview.status_code == 501
-    assert preview.json()["status"] == "not_implemented"
+    assert recovery_preview.status_code == 409
+    assert recovery_preview.json()["status"] == "no_verified_app_backup"
 
     restore = client().post(
         "/api/lite/recovery/apps/photoprism/restore",

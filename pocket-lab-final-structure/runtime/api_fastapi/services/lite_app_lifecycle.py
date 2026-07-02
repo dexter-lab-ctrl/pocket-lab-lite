@@ -180,6 +180,8 @@ def _backup_profile(backup: dict[str, Any]) -> dict[str, Any]:
     media = backup.get("media") if isinstance(backup.get("media"), dict) else {}
     status = _normalize_lifecycle_status(backup.get("status"))
     target_summary = backup.get("backup_target_summary") if isinstance(backup.get("backup_target_summary"), dict) else target
+    latest_backup = backup.get("latest_backup") if isinstance(backup.get("latest_backup"), dict) else None
+    latest_restore_preview = backup.get("latest_restore_preview") if isinstance(backup.get("latest_restore_preview"), dict) else None
     return {
         "status": status,
         "summary": "Backup ready" if status == "ready" else _safe_text(backup.get("summary"), "Backup profile needs review."),
@@ -189,6 +191,9 @@ def _backup_profile(backup: dict[str, Any]) -> dict[str, Any]:
         "target_ready": bool(target_summary.get("ready")),
         "target_summary": _safe_text(target_summary.get("summary") or target_summary.get("label"), "Backup target not ready"),
         "target_label": _safe_label(target_summary.get("target_label"), "Storage device") if target_summary.get("target_label") else None,
+        "latest_backup_id": _safe_label(latest_backup.get("backup_id"), "") if latest_backup else None,
+        "latest_backup_status": _safe_label(latest_backup.get("verification_status") or latest_backup.get("status"), "not_verified") if latest_backup else "not_created",
+        "latest_restore_preview_id": _safe_label(latest_restore_preview.get("preview_id"), "") if latest_restore_preview else None,
     }
 
 
@@ -200,6 +205,8 @@ def _recovery_profile(backup: dict[str, Any]) -> dict[str, Any]:
         "summary": _safe_text(restore.get("summary"), "Restore preview not ready" if not preview else "Restore preview available"),
         "preview_available": preview,
         "restore_available": bool(restore.get("restore_available")),
+        "preview_only": bool(restore.get("preview_only", True)),
+        "restore_apply_supported": bool(restore.get("restore_apply_supported", False)),
     }
 
 

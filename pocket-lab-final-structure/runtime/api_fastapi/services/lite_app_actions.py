@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from . import lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 SUPPORTED_ACTIONS = {
@@ -93,12 +93,12 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         return {"kind": "remove_not_implemented", "response": response, "summary": response.get("summary")}
 
     if action == "backup_to_storage":
-        response = lite_app_backup_targets.backup_to_storage_not_implemented(
+        response = lite_app_backup.backup_to_storage_readiness(
             "photoprism",
             payload.get("target_device_id"),
             reason=reason,
         )
-        return {"kind": "backup_to_storage_not_implemented", "response": response, "summary": response.get("summary")}
+        return {"kind": "backup_to_storage_readiness", "response": response, "summary": response.get("summary")}
 
     if not action_profile.get("enabled"):
         raise HTTPException(
@@ -135,8 +135,12 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         }
 
     if action == "backup_app":
-        command = lite_app_profiles.app_backup_command("photoprism", mode="config_only", reason=reason)
+        command = lite_app_backup.app_backup_command("photoprism", mode="config_only", reason=reason)
         return {"kind": "backup", "command": command, "summary": "PhotoPrism app backup queued."}
+
+    if action == "preview_restore":
+        command = lite_app_backup.app_restore_preview_command("photoprism", backup_id=payload.get("backup_id") or "latest", reason=reason)
+        return {"kind": "restore_preview", "command": command, "summary": "PhotoPrism restore preview queued."}
 
     if action in {"check_app", "repair_app"}:
         command = lite_app_operations.command_for_operation("photoprism", action, reason=reason)
