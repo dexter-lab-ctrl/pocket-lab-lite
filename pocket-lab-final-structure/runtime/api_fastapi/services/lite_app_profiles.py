@@ -5,13 +5,13 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_storage, lite_backup, lite_catalog, lite_catalog_live, lite_security, lite_app_backup_targets
+from . import lite_app_storage, lite_backup, lite_catalog, lite_catalog_live, lite_security, lite_app_backup_targets, lite_app_backup
 
 SUPPORTED_APP_IDS = {"photoprism"}
 APP_NAMES = {"photoprism": "PhotoPrism"}
 
 APP_SECURITY_CHECK_SUBJECT = "pocketlab.commands.lite.security.app_scan"
-APP_BACKUP_SUBJECT = "pocketlab.commands.lite.backup.create"
+APP_BACKUP_SUBJECT = lite_app_backup.APP_BACKUP_CREATE_SUBJECT
 
 _SECRET_MARKERS = (
     "token",
@@ -137,16 +137,17 @@ def _security_status_from_checks(checks: list[dict[str, str]], installed: bool) 
 def _backup_status(profile: dict[str, Any]) -> str:
     if not profile.get("installed"):
         return "unavailable"
-    target = profile.get("backup_target") if isinstance(profile.get("backup_target"), dict) else {}
-    if target.get("available"):
-        return "ready"
-    return "review"
+    return "ready"
 
 
 def photoprism_backup_profile() -> dict[str, Any]:
     app = _catalog_app("photoprism")
     mappings = _mapping_summary()
     target = _backup_target_summary(app)
+    app_backup_status = lite_app_backup.app_backup_status("photoprism")
+    latest_app_backup = app_backup_status.get("latest_backup") if isinstance(app_backup_status.get("latest_backup"), dict) else None
+    latest_restore_preview = app_backup_status.get("latest_restore_preview") if isinstance(app_backup_status.get("latest_restore_preview"), dict) else None
+    restore_preview_ready = bool((app_backup_status.get("actions") or {}).get("preview_restore", {}).get("enabled"))
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
     profile: dict[str, Any] = {
         "app_id": "photoprism",
@@ -196,14 +197,18 @@ def photoprism_backup_profile() -> dict[str, Any]:
         "backup_target_summary": target,
         "backup_targets": target.get("targets", []) if isinstance(target, dict) else [],
         "evidence": _evidence_summary("recovery"),
+        "latest_backup": latest_app_backup,
+        "latest_restore_preview": latest_restore_preview,
         "storage_mappings": {
             "count": int(mappings.get("count") or 0),
             "summary": _public_text(mappings.get("summary"), "No media folders connected."),
         },
         "restore": {
-            "preview_available": False,
+            "preview_available": restore_preview_ready,
             "restore_available": False,
-            "summary": "Restore preview coming soon for app-specific recovery.",
+            "preview_only": True,
+            "restore_apply_supported": False,
+            "summary": "Restore preview ready." if restore_preview_ready else "No verified app backup yet.",
         },
         "updated_at": _now(),
     }
@@ -327,33 +332,7 @@ def app_security_check_not_implemented(app_id: str, reason: str | None = None) -
 
 def app_backup_command(app_id: str, *, mode: str = "config_only", reason: str | None = None) -> dict[str, Any]:
     _validate_app_id(app_id)
-    selected_mode = str(mode or "config_only").strip().lower()
-    if selected_mode not in {"config_only", "config_and_index", "full_with_media"}:
-        raise HTTPException(status_code=422, detail={"status": "unsupported_mode", "summary": "Choose a supported app backup mode."})
-    profile = photoprism_backup_profile()
-    if selected_mode == "full_with_media":
-        target = profile.get("backup_target") if isinstance(profile.get("backup_target"), dict) else {}
-        if not target.get("ready"):
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "status": "backup_target_required",
-                    "summary": "Add a ready storage device before including media in app backups.",
-                },
-            )
-    command_id = f"app-backup-photoprism-{deps.now_utc_iso().replace(':', '').replace('.', '-') }"
-    return {
-        "command_id": command_id,
-        "backup_id": command_id,
-        "app_id": "photoprism",
-        "app_backup_mode": selected_mode,
-        "include_app_data": True,
-        "include_event_journal": True,
-        "reason": _public_text(reason, "manual app backup"),
-        "requested_by": "lite-api",
-        "dry_run": False,
-        "profile_summary": "Backs up PhotoPrism config and Pocket Lab app metadata. Media is excluded unless explicitly enabled.",
-    }
+    return lite_app_backup.app_backup_command(app_id, mode=mode, reason=reason)
 
 
 def app_restore_preview_not_implemented(app_id: str) -> dict[str, Any]:

@@ -12517,3 +12517,18 @@ textarea {
     animation: none;
   }
 }
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-recovery-running .lite-catalog-action-progress {
+  border-color: rgba(56, 189, 248, 0.32);
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.10), rgba(124, 58, 237, 0.10)),
+    rgba(255, 255, 255, 0.74);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-recovery-running .lite-catalog-action-progress-fill {
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.80), rgba(124, 58, 237, 0.82));
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile.is-recovery-running .lite-catalog-action-progress-comet {
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.34);
+}

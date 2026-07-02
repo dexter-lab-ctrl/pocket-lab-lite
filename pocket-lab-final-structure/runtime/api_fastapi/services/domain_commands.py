@@ -513,6 +513,108 @@ async def handle_lite_catalog_install(command: Dict[str, Any]) -> Dict[str, Any]
     return result
 
 
+async def handle_lite_app_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    app_id = str(command.get("app_id") or "photoprism")
+    await _publish(
+        "pocketlab.events.lite.app.backup.started",
+        "lite.app.backup.started",
+        {"command_id": command_id, "app_id": app_id, "mode": command.get("app_backup_mode") or "config_only"},
+        trace_id=command_id,
+    )
+    from . import lite_app_backup
+
+    try:
+        result = await asyncio.to_thread(lite_app_backup.create_app_backup, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.app.backup.failed",
+            "lite.app.backup.failed",
+            {"command_id": command_id, "app_id": app_id, "status": "failed", "error": str(exc)},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.app.backup.failed",
+            "lite.app.backup.failed",
+            {"command_id": command_id, "app_id": app_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+
+    await _publish(
+        "pocketlab.events.lite.app.backup.completed",
+        "lite.app.backup.completed",
+        {
+            "command_id": command_id,
+            "app_id": app_id,
+            "backup_id": result.get("backup_id"),
+            "status": result.get("status"),
+            "evidence_ref": result.get("evidence_ref"),
+            "restore_apply_supported": False,
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.app.backup.completed",
+        "lite.app.backup.completed",
+        {"command_id": command_id, "app_id": app_id, "backup_id": result.get("backup_id"), "status": result.get("status")},
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_app_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    app_id = str(command.get("app_id") or "photoprism")
+    backup_id = str(command.get("backup_id") or "latest")
+    await _publish(
+        "pocketlab.events.lite.app.restore.preview_started",
+        "lite.app.restore.preview_started",
+        {"command_id": command_id, "app_id": app_id, "backup_id": backup_id},
+        trace_id=command_id,
+    )
+    from . import lite_app_backup
+
+    try:
+        result = await asyncio.to_thread(lite_app_backup.create_app_restore_preview, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.app.restore.preview_failed",
+            "lite.app.restore.preview_failed",
+            {"command_id": command_id, "app_id": app_id, "backup_id": backup_id, "status": "failed", "error": str(exc)},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.app.restore.preview_failed",
+            "lite.app.restore.preview_failed",
+            {"command_id": command_id, "app_id": app_id, "backup_id": backup_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+
+    await _publish(
+        "pocketlab.events.lite.app.restore.preview_created",
+        "lite.app.restore.preview_created",
+        {
+            "command_id": command_id,
+            "app_id": app_id,
+            "backup_id": result.get("backup_id"),
+            "preview_id": result.get("preview_id"),
+            "status": result.get("status"),
+            "preview_only": True,
+            "restore_allowed": False,
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.app.restore.preview_created",
+        "lite.app.restore.preview_created",
+        {"command_id": command_id, "app_id": app_id, "backup_id": result.get("backup_id"), "preview_id": result.get("preview_id"), "status": result.get("status")},
+        trace_id=command_id,
+    )
+    return result
+
+
 async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     await _publish(
@@ -986,6 +1088,8 @@ HANDLERS = {
     "pocketlab.commands.vault.rotate": handle_vault_rotate,
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
+    "pocketlab.commands.lite.app.backup.create": handle_lite_app_backup_create,
+    "pocketlab.commands.lite.app.restore.preview": handle_lite_app_restore_preview,
     "pocketlab.commands.lite.app.media": handle_lite_app_media,
     "pocketlab.commands.lite.app.safety": handle_lite_app_operation,
     "pocketlab.commands.lite.app.repair": handle_lite_app_operation,
