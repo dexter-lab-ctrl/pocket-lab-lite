@@ -3612,10 +3612,18 @@ def test_lite_app_preview_restore_waits_for_current_backup(monkeypatch):
 
 def test_lite_app_catalog_receipt_selection_is_action_specific():
     ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
     assert "selectedReceiptActionId" in ui
     assert "openEvidenceReceipt(entry.actionId)" in ui
-    assert "evidenceReceiptFromPayload(appEvidence, selectedReceiptActionId)" in ui
+    assert "selectedReceiptActionId === entry.actionId" in ui
+    assert "lite-catalog-action-receipt-anchor" in ui
+    assert "PhotoPrismEvidenceReceiptModal" in ui
+    assert "inline" in ui
     assert "No unrelated receipt was shown for this action." in ui
+    assert "lite-evidence-modal-inline" in css
+    assert "liteEvidenceBorderRailOrbit" in css
+    assert "liteEvidenceRailPerimeterFlow" in css
+    assert "Hide receipt" in ui
 
 
 def test_lite_app_update_receipt_technical_details_show_versions(monkeypatch):
