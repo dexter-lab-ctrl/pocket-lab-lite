@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from . import lite_app_backup_targets, lite_app_lifecycle, lite_app_profiles, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 SUPPORTED_ACTIONS = {
@@ -138,6 +138,16 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         command = lite_app_profiles.app_backup_command("photoprism", mode="config_only", reason=reason)
         return {"kind": "backup", "command": command, "summary": "PhotoPrism app backup queued."}
 
+    if action in {"check_app", "repair_app"}:
+        command = lite_app_operations.command_for_operation("photoprism", action, reason=reason)
+        summary = "Checking PhotoPrism safety." if action == "check_app" else "Repairing PhotoPrism safely."
+        return {
+            "kind": "app_operation",
+            "command": command,
+            "subject": lite_app_operations.subject_for_action(action),
+            "summary": summary,
+        }
+
     if action == "import_photos":
         command = lite_photoprism_media.media_command(action, reason=reason)
         return {"kind": "media", "command": command, "summary": action_profile.get("summary") or f"{action_profile.get('label')} queued."}
@@ -149,10 +159,6 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
     if action == "update_app":
         response = lite_photoprism_lifecycle.update_not_implemented(reason=reason)
         return {"kind": "update_not_implemented", "response": response, "summary": response.get("summary")}
-
-    if action == "repair_app":
-        response = lite_photoprism_lifecycle.repair_not_implemented(reason=reason)
-        return {"kind": "repair_not_implemented", "response": response, "summary": response.get("summary")}
 
     raise HTTPException(
         status_code=501,

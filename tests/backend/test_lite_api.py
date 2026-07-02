@@ -2010,7 +2010,7 @@ def test_lite_unified_lifecycle_ui_source_is_present():
 
 def _force_photoprism_installed_for_action_tests(monkeypatch):
     ensure_runtime_path()
-    from api_fastapi.services import lite_app_lifecycle, lite_photoprism_lifecycle
+    from api_fastapi.services import lite_app_lifecycle, lite_photoprism_lifecycle, lite_photoprism_media
 
     installed_app = {
         "id": "photoprism",
@@ -2026,6 +2026,7 @@ def _force_photoprism_installed_for_action_tests(monkeypatch):
 
     monkeypatch.setattr(lite_app_lifecycle, "_catalog_app", lambda app_id: dict(installed_app))
     monkeypatch.setattr(lite_photoprism_lifecycle, "_catalog_app", lambda: dict(installed_app))
+    monkeypatch.setattr(lite_photoprism_media, "_matching_media_process_count", lambda: 0)
 
 
 def test_lite_app_action_center_lists_photoprism_readiness(monkeypatch):
@@ -3056,3 +3057,205 @@ def test_lite_app_catalog_ui_has_evidence_receipt_surface():
     assert "lite-evidence-modal" in css
     assert "liteEvidenceSheetIn" in css
     assert "prefers-reduced-motion" in css
+
+
+def test_lite_app_safety_repair_actions_are_enabled_when_installed(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().get("/api/lite/apps/photoprism/actions")
+    assert response.status_code == 200
+    actions = response.json()["actions"]
+    assert actions["check_app"]["enabled"] is True
+    assert actions["check_app"]["category"] == "safety"
+    assert "route" in actions["check_app"]["summary"].lower()
+    assert actions["repair_app"]["enabled"] is True
+    assert actions["repair_app"]["category"] == "recovery"
+    assert "storage" in actions["repair_app"]["summary"].lower()
+    assert "password" not in response.text.lower()
+    assert "nats://" not in response.text.lower()
+
+
+def test_lite_app_safety_and_repair_worker_subjects_registered():
+    ensure_runtime_path()
+    from api_fastapi.services import domain_commands, lite_app_operations
+
+    subjects = domain_commands.supported_subjects()
+    assert lite_app_operations.SAFETY_SUBJECT in subjects
+    assert lite_app_operations.REPAIR_SUBJECT in subjects
+
+
+def test_lite_app_check_app_builds_worker_command_and_queued_state(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_actions, lite_app_operations
+
+    action = lite_app_actions.prepare_action(
+        "photoprism",
+        "check_app",
+        payload={"reason": "manual app safety check"},
+    )
+
+    assert action["kind"] == "app_operation"
+    assert action["subject"] == lite_app_operations.SAFETY_SUBJECT
+    assert action["command"]["action_id"] == "check_app"
+
+    queued = lite_app_operations.record_queued_operation(action["command"])
+    assert queued["status"] == "queued"
+    assert queued["progress"]["phase"] == "queued"
+    assert queued["progress"]["bounded"] is True
+    assert queued["evidence_ref"].startswith("apps/photoprism/safety/")
+    assert "password" not in json.dumps(queued).lower()
+    assert "nats://" not in json.dumps(queued).lower()
+
+    router_source = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
+    assert 'kind == "app_operation"' in router_source
+    assert "submit_domain_command" in router_source
+
+
+def test_lite_app_repair_app_builds_worker_command_and_queued_state(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_actions, lite_app_operations
+
+    action = lite_app_actions.prepare_action(
+        "photoprism",
+        "repair_app",
+        payload={"reason": "manual safe repair"},
+    )
+
+    assert action["kind"] == "app_operation"
+    assert action["subject"] == lite_app_operations.REPAIR_SUBJECT
+    assert action["command"]["action_id"] == "repair_app"
+
+    queued = lite_app_operations.record_queued_operation(action["command"])
+    assert queued["status"] == "queued"
+    assert queued["progress"]["phase"] == "queued"
+    assert queued["progress"]["bounded"] is True
+    assert queued["evidence_ref"].startswith("apps/photoprism/repair/")
+    assert "password" not in json.dumps(queued).lower()
+    assert "nats://" not in json.dumps(queued).lower()
+
+def test_lite_app_check_receipt_has_safe_proofs(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_operations
+
+    monkeypatch.setattr(lite_app_operations, "_pm2_process_online", lambda process_name="pocketlab-app-photoprism": "online")
+    monkeypatch.setattr(lite_app_operations, "_local_health_ready", lambda: True)
+    monkeypatch.setattr(lite_app_operations, "_route_health_ready", lambda: True)
+    monkeypatch.setattr(lite_app_operations, "_caddy_route_status", lambda: ("passed", {"caddyfile_checked": True, "prefix_preserved": True}))
+
+    command = lite_app_operations.command_for_operation("photoprism", "check_app", reason="unit check")
+    lite_app_operations.record_queued_operation(command)
+    result = lite_app_operations.execute_check_app(command)
+    assert result["status"] in {"succeeded", "review"}
+
+    response = client().get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    latest = payload["latest"]
+    assert latest["action_id"] == "check_app"
+    proof_ids = {item["id"] for item in latest["proofs"]}
+    assert {
+        "backend_worker_executed",
+        "frontend_no_shell",
+        "app_route_checked",
+        "app_health_checked",
+        "storage_mapping_checked",
+        "secrets_hidden",
+        "raw_logs_hidden",
+        "raw_paths_hidden",
+        "media_not_scanned",
+        "media_details_owned_by_photoprism",
+    }.issubset(proof_ids)
+    assert latest["redaction"]["secrets_hidden"] is True
+    assert latest["redaction"]["raw_logs_hidden"] is True
+    assert latest["redaction"]["raw_paths_hidden"] is True
+    assert latest["redaction"]["secret_values_saved"] is False
+    text = response.text.lower()
+    assert "/data/data" not in text
+    assert "nats://" not in text
+    assert "password=" not in text
+    assert "token=" not in text
+
+
+def test_lite_app_repair_receipt_has_safe_proofs(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_operations
+
+    monkeypatch.setattr(lite_app_operations, "_local_health_ready", lambda: True)
+    monkeypatch.setattr(lite_app_operations, "_route_health_ready", lambda: True)
+    monkeypatch.setattr(lite_app_operations, "_caddy_route_status", lambda: ("passed", {"caddyfile_checked": True, "prefix_preserved": True}))
+    monkeypatch.setattr(lite_app_operations, "_refresh_caddy_route_if_safe", lambda route_needs_refresh: ("skipped", False))
+    monkeypatch.setattr(lite_app_operations, "_restart_photoprism_if_safe", lambda health_failed: ("skipped", False))
+
+    command = lite_app_operations.command_for_operation("photoprism", "repair_app", reason="unit repair")
+    lite_app_operations.record_queued_operation(command)
+    result = lite_app_operations.execute_repair_app(command)
+    assert result["status"] in {"succeeded", "review"}
+
+    response = client().get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    latest = response.json()["latest"]
+    assert latest["action_id"] == "repair_app"
+    proof_ids = {item["id"] for item in latest["proofs"]}
+    assert {
+        "backend_worker_executed",
+        "frontend_no_shell",
+        "repair_bounded",
+        "media_preserved",
+        "app_route_checked",
+        "storage_mapping_checked",
+        "app_health_checked",
+        "no_destructive_changes",
+        "secrets_hidden",
+    }.issubset(proof_ids)
+    assert any("No photos were deleted" in item for item in latest["what_did_not_happen"])
+    assert latest["technical_details"]["destructive_changes"] is False
+    assert latest["technical_details"]["app_login_changed"] is False
+    assert latest["technical_details"]["database_reset"] is False
+    text = response.text.lower()
+    assert "/data/data" not in text
+    assert "password=" not in text
+    assert "token=" not in text
+
+
+def test_lite_app_operations_reconcile_stale_running(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi import deps
+    from api_fastapi.services import lite_app_operations
+
+    monkeypatch.setattr(lite_app_operations, "STALE_OPERATION_SECONDS", 0)
+    command = lite_app_operations.command_for_operation("photoprism", "check_app", reason="stale test")
+    queued = lite_app_operations.record_queued_operation(command)
+    state = deps.core.read_json_file(deps.settings().state_dir / "lite_app_operations.json", {})
+    op = state["operations"][queued["operation_id"]]
+    op["status"] = "running"
+    op["started_at"] = "2020-01-01T00:00:00Z"
+    deps.core.write_json_file(deps.settings().state_dir / "lite_app_operations.json", state)
+
+    status = lite_app_operations.app_operation_status("photoprism")
+    assert status["last_safety_check"]["status"] == "review"
+    assert "did not fake success" in json.dumps(status).lower()
+
+
+def test_lite_app_safety_repair_frontend_source_is_mobile_safe():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    mocks = Path("src/mocks/handlers.js").read_text()
+    assert "Check PhotoPrism health, route, storage, and safety evidence." in ui
+    assert "Fix PhotoPrism route, health, and storage connection safely." in ui
+    assert "Checking app…" in ui
+    assert "Repairing app…" in ui
+    assert "lite-catalog-app-operation-steps" in ui
+    assert "liteCatalogSafetySweep" in css
+    assert "prefers-reduced-motion" in css
+    assert "check_app" in mocks
+    assert "repair_app" in mocks
+    forbidden = "\n".join([ui, mocks]).lower()
+    assert "index photos" not in forbidden
+    assert "refresh library" not in forbidden
+    assert "stop photo" not in forbidden
+    assert "child_process" not in forbidden
+    assert "nats.connect" not in forbidden
+    assert "exec(" not in forbidden

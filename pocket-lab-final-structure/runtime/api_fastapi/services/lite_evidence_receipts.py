@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_storage, lite_backup, lite_photoprism_media, lite_security
+from . import lite_app_operations, lite_app_storage, lite_backup, lite_photoprism_media, lite_security
 
 PHOTOPRISM_APP_ID = "photoprism"
 RECEIPT_VERSION = 1
@@ -236,12 +236,13 @@ def _receipt(
             "raw_logs_hidden": True,
             "raw_paths_hidden": True,
             "media_file_names_hidden": True,
+            "secret_values_saved": False,
         },
         "technical_details": _sanitize_technical({
             "action_id": action_id,
             "short_command_id": _short_id(receipt_id),
             "evidence_ref": safe_ref,
-            "execution_owner": "backend worker" if action_id in {"import_photos", "backup_app", "check_app"} else "FastAPI control API",
+            "execution_owner": "backend worker" if action_id in {"import_photos", "backup_app", "check_app", "repair_app"} else "FastAPI control API",
             "control_api": "FastAPI",
             "proof_source": proof_source,
             "redaction_status": "passed",
@@ -464,6 +465,114 @@ def _backup_receipt() -> dict[str, Any] | None:
     )
 
 
+
+
+def _operation_receipts() -> list[dict[str, Any]]:
+    receipts: list[dict[str, Any]] = []
+    try:
+        operations = lite_app_operations.operation_receipts(PHOTOPRISM_APP_ID)
+    except Exception:
+        return receipts
+    for operation in operations:
+        action_id = str(operation.get("action_id") or "").lower()
+        if action_id not in {"check_app", "repair_app"}:
+            continue
+        status = _normalize_receipt_status(operation.get("status"))
+        proof_status = "passed" if status == "succeeded" else ("failed" if status == "failed" else "review")
+        stored_proofs = operation.get("proofs") if isinstance(operation.get("proofs"), list) else []
+        proof_by_id = {str(item.get("id")): item for item in stored_proofs if isinstance(item, dict)}
+
+        def from_operation(proof_id: str, label: str, fallback_status: str, plain_language: str) -> dict[str, Any]:
+            item = proof_by_id.get(proof_id)
+            if item:
+                return _proof(
+                    proof_id,
+                    item.get("label") or label,
+                    item.get("status") or fallback_status,
+                    item.get("plain_language") or item.get("summary") or plain_language,
+                    technical=item.get("technical") if isinstance(item.get("technical"), dict) else None,
+                )
+            return _proof(proof_id, label, fallback_status, plain_language)
+
+        if action_id == "check_app":
+            proofs = [
+                from_operation("backend_worker_executed", "Backend worker executed", proof_status, "The app check was handled by Pocket Lab Lite backend worker."),
+                from_operation("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested Check app through FastAPI."),
+                from_operation("browser_no_file_access", "Browser did not access files", "passed", "The browser did not access files or PhotoPrism internals."),
+                from_operation("app_route_checked", "Secure route checked", proof_status, "Pocket Lab checked the same-origin PhotoPrism route."),
+                from_operation("app_health_checked", "App health checked", proof_status, "Pocket Lab checked PhotoPrism health."),
+                from_operation("storage_mapping_checked", "Storage mapping checked", proof_status, "Photo storage mapping state was checked without listing files."),
+                from_operation("secrets_hidden", "Secrets hidden", "passed", "Secret values are hidden."),
+                from_operation("raw_logs_hidden", "Raw logs hidden", "passed", "Raw app logs are hidden."),
+                from_operation("raw_paths_hidden", "Raw paths hidden", "passed", "Raw paths are hidden."),
+                from_operation("media_not_scanned", "Media was not scanned", "passed", "No photos were scanned, imported, or indexed."),
+                from_operation("media_details_owned_by_photoprism", "PhotoPrism owns media details", "passed", "PhotoPrism handles media-specific details."),
+                from_operation("receipt_saved", "Receipt saved", proof_status, "Pocket Lab saved a sanitized Check app receipt."),
+            ]
+            receipts.append(_receipt(
+                receipt_id=operation.get("operation_id") or operation.get("command_id") or "check-app",
+                app_id=PHOTOPRISM_APP_ID,
+                action_id="check_app",
+                action_label="Check app",
+                status=status,
+                summary=_safe_text(operation.get("summary"), "App checked."),
+                started_at=operation.get("started_at") or operation.get("queued_at"),
+                completed_at=operation.get("completed_at") or operation.get("updated_at"),
+                proofs=proofs,
+                what_changed=["Pocket Lab Lite checked PhotoPrism safety and route readiness."],
+                what_did_not_happen=["No photos were scanned.", "No PhotoPrism indexing was started.", "No source media was changed.", "No secret values were exposed."],
+                evidence_ref=operation.get("evidence_ref") or "apps/photoprism/safety/latest.json",
+                technical_details={
+                    "route_status": (operation.get("technical_details") or {}).get("route_path") or "checked",
+                    "storage_mode": (operation.get("technical_details") or {}).get("storage_mode") or "checked",
+                    "media_scanned": False,
+                    "import_started": False,
+                    "index_started": False,
+                },
+                proof_source="PhotoPrism app safety operation",
+            ))
+        if action_id == "repair_app":
+            proofs = [
+                from_operation("backend_worker_executed", "Backend worker executed", proof_status, "The repair was handled by Pocket Lab Lite backend worker."),
+                from_operation("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested Repair through FastAPI."),
+                from_operation("browser_no_file_access", "Browser did not access files", "passed", "The browser did not access app files or storage."),
+                from_operation("repair_bounded", "Repair was bounded", "passed", "Repair was limited to route, health, and managed storage checks."),
+                from_operation("media_preserved", "Media preserved", "passed", "No source photos were deleted or changed."),
+                from_operation("no_destructive_changes", "No destructive changes", "passed", "Repair did not reset the database, credentials, or media."),
+                from_operation("app_route_checked", "Secure route checked", proof_status, "Pocket Lab checked or refreshed the app route."),
+                from_operation("storage_mapping_checked", "Storage mapping checked", proof_status, "Managed storage mappings were checked safely."),
+                from_operation("app_health_checked", "App health verified", proof_status, "Pocket Lab checked app health after repair."),
+                from_operation("restart_safe", "Restart was safe", "not_applicable", "No restart was needed or only the app process was restarted safely."),
+                from_operation("secrets_hidden", "Secrets hidden", "passed", "Secret values are hidden."),
+                from_operation("raw_logs_hidden", "Raw logs hidden", "passed", "Raw PM2 and app logs are hidden."),
+                from_operation("raw_paths_hidden", "Raw paths hidden", "passed", "Raw paths are hidden."),
+                from_operation("receipt_saved", "Receipt saved", proof_status, "Pocket Lab saved a sanitized Repair receipt."),
+            ]
+            receipts.append(_receipt(
+                receipt_id=operation.get("operation_id") or operation.get("command_id") or "repair-app",
+                app_id=PHOTOPRISM_APP_ID,
+                action_id="repair_app",
+                action_label="Repair",
+                status=status,
+                summary=_safe_text(operation.get("summary"), "Repair completed."),
+                started_at=operation.get("started_at") or operation.get("queued_at"),
+                completed_at=operation.get("completed_at") or operation.get("updated_at"),
+                proofs=proofs,
+                what_changed=["Pocket Lab checked or refreshed PhotoPrism route, health, and managed storage setup."],
+                what_did_not_happen=["No photos were deleted.", "No database was reset.", "No passwords were changed.", "No PhotoPrism indexing was started.", "No raw secrets were exposed."],
+                evidence_ref=operation.get("evidence_ref") or "apps/photoprism/repair/latest.json",
+                technical_details={
+                    "restart_performed": bool((operation.get("technical_details") or {}).get("restart_performed")),
+                    "repair_bounded": True,
+                    "media_preserved": True,
+                    "destructive_changes": False,
+                    "app_login_changed": False,
+                    "database_reset": False,
+                },
+                proof_source="PhotoPrism app repair operation",
+            ))
+    return receipts
+
 def _fallback_receipt() -> dict[str, Any]:
     proofs = [
         _proof("frontend_no_shell", "Browser did not run commands", "not_checked", "No detailed receipt has been saved yet."),
@@ -489,6 +598,7 @@ def _fallback_receipt() -> dict[str, Any]:
 def app_evidence(app_id: str) -> dict[str, Any]:
     app = _validate_app_id(app_id)
     items: list[dict[str, Any]] = []
+    items.extend(_operation_receipts())
     items.extend(_import_receipts())
     connect = _connect_photos_receipt()
     if connect:
