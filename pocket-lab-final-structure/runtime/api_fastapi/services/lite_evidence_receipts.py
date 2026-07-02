@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+from functools import lru_cache
 import re
 from datetime import datetime, timezone
 from typing import Any
@@ -228,7 +229,11 @@ def _receipt(
         "proof_counts": counts,
         "proof_status": _summary_status(clean_proofs),
         "operator_summary": [_safe_text(item, "Receipt detail available.") for item in story_lines[:6]],
-        "backend_trace": backend_trace or _backend_trace_for_action(action_id, receipt_id, execution_owner="backend_worker" if action_id in {"import_photos", "backup_app", "check_app", "repair_app", "update_app", "preview_restore"} else "fastapi"),
+        # Keep receipt creation light. Full workflow/event trace is attached only
+        # to the selected latest/by-action receipts in app_evidence(). On small
+        # Android/Termux hosts, scanning workflow_events.jsonl for every historic
+        # receipt can make /api/lite/apps/photoprism/evidence slow or unavailable.
+        "backend_trace": backend_trace or _minimal_backend_trace_for_action(action_id, receipt_id, execution_owner="backend_worker" if action_id in {"import_photos", "backup_app", "check_app", "repair_app", "update_app", "preview_restore"} else "fastapi"),
         "safety_badges": _safety_badges(clean_proofs),
         "what_changed": [_safe_text(item, "Something changed.") for item in what_changed[:8]],
         "what_did_not_happen": [_safe_text(item, "Nothing unsafe happened.") for item in what_did_not_happen[:8]],
@@ -376,44 +381,60 @@ def _read_json(path, default: Any) -> Any:
         return default
 
 
-def _read_workflow_events(operation_id: Any) -> tuple[list[dict[str, Any]], int]:
-    op_id = str(operation_id or "").strip()
-    if not op_id:
-        return [], 0
-    path = _state_dir() / "workflows" / "events" / "workflow_events.jsonl"
-    if not path.exists():
-        return [], 0
+@lru_cache(maxsize=2)
+def _workflow_event_rows_cache(path_text: str, mtime_ns: int, size: int) -> tuple[dict[str, Any], ...]:
+    # Cache is keyed by path, mtime and size, so it refreshes automatically when
+    # the event journal changes. This keeps receipt reads fast on Android/Termux.
     rows: list[dict[str, Any]] = []
-    duplicate_rows = 0
-    seen: set[str] = set()
     try:
-        with path.open("r", encoding="utf-8") as handle:
+        with open(path_text, "r", encoding="utf-8") as handle:
             for line in handle:
-                if op_id not in line:
-                    continue
                 try:
                     event = json.loads(line)
                 except Exception:
                     continue
-                data = event.get("data") if isinstance(event.get("data"), dict) else {}
-                if op_id not in {
-                    str(event.get("trace_id") or ""),
-                    str(event.get("workflow_id") or ""),
-                    str(data.get("command_id") or ""),
-                    str(data.get("operation_id") or ""),
-                    str(data.get("job_id") or ""),
-                    str(data.get("preview_id") or ""),
-                    str(data.get("backup_id") or ""),
-                }:
-                    continue
-                event_id = str(event.get("id") or hashlib.sha256(line.encode("utf-8")).hexdigest()[:16])
-                if event_id in seen:
-                    duplicate_rows += 1
-                    continue
-                seen.add(event_id)
-                rows.append(event)
+                if isinstance(event, dict):
+                    rows.append(event)
     except Exception:
+        return tuple()
+    return tuple(rows[-5000:])
+
+
+def _workflow_event_rows() -> tuple[dict[str, Any], ...]:
+    path = _state_dir() / "workflows" / "events" / "workflow_events.jsonl"
+    try:
+        stat = path.stat()
+    except Exception:
+        return tuple()
+    return _workflow_event_rows_cache(str(path), int(stat.st_mtime_ns), int(stat.st_size))
+
+
+def _read_workflow_events(operation_id: Any) -> tuple[list[dict[str, Any]], int]:
+    op_id = str(operation_id or "").strip()
+    if not op_id or op_id.endswith("-state"):
         return [], 0
+    rows: list[dict[str, Any]] = []
+    duplicate_rows = 0
+    seen: set[str] = set()
+    for event in _workflow_event_rows():
+        data = event.get("data") if isinstance(event.get("data"), dict) else {}
+        candidates = {
+            str(event.get("trace_id") or ""),
+            str(event.get("workflow_id") or ""),
+            str(data.get("command_id") or ""),
+            str(data.get("operation_id") or ""),
+            str(data.get("job_id") or ""),
+            str(data.get("preview_id") or ""),
+            str(data.get("backup_id") or ""),
+        }
+        if op_id not in candidates:
+            continue
+        event_id = str(event.get("id") or hashlib.sha256(json.dumps(event, sort_keys=True).encode("utf-8")).hexdigest()[:16])
+        if event_id in seen:
+            duplicate_rows += 1
+            continue
+        seen.add(event_id)
+        rows.append(event)
     rows.sort(key=lambda item: (str(item.get("time") or ""), str(item.get("type") or ""), str(item.get("subject") or "")))
     return rows[:12], duplicate_rows
 
@@ -482,6 +503,35 @@ def _backend_trace_events(operation_id: Any) -> tuple[list[dict[str, Any]], int]
             "worker": _safe_text(data.get("worker"), "") if data.get("worker") else None,
         })
     return events, duplicate_rows
+
+
+def _minimal_backend_trace_for_action(action_id: str, operation_id: Any = None, *, execution_owner: str = "backend_worker") -> dict[str, Any]:
+    owner = OWNER_LABELS.get(str(execution_owner or "").replace(" ", "_"), OWNER_LABELS.get(str(execution_owner or ""), "Backend worker"))
+    op_id = str(operation_id or "").strip()
+    if execution_owner == "browser_navigation":
+        summary = "This action opens PhotoPrism in the browser. No backend command or worker action is needed."
+        status = "succeeded"
+    elif action_id in {"backup_to_storage", "install_app", "remove_app"}:
+        summary = "This action is safety-gated. Pocket Lab did not queue backend work for this receipt."
+        status = "review"
+    else:
+        summary = "Backend trace will be attached when this action has linked workflow events."
+        status = "review"
+    return {
+        "summary": _safe_text(summary, "Backend trace available."),
+        "execution_owner": owner,
+        "operation_id": _safe_ref(op_id, "") or None,
+        "command_subject": None,
+        "worker": None,
+        "status": status,
+        "workflow_status": None,
+        "workflow_event_count": 0,
+        "unique_event_count": 0,
+        "duplicate_events_hidden": False,
+        "duplicate_event_rows_hidden": 0,
+        "events": [],
+        "steps": [],
+    }
 
 
 def _backend_trace_for_action(action_id: str, operation_id: Any = None, *, execution_owner: str = "backend_worker") -> dict[str, Any]:
@@ -576,7 +626,7 @@ def _static_action_receipts(existing_actions: set[str]) -> list[dict[str, Any]]:
                 "command_queued": False,
             },
             proof_source="App Catalog action contract",
-            backend_trace=_backend_trace_for_action(action_id, f"photoprism-{action_id}-state", execution_owner=owner),
+            backend_trace=_minimal_backend_trace_for_action(action_id, f"photoprism-{action_id}-state", execution_owner=owner),
             operator_summary=[_safe_text(disabled_reason or story.get("summary"), "Action state is available.")],
         ))
     return receipts
@@ -1002,26 +1052,53 @@ def _fallback_receipt() -> dict[str, Any]:
     )
 
 
+def _trace_operation_id(item: dict[str, Any]) -> str:
+    for key in ("operation_id", "command_id", "preview_id", "backup_id", "receipt_id"):
+        value = str(item.get(key) or "").strip()
+        if value and not value.endswith("-state"):
+            return value
+    return ""
+
+
+def _enrich_backend_trace(item: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        return item
+    op_id = _trace_operation_id(item)
+    action_id = str(item.get("action_id") or "")
+    owner = str((item.get("technical_details") or {}).get("execution_owner") or "backend_worker")
+    if action_id in {"open", "open_full_screen", "install_to_phone"}:
+        owner = "browser_navigation"
+    if action_id in {"connect_photos"}:
+        owner = "fastapi"
+    try:
+        trace = _backend_trace_for_action(action_id, op_id, execution_owner=owner) if op_id else _minimal_backend_trace_for_action(action_id, item.get("receipt_id"), execution_owner=owner)
+        item["backend_trace"] = trace
+    except Exception:
+        item["backend_trace"] = _minimal_backend_trace_for_action(action_id, item.get("receipt_id"), execution_owner=owner)
+    return item
+
+
+def _safe_add_receipts(items: list[dict[str, Any]], loader) -> None:
+    try:
+        loaded = loader()
+    except Exception:
+        return
+    if isinstance(loaded, list):
+        items.extend(item for item in loaded if isinstance(item, dict))
+    elif isinstance(loaded, dict):
+        items.append(loaded)
+
+
 def app_evidence(app_id: str) -> dict[str, Any]:
     app = _validate_app_id(app_id)
     items: list[dict[str, Any]] = []
-    items.extend(_operation_receipts())
-    items.extend(_import_receipts())
-    connect = _connect_photos_receipt()
-    if connect:
-        items.append(connect)
-    backup = _backup_receipt()
-    if backup:
-        items.append(backup)
-    restore_preview = _restore_preview_receipt()
-    if restore_preview:
-        items.append(restore_preview)
-    update = _update_receipt()
-    if update:
-        items.append(update)
-    security = _security_receipt()
-    if security:
-        items.append(security)
+    _safe_add_receipts(items, _operation_receipts)
+    _safe_add_receipts(items, _import_receipts)
+    _safe_add_receipts(items, _connect_photos_receipt)
+    _safe_add_receipts(items, _backup_receipt)
+    _safe_add_receipts(items, _restore_preview_receipt)
+    _safe_add_receipts(items, _update_receipt)
+    _safe_add_receipts(items, _security_receipt)
 
     evidence_items = sorted(items, key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
     existing_action_ids = {str(item.get("action_id") or "") for item in evidence_items if isinstance(item, dict)}
@@ -1042,6 +1119,11 @@ def app_evidence(app_id: str) -> dict[str, Any]:
         action_id = str(item.get("action_id") or "").strip()
         if action_id and action_id not in by_action:
             by_action[action_id] = item
+
+    for action_id, item in list(by_action.items()):
+        by_action[action_id] = _enrich_backend_trace(item)
+    if latest:
+        latest = _enrich_backend_trace(latest)
 
     payload = {
         "status": "healthy",
