@@ -21,6 +21,7 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import LiteActionProgress from './LiteActionProgress.jsx';
 
 const KNOWN_APP_NAMES = ['PhotoPrism'];
 
@@ -112,15 +113,15 @@ function isActionBusy(app, actionId, busyKey) {
 }
 
 function busyActionLabel(actionId) {
-  if (actionId === 'import_photos') return 'Importing...';
-  if (actionId === 'backup_app') return 'Backing up app…';
-  if (actionId === 'backup_to_storage') return 'Saving app backup…';
-  if (actionId === 'check_app') return 'Checking app…';
-  if (actionId === 'preview_restore') return 'Preparing restore preview…';
-  if (actionId === 'install_app') return 'Installing...';
-  if (actionId === 'update_app') return 'Checking update…';
-  if (actionId === 'repair_app') return 'Repairing app…';
-  return 'Working...';
+  if (actionId === 'import_photos') return 'Working';
+  if (actionId === 'backup_app') return 'Working';
+  if (actionId === 'backup_to_storage') return 'Working';
+  if (actionId === 'check_app') return 'Working';
+  if (actionId === 'preview_restore') return 'Working';
+  if (actionId === 'install_app') return 'Working';
+  if (actionId === 'update_app') return 'Working';
+  if (actionId === 'repair_app') return 'Working';
+  return 'Working';
 }
 
 const APP_ACTION_CATEGORY_ORDER = ['access', 'media', 'safety', 'recovery', 'setup', 'danger'];
@@ -252,7 +253,7 @@ function actionResultCopy(actionId, payload = {}, action = {}) {
   if (actionId === 'backup_to_storage') {
     return { title: status === 'queued' ? 'Storage backup queued' : 'Storage target checked', summary: summary || 'Join a storage device to save app backups elsewhere.', badges: ['Readiness only'] };
   }
-  return { title: status === 'queued' ? 'Request accepted' : 'Action updated', summary: summary || 'Pocket Lab updated this app action.', badges: [] };
+  return { title: status === 'queued' ? 'Getting ready' : 'Action updated', summary: summary || 'Pocket Lab updated this app action.', badges: [] };
 }
 
 function tileResultForAction(actionId, action = {}, result = null) {
@@ -283,26 +284,6 @@ function AppActionReceiptButton({ available, onClick, expanded = false }) {
 function AppActionDisabledReason({ reason }) {
   if (!reason) return null;
   return <p className="lite-app-action-disabled-reason">{reason}</p>;
-}
-
-function AppActionTimeline({ actionId, steps = [] }) {
-  const fallbackSteps = actionId === 'update_app'
-    ? ['Version', 'Backup', 'Restore Preview', 'Route', 'Rollback', 'Evidence']
-    : actionId === 'preview_restore'
-      ? ['Backup', 'Preview checklist', 'Evidence']
-      : actionId === 'import_photos'
-        ? ['Phone storage', 'Worker', 'PhotoPrism']
-        : ['Request accepted', 'Worker picked it up', 'Evidence saved'];
-  const timelineSteps = Array.isArray(steps) && steps.length ? steps.slice(0, 6) : fallbackSteps.map((label, index) => ({ id: label, label, status: index === 0 ? 'active' : 'waiting' }));
-  return (
-    <span className="lite-app-action-timeline" aria-label="Action step timeline">
-      {timelineSteps.map((step) => <i key={step.id || step.label} className={`is-${step.status || 'waiting'}`}>{step.label}</i>)}
-    </span>
-  );
-}
-
-function AppActionFlowAnimation({ actionId, running }) {
-  return <span className={`lite-app-action-flow is-${actionId} ${running ? 'is-running' : ''}`} aria-hidden="true"><i /><i /><i /></span>;
 }
 
 function AppActionResultCard({ actionId, action, result, onViewReceipt, receiptExpanded = false }) {
@@ -357,7 +338,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       percent,
       indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing' || operationStatus === 'running'),
       phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
-      step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : 'Importing photos...'),
+      step: progress?.step || operation?.summary || (busy ? 'Importing photos' : 'Importing photos'),
       steps: progress?.steps || [],
     };
   }
@@ -378,14 +359,11 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       percent,
       indeterminate: progress?.indeterminate !== false,
       phase: progress?.phase || rawStatus || 'queued',
-      step: progress?.step || 'Checking version, backup, route, rollback, and safety proof.',
+      step: progress?.step || 'Checking update readiness',
       steps: Array.isArray(progress?.steps) && progress.steps.length ? progress.steps : [
-        { id: 'version', label: 'Version', status: 'active' },
-        { id: 'backup', label: 'Backup', status: 'waiting' },
-        { id: 'restore_preview', label: 'Restore Preview', status: 'waiting' },
-        { id: 'route', label: 'Route', status: 'waiting' },
-        { id: 'rollback', label: 'Rollback', status: 'waiting' },
-        { id: 'evidence', label: 'Evidence', status: 'waiting' },
+        { id: 'ready', label: 'Getting ready', status: 'active' },
+        { id: 'working', label: 'Checking readiness', status: 'waiting' },
+        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
       ],
     };
   }
@@ -393,10 +371,10 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
   if (['backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId)) {
     if (!busy) return null;
     const step = actionId === 'backup_app'
-      ? 'Pocket Lab is saving PhotoPrism settings, mappings, and safe app records.'
+      ? 'Saving app settings'
       : actionId === 'preview_restore'
-        ? 'Pocket Lab is preparing a preview-only restore plan.'
-        : 'Pocket Lab is checking storage-device readiness.';
+        ? 'Preparing restore preview. No changes made.'
+        : 'Checking storage-device readiness.';
     return {
       running: true,
       percent: actionId === 'preview_restore' ? 28 : 20,
@@ -404,9 +382,9 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       phase: 'queued',
       step,
       steps: [
-        { id: 'request_accepted', label: 'Request accepted', status: 'completed' },
-        { id: 'worker_picked_up', label: 'Worker picked it up', status: 'active' },
-        { id: 'receipt_pending', label: 'Evidence pending', status: 'waiting' },
+        { id: 'ready', label: 'Getting ready', status: 'completed' },
+        { id: 'working', label: 'Working', status: 'active' },
+        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
       ],
     };
   }
@@ -426,7 +404,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
     percent,
     indeterminate: progress?.indeterminate !== false,
     phase: progress?.phase || rawStatus || 'queued',
-    step: progress?.step || (actionId === 'check_app' ? 'Pocket Lab is checking PhotoPrism through the backend worker.' : 'Pocket Lab is checking route, health, and storage setup.'),
+    step: progress?.step || (actionId === 'check_app' ? 'Checking safely' : 'Checking repair'),
     steps: Array.isArray(progress?.steps) ? progress.steps : [],
   };
 }
@@ -507,8 +485,8 @@ function catalogActionNotice(result, error) {
     return {
       ...base,
       tone: 'review',
-      title: 'Checking app…',
-      message: 'Pocket Lab is checking PhotoPrism through the backend worker.',
+      title: 'Checking safely',
+      message: 'Pocket Lab is checking PhotoPrism safely.',
       persistent: true,
     };
   }
@@ -517,8 +495,8 @@ function catalogActionNotice(result, error) {
     return {
       ...base,
       tone: 'review',
-      title: 'Checking update…',
-      message: 'Pocket Lab is checking backup, health, version, and rollback readiness. No update will be applied.',
+      title: 'Checking update readiness',
+      message: 'Pocket Lab is checking whether this app is ready. No update will be applied.',
       persistent: true,
     };
   }
@@ -527,8 +505,8 @@ function catalogActionNotice(result, error) {
     return {
       ...base,
       tone: 'review',
-      title: 'Repairing app…',
-      message: 'Pocket Lab is checking route, health, and storage setup.',
+      title: 'Checking repair',
+      message: 'Pocket Lab is checking route, health, and storage setup safely.',
       persistent: true,
     };
   }
@@ -563,7 +541,7 @@ function catalogActionNotice(result, error) {
   if (result?.accepted || status === 'queued') {
     return {
       ...base,
-      message: 'Pocket Lab queued this through the control plane.',
+      message: 'Pocket Lab accepted this safely.',
     };
   }
 
@@ -632,25 +610,11 @@ function PhotoPrismActionTile({
   const progressDisablesAction = progressState?.running;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
   const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
-  const isImportRunning = Boolean(showProgress && actionId === 'import_photos');
-  const isSafetyRepairRunning = Boolean(showProgress && ['check_app', 'repair_app'].includes(actionId));
-  const isRecoveryRunning = Boolean(showProgress && ['backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId));
-  const isUpdateRunning = Boolean(showProgress && actionId === 'update_app');
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const tileResult = tileResultForAction(actionId, action, result);
   const receiptAvailable = normalized.receiptAvailable || Boolean(tileResult && catalogActionReference(tileResult));
-  const runningButtonLabel = isImportRunning ? (
-    <span className="lite-catalog-import-flow-button">
-      <span className="lite-catalog-import-flow-button-stage" aria-hidden="true">
-        <span className="lite-catalog-import-flow-button-node is-storage"><i /></span>
-        <span className="lite-catalog-import-flow-button-line"><i /></span>
-        <span className="lite-catalog-import-flow-button-node is-prism"><i /></span>
-      </span>
-      <span className="lite-catalog-import-flow-button-copy">Importing</span>
-    </span>
-  ) : busyActionLabel(actionId);
   return (
-    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${isSafetyRepairRunning ? 'is-safety-repair-running' : ''} ${isRecoveryRunning ? 'is-recovery-running' : ''} ${isUpdateRunning ? 'is-update-running' : ''} ${actionId === 'check_app' ? 'is-check-app' : ''} ${actionId === 'repair_app' ? 'is-repair-app' : ''} ${actionId === 'update_app' ? 'is-update-app' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`} data-action-id={actionId}>
+    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`} data-action-id={actionId}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
@@ -661,7 +625,6 @@ function PhotoPrismActionTile({
       </div>
       <div className="lite-app-action-state-row">
         <StatusBadge status={normalized.display.status}>{normalized.display.label}</StatusBadge>
-        <AppActionFlowAnimation actionId={actionId} running={Boolean(showProgress)} />
       </div>
       <LiteButton
         tone={tone}
@@ -669,63 +632,18 @@ function PhotoPrismActionTile({
         disabled={isDisabled}
         title={title || reason || copy.description}
       >
-        {busy || progressState?.running ? runningButtonLabel : copy.label}
+        {busy || progressState?.running ? 'Working' : copy.label}
       </LiteButton>
       <AppActionDisabledReason reason={!showProgress ? reason : ''} />
-      {showProgress ? (
-        <div
-          className={`lite-catalog-action-progress ${progressState.indeterminate ? 'is-indeterminate' : ''}`}
-          role="progressbar"
-          aria-label={`${copy.label} progress`}
-          aria-valuemin="0"
-          aria-valuemax="100"
-          aria-valuenow={progressState.indeterminate ? undefined : Math.round(progressState.percent || 0)}
-        >
-          <span className="lite-catalog-action-progress-depth" aria-hidden="true" />
-          <span className="lite-catalog-action-progress-fill" style={{ width: progressState.indeterminate ? '52%' : `${Math.min(100, Math.max(0, progressState.percent || 0))}%` }} />
-          <span className="lite-catalog-action-progress-aurora" aria-hidden="true" />
-          <span className="lite-catalog-import-flow-rail" aria-hidden="true">
-            <span className="lite-catalog-import-flow-rail-node is-storage"><i /></span>
-            <span className="lite-catalog-import-flow-rail-line"><i /></span>
-            <span className="lite-catalog-import-flow-rail-node is-worker"><i /></span>
-            <span className="lite-catalog-import-flow-rail-line"><i /></span>
-            <span className="lite-catalog-import-flow-rail-node is-prism"><i /></span>
-          </span>
-          <b className="lite-catalog-action-progress-comet" aria-hidden="true" />
-          <span className="lite-catalog-action-progress-status">{progressLabel || (actionId === 'check_app' ? 'Checking app…' : actionId === 'repair_app' ? 'Repairing app…' : actionId === 'backup_app' ? 'Backing up app…' : actionId === 'preview_restore' ? 'Preparing restore preview…' : actionId === 'update_app' ? 'Checking update…' : 'PhotoPrism is importing photos.')}</span>
-          {isUpdateRunning ? (
-            <span className="lite-catalog-update-conveyor" aria-label="Update Readiness Conveyor">
-              {(progressState?.steps?.length ? progressState.steps : [
-                { id: 'version', label: 'Version', status: 'active' },
-                { id: 'backup', label: 'Backup', status: 'waiting' },
-                { id: 'restore_preview', label: 'Restore Preview', status: 'waiting' },
-                { id: 'route', label: 'Route', status: 'waiting' },
-                { id: 'rollback', label: 'Rollback', status: 'waiting' },
-                { id: 'evidence', label: 'Evidence', status: 'waiting' },
-              ]).map((step) => (
-                <span key={step.id || step.label} className={`lite-catalog-update-conveyor-step is-${step.status || 'waiting'}`}>
-                  <i aria-hidden="true" />
-                  <b>{step.label}</b>
-                </span>
-              ))}
-            </span>
-          ) : null}
-          <AppActionTimeline actionId={actionId} steps={progressState?.steps || []} />
-          {(isSafetyRepairRunning || isRecoveryRunning) ? (
-            <span className="lite-catalog-app-operation-steps" aria-label={`${copy.label} progress steps`}>
-              {(progressState?.steps?.length ? progressState.steps : [
-                { id: 'request_accepted', label: 'Request accepted', status: 'completed' },
-                { id: 'worker_picked_up', label: 'Worker picked it up', status: 'active' },
-                { id: 'route_checked', label: 'Route checked', status: 'waiting' },
-                { id: 'health_checked', label: 'Health checked', status: 'waiting' },
-                { id: 'evidence_saved', label: 'Evidence saved', status: 'waiting' },
-              ]).slice(0, 5).map((step) => (
-                <i key={step.id || step.label} className={`is-${step.status || 'waiting'}`}>{step.label}</i>
-              ))}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
+      <LiteActionProgress
+        actionId={actionId}
+        status={normalized.status}
+        enabled={!(action?.enabled === false || (disabled && !busy && !progressState?.running))}
+        disabledReason={(action?.enabled === false || (disabled && !busy && !progressState?.running)) && !showProgress ? reason : ''}
+        progress={progressState}
+        result={tileResult}
+        receiptAvailable={receiptAvailable}
+      />
       <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewReceipt={onViewReceipt} receiptExpanded={receiptExpanded} />
       {!tileResult ? <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} expanded={receiptExpanded} /> : null}
     </div>

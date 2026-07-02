@@ -3383,10 +3383,10 @@ def test_lite_app_safety_repair_frontend_source_is_mobile_safe():
     mocks = Path("src/mocks/handlers.js").read_text()
     assert "Check PhotoPrism health, route, storage, and safety evidence." in ui
     assert "Fix PhotoPrism route, health, and storage connection safely." in ui
-    assert "Checking app…" in ui
-    assert "Repairing app…" in ui
-    assert "lite-catalog-app-operation-steps" in ui
-    assert "liteCatalogSafetySweep" in css
+    assert "Checking safely" in ui
+    assert "Checking repair" in ui
+    assert "LiteActionProgress" in ui
+    assert "lite-action-progress" in css
     assert "prefers-reduced-motion" in css
     assert "check_app" in mocks
     assert "repair_app" in mocks
@@ -3474,8 +3474,7 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "AppActionResultCard",
         "AppActionReceiptButton",
         "AppActionDisabledReason",
-        "AppActionTimeline",
-        "AppActionFlowAnimation",
+        "LiteActionProgress",
         "lite-catalog-action-groups",
         "View receipt",
         "No update was applied",
@@ -3485,17 +3484,59 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "lite-app-action-group",
         "lite-app-action-result-card",
         "lite-app-action-receipt-button",
-        "liteAppActionCommandDispatch",
-        "liteAppActionWorkerClaim",
-        "liteAppActionReceiptStamp",
+        "lite-action-progress",
+        "lite-action-progress__track",
+        "lite-action-progress__fill",
+        "lite-action-progress__nodes",
+        "liteActionProgressCalmFill",
         "prefers-reduced-motion",
     ):
         assert marker in css
+    for removed_marker in (
+        "AppActionFlowAnimation",
+        "lite-app-action-flow",
+        "liteAppActionCommandDispatch",
+        "liteAppActionWorkerClaim",
+        "liteAppActionReceiptStamp",
+    ):
+        assert removed_marker not in ui
+        assert removed_marker not in css
     assert "Index photos" not in ui
     assert "Refresh library" not in ui
     assert "Stop photo" not in ui
     assert "nats.connect" not in ui
     assert "exec(" not in ui
+
+
+def test_lite_app_catalog_reusable_action_progress_source():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    progress = Path("src/lite/LiteActionProgress.jsx").read_text()
+    for marker in (
+        "Getting ready",
+        "Working",
+        "Evidence saved",
+        "Paused for safety",
+        "Needs review",
+        "Checking safely",
+        "Saving app settings",
+        "Preparing restore preview",
+        "Checking update readiness",
+        "No changes made",
+        "No update was applied",
+    ):
+        assert marker in progress
+    assert "<LiteActionProgress" in ui
+    assert "lite-catalog-media-flow" in ui
+    assert "lite-catalog-media-flow" in css
+    assert "prefers-reduced-motion" in css
+    forbidden = "\n".join([ui, progress]).lower()
+    assert "index photos" not in forbidden
+    assert "refresh library" not in forbidden
+    assert "stop photo" not in forbidden
+    assert "nats.connect" not in forbidden
+    assert "child_process" not in forbidden
+    assert "exec(" not in forbidden
 
 
 def test_lite_app_evidence_exposes_latest_receipt_and_by_action(monkeypatch):
