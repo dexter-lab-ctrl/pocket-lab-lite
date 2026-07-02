@@ -651,13 +651,41 @@ def _storage_audit_events() -> list[dict[str, Any]]:
 
 
 def _media_events() -> list[dict[str, Any]]:
+    # Prefer the compact current media operation state. The historical media
+    # evidence file can grow large on Android/Termux devices and should not be
+    # fully expanded inside the main /evidence response.
+    try:
+        state = deps.core.read_json_file(lite_photoprism_media._state_path(), {})
+        app_state = ((state.get("apps") or {}).get(PHOTOPRISM_APP_ID) or {}) if isinstance(state, dict) else {}
+        operations = app_state.get("operations") if isinstance(app_state, dict) else {}
+        if isinstance(operations, dict):
+            compact_events = [item for item in operations.values() if isinstance(item, dict)]
+            compact_events.sort(key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
+            if compact_events:
+                return compact_events[:4]
+    except Exception:
+        pass
+
+    # Fallback for older state: read a small latest-only, de-duplicated slice.
     try:
         payload = deps.core.read_json_file(lite_photoprism_media._evidence_path(), {})
     except Exception:
         return []
     if not isinstance(payload, dict):
         return []
-    return [item for item in payload.get("events") or [] if isinstance(item, dict)]
+    events = [item for item in payload.get("events") or [] if isinstance(item, dict)]
+    events.sort(key=lambda item: _time_key(item.get("completed_at") or item.get("updated_at") or item.get("started_at")), reverse=True)
+    deduped: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in events:
+        key = (str(item.get("operation") or item.get("action_id") or ""), str(item.get("event_id") or item.get("operation_id") or ""))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(item)
+        if len(deduped) >= 8:
+            break
+    return deduped
 
 
 def _security_receipt() -> dict[str, Any] | None:
