@@ -615,6 +615,65 @@ async def handle_lite_app_restore_preview(command: Dict[str, Any]) -> Dict[str, 
     return result
 
 
+async def handle_lite_app_update_check(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    app_id = str(command.get("app_id") or "photoprism")
+    await _publish(
+        "pocketlab.events.lite.app.update.check_started",
+        "lite.app.update.check_started",
+        {"command_id": command_id, "app_id": app_id, "readiness_only": True},
+        trace_id=command_id,
+    )
+    from . import lite_app_update
+
+    try:
+        result = await asyncio.to_thread(lite_app_update.create_update_readiness, command)
+    except Exception as exc:
+        await _publish(
+            "pocketlab.events.lite.app.update.check_failed",
+            "lite.app.update.check_failed",
+            {"command_id": command_id, "app_id": app_id, "status": "failed", "error": str(exc)},
+            trace_id=command_id,
+        )
+        await _publish(
+            "pocketlab.audit.lite.app.update.check_failed",
+            "lite.app.update.check_failed",
+            {"command_id": command_id, "app_id": app_id, "status": "failed"},
+            trace_id=command_id,
+        )
+        raise
+
+    await _publish(
+        "pocketlab.events.lite.app.update.check_completed",
+        "lite.app.update.check_completed",
+        {
+            "command_id": command_id,
+            "app_id": app_id,
+            "operation_id": result.get("operation_id"),
+            "status": result.get("status"),
+            "readiness": result.get("readiness"),
+            "update_available": result.get("update_available"),
+            "apply_supported": False,
+            "evidence_ref": result.get("evidence_ref"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.app.update.check_completed",
+        "lite.app.update.check_completed",
+        {
+            "command_id": command_id,
+            "app_id": app_id,
+            "operation_id": result.get("operation_id"),
+            "status": result.get("status"),
+            "readiness": result.get("readiness"),
+            "update_applied": False,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
 async def handle_lite_backup_create(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     await _publish(
@@ -1090,6 +1149,7 @@ HANDLERS = {
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
     "pocketlab.commands.lite.app.backup.create": handle_lite_app_backup_create,
     "pocketlab.commands.lite.app.restore.preview": handle_lite_app_restore_preview,
+    "pocketlab.commands.lite.app.update.check": handle_lite_app_update_check,
     "pocketlab.commands.lite.app.media": handle_lite_app_media,
     "pocketlab.commands.lite.app.safety": handle_lite_app_operation,
     "pocketlab.commands.lite.app.repair": handle_lite_app_operation,

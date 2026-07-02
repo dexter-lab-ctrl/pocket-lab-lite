@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 _SAFE_ROUTE = "/apps/photoprism/"
@@ -300,7 +300,7 @@ def _operation_action(action_id: str, installed: bool, operations: dict[str, Any
     }
 
 
-def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any], operations: dict[str, Any] | None = None) -> dict[str, Any]:
+def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any], operations: dict[str, Any] | None = None, update: dict[str, Any] | None = None) -> dict[str, Any]:
     access = app.get("access") if isinstance(app.get("access"), dict) else {}
     actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
     open_url = access.get("open_url") or (app.get("runtime") or {}).get("url")
@@ -325,6 +325,30 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         ),
     }
     action_payload.update(_photoprism_lifecycle_actions())
+    update = update or {}
+    update_actions = update.get("actions") if isinstance(update.get("actions"), dict) else {}
+    update_action = update_actions.get("update_app") if isinstance(update_actions.get("update_app"), dict) else {}
+    update_pending = update.get("pending_check") if isinstance(update.get("pending_check"), dict) else None
+    update_latest = update.get("latest_check") if isinstance(update.get("latest_check"), dict) else None
+    update_running = bool(update.get("operation_running"))
+    update_readiness = update.get("readiness") if isinstance(update.get("readiness"), dict) else {}
+    action_payload["update_app"] = _action(
+        installed and bool(update_action.get("enabled", True)),
+        "Update",
+        reason=None if installed and bool(update_action.get("enabled", True)) else (update_action.get("disabled_reason") or "Install PhotoPrism first."),
+        summary="Check whether this app is ready for a safe update.",
+        status="running" if update_running else (update_readiness.get("status") or "ready"),
+    ) | {
+        "category": "app_setup",
+        "readiness_only": True,
+        "apply_supported": False,
+        "apply_update_enabled": False,
+        "apply_disabled_reason": "Update apply is not enabled yet.",
+        "progress": (update_pending or {}).get("progress"),
+        "last_result": (update_latest or {}).get("summary"),
+        "latest_check": update_latest,
+        "evidence_ref": (update_latest or update_pending or {}).get("evidence_ref"),
+    }
     operations = operations or {}
     action_payload["check_app"] = _operation_action("check_app", installed, operations)
     action_payload["repair_app"] = _operation_action("repair_app", installed, operations)
@@ -436,6 +460,10 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
         operations = lite_app_operations.app_operation_status("photoprism")
     except Exception:
         operations = {"status": "unknown", "actions": {}}
+    try:
+        update = lite_app_update.update_status("photoprism")
+    except Exception:
+        update = {"status": "unknown", "actions": {"update_app": {"enabled": installed, "label": "Update"}}, "readiness": {"status": "unknown", "summary": "Update readiness is not available."}}
     attention = _attention(installed, storage, security, backup, recovery, media)
     current_action = operations.get("current_action") if isinstance(operations, dict) else None
     if isinstance(current_action, dict) and current_action.get("action_id") in {"check_app", "repair_app"}:
@@ -445,6 +473,15 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
             "severity": "info",
             "title": "Checking app" if current_action.get("action_id") == "check_app" else "Repairing app",
             "summary": _safe_text(current_action.get("summary"), "Pocket Lab is working on this app."),
+        })
+    update_pending = update.get("pending_check") if isinstance(update, dict) and isinstance(update.get("pending_check"), dict) else None
+    if update_pending:
+        attention.append({
+            "id": "update_check_running",
+            "area": "apps",
+            "severity": "info",
+            "title": "Checking update",
+            "summary": _safe_text(update_pending.get("summary"), "Pocket Lab is checking update readiness."),
         })
     status = _overall_status(installed, attention)
     summary = (
@@ -469,11 +506,12 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
         "recovery": recovery,
         "media": media,
         "operations": operations,
-        "current_action": operations.get("current_action") if isinstance(operations, dict) else None,
+        "update": update,
+        "current_action": update.get("pending_check") if isinstance(update.get("pending_check"), dict) else operations.get("current_action") if isinstance(operations, dict) else None,
         "last_safety_check": operations.get("last_safety_check") if isinstance(operations, dict) else None,
         "last_repair": operations.get("last_repair") if isinstance(operations, dict) else None,
         "attention": attention,
-        "actions": _actions(app, installed, backup, recovery, media, operations),
+        "actions": _actions(app, installed, backup, recovery, media, operations, update),
         "evidence": _evidence(security_raw, backup_raw, media),
         "updated_at": _now(),
     }
@@ -519,6 +557,7 @@ def hydrate_catalog_lifecycle(payload: dict[str, Any]) -> dict[str, Any]:
                     "security": profile["security"].get("summary"),
                     "backup": profile["backup"].get("summary"),
                     "media": profile.get("media", {}).get("summary"),
+                    "update": (profile.get("update") or {}).get("readiness", {}).get("summary") if isinstance((profile.get("update") or {}).get("readiness"), dict) else None,
                     "last_indexed_at": profile.get("media", {}).get("last_indexed_at"),
                     "attention_count": len(profile.get("attention") or []),
                 }

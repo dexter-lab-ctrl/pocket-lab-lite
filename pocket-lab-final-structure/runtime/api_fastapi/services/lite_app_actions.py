@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 SUPPORTED_ACTIONS = {
@@ -161,8 +161,8 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         return {"kind": "install_app", "command": command, "summary": "PhotoPrism install started."}
 
     if action == "update_app":
-        response = lite_photoprism_lifecycle.update_not_implemented(reason=reason)
-        return {"kind": "update_not_implemented", "response": response, "summary": response.get("summary")}
+        command = lite_app_update.update_command("photoprism", reason=reason)
+        return {"kind": "update_check", "command": command, "subject": lite_app_update.APP_UPDATE_CHECK_SUBJECT, "summary": "Checking PhotoPrism update readiness."}
 
     raise HTTPException(
         status_code=501,

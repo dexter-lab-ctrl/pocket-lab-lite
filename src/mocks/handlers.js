@@ -19,12 +19,13 @@ const mockAppLifecycleProfiles = () => [{
   status: scenario() === 'lifecycle-attention' ? 'review' : 'ready',
   summary: scenario() === 'lifecycle-attention' ? 'PhotoPrism needs attention.' : 'PhotoPrism is ready, protected, and recoverable.',
   host_device: { id: 'pocket-lab-lite-server', name: 'Pocket Lab Lite Server', label: 'Runs on Server Phone', status: 'online' },
-  storage: { status: 'connected', summary: 'Media connected', mapping_count: 1, labels: ['Phone photos'] },
+  storage: { status: 'connected', summary: 'Media connected', mapping_count: 2, labels: ['Phone photos'] },
   security: { status: 'protected', summary: 'Protected app', evidence_status: 'saved', last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
   backup: { status: 'ready', summary: 'Backup ready', default_mode: 'config_only', media: 'excluded', target_available: true, target_ready: true, target_label: 'Storage Phone' },
   backup_targets: { status: 'healthy', app_id: 'photoprism', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 },
   app_lifecycle: { status: 'ready', preservation: { media_preserved_by_default: true, backups_preserved_by_default: true, evidence_preserved_by_default: true } },
   recovery: { status: 'review', summary: 'Restore preview not ready', preview_available: false, restore_available: false },
+  update: mockAppUpdateState(),
   media: { status: 'ready', summary: 'Import ready', mapping_count: 1, labels: ['Phone photos'], last_imported_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), evidence: { status: 'saved', count: 1, summary: '1 media record' } },
   attention: scenario() === 'lifecycle-attention' ? [{ id: 'backup_target_missing', area: 'backup', severity: 'review', title: 'Backup target not ready', summary: 'Join a storage device to save app backups elsewhere.' }] : [],
   actions: {
@@ -38,7 +39,7 @@ const mockAppLifecycleProfiles = () => [{
     import_photos: { enabled: true, label: 'Import photos', summary: 'Import connected photos into PhotoPrism.', status: 'ready' },
     backup_to_storage: { enabled: true, label: 'Back up to storage device', summary: 'Save PhotoPrism backup to Storage Phone.', status: 'ready', target_label: 'Storage Phone', requires_target: true },
     install_app: { enabled: false, label: 'Install', reason: 'PhotoPrism is already installed.' },
-    update_app: { enabled: false, label: 'Update', reason: 'Update check not ready yet.' },
+    update_app: { enabled: true, label: 'Update', category: 'app_setup', summary: 'Check whether this app is ready for a safe update.', status: 'review', readiness_only: true, apply_supported: false, progress: mockAppUpdateState().pending_check?.progress || null, latest_check: mockAppUpdateState().latest_check, evidence_ref: mockAppUpdateState().latest_check?.evidence_ref },
     repair_app: { enabled: true, label: 'Repair', category: 'recovery', summary: 'Fix route, health, and storage setup safely.', status: 'ready' },
     remove_app: { enabled: true, label: 'Remove app', risk: 'destructive', requires_confirmation: true, summary: 'Your photo files and backups will not be deleted by default.' },
   },
@@ -46,6 +47,111 @@ const mockAppLifecycleProfiles = () => [{
   updated_at: new Date().toISOString(),
 }];
 
+
+
+function mockAppUpdateState() {
+  const running = scenario() === 'app-update-running';
+  const noCheck = scenario() === 'app-update-empty';
+  const now = new Date().toISOString();
+  const latest = noCheck ? null : {
+    app_id: 'photoprism',
+    app_label: 'PhotoPrism',
+    action_id: 'update_app',
+    action_label: 'Update',
+    operation_id: 'app-update-check-photoprism-mock001',
+    status: 'succeeded',
+    readiness: scenario() === 'app-update-current' ? 'ready' : 'review',
+    summary: scenario() === 'app-update-current' ? 'Already current. No update was applied.' : 'Update source not ready. No update was applied.',
+    current_version: { status: 'unknown', summary: 'Current version could not be safely verified.', raw_value_hidden: true },
+    latest_version: { status: 'unknown', summary: 'Update source not configured yet.' },
+    update_available: 'unknown',
+    apply_supported: false,
+    rollback_ready: false,
+    backup_fresh: true,
+    restore_preview_ready: false,
+    route_healthy: true,
+    safety_recent: true,
+    evidence_ref: 'apps/photoprism/update/app-update-check-photoprism-mock001.json',
+    proof_counts: { passed: 7, review: 4, failed: 0, not_checked: 0, not_applicable: 0 },
+    progress: { phase: 'completed', step: 'Update readiness checked. No update was applied.', percent: 100, bounded: true, steps: [
+      { id: 'version', label: 'Version', status: 'review' },
+      { id: 'backup', label: 'Backup', status: 'completed' },
+      { id: 'restore_preview', label: 'Restore Preview', status: 'review' },
+      { id: 'route', label: 'Route', status: 'completed' },
+      { id: 'rollback', label: 'Rollback', status: 'review' },
+      { id: 'evidence', label: 'Evidence', status: 'completed' },
+    ] },
+    updated_at: now,
+    completed_at: now,
+  };
+  const pending = running ? {
+    app_id: 'photoprism',
+    app_label: 'PhotoPrism',
+    action_id: 'update_app',
+    operation_id: 'app-update-check-photoprism-running',
+    status: 'running',
+    summary: 'Checking PhotoPrism update readiness.',
+    progress: { phase: 'running', step: 'Checking version, backup, route, rollback, and safety proof.', percent: 44, indeterminate: true, bounded: true, steps: [
+      { id: 'version', label: 'Version', status: 'active' },
+      { id: 'backup', label: 'Backup', status: 'waiting' },
+      { id: 'restore_preview', label: 'Restore Preview', status: 'waiting' },
+      { id: 'route', label: 'Route', status: 'waiting' },
+      { id: 'rollback', label: 'Rollback', status: 'waiting' },
+      { id: 'evidence', label: 'Evidence', status: 'waiting' },
+    ] },
+    evidence_ref: 'apps/photoprism/update/app-update-check-photoprism-running.json',
+    updated_at: now,
+  } : null;
+  return {
+    status: 'healthy',
+    app_id: 'photoprism',
+    app_label: 'PhotoPrism',
+    summary: 'Update readiness can be checked.',
+    update_check_supported: true,
+    update_apply_supported: false,
+    apply_supported: false,
+    latest_check: latest,
+    pending_check: pending,
+    operation_running: running,
+    readiness: { status: latest?.readiness || 'unknown', summary: latest?.summary || 'No update check has run yet.' },
+    actions: {
+      update_app: { enabled: !running, label: 'Update', summary: 'Check whether this app is ready for a safe update.', disabled_reason: running ? 'Update readiness check is already running.' : null },
+      apply_update: { enabled: false, label: 'Apply update', disabled_reason: 'Update apply is not enabled yet.' },
+    },
+    updated_at: now,
+  };
+}
+
+function mockAppUpdateReceipt() {
+  return ({
+  receipt_version: 1,
+  receipt_id: 'app-update-check-photoprism-mock001',
+  app_id: 'photoprism',
+  app_label: 'PhotoPrism',
+  action_id: 'update_app',
+  action_label: 'Update',
+  status: 'succeeded',
+  readiness: 'review',
+  summary: 'Update source not ready. No update was applied.',
+  completed_at: new Date().toISOString(),
+  proofs: [
+    { id: 'backend_worker_executed', label: 'Backend worker executed', status: 'passed', plain_language: 'The update readiness check ran through the backend worker.' },
+    { id: 'frontend_no_shell', label: 'Browser did not run commands', status: 'passed', plain_language: 'The browser only requested Update through FastAPI.' },
+    { id: 'no_update_applied', label: 'No update was applied', status: 'passed', plain_language: 'No files were replaced and no services were restarted.' },
+    { id: 'backup_freshness_checked', label: 'Backup freshness checked', status: 'passed', plain_language: 'A verified app backup is available.' },
+    { id: 'restore_preview_checked', label: 'Restore preview checked', status: 'review', plain_language: 'Prepare a restore preview before updating.' },
+    { id: 'rollback_readiness_checked', label: 'Rollback readiness checked', status: 'review', plain_language: 'Rollback is not enabled for app updates yet.' },
+    { id: 'secrets_hidden', label: 'Secrets hidden', status: 'passed', plain_language: 'Secret values are hidden.' },
+  ],
+  proof_counts: { passed: 5, review: 2, failed: 0, not_checked: 0, not_applicable: 0 },
+  what_changed: ['Pocket Lab Lite checked whether PhotoPrism is ready for a safe update.'],
+  what_did_not_happen: ['No update was installed.', 'No files were replaced.', 'No database was changed.', 'No photos were changed.', 'No services were restarted.', 'No secret values were exposed.'],
+  redaction: { status: 'passed', secrets_hidden: true, raw_logs_hidden: true, raw_paths_hidden: true },
+  technical_details: { action_id: 'update_app', execution_owner: 'backend worker', apply_supported: false, rollback_ready: false, raw_logs: 'hidden', raw_paths: 'hidden', secret_values: 'hidden' },
+  evidence_ref: 'apps/photoprism/update/app-update-check-photoprism-mock001.json',
+  updated_at: new Date().toISOString(),
+});
+}
 
 const mockAppEvidence = () => {
   const completedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
@@ -98,8 +204,8 @@ const mockAppEvidence = () => {
     summary: 'Import photos completed.',
     latest: receipt,
     proof_counts: receipt.proof_counts,
-    items: [receipt],
-    count: 1,
+    items: [mockAppUpdateReceipt(), receipt],
+    count: 2,
     fallback_receipt: null,
     updated_at: completedAt,
   };
@@ -415,6 +521,9 @@ export const handlers = [
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
   http.get('/api/lite/apps/photoprism/actions', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', name: 'PhotoPrism', summary: 'PhotoPrism Action Center is available.', actions: mockAppLifecycleProfiles()[0].actions, media: mockAppLifecycleProfiles()[0].media })),
   http.get('/api/lite/apps/photoprism/evidence', () => HttpResponse.json(mockAppEvidence())),
+  http.get('/api/lite/apps/photoprism/update', () => HttpResponse.json(mockAppUpdateState())),
+  http.get('/api/lite/apps/photoprism/update/receipts/:operationId', () => HttpResponse.json(mockAppUpdateReceipt())),
+  http.post('/api/lite/apps/photoprism/update/apply', () => HttpResponse.json({ status: 'disabled', accepted: false, app_id: 'photoprism', action_id: 'apply_update', summary: 'Update apply is not enabled yet. Run backup and review readiness first.' }, { status: 409 })),
   http.post('/api/lite/apps/photoprism/actions/:actionId', ({ params }) => {
     const actionId = String(params.actionId || '');
     if (actionId === 'import_photos') {
@@ -425,6 +534,9 @@ export const handlers = [
     }
     if (actionId === 'repair_app') {
       return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, command_id: 'app-photoprism-repair-mock001', summary: 'Repairing PhotoPrism safely.', progress: { phase: 'queued', step: 'Repair queued.', bounded: true, steps: [{ id: 'setup_checked', label: 'Checking setup', status: 'active' }] }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
+    }
+    if (actionId === 'update_app') {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, operation_id: 'app-update-check-photoprism-mock001', command_id: 'app-update-check-photoprism-mock001', summary: 'Checking PhotoPrism update readiness.', progress: { phase: 'queued', step: 'Update check queued.', bounded: true, steps: [{ id: 'version', label: 'Version', status: 'active' }, { id: 'backup', label: 'Backup', status: 'waiting' }, { id: 'restore_preview', label: 'Restore Preview', status: 'waiting' }, { id: 'route', label: 'Route', status: 'waiting' }, { id: 'rollback', label: 'Rollback', status: 'waiting' }, { id: 'evidence', label: 'Evidence', status: 'waiting' }] }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
     }
     if (actionId === 'backup_app') {
       return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'PhotoPrism app backup queued.' }, { status: 202 });
