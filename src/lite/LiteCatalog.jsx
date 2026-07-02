@@ -50,7 +50,7 @@ const PHOTO_PRISM_ACTION_COPY = {
   check_app: {
     eyebrow: 'Safety',
     label: 'Check app',
-    description: 'Check PhotoPrism safety and app protection.',
+    description: 'Check PhotoPrism health, route, storage, and safety evidence.',
   },
   preview_restore: {
     eyebrow: 'Recovery',
@@ -75,7 +75,7 @@ const PHOTO_PRISM_ACTION_COPY = {
   repair_app: {
     eyebrow: 'Recovery',
     label: 'Repair',
-    description: 'Fix PhotoPrism routing, health, or setup issues.',
+    description: 'Fix PhotoPrism route, health, and storage connection safely.',
   },
   remove_app: {
     eyebrow: 'Danger zone',
@@ -115,34 +115,55 @@ function busyActionLabel(actionId) {
   if (actionId === 'import_photos') return 'Importing...';
   if (actionId === 'backup_app') return 'Backing up...';
   if (actionId === 'backup_to_storage') return 'Backing up...';
-  if (actionId === 'check_app') return 'Checking...';
+  if (actionId === 'check_app') return 'Checking app…';
   if (actionId === 'preview_restore') return 'Preparing...';
   if (actionId === 'install_app') return 'Installing...';
   if (actionId === 'update_app') return 'Updating...';
-  if (actionId === 'repair_app') return 'Repairing...';
+  if (actionId === 'repair_app') return 'Repairing app…';
   return 'Working...';
 }
 
 
 function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
-  if (actionId !== 'import_photos') return null;
-  const media = lifecycle?.media || {};
-  const operation = media?.last_import || null;
-  const operationStatus = String(operation?.status || '').toLowerCase();
-  const isRunning = Boolean(busy || ['queued', 'running'].includes(operationStatus));
+  if (actionId === 'import_photos') {
+    const media = lifecycle?.media || {};
+    const operation = media?.last_import || null;
+    const operationStatus = String(operation?.status || '').toLowerCase();
+    const isRunning = Boolean(busy || ['queued', 'running'].includes(operationStatus));
+    if (!isRunning) return null;
+    const progress = operation?.progress || {};
+    const rawPercent = Number(progress?.percent);
+    let percent = Number.isFinite(rawPercent) ? rawPercent : 18;
+    if (percent < 10) percent = 10;
+    if (percent >= 100) percent = 88;
+    percent = Math.min(92, Math.max(10, percent));
+    return {
+      running: isRunning,
+      percent,
+      indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing' || operationStatus === 'running'),
+      phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
+      step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : 'Importing photos...'),
+      steps: progress?.steps || [],
+    };
+  }
+
+  if (!['check_app', 'repair_app'].includes(actionId)) return null;
+  const operationAction = lifecycle?.operations?.actions?.[actionId] || lifecycle?.actions?.[actionId] || {};
+  const currentAction = lifecycle?.current_action || lifecycle?.operations?.current_action || null;
+  const currentMatches = currentAction?.action_id === actionId;
+  const rawStatus = String((currentMatches ? currentAction?.status : operationAction?.status) || '').toLowerCase();
+  const isRunning = Boolean(busy || ['queued', 'running'].includes(rawStatus));
   if (!isRunning) return null;
-  const progress = operation?.progress || {};
+  const progress = (currentMatches ? currentAction?.progress : operationAction?.progress) || {};
   const rawPercent = Number(progress?.percent);
-  let percent = Number.isFinite(rawPercent) ? rawPercent : 18;
-  if (percent < 10) percent = 10;
-  if (percent >= 100) percent = 88;
-  percent = Math.min(92, Math.max(10, percent));
+  const percent = Number.isFinite(rawPercent) ? Math.min(92, Math.max(10, rawPercent)) : 22;
   return {
-    running: isRunning,
+    running: true,
     percent,
-    indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing' || operationStatus === 'running'),
-    phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
-    step: progress?.step || operation?.summary || (busy ? busyActionLabel(actionId) : 'Importing photos...'),
+    indeterminate: progress?.indeterminate !== false,
+    phase: progress?.phase || rawStatus || 'queued',
+    step: progress?.step || (actionId === 'check_app' ? 'Pocket Lab is checking PhotoPrism through the backend worker.' : 'Pocket Lab is checking route, health, and storage setup.'),
+    steps: Array.isArray(progress?.steps) ? progress.steps : [],
   };
 }
 
@@ -215,6 +236,26 @@ function catalogActionNotice(result, error) {
       ...base,
       title: 'Import started',
       message: 'Pocket Lab is bringing connected photos into PhotoPrism.',
+    };
+  }
+
+  if (actionId === 'check_app') {
+    return {
+      ...base,
+      tone: 'review',
+      title: 'Checking app…',
+      message: 'Pocket Lab is checking PhotoPrism through the backend worker.',
+      persistent: true,
+    };
+  }
+
+  if (actionId === 'repair_app') {
+    return {
+      ...base,
+      tone: 'review',
+      title: 'Repairing app…',
+      message: 'Pocket Lab is checking route, health, and storage setup.',
+      persistent: true,
     };
   }
 
@@ -302,8 +343,9 @@ function PhotoPrismActionTile({
   const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
   const progressDisablesAction = progressState?.running;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
-  const showProgress = Boolean(progressState?.running && actionId === 'import_photos');
+  const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app'].includes(actionId));
   const isImportRunning = Boolean(showProgress && actionId === 'import_photos');
+  const isSafetyRepairRunning = Boolean(showProgress && ['check_app', 'repair_app'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const runningButtonLabel = isImportRunning ? (
     <span className="lite-catalog-import-flow-button">
@@ -316,7 +358,7 @@ function PhotoPrismActionTile({
     </span>
   ) : busyActionLabel(actionId);
   return (
-    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
+    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${isSafetyRepairRunning ? 'is-safety-repair-running' : ''} ${actionId === 'check_app' ? 'is-check-app' : ''} ${actionId === 'repair_app' ? 'is-repair-app' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
@@ -353,7 +395,20 @@ function PhotoPrismActionTile({
             <span className="lite-catalog-import-flow-rail-node is-prism"><i /></span>
           </span>
           <b className="lite-catalog-action-progress-comet" aria-hidden="true" />
-          <span className="lite-catalog-action-progress-status">{progressLabel || 'PhotoPrism is importing photos.'}</span>
+          <span className="lite-catalog-action-progress-status">{progressLabel || (actionId === 'check_app' ? 'Checking app…' : actionId === 'repair_app' ? 'Repairing app…' : 'PhotoPrism is importing photos.')}</span>
+          {isSafetyRepairRunning ? (
+            <span className="lite-catalog-app-operation-steps" aria-label={`${copy.label} progress steps`}>
+              {(progressState?.steps?.length ? progressState.steps : [
+                { id: 'request_accepted', label: 'Request accepted', status: 'completed' },
+                { id: 'worker_picked_up', label: 'Worker picked it up', status: 'active' },
+                { id: 'route_checked', label: 'Route checked', status: 'waiting' },
+                { id: 'health_checked', label: 'Health checked', status: 'waiting' },
+                { id: 'evidence_saved', label: 'Evidence saved', status: 'waiting' },
+              ]).slice(0, 5).map((step) => (
+                <i key={step.id || step.label} className={`is-${step.status || 'waiting'}`}>{step.label}</i>
+              ))}
+            </span>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -1054,8 +1109,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [storagePreviewNotice]);
 
   useEffect(() => {
-    const busyMediaAction = /:import_photos$/.test(actionBusyKey || '');
-    if (!busyMediaAction && !hasRunningPhotoPrismMedia(apps)) return undefined;
+    const busyAppAction = /:(import_photos|check_app|repair_app)$/.test(actionBusyKey || '');
+    const runningCatalogAction = apps.some((app) => {
+      const current = lifecycleProfile(app)?.current_action || lifecycleProfile(app)?.operations?.current_action;
+      return ['check_app', 'repair_app'].includes(String(current?.action_id || '')) && ['queued', 'running'].includes(String(current?.status || '').toLowerCase());
+    });
+    if (!busyAppAction && !runningCatalogAction && !hasRunningPhotoPrismMedia(apps)) return undefined;
     const timer = window.setInterval(() => {
       refresh();
     }, 4000);
@@ -1319,6 +1378,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
     const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
     const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
+    const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
+    const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
     const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
     const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
     const installAppAction = lifecycleAction(lifecycle, 'install_app');
@@ -1439,6 +1500,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="check_app"
                   action={checkAppAction}
                   busyKey={actionBusyKey}
+                  progress={checkAppProgress}
                   tone="ghost"
                   onClick={(event) => runLifecycleAction(app, 'check_app', event)}
                   disabled={checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`}
@@ -1489,6 +1551,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   actionId="repair_app"
                   action={repairAppAction}
                   busyKey={actionBusyKey}
+                  progress={repairAppProgress}
                   tone="ghost"
                   onClick={(event) => runLifecycleAction(app, 'repair_app', event)}
                   disabled={repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`}

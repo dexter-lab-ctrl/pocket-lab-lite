@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
 
 SUPPORTED_APP_IDS = {"photoprism"}
 _SAFE_ROUTE = "/apps/photoprism/"
@@ -263,7 +263,37 @@ def _photoprism_lifecycle_actions() -> dict[str, Any]:
         }
 
 
-def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any]) -> dict[str, Any]:
+def _operation_action(action_id: str, installed: bool, operations: dict[str, Any]) -> dict[str, Any]:
+    op = (operations.get("actions") or {}).get(action_id) if isinstance(operations, dict) else {}
+    running = str(op.get("status") or "").lower() in {"queued", "running"}
+    if action_id == "check_app":
+        return _action(
+            installed and not running,
+            "Check app",
+            reason=None if installed else "Install PhotoPrism first.",
+            summary="Check route, health, storage, and safety proof.",
+            status="running" if running else "ready",
+        ) | {
+            "category": "safety",
+            "progress": op.get("progress"),
+            "last_result": op.get("summary"),
+            "evidence_ref": op.get("evidence_ref"),
+        }
+    return _action(
+        installed and not running,
+        "Repair",
+        reason=None if installed else "Install PhotoPrism first.",
+        summary="Fix route, health, and storage setup safely.",
+        status="running" if running else "ready",
+    ) | {
+        "category": "recovery",
+        "progress": op.get("progress"),
+        "last_result": op.get("summary"),
+        "evidence_ref": op.get("evidence_ref"),
+    }
+
+
+def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recovery: dict[str, Any], media: dict[str, Any], operations: dict[str, Any] | None = None) -> dict[str, Any]:
     access = app.get("access") if isinstance(app.get("access"), dict) else {}
     actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
     open_url = access.get("open_url") or (app.get("runtime") or {}).get("url")
@@ -288,6 +318,9 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         ),
     }
     action_payload.update(_photoprism_lifecycle_actions())
+    operations = operations or {}
+    action_payload["check_app"] = _operation_action("check_app", installed, operations)
+    action_payload["repair_app"] = _operation_action("repair_app", installed, operations)
     return action_payload
 
 
@@ -392,7 +425,20 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
     security = _security_profile(security_raw)
     backup = _backup_profile(backup_raw)
     recovery = _recovery_profile(backup_raw)
+    try:
+        operations = lite_app_operations.app_operation_status("photoprism")
+    except Exception:
+        operations = {"status": "unknown", "actions": {}}
     attention = _attention(installed, storage, security, backup, recovery, media)
+    current_action = operations.get("current_action") if isinstance(operations, dict) else None
+    if isinstance(current_action, dict) and current_action.get("action_id") in {"check_app", "repair_app"}:
+        attention.append({
+            "id": f"{current_action.get('action_id')}_running",
+            "area": "apps",
+            "severity": "info",
+            "title": "Checking app" if current_action.get("action_id") == "check_app" else "Repairing app",
+            "summary": _safe_text(current_action.get("summary"), "Pocket Lab is working on this app."),
+        })
     status = _overall_status(installed, attention)
     summary = (
         "PhotoPrism is ready, protected, and recoverable."
@@ -415,8 +461,12 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
         "app_lifecycle": lite_photoprism_lifecycle.lifecycle_state(),
         "recovery": recovery,
         "media": media,
+        "operations": operations,
+        "current_action": operations.get("current_action") if isinstance(operations, dict) else None,
+        "last_safety_check": operations.get("last_safety_check") if isinstance(operations, dict) else None,
+        "last_repair": operations.get("last_repair") if isinstance(operations, dict) else None,
         "attention": attention,
-        "actions": _actions(app, installed, backup, recovery, media),
+        "actions": _actions(app, installed, backup, recovery, media, operations),
         "evidence": _evidence(security_raw, backup_raw, media),
         "updated_at": _now(),
     }

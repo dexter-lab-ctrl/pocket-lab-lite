@@ -847,6 +847,60 @@ async def handle_lite_security_scan(command: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+async def handle_lite_app_operation(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    app_id = str(command.get("app_id") or "photoprism")
+    action_id = str(command.get("action_id") or command.get("operation") or "check_app")
+    event_prefix = "safety" if action_id == "check_app" else "repair"
+    await _publish(
+        f"pocketlab.events.lite.app.{event_prefix}.started",
+        f"lite.app.{event_prefix}.started",
+        {"command_id": command_id, "app_id": app_id, "action_id": action_id},
+        trace_id=command_id,
+    )
+    from . import lite_app_operations
+
+    try:
+        result = await asyncio.to_thread(lite_app_operations.execute_app_operation, command)
+    except Exception as exc:
+        operation = lite_app_operations.record_operation_failure(command, exc)
+        await _publish(
+            f"pocketlab.events.lite.app.{event_prefix}.failed",
+            f"lite.app.{event_prefix}.failed",
+            {
+                "command_id": command_id,
+                "app_id": app_id,
+                "action_id": action_id,
+                "status": "failed",
+                "summary": operation.get("summary") or "App action failed safely.",
+            },
+            trace_id=command_id,
+        )
+        await _publish(
+            f"pocketlab.audit.lite.app.{event_prefix}.failed",
+            f"lite.app.{event_prefix}.failed",
+            {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": "failed", "evidence_ref": operation.get("evidence_ref")},
+            trace_id=command_id,
+        )
+        return {"status": "failed", "app_id": app_id, "action_id": action_id, "operation": operation}
+
+    status = str(result.get("status") or "unknown")
+    completed_subject = f"pocketlab.events.lite.app.{event_prefix}.completed" if status in {"succeeded", "review"} else f"pocketlab.events.lite.app.{event_prefix}.updated"
+    await _publish(
+        completed_subject,
+        f"lite.app.{event_prefix}.updated",
+        {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": status, "evidence_ref": result.get("evidence_ref")},
+        trace_id=command_id,
+    )
+    await _publish(
+        f"pocketlab.audit.lite.app.{event_prefix}.updated",
+        f"lite.app.{event_prefix}.updated",
+        {"command_id": command_id, "app_id": app_id, "action_id": action_id, "status": status, "evidence_ref": result.get("evidence_ref")},
+        trace_id=command_id,
+    )
+    return result
+
+
 async def handle_lite_app_media(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = _command_id(command)
     app_id = str(command.get("app_id") or "photoprism")
@@ -933,6 +987,8 @@ HANDLERS = {
     "pocketlab.commands.vault.dynamic_secret": handle_vault_dynamic_secret,
     "pocketlab.commands.lite.backup.create": handle_lite_backup_create,
     "pocketlab.commands.lite.app.media": handle_lite_app_media,
+    "pocketlab.commands.lite.app.safety": handle_lite_app_operation,
+    "pocketlab.commands.lite.app.repair": handle_lite_app_operation,
     "pocketlab.commands.lite.backup.verify": handle_lite_backup_verify,
     "pocketlab.commands.lite.restore.preview": handle_lite_restore_preview,
     "pocketlab.commands.lite.restore.apply": handle_lite_restore_apply,

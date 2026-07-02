@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup_targets, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup_targets, lite_app_operations, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -303,6 +303,33 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "media_operation": operation,
             "summary": action.get("summary") or operation.get("summary") or "PhotoPrism media action queued.",
             "evidence": {"status": "pending", "summary": "Media evidence pending"},
+        })
+        return submitted
+
+    if kind == "app_operation":
+        command = action["command"]
+        subject = action.get("subject") or lite_app_operations.subject_for_action(command.get("action_id"))
+        await ensure_worker_execution_ready()
+        operation = lite_app_operations.record_queued_operation(command)
+        try:
+            submitted = await submit_domain_command(
+                subject,
+                "lite.app.operation.queued",
+                command,
+                trace_id=command.get("command_id"),
+            )
+        except Exception as exc:
+            lite_app_operations.mark_operation_failed(command, "App action could not be queued safely.")
+            raise
+        submitted.update({
+            "accepted": True,
+            "status": submitted.get("status") or "queued",
+            "app_id": "photoprism",
+            "action_id": command["action_id"],
+            "operation": operation,
+            "summary": action.get("summary") or operation.get("summary") or "App action queued.",
+            "progress": operation.get("progress") or {"phase": "queued", "step": "Request queued.", "bounded": True},
+            "evidence": {"status": "pending", "summary": "Evidence pending."},
         })
         return submitted
 

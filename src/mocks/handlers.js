@@ -25,22 +25,21 @@ const mockAppLifecycleProfiles = () => [{
   backup_targets: { status: 'healthy', app_id: 'photoprism', targets: [{ device_id: 'storage-phone', name: 'Storage Phone', status: 'ready', ready: true, available: true, label: 'Storage device', summary: 'Storage Phone can save app backups.' }], count: 1, ready_count: 1 },
   app_lifecycle: { status: 'ready', preservation: { media_preserved_by_default: true, backups_preserved_by_default: true, evidence_preserved_by_default: true } },
   recovery: { status: 'review', summary: 'Restore preview not ready', preview_available: false, restore_available: false },
-  media: { status: 'ready', summary: 'Import ready', mapping_count: 1, labels: ['Phone photos'], last_indexed_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), evidence: { status: 'saved', count: 1, summary: '1 media record' } },
+  media: { status: 'ready', summary: 'Import ready', mapping_count: 1, labels: ['Phone photos'], last_imported_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), evidence: { status: 'saved', count: 1, summary: '1 media record' } },
   attention: scenario() === 'lifecycle-attention' ? [{ id: 'backup_target_missing', area: 'backup', severity: 'review', title: 'Backup target not ready', summary: 'Join a storage device to save app backups elsewhere.' }] : [],
   actions: {
     open: { enabled: true, label: 'Open', url: '/apps/photoprism/' },
     open_full_screen: { enabled: true, label: 'Open full screen', url: '/apps/photoprism/' },
     install_to_phone: { enabled: true, label: 'Install to phone', url: '/apps/photoprism/' },
     connect_photos: { enabled: true, label: 'Connect photos' },
-    check_app: { enabled: false, label: 'Check app', reason: 'Use Run Safety Check for the current device-wide scan.' },
+    check_app: { enabled: true, label: 'Check app', category: 'safety', summary: 'Check route, health, storage, and safety proof.', status: 'ready' },
     backup_app: { enabled: true, label: 'Back up app' },
     preview_restore: { enabled: false, label: 'Preview restore', reason: 'No verified app backup yet' },
     import_photos: { enabled: true, label: 'Import photos', summary: 'Import connected photos into PhotoPrism.', status: 'ready' },
-    index_photos: { enabled: true, label: 'Index photos', summary: 'Update PhotoPrism with connected media.', status: 'ready' },
     backup_to_storage: { enabled: true, label: 'Back up to storage device', summary: 'Save PhotoPrism backup to Storage Phone.', status: 'ready', target_label: 'Storage Phone', requires_target: true },
     install_app: { enabled: false, label: 'Install', reason: 'PhotoPrism is already installed.' },
     update_app: { enabled: false, label: 'Update', reason: 'Update check not ready yet.' },
-    repair_app: { enabled: false, label: 'Repair', reason: 'Repair app is prepared, but backend repair execution is not enabled yet.' },
+    repair_app: { enabled: true, label: 'Repair', category: 'recovery', summary: 'Fix route, health, and storage setup safely.', status: 'ready' },
     remove_app: { enabled: true, label: 'Remove app', risk: 'destructive', requires_confirmation: true, summary: 'Your photo files and backups will not be deleted by default.' },
   },
   evidence: { status: 'saved', summary: 'Safety, recovery, and media records saved', security_count: 1, backup_count: 1, media_count: 1 },
@@ -418,8 +417,14 @@ export const handlers = [
   http.get('/api/lite/apps/photoprism/evidence', () => HttpResponse.json(mockAppEvidence())),
   http.post('/api/lite/apps/photoprism/actions/:actionId', ({ params }) => {
     const actionId = String(params.actionId || '');
-    if (['import_photos', 'index_photos'].includes(actionId)) {
-      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: actionId === 'import_photos' ? 'Import photos queued.' : 'Index photos queued.', evidence: { status: 'pending', summary: 'Media evidence pending' } }, { status: 202 });
+    if (actionId === 'import_photos') {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'Import photos queued.', evidence: { status: 'pending', summary: 'Media evidence pending' } }, { status: 202 });
+    }
+    if (actionId === 'check_app') {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, command_id: 'app-photoprism-safety-mock001', summary: 'Checking PhotoPrism safety.', progress: { phase: 'queued', step: 'Check queued.', bounded: true, steps: [{ id: 'request_accepted', label: 'Request accepted', status: 'active' }] }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
+    }
+    if (actionId === 'repair_app') {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, command_id: 'app-photoprism-repair-mock001', summary: 'Repairing PhotoPrism safely.', progress: { phase: 'queued', step: 'Repair queued.', bounded: true, steps: [{ id: 'setup_checked', label: 'Checking setup', status: 'active' }] }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
     }
     if (actionId === 'backup_app') {
       return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'PhotoPrism app backup queued.' }, { status: 202 });
@@ -461,7 +466,7 @@ export const handlers = [
         pending_apply: true,
         requires_restart: true,
       },
-      summary: body.source_path === '~/storage' ? 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos or Index photos to update your library.' : 'Media folder connected. Pocket Lab will apply it safely through the app agent path.',
+      summary: body.source_path === '~/storage' ? 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos to update your library.' : 'Media folder connected. Pocket Lab will apply it safely through the app agent path.',
     }, { status: 201 });
   }),
   http.delete('/api/lite/apps/photoprism/storage-mappings/:mappingId', ({ params }) => HttpResponse.json({ status: 'deleted', accepted: true, app_id: 'photoprism', mapping_id: params.mappingId, summary: 'Media folder disconnected.' })),
