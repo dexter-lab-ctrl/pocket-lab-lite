@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup_targets, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup_targets, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 
@@ -226,6 +226,12 @@ def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> dict[str, A
 def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
     return lite_app_actions.app_actions(app_id)
+
+
+@router.get("/apps/{app_id}/evidence")
+def get_lite_app_evidence(app_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_evidence_receipts.app_evidence(app_id)
 
 
 @router.post("/apps/{app_id}/actions/{action_id}")

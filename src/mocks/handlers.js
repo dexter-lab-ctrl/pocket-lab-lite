@@ -47,6 +47,65 @@ const mockAppLifecycleProfiles = () => [{
   updated_at: new Date().toISOString(),
 }];
 
+
+const mockAppEvidence = () => {
+  const completedAt = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+  const receipt = {
+    receipt_version: 1,
+    receipt_id: 'photoprism-media-mock001',
+    app_id: 'photoprism',
+    app_label: 'PhotoPrism',
+    action_id: 'import_photos',
+    action_label: 'Import photos',
+    status: 'succeeded',
+    summary: 'Import photos completed.',
+    started_at: new Date(Date.now() - 9 * 60 * 1000).toISOString(),
+    completed_at: completedAt,
+    proof_counts: { passed: 8, review: 0, failed: 0, not_checked: 0, not_applicable: 1 },
+    proof_status: 'passed',
+    safety_badges: ['Backend worker executed', 'Storage read-only', 'Secrets hidden', 'Media preserved'],
+    proofs: [
+      { id: 'backend_worker_executed', label: 'Backend worker executed', status: 'passed', plain_language: 'The action was handled by Pocket Lab Lite backend, not the browser.' },
+      { id: 'frontend_no_shell', label: 'Browser did not run commands', status: 'passed', plain_language: 'The browser only requested Import photos through FastAPI.' },
+      { id: 'browser_no_file_access', label: 'Browser did not access files', status: 'passed', plain_language: 'The browser did not read files or PhotoPrism output.' },
+      { id: 'storage_read_only', label: 'Storage read-only', status: 'passed', plain_language: 'Connected source storage is read-only.' },
+      { id: 'raw_paths_hidden', label: 'Raw paths hidden', status: 'passed', plain_language: 'Raw media paths and device-private paths are hidden.' },
+      { id: 'secrets_hidden', label: 'Secrets hidden', status: 'passed', plain_language: 'Secret values and raw logs are hidden.' },
+      { id: 'media_preserved', label: 'Media preserved', status: 'passed', plain_language: 'The Lite import request does not delete source photos.' },
+      { id: 'media_details_owned_by_photoprism', label: 'PhotoPrism owns media details', status: 'passed', plain_language: 'Indexing, thumbnails, metadata, and warnings stay inside PhotoPrism.' },
+      { id: 'receipt_saved', label: 'Receipt saved', status: 'passed', plain_language: 'Pocket Lab saved a sanitized import evidence reference.' },
+    ],
+    what_changed: ['PhotoPrism import was requested using connected phone storage.', 'Pocket Lab saved sanitized import evidence.'],
+    what_did_not_happen: ['No source photos were deleted.', 'No secret values were exposed.', 'No frontend shell commands ran.', 'No PhotoPrism indexing was controlled by Pocket Lab Lite.'],
+    details_owner: { name: 'PhotoPrism', reason: 'PhotoPrism handles indexing, thumbnails, metadata, and media warnings.' },
+    redaction: { status: 'passed', secrets_hidden: true, raw_logs_hidden: true, raw_paths_hidden: true, media_file_names_hidden: true },
+    technical_details: {
+      action_id: 'import_photos',
+      short_command_id: 'photoprism…mock001',
+      evidence_ref: 'apps/photoprism/media/photoprism-media-mock001.json',
+      execution_owner: 'backend worker',
+      control_api: 'FastAPI',
+      proof_source: 'PhotoPrism media evidence',
+      redaction_status: 'passed',
+      storage_mode: 'read_only',
+      media_preserved: true,
+    },
+    evidence_ref: 'apps/photoprism/media/photoprism-media-mock001.json',
+    updated_at: completedAt,
+  };
+  return {
+    status: 'healthy',
+    app_id: 'photoprism',
+    summary: 'Import photos completed.',
+    latest: receipt,
+    proof_counts: receipt.proof_counts,
+    items: [receipt],
+    count: 1,
+    fallback_receipt: null,
+    updated_at: completedAt,
+  };
+};
+
 const mockProtectedApps = () => [{
   app_id: 'photoprism',
   name: 'PhotoPrism',
@@ -356,6 +415,7 @@ export const handlers = [
   http.get('/api/lite/apps/lifecycle', () => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
   http.get('/api/lite/apps/photoprism/actions', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', name: 'PhotoPrism', summary: 'PhotoPrism Action Center is available.', actions: mockAppLifecycleProfiles()[0].actions, media: mockAppLifecycleProfiles()[0].media })),
+  http.get('/api/lite/apps/photoprism/evidence', () => HttpResponse.json(mockAppEvidence())),
   http.post('/api/lite/apps/photoprism/actions/:actionId', ({ params }) => {
     const actionId = String(params.actionId || '');
     if (['import_photos', 'index_photos'].includes(actionId)) {

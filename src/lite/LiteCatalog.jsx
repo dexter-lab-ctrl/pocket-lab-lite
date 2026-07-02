@@ -621,6 +621,189 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
 }
 
 
+
+function evidenceReceiptFromPayload(evidence) {
+  return evidence?.latest || evidence?.fallback_receipt || null;
+}
+
+function evidenceStatusLabel(status) {
+  const value = String(status || '').toLowerCase();
+  if (value === 'succeeded') return 'Completed';
+  if (value === 'running') return 'Working';
+  if (value === 'failed') return 'Needs attention';
+  if (value === 'review') return 'Needs review';
+  return 'Not checked';
+}
+
+function proofStatusLabel(status) {
+  const value = String(status || '').toLowerCase();
+  if (value === 'passed') return 'Verified';
+  if (value === 'review') return 'Review';
+  if (value === 'failed') return 'Needs attention';
+  if (value === 'not_applicable') return 'Not needed';
+  return 'Not checked';
+}
+
+function proofStatusClass(status) {
+  const value = String(status || '').toLowerCase();
+  if (value === 'passed') return 'is-passed';
+  if (value === 'failed') return 'is-failed';
+  if (value === 'review') return 'is-review';
+  if (value === 'not_applicable') return 'is-muted';
+  return 'is-checking';
+}
+
+function evidenceTechnicalEntries(receipt) {
+  const details = receipt?.technical_details && typeof receipt.technical_details === 'object' ? receipt.technical_details : {};
+  return Object.entries(details)
+    .filter(([key, value]) => value !== null && value !== undefined && String(value).trim?.() !== '')
+    .slice(0, 12)
+    .map(([key, value]) => ({
+      key,
+      label: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+      value: typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value),
+    }));
+}
+
+function PhotoPrismEvidenceCard({ evidence, loading, error, onViewReceipt }) {
+  const receipt = evidenceReceiptFromPayload(evidence);
+  const proofs = Array.isArray(receipt?.proofs) ? receipt.proofs : [];
+  const passedCount = Number(receipt?.proof_counts?.passed || 0);
+  const reviewCount = Number(receipt?.proof_counts?.review || 0) + Number(receipt?.proof_counts?.failed || 0);
+  const badges = Array.isArray(receipt?.safety_badges) && receipt.safety_badges.length
+    ? receipt.safety_badges.slice(0, 4)
+    : proofs.filter((proof) => proof?.status === 'passed').slice(0, 4).map((proof) => proof.label);
+  const timestamp = receipt?.completed_at || receipt?.updated_at || receipt?.started_at;
+
+  return (
+    <section className={`lite-catalog-evidence-card ${loading ? 'is-loading' : ''}`} aria-label="PhotoPrism evidence">
+      <div className="lite-catalog-evidence-head">
+        <div>
+          <span>Evidence</span>
+          <strong>{receipt ? 'Latest proof' : 'No evidence receipt yet'}</strong>
+        </div>
+        <FileCheck className="h-5 w-5" />
+      </div>
+      {loading ? (
+        <div className="lite-catalog-evidence-loading" aria-live="polite">
+          <span />
+          <p>Loading receipt...</p>
+        </div>
+      ) : error ? (
+        <div className="lite-catalog-evidence-empty is-error" role="status">
+          <strong>Evidence needs a moment</strong>
+          <p>{error}</p>
+        </div>
+      ) : receipt ? (
+        <>
+          <div className="lite-catalog-evidence-latest">
+            <strong>{receipt.summary || 'Evidence receipt available.'}</strong>
+            <p>{receipt.action_label || 'PhotoPrism action'}{timestamp ? ` · ${formatLiteTime(timestamp)}` : ''}</p>
+          </div>
+          <div className="lite-catalog-evidence-counts" aria-label="Proof counts">
+            <span><CheckCircle2 className="h-4 w-4" />{passedCount} verified</span>
+            <span>{reviewCount ? `${reviewCount} to review` : 'No unsafe proof'}</span>
+            <span>{evidenceStatusLabel(receipt.status)}</span>
+          </div>
+          <div className="lite-catalog-evidence-badges" aria-label="Verified proofs">
+            {badges.length ? badges.map((badge) => <span key={badge}><CheckCircle2 className="h-3.5 w-3.5" />{badge}</span>) : <span>No proof details yet</span>}
+          </div>
+          <LiteButton tone="secondary" onClick={onViewReceipt}>View receipt</LiteButton>
+        </>
+      ) : (
+        <div className="lite-catalog-evidence-empty" role="status">
+          <strong>No evidence receipt yet.</strong>
+          <p>Connect photos, import photos, or back up the app to create a receipt.</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PhotoPrismEvidenceReceiptModal({ receipt, onClose }) {
+  if (!receipt) return null;
+  const proofs = Array.isArray(receipt.proofs) ? receipt.proofs : [];
+  const changed = Array.isArray(receipt.what_changed) ? receipt.what_changed : [];
+  const didNotHappen = Array.isArray(receipt.what_did_not_happen) ? receipt.what_did_not_happen : [];
+  const details = evidenceTechnicalEntries(receipt);
+
+  return (
+    <div className="lite-evidence-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="lite-evidence-modal" role="dialog" aria-modal="true" aria-labelledby="lite-evidence-modal-title">
+        <div className="lite-evidence-modal-rail" aria-hidden="true"><span /></div>
+        <div className="lite-evidence-modal-head">
+          <div>
+            <span>Evidence receipt</span>
+            <h2 id="lite-evidence-modal-title">{receipt.action_label || 'PhotoPrism'} receipt</h2>
+            <p>{receipt.summary || 'Proof details are available.'}</p>
+          </div>
+          <button type="button" className="lite-evidence-modal-close" onClick={onClose} aria-label="Close evidence receipt">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="lite-evidence-modal-status">
+          <span>Status</span>
+          <strong>{evidenceStatusLabel(receipt.status)}</strong>
+        </div>
+
+        <div className="lite-evidence-section">
+          <div className="lite-evidence-section-title"><span>Proofs</span><strong>{Number(receipt?.proof_counts?.passed || 0)} verified</strong></div>
+          <div className="lite-evidence-proof-list">
+            {proofs.length ? proofs.map((proof) => (
+              <article key={proof.id || proof.label} className={`lite-evidence-proof ${proofStatusClass(proof.status)}`}>
+                <span className="lite-evidence-proof-check" aria-hidden="true"><CheckCircle2 className="h-4 w-4" /></span>
+                <div>
+                  <strong>{proof.label}</strong>
+                  <p>{proof.plain_language}</p>
+                </div>
+                <em>{proofStatusLabel(proof.status)}</em>
+              </article>
+            )) : <p className="lite-evidence-muted">No proof details yet.</p>}
+          </div>
+        </div>
+
+        <div className="lite-evidence-two-col">
+          <div className="lite-evidence-section">
+            <div className="lite-evidence-section-title"><span>What changed</span></div>
+            {changed.length ? changed.map((item) => <p key={item} className="lite-evidence-line"><CheckCircle2 className="h-4 w-4" />{item}</p>) : <p className="lite-evidence-muted">No app change recorded yet.</p>}
+          </div>
+          <div className="lite-evidence-section">
+            <div className="lite-evidence-section-title"><span>What did not happen</span></div>
+            {didNotHappen.length ? didNotHappen.map((item) => <p key={item} className="lite-evidence-line"><ShieldCheck className="h-4 w-4" />{item}</p>) : <p className="lite-evidence-muted">No safety exclusions recorded yet.</p>}
+          </div>
+        </div>
+
+        <div className="lite-evidence-section lite-evidence-redaction">
+          <div className="lite-evidence-section-title"><span>Safety / redaction</span><strong>{receipt?.redaction?.status === 'passed' ? 'Passed' : 'Review'}</strong></div>
+          <div className="lite-evidence-redaction-grid">
+            <span>Secrets hidden</span>
+            <span>Raw logs hidden</span>
+            <span>Raw paths hidden</span>
+            <span>Media names hidden</span>
+          </div>
+        </div>
+
+        <div className="lite-evidence-section lite-evidence-owner">
+          <div className="lite-evidence-section-title"><span>details owner</span><strong>{receipt?.details_owner?.name || 'PhotoPrism'}</strong></div>
+          <p>{receipt?.details_owner?.reason || 'PhotoPrism handles indexing, thumbnails, metadata, and media warnings.'}</p>
+        </div>
+
+        <details className="lite-evidence-technical">
+          <summary>Technical details</summary>
+          <div className="lite-evidence-technical-grid">
+            {details.map((item) => (
+              <span key={item.key}><strong>{item.label}</strong>{item.value}</span>
+            ))}
+            <span><strong>Evidence ref</strong>{receipt.evidence_ref || 'Not available yet'}</span>
+          </div>
+        </details>
+      </section>
+    </div>
+  );
+}
+
+
 function isStandalonePwa() {
   try {
     return window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone === true;
@@ -831,6 +1014,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewLoading, setStoragePreviewLoading] = useState(false);
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
+  const [appEvidence, setAppEvidence] = useState(null);
+  const [appEvidenceLoading, setAppEvidenceLoading] = useState(false);
+  const [appEvidenceError, setAppEvidenceError] = useState(null);
+  const [evidenceReceiptOpen, setEvidenceReceiptOpen] = useState(false);
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -844,6 +1031,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       return matchesQuery && matchesFilter;
     });
   }, [apps, activeFilter, query]);
+
+
+  useEffect(() => {
+    loadPhotoPrismEvidence();
+  }, []);
 
   useEffect(() => {
     const notice = catalogActionNotice(result, actionError);
@@ -870,6 +1062,19 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     return () => window.clearInterval(timer);
   }, [actionBusyKey, apps, refresh]);
 
+
+  async function loadPhotoPrismEvidence() {
+    setAppEvidenceLoading(true);
+    setAppEvidenceError(null);
+    try {
+      setAppEvidence(await liteApi.appEvidence('photoprism'));
+    } catch (err) {
+      setAppEvidenceError(err.message || 'Pocket Lab could not load the latest receipt.');
+    } finally {
+      setAppEvidenceLoading(false);
+    }
+  }
+
   function dismissActionNotice() {
     setResult(null);
     setActionError(null);
@@ -888,6 +1093,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       refresh();
       window.setTimeout(refresh, 700);
       window.setTimeout(refresh, 1800);
+      window.setTimeout(loadPhotoPrismEvidence, 2200);
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -934,6 +1140,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       liteApi.photoprismStorageMappings(),
       liteApi.appLifecycleProfile('photoprism'),
       liteApi.appActions('photoprism'),
+      loadPhotoPrismEvidence(),
     ]);
     await refresh();
   }
@@ -1067,6 +1274,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       refresh();
       window.setTimeout(refresh, 700);
       window.setTimeout(refresh, 1800);
+      window.setTimeout(loadPhotoPrismEvidence, 2200);
     } catch (err) {
       const detail = err?.payload?.detail;
       setActionError(detail?.summary || err.message);
@@ -1297,6 +1505,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   title={lifecycleActionReason(removeAppAction)}
                 />
               </div>
+              <PhotoPrismEvidenceCard
+                evidence={appEvidence}
+                loading={appEvidenceLoading}
+                error={appEvidenceError}
+                onViewReceipt={() => setEvidenceReceiptOpen(true)}
+              />
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
                 {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
@@ -1476,6 +1690,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       ) : null}
 
       <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />
+
+      {evidenceReceiptOpen ? (
+        <PhotoPrismEvidenceReceiptModal
+          receipt={evidenceReceiptFromPayload(appEvidence)}
+          onClose={() => setEvidenceReceiptOpen(false)}
+        />
+      ) : null}
 
     </div>
   );

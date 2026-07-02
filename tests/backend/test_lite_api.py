@@ -2956,3 +2956,103 @@ def test_lite_photoprism_executing_progress_is_indeterminate():
     assert operation["summary"] == "Import photos is running."
     assert operation["progress"]["step"] == "Import photos is running."
     assert operation["progress"]["indeterminate"] is True
+
+
+def test_lite_app_evidence_endpoint_handles_missing_receipts_safely():
+    response = client().get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert payload["app_id"] == "photoprism"
+    assert payload["latest"] is None
+    assert payload["items"] == []
+    assert payload["fallback_receipt"]["summary"] == "No detailed receipt yet. Future actions will include proof details."
+    text = response.text.lower()
+    assert "/data/data" not in text
+    assert "nats://" not in text
+    assert "token=" not in text
+    assert "password=" not in text
+    assert "api_key" not in text
+
+
+def test_lite_app_evidence_import_receipt_has_safe_proofs():
+    ensure_runtime_path()
+    api = client()
+    created = api.post(
+        "/api/lite/apps/photoprism/storage-mappings",
+        json={
+            "source_type": "phone_media",
+            "label": "Phone storage",
+            "source_path": "~/storage",
+            "target": "import",
+            "mode": "read_only",
+        },
+    )
+    assert created.status_code == 201
+
+    from api_fastapi.services import lite_photoprism_media
+
+    command = {
+        "command_id": "photoprism-media-test-import-receipt",
+        "app_id": "photoprism",
+        "action_id": "import_photos",
+        "operation": "import_photos",
+        "mapping_count": 1,
+        "runtime_mappings_used": 1,
+        "progress": lite_photoprism_media._progress_payload("done", "Import photos completed.", 5),
+    }
+    lite_photoprism_media.record_operation(command, status="succeeded", summary="Import photos completed.")
+
+    response = api.get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    latest = payload["latest"]
+    assert latest["action_id"] == "import_photos"
+    assert latest["status"] == "succeeded"
+    proof_ids = {item["id"] for item in latest["proofs"]}
+    assert {
+        "backend_worker_executed",
+        "frontend_no_shell",
+        "browser_no_file_access",
+        "storage_read_only",
+        "secrets_hidden",
+        "media_preserved",
+        "media_details_owned_by_photoprism",
+    }.issubset(proof_ids)
+    assert latest["proof_counts"]["passed"] >= 7
+    assert latest["redaction"]["secrets_hidden"] is True
+    assert latest["redaction"]["raw_logs_hidden"] is True
+    assert latest["redaction"]["raw_paths_hidden"] is True
+    assert latest["technical_details"]["control_api"] == "FastAPI"
+    text = response.text.lower()
+    assert "/data/data" not in text
+    assert "nats://" not in text
+    assert "token=" not in text
+    assert "password=" not in text
+    assert "api_key" not in text
+    assert "photoprism admin" not in text
+
+
+def test_lite_app_evidence_unknown_app_returns_safe_404():
+    response = client().get("/api/lite/apps/gitea/evidence")
+    assert response.status_code == 404
+    text = response.text.lower()
+    assert "photoprism" in text
+    assert "token" not in text
+    assert "password" not in text
+
+
+def test_lite_app_catalog_ui_has_evidence_receipt_surface():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "PhotoPrismEvidenceCard" in ui
+    assert "PhotoPrismEvidenceReceiptModal" in ui
+    assert "View receipt" in ui
+    assert "What changed" in ui
+    assert "What did not happen" in ui
+    assert "Technical details" in ui
+    assert "No evidence receipt yet" in ui
+    assert "lite-catalog-evidence-card" in css
+    assert "lite-evidence-modal" in css
+    assert "liteEvidenceSheetIn" in css
+    assert "prefers-reduced-motion" in css
