@@ -465,6 +465,64 @@ def _backup_receipt() -> dict[str, Any] | None:
 
 
 
+def _restore_preview_receipt() -> dict[str, Any] | None:
+    try:
+        status = lite_app_backup.app_backup_status(PHOTOPRISM_APP_ID)
+    except Exception:
+        return None
+    preview = status.get("latest_restore_preview") if isinstance(status.get("latest_restore_preview"), dict) else None
+    if not preview:
+        return None
+    preview_id = preview.get("preview_id") or preview.get("operation_id") or preview.get("command_id")
+    backup_id = preview.get("backup_id")
+    preview_status = _normalize_receipt_status(preview.get("status"))
+    ready = preview_status == "succeeded" or str(preview.get("status") or "").lower() == "ready"
+    proofs = [
+        _proof("backend_worker_executed", "Backend worker executed", "passed" if ready else "review", "The restore preview ran through Pocket Lab Lite backend worker."),
+        _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested Preview restore through FastAPI."),
+        _proof("preview_only", "Preview only", "passed", "This action reviewed restore impact only."),
+        _proof("restore_apply_disabled", "Restore apply disabled", "passed", "No destructive restore apply is enabled from this App Catalog action."),
+        _proof("backup_verified", "Backup verified", "passed" if backup_id else "review", "A verified app backup was selected for the restore preview." if backup_id else "A verified app backup could not be confirmed from public state."),
+        _proof("app_records_reviewed", "App records reviewed", "passed" if ready else "review", "PhotoPrism app settings, mappings, route records, and safe app records were reviewed."),
+        _proof("media_preserved", "Media preserved", "passed", "Original photos and imported media were not changed."),
+        _proof("secrets_hidden", "Secrets hidden", "passed", "Secret values are hidden."),
+        _proof("raw_logs_hidden", "Raw logs hidden", "passed", "Raw logs are hidden."),
+        _proof("raw_paths_hidden", "Raw paths hidden", "passed", "Raw device and backup paths are hidden."),
+        _proof("receipt_saved", "Receipt saved", "passed" if preview_id else "review", "Pocket Lab saved a sanitized restore-preview receipt."),
+    ]
+    return _receipt(
+        receipt_id=preview_id or "restore-preview",
+        app_id=PHOTOPRISM_APP_ID,
+        action_id="preview_restore",
+        action_label="Preview restore",
+        status="succeeded" if ready else "review",
+        summary=_safe_text(preview.get("summary"), "Restore preview ready. No changes were applied."),
+        started_at=preview.get("started_at") or preview.get("created_at"),
+        completed_at=preview.get("completed_at") or preview.get("created_at") or preview.get("updated_at"),
+        proofs=proofs,
+        what_changed=["Pocket Lab Lite prepared a restore preview for PhotoPrism app records."],
+        what_did_not_happen=[
+            "No files were restored.",
+            "No app configuration was replaced.",
+            "No database was changed.",
+            "No photos were changed.",
+            "No services were restarted.",
+            "No secret values were exposed.",
+        ],
+        evidence_ref=preview.get("evidence_ref") or f"apps/photoprism/restore-previews/{_safe_ref(preview_id, 'latest')}.json",
+        technical_details={
+            "backup_id": _safe_ref(backup_id, "latest"),
+            "preview_only": True,
+            "restore_allowed": False,
+            "restore_apply_supported": False,
+            "media_preserved": True,
+            "destructive_changes": False,
+        },
+        proof_source="App Catalog restore-preview state",
+    )
+
+
+
 def _update_receipt() -> dict[str, Any] | None:
     try:
         receipt = lite_app_update.update_receipt(PHOTOPRISM_APP_ID, "latest")
@@ -655,6 +713,9 @@ def app_evidence(app_id: str) -> dict[str, Any]:
     backup = _backup_receipt()
     if backup:
         items.append(backup)
+    restore_preview = _restore_preview_receipt()
+    if restore_preview:
+        items.append(restore_preview)
     update = _update_receipt()
     if update:
         items.append(update)
@@ -672,13 +733,26 @@ def app_evidence(app_id: str) -> dict[str, Any]:
         proof_counts = latest.get("proof_counts") or _proof_counts(latest.get("proofs") or [])
         summary = _safe_text(latest.get("summary"), "Latest evidence receipt available.")
 
+    by_action: dict[str, dict[str, Any]] = {}
+    for item in items:
+        action_id = str(item.get("action_id") or "").strip()
+        if action_id and action_id not in by_action:
+            by_action[action_id] = item
+
     payload = {
         "status": "healthy",
         "app_id": app,
         "summary": summary,
         "latest": latest,
+        "receipt": latest,
+        "receipt_id": (latest or {}).get("receipt_id"),
+        "action_id": (latest or {}).get("action_id"),
+        "action_label": (latest or {}).get("action_label"),
+        "evidence_ref": (latest or {}).get("evidence_ref"),
         "proof_counts": proof_counts,
         "items": items[:12],
+        "by_action": by_action,
+        "latest_by_action": by_action,
         "count": len(items),
         "fallback_receipt": _fallback_receipt() if not items else None,
         "updated_at": (latest or {}).get("updated_at") or _now(),

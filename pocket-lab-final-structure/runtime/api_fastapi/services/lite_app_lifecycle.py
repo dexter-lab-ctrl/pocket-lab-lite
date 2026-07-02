@@ -313,9 +313,33 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         "install_to_phone": _action(route_enabled, "Install to phone", url=_SAFE_ROUTE if route_enabled else None, reason=None if route_enabled else "Install to phone is available after Open is ready."),
         "connect_photos": _action(installed, "Connect photos", reason=None if installed else "Install PhotoPrism first."),
         "check_app": _action(False, "Check app", reason="Use Run Safety Check for the current device-wide scan."),
-        "backup_app": _action(backup_enabled, "Back up app", reason=None if backup_enabled else "Install PhotoPrism first."),
+        "backup_app": _action(
+            backup_enabled,
+            "Back up app",
+            reason=None if backup_enabled else "Install PhotoPrism first.",
+            summary="Save PhotoPrism settings, mappings, route records, and safe app records.",
+            status="ready" if backup_enabled else "not_ready",
+        ) | {
+            "category": "recovery",
+            "last_result": "App backup saved." if backup.get("latest_backup_id") else None,
+            "latest_backup_id": backup.get("latest_backup_id"),
+            "receipt_id": backup.get("latest_backup_id"),
+            "evidence_ref": f"apps/photoprism/backups/{backup.get('latest_backup_id')}.json" if backup.get("latest_backup_id") else None,
+        },
         "backup_to_storage": _backup_to_storage_action(backup),
-        "preview_restore": _action(bool(recovery.get("preview_available")), "Preview restore", reason=None if recovery.get("preview_available") else "No verified app backup yet"),
+        "preview_restore": _action(
+            bool(recovery.get("preview_available")),
+            "Preview restore",
+            reason=None if recovery.get("preview_available") else "No verified app backup yet",
+            summary="Review what would be restored before making changes.",
+            status="ready" if recovery.get("preview_available") else "not_ready",
+        ) | {
+            "category": "recovery",
+            "last_result": "Restore preview ready. No changes were applied." if backup.get("latest_restore_preview_id") else None,
+            "latest_restore_preview_id": backup.get("latest_restore_preview_id"),
+            "receipt_id": backup.get("latest_restore_preview_id"),
+            "evidence_ref": f"apps/photoprism/restore-previews/{backup.get('latest_restore_preview_id')}.json" if backup.get("latest_restore_preview_id") else None,
+        },
         "import_photos": _action(
             media_ready,
             "Import photos",
@@ -348,6 +372,7 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         "last_result": (update_latest or {}).get("summary"),
         "latest_check": update_latest,
         "evidence_ref": (update_latest or update_pending or {}).get("evidence_ref"),
+        "receipt_id": (update_latest or update_pending or {}).get("operation_id") or (update_latest or update_pending or {}).get("command_id"),
     }
     operations = operations or {}
     action_payload["check_app"] = _operation_action("check_app", installed, operations)
