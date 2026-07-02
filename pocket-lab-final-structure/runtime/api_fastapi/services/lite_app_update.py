@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +17,7 @@ from . import lite_app_backup, lite_catalog, lite_catalog_live, lite_security
 SUPPORTED_APP_IDS = {"photoprism"}
 APP_LABELS = {"photoprism": "PhotoPrism"}
 APP_UPDATE_CHECK_SUBJECT = "pocketlab.commands.lite.app.update.check"
+PHOTOPRISM_STATUS_URL = "http://127.0.0.1:8443/apps/photoprism/api/v1/status"
 STALE_SECONDS = 20 * 60
 SECRET_MARKERS = (
     "token",
@@ -167,21 +170,102 @@ def _route_healthy(app: dict[str, Any]) -> bool:
     )
 
 
+def _version_label(value: Any, fallback: str = "") -> str:
+    text = str(value or "").strip()
+    if not text or text.lower() in {"detected-or-unknown", "unknown", "none", "null", "n/a"}:
+        return fallback
+    safe = _safe_text(text, fallback or "Version detected.")
+    return safe if safe != "Available" else fallback
+
+
+def _photoprism_status_payload() -> dict[str, Any]:
+    try:
+        request = urllib.request.Request(PHOTOPRISM_STATUS_URL, method="GET")
+        with urllib.request.urlopen(request, timeout=1.5) as response:
+            if int(getattr(response, "status", response.getcode())) >= 400:
+                return {}
+            payload = json.loads(response.read(4096).decode("utf-8", errors="replace"))
+            return payload if isinstance(payload, dict) else {}
+    except Exception:
+        return {}
+
+
+def _extract_version(payload: dict[str, Any]) -> str:
+    if not isinstance(payload, dict):
+        return ""
+    for key in ("version", "Version", "photoprism_version", "photoprismVersion", "release", "build"):
+        value = payload.get(key)
+        if isinstance(value, dict):
+            nested = _extract_version(value)
+            if nested:
+                return nested
+        label = _version_label(value)
+        if label:
+            return label
+    return ""
+
+
 def _current_version(app: dict[str, Any]) -> dict[str, Any]:
     runtime = app.get("runtime") if isinstance(app.get("runtime"), dict) else {}
-    raw = runtime.get("version") or app.get("version")
-    if not raw or str(raw).lower() in {"detected-or-unknown", "unknown", "none", "null"}:
+    status_payload = _photoprism_status_payload()
+    raw = _extract_version(status_payload) or _version_label(runtime.get("version") or app.get("version"))
+    if not raw:
         return {
             "status": "unknown",
+            "label": "Not detected",
+            "version": "Not detected",
             "summary": "Current version could not be safely verified.",
+            "source": "photoprism status route",
             "raw_value_hidden": True,
         }
     return {
         "status": "detected",
-        "label": _safe_text(raw, "PhotoPrism version detected."),
-        "summary": "Current version detected safely.",
+        "label": raw,
+        "version": raw,
+        "summary": f"Current installed version: {raw}.",
+        "source": "photoprism status route" if status_payload else "catalog runtime",
         "raw_value_hidden": True,
     }
+
+
+def _latest_version() -> dict[str, Any]:
+    raw = _version_label(
+        os.environ.get("POCKETLAB_PHOTOPRISM_LATEST_VERSION")
+        or os.environ.get("PHOTOPRISM_LATEST_VERSION")
+    )
+    if not raw:
+        return {
+            "status": "not_configured",
+            "label": "Not configured",
+            "version": "Not configured",
+            "summary": "Latest version source is not configured yet.",
+            "source": "not_configured",
+        }
+    return {
+        "status": "detected",
+        "label": raw,
+        "version": raw,
+        "summary": f"Latest configured version: {raw}.",
+        "source": "environment",
+    }
+
+
+def _version_sort_key(value: Any) -> tuple[int, ...] | None:
+    text = str(value or "")
+    numbers = re.findall(r"\d+", text)
+    if not numbers:
+        return None
+    return tuple(int(part) for part in numbers[:4])
+
+
+def _update_available(current: dict[str, Any], latest: dict[str, Any]) -> str:
+    if latest.get("status") == "not_configured":
+        return "No (latest version source not configured)"
+    current_key = _version_sort_key(current.get("version") or current.get("label"))
+    latest_key = _version_sort_key(latest.get("version") or latest.get("label"))
+    if current_key and latest_key:
+        return "Yes" if latest_key > current_key else "No"
+    return "Cannot determine"
 
 
 def _latest_verified_backup(app_id: str) -> dict[str, Any] | None:
@@ -427,6 +511,10 @@ def update_status(app_id: str = "photoprism") -> dict[str, Any]:
         "latest_receipt_id": (latest_receipt or {}).get("receipt_id") if isinstance(latest_receipt, dict) else latest_operation_id,
         "latest_evidence_ref": latest_evidence_ref,
         "latest_receipt": latest_receipt,
+        "operation_id": latest_operation_id,
+        "receipt_id": (latest_receipt or {}).get("receipt_id") if isinstance(latest_receipt, dict) else latest_operation_id,
+        "evidence_ref": latest_evidence_ref,
+        "receipt": latest_receipt,
         "pending_check": pending,
         "operation_running": running,
         "readiness": {"status": readiness or "unknown", "summary": _safe_text(summary, "No update check has run yet.")},
@@ -481,13 +569,13 @@ def create_update_readiness(command: dict[str, Any]) -> dict[str, Any]:
     installed = _is_installed(catalog_app)
     route_ok = _route_healthy(catalog_app)
     current = _current_version(catalog_app)
-    latest = {"status": "unknown", "summary": "Update source not configured yet."}
+    latest = _latest_version()
     backup = _latest_verified_backup(app)
     backup_fresh = bool(backup and backup.get("verification_status") == "verified")
     preview_ok, preview = _restore_preview_ready(app)
     safety_ok, safety = _safety_recent()
-    update_source_known = False
-    update_available = "unknown"
+    update_source_known = latest.get("status") == "detected"
+    update_available = _update_available(current, latest)
     apply_supported = False
     rollback_ready = False
     disk_ready = "unknown"
@@ -509,7 +597,7 @@ def create_update_readiness(command: dict[str, Any]) -> dict[str, Any]:
         _proof("frontend_no_shell", "Browser did not run commands", "passed", "The browser only requested Update through FastAPI."),
         _proof("no_update_applied", "No update was applied", "passed", "No files were replaced, no services were restarted, and no database was changed."),
         _proof("version_checked", "Version checked", "passed" if current.get("status") == "detected" else "review", current.get("summary") or "Current version was checked."),
-        _proof("update_source_checked", "Update source checked", "passed" if update_source_known else "review", "Update source is configured." if update_source_known else "Update source is not configured yet."),
+        _proof("update_source_checked", "Update source checked", "passed" if update_source_known else "review", latest.get("summary") or "Update source is not configured yet."),
         _proof("app_health_checked", "App health checked", "passed" if route_ok else "failed", "Pocket Lab checked the same-origin PhotoPrism route."),
         _proof("backup_freshness_checked", "Backup freshness checked", "passed" if backup_fresh else "review", "A verified app backup is available." if backup_fresh else "Create a verified app backup before updating."),
         _proof("restore_preview_checked", "Restore preview checked", "passed" if preview_ok else "review", "A restore preview is ready." if preview_ok else "Prepare a restore preview before updating."),
@@ -538,7 +626,7 @@ def create_update_readiness(command: dict[str, Any]) -> dict[str, Any]:
         "updated_at": completed,
         "current_version": current,
         "latest_version": latest,
-        "update_source": {"known": update_source_known, "summary": "Update source not configured yet."},
+        "update_source": {"known": update_source_known, "summary": latest.get("summary") or "Update source not configured yet.", "source": latest.get("source")},
         "update_available": update_available,
         "apply_supported": apply_supported,
         "update_apply_supported": apply_supported,
@@ -566,8 +654,10 @@ def create_update_readiness(command: dict[str, Any]) -> dict[str, Any]:
         "technical_details": {
             "action_id": "update_app",
             "execution_owner": "backend worker",
-            "current_version_status": current.get("status"),
-            "latest_version_status": latest.get("status"),
+            "current_version": current.get("version") or current.get("label") or "Not detected",
+            "current_version_source": current.get("source") or "photoprism status route",
+            "latest_version": latest.get("version") or latest.get("label") or "Not configured",
+            "latest_version_source": latest.get("source") or "not_configured",
             "update_available": update_available,
             "apply_supported": False,
             "rollback_ready": rollback_ready,

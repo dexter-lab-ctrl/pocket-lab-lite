@@ -3616,3 +3616,49 @@ def test_lite_app_catalog_receipt_selection_is_action_specific():
     assert "openEvidenceReceipt(entry.actionId)" in ui
     assert "evidenceReceiptFromPayload(appEvidence, selectedReceiptActionId)" in ui
     assert "No unrelated receipt was shown for this action." in ui
+
+
+def test_lite_app_update_receipt_technical_details_show_versions(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_update
+
+    monkeypatch.setattr(
+        lite_app_update,
+        "_photoprism_status_payload",
+        lambda: {"status": "operational", "version": "240711-e1280b2fb"},
+    )
+    monkeypatch.setenv("POCKETLAB_PHOTOPRISM_LATEST_VERSION", "240712-future")
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    result = lite_app_update.create_update_readiness(command)
+    receipt = lite_app_update.update_receipt("photoprism", result["operation_id"])
+    details = receipt["technical_details"]
+    assert details["current_version"] == "240711-e1280b2fb"
+    assert details["latest_version"] == "240712-future"
+    assert details["update_available"] == "Yes"
+    assert "current_version_status" not in details
+    assert "latest_version_status" not in details
+
+
+def test_lite_app_update_status_exposes_receipt_aliases(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_update
+
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    result = lite_app_update.create_update_readiness(command)
+    payload = lite_app_update.update_status("photoprism")
+    assert payload["latest_operation_id"] == result["operation_id"]
+    assert payload["operation_id"] == result["operation_id"]
+    assert payload["latest_receipt_id"] == result["operation_id"]
+    assert payload["receipt_id"] == result["operation_id"]
+    assert payload["latest_evidence_ref"] == result["evidence_ref"]
+    assert payload["evidence_ref"] == result["evidence_ref"]
+    assert payload["receipt"]["action_id"] == "update_app"
+
+
+def test_photoprism_action_e2e_script_waits_for_backup_before_preview():
+    script = Path("scripts/dev/check-photoprism-app-actions-e2e.sh").read_text()
+    assert "wait_for_backup_completion" in script
+    assert "Skipping Preview restore because the current backup has not completed yet" in script
+    assert "BASH" not in script.splitlines()[-1:]
