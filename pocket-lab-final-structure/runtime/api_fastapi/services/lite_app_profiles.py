@@ -147,7 +147,11 @@ def photoprism_backup_profile() -> dict[str, Any]:
     app_backup_status = lite_app_backup.app_backup_status("photoprism")
     latest_app_backup = app_backup_status.get("latest_backup") if isinstance(app_backup_status.get("latest_backup"), dict) else None
     latest_restore_preview = app_backup_status.get("latest_restore_preview") if isinstance(app_backup_status.get("latest_restore_preview"), dict) else None
-    restore_preview_ready = bool((app_backup_status.get("actions") or {}).get("preview_restore", {}).get("enabled"))
+    pending_backup = app_backup_status.get("pending_backup") if isinstance(app_backup_status.get("pending_backup"), dict) else None
+    backup_running = bool(app_backup_status.get("backup_running"))
+    preview_action = (app_backup_status.get("actions") or {}).get("preview_restore", {})
+    restore_preview_ready = bool(preview_action.get("enabled"))
+    restore_preview_reason = preview_action.get("disabled_reason") or app_backup_status.get("restore_preview_disabled_reason") or "No verified app backup yet."
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
     profile: dict[str, Any] = {
         "app_id": "photoprism",
@@ -198,6 +202,8 @@ def photoprism_backup_profile() -> dict[str, Any]:
         "backup_targets": target.get("targets", []) if isinstance(target, dict) else [],
         "evidence": _evidence_summary("recovery"),
         "latest_backup": latest_app_backup,
+        "pending_backup": pending_backup,
+        "backup_running": backup_running,
         "latest_restore_preview": latest_restore_preview,
         "storage_mappings": {
             "count": int(mappings.get("count") or 0),
@@ -208,7 +214,9 @@ def photoprism_backup_profile() -> dict[str, Any]:
             "restore_available": False,
             "preview_only": True,
             "restore_apply_supported": False,
-            "summary": "Restore preview ready." if restore_preview_ready else "No verified app backup yet.",
+            "summary": "Restore preview ready." if restore_preview_ready else _public_text(restore_preview_reason, "No verified app backup yet."),
+            "disabled_reason": None if restore_preview_ready else _public_text(restore_preview_reason, "No verified app backup yet."),
+            "backup_running": backup_running,
         },
         "updated_at": _now(),
     }

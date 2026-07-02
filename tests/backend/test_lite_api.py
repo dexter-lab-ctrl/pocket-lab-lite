@@ -3581,3 +3581,38 @@ def test_lite_app_actions_surface_backup_preview_and_update_receipt_links(monkey
     assert actions["update_app"]["receipt"]["receipt_id"] == update_result["operation_id"]
     assert "password" not in response.text.lower()
     assert "nats://" not in response.text.lower()
+
+
+def test_lite_app_preview_restore_waits_for_current_backup(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_backup
+
+    command = lite_app_backup.app_backup_command("photoprism", reason="manual backup before preview")
+    lite_app_backup.record_backup_request(command)
+
+    actions_response = client().get("/api/lite/apps/photoprism/actions")
+    assert actions_response.status_code == 200
+    preview = actions_response.json()["actions"]["preview_restore"]
+    assert preview["enabled"] is False
+    assert preview["status"] in {"running", "not_ready", "blocked"}
+    assert "current app backup" in preview["disabled_reason"].lower()
+
+    run_response = client().post(
+        "/api/lite/apps/photoprism/actions/preview_restore",
+        json={"reason": "do not preview stale backup"},
+    )
+    assert run_response.status_code == 409
+    payload = run_response.json().get("detail") or run_response.json()
+    assert payload["status"] in {"disabled", "backup_still_running"}
+    assert "current app backup" in (payload.get("disabled_reason") or payload.get("summary") or "").lower()
+    assert "password" not in run_response.text.lower()
+    assert "nats://" not in run_response.text.lower()
+
+
+def test_lite_app_catalog_receipt_selection_is_action_specific():
+    ui = _lite_ui_source()
+    assert "selectedReceiptActionId" in ui
+    assert "openEvidenceReceipt(entry.actionId)" in ui
+    assert "evidenceReceiptFromPayload(appEvidence, selectedReceiptActionId)" in ui
+    assert "No unrelated receipt was shown for this action." in ui
