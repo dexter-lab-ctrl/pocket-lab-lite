@@ -410,6 +410,9 @@ def update_status(app_id: str = "photoprism") -> dict[str, Any]:
     summary = latest.get("summary") if latest else "No update check has run yet."
     action_enabled = installed and not running
     disabled_reason = "Update readiness check is already running." if running else (None if installed else "Install PhotoPrism first.")
+    latest_operation_id = (latest or {}).get("operation_id") or (latest or {}).get("command_id")
+    latest_evidence_ref = (latest or {}).get("evidence_ref")
+    latest_receipt = update_receipt(app, latest_operation_id or "latest") if latest_operation_id else None
     return {
         "status": "healthy",
         "app_id": app,
@@ -420,6 +423,10 @@ def update_status(app_id: str = "photoprism") -> dict[str, Any]:
         "update_apply_supported": False,
         "apply_supported": False,
         "latest_check": latest,
+        "latest_operation_id": latest_operation_id,
+        "latest_receipt_id": (latest_receipt or {}).get("receipt_id") if isinstance(latest_receipt, dict) else latest_operation_id,
+        "latest_evidence_ref": latest_evidence_ref,
+        "latest_receipt": latest_receipt,
         "pending_check": pending,
         "operation_running": running,
         "readiness": {"status": readiness or "unknown", "summary": _safe_text(summary, "No update check has run yet.")},

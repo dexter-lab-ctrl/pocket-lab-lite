@@ -3496,3 +3496,88 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
     assert "Stop photo" not in ui
     assert "nats.connect" not in ui
     assert "exec(" not in ui
+
+
+def test_lite_app_evidence_exposes_latest_receipt_and_by_action(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_update
+
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    result = lite_app_update.create_update_readiness(command)
+    response = client().get("/api/lite/apps/photoprism/evidence")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["receipt"]["action_id"] == "update_app"
+    assert payload["receipt_id"] == result["operation_id"]
+    assert payload["action_id"] == "update_app"
+    assert payload["evidence_ref"].startswith("apps/photoprism/update/")
+    assert payload["by_action"]["update_app"]["receipt_id"] == result["operation_id"]
+    assert payload["latest_by_action"]["update_app"]["proofs"]
+    assert "password" not in response.text.lower()
+    assert "nats://" not in response.text.lower()
+
+
+def test_lite_app_update_status_exposes_latest_receipt_id(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_update
+
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    result = lite_app_update.create_update_readiness(command)
+    response = client().get("/api/lite/apps/photoprism/update")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["latest_operation_id"] == result["operation_id"]
+    assert payload["latest_receipt_id"] == result["operation_id"]
+    assert payload["latest_evidence_ref"] == result["evidence_ref"]
+    assert payload["latest_receipt"]["action_id"] == "update_app"
+    assert payload["latest_receipt"]["proofs"]
+    assert "No update was applied" in response.text or "No update was installed" in response.text
+
+
+def test_lite_app_actions_surface_backup_preview_and_update_receipt_links(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_lifecycle, lite_app_update
+
+    def fake_backup_payload():
+        return {
+            "status": "ready",
+            "summary": "App backup ready.",
+            "latest_backup": {
+                "backup_id": "app-backup-photoprism-test",
+                "verification_status": "verified",
+                "status": "verified",
+                "evidence_ref": "apps/photoprism/backups/app-backup-photoprism-test.json",
+            },
+            "latest_restore_preview": {
+                "preview_id": "app-restore-preview-photoprism-test",
+                "backup_id": "app-backup-photoprism-test",
+                "status": "ready",
+                "summary": "Restore preview ready. This phase is preview-only and will not change app state.",
+                "evidence_ref": "apps/photoprism/restore-previews/app-restore-preview-photoprism-test.json",
+            },
+            "restore": {
+                "preview_available": True,
+                "restore_available": False,
+                "restore_apply_supported": False,
+                "preview_only": True,
+            },
+        }
+
+    monkeypatch.setattr(lite_app_lifecycle, "_backup_payload", fake_backup_payload)
+    command = lite_app_update.update_command("photoprism", reason="manual update readiness check")
+    update_result = lite_app_update.create_update_readiness(command)
+
+    response = client().get("/api/lite/apps/photoprism/actions")
+    assert response.status_code == 200
+    actions = response.json()["actions"]
+    assert actions["backup_app"]["receipt"]["available"] is True
+    assert actions["backup_app"]["receipt"]["receipt_id"] == "app-backup-photoprism-test"
+    assert actions["preview_restore"]["receipt"]["available"] is True
+    assert actions["preview_restore"]["receipt"]["receipt_id"] == "app-restore-preview-photoprism-test"
+    assert actions["update_app"]["receipt"]["available"] is True
+    assert actions["update_app"]["receipt"]["receipt_id"] == update_result["operation_id"]
+    assert "password" not in response.text.lower()
+    assert "nats://" not in response.text.lower()
