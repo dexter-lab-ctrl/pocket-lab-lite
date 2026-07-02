@@ -265,12 +265,17 @@ function tileResultForAction(actionId, action = {}, result = null) {
   return null;
 }
 
-function AppActionReceiptButton({ available, onClick }) {
+function AppActionReceiptButton({ available, onClick, expanded = false }) {
   if (!available) return null;
   return (
-    <button type="button" className="lite-app-action-receipt-button" onClick={onClick}>
+    <button
+      type="button"
+      className={`lite-app-action-receipt-button ${expanded ? 'is-expanded' : ''}`}
+      onClick={onClick}
+      aria-expanded={expanded}
+    >
       <FileCheck className="h-4 w-4" />
-      View receipt
+      <span>{expanded ? 'Hide receipt' : 'View receipt'}</span>
     </button>
   );
 }
@@ -300,7 +305,7 @@ function AppActionFlowAnimation({ actionId, running }) {
   return <span className={`lite-app-action-flow is-${actionId} ${running ? 'is-running' : ''}`} aria-hidden="true"><i /><i /><i /></span>;
 }
 
-function AppActionResultCard({ actionId, action, result, onViewReceipt }) {
+function AppActionResultCard({ actionId, action, result, onViewReceipt, receiptExpanded = false }) {
   const payload = result || null;
   if (!payload) return null;
   const copy = actionResultCopy(actionId, payload, action);
@@ -312,7 +317,7 @@ function AppActionResultCard({ actionId, action, result, onViewReceipt }) {
         <p>{copy.summary}</p>
       </div>
       {copy.badges?.length ? <div className="lite-app-action-result-badges">{copy.badges.map((badge) => <span key={badge}>{badge}</span>)}</div> : null}
-      <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} />
+      <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} expanded={receiptExpanded} />
     </div>
   );
 }
@@ -615,6 +620,7 @@ function PhotoPrismActionTile({
   tone = 'secondary',
   onClick,
   onViewReceipt,
+  receiptExpanded = false,
   disabled = false,
   title,
 }) {
@@ -720,8 +726,8 @@ function PhotoPrismActionTile({
           ) : null}
         </div>
       ) : null}
-      <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewReceipt={onViewReceipt} />
-      {!tileResult ? <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} /> : null}
+      <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewReceipt={onViewReceipt} receiptExpanded={receiptExpanded} />
+      {!tileResult ? <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} expanded={receiptExpanded} /> : null}
     </div>
   );
 }
@@ -1123,20 +1129,29 @@ function PhotoPrismEvidenceCard({ evidence, loading, error, onViewReceipt }) {
   );
 }
 
-function PhotoPrismEvidenceReceiptModal({ receipt, onClose }) {
+function PhotoPrismEvidenceReceiptModal({ receipt, onClose, inline = false }) {
   if (!receipt) return null;
   const proofs = Array.isArray(receipt.proofs) ? receipt.proofs : [];
   const changed = Array.isArray(receipt.what_changed) ? receipt.what_changed : [];
   const didNotHappen = Array.isArray(receipt.what_did_not_happen) ? receipt.what_did_not_happen : [];
   const details = evidenceTechnicalEntries(receipt);
 
+  const wrapperProps = inline
+    ? { className: 'lite-evidence-modal-inline', role: 'region', 'aria-label': `${receipt.action_label || 'PhotoPrism'} evidence receipt` }
+    : { className: 'lite-evidence-modal-backdrop', role: 'presentation', onMouseDown: (event) => { if (event.target === event.currentTarget) onClose(); } };
+
   return (
-    <div className="lite-evidence-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="lite-evidence-modal" role="dialog" aria-modal="true" aria-labelledby="lite-evidence-modal-title">
+    <div {...wrapperProps}>
+      <section
+        className={`lite-evidence-modal ${inline ? 'is-inline' : ''}`}
+        role={inline ? 'group' : 'dialog'}
+        aria-modal={inline ? undefined : 'true'}
+        aria-labelledby="lite-evidence-modal-title"
+      >
         <div className="lite-evidence-modal-rail" aria-hidden="true"><span /></div>
         <div className="lite-evidence-modal-head">
           <div>
-            <span>Evidence receipt</span>
+            <span>{inline ? 'Action evidence' : 'Evidence receipt'}</span>
             <h2 id="lite-evidence-modal-title">{receipt.action_label || 'PhotoPrism'} receipt</h2>
             <p>{receipt.summary || 'Proof details are available.'}</p>
           </div>
@@ -1484,8 +1499,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }
 
   function openEvidenceReceipt(actionId = null) {
-    setSelectedReceiptActionId(actionId || null);
+    const nextActionId = actionId || null;
+    if (evidenceReceiptOpen && selectedReceiptActionId === nextActionId) {
+      closeEvidenceReceipt();
+      return;
+    }
+    setSelectedReceiptActionId(nextActionId);
     setEvidenceReceiptOpen(true);
+    loadPhotoPrismEvidence();
   }
 
   function closeEvidenceReceipt() {
@@ -1946,6 +1967,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           tone={entry.tone}
                           onClick={entry.onClick}
                           onViewReceipt={() => openEvidenceReceipt(entry.actionId)}
+                          receiptExpanded={evidenceReceiptOpen && selectedReceiptActionId === entry.actionId}
                           disabled={entry.disabled}
                           title={entry.title}
                         />
@@ -1964,6 +1986,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                             />
                           </div>
                         ) : null}
+                        {evidenceReceiptOpen && selectedReceiptActionId === entry.actionId ? (
+                          <div className="lite-catalog-action-receipt-anchor">
+                            <PhotoPrismEvidenceReceiptModal
+                              inline
+                              receipt={evidenceReceiptFromPayload(appEvidence, entry.actionId)}
+                              onClose={closeEvidenceReceipt}
+                            />
+                          </div>
+                        ) : null}
                       </React.Fragment>
                     ))}
                   </AppActionGroup>
@@ -1975,6 +2006,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 error={appEvidenceError}
                 onViewReceipt={() => openEvidenceReceipt()}
               />
+              {evidenceReceiptOpen && selectedReceiptActionId === null ? (
+                <div className="lite-catalog-action-receipt-anchor is-summary-receipt">
+                  <PhotoPrismEvidenceReceiptModal
+                    inline
+                    receipt={evidenceReceiptFromPayload(appEvidence)}
+                    onClose={closeEvidenceReceipt}
+                  />
+                </div>
+              ) : null}
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
                 {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
@@ -2154,13 +2194,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       ) : null}
 
       <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />
-
-      {evidenceReceiptOpen ? (
-        <PhotoPrismEvidenceReceiptModal
-          receipt={evidenceReceiptFromPayload(appEvidence, selectedReceiptActionId)}
-          onClose={closeEvidenceReceipt}
-        />
-      ) : null}
 
     </div>
   );
