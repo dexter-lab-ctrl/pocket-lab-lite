@@ -3397,3 +3397,102 @@ def test_lite_app_safety_repair_frontend_source_is_mobile_safe():
     assert "child_process" not in forbidden
     assert "nats.connect" not in forbidden
     assert "exec(" not in forbidden
+
+
+def test_lite_app_actions_phase5_unified_contract(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().get("/api/lite/apps/photoprism/actions")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "healthy"
+    assert "action_groups" in payload
+    assert "action_list" in payload
+    actions = payload["actions"]
+    expected_actions = {
+        "open",
+        "connect_photos",
+        "import_photos",
+        "check_app",
+        "repair_app",
+        "backup_app",
+        "preview_restore",
+        "backup_to_storage",
+        "update_app",
+    }
+    assert expected_actions.issubset(actions)
+    forbidden_actions = {"index_photos", "refresh_library", "cancel_media", "stop_photo"}
+    assert forbidden_actions.isdisjoint(actions)
+    for action_id, action in actions.items():
+        assert action["id"] == action_id
+        assert action["app_id"] == "photoprism"
+        assert action["label"]
+        assert action["category"] in {"access", "media", "safety", "recovery", "setup", "danger"}
+        assert isinstance(action["enabled"], bool)
+        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported"}
+        assert action["summary"]
+        assert action["risk"] in {"low", "review", "high", "destructive"}
+        assert action["execution_owner"] in {"browser_navigation", "fastapi", "backend_worker"}
+        assert isinstance(action["progress"], dict)
+        assert {"phase", "step", "indeterminate", "steps"}.issubset(action["progress"])
+        assert isinstance(action["result"], dict)
+        assert isinstance(action["receipt"], dict)
+        if action["enabled"] is False:
+            assert action["disabled_reason"]
+    assert actions["update_app"]["summary"].lower().count("no update") >= 1
+    text = response.text.lower()
+    for forbidden in ("password", "token", "api_key", "private_key", "nats://", "/data/data", "restic-password", "caddyfile", "pm2"):
+        assert forbidden not in text
+
+
+def test_lite_app_actions_phase5_disabled_response_shape(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    response = client().post(
+        "/api/lite/apps/photoprism/actions/import_photos",
+        json={"reason": "manual import without mapping"},
+    )
+    assert response.status_code == 409
+    payload = response.json().get("detail") or response.json()
+    assert payload["status"] == "disabled"
+    assert payload["accepted"] is False
+    assert payload["action_id"] == "import_photos"
+    assert payload["disabled_reason"] == payload["summary"]
+    assert payload["progress"]["phase"] == "blocked"
+    assert payload["evidence"]["status"] == "not_started"
+    text = response.text.lower()
+    for forbidden in ("password", "token", "nats://", "/data/data", "raw log"):
+        assert forbidden not in text
+
+
+def test_lite_app_catalog_phase5_unified_action_ui_source():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    for marker in (
+        "normalizeAppAction",
+        "groupAppActions",
+        "getActionDisplayState",
+        "AppActionGroup",
+        "AppActionResultCard",
+        "AppActionReceiptButton",
+        "AppActionDisabledReason",
+        "AppActionTimeline",
+        "AppActionFlowAnimation",
+        "lite-catalog-action-groups",
+        "View receipt",
+        "No update was applied",
+    ):
+        assert marker in ui
+    for marker in (
+        "lite-app-action-group",
+        "lite-app-action-result-card",
+        "lite-app-action-receipt-button",
+        "liteAppActionCommandDispatch",
+        "liteAppActionWorkerClaim",
+        "liteAppActionReceiptStamp",
+        "prefers-reduced-motion",
+    ):
+        assert marker in css
+    assert "Index photos" not in ui
+    assert "Refresh library" not in ui
+    assert "Stop photo" not in ui
+    assert "nats.connect" not in ui
+    assert "exec(" not in ui
