@@ -182,6 +182,8 @@ def _backup_profile(backup: dict[str, Any]) -> dict[str, Any]:
     target_summary = backup.get("backup_target_summary") if isinstance(backup.get("backup_target_summary"), dict) else target
     latest_backup = backup.get("latest_backup") if isinstance(backup.get("latest_backup"), dict) else None
     latest_restore_preview = backup.get("latest_restore_preview") if isinstance(backup.get("latest_restore_preview"), dict) else None
+    pending_backup = backup.get("pending_backup") if isinstance(backup.get("pending_backup"), dict) else None
+    restore = backup.get("restore") if isinstance(backup.get("restore"), dict) else {}
     return {
         "status": status,
         "summary": "Backup ready" if status == "ready" else _safe_text(backup.get("summary"), "Backup profile needs review."),
@@ -192,7 +194,12 @@ def _backup_profile(backup: dict[str, Any]) -> dict[str, Any]:
         "target_summary": _safe_text(target_summary.get("summary") or target_summary.get("label"), "Backup target not ready"),
         "target_label": _safe_label(target_summary.get("target_label"), "Storage device") if target_summary.get("target_label") else None,
         "latest_backup_id": _safe_label(latest_backup.get("backup_id"), "") if latest_backup else None,
+        "latest_verified_backup_id": _safe_label(backup.get("latest_verified_backup_id"), "") if backup.get("latest_verified_backup_id") else None,
         "latest_backup_status": _safe_label(latest_backup.get("verification_status") or latest_backup.get("status"), "not_verified") if latest_backup else "not_created",
+        "pending_backup_id": _safe_label(pending_backup.get("backup_id") or pending_backup.get("command_id"), "") if pending_backup else None,
+        "backup_running": bool(backup.get("backup_running") or restore.get("backup_running")),
+        "restore_preview_available": bool(restore.get("preview_available")),
+        "restore_preview_disabled_reason": _safe_text(restore.get("disabled_reason") or backup.get("restore_preview_disabled_reason"), "No verified app backup yet"),
         "latest_restore_preview_id": _safe_label(latest_restore_preview.get("preview_id"), "") if latest_restore_preview else None,
     }
 
@@ -200,10 +207,13 @@ def _backup_profile(backup: dict[str, Any]) -> dict[str, Any]:
 def _recovery_profile(backup: dict[str, Any]) -> dict[str, Any]:
     restore = backup.get("restore") if isinstance(backup.get("restore"), dict) else {}
     preview = bool(restore.get("preview_available"))
+    disabled_reason = restore.get("disabled_reason") or backup.get("restore_preview_disabled_reason") or "No verified app backup yet"
     return {
-        "status": "ready" if preview else "review",
-        "summary": _safe_text(restore.get("summary"), "Restore preview not ready" if not preview else "Restore preview available"),
+        "status": "ready" if preview else ("checking" if backup.get("backup_running") else "review"),
+        "summary": _safe_text(restore.get("summary") or disabled_reason, "Restore preview not ready" if not preview else "Restore preview available"),
+        "disabled_reason": None if preview else _safe_text(disabled_reason, "No verified app backup yet"),
         "preview_available": preview,
+        "backup_running": bool(backup.get("backup_running")),
         "restore_available": bool(restore.get("restore_available")),
         "preview_only": bool(restore.get("preview_only", True)),
         "restore_apply_supported": bool(restore.get("restore_apply_supported", False)),
@@ -330,9 +340,9 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         "preview_restore": _action(
             bool(recovery.get("preview_available")),
             "Preview restore",
-            reason=None if recovery.get("preview_available") else "No verified app backup yet",
-            summary="Review what would be restored before making changes.",
-            status="ready" if recovery.get("preview_available") else "not_ready",
+            reason=None if recovery.get("preview_available") else (recovery.get("disabled_reason") or backup.get("restore_preview_disabled_reason") or "No verified app backup yet"),
+            summary="Review what would be restored before making changes." if recovery.get("preview_available") else (recovery.get("summary") or "No verified app backup yet"),
+            status="ready" if recovery.get("preview_available") else ("running" if backup.get("backup_running") else "not_ready"),
         ) | {
             "category": "recovery",
             "last_result": "Restore preview ready. No changes were applied." if backup.get("latest_restore_preview_id") else None,

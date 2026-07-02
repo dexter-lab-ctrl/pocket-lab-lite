@@ -988,8 +988,45 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
 
 
 
-function evidenceReceiptFromPayload(evidence) {
-  return evidence?.latest || evidence?.fallback_receipt || null;
+function receiptActionLabel(actionId) {
+  return {
+    check_app: 'Check app',
+    backup_app: 'Back up app',
+    preview_restore: 'Preview restore',
+    repair_app: 'Repair',
+    update_app: 'Update',
+    import_photos: 'Import photos',
+    connect_photos: 'Connect photos',
+    backup_to_storage: 'Back up to storage device',
+  }[actionId] || 'PhotoPrism action';
+}
+
+function evidenceReceiptFromPayload(evidence, actionId = null) {
+  if (!evidence) return null;
+  const wanted = actionId ? String(actionId) : '';
+  const byAction = evidence?.by_action && typeof evidence.by_action === 'object' ? evidence.by_action : {};
+  const latestByAction = evidence?.latest_by_action && typeof evidence.latest_by_action === 'object' ? evidence.latest_by_action : {};
+  if (wanted && byAction[wanted]) return byAction[wanted];
+  if (wanted && latestByAction[wanted]) return latestByAction[wanted];
+  if (wanted) {
+    return {
+      receipt_id: `${wanted}-receipt-not-ready`,
+      action_id: wanted,
+      action_label: receiptActionLabel(wanted),
+      status: 'review',
+      summary: `${receiptActionLabel(wanted)} evidence is not available yet. Run the action or refresh after it completes.`,
+      proofs: [],
+      proof_counts: { passed: 0, review: 1, failed: 0, not_checked: 0, not_applicable: 0 },
+      safety_badges: [],
+      what_changed: [],
+      what_did_not_happen: ['No unrelated receipt was shown for this action.'],
+      redaction: { status: 'passed', secrets_hidden: true, raw_logs_hidden: true, raw_paths_hidden: true },
+      details_owner: { name: 'PhotoPrism', reason: 'PhotoPrism handles media-specific details.' },
+      technical_details: { action_id: wanted, proof_source: 'App Catalog action-specific receipt selection' },
+      evidence_ref: null,
+    };
+  }
+  return evidence?.latest || evidence?.receipt || evidence?.fallback_receipt || null;
 }
 
 function evidenceStatusLabel(status) {
@@ -1384,6 +1421,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [appEvidenceLoading, setAppEvidenceLoading] = useState(false);
   const [appEvidenceError, setAppEvidenceError] = useState(null);
   const [evidenceReceiptOpen, setEvidenceReceiptOpen] = useState(false);
+  const [selectedReceiptActionId, setSelectedReceiptActionId] = useState(null);
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -1443,6 +1481,16 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     } finally {
       setAppEvidenceLoading(false);
     }
+  }
+
+  function openEvidenceReceipt(actionId = null) {
+    setSelectedReceiptActionId(actionId || null);
+    setEvidenceReceiptOpen(true);
+  }
+
+  function closeEvidenceReceipt() {
+    setEvidenceReceiptOpen(false);
+    setSelectedReceiptActionId(null);
   }
 
   function dismissActionNotice() {
@@ -1897,7 +1945,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           result={entry.result}
                           tone={entry.tone}
                           onClick={entry.onClick}
-                          onViewReceipt={() => setEvidenceReceiptOpen(true)}
+                          onViewReceipt={() => openEvidenceReceipt(entry.actionId)}
                           disabled={entry.disabled}
                           title={entry.title}
                         />
@@ -1925,7 +1973,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 evidence={appEvidence}
                 loading={appEvidenceLoading}
                 error={appEvidenceError}
-                onViewReceipt={() => setEvidenceReceiptOpen(true)}
+                onViewReceipt={() => openEvidenceReceipt()}
               />
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
@@ -2109,8 +2157,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
       {evidenceReceiptOpen ? (
         <PhotoPrismEvidenceReceiptModal
-          receipt={evidenceReceiptFromPayload(appEvidence)}
-          onClose={() => setEvidenceReceiptOpen(false)}
+          receipt={evidenceReceiptFromPayload(appEvidence, selectedReceiptActionId)}
+          onClose={closeEvidenceReceipt}
         />
       ) : null}
 

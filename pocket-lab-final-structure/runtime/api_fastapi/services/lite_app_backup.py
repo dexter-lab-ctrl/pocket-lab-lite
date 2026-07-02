@@ -163,6 +163,31 @@ def _resolve_app_backup_id(app_id: str, backup_id: str | None = None, *, verifie
     return selected
 
 
+
+
+def _pending_backup(app_id: str) -> dict[str, Any] | None:
+    app = _validate_app_id(app_id)
+    state = _read_state()
+    pending = state.get("pending_backup") if isinstance(state.get("pending_backup"), dict) else None
+    if not pending or pending.get("app_id") != app:
+        return None
+    return pending
+
+
+def _pending_backup_active(app_id: str) -> bool:
+    pending = _pending_backup(app_id)
+    if not pending:
+        return False
+    return str(pending.get("status") or "").lower() in {"queued", "pending", "running", "working"}
+
+
+def _restore_preview_disabled_reason(app_id: str, verified: bool) -> str | None:
+    if _pending_backup_active(app_id):
+        return "Wait for the current app backup to finish before preview restore."
+    if not verified:
+        return "No verified app backup yet"
+    return None
+
 def backup_profile() -> dict[str, Any]:
     return {
         "app_id": "photoprism",
@@ -208,10 +233,19 @@ def app_backup_command(app_id: str, *, mode: str = "config_only", reason: str | 
 
 def app_restore_preview_command(app_id: str, *, backup_id: str | None = None, reason: str | None = None) -> dict[str, Any]:
     app = _validate_app_id(app_id)
+    if _pending_backup_active(app):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "backup_still_running",
+                "summary": "Wait for the current app backup to finish before preview restore.",
+                "disabled_reason": "Wait for the current app backup to finish before preview restore.",
+            },
+        )
     selected = backup_id or "latest"
     resolved = _resolve_app_backup_id(app, selected, verified_only=True)
     if not resolved:
-        raise HTTPException(status_code=409, detail={"status": "no_verified_app_backup", "summary": "No verified app backup yet. Back up PhotoPrism first."})
+        raise HTTPException(status_code=409, detail={"status": "no_verified_app_backup", "summary": "No verified app backup yet. Back up PhotoPrism first.", "disabled_reason": "No verified app backup yet"})
     command_id = f"app-restore-preview-{app}-{uuid.uuid4().hex[:16]}"
     return {
         "command_id": command_id,
@@ -393,6 +427,10 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
     backups = list_app_backups(app)
     latest = backups.get("latest_backup")
     verified = bool(latest and latest.get("verification_status") == "verified")
+    pending_backup = _pending_backup(app)
+    backup_running = _pending_backup_active(app)
+    restore_disabled_reason = _restore_preview_disabled_reason(app, verified)
+    restore_preview_enabled = verified and not backup_running
     target = lite_app_backup_targets.backup_target_summary(app)
     storage_ready = bool(target.get("ready"))
     storage_summary = _safe_text(target.get("summary"), "Join a storage device to save app backups elsewhere.")
@@ -406,7 +444,12 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
         "restore_preview_supported": True,
         "restore_apply_supported": False,
         "latest_backup": latest,
+        "latest_verified_backup_id": latest.get("backup_id") if verified else None,
+        "pending_backup": pending_backup,
+        "backup_running": backup_running,
         "latest_restore_preview": _latest_restore_preview(app),
+        "restore_preview_ready": restore_preview_enabled,
+        "restore_preview_disabled_reason": restore_disabled_reason,
         "storage_target": {
             "ready": storage_ready,
             "summary": storage_summary,
@@ -419,10 +462,13 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
                 "summary": "Save PhotoPrism settings, mappings, route records, and safe app records.",
             },
             "preview_restore": {
-                "enabled": verified,
+                "enabled": restore_preview_enabled,
                 "label": "Preview restore",
-                "disabled_reason": None if verified else "No verified app backup yet",
-                "summary": "Review what would be restored before making changes.",
+                "status": "ready" if restore_preview_enabled else ("running" if backup_running else "not_ready"),
+                "disabled_reason": restore_disabled_reason,
+                "summary": "Review what would be restored before making changes." if restore_preview_enabled else (restore_disabled_reason or "No verified app backup yet"),
+                "requires_current_backup": True,
+                "latest_verified_backup_id": latest.get("backup_id") if verified else None,
             },
             "backup_to_storage_device": {
                 "enabled": False,
