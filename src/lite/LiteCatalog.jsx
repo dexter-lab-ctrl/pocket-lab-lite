@@ -123,6 +123,216 @@ function busyActionLabel(actionId) {
   return 'Working...';
 }
 
+const APP_ACTION_CATEGORY_ORDER = ['access', 'media', 'safety', 'recovery', 'setup', 'danger'];
+
+const APP_ACTION_CATEGORY_COPY = {
+  access: { label: 'Open', summary: 'Open the app through Pocket Lab.' },
+  media: { label: 'Photos', summary: 'Connect and import photos through backend-owned actions.' },
+  safety: { label: 'Safety', summary: 'Check app health and protected evidence.' },
+  recovery: { label: 'Recovery', summary: 'Back up, preview restore, and repair safely.' },
+  setup: { label: 'App setup', summary: 'Install or check update readiness.' },
+  danger: { label: 'Remove', summary: 'Advanced actions require explicit confirmation.' },
+};
+
+function normalizeActionStatus(rawStatus, enabled, busy = false, hasProgress = false) {
+  if (busy || hasProgress) return 'running';
+  const value = String(rawStatus || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (['queued', 'pending'].includes(value)) return 'queued';
+  if (['running', 'working', 'executing'].includes(value)) return 'running';
+  if (['succeeded', 'success', 'done', 'completed', 'verified'].includes(value)) return 'done';
+  if (['review', 'degraded', 'warning', 'needs_attention'].includes(value)) return 'review';
+  if (['failed', 'failure', 'error'].includes(value)) return 'failed';
+  if (['blocked', 'disabled', 'paused'].includes(value)) return 'blocked';
+  if (['not_supported', 'unsupported'].includes(value)) return 'not_supported';
+  if (['not_ready', 'unavailable'].includes(value)) return 'not_ready';
+  return enabled ? 'ready' : 'not_ready';
+}
+
+function getActionDisplayState(status, enabled = true) {
+  const normalized = normalizeActionStatus(status, enabled);
+  if (normalized === 'ready') return { status: 'healthy', label: 'Ready' };
+  if (normalized === 'queued') return { status: 'degraded', label: 'Getting ready' };
+  if (normalized === 'running') return { status: 'degraded', label: 'Working' };
+  if (normalized === 'done') return { status: 'healthy', label: 'Done' };
+  if (['review', 'failed'].includes(normalized)) return { status: 'degraded', label: 'Needs attention' };
+  if (normalized === 'blocked') return { status: 'degraded', label: 'Paused for safety' };
+  if (normalized === 'not_supported') return { status: 'unknown', label: 'Not available' };
+  if (normalized === 'not_ready') return { status: 'unknown', label: enabled ? 'Waiting' : 'Not ready' };
+  return { status: 'unknown', label: 'Unknown' };
+}
+
+function appActionCategory(actionId, action = {}) {
+  if (action?.category === 'app_setup') return 'setup';
+  if (action?.category) return String(action.category).replace('app_setup', 'setup');
+  if (['open', 'open_full_screen', 'install_to_phone'].includes(actionId)) return 'access';
+  if (['connect_photos', 'import_photos'].includes(actionId)) return 'media';
+  if (actionId === 'check_app') return 'safety';
+  if (['backup_app', 'preview_restore', 'backup_to_storage', 'repair_app'].includes(actionId)) return 'recovery';
+  if (['install_app', 'update_app'].includes(actionId)) return 'setup';
+  if (actionId === 'remove_app') return 'danger';
+  return 'setup';
+}
+
+function actionDisabledReason(action = {}) {
+  return action?.disabled_reason || action?.reason || '';
+}
+
+function normalizeAppAction(entry) {
+  const action = entry?.action || {};
+  const actionId = entry?.actionId || action?.id || '';
+  const copy = actionCopy(actionId);
+  const busy = Boolean(entry?.busy);
+  const progress = entry?.progress || action?.progress || null;
+  const hasProgress = Boolean(progress?.running || ['queued', 'running'].includes(String(progress?.phase || '').toLowerCase()));
+  const enabled = action?.enabled !== false && !entry?.disabled;
+  const status = normalizeActionStatus(action?.status, enabled, busy, hasProgress);
+  const category = appActionCategory(actionId, action);
+  const display = getActionDisplayState(status, enabled);
+  return {
+    ...entry,
+    id: actionId,
+    actionId,
+    action,
+    copy,
+    category,
+    categoryLabel: APP_ACTION_CATEGORY_COPY[category]?.label || category,
+    enabled,
+    status,
+    display,
+    progress,
+    disabledReason: !enabled ? actionDisabledReason(action) || entry?.title || 'Action is not ready yet.' : '',
+    risk: action?.risk || (category === 'danger' ? 'destructive' : category === 'recovery' || category === 'setup' ? 'review' : 'low'),
+    receiptAvailable: Boolean(action?.receipt?.available || action?.evidence_ref || action?.latest_check?.evidence_ref || entry?.result?.evidence_ref),
+    summary: action?.summary || copy.description,
+  };
+}
+
+function groupAppActions(entries) {
+  const grouped = new Map();
+  entries.map(normalizeAppAction).forEach((entry) => {
+    if (!entry?.actionId) return;
+    const category = entry.category || 'setup';
+    if (!grouped.has(category)) {
+      grouped.set(category, {
+        id: category,
+        label: APP_ACTION_CATEGORY_COPY[category]?.label || category,
+        summary: APP_ACTION_CATEGORY_COPY[category]?.summary || 'App actions.',
+        actions: [],
+      });
+    }
+    grouped.get(category).actions.push(entry);
+  });
+  return APP_ACTION_CATEGORY_ORDER.map((category) => grouped.get(category)).filter(Boolean);
+}
+
+function actionResultCopy(actionId, payload = {}, action = {}) {
+  const status = String(payload?.status || action?.result?.status || '').toLowerCase();
+  const summary = payload?.summary || action?.result?.summary || action?.last_result || '';
+  if (actionId === 'backup_app') {
+    return { title: status === 'queued' ? 'App backup queued' : 'App backup saved', summary: summary || 'Settings, mappings, route records, and safe app records were saved.', badges: ['Media excluded', 'Secrets hidden'] };
+  }
+  if (actionId === 'preview_restore') {
+    return { title: status === 'queued' ? 'Restore preview queued' : 'Restore preview ready', summary: summary || 'No files were restored. No database was changed.', badges: ['Preview only', 'Media preserved'] };
+  }
+  if (actionId === 'update_app') {
+    return { title: status === 'queued' ? 'Update readiness queued' : 'Update readiness checked', summary: summary || 'No update was applied.', badges: ['No update was applied', 'Rollback checked'] };
+  }
+  if (actionId === 'check_app') {
+    return { title: status === 'queued' ? 'Check app queued' : status === 'failed' ? 'Something changed' : 'Protected app', summary: summary || 'Route, health, storage, and redaction checks passed.', badges: ['Evidence saved'] };
+  }
+  if (actionId === 'repair_app') {
+    return { title: status === 'queued' ? 'Repair queued' : 'Repair completed', summary: summary || 'Route and health are ready.', badges: ['Non-destructive', 'Evidence saved'] };
+  }
+  if (actionId === 'import_photos') {
+    return { title: status === 'queued' ? 'Import photos queued' : 'Import photos completed', summary: summary || 'PhotoPrism owns indexing and media details.', badges: ['Media flow', 'Evidence saved'] };
+  }
+  if (actionId === 'connect_photos') {
+    return { title: 'Photos connected', summary: summary || 'PhotoPrism can now look there. Run Import photos to update your library.', badges: ['Read-only', 'Paths hidden'] };
+  }
+  if (actionId === 'backup_to_storage') {
+    return { title: status === 'queued' ? 'Storage backup queued' : 'Storage target checked', summary: summary || 'Join a storage device to save app backups elsewhere.', badges: ['Readiness only'] };
+  }
+  return { title: status === 'queued' ? 'Request accepted' : 'Action updated', summary: summary || 'Pocket Lab updated this app action.', badges: [] };
+}
+
+function tileResultForAction(actionId, action = {}, result = null) {
+  if (result?.action_id === actionId || (actionId === 'connect_photos' && ['duplicate_mapping', 'already_connected', 'created', 'queued'].includes(String(result?.status || '').toLowerCase()))) {
+    return result;
+  }
+  if (action?.result?.summary && action?.result?.status) {
+    return { action_id: actionId, ...action.result };
+  }
+  return null;
+}
+
+function AppActionReceiptButton({ available, onClick }) {
+  if (!available) return null;
+  return (
+    <button type="button" className="lite-app-action-receipt-button" onClick={onClick}>
+      <FileCheck className="h-4 w-4" />
+      View receipt
+    </button>
+  );
+}
+
+function AppActionDisabledReason({ reason }) {
+  if (!reason) return null;
+  return <p className="lite-app-action-disabled-reason">{reason}</p>;
+}
+
+function AppActionTimeline({ actionId, steps = [] }) {
+  const fallbackSteps = actionId === 'update_app'
+    ? ['Version', 'Backup', 'Restore Preview', 'Route', 'Rollback', 'Evidence']
+    : actionId === 'preview_restore'
+      ? ['Backup', 'Preview checklist', 'Evidence']
+      : actionId === 'import_photos'
+        ? ['Phone storage', 'Worker', 'PhotoPrism']
+        : ['Request accepted', 'Worker picked it up', 'Evidence saved'];
+  const timelineSteps = Array.isArray(steps) && steps.length ? steps.slice(0, 6) : fallbackSteps.map((label, index) => ({ id: label, label, status: index === 0 ? 'active' : 'waiting' }));
+  return (
+    <span className="lite-app-action-timeline" aria-label="Action step timeline">
+      {timelineSteps.map((step) => <i key={step.id || step.label} className={`is-${step.status || 'waiting'}`}>{step.label}</i>)}
+    </span>
+  );
+}
+
+function AppActionFlowAnimation({ actionId, running }) {
+  return <span className={`lite-app-action-flow is-${actionId} ${running ? 'is-running' : ''}`} aria-hidden="true"><i /><i /><i /></span>;
+}
+
+function AppActionResultCard({ actionId, action, result, onViewReceipt }) {
+  const payload = result || null;
+  if (!payload) return null;
+  const copy = actionResultCopy(actionId, payload, action);
+  const receiptAvailable = Boolean(action?.receipt?.available || action?.evidence_ref || action?.latest_check?.evidence_ref || catalogActionReference(payload));
+  return (
+    <div className="lite-app-action-result-card" role="status" aria-live="polite">
+      <div>
+        <strong>{copy.title}</strong>
+        <p>{copy.summary}</p>
+      </div>
+      {copy.badges?.length ? <div className="lite-app-action-result-badges">{copy.badges.map((badge) => <span key={badge}>{badge}</span>)}</div> : null}
+      <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} />
+    </div>
+  );
+}
+
+function AppActionGroup({ group, children }) {
+  return (
+    <section className={`lite-app-action-group is-${group.id}`} aria-label={`${group.label} actions`}>
+      <div className="lite-app-action-group-head">
+        <div>
+          <span>{group.label}</span>
+          <p>{group.summary}</p>
+        </div>
+      </div>
+      <div className="lite-app-action-group-grid">
+        {children}
+      </div>
+    </section>
+  );
+}
+
 
 function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
   if (actionId === 'import_photos') {
@@ -401,15 +611,18 @@ function PhotoPrismActionTile({
   action,
   busyKey,
   progress,
+  result,
   tone = 'secondary',
   onClick,
+  onViewReceipt,
   disabled = false,
   title,
 }) {
-  const copy = actionCopy(actionId);
   const busy = isActionBusy(app, actionId, busyKey) || (actionId === 'connect_photos' && busyKey === `${app?.id}:phone_storage`);
-  const progressState = progress || null;
-  const reason = action?.enabled === false ? lifecycleActionReason(action) : '';
+  const normalized = normalizeAppAction({ app, actionId, action, busy, disabled, progress, result, title });
+  const copy = normalized.copy;
+  const progressState = normalized.progress || null;
+  const reason = normalized.disabledReason;
   const progressDisablesAction = progressState?.running;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
   const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
@@ -418,6 +631,8 @@ function PhotoPrismActionTile({
   const isRecoveryRunning = Boolean(showProgress && ['backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId));
   const isUpdateRunning = Boolean(showProgress && actionId === 'update_app');
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
+  const tileResult = tileResultForAction(actionId, action, result);
+  const receiptAvailable = normalized.receiptAvailable || Boolean(tileResult && catalogActionReference(tileResult));
   const runningButtonLabel = isImportRunning ? (
     <span className="lite-catalog-import-flow-button">
       <span className="lite-catalog-import-flow-button-stage" aria-hidden="true">
@@ -429,14 +644,18 @@ function PhotoPrismActionTile({
     </span>
   ) : busyActionLabel(actionId);
   return (
-    <div className={`lite-catalog-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${isSafetyRepairRunning ? 'is-safety-repair-running' : ''} ${isRecoveryRunning ? 'is-recovery-running' : ''} ${isUpdateRunning ? 'is-update-running' : ''} ${actionId === 'check_app' ? 'is-check-app' : ''} ${actionId === 'repair_app' ? 'is-repair-app' : ''} ${actionId === 'update_app' ? 'is-update-app' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`}>
+    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${isImportRunning ? 'is-import-running' : ''} ${isSafetyRepairRunning ? 'is-safety-repair-running' : ''} ${isRecoveryRunning ? 'is-recovery-running' : ''} ${isUpdateRunning ? 'is-update-running' : ''} ${actionId === 'check_app' ? 'is-check-app' : ''} ${actionId === 'repair_app' ? 'is-repair-app' : ''} ${actionId === 'update_app' ? 'is-update-app' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`} data-action-id={actionId}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
-          <span>{copy.eyebrow}</span>
+          <span>{copy.eyebrow || normalized.categoryLabel}</span>
           <strong>{copy.label}</strong>
-          <p>{progressLabel || reason || copy.description}</p>
+          <p>{progressLabel || reason || normalized.summary || copy.description}</p>
         </div>
+      </div>
+      <div className="lite-app-action-state-row">
+        <StatusBadge status={normalized.display.status}>{normalized.display.label}</StatusBadge>
+        <AppActionFlowAnimation actionId={actionId} running={Boolean(showProgress)} />
       </div>
       <LiteButton
         tone={tone}
@@ -446,6 +665,7 @@ function PhotoPrismActionTile({
       >
         {busy || progressState?.running ? runningButtonLabel : copy.label}
       </LiteButton>
+      <AppActionDisabledReason reason={!showProgress ? reason : ''} />
       {showProgress ? (
         <div
           className={`lite-catalog-action-progress ${progressState.indeterminate ? 'is-indeterminate' : ''}`}
@@ -484,6 +704,7 @@ function PhotoPrismActionTile({
               ))}
             </span>
           ) : null}
+          <AppActionTimeline actionId={actionId} steps={progressState?.steps || []} />
           {(isSafetyRepairRunning || isRecoveryRunning) ? (
             <span className="lite-catalog-app-operation-steps" aria-label={`${copy.label} progress steps`}>
               {(progressState?.steps?.length ? progressState.steps : [
@@ -499,6 +720,8 @@ function PhotoPrismActionTile({
           ) : null}
         </div>
       ) : null}
+      <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewReceipt={onViewReceipt} />
+      {!tileResult ? <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} /> : null}
     </div>
   );
 }
@@ -1332,7 +1555,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setResult({ status: 'queued', summary: 'Connecting phone storage...' });
     try {
       const response = await liteApi.connectPhotoPrismStorage(storagePreview.connect_payload);
-      setResult({ ...response, summary: 'Phone storage connected. PhotoPrism can now look in ~/storage. Run Import photos to update your library.' });
+      setResult({ action_id: 'connect_photos', ...response, summary: 'Phone storage connected. PhotoPrism can now look there. Run Import photos to update your library.' });
       closeStoragePreview(true);
       await refreshPhotoPrismState();
       window.setTimeout(refresh, 700);
@@ -1392,13 +1615,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setResult({ status: 'queued', summary: 'Connecting media folder...' });
     try {
       const response = await liteApi.connectPhotoPrismStorage(payload);
-      setResult(response);
+      setResult({ action_id: 'connect_photos', ...response });
       await refreshPhotoPrismState();
       window.setTimeout(refresh, 700);
     } catch (err) {
       const detail = err?.payload?.detail;
       if (detail?.status === 'duplicate_mapping') {
-        setResult({ status: 'already_connected', summary: detail.summary || 'This media folder is already connected to PhotoPrism.' });
+        setResult({ action_id: 'connect_photos', status: 'already_connected', summary: detail.summary || 'This media folder is already connected to PhotoPrism.' });
       } else {
         setActionError(err.message);
       }
@@ -1461,6 +1684,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const actionsClassName = `lite-catalog-actions ${canInstallPhone ? 'has-phone-install' : ''}`;
     const lifecycle = lifecycleProfile(app);
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
+    const openAction = lifecycleAction(lifecycle, 'open');
     const connectPhotosAction = lifecycleAction(lifecycle, 'connect_photos');
     const checkAppAction = lifecycleAction(lifecycle, 'check_app');
     const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
@@ -1479,6 +1703,125 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const repairAppAction = lifecycleAction(lifecycle, 'repair_app');
     const removeAppAction = lifecycleAction(lifecycle, 'remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
+    const appActionEntries = [
+      {
+        actionId: 'open',
+        action: openAction,
+        tone: 'primary',
+        onClick: (event) => openApp(app, event),
+        disabled: !canOpen || openAction.enabled === false,
+        title: lifecycleActionReason(openAction) || app?.access?.message || 'Open PhotoPrism.',
+        result,
+      },
+      {
+        actionId: 'connect_photos',
+        action: connectPhotosAction,
+        busyKey: storageBusy || actionBusyKey,
+        tone: 'secondary',
+        onClick: (event) => openPhoneStoragePreview(app, event),
+        disabled: connectPhotosAction.enabled === false || Boolean(storageBusy),
+        title: lifecycleActionReason(connectPhotosAction),
+        result,
+      },
+      {
+        actionId: 'import_photos',
+        action: importPhotosAction,
+        busyKey: actionBusyKey,
+        progress: importProgress,
+        tone: 'secondary',
+        onClick: (event) => runLifecycleAction(app, 'import_photos', event),
+        disabled: importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
+        title: lifecycleActionReason(importPhotosAction),
+        result,
+      },
+      {
+        actionId: 'check_app',
+        action: checkAppAction,
+        busyKey: actionBusyKey,
+        progress: checkAppProgress,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'check_app', event),
+        disabled: checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`,
+        title: lifecycleActionReason(checkAppAction),
+        result,
+      },
+      {
+        actionId: 'backup_app',
+        action: backupAppAction,
+        busyKey: actionBusyKey,
+        progress: backupAppProgress,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'backup_app', event),
+        disabled: backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`,
+        title: lifecycleActionReason(backupAppAction),
+        result,
+      },
+      {
+        actionId: 'preview_restore',
+        action: previewRestoreAction,
+        busyKey: actionBusyKey,
+        progress: previewRestoreProgress,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'preview_restore', event),
+        disabled: previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`,
+        title: lifecycleActionReason(previewRestoreAction),
+        result,
+      },
+      {
+        actionId: 'backup_to_storage',
+        action: backupToStorageAction,
+        busyKey: actionBusyKey,
+        progress: backupToStorageProgress,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id }),
+        disabled: backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`,
+        title: lifecycleActionReason(backupToStorageAction),
+        result,
+      },
+      {
+        actionId: 'repair_app',
+        action: repairAppAction,
+        busyKey: actionBusyKey,
+        progress: repairAppProgress,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'repair_app', event),
+        disabled: repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`,
+        title: lifecycleActionReason(repairAppAction),
+        result,
+      },
+      {
+        actionId: 'install_app',
+        action: installAppAction,
+        busyKey: actionBusyKey,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'install_app', event),
+        disabled: installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`,
+        title: lifecycleActionReason(installAppAction),
+        result,
+      },
+      {
+        actionId: 'update_app',
+        action: updateAppAction,
+        busyKey: actionBusyKey,
+        progress: updateAppProgress,
+        tone: 'ghost',
+        onClick: (event) => runLifecycleAction(app, 'update_app', event),
+        disabled: updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`,
+        title: lifecycleActionReason(updateAppAction),
+        result,
+      },
+      {
+        actionId: 'remove_app',
+        action: removeAppAction,
+        busyKey: actionBusyKey,
+        tone: 'danger',
+        onClick: (event) => { event?.stopPropagation?.(); setRemoveConfirmApp(app); },
+        disabled: removeAppAction.enabled === false,
+        title: lifecycleActionReason(removeAppAction),
+        result,
+      },
+    ];
+    const appActionGroups = groupAppActions(appActionEntries);
 
     return (
       <GlassCard
@@ -1540,129 +1883,43 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 </div>
                 <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
               </div>
-              <div className="lite-catalog-action-buttons">
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="connect_photos"
-                  action={connectPhotosAction}
-                  busyKey={storageBusy || actionBusyKey}
-                  tone="secondary"
-                  onClick={(event) => openPhoneStoragePreview(app, event)}
-                  disabled={connectPhotosAction.enabled === false || Boolean(storageBusy)}
-                  title={lifecycleActionReason(connectPhotosAction)}
-                />
-                {storagePreviewApp?.id === app.id ? (
-                  <div className="lite-catalog-storage-preview-anchor">
-                    <PhotoPrismStoragePreviewSheet
-                      preview={storagePreview}
-                      loading={storagePreviewLoading}
-                      error={storagePreviewError}
-                      connecting={Boolean(storageBusy)}
-                      notice={storagePreviewNotice}
-                      onClose={closeStoragePreview}
-                      onConfirm={connectPhoneStorageFromPreview}
-                      onRetry={loadStoragePreview}
-                      onDismissNotice={() => setStoragePreviewNotice(null)}
-                    />
-                  </div>
-                ) : null}
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="import_photos"
-                  action={importPhotosAction}
-                  busyKey={actionBusyKey}
-                  progress={importProgress}
-                  tone="secondary"
-                  onClick={(event) => runLifecycleAction(app, 'import_photos', event)}
-                  disabled={importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`}
-                  title={lifecycleActionReason(importPhotosAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="backup_app"
-                  action={backupAppAction}
-                  busyKey={actionBusyKey}
-                  progress={backupAppProgress}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'backup_app', event)}
-                  disabled={backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`}
-                  title={lifecycleActionReason(backupAppAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="check_app"
-                  action={checkAppAction}
-                  busyKey={actionBusyKey}
-                  progress={checkAppProgress}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'check_app', event)}
-                  disabled={checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`}
-                  title={lifecycleActionReason(checkAppAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="preview_restore"
-                  action={previewRestoreAction}
-                  busyKey={actionBusyKey}
-                  progress={previewRestoreProgress}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'preview_restore', event)}
-                  disabled={previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`}
-                  title={lifecycleActionReason(previewRestoreAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="backup_to_storage"
-                  action={backupToStorageAction}
-                  busyKey={actionBusyKey}
-                  progress={backupToStorageProgress}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id })}
-                  disabled={backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`}
-                  title={lifecycleActionReason(backupToStorageAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="install_app"
-                  action={installAppAction}
-                  busyKey={actionBusyKey}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'install_app', event)}
-                  disabled={installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`}
-                  title={lifecycleActionReason(installAppAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="update_app"
-                  action={updateAppAction}
-                  busyKey={actionBusyKey}
-                  progress={updateAppProgress}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'update_app', event)}
-                  disabled={updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`}
-                  title={lifecycleActionReason(updateAppAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="repair_app"
-                  action={repairAppAction}
-                  busyKey={actionBusyKey}
-                  progress={repairAppProgress}
-                  tone="ghost"
-                  onClick={(event) => runLifecycleAction(app, 'repair_app', event)}
-                  disabled={repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`}
-                  title={lifecycleActionReason(repairAppAction)}
-                />
-                <PhotoPrismActionTile
-                  app={app}
-                  actionId="remove_app"
-                  action={removeAppAction}
-                  busyKey={actionBusyKey}
-                  tone="danger"
-                  onClick={(event) => { event?.stopPropagation?.(); setRemoveConfirmApp(app); }}
-                  disabled={removeAppAction.enabled === false}
-                  title={lifecycleActionReason(removeAppAction)}
-                />
+              <div className="lite-catalog-action-groups">
+                {appActionGroups.map((group) => (
+                  <AppActionGroup key={group.id} group={group}>
+                    {group.actions.map((entry) => (
+                      <React.Fragment key={entry.actionId}>
+                        <PhotoPrismActionTile
+                          app={app}
+                          actionId={entry.actionId}
+                          action={entry.action}
+                          busyKey={entry.busyKey || actionBusyKey}
+                          progress={entry.progress}
+                          result={entry.result}
+                          tone={entry.tone}
+                          onClick={entry.onClick}
+                          onViewReceipt={() => setEvidenceReceiptOpen(true)}
+                          disabled={entry.disabled}
+                          title={entry.title}
+                        />
+                        {entry.actionId === 'connect_photos' && storagePreviewApp?.id === app.id ? (
+                          <div className="lite-catalog-storage-preview-anchor">
+                            <PhotoPrismStoragePreviewSheet
+                              preview={storagePreview}
+                              loading={storagePreviewLoading}
+                              error={storagePreviewError}
+                              connecting={Boolean(storageBusy)}
+                              notice={storagePreviewNotice}
+                              onClose={closeStoragePreview}
+                              onConfirm={connectPhoneStorageFromPreview}
+                              onRetry={loadStoragePreview}
+                              onDismissNotice={() => setStoragePreviewNotice(null)}
+                            />
+                          </div>
+                        ) : null}
+                      </React.Fragment>
+                    ))}
+                  </AppActionGroup>
+                ))}
               </div>
               <PhotoPrismEvidenceCard
                 evidence={appEvidence}

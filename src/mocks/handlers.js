@@ -47,6 +47,43 @@ const mockAppLifecycleProfiles = () => [{
   updated_at: new Date().toISOString(),
 }];
 
+function mockUnifiedAppActions() {
+  const actions = mockAppLifecycleProfiles()[0].actions || {};
+  const categoryFor = (actionId, action = {}) => {
+    if (action.category === 'app_setup') return 'setup';
+    if (action.category) return action.category;
+    if (['open', 'open_full_screen', 'install_to_phone'].includes(actionId)) return 'access';
+    if (['connect_photos', 'import_photos'].includes(actionId)) return 'media';
+    if (actionId === 'check_app') return 'safety';
+    if (['backup_app', 'preview_restore', 'backup_to_storage', 'repair_app'].includes(actionId)) return 'recovery';
+    if (['install_app', 'update_app'].includes(actionId)) return 'setup';
+    if (actionId === 'remove_app') return 'danger';
+    return 'setup';
+  };
+  const normalized = Object.fromEntries(Object.entries(actions).map(([actionId, action]) => {
+    const enabled = action.enabled !== false;
+    const status = action.status || (enabled ? 'ready' : 'not_ready');
+    const evidenceRef = action.evidence_ref || action.latest_check?.evidence_ref || null;
+    return [actionId, {
+      ...action,
+      id: actionId,
+      app_id: 'photoprism',
+      category: categoryFor(actionId, action),
+      enabled,
+      status,
+      disabled_reason: enabled ? null : action.disabled_reason || action.reason || 'Action is not ready yet.',
+      summary: action.summary || 'Pocket Lab will run this safely through the backend.',
+      risk: action.risk || (actionId === 'remove_app' ? 'destructive' : ['backup_app', 'preview_restore', 'repair_app', 'install_app', 'update_app'].includes(actionId) ? 'review' : 'low'),
+      execution_owner: ['open', 'open_full_screen', 'install_to_phone'].includes(actionId) ? 'browser_navigation' : actionId === 'connect_photos' ? 'fastapi' : 'backend_worker',
+      confirmation_required: Boolean(action.confirmation_required || action.requires_confirmation),
+      destructive: action.risk === 'destructive' || actionId === 'remove_app',
+      progress: action.progress || { phase: status, step: enabled ? 'Ready.' : action.reason || 'Not ready.', percent: null, indeterminate: false, steps: [] },
+      result: action.latest_check ? { status: action.latest_check.status, summary: action.latest_check.summary, evidence_ref: evidenceRef, receipt_id: null } : { status: null, summary: null, evidence_ref: null, receipt_id: null },
+      receipt: { available: Boolean(evidenceRef), receipt_id: null, evidence_ref: evidenceRef },
+    }];
+  }));
+  return normalized;
+}
 
 
 function mockAppUpdateState() {
@@ -519,7 +556,27 @@ export const handlers = [
   }),
   http.get('/api/lite/apps/lifecycle', () => HttpResponse.json({ status: 'healthy', summary: 'Unified App Lifecycle profiles are available.', apps: mockAppLifecycleProfiles(), items: mockAppLifecycleProfiles(), count: mockAppLifecycleProfiles().length, ready_count: 1, attention_count: 0, updated_at: new Date().toISOString() })),
   http.get('/api/lite/apps/lifecycle/photoprism', () => HttpResponse.json(mockAppLifecycleProfiles()[0])),
-  http.get('/api/lite/apps/photoprism/actions', () => HttpResponse.json({ status: 'healthy', app_id: 'photoprism', name: 'PhotoPrism', summary: 'PhotoPrism Action Center is available.', actions: mockAppLifecycleProfiles()[0].actions, media: mockAppLifecycleProfiles()[0].media })),
+  http.get('/api/lite/apps/photoprism/actions', () => {
+    const actions = mockUnifiedAppActions();
+    return HttpResponse.json({
+      status: 'healthy',
+      app_id: 'photoprism',
+      name: 'PhotoPrism',
+      summary: 'PhotoPrism Action Center is available.',
+      actions,
+      items: actions,
+      action_list: Object.values(actions),
+      action_groups: [
+        { id: 'access', label: 'Open', actions: ['open', 'open_full_screen', 'install_to_phone'] },
+        { id: 'media', label: 'Photos', actions: ['connect_photos', 'import_photos'] },
+        { id: 'safety', label: 'Safety', actions: ['check_app'] },
+        { id: 'recovery', label: 'Recovery', actions: ['backup_app', 'preview_restore', 'backup_to_storage', 'repair_app'] },
+        { id: 'setup', label: 'App setup', actions: ['install_app', 'update_app'] },
+        { id: 'danger', label: 'Remove', actions: ['remove_app'] },
+      ],
+      media: mockAppLifecycleProfiles()[0].media,
+    });
+  }),
   http.get('/api/lite/apps/photoprism/evidence', () => HttpResponse.json(mockAppEvidence())),
   http.get('/api/lite/apps/photoprism/update', () => HttpResponse.json(mockAppUpdateState())),
   http.get('/api/lite/apps/photoprism/update/receipts/:operationId', () => HttpResponse.json(mockAppUpdateReceipt())),
@@ -539,9 +596,12 @@ export const handlers = [
       return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, operation_id: 'app-update-check-photoprism-mock001', command_id: 'app-update-check-photoprism-mock001', summary: 'Checking PhotoPrism update readiness.', progress: { phase: 'queued', step: 'Update check queued.', bounded: true, steps: [{ id: 'version', label: 'Version', status: 'active' }, { id: 'backup', label: 'Backup', status: 'waiting' }, { id: 'restore_preview', label: 'Restore Preview', status: 'waiting' }, { id: 'route', label: 'Route', status: 'waiting' }, { id: 'rollback', label: 'Rollback', status: 'waiting' }, { id: 'evidence', label: 'Evidence', status: 'waiting' }] }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
     }
     if (actionId === 'backup_app') {
-      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'PhotoPrism app backup queued.' }, { status: 202 });
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'PhotoPrism app backup queued.', progress: { phase: 'queued', step: 'Backup queued.', bounded: true }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
     }
-    return HttpResponse.json({ status: 'disabled', app_id: 'photoprism', action_id: actionId, summary: 'This action is not ready yet.' }, { status: 409 });
+    if (actionId === 'preview_restore') {
+      return HttpResponse.json({ accepted: true, status: 'queued', app_id: 'photoprism', action_id: actionId, summary: 'Restore preview queued. No files were restored.', progress: { phase: 'queued', step: 'Restore preview queued.', bounded: true }, evidence: { status: 'pending', summary: 'Evidence pending.' } }, { status: 202 });
+    }
+    return HttpResponse.json({ status: 'disabled', accepted: false, app_id: 'photoprism', action_id: actionId, summary: 'This action is not ready yet.', disabled_reason: 'This action is not ready yet.', progress: { phase: 'blocked', step: 'This action is not ready yet.', bounded: true }, evidence: { status: 'not_started', summary: 'No evidence was created because the action was not started.' } }, { status: 409 });
   }),
   http.get('/api/lite/apps/photoprism/storage-preview', () => HttpResponse.json({
     status: 'ready',

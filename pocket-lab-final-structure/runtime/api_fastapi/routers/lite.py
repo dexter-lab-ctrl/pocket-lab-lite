@@ -505,6 +505,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "action_id": command["action_id"],
             "media_operation": operation,
             "summary": action.get("summary") or operation.get("summary") or "PhotoPrism media action queued.",
+            "progress": operation.get("progress") or {"phase": "queued", "step": "Import photos queued.", "bounded": True},
             "evidence": {"status": "pending", "summary": "Media evidence pending"},
         })
         return submitted
@@ -574,6 +575,8 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "action_id": "install_app",
             "operation_id": command["operation_id"],
             "summary": "PhotoPrism install started.",
+            "progress": {"phase": "queued", "step": "Install queued.", "bounded": True},
+            "evidence": {"status": "pending", "summary": "Install evidence pending."},
         })
         return queued
 
