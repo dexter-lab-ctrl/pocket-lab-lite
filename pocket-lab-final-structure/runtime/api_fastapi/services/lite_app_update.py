@@ -260,12 +260,12 @@ def _version_sort_key(value: Any) -> tuple[int, ...] | None:
 
 def _update_available(current: dict[str, Any], latest: dict[str, Any]) -> str:
     if latest.get("status") == "not_configured":
-        return "No (latest version source not configured)"
+        return "unknown"
     current_key = _version_sort_key(current.get("version") or current.get("label"))
     latest_key = _version_sort_key(latest.get("version") or latest.get("label"))
     if current_key and latest_key:
         return "Yes" if latest_key > current_key else "No"
-    return "Cannot determine"
+    return "unknown"
 
 
 def _latest_verified_backup(app_id: str) -> dict[str, Any] | None:
