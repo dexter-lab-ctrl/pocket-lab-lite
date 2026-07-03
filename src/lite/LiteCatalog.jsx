@@ -1058,6 +1058,25 @@ function handleCatalogPointerDown(event) {
 }
 
 
+function appTone(status) {
+  const value = String(status || '').toLowerCase();
+  if (['ready', 'installed', 'healthy'].includes(value)) return 'healthy';
+  if (['installing', 'queued', 'running'].includes(value)) return 'working';
+  if (['needs_attention', 'unavailable', 'failed'].includes(value)) return 'degraded';
+  return 'ready';
+}
+
+function appLabel(app) {
+  const value = String(app?.status || '').toLowerCase();
+  if (value === 'ready' && app?.actions?.open) return 'Ready';
+  if (value === 'ready' || app?.installed) return 'Ready';
+  if (value === 'installing') return 'Installing';
+  if (value === 'needs_attention') return 'Needs attention';
+  if (value === 'unavailable') return 'Unavailable';
+  return 'Available';
+}
+
+
 function appFilterState(app) {
   const value = String(app?.status || '').toLowerCase();
   if (['needs_attention', 'unavailable', 'failed'].includes(value)) return 'attention';
