@@ -11963,6 +11963,15 @@ textarea {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-action-progress *,
+  .theme-pocket-lite-daylight .lite-action-progress::before,
+  .theme-pocket-lite-daylight .lite-action-progress::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Lite App Catalog Phase 2: safety check and repair progress */
 .theme-pocket-lite-daylight .lite-catalog-action-tile.is-safety-repair-running {
   border-color: rgba(14, 165, 233, 0.28);
@@ -12330,13 +12339,53 @@ textarea {
   transition: width 180ms ease;
 }
 
+.theme-pocket-lite-daylight .lite-action-progress__packet {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.96), rgba(14, 165, 233, 0.82));
+  border-radius: 999px;
+  box-shadow: 0 0 0.55rem rgba(14, 165, 233, 0.34);
+  height: 0.44rem;
+  left: 0.18rem;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.44rem;
+}
+
+.theme-pocket-lite-daylight .lite-action-progress__stamp {
+  align-items: center;
+  background: rgba(34, 197, 94, 0.96);
+  border-radius: 999px;
+  color: white;
+  display: inline-flex;
+  height: 1.1rem;
+  justify-content: center;
+  opacity: 0;
+  position: absolute;
+  right: 0.08rem;
+  top: 50%;
+  transform: translateY(-50%) scale(0.82);
+  width: 1.1rem;
+}
+
 .theme-pocket-lite-daylight .lite-action-progress--queued .lite-action-progress__fill,
 .theme-pocket-lite-daylight .lite-action-progress--running .lite-action-progress__fill,
 .theme-pocket-lite-daylight .lite-action-progress--waiting .lite-action-progress__fill {
   animation: liteActionProgressCalmFill 1.35s ease-in-out infinite;
 }
 
-.theme-pocket-lite-daylight .lite-action-progress--saved_for_troubleshooting .lite-action-progress__fill {
+.theme-pocket-lite-daylight .lite-action-progress--queued .lite-action-progress__packet,
+.theme-pocket-lite-daylight .lite-action-progress--running .lite-action-progress__packet,
+.theme-pocket-lite-daylight .lite-action-progress--waiting .lite-action-progress__packet {
+  animation: liteActionProgressPacket 1.15s ease-in-out infinite;
+  opacity: 1;
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--evidence_saved .lite-action-progress__stamp {
+  animation: liteActionProgressStamp 180ms ease-out both;
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--evidence_saved .lite-action-progress__fill {
   background: linear-gradient(90deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.82));
 }
 
@@ -12395,12 +12444,67 @@ textarea {
   white-space: nowrap;
 }
 
+.theme-pocket-lite-daylight .lite-action-progress__meta {
+  color: rgba(100, 116, 139, 0.88);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: -0.12rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--idle .lite-action-progress__track {
+  background: rgba(241, 245, 249, 0.92);
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--idle .lite-action-progress__fill {
+  background: transparent;
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--shield .lite-action-progress__fill {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.9), rgba(14, 165, 233, 0.78));
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--backup .lite-action-progress__fill {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.82), rgba(34, 197, 94, 0.78));
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--preview .lite-action-progress__fill,
+.theme-pocket-lite-daylight .lite-action-progress--readiness .lite-action-progress__fill {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.82), rgba(14, 165, 233, 0.76));
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--repair .lite-action-progress__fill {
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.78), rgba(14, 165, 233, 0.76));
+}
+
+.theme-pocket-lite-daylight .lite-action-progress--evidence_saved .lite-action-progress__fill {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.82));
+}
+
 .theme-pocket-lite-daylight .lite-action-progress__reason {
   color: rgba(120, 53, 15, 0.92);
   font-size: 0.78rem;
   line-height: 1.35;
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+@keyframes liteActionProgressCalmFill {
+  0%, 100% { filter: saturate(1); opacity: 0.88; }
+  50% { filter: saturate(1.08); opacity: 1; }
+}
+
+@keyframes liteActionProgressPacket {
+  0% { left: 0.18rem; opacity: 0; transform: translateY(-50%) scale(0.78); }
+  18% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { left: calc(100% - 0.62rem); opacity: 0; transform: translateY(-50%) scale(0.98); }
+}
+
+@keyframes liteActionProgressStamp {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.82); }
+  100% { opacity: 1; transform: translateY(-50%) scale(1); }
 }
 
 .theme-pocket-lite-daylight .lite-app-action-result-card {
@@ -12569,6 +12673,11 @@ textarea {
   background: rgba(240, 253, 250, 0.82);
 }
 
+.theme-pocket-lite-daylight .lite-app-action-detail-section--run-history {
+  background: rgba(248, 250, 252, 0.88);
+  border-color: rgba(100, 116, 139, 0.14);
+}
+
 .theme-pocket-lite-daylight .lite-app-action-technical-details summary {
   cursor: pointer;
 }
@@ -12586,5 +12695,25 @@ textarea {
   .theme-pocket-lite-daylight .lite-app-action-details-status {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .theme-pocket-lite-daylight .lite-action-progress {
+    gap: 0.42rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-action-progress__label {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.22rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-action-progress__nodes {
+    gap: 0.25rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-action-progress__stage {
+    font-size: 0.62rem;
   }
 }
