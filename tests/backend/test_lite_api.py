@@ -2464,6 +2464,11 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
     assert "lite-catalog-summary-panel" in ui
+    assert "lite-app-action-row" in ui
+    assert "beginManageDrag" in ui
+    assert "moveManageDrag" in ui
+    assert "endManageDrag" in ui
+    assert "Drag app actions sheet" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
     assert "lite-catalog-filter-pills" not in ui
@@ -2478,6 +2483,10 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-manage-layer" in css
     assert "lite-catalog-manage-backdrop" in css
     assert "lite-catalog-manage-sheet" in css
+    assert "lite-app-action-row" in css
+    assert "lite-app-action-row-result" in css
+    assert "touch-action: none" in css
+    assert "safe-area-inset-top" in css
     assert "child_process" not in ui
     assert "nats.connect" not in ui
     assert "photoprism import" not in ui.lower()
@@ -3560,6 +3569,8 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "groupAppActions",
         "getActionDisplayState",
         "AppActionGroup",
+        "lite-app-action-row",
+        "actionRowStateLabel",
         "AppActionResultCard",
         "AppActionDetailsButton",
         "AppActionDetailsPanel",
