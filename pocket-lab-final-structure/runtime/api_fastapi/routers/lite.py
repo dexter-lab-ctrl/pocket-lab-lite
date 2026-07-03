@@ -235,7 +235,14 @@ def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
 @router.get("/apps/{app_id}/evidence")
 def get_lite_app_evidence(app_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_evidence_receipts.app_evidence(app_id)
+    payload = lite_evidence_receipts.app_evidence(app_id)
+    payload.update({
+        "backend_only": True,
+        "debug_only": True,
+        "normal_ui_dependency": False,
+        "summary": "Backend troubleshooting records are available for support and recovery review. The normal App Catalog UI does not load this endpoint.",
+    })
+    return payload
 
 
 @router.get("/apps/{app_id}/update")
@@ -297,7 +304,7 @@ async def start_lite_app_backup(app_id: str, payload: LiteAppBackupRequest, requ
         "pending_backup": pending,
         "summary": "Backing up PhotoPrism app settings.",
         "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
-        "evidence": {"status": "pending", "summary": "Evidence pending."},
+        "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
     return submitted
 
@@ -349,7 +356,7 @@ async def start_lite_app_restore_preview(app_id: str, payload: LiteAppRestorePre
         "pending_restore_preview": pending,
         "summary": "Preparing PhotoPrism restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
-        "evidence": {"status": "pending", "summary": "Evidence pending."},
+        "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
     return submitted
 
@@ -408,7 +415,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "pending_backup": pending,
             "summary": "Backing up PhotoPrism app settings.",
             "progress": {"phase": "queued", "step": "Backup queued.", "bounded": True},
-            "evidence": {"status": "pending", "summary": "Evidence pending."},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
         return submitted
 
@@ -442,7 +449,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "pending_restore_preview": pending,
             "summary": "Preparing PhotoPrism restore preview.",
             "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
-            "evidence": {"status": "pending", "summary": "Evidence pending."},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
         return submitted
 
@@ -474,7 +481,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "pending_update_check": pending,
             "summary": "Checking PhotoPrism update readiness.",
             "progress": pending.get("progress") or {"phase": "queued", "step": "Update check queued.", "bounded": True},
-            "evidence": {"status": "pending", "summary": "Evidence pending."},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
         return submitted
 
@@ -506,7 +513,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "media_operation": operation,
             "summary": action.get("summary") or operation.get("summary") or "PhotoPrism media action queued.",
             "progress": operation.get("progress") or {"phase": "queued", "step": "Import photos queued.", "bounded": True},
-            "evidence": {"status": "pending", "summary": "Media evidence pending"},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend media record pending."},
         })
         return submitted
 
@@ -533,7 +540,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "operation": operation,
             "summary": action.get("summary") or operation.get("summary") or "App action queued.",
             "progress": operation.get("progress") or {"phase": "queued", "step": "Request queued.", "bounded": True},
-            "evidence": {"status": "pending", "summary": "Evidence pending."},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
         })
         return submitted
 
@@ -576,7 +583,7 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
             "operation_id": command["operation_id"],
             "summary": "PhotoPrism install started.",
             "progress": {"phase": "queued", "step": "Install queued.", "bounded": True},
-            "evidence": {"status": "pending", "summary": "Install evidence pending."},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend install record pending."},
         })
         return queued
 
@@ -989,7 +996,7 @@ async def preview_lite_app_restore(app_id: str, payload: LiteAppRestorePreviewRe
         "pending_restore_preview": pending,
         "summary": "Preparing PhotoPrism restore preview.",
         "progress": {"phase": "queued", "step": "Restore preview queued.", "bounded": True},
-        "evidence": {"status": "pending", "summary": "Evidence pending."},
+        "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend record pending."},
     })
     return submitted
 

@@ -51,7 +51,7 @@ const PHOTO_PRISM_ACTION_COPY = {
   check_app: {
     eyebrow: 'Safety',
     label: 'Check app',
-    description: 'Check PhotoPrism health, route, storage, and safety evidence.',
+    description: 'Check PhotoPrism health, route, storage, and safety record.',
   },
   preview_restore: {
     eyebrow: 'Recovery',
@@ -81,7 +81,7 @@ const PHOTO_PRISM_ACTION_COPY = {
   remove_app: {
     eyebrow: 'Danger zone',
     label: 'Remove app',
-    description: 'Remove PhotoPrism while preserving photos, backups, and evidence by default.',
+    description: 'Remove PhotoPrism while preserving photos, backups, and backend records by default.',
   },
 };
 
@@ -129,7 +129,7 @@ const APP_ACTION_CATEGORY_ORDER = ['access', 'media', 'safety', 'recovery', 'set
 const APP_ACTION_CATEGORY_COPY = {
   access: { label: 'Open', summary: 'Open the app through Pocket Lab.' },
   media: { label: 'Photos', summary: 'Connect and import photos through backend-owned actions.' },
-  safety: { label: 'Safety', summary: 'Check app health and protected evidence.' },
+  safety: { label: 'Safety', summary: 'Check app health and protected records.' },
   recovery: { label: 'Recovery', summary: 'Back up, preview restore, and repair safely.' },
   setup: { label: 'App setup', summary: 'Install or check update readiness.' },
   danger: { label: 'Remove', summary: 'Advanced actions require explicit confirmation.' },
@@ -203,7 +203,7 @@ function normalizeAppAction(entry) {
     progress,
     disabledReason: !enabled ? actionDisabledReason(action) || entry?.title || 'Action is not ready yet.' : '',
     risk: action?.risk || (category === 'danger' ? 'destructive' : category === 'recovery' || category === 'setup' ? 'review' : 'low'),
-    receiptAvailable: Boolean(action?.receipt?.available || action?.evidence_ref || action?.latest_check?.evidence_ref || entry?.result?.evidence_ref),
+    detailsAvailable: true,
     summary: action?.summary || copy.description,
   };
 }
@@ -239,13 +239,13 @@ function actionResultCopy(actionId, payload = {}, action = {}) {
     return { title: status === 'queued' ? 'Update readiness queued' : 'Update readiness checked', summary: summary || 'No update was applied.', badges: ['No update was applied', 'Rollback checked'] };
   }
   if (actionId === 'check_app') {
-    return { title: status === 'queued' ? 'Check app queued' : status === 'failed' ? 'Something changed' : 'Protected app', summary: summary || 'Route, health, storage, and redaction checks passed.', badges: ['Evidence saved'] };
+    return { title: status === 'queued' ? 'Check app queued' : status === 'failed' ? 'Something changed' : 'Protected app', summary: summary || 'Route, health, storage, and redaction checks passed.', badges: ['Saved for troubleshooting'] };
   }
   if (actionId === 'repair_app') {
-    return { title: status === 'queued' ? 'Repair queued' : 'Repair completed', summary: summary || 'Route and health are ready.', badges: ['Non-destructive', 'Evidence saved'] };
+    return { title: status === 'queued' ? 'Repair queued' : 'Repair completed', summary: summary || 'Route and health are ready.', badges: ['Non-destructive', 'Saved for troubleshooting'] };
   }
   if (actionId === 'import_photos') {
-    return { title: status === 'queued' ? 'Import photos queued' : 'Import photos completed', summary: summary || 'PhotoPrism owns indexing and media details.', badges: ['Media flow', 'Evidence saved'] };
+    return { title: status === 'queued' ? 'Import photos queued' : 'Import photos completed', summary: summary || 'PhotoPrism owns indexing and media details.', badges: ['Media flow', 'Saved for troubleshooting'] };
   }
   if (actionId === 'connect_photos') {
     return { title: 'Photos connected', summary: summary || 'PhotoPrism can now look there. Run Import photos to update your library.', badges: ['Read-only', 'Paths hidden'] };
@@ -266,17 +266,17 @@ function tileResultForAction(actionId, action = {}, result = null) {
   return null;
 }
 
-function AppActionReceiptButton({ available, onClick, expanded = false }) {
+function AppActionDetailsButton({ available, onClick, expanded = false }) {
   if (!available) return null;
   return (
     <button
       type="button"
-      className={`lite-app-action-receipt-button ${expanded ? 'is-expanded' : ''}`}
+      className={`lite-app-action-details-button ${expanded ? 'is-expanded' : ''}`}
       onClick={onClick}
       aria-expanded={expanded}
     >
       <FileCheck className="h-4 w-4" />
-      <span>{expanded ? 'Hide receipt' : 'View receipt'}</span>
+      <span>{expanded ? 'Hide details' : 'Details'}</span>
     </button>
   );
 }
@@ -286,11 +286,11 @@ function AppActionDisabledReason({ reason }) {
   return <p className="lite-app-action-disabled-reason">{reason}</p>;
 }
 
-function AppActionResultCard({ actionId, action, result, onViewReceipt, receiptExpanded = false }) {
+function AppActionResultCard({ actionId, action, result, onViewDetails, detailsExpanded = false }) {
   const payload = result || null;
   if (!payload) return null;
   const copy = actionResultCopy(actionId, payload, action);
-  const receiptAvailable = Boolean(action?.receipt?.available || action?.evidence_ref || action?.latest_check?.evidence_ref || catalogActionReference(payload));
+  const detailsAvailable = true;
   return (
     <div className="lite-app-action-result-card" role="status" aria-live="polite">
       <div>
@@ -298,7 +298,7 @@ function AppActionResultCard({ actionId, action, result, onViewReceipt, receiptE
         <p>{copy.summary}</p>
       </div>
       {copy.badges?.length ? <div className="lite-app-action-result-badges">{copy.badges.map((badge) => <span key={badge}>{badge}</span>)}</div> : null}
-      <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} expanded={receiptExpanded} />
+      <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
     </div>
   );
 }
@@ -363,7 +363,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       steps: Array.isArray(progress?.steps) && progress.steps.length ? progress.steps : [
         { id: 'ready', label: 'Getting ready', status: 'active' },
         { id: 'working', label: 'Checking readiness', status: 'waiting' },
-        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
+        { id: 'troubleshooting', label: 'Saved for troubleshooting', status: 'waiting' },
       ],
     };
   }
@@ -384,7 +384,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       steps: [
         { id: 'ready', label: 'Getting ready', status: 'completed' },
         { id: 'working', label: 'Working', status: 'active' },
-        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
+        { id: 'troubleshooting', label: 'Saved for troubleshooting', status: 'waiting' },
       ],
     };
   }
@@ -549,7 +549,7 @@ function catalogActionNotice(result, error) {
 }
 
 function AppCatalogResultNotice({ result, error, onDismiss }) {
-  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [noticeDetailsOpen, setNoticeDetailsOpen] = useState(false);
   const notice = catalogActionNotice(result, error);
   if (!notice) return null;
 
@@ -570,17 +570,17 @@ function AppCatalogResultNotice({ result, error, onDismiss }) {
       </div>
       <div className="lite-catalog-action-notice-actions">
         {notice.reference ? (
-          <button type="button" className="lite-catalog-action-notice-detail" onClick={() => setReceiptOpen((open) => !open)}>
-            {receiptOpen ? 'Hide receipt' : 'Receipt'}
+          <button type="button" className="lite-catalog-action-notice-detail" onClick={() => setNoticeDetailsOpen((open) => !open)}>
+            {noticeDetailsOpen ? 'Hide details' : 'Details'}
           </button>
         ) : null}
         <button type="button" className="lite-catalog-action-notice-close" onClick={onDismiss} aria-label="Dismiss App Catalog message">
           <X className="h-4 w-4" />
         </button>
       </div>
-      {receiptOpen && notice.reference ? (
+      {noticeDetailsOpen && notice.reference ? (
         <div className="lite-catalog-action-notice-reference">
-          <span>Reference</span>
+          <span>Action reference</span>
           <code>{notice.reference}</code>
         </div>
       ) : null}
@@ -597,8 +597,8 @@ function PhotoPrismActionTile({
   result,
   tone = 'secondary',
   onClick,
-  onViewReceipt,
-  receiptExpanded = false,
+  onViewDetails,
+  detailsExpanded = false,
   disabled = false,
   title,
 }) {
@@ -612,7 +612,7 @@ function PhotoPrismActionTile({
   const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const tileResult = tileResultForAction(actionId, action, result);
-  const receiptAvailable = normalized.receiptAvailable || Boolean(tileResult && catalogActionReference(tileResult));
+  const detailsAvailable = true;
   return (
     <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`} data-action-id={actionId}>
       <div className="lite-catalog-action-tile-copy">
@@ -642,10 +642,10 @@ function PhotoPrismActionTile({
         disabledReason={(action?.enabled === false || (disabled && !busy && !progressState?.running)) && !showProgress ? reason : ''}
         progress={progressState}
         result={tileResult}
-        receiptAvailable={receiptAvailable}
+        detailsAvailable={detailsAvailable}
       />
-      <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewReceipt={onViewReceipt} receiptExpanded={receiptExpanded} />
-      {!tileResult ? <AppActionReceiptButton available={receiptAvailable} onClick={onViewReceipt} expanded={receiptExpanded} /> : null}
+      <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} />
+      {!tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
     </div>
   );
 }
@@ -901,7 +901,7 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
     state: succeeded ? 'succeeded' : 'connected',
     eyebrow: 'PhotoPrism flow',
     title: succeeded ? 'Photo library updated' : 'Phone photos connected',
-    summary: succeeded ? 'PhotoPrism is ready with saved media evidence.' : 'PhotoPrism is ready to import connected media.',
+    summary: succeeded ? 'PhotoPrism is ready with a saved troubleshooting record.' : 'PhotoPrism is ready to import connected media.',
     badge: succeeded ? 'Done' : 'Connected',
     ariaLabel: 'PhotoPrism media flow ready.',
     motion: succeeded ? 'calm' : 'ready',
@@ -912,295 +912,124 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
 
 
 
-function receiptActionLabel(actionId) {
+function safeDetailList(items, fallback = []) {
+  const values = Array.isArray(items) ? items : fallback;
+  return values.filter(Boolean).map((item) => String(item)).slice(0, 6);
+}
+
+function fallbackActionDetails(actionId, action = {}, result = null) {
+  const copy = actionCopy(actionId);
+  const summary = result?.summary || action?.summary || copy.description || 'Action details are available.';
+  const browserOnly = ['open', 'open_full_screen', 'install_to_phone'].includes(actionId);
+  const disabled = action?.enabled === false;
   return {
-    check_app: 'Check app',
-    backup_app: 'Back up app',
-    preview_restore: 'Preview restore',
-    repair_app: 'Repair',
-    update_app: 'Update',
-    import_photos: 'Import photos',
-    connect_photos: 'Connect photos',
-    backup_to_storage: 'Back up to storage device',
-  }[actionId] || 'PhotoPrism action';
+    title: action?.label || copy.label,
+    status: action?.status || (disabled ? 'not_ready' : 'ready'),
+    summary,
+    what_happened: disabled
+      ? [`This action is paused because ${String(action?.disabled_reason || action?.reason || 'it is not ready yet.').replace(/^./, (char) => char.toLowerCase())}`]
+      : [summary],
+    what_changed: [browserOnly || disabled ? 'Nothing changed.' : 'Pocket Lab will update this action after the backend finishes.'],
+    what_did_not_happen: browserOnly
+      ? ['No worker command was queued.', 'No app files were changed.', 'No photos were changed.']
+      : ['No unsafe action was started from the browser.'],
+    saved_for_troubleshooting: {
+      saved: Boolean(result?.summary && !browserOnly),
+      backend_only: true,
+      summary: result?.summary && !browserOnly
+        ? 'A backend record was saved for troubleshooting.'
+        : 'No backend record was saved because this action did not run.',
+    },
+    technical_details: [
+      `Execution owner: ${String(action?.execution_owner || (browserOnly ? 'browser navigation' : 'backend worker')).replace(/_/g, ' ')}`,
+      `Action: ${actionId}`,
+      `Status: ${action?.status || 'ready'}`,
+      'Backend troubleshooting records stay backend-only.',
+    ],
+  };
 }
 
-function evidenceReceiptFromPayload(evidence, actionId = null) {
-  if (!evidence) return null;
-  const wanted = actionId ? String(actionId) : '';
-  const byAction = evidence?.by_action && typeof evidence.by_action === 'object' ? evidence.by_action : {};
-  const latestByAction = evidence?.latest_by_action && typeof evidence.latest_by_action === 'object' ? evidence.latest_by_action : {};
-  if (wanted && byAction[wanted]) return byAction[wanted];
-  if (wanted && latestByAction[wanted]) return latestByAction[wanted];
-  if (wanted) {
-    return {
-      receipt_id: `${wanted}-receipt-not-ready`,
-      action_id: wanted,
-      action_label: receiptActionLabel(wanted),
-      status: 'review',
-      summary: `${receiptActionLabel(wanted)} evidence is not available yet. Run the action or refresh after it completes.`,
-      proofs: [],
-      proof_counts: { passed: 0, review: 1, failed: 0, not_checked: 0, not_applicable: 0 },
-      safety_badges: [],
-      what_changed: [],
-      what_did_not_happen: ['No unrelated receipt was shown for this action.'],
-      redaction: { status: 'passed', secrets_hidden: true, raw_logs_hidden: true, raw_paths_hidden: true },
-      details_owner: { name: 'PhotoPrism', reason: 'PhotoPrism handles media-specific details.' },
-      technical_details: { action_id: wanted, proof_source: 'App Catalog action-specific receipt selection' },
-      evidence_ref: null,
-    };
-  }
-  return evidence?.latest || evidence?.receipt || evidence?.fallback_receipt || null;
+function detailsForAction(actionId, action = {}, result = null) {
+  const details = action?.details && typeof action.details === 'object'
+    ? action.details
+    : fallbackActionDetails(actionId, action, result);
+  if (!result?.summary) return details;
+  return {
+    ...details,
+    summary: result.summary,
+  };
 }
 
-function evidenceStatusLabel(status) {
-  const value = String(status || '').toLowerCase();
-  if (value === 'succeeded') return 'Completed';
-  if (value === 'running') return 'Working';
-  if (value === 'failed') return 'Needs attention';
-  if (value === 'review') return 'Needs review';
-  return 'Not checked';
-}
-
-function proofStatusLabel(status) {
-  const value = String(status || '').toLowerCase();
-  if (value === 'passed') return 'Verified';
-  if (value === 'review') return 'Review';
-  if (value === 'failed') return 'Needs attention';
-  if (value === 'not_applicable') return 'Not needed';
-  return 'Not checked';
-}
-
-function proofStatusClass(status) {
-  const value = String(status || '').toLowerCase();
-  if (value === 'passed') return 'is-passed';
-  if (value === 'failed') return 'is-failed';
-  if (value === 'review') return 'is-review';
-  if (value === 'not_applicable') return 'is-muted';
-  return 'is-checking';
-}
-
-function evidenceTechnicalEntries(receipt) {
-  const details = receipt?.technical_details && typeof receipt.technical_details === 'object' ? receipt.technical_details : {};
-  return Object.entries(details)
-    .filter(([key, value]) => value !== null && value !== undefined && String(value).trim?.() !== '')
-    .slice(0, 12)
-    .map(([key, value]) => ({
-      key,
-      label: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
-      value: typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value),
-    }));
-}
-
-function receiptOperatorSummary(receipt) {
-  return Array.isArray(receipt?.operator_summary) ? receipt.operator_summary.filter(Boolean).slice(0, 6) : [];
-}
-
-function receiptBackendTrace(receipt) {
-  const trace = receipt?.backend_trace && typeof receipt.backend_trace === 'object' ? receipt.backend_trace : null;
-  if (!trace) return null;
-  const steps = Array.isArray(trace.steps) ? trace.steps.filter(Boolean).slice(0, 8) : [];
-  const events = Array.isArray(trace.events) ? trace.events.filter(Boolean).slice(0, 8) : [];
-  return { ...trace, steps, events };
-}
-
-function traceStatusLabel(status) {
-  const value = String(status || '').toLowerCase();
-  if (['succeeded', 'passed', 'completed', 'ready'].includes(value)) return 'Done';
-  if (['failed', 'error'].includes(value)) return 'Needs attention';
-  if (['running', 'queued'].includes(value)) return 'Working';
-  if (['review', 'not_checked'].includes(value)) return 'Review';
-  return 'Recorded';
-}
-
-function traceStatusClass(status) {
-  const value = String(status || '').toLowerCase();
-  if (['succeeded', 'passed', 'completed', 'ready'].includes(value)) return 'is-passed';
-  if (['failed', 'error'].includes(value)) return 'is-failed';
-  if (['running', 'queued'].includes(value)) return 'is-checking';
-  if (['review', 'not_checked'].includes(value)) return 'is-review';
-  return 'is-muted';
-}
-
-function PhotoPrismEvidenceCard({ evidence, loading, error, onViewReceipt }) {
-  const receipt = evidenceReceiptFromPayload(evidence);
-  const proofs = Array.isArray(receipt?.proofs) ? receipt.proofs : [];
-  const passedCount = Number(receipt?.proof_counts?.passed || 0);
-  const reviewCount = Number(receipt?.proof_counts?.review || 0) + Number(receipt?.proof_counts?.failed || 0);
-  const badges = Array.isArray(receipt?.safety_badges) && receipt.safety_badges.length
-    ? receipt.safety_badges.slice(0, 4)
-    : proofs.filter((proof) => proof?.status === 'passed').slice(0, 4).map((proof) => proof.label);
-  const timestamp = receipt?.completed_at || receipt?.updated_at || receipt?.started_at;
+function AppActionDetailsPanel({ details, onClose }) {
+  if (!details) return null;
+  const happened = safeDetailList(details.what_happened, [details.summary || 'Action details are available.']);
+  const changed = safeDetailList(details.what_changed, ['Nothing changed.']);
+  const didNotHappen = safeDetailList(details.what_did_not_happen, ['No unsafe action was started.']);
+  const wouldHappen = safeDetailList(details.what_would_happen_after_confirmation);
+  const willNotHappen = safeDetailList(details.what_will_not_happen_by_default);
+  const technical = safeDetailList(details.technical_details);
+  const saved = details.saved_for_troubleshooting && typeof details.saved_for_troubleshooting === 'object'
+    ? details.saved_for_troubleshooting
+    : { saved: false, backend_only: true, summary: 'No backend record was saved because this action did not run.' };
 
   return (
-    <section className={`lite-catalog-evidence-card ${loading ? 'is-loading' : ''}`} aria-label="PhotoPrism evidence">
-      <div className="lite-catalog-evidence-head">
+    <section className="lite-app-action-details-panel" role="region" aria-label={`${details.title || 'Action'} details`}>
+      <div className="lite-app-action-details-head">
         <div>
-          <span>Evidence</span>
-          <strong>{receipt ? 'Latest proof' : 'No evidence receipt yet'}</strong>
+          <span>Details</span>
+          <h3>{details.title || 'Action details'}</h3>
+          <p>{details.summary || 'Action details are available.'}</p>
         </div>
-        <FileCheck className="h-5 w-5" />
+        <button type="button" className="lite-app-action-details-close" onClick={onClose} aria-label="Close action details">
+          <X className="h-4 w-4" />
+        </button>
       </div>
-      {loading ? (
-        <div className="lite-catalog-evidence-loading" aria-live="polite">
-          <span />
-          <p>Loading receipt...</p>
+
+      <div className="lite-app-action-details-status">
+        <span>Last result</span>
+        <strong>{getActionDisplayState(details.status || 'ready').label}</strong>
+      </div>
+
+      <div className="lite-app-action-details-grid">
+        <div className="lite-app-action-detail-section">
+          <strong>What happened</strong>
+          {happened.map((item) => <p key={item}>{item}</p>)}
         </div>
-      ) : error ? (
-        <div className="lite-catalog-evidence-empty is-error" role="status">
-          <strong>Evidence needs a moment</strong>
-          <p>{error}</p>
+        <div className="lite-app-action-detail-section">
+          <strong>What changed</strong>
+          {changed.map((item) => <p key={item}>{item}</p>)}
         </div>
-      ) : receipt ? (
-        <>
-          <div className="lite-catalog-evidence-latest">
-            <strong>{receipt.summary || 'Evidence receipt available.'}</strong>
-            <p>{receipt.action_label || 'PhotoPrism action'}{timestamp ? ` · ${formatLiteTime(timestamp)}` : ''}</p>
+        <div className="lite-app-action-detail-section">
+          <strong>What did not happen</strong>
+          {didNotHappen.map((item) => <p key={item}>{item}</p>)}
+        </div>
+        {wouldHappen.length ? (
+          <div className="lite-app-action-detail-section">
+            <strong>What would happen after confirmation</strong>
+            {wouldHappen.map((item) => <p key={item}>{item}</p>)}
           </div>
-          <div className="lite-catalog-evidence-counts" aria-label="Proof counts">
-            <span><CheckCircle2 className="h-4 w-4" />{passedCount} verified</span>
-            <span>{reviewCount ? `${reviewCount} to review` : 'No unsafe proof'}</span>
-            <span>{evidenceStatusLabel(receipt.status)}</span>
-          </div>
-          <div className="lite-catalog-evidence-badges" aria-label="Verified proofs">
-            {badges.length ? badges.map((badge) => <span key={badge}><CheckCircle2 className="h-3.5 w-3.5" />{badge}</span>) : <span>No proof details yet</span>}
-          </div>
-          <LiteButton tone="secondary" onClick={onViewReceipt}>View receipt</LiteButton>
-        </>
-      ) : (
-        <div className="lite-catalog-evidence-empty" role="status">
-          <strong>No evidence receipt yet.</strong>
-          <p>Connect photos, import photos, or back up the app to create a receipt.</p>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function PhotoPrismEvidenceReceiptModal({ receipt, onClose, inline = false }) {
-  if (!receipt) return null;
-  const proofs = Array.isArray(receipt.proofs) ? receipt.proofs : [];
-  const changed = Array.isArray(receipt.what_changed) ? receipt.what_changed : [];
-  const didNotHappen = Array.isArray(receipt.what_did_not_happen) ? receipt.what_did_not_happen : [];
-  const details = evidenceTechnicalEntries(receipt);
-  const operatorSummary = receiptOperatorSummary(receipt);
-  const backendTrace = receiptBackendTrace(receipt);
-
-  const wrapperProps = inline
-    ? { className: 'lite-evidence-modal-inline', role: 'region', 'aria-label': `${receipt.action_label || 'PhotoPrism'} evidence receipt` }
-    : { className: 'lite-evidence-modal-backdrop', role: 'presentation', onMouseDown: (event) => { if (event.target === event.currentTarget) onClose(); } };
-
-  return (
-    <div {...wrapperProps}>
-      <section
-        className={`lite-evidence-modal ${inline ? 'is-inline' : ''}`}
-        role={inline ? 'group' : 'dialog'}
-        aria-modal={inline ? undefined : 'true'}
-        aria-labelledby="lite-evidence-modal-title"
-      >
-        <div className="lite-evidence-modal-rail" aria-hidden="true"><span /></div>
-        <div className="lite-evidence-modal-head">
-          <div>
-            <span>{inline ? 'Action evidence' : 'Evidence receipt'}</span>
-            <h2 id="lite-evidence-modal-title">{receipt.action_label || 'PhotoPrism'} receipt</h2>
-            <p>{receipt.summary || 'Proof details are available.'}</p>
-          </div>
-          <button type="button" className="lite-evidence-modal-close" onClick={onClose} aria-label="Close evidence receipt">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="lite-evidence-modal-status">
-          <span>Status</span>
-          <strong>{evidenceStatusLabel(receipt.status)}</strong>
-        </div>
-
-        <div className="lite-evidence-section lite-evidence-plain-story">
-          <div className="lite-evidence-section-title"><span>What Pocket Lab did</span><strong>Plain language</strong></div>
-          {operatorSummary.length ? operatorSummary.map((item) => (
-            <p key={item} className="lite-evidence-line"><CheckCircle2 className="h-4 w-4" />{item}</p>
-          )) : <p className="lite-evidence-muted">Pocket Lab saved this receipt so the action can be reviewed safely.</p>}
-        </div>
-
-        <div className="lite-evidence-section">
-          <div className="lite-evidence-section-title"><span>Proofs</span><strong>{Number(receipt?.proof_counts?.passed || 0)} verified</strong></div>
-          <div className="lite-evidence-proof-list">
-            {proofs.length ? proofs.map((proof) => (
-              <article key={proof.id || proof.label} className={`lite-evidence-proof ${proofStatusClass(proof.status)}`}>
-                <span className="lite-evidence-proof-check" aria-hidden="true"><CheckCircle2 className="h-4 w-4" /></span>
-                <div>
-                  <strong>{proof.label}</strong>
-                  <p>{proof.plain_language}</p>
-                </div>
-                <em>{proofStatusLabel(proof.status)}</em>
-              </article>
-            )) : <p className="lite-evidence-muted">No proof details yet.</p>}
-          </div>
-        </div>
-
-        <div className="lite-evidence-two-col">
-          <div className="lite-evidence-section">
-            <div className="lite-evidence-section-title"><span>What changed</span></div>
-            {changed.length ? changed.map((item) => <p key={item} className="lite-evidence-line"><CheckCircle2 className="h-4 w-4" />{item}</p>) : <p className="lite-evidence-muted">No app change recorded yet.</p>}
-          </div>
-          <div className="lite-evidence-section">
-            <div className="lite-evidence-section-title"><span>What did not happen</span></div>
-            {didNotHappen.length ? didNotHappen.map((item) => <p key={item} className="lite-evidence-line"><ShieldCheck className="h-4 w-4" />{item}</p>) : <p className="lite-evidence-muted">No safety exclusions recorded yet.</p>}
-          </div>
-        </div>
-
-        <div className="lite-evidence-section lite-evidence-redaction">
-          <div className="lite-evidence-section-title"><span>Safety / redaction</span><strong>{receipt?.redaction?.status === 'passed' ? 'Passed' : 'Review'}</strong></div>
-          <div className="lite-evidence-redaction-grid">
-            <span>Secrets hidden</span>
-            <span>Raw logs hidden</span>
-            <span>Raw paths hidden</span>
-            <span>Media names hidden</span>
-          </div>
-        </div>
-
-        <div className="lite-evidence-section lite-evidence-owner">
-          <div className="lite-evidence-section-title"><span>details owner</span><strong>{receipt?.details_owner?.name || 'PhotoPrism'}</strong></div>
-          <p>{receipt?.details_owner?.reason || 'PhotoPrism handles indexing, thumbnails, metadata, and media warnings.'}</p>
-        </div>
-
-        {backendTrace ? (
-          <details className="lite-evidence-backend-trace" open={!inline}>
-            <summary>Backend trace</summary>
-            <p className="lite-evidence-muted">{backendTrace.summary || 'Backend trace is available.'}</p>
-            <div className="lite-evidence-trace-meta">
-              <span><strong>Owner</strong>{backendTrace.execution_owner || 'Pocket Lab'}</span>
-              {backendTrace.worker ? <span><strong>Worker</strong>{backendTrace.worker}</span> : null}
-              {backendTrace.command_subject ? <span><strong>Command</strong>{backendTrace.command_subject}</span> : null}
-              <span><strong>Events</strong>{Number(backendTrace.unique_event_count || 0)} unique</span>
-              {backendTrace.duplicate_events_hidden ? <span><strong>Duplicates hidden</strong>{Number(backendTrace.duplicate_event_rows_hidden || 0)}</span> : null}
-            </div>
-            <div className="lite-evidence-trace-list">
-              {(backendTrace.steps.length ? backendTrace.steps : backendTrace.events).map((step, index) => (
-                <article key={`${step.label || 'trace'}-${index}`} className={`lite-evidence-trace-step ${traceStatusClass(step.status)}`}>
-                  <span aria-hidden="true" />
-                  <div>
-                    <strong>{step.label || 'Backend event recorded'}</strong>
-                    <p>{step.plain_language || step.source || 'Pocket Lab recorded this step.'}</p>
-                  </div>
-                  <em>{traceStatusLabel(step.status)}</em>
-                </article>
-              ))}
-            </div>
-          </details>
         ) : null}
+        {willNotHappen.length ? (
+          <div className="lite-app-action-detail-section">
+            <strong>What will not happen by default</strong>
+            {willNotHappen.map((item) => <p key={item}>{item}</p>)}
+          </div>
+        ) : null}
+        <div className="lite-app-action-detail-section lite-app-action-detail-section--saved">
+          <strong>Saved for troubleshooting</strong>
+          <p>{saved.summary || (saved.saved ? 'A backend record was saved for troubleshooting.' : 'No backend record was saved because this action did not run.')}</p>
+        </div>
+      </div>
 
-        <details className="lite-evidence-technical">
+      {technical.length ? (
+        <details className="lite-app-action-technical-details">
           <summary>Technical details</summary>
-          <div className="lite-evidence-technical-grid">
-            {details.map((item) => (
-              <span key={item.key}><strong>{item.label}</strong>{item.value}</span>
-            ))}
-            <span><strong>Evidence ref</strong>{receipt.evidence_ref || 'Not available yet'}</span>
+          <div>
+            {technical.map((item) => <p key={item}>{item}</p>)}
           </div>
         </details>
-      </section>
-    </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -1228,23 +1057,6 @@ function handleCatalogPointerDown(event) {
   safeHaptic(6);
 }
 
-function appTone(status) {
-  const value = String(status || '').toLowerCase();
-  if (['ready', 'installed', 'healthy'].includes(value)) return 'healthy';
-  if (['installing', 'queued', 'running'].includes(value)) return 'working';
-  if (['needs_attention', 'unavailable', 'failed'].includes(value)) return 'degraded';
-  return 'ready';
-}
-
-function appLabel(app) {
-  const value = String(app?.status || '').toLowerCase();
-  if (value === 'ready' && app?.actions?.open) return 'Ready';
-  if (value === 'ready' || app?.installed) return 'Ready';
-  if (value === 'installing') return 'Installing';
-  if (value === 'needs_attention') return 'Needs attention';
-  if (value === 'unavailable') return 'Unavailable';
-  return 'Available';
-}
 
 function appFilterState(app) {
   const value = String(app?.status || '').toLowerCase();
@@ -1415,11 +1227,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewLoading, setStoragePreviewLoading] = useState(false);
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
-  const [appEvidence, setAppEvidence] = useState(null);
-  const [appEvidenceLoading, setAppEvidenceLoading] = useState(false);
-  const [appEvidenceError, setAppEvidenceError] = useState(null);
-  const [evidenceReceiptOpen, setEvidenceReceiptOpen] = useState(false);
-  const [selectedReceiptActionId, setSelectedReceiptActionId] = useState(null);
+  const [detailsActionId, setDetailsActionId] = useState(null);
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -1434,10 +1242,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     });
   }, [apps, activeFilter, query]);
 
-
-  useEffect(() => {
-    loadPhotoPrismEvidence();
-  }, []);
 
   useEffect(() => {
     const notice = catalogActionNotice(result, actionError);
@@ -1469,33 +1273,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [actionBusyKey, apps, refresh]);
 
 
-  async function loadPhotoPrismEvidence() {
-    setAppEvidenceLoading(true);
-    setAppEvidenceError(null);
-    try {
-      setAppEvidence(await liteApi.appEvidence('photoprism'));
-    } catch (err) {
-      setAppEvidenceError(err.message || 'Pocket Lab could not load the latest receipt.');
-    } finally {
-      setAppEvidenceLoading(false);
-    }
+  function openActionDetails(actionId) {
+    setDetailsActionId((current) => (current === actionId ? null : actionId));
   }
 
-  function openEvidenceReceipt(actionId = null) {
-    const nextActionId = actionId || null;
-    if (evidenceReceiptOpen && selectedReceiptActionId === nextActionId) {
-      closeEvidenceReceipt();
-      return;
-    }
-    setSelectedReceiptActionId(nextActionId);
-    setEvidenceReceiptOpen(true);
-    loadPhotoPrismEvidence();
+  function closeActionDetails() {
+    setDetailsActionId(null);
   }
 
-  function closeEvidenceReceipt() {
-    setEvidenceReceiptOpen(false);
-    setSelectedReceiptActionId(null);
-  }
 
   function dismissActionNotice() {
     setResult(null);
@@ -1515,7 +1300,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       refresh();
       window.setTimeout(refresh, 700);
       window.setTimeout(refresh, 1800);
-      window.setTimeout(loadPhotoPrismEvidence, 2200);
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -1562,7 +1346,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       liteApi.photoprismStorageMappings(),
       liteApi.appLifecycleProfile('photoprism'),
       liteApi.appActions('photoprism'),
-      loadPhotoPrismEvidence(),
     ]);
     await refresh();
   }
@@ -1696,7 +1479,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       refresh();
       window.setTimeout(refresh, 700);
       window.setTimeout(refresh, 1800);
-      window.setTimeout(loadPhotoPrismEvidence, 2200);
     } catch (err) {
       const detail = err?.payload?.detail;
       setActionError(detail?.summary || err.message);
@@ -1714,7 +1496,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       reason: 'user confirmed app removal from App Catalog',
       preserve_media: true,
       preserve_backups: true,
-      preserve_evidence: true,
+      preserve_backend_records: true,
       preserve_storage_mappings: true,
     });
     setRemoveConfirmApp(null);
@@ -1949,8 +1731,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           result={entry.result}
                           tone={entry.tone}
                           onClick={entry.onClick}
-                          onViewReceipt={() => openEvidenceReceipt(entry.actionId)}
-                          receiptExpanded={evidenceReceiptOpen && selectedReceiptActionId === entry.actionId}
+                          onViewDetails={() => openActionDetails(entry.actionId)}
+                          detailsExpanded={detailsActionId === entry.actionId}
                           disabled={entry.disabled}
                           title={entry.title}
                         />
@@ -1969,12 +1751,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                             />
                           </div>
                         ) : null}
-                        {evidenceReceiptOpen && selectedReceiptActionId === entry.actionId ? (
-                          <div className="lite-catalog-action-receipt-anchor">
-                            <PhotoPrismEvidenceReceiptModal
-                              inline
-                              receipt={evidenceReceiptFromPayload(appEvidence, entry.actionId)}
-                              onClose={closeEvidenceReceipt}
+                        {detailsActionId === entry.actionId ? (
+                          <div className="lite-catalog-action-details-anchor">
+                            <AppActionDetailsPanel
+                              details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
+                              onClose={closeActionDetails}
                             />
                           </div>
                         ) : null}
@@ -1983,21 +1764,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   </AppActionGroup>
                 ))}
               </div>
-              <PhotoPrismEvidenceCard
-                evidence={appEvidence}
-                loading={appEvidenceLoading}
-                error={appEvidenceError}
-                onViewReceipt={() => openEvidenceReceipt()}
-              />
-              {evidenceReceiptOpen && selectedReceiptActionId === null ? (
-                <div className="lite-catalog-action-receipt-anchor is-summary-receipt">
-                  <PhotoPrismEvidenceReceiptModal
-                    inline
-                    receipt={evidenceReceiptFromPayload(appEvidence)}
-                    onClose={closeEvidenceReceipt}
-                  />
-                </div>
-              ) : null}
               <div className="lite-catalog-action-reasons">
                 {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
                 {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
@@ -2163,7 +1929,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           <div>
             <span>Confirm remove</span>
             <h2>Remove PhotoPrism?</h2>
-            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Evidence saved.</p>
+            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Backend records preserved.</p>
           </div>
           <div className="lite-catalog-remove-confirm-grid">
             <span><strong>What will happen</strong>Remove app runtime and route after backend support is enabled.</span>
