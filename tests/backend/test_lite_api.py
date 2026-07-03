@@ -2013,7 +2013,11 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     css = Path("src/index.css").read_text()
     assert "apps/lifecycle" in Path("src/lib/liteApi.js").read_text()
     assert "lite-catalog-summary-panel" in ui
+    assert "lite-catalog-manage-layer" in ui
+    assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
+    assert 'role="dialog"' in ui
+    assert 'aria-modal="true"' in ui
     assert "Manage" in ui
     assert "Open" in ui
     assert "Media connected" in ui
@@ -2025,7 +2029,11 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     assert "Unified App Lifecycle" not in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
+    assert "lite-catalog-filter-pills" not in ui
+    assert "lite-catalog-filter-pills" not in css
     assert "lite-catalog-summary-panel" in css
+    assert "lite-catalog-manage-layer" in css
+    assert "lite-catalog-manage-backdrop" in css
     assert "lite-catalog-manage-sheet" in css
     assert "lite-security-app-lifecycle" in css
     assert "lite-recovery-app-lifecycle" in css
@@ -2452,10 +2460,14 @@ def test_lite_app_action_sheet_ui_source_is_present():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "Manage" in ui
+    assert "lite-catalog-manage-layer" in ui
+    assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
     assert "lite-catalog-summary-panel" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
+    assert "lite-catalog-filter-pills" not in ui
+    assert "lite-catalog-filter-pills" not in css
     assert "Import photos" in ui
     assert "Index photos" not in ui
     assert "Stop photo action" not in ui
@@ -2463,6 +2475,8 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "Connect a photo folder first" in ui
     assert "runAppAction" in Path("src/lib/liteApi.js").read_text()
     assert "apps/${encodeURIComponent(appId)}/actions" in Path("src/lib/liteApi.js").read_text()
+    assert "lite-catalog-manage-layer" in css
+    assert "lite-catalog-manage-backdrop" in css
     assert "lite-catalog-manage-sheet" in css
     assert "child_process" not in ui
     assert "nats.connect" not in ui
