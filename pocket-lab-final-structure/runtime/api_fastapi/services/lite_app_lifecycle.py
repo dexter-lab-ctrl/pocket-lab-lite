@@ -298,6 +298,9 @@ def _operation_action(action_id: str, installed: bool, operations: dict[str, Any
             "last_ran_at": op.get("completed_at") or op.get("updated_at") or op.get("started_at") or op.get("queued_at"),
             "run_count": 1 if op.get("summary") or op.get("evidence_ref") else 0,
             "evidence_ref": op.get("evidence_ref"),
+            "checks": op.get("checks") if isinstance(op.get("checks"), list) else [],
+            "details": op.get("details") if isinstance(op.get("details"), dict) else {},
+            "technical_details": op.get("technical_details") if isinstance(op.get("technical_details"), dict) else {},
         }
     return _action(
         installed and not running,
@@ -309,7 +312,13 @@ def _operation_action(action_id: str, installed: bool, operations: dict[str, Any
         "category": "recovery",
         "progress": op.get("progress"),
         "last_result": op.get("summary"),
+        "first_ran_at": op.get("started_at") or op.get("queued_at") or op.get("completed_at"),
+        "last_ran_at": op.get("completed_at") or op.get("updated_at") or op.get("started_at") or op.get("queued_at"),
+        "run_count": 1 if op.get("summary") or op.get("evidence_ref") else 0,
         "evidence_ref": op.get("evidence_ref"),
+        "repair_steps": op.get("repair_steps") if isinstance(op.get("repair_steps"), list) else [],
+        "details": op.get("details") if isinstance(op.get("details"), dict) else {},
+        "technical_details": op.get("technical_details") if isinstance(op.get("technical_details"), dict) else {},
     }
 
 

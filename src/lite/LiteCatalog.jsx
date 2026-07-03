@@ -1145,6 +1145,7 @@ function AppActionDetailsPanel({ details, onClose }) {
   if (!details) return null;
   const happened = safeDetailList(details.what_happened, [details.summary || 'Action details are available.']);
   const changed = safeDetailList(details.what_changed, ['Nothing changed.']);
+  const needsAttention = safeDetailList(details.what_needs_attention);
   const didNotHappen = safeDetailList(details.what_did_not_happen, ['No unsafe action was started.']);
   const wouldHappen = safeDetailList(details.what_would_happen_after_confirmation);
   const willNotHappen = safeDetailList(details.what_will_not_happen_by_default);
@@ -1186,6 +1187,12 @@ function AppActionDetailsPanel({ details, onClose }) {
           <strong>What changed</strong>
           {changed.map((item) => <p key={item}>{item}</p>)}
         </div>
+        {needsAttention.length ? (
+          <div className="lite-app-action-detail-section lite-app-action-detail-section--attention">
+            <strong>What needs attention</strong>
+            {needsAttention.map((item) => <p key={item}>{item}</p>)}
+          </div>
+        ) : null}
         <div className="lite-app-action-detail-section">
           <strong>What did not happen</strong>
           {didNotHappen.map((item) => <p key={item}>{item}</p>)}
