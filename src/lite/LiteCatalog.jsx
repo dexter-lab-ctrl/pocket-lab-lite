@@ -362,6 +362,33 @@ function groupAppActions(entries) {
   return APP_ACTION_CATEGORY_ORDER.map((category) => grouped.get(category)).filter(Boolean);
 }
 
+function normalizedResultTone(actionId, payload = {}, action = {}) {
+  const status = String(payload?.status || action?.status || action?.result?.status || '').toLowerCase().replace(/[-\s]+/g, '_');
+  const summary = String(payload?.summary || action?.last_result || action?.result?.summary || '').toLowerCase();
+  if (['review', 'needs_attention', 'degraded', 'warning', 'failed', 'error'].includes(status)) return 'review';
+  if (summary.includes('something changed') || summary.includes('needs review') || summary.includes('not ready')) return 'review';
+  return 'ready';
+}
+
+function actionStatusChecks(actionId, action = {}) {
+  const detailsChecks = Array.isArray(action?.details?.status_checks) ? action.details.status_checks : [];
+  const actionChecks = Array.isArray(action?.status_checks) ? action.status_checks : [];
+  const checks = detailsChecks.length ? detailsChecks : actionChecks;
+  if (checks.length) {
+    return checks.slice(0, 4).map((item) => ({
+      id: item?.id || item?.label || 'check',
+      label: item?.label || 'Check',
+      status: String(item?.status || 'review').toLowerCase(),
+      summary: item?.summary || '',
+    }));
+  }
+  const tone = normalizedResultTone(actionId, action?.result, action);
+  if (actionId === 'check_app') {
+    return ['Route', 'Health', 'Storage', 'Safety'].map((label) => ({ id: label.toLowerCase(), label, status: tone === 'ready' ? 'ready' : 'review' }));
+  }
+  return [];
+}
+
 function actionResultCopy(actionId, payload = {}, action = {}) {
   const status = String(payload?.status || action?.result?.status || '').toLowerCase();
   const summary = payload?.summary || action?.result?.summary || action?.last_result || '';
@@ -375,10 +402,23 @@ function actionResultCopy(actionId, payload = {}, action = {}) {
     return { title: status === 'queued' ? 'Update readiness queued' : 'Update readiness checked', summary: summary || 'No update was applied.', badges: ['No update was applied', 'Rollback checked'] };
   }
   if (actionId === 'check_app') {
-    return { title: status === 'queued' ? 'Check app queued' : status === 'failed' ? 'Something changed' : 'Protected app', summary: summary || 'Route, health, storage, and redaction checks passed.', badges: ['Saved for troubleshooting'] };
+    const tone = normalizedResultTone(actionId, payload, action);
+    return {
+      title: status === 'queued' ? 'Check app queued' : tone === 'review' ? 'Something changed' : 'Checked safely',
+      summary: summary || (tone === 'review' ? 'PhotoPrism needs attention.' : 'Route, health, storage, and safety look ready.'),
+      badges: [],
+      checks: actionStatusChecks(actionId, action),
+      tone,
+    };
   }
   if (actionId === 'repair_app') {
-    return { title: status === 'queued' ? 'Repair queued' : 'Repair completed', summary: summary || 'Route and health are ready.', badges: ['Non-destructive', 'Saved for troubleshooting'] };
+    const tone = normalizedResultTone(actionId, payload, action);
+    return {
+      title: status === 'queued' ? 'Repair queued' : tone === 'review' ? 'Repair needs attention' : 'Repair completed',
+      summary: summary || (tone === 'review' ? 'PhotoPrism still needs attention.' : 'PhotoPrism is online again.'),
+      badges: ['Non-destructive', tone === 'review' ? 'Needs attention' : 'Evidence saved'],
+      tone,
+    };
   }
   if (actionId === 'import_photos') {
     return { title: status === 'queued' ? 'Import photos queued' : 'Import photos completed', summary: summary || 'PhotoPrism owns indexing and media details.', badges: ['Media flow', 'Saved for troubleshooting'] };
@@ -421,12 +461,26 @@ function AppActionResultCard({ actionId, action, result, onViewDetails, detailsE
   if (!payload) return null;
   const copy = actionResultCopy(actionId, payload, action);
   const detailsAvailable = true;
+  const tone = copy.tone || normalizedResultTone(actionId, payload, action);
   return (
-    <div className="lite-app-action-result-card" role="status" aria-live="polite">
+    <div className={`lite-app-action-result-card is-${tone}`} role="status" aria-live="polite">
       <div>
         <strong>{copy.title}</strong>
         <p>{copy.summary}</p>
       </div>
+      {copy.checks?.length ? (
+        <div className="lite-app-action-result-checks" aria-label="Check summary">
+          {copy.checks.map((check) => {
+            const checkReady = String(check.status || '').toLowerCase() === 'ready';
+            return (
+              <span key={check.id || check.label} className={checkReady ? 'is-ready' : 'is-review'} title={check.summary || check.label}>
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {check.label}
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
       {copy.badges?.length ? <div className="lite-app-action-result-badges">{copy.badges.map((badge) => <span key={badge}>{badge}</span>)}</div> : null}
       <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
     </div>

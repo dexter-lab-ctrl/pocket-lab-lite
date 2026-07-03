@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 import urllib.request
 import uuid
 from datetime import datetime, timezone
@@ -529,6 +530,19 @@ def _check_needs_attention(process_state: str, local_health: bool, route_health:
     return items[:5]
 
 
+def _plain_status_checks(*, status: str, local_health: bool, route_health: bool, storage_status: str) -> list[dict[str, Any]]:
+    route_ready = bool(route_health)
+    health_ready = bool(local_health or route_health)
+    storage_ready = storage_status == "passed"
+    safety_ready = status == "succeeded"
+    return [
+        {"id": "route", "label": "Route", "status": "ready" if route_ready else "review", "summary": "The PhotoPrism route is ready." if route_ready else "The PhotoPrism route needs attention."},
+        {"id": "health", "label": "Health", "status": "ready" if health_ready else "review", "summary": "PhotoPrism health responded." if health_ready else "PhotoPrism health could not be confirmed."},
+        {"id": "storage", "label": "Storage", "status": "ready" if storage_ready else "review", "summary": "Phone Storage is connected safely." if storage_ready else "Photo storage connection needs attention."},
+        {"id": "safety", "label": "Safety", "status": "ready" if safety_ready else "review", "summary": "Private details stayed hidden." if safety_ready else "Pocket Lab saved a review record."},
+    ]
+
+
 def _check_details(*, status: str, process_state: str, local_health: bool, route_health: bool, storage_status: str, installed: bool) -> dict[str, Any]:
     attention = _check_needs_attention(process_state, local_health, route_health, storage_status, installed)
     protected = status == "succeeded" and not attention
@@ -556,6 +570,7 @@ def _check_details(*, status: str, process_state: str, local_health: bool, route
         "what_happened": happened,
         "what_changed": changed,
         "what_needs_attention": attention,
+        "status_checks": _plain_status_checks(status=status, local_health=local_health, route_health=route_health, storage_status=storage_status),
         "what_did_not_happen": [
             "No photos were scanned.",
             "No database was changed.",
@@ -577,7 +592,7 @@ def _check_details(*, status: str, process_state: str, local_health: bool, route
     }
 
 
-def _repair_details(*, status: str, changed: bool, restart_performed: bool, local_health_before: bool, route_health_before: bool, local_health_after: bool, route_health_after: bool, route_changed: bool, caddy_changed: bool, storage_changed: bool) -> dict[str, Any]:
+def _repair_details(*, status: str, changed: bool, restart_performed: bool, local_health_before: bool, route_health_before: bool, local_health_after: bool, route_health_after: bool, route_changed: bool, caddy_changed: bool, storage_changed: bool, storage_status: str) -> dict[str, Any]:
     before_ready = bool(local_health_before or route_health_before)
     after_ready = bool(local_health_after or route_health_after)
     attention: list[str] = []
@@ -615,6 +630,7 @@ def _repair_details(*, status: str, changed: bool, restart_performed: bool, loca
         "what_happened": happened,
         "what_changed": what_changed,
         "what_needs_attention": attention,
+        "status_checks": _plain_status_checks(status=status, local_health=local_health_after, route_health=route_health_after, storage_status=storage_status),
         "what_did_not_happen": [
             "No photos were changed.",
             "No database was changed.",
@@ -790,6 +806,18 @@ def _restart_photoprism_if_safe(health_failed: bool) -> tuple[str, bool]:
     return ("changed" if proc.returncode == 0 else "review"), proc.returncode == 0
 
 
+def _wait_for_photoprism_health(*, attempts: int = 10, delay_seconds: float = 0.7) -> tuple[bool, bool]:
+    local_ready = False
+    route_ready = False
+    for _ in range(max(1, attempts)):
+        local_ready = _local_health_ready()
+        route_ready = _route_health_ready()
+        if local_ready or route_ready:
+            return local_ready, route_ready
+        time.sleep(delay_seconds)
+    return local_ready, route_ready
+
+
 def _repair_storage_if_safe(storage_detail: dict[str, Any]) -> tuple[str, bool, dict[str, Any]]:
     if not storage_detail.get("mapping_count"):
         return "skipped", False, {"mapping_count": 0}
@@ -842,8 +870,11 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
     caddy_step_status, caddy_changed = _refresh_caddy_route_if_safe(caddy_needs_refresh)
     storage_step_status, storage_changed, storage_step_detail = _repair_storage_if_safe(storage_detail)
     restart_step_status, restart_performed = _restart_photoprism_if_safe(not (local_health_before or route_health_before))
-    local_health_after = _local_health_ready()
-    route_health_after = _route_health_ready()
+    if restart_performed:
+        local_health_after, route_health_after = _wait_for_photoprism_health()
+    else:
+        local_health_after = _local_health_ready()
+        route_health_after = _route_health_ready()
 
     repair_steps = [
         _step("config_present", "App config checked", "passed" if env_ready else ("review" if installed else "skipped"), "Pocket Lab checked that app config exists without reading values.", technical={"config_present": env_ready}),
@@ -903,6 +934,7 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
         route_changed=route_changed,
         caddy_changed=caddy_changed,
         storage_changed=storage_changed,
+        storage_status=storage_status,
     )
     return _finish_operation(state, op, status=status, summary=_repair_summary(status, changed), repair_steps=repair_steps, proofs=proofs, technical=technical, details=details)
 

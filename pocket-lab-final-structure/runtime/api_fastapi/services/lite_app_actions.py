@@ -577,6 +577,21 @@ def _details_payload(
     for optional_key in ("what_needs_attention", "what_would_happen_after_confirmation", "what_will_not_happen_by_default"):
         if optional_key in detail_definition:
             details[optional_key] = _safe_list(detail_definition.get(optional_key), [], max_items=6)
+
+    status_checks = detail_definition.get("status_checks") if isinstance(detail_definition.get("status_checks"), list) else []
+    if status_checks:
+        clean_checks = []
+        for item in status_checks[:6]:
+            if not isinstance(item, dict):
+                continue
+            clean_checks.append({
+                "id": _safe_text(item.get("id"), "check"),
+                "label": _safe_text(item.get("label"), "Check"),
+                "status": _normalized_status(item.get("status"), enabled=True),
+                "summary": _safe_text(item.get("summary"), "Check status is available."),
+            })
+        if clean_checks:
+            details["status_checks"] = clean_checks
     return details
 
 
