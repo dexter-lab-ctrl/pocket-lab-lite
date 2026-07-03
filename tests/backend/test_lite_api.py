@@ -3943,3 +3943,52 @@ def test_lite_app_action_details_panel_can_show_needs_attention_section():
     assert "What needs attention" in ui
     assert "lite-app-action-detail-section--attention" in ui
     assert "lite-app-action-detail-section--attention" in css
+
+
+def test_lite_app_repair_review_reconciles_after_stable_check(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_actions, lite_app_operations
+
+    monkeypatch.setattr(lite_app_operations, "_installed_from_catalog", lambda app: True)
+    repair_local = iter([False, False])
+    repair_route = iter([False, False])
+    monkeypatch.setattr(lite_app_operations, "_local_health_ready", lambda: next(repair_local))
+    monkeypatch.setattr(lite_app_operations, "_route_health_ready", lambda: next(repair_route))
+    monkeypatch.setattr(lite_app_operations, "_route_registry_status", lambda: ("passed", {"present": True, "route_path": "/apps/photoprism/"}))
+    monkeypatch.setattr(lite_app_operations, "_caddy_route_status", lambda: ("passed", {"caddyfile_checked": True, "prefix_preserved": True}))
+    monkeypatch.setattr(lite_app_operations, "_refresh_caddy_route_if_safe", lambda route_needs_refresh: ("skipped", False))
+    monkeypatch.setattr(lite_app_operations, "_repair_storage_if_safe", lambda storage_detail: ("passed", False, {"mapping_count": 1, "pending_apply": False}))
+    monkeypatch.setattr(lite_app_operations, "_restart_photoprism_if_safe", lambda health_failed: ("changed", True))
+    monkeypatch.setattr(lite_app_operations, "_wait_for_photoprism_health", lambda: (False, False))
+
+    repair_command = lite_app_operations.command_for_operation("photoprism", "repair_app", reason="unit early repair")
+    lite_app_operations.record_queued_operation(repair_command)
+    repair_result = lite_app_operations.execute_repair_app(repair_command)
+    assert repair_result["status"] == "review"
+
+    monkeypatch.setattr(lite_app_operations, "_pm2_process_online", lambda: "online")
+    monkeypatch.setattr(lite_app_operations, "_local_health_ready", lambda: True)
+    monkeypatch.setattr(lite_app_operations, "_route_health_ready", lambda: True)
+    monkeypatch.setattr(lite_app_operations, "_storage_status", lambda: ("passed", {"mapping_count": 1, "read_only": True, "pending_apply": False}))
+    monkeypatch.setattr(lite_app_operations, "_backup_status", lambda: ("passed", {"config_backup_available": True}))
+    monkeypatch.setattr(lite_app_operations, "_security_ref_status", lambda: ("passed", {"security_evidence_ref": "security/evidence/latest/summary.json"}))
+
+    check_command = lite_app_operations.command_for_operation("photoprism", "check_app", reason="unit stable check")
+    lite_app_operations.record_queued_operation(check_command)
+    check_result = lite_app_operations.execute_check_app(check_command)
+    assert check_result["status"] == "succeeded"
+
+    action = lite_app_actions.app_actions("photoprism")["actions"]["repair_app"]
+    assert action["last_result"] == "Repair completed"
+    assert action["details"]["last_result"] == "Repair completed"
+    assert not action["details"].get("what_needs_attention")
+    assert "PhotoPrism is now online." in action["details"]["what_changed"]
+
+
+def test_lite_app_action_details_filters_hidden_placeholder():
+    ui = _lite_ui_source()
+    assert "item.toLowerCase() !== 'hidden'" in ui
+    assert "No app login was changed." in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
+    assert "No app password was changed." not in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
+    assert "lite-app-action-details-panel is-" in ui

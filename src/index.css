@@ -12629,6 +12629,31 @@ textarea {
   padding: 1rem;
 }
 
+
+.theme-pocket-lite-daylight .lite-app-action-details-panel.is-review {
+  background: linear-gradient(145deg, rgba(255, 251, 235, 0.98), rgba(254, 243, 199, 0.88));
+  border-color: rgba(245, 158, 11, 0.30);
+  box-shadow: 0 18px 42px rgba(146, 64, 14, 0.10);
+}
+
+.theme-pocket-lite-daylight .lite-app-action-details-panel.is-review .lite-app-action-details-head span,
+.theme-pocket-lite-daylight .lite-app-action-details-panel.is-review .lite-app-action-details-status span {
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-app-action-details-panel.is-review .lite-app-action-details-status {
+  background: rgba(255, 251, 235, 0.88);
+  border-color: rgba(245, 158, 11, 0.24);
+}
+
+.theme-pocket-lite-daylight .lite-app-action-details-panel.is-review .lite-app-action-details-status strong {
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-app-action-details-panel.is-review .lite-app-action-detail-section {
+  border-color: rgba(245, 158, 11, 0.18);
+}
+
 .theme-pocket-lite-daylight .lite-app-action-details-head {
   align-items: flex-start;
   display: flex;
