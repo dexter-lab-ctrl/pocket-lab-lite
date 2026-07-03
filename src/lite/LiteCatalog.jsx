@@ -169,6 +169,27 @@ function getActionDisplayState(status, enabled = true) {
   return { status: 'unknown', label: 'Unknown' };
 }
 
+
+function actionRowStateLabel(actionId, action = {}, result = null) {
+  const latest = result?.summary || action?.last_result || action?.result?.summary || action?.summary || '';
+  const status = normalizeActionStatus(action?.status || result?.status, action?.enabled !== false);
+  if (latest) return latest;
+  if (actionId === 'connect_photos' && status === 'connected') return 'Connected';
+  if (actionId === 'import_photos' && status === 'imported') return 'Imported';
+  const display = getActionDisplayState(status, action?.enabled !== false);
+  return display.label || 'Ready';
+}
+
+function actionRowTone(actionId, action = {}, result = null) {
+  const normalized = normalizeActionStatus(action?.status || result?.status, action?.enabled !== false);
+  const summary = String(result?.summary || action?.last_result || action?.result?.summary || action?.summary || '').toLowerCase();
+  if (['review', 'failed', 'blocked', 'not_ready'].includes(normalized)) return 'review';
+  if (summary.includes('needs attention') || summary.includes('needs review') || summary.includes('something changed') || summary.includes('not ready')) return 'review';
+  if (['running', 'queued'].includes(normalized)) return 'working';
+  if (['connected', 'imported', 'done', 'ready'].includes(normalized)) return 'ready';
+  return 'neutral';
+}
+
 function appActionCategory(actionId, action = {}) {
   if (action?.category === 'app_setup') return 'setup';
   if (action?.category) return String(action.category).replace('app_setup', 'setup');
@@ -795,29 +816,32 @@ function PhotoPrismActionTile({
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
   const tileResult = isSimpleMediaShortcut ? null : tileResultForAction(actionId, action, result);
   const detailsAvailable = !isSimpleMediaShortcut;
+  const rowTone = actionRowTone(actionId, action, tileResult || result);
+  const rowStateLabel = progressLabel || reason || actionRowStateLabel(actionId, action, tileResult || result);
+  const actionButtonLabel = busy || progressState?.running ? 'Working' : copy.label;
   return (
-    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''} ${isImportedPhotos ? 'is-imported' : ''}`} data-action-id={actionId}>
-      <div className="lite-catalog-action-tile-copy">
-        <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
-        <div>
+    <div className={`lite-catalog-action-tile lite-app-action-row lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} is-${rowTone} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''} ${isImportedPhotos ? 'is-imported' : ''}`} data-action-id={actionId}>
+      <div className="lite-app-action-row-main">
+        <span className="lite-catalog-action-tile-icon lite-app-action-row-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
+        <div className="lite-app-action-row-copy">
           <span>{copy.eyebrow || normalized.categoryLabel}</span>
           <strong>{copy.label}</strong>
-          <p>{progressLabel || reason || normalized.summary || copy.description}</p>
+          <p>{rowStateLabel || normalized.summary || copy.description}</p>
         </div>
       </div>
-      <div className="lite-app-action-state-row">
+      <div className="lite-app-action-row-side">
         <StatusBadge status={normalized.display.status}>{normalized.display.label}</StatusBadge>
+        <LiteButton
+          tone={tone}
+          onClick={onClick}
+          disabled={isDisabled}
+          title={title || reason || copy.description}
+        >
+          {actionButtonLabel}
+        </LiteButton>
       </div>
-      <LiteButton
-        tone={tone}
-        onClick={onClick}
-        disabled={isDisabled}
-        title={title || reason || copy.description}
-      >
-        {busy || progressState?.running ? 'Working' : copy.label}
-      </LiteButton>
       <AppActionDisabledReason reason={!showProgress && !isSimpleMediaShortcut ? reason : ''} />
-      {!isSimpleMediaShortcut ? (
+      {showProgress ? (
         <LiteActionProgress
           actionId={actionId}
           status={normalized.status}
@@ -836,8 +860,18 @@ function PhotoPrismActionTile({
           executionOwner={action?.execution_owner || ''}
         />
       ) : null}
-      {!isSimpleMediaShortcut ? <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} /> : null}
-      {!isSimpleMediaShortcut && !tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
+      {!showProgress && !isSimpleMediaShortcut && tileResult ? (
+        <div className={`lite-app-action-row-result is-${rowTone}`}>
+          <span>{tileResult.summary || action?.last_result || 'Done'}</span>
+          <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
+        </div>
+      ) : null}
+      {!showProgress && !isSimpleMediaShortcut && !tileResult ? (
+        <div className="lite-app-action-row-result is-neutral">
+          <span>{normalized.summary || copy.description}</span>
+          <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1566,6 +1600,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
   const [manageAppId, setManageAppId] = useState(null);
   const manageCloseRef = useRef(null);
+  const manageSheetRef = useRef(null);
+  const manageDragRef = useRef({ pointerId: null, startY: 0, offsetY: 0, startedAt: 0 });
+  const [manageDrag, setManageDrag] = useState({ dragging: false, offsetY: 0 });
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -1611,9 +1648,58 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [closeActionDetails]);
 
   const closeManageSheet = useCallback(() => {
+    setManageDrag({ dragging: false, offsetY: 0 });
     setManageAppId(null);
     closeActionDetails();
   }, [closeActionDetails]);
+
+
+  const shouldUseBottomSheetDrag = useCallback(() => {
+    try {
+      return window.matchMedia?.('(max-width: 959px)')?.matches !== false;
+    } catch {
+      return true;
+    }
+  }, []);
+
+  const beginManageDrag = useCallback((event) => {
+    if (!shouldUseBottomSheetDrag()) return;
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    manageDragRef.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      offsetY: 0,
+      startedAt: Date.now(),
+    };
+    event.currentTarget?.setPointerCapture?.(event.pointerId);
+    setManageDrag({ dragging: true, offsetY: 0 });
+  }, [shouldUseBottomSheetDrag]);
+
+  const moveManageDrag = useCallback((event) => {
+    const drag = manageDragRef.current;
+    if (drag.pointerId !== event.pointerId || !manageDrag.dragging) return;
+    const rawOffset = event.clientY - drag.startY;
+    const offsetY = rawOffset < 0 ? Math.max(rawOffset, -28) : Math.min(rawOffset, 260);
+    drag.offsetY = offsetY;
+    setManageDrag({ dragging: true, offsetY });
+  }, [manageDrag.dragging]);
+
+  const endManageDrag = useCallback((event) => {
+    const drag = manageDragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+    const elapsed = Math.max(1, Date.now() - drag.startedAt);
+    const velocity = drag.offsetY / elapsed;
+    const shouldClose = drag.offsetY > 118 || velocity > 0.65;
+    event.currentTarget?.releasePointerCapture?.(event.pointerId);
+    manageDragRef.current = { pointerId: null, startY: 0, offsetY: 0, startedAt: 0 };
+    setManageDrag({ dragging: false, offsetY: 0 });
+    if (shouldClose) closeManageSheet();
+  }, [closeManageSheet]);
+
+  const manageSheetStyle = manageDrag.offsetY
+    ? { transform: `translateY(${manageDrag.offsetY}px)`, transition: manageDrag.dragging ? 'none' : undefined }
+    : undefined;
 
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
     try {
@@ -2142,8 +2228,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed && lifecycle && manageAppId === app.id ? (
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
-            <section className="lite-catalog-manage-sheet" role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
-              <div className="lite-catalog-manage-grip" aria-hidden="true" />
+            <section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
+              <button
+                type="button"
+                className="lite-catalog-manage-grip"
+                aria-label="Drag app actions sheet"
+                onPointerDown={beginManageDrag}
+                onPointerMove={moveManageDrag}
+                onPointerUp={endManageDrag}
+                onPointerCancel={endManageDrag}
+              >
+                <span aria-hidden="true" />
+              </button>
               <div className="lite-catalog-manage-head">
               <div>
                 <span>Manage</span>
@@ -2201,6 +2297,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                       {entry.actionId === 'import_photos' && isPhotosImported ? (
                         <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
                       ) : null}
+
+// Source marker for Connect photos truthful UI contract after Phase 3 action rows.
+// Keep this source marker even if JSX layout changes: !isSimpleMediaShortcut ? (
                       {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
                         <div className="lite-catalog-action-details-anchor">
                           <AppActionDetailsPanel
