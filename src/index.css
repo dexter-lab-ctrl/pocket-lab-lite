@@ -12719,6 +12719,15 @@ textarea {
   border-color: rgba(100, 116, 139, 0.14);
 }
 
+.theme-pocket-lite-daylight .lite-app-action-detail-section--attention {
+  background: rgba(255, 251, 235, 0.92);
+  border-color: rgba(217, 119, 6, 0.18);
+}
+
+.theme-pocket-lite-daylight .lite-app-action-detail-section--attention strong {
+  color: #92400e;
+}
+
 .theme-pocket-lite-daylight .lite-app-action-technical-details summary {
   cursor: pointer;
 }

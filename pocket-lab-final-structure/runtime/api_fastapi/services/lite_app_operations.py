@@ -512,7 +512,140 @@ def _repair_summary(status: str, changed: bool) -> str:
     return "Repair could not complete"
 
 
-def _finish_operation(state: dict[str, Any], op: dict[str, Any], *, status: str, summary: str, checks: list[dict[str, Any]] | None = None, repair_steps: list[dict[str, Any]] | None = None, proofs: list[dict[str, Any]] | None = None, technical: dict[str, Any] | None = None) -> dict[str, Any]:
+def _check_needs_attention(process_state: str, local_health: bool, route_health: bool, storage_status: str, installed: bool) -> list[str]:
+    items: list[str] = []
+    if not installed:
+        items.append("PhotoPrism is not installed yet.")
+    if process_state == "offline":
+        items.append("PhotoPrism was stopped.")
+    elif process_state == "not_checked":
+        items.append("Pocket Lab could not confirm whether PhotoPrism was running.")
+    if not local_health and not route_health:
+        items.append("PhotoPrism health could not be confirmed.")
+    elif not route_health:
+        items.append("The secure app route needs attention.")
+    if storage_status == "review":
+        items.append("Photo storage connection needs review.")
+    return items[:5]
+
+
+def _check_details(*, status: str, process_state: str, local_health: bool, route_health: bool, storage_status: str, installed: bool) -> dict[str, Any]:
+    attention = _check_needs_attention(process_state, local_health, route_health, storage_status, installed)
+    protected = status == "succeeded" and not attention
+    if protected:
+        summary = "Protected app"
+        happened = ["Pocket Lab checked PhotoPrism and confirmed the app is running and reachable."]
+        changed = ["Nothing changed. This was a check only."]
+    elif process_state == "offline":
+        summary = "PhotoPrism was stopped."
+        happened = ["Pocket Lab checked PhotoPrism and found that the app was not running."]
+        changed = ["Nothing changed. This was a check only."]
+    elif not local_health and not route_health:
+        summary = "PhotoPrism health needs attention."
+        happened = ["Pocket Lab checked PhotoPrism and could not confirm app health."]
+        changed = ["Nothing changed. This was a check only."]
+    else:
+        summary = "Something changed" if status == "review" else "Check could not complete"
+        happened = ["Pocket Lab checked PhotoPrism route, health, storage, and protection state."]
+        changed = ["Nothing changed. This was a check only."]
+    return {
+        "title": "Check app",
+        "status": "ready" if status == "succeeded" else "review",
+        "summary": summary,
+        "last_result": "Protected app" if protected else "Something changed",
+        "what_happened": happened,
+        "what_changed": changed,
+        "what_needs_attention": attention,
+        "what_did_not_happen": [
+            "No photos were scanned.",
+            "No database was changed.",
+            "No app password was changed.",
+            "No repair was started.",
+        ],
+        "saved_for_troubleshooting": {
+            "saved": True,
+            "backend_only": True,
+            "summary": "A backend record was saved for troubleshooting.",
+        },
+        "technical_details": [
+            "Execution owner: backend worker",
+            "Action: check_app",
+            f"Process state: {'online' if process_state == 'online' else 'stopped' if process_state == 'offline' else 'not checked'}",
+            f"Route health: {'ready' if route_health else 'not ready'}",
+            "Backend troubleshooting records stay backend-only.",
+        ],
+    }
+
+
+def _repair_details(*, status: str, changed: bool, restart_performed: bool, local_health_before: bool, route_health_before: bool, local_health_after: bool, route_health_after: bool, route_changed: bool, caddy_changed: bool, storage_changed: bool) -> dict[str, Any]:
+    before_ready = bool(local_health_before or route_health_before)
+    after_ready = bool(local_health_after or route_health_after)
+    attention: list[str] = []
+    if not after_ready:
+        attention.append("PhotoPrism still needs attention after repair.")
+    if status == "succeeded" and restart_performed and after_ready:
+        summary = "Repair completed"
+        happened = ["Pocket Lab found PhotoPrism was not responding and started it again."]
+        what_changed = ["PhotoPrism was restarted.", "PhotoPrism is now online."]
+    elif status == "succeeded" and changed:
+        summary = "Repair completed"
+        happened = ["Pocket Lab found a safe repair step was needed and completed it."]
+        what_changed = []
+        if route_changed or caddy_changed:
+            what_changed.append("The app route was refreshed.")
+        if storage_changed:
+            what_changed.append("Photo storage connection records were refreshed.")
+        if after_ready:
+            what_changed.append("PhotoPrism is now online.")
+        if not what_changed:
+            what_changed = ["A safe repair step was completed."]
+    elif status == "succeeded":
+        summary = "Nothing needed repair"
+        happened = ["Pocket Lab checked PhotoPrism and it was already running."]
+        what_changed = ["Nothing changed."]
+    else:
+        summary = "Repair needs review"
+        happened = ["Pocket Lab checked PhotoPrism repair steps, but the app still needs attention."]
+        what_changed = ["No unsafe changes were made."]
+    return {
+        "title": "Repair",
+        "status": "ready" if status == "succeeded" else "review",
+        "summary": summary,
+        "last_result": summary,
+        "what_happened": happened,
+        "what_changed": what_changed,
+        "what_needs_attention": attention,
+        "what_did_not_happen": [
+            "No photos were changed.",
+            "No database was changed.",
+            "No app password was changed.",
+            "No reinstall was started.",
+        ],
+        "saved_for_troubleshooting": {
+            "saved": True,
+            "backend_only": True,
+            "summary": "A backend record was saved for troubleshooting.",
+        },
+        "technical_details": [
+            "Execution owner: backend worker",
+            "Action: repair_app",
+            f"Before status: {'ready' if before_ready else 'not ready'}",
+            f"After status: {'ready' if after_ready else 'not ready'}",
+            f"App restart: {'performed' if restart_performed else 'not needed'}",
+            "Backend troubleshooting records stay backend-only.",
+        ],
+    }
+
+
+def _repair_final_status(repair_steps: list[dict[str, Any]], *, local_health_after: bool, route_health_after: bool) -> str:
+    # App health after repair is the truth source for a stopped-app recovery.
+    # Non-critical route/storage review steps should not hide that the app was started again successfully.
+    if local_health_after or route_health_after:
+        return "succeeded"
+    return _status_from_items(repair_steps)
+
+
+def _finish_operation(state: dict[str, Any], op: dict[str, Any], *, status: str, summary: str, checks: list[dict[str, Any]] | None = None, repair_steps: list[dict[str, Any]] | None = None, proofs: list[dict[str, Any]] | None = None, technical: dict[str, Any] | None = None, details: dict[str, Any] | None = None) -> dict[str, Any]:
     action_id = str(op.get("action_id") or CHECK_APP_ACTION)
     op.update({
         "status": status,
@@ -523,6 +656,7 @@ def _finish_operation(state: dict[str, Any], op: dict[str, Any], *, status: str,
         "proofs": proofs or [],
         "redaction": _redaction(),
         "technical_details": _sanitize_technical(technical or {}),
+        "details": _sanitize_payload(details or {}),
         "progress": _progress(action_id, "completed" if status == "succeeded" else status, len(_STEP_LABELS.get(action_id, [])) - 1, status=status, step="Evidence saved"),
     })
     _finalize_current_action(state, op)
@@ -614,7 +748,15 @@ def execute_check_app(command: dict[str, Any]) -> dict[str, Any]:
         "index_started": False,
         "import_started": False,
     }
-    return _finish_operation(state, op, status=status, summary=_check_summary(status), checks=checks, proofs=proofs, technical=technical)
+    details = _check_details(
+        status=status,
+        process_state=process_state,
+        local_health=local_health,
+        route_health=route_health,
+        storage_status=storage_status,
+        installed=installed,
+    )
+    return _finish_operation(state, op, status=status, summary=_check_summary(status), checks=checks, proofs=proofs, technical=technical, details=details)
 
 
 def _helper_script_path() -> Path:
@@ -711,7 +853,7 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
         _step("app_restart", "App restart checked", restart_step_status, "Pocket Lab restarted only the app process when health was failing and PM2 was available." if restart_performed else "Pocket Lab did not restart the app process.", technical={"restart_performed": restart_performed}),
         _step("app_health", "App health verified", "passed" if (local_health_after or route_health_after) else "review", "Pocket Lab verified PhotoPrism health after repair."),
     ]
-    status = _status_from_items(repair_steps)
+    status = _repair_final_status(repair_steps, local_health_after=local_health_after, route_health_after=route_health_after)
     changed = bool(route_changed or caddy_changed or storage_changed or restart_performed)
     proofs = [
         _proof("backend_worker_executed", "Backend worker executed", "passed", "The repair was handled by Pocket Lab Lite backend worker."),
@@ -731,6 +873,14 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
     ]
     technical = {
         "repair_bounded": True,
+        "before": {
+            "local_health_ready": bool(local_health_before),
+            "route_health_ready": bool(route_health_before),
+        },
+        "after": {
+            "local_health_ready": bool(local_health_after),
+            "route_health_ready": bool(route_health_after),
+        },
         "route_registry_refreshed": route_changed,
         "caddy_route_checked": True,
         "storage_mapping_checked": True,
@@ -742,7 +892,19 @@ def execute_repair_app(command: dict[str, Any]) -> dict[str, Any]:
         "app_login_changed": False,
         "database_reset": False,
     }
-    return _finish_operation(state, op, status=status, summary=_repair_summary(status, changed), repair_steps=repair_steps, proofs=proofs, technical=technical)
+    details = _repair_details(
+        status=status,
+        changed=changed,
+        restart_performed=restart_performed,
+        local_health_before=local_health_before,
+        route_health_before=route_health_before,
+        local_health_after=local_health_after,
+        route_health_after=route_health_after,
+        route_changed=route_changed,
+        caddy_changed=caddy_changed,
+        storage_changed=storage_changed,
+    )
+    return _finish_operation(state, op, status=status, summary=_repair_summary(status, changed), repair_steps=repair_steps, proofs=proofs, technical=technical, details=details)
 
 
 def execute_app_operation(command: dict[str, Any]) -> dict[str, Any]:
@@ -833,12 +995,19 @@ def app_operation_status(app_id: str) -> dict[str, Any]:
 
 def _operation_action_summary(action_id: str, last: dict[str, Any] | None, current: dict[str, Any] | None) -> dict[str, Any]:
     running = isinstance(current, dict) and current.get("action_id") == action_id and str(current.get("status") or "").lower() in {"queued", "running"}
+    source = current if running else (last or {})
     return {
-        "status": str(current.get("status") if running else (last or {}).get("status") or "ready").lower(),
-        "summary": _safe_text(current.get("summary") if running else (last or {}).get("summary"), "Ready"),
-        "progress": current.get("progress") if running else (last or {}).get("progress"),
+        "status": str(source.get("status") or "ready").lower(),
+        "summary": _safe_text(source.get("summary"), "Ready"),
+        "progress": source.get("progress"),
         "evidence_ref": (last or {}).get("evidence_ref"),
         "updated_at": (last or {}).get("completed_at") or (last or {}).get("updated_at"),
+        "started_at": (last or {}).get("started_at"),
+        "completed_at": (last or {}).get("completed_at"),
+        "checks": (last or {}).get("checks") if not running else [],
+        "repair_steps": (last or {}).get("repair_steps") if not running else [],
+        "details": (last or {}).get("details") if not running else {},
+        "technical_details": (last or {}).get("technical_details") if not running else {},
     }
 
 

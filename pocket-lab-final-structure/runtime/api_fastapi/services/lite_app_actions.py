@@ -535,7 +535,8 @@ def _details_payload(
     disabled_reason: Any,
 ) -> dict[str, Any]:
     definition = ACTION_DEFINITIONS.get(action_id, {})
-    detail_definition = ACTION_DETAIL_DEFINITIONS.get(action_id, {})
+    operation_details = action.get("details") if isinstance(action.get("details"), dict) else {}
+    detail_definition = operation_details or ACTION_DETAIL_DEFINITIONS.get(action_id, {})
     execution_owner = action.get("execution_owner") or definition.get("execution_owner") or "backend_worker"
     result_summary = result.get("summary") if isinstance(result, dict) else None
     disabled_summary = _safe_text(disabled_reason, "") if disabled_reason and not enabled else ""
@@ -573,7 +574,7 @@ def _details_payload(
         },
         "technical_details": technical_details[:12],
     }
-    for optional_key in ("what_would_happen_after_confirmation", "what_will_not_happen_by_default"):
+    for optional_key in ("what_needs_attention", "what_would_happen_after_confirmation", "what_will_not_happen_by_default"):
         if optional_key in detail_definition:
             details[optional_key] = _safe_list(detail_definition.get(optional_key), [], max_items=6)
     return details

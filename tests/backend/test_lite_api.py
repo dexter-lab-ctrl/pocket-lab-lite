@@ -3875,3 +3875,71 @@ def test_photoprism_action_e2e_script_waits_for_backup_before_preview():
     assert "wait_for_backup_completion" in script
     assert "Skipping Preview restore because the current backup has not completed yet" in script
     assert "BASH" not in script.splitlines()[-1:]
+
+
+def test_lite_app_check_details_report_stopped_app_without_repair(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_actions, lite_app_operations
+
+    monkeypatch.setattr(lite_app_operations, "_pm2_process_online", lambda: "offline")
+    monkeypatch.setattr(lite_app_operations, "_local_health_ready", lambda: False)
+    monkeypatch.setattr(lite_app_operations, "_route_health_ready", lambda: False)
+    monkeypatch.setattr(lite_app_operations, "_route_registry_status", lambda: ("passed", {"present": True, "route_path": "/apps/photoprism/"}))
+    monkeypatch.setattr(lite_app_operations, "_caddy_route_status", lambda: ("passed", {"caddyfile_checked": True, "prefix_preserved": True}))
+    monkeypatch.setattr(lite_app_operations, "_storage_status", lambda: ("passed", {"mapping_count": 1, "read_only": True, "pending_apply": False}))
+    monkeypatch.setattr(lite_app_operations, "_backup_status", lambda: ("passed", {"config_backup_available": True}))
+    monkeypatch.setattr(lite_app_operations, "_security_ref_status", lambda: ("passed", {"security_evidence_ref": "security/evidence/latest/summary.json"}))
+
+    command = lite_app_operations.command_for_operation("photoprism", "check_app", reason="unit stopped check")
+    lite_app_operations.record_queued_operation(command)
+    result = lite_app_operations.execute_check_app(command)
+    assert result["status"] == "review"
+
+    action = lite_app_actions.app_actions("photoprism")["actions"]["check_app"]
+    details = action["details"]
+    assert action["last_result"] == "Something changed"
+    assert any("not running" in item.lower() for item in details["what_happened"])
+    assert any("check only" in item.lower() for item in details["what_changed"])
+    assert any("stopped" in item.lower() for item in details.get("what_needs_attention", []))
+    assert any("repair" in item.lower() for item in details["what_did_not_happen"])
+
+
+def test_lite_app_repair_details_report_restart_and_online_after(monkeypatch):
+    _force_photoprism_installed_for_action_tests(monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import lite_app_actions, lite_app_operations
+
+    local_health = iter([False, True])
+    route_health = iter([False, True])
+    monkeypatch.setattr(lite_app_operations, "_local_health_ready", lambda: next(local_health))
+    monkeypatch.setattr(lite_app_operations, "_route_health_ready", lambda: next(route_health))
+    monkeypatch.setattr(lite_app_operations, "_route_registry_status", lambda: ("passed", {"present": True, "route_path": "/apps/photoprism/"}))
+    monkeypatch.setattr(lite_app_operations, "_caddy_route_status", lambda: ("passed", {"caddyfile_checked": True, "prefix_preserved": True}))
+    monkeypatch.setattr(lite_app_operations, "_refresh_caddy_route_if_safe", lambda route_needs_refresh: ("skipped", False))
+    monkeypatch.setattr(lite_app_operations, "_repair_storage_if_safe", lambda storage_detail: ("passed", False, {"mapping_count": 1, "pending_apply": False}))
+    monkeypatch.setattr(lite_app_operations, "_restart_photoprism_if_safe", lambda health_failed: ("changed", True))
+
+    command = lite_app_operations.command_for_operation("photoprism", "repair_app", reason="unit stopped repair")
+    lite_app_operations.record_queued_operation(command)
+    result = lite_app_operations.execute_repair_app(command)
+    assert result["status"] == "succeeded"
+    assert result["summary"] == "Repair completed"
+
+    action = lite_app_actions.app_actions("photoprism")["actions"]["repair_app"]
+    details = action["details"]
+    assert action["last_result"] == "Repair completed"
+    assert any("started it again" in item.lower() or "started" in item.lower() for item in details["what_happened"])
+    assert "PhotoPrism was restarted." in details["what_changed"]
+    assert "PhotoPrism is now online." in details["what_changed"]
+    assert "No photos were changed." in details["what_did_not_happen"]
+    assert "No database was changed." in details["what_did_not_happen"]
+
+
+def test_lite_app_action_details_panel_can_show_needs_attention_section():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    assert "what_needs_attention" in ui
+    assert "What needs attention" in ui
+    assert "lite-app-action-detail-section--attention" in ui
+    assert "lite-app-action-detail-section--attention" in css
