@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
   FileCheck,
@@ -178,6 +178,113 @@ function actionDisabledReason(action = {}) {
   return action?.disabled_reason || action?.reason || '';
 }
 
+function normalizedActionValue(value) {
+  return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+function actionHasRunEvidence(action = {}, result = null, progress = null) {
+  const mergedResult = result || action?.result || {};
+  const mergedProgress = progress || action?.progress || {};
+  const resultStatus = normalizedActionValue(mergedResult?.status);
+  const phase = normalizedActionValue(mergedProgress?.phase);
+  return Boolean(
+    action?.first_ran_at
+    || action?.last_ran_at
+    || action?.last_result
+    || action?.evidence_ref
+    || action?.receipt_id
+    || action?.latest_backup_id
+    || action?.troubleshooting?.available
+    || ['completed', 'complete', 'done', 'succeeded', 'success', 'verified'].includes(phase)
+    || (['succeeded', 'success', 'done', 'completed', 'verified'].includes(resultStatus) && mergedResult?.summary)
+  );
+}
+
+function normalizeAppActionsPayload(payload = {}) {
+  const actions = {};
+  if (payload?.actions && typeof payload.actions === 'object') {
+    Object.entries(payload.actions).forEach(([actionId, action]) => {
+      if (action && typeof action === 'object') actions[actionId] = { id: actionId, ...action };
+    });
+  }
+  if (Array.isArray(payload?.action_list)) {
+    payload.action_list.forEach((action) => {
+      const actionId = action?.id || action?.action_id;
+      if (actionId) actions[actionId] = { ...(actions[actionId] || {}), ...action, id: actionId };
+    });
+  }
+  const latestResults = payload?.latest_results && typeof payload.latest_results === 'object' ? payload.latest_results : {};
+  const latestTroubleshooting = payload?.latest_troubleshooting_records && typeof payload.latest_troubleshooting_records === 'object'
+    ? payload.latest_troubleshooting_records
+    : {};
+  Object.entries(latestResults).forEach(([actionId, latestResult]) => {
+    if (!actions[actionId]) actions[actionId] = { id: actionId };
+    actions[actionId] = {
+      ...actions[actionId],
+      result: { ...(actions[actionId].result || {}), ...(latestResult || {}) },
+      latest_result: latestResult || null,
+    };
+  });
+  Object.entries(latestTroubleshooting).forEach(([actionId, record]) => {
+    if (!actions[actionId]) actions[actionId] = { id: actionId };
+    actions[actionId] = {
+      ...actions[actionId],
+      troubleshooting: record || actions[actionId].troubleshooting,
+    };
+  });
+  return {
+    actions,
+    updated_at: payload?.updated_at || null,
+  };
+}
+
+function appSnapshotKey(app) {
+  return String(app?.id || 'photoprism').toLowerCase();
+}
+
+function actionFromSnapshot(snapshot, actionId, fallback = {}) {
+  const fresh = snapshot?.actions?.[actionId] || null;
+  if (!fresh) return fallback || {};
+  const merged = {
+    ...(fallback || {}),
+    ...fresh,
+    result: {
+      ...((fallback || {}).result || {}),
+      ...(fresh.result || {}),
+    },
+    progress: {
+      ...((fallback || {}).progress || {}),
+      ...(fresh.progress || {}),
+    },
+    details: fresh.details || (fallback || {}).details,
+    troubleshooting: fresh.troubleshooting || (fallback || {}).troubleshooting,
+  };
+  return merged;
+}
+
+function bestResultForAction(actionId, action = {}, result = null) {
+  if (result?.action_id === actionId || (actionId === 'connect_photos' && ['duplicate_mapping', 'already_connected', 'created', 'queued'].includes(String(result?.status || '').toLowerCase()))) {
+    return result;
+  }
+  if (actionHasRunEvidence(action, action?.result, action?.progress)) {
+    return {
+      action_id: actionId,
+      status: action?.result?.status || action?.status || 'ready',
+      summary: action?.last_result || action?.result?.summary || action?.summary || 'Action completed.',
+      receipt_id: action?.receipt_id || action?.result?.receipt_id || null,
+      backend_only: action?.result?.backend_only !== false,
+    };
+  }
+  return null;
+}
+
+function actionRunTimestamp(action = {}, result = null, key = 'last') {
+  const values = key === 'first'
+    ? [action?.first_ran_at, action?.first_run_at, action?.started_at, result?.first_ran_at, result?.started_at]
+    : [action?.last_ran_at, action?.last_run_at, action?.completed_at, action?.updated_at, result?.last_ran_at, result?.completed_at, result?.updated_at];
+  return values.find(Boolean) || '';
+}
+
 function normalizeAppAction(entry) {
   const action = entry?.action || {};
   const actionId = entry?.actionId || action?.id || '';
@@ -257,13 +364,7 @@ function actionResultCopy(actionId, payload = {}, action = {}) {
 }
 
 function tileResultForAction(actionId, action = {}, result = null) {
-  if (result?.action_id === actionId || (actionId === 'connect_photos' && ['duplicate_mapping', 'already_connected', 'created', 'queued'].includes(String(result?.status || '').toLowerCase()))) {
-    return result;
-  }
-  if (action?.result?.summary && action?.result?.status) {
-    return { action_id: actionId, ...action.result };
-  }
-  return null;
+  return bestResultForAction(actionId, action, result);
 }
 
 function AppActionDetailsButton({ available, onClick, expanded = false }) {
@@ -363,7 +464,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       steps: Array.isArray(progress?.steps) && progress.steps.length ? progress.steps : [
         { id: 'ready', label: 'Getting ready', status: 'active' },
         { id: 'working', label: 'Checking readiness', status: 'waiting' },
-        { id: 'troubleshooting', label: 'Saved for troubleshooting', status: 'waiting' },
+        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
       ],
     };
   }
@@ -384,7 +485,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       steps: [
         { id: 'ready', label: 'Getting ready', status: 'completed' },
         { id: 'working', label: 'Working', status: 'active' },
-        { id: 'troubleshooting', label: 'Saved for troubleshooting', status: 'waiting' },
+        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
       ],
     };
   }
@@ -640,9 +741,17 @@ function PhotoPrismActionTile({
         status={normalized.status}
         enabled={!(action?.enabled === false || (disabled && !busy && !progressState?.running))}
         disabledReason={(action?.enabled === false || (disabled && !busy && !progressState?.running)) && !showProgress ? reason : ''}
-        progress={progressState}
-        result={tileResult}
+        progress={progressState || action?.progress}
+        result={tileResult || action?.result}
         detailsAvailable={detailsAvailable}
+        lastResult={action?.last_result || tileResult?.summary || ''}
+        firstRanAt={actionRunTimestamp(action, tileResult, 'first')}
+        lastRanAt={actionRunTimestamp(action, tileResult, 'last')}
+        runCount={action?.run_count || 0}
+        troubleshooting={action?.troubleshooting}
+        evidenceRef={action?.evidence_ref || ''}
+        receiptId={action?.receipt_id || action?.result?.receipt_id || tileResult?.receipt_id || ''}
+        executionOwner={action?.execution_owner || ''}
       />
       <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} />
       {!tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
@@ -950,13 +1059,28 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
 }
 
 function detailsForAction(actionId, action = {}, result = null) {
-  const details = action?.details && typeof action.details === 'object'
-    ? action.details
-    : fallbackActionDetails(actionId, action, result);
-  if (!result?.summary) return details;
+  const details = result?.details && typeof result.details === 'object'
+    ? result.details
+    : action?.result?.details && typeof action.result.details === 'object'
+      ? action.result.details
+      : action?.details && typeof action.details === 'object'
+        ? action.details
+        : fallbackActionDetails(actionId, action, result);
+  const summary = result?.summary || action?.last_result || action?.result?.summary || details.summary;
   return {
     ...details,
-    summary: result.summary,
+    summary,
+    last_result: action?.last_result || result?.summary || action?.result?.summary || details.last_result || summary,
+    first_ran_at: actionRunTimestamp(action, result, 'first') || details.first_ran_at || '',
+    last_ran_at: actionRunTimestamp(action, result, 'last') || details.last_ran_at || '',
+    run_count: Number(action?.run_count || details.run_count || 0),
+    saved_for_troubleshooting: details.saved_for_troubleshooting || {
+      saved: actionHasRunEvidence(action, result, action?.progress),
+      backend_only: true,
+      summary: actionHasRunEvidence(action, result, action?.progress)
+        ? 'A backend record was saved for troubleshooting.'
+        : 'No backend record was saved because this action did not run.',
+    },
   };
 }
 
@@ -987,10 +1111,15 @@ function AppActionDetailsPanel({ details, onClose }) {
 
       <div className="lite-app-action-details-status">
         <span>Last result</span>
-        <strong>{getActionDisplayState(details.status || 'ready').label}</strong>
+        <strong>{details.last_result || getActionDisplayState(details.status || 'ready').label}</strong>
       </div>
 
       <div className="lite-app-action-details-grid">
+        <div className="lite-app-action-detail-section lite-app-action-detail-section--run-history">
+          <strong>Run history</strong>
+          <p>First run: {details.first_ran_at ? formatLiteTime(details.first_ran_at) : 'Not run yet'}</p>
+          <p>Last run: {details.last_ran_at ? formatLiteTime(details.last_ran_at) : (saved.saved ? 'Recorded' : 'Not run yet')}</p>
+        </div>
         <div className="lite-app-action-detail-section">
           <strong>What happened</strong>
           {happened.map((item) => <p key={item}>{item}</p>)}
@@ -1247,6 +1376,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
   const [detailsActionId, setDetailsActionId] = useState(null);
+  const [actionSnapshots, setActionSnapshots] = useState({});
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -1260,6 +1390,21 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       return matchesQuery && matchesFilter;
     });
   }, [apps, activeFilter, query]);
+
+
+  const refreshAppActions = useCallback(async (appId = 'photoprism') => {
+    try {
+      const payload = await liteApi.appActions(appId || 'photoprism');
+      const snapshot = normalizeAppActionsPayload(payload || {});
+      setActionSnapshots((current) => ({
+        ...current,
+        [String(appId || 'photoprism').toLowerCase()]: snapshot,
+      }));
+      return snapshot;
+    } catch (_error) {
+      return null;
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -1287,13 +1432,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     if (!busyAppAction && !runningCatalogAction && !hasRunningPhotoPrismMedia(apps)) return undefined;
     const timer = window.setInterval(() => {
       refresh();
+      refreshAppActions('photoprism');
     }, 4000);
     return () => window.clearInterval(timer);
-  }, [actionBusyKey, apps, refresh]);
+  }, [actionBusyKey, apps, refresh, refreshAppActions]);
 
 
-  function openActionDetails(actionId) {
-    setDetailsActionId((current) => (current === actionId ? null : actionId));
+  function openActionDetails(actionId, appId = 'photoprism') {
+    setDetailsActionId((current) => {
+      const next = current === actionId ? null : actionId;
+      if (next) refreshAppActions(appId || 'photoprism');
+      return next;
+    });
   }
 
   function closeActionDetails() {
@@ -1364,7 +1514,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     await Promise.allSettled([
       liteApi.photoprismStorageMappings(),
       liteApi.appLifecycleProfile('photoprism'),
-      liteApi.appActions('photoprism'),
+      refreshAppActions('photoprism'),
     ]);
     await refresh();
   }
@@ -1493,11 +1643,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setActionError(null);
     setResult({ status: 'queued', action_id: actionId, summary: 'Sending app action to Pocket Lab...' });
     try {
-      const response = await liteApi.runAppAction(app.id || 'photoprism', actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload });
+      const appId = app.id || 'photoprism';
+      const response = await liteApi.runAppAction(appId, actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload });
       setResult({ action_id: actionId, ...response });
+      await refreshAppActions(appId);
       refresh();
-      window.setTimeout(refresh, 700);
-      window.setTimeout(refresh, 1800);
+      window.setTimeout(() => { refresh(); refreshAppActions(appId); }, 700);
+      window.setTimeout(() => { refresh(); refreshAppActions(appId); }, 1800);
     } catch (err) {
       const detail = err?.payload?.detail;
       setActionError(detail?.summary || err.message);
@@ -1536,12 +1688,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = `lite-catalog-actions ${canInstallPhone ? 'has-phone-install' : ''}`;
     const lifecycle = lifecycleProfile(app);
+    const actionSnapshot = actionSnapshots[appSnapshotKey(app)] || null;
+    const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
-    const openAction = lifecycleAction(lifecycle, 'open');
-    const connectPhotosAction = lifecycleAction(lifecycle, 'connect_photos');
-    const checkAppAction = lifecycleAction(lifecycle, 'check_app');
-    const backupAppAction = lifecycleAction(lifecycle, 'backup_app');
-    const importPhotosAction = lifecycleAction(lifecycle, 'import_photos');
+    const openAction = actionState('open');
+    const connectPhotosAction = actionState('connect_photos');
+    const checkAppAction = actionState('check_app');
+    const backupAppAction = actionState('backup_app');
+    const importPhotosAction = actionState('import_photos');
     const importProgress = actionProgressFromLifecycle(lifecycle, 'import_photos', actionBusyKey === `${app.id}:import_photos`);
     const checkAppProgress = actionProgressFromLifecycle(lifecycle, 'check_app', actionBusyKey === `${app.id}:check_app`);
     const repairAppProgress = actionProgressFromLifecycle(lifecycle, 'repair_app', actionBusyKey === `${app.id}:repair_app`);
@@ -1549,12 +1703,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const previewRestoreProgress = actionProgressFromLifecycle(lifecycle, 'preview_restore', actionBusyKey === `${app.id}:preview_restore`);
     const backupToStorageProgress = actionProgressFromLifecycle(lifecycle, 'backup_to_storage', actionBusyKey === `${app.id}:backup_to_storage`);
     const updateAppProgress = actionProgressFromLifecycle(lifecycle, 'update_app', actionBusyKey === `${app.id}:update_app`);
-    const previewRestoreAction = lifecycleAction(lifecycle, 'preview_restore');
-    const backupToStorageAction = lifecycleAction(lifecycle, 'backup_to_storage');
-    const installAppAction = lifecycleAction(lifecycle, 'install_app');
-    const updateAppAction = lifecycleAction(lifecycle, 'update_app');
-    const repairAppAction = lifecycleAction(lifecycle, 'repair_app');
-    const removeAppAction = lifecycleAction(lifecycle, 'remove_app');
+    const previewRestoreAction = actionState('preview_restore');
+    const backupToStorageAction = actionState('backup_to_storage');
+    const installAppAction = actionState('install_app');
+    const updateAppAction = actionState('update_app');
+    const repairAppAction = actionState('repair_app');
+    const removeAppAction = actionState('remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
     const appActionEntries = [
       {
@@ -1750,7 +1904,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           result={entry.result}
                           tone={entry.tone}
                           onClick={entry.onClick}
-                          onViewDetails={() => openActionDetails(entry.actionId)}
+                          onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
                           detailsExpanded={detailsActionId === entry.actionId}
                           disabled={entry.disabled}
                           title={entry.title}

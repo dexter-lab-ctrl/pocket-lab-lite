@@ -3247,10 +3247,13 @@ def test_lite_app_update_frontend_source_is_readiness_only():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "Check whether PhotoPrism is ready for a safe update." in ui
-    assert "Update Readiness Conveyor" in ui
-    assert "lite-catalog-update-conveyor" in css
-    assert "Checking version, backup, route, rollback, and safety proof" in ui
-    assert "No update will be applied" in ui
+    assert "Checking update readiness" in ui
+    assert "No update was applied" in ui
+    assert "LiteActionProgress" in ui
+    assert "lite-action-progress__packet" in ui
+    assert "update_app: 'readiness'" in ui
+    assert "lite-action-progress" in css
+    assert "Update Readiness Conveyor" not in ui
     assert "Index photos" not in ui
     assert "Refresh library" not in ui
     assert "Stop photo" not in ui
@@ -3542,7 +3545,12 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "lite-action-progress__track",
         "lite-action-progress__fill",
         "lite-action-progress__nodes",
+        "lite-action-progress__packet",
+        "lite-action-progress__stamp",
+        "lite-action-progress__meta",
         "liteActionProgressCalmFill",
+        "liteActionProgressPacket",
+        "liteActionProgressStamp",
         "prefers-reduced-motion",
     ):
         assert marker in css
@@ -3569,13 +3577,13 @@ def test_lite_app_catalog_reusable_action_progress_source():
     for marker in (
         "Getting ready",
         "Working",
-        "Saved for troubleshooting",
+        "Evidence saved",
         "Paused for safety",
         "Needs review",
-        "Checking safely",
+        "Checking PhotoPrism safely",
         "Saving app settings",
         "Preparing restore preview",
-        "Checking update readiness",
+        "Checking readiness only",
         "No changes made",
         "No update was applied",
     ):
@@ -3717,16 +3725,38 @@ def test_lite_app_catalog_details_selection_is_action_specific():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     assert "detailsActionId" in ui
-    assert "openActionDetails(entry.actionId)" in ui
+    assert "openActionDetails(entry.actionId, app.id || 'photoprism')" in ui
     assert "detailsActionId === entry.actionId" in ui
     assert "lite-catalog-action-details-anchor" in ui
     assert "AppActionDetailsPanel" in ui
     assert "Hide details" in ui
     assert "Saved for troubleshooting" in ui
     assert "lite-app-action-details-panel" in css
+    assert "lite-app-action-detail-section--run-history" in css
     assert "liteEvidenceBorderRailOrbit" not in ui
     assert "liteEvidenceRailPerimeterFlow" not in ui
     assert "Hide receipt" not in ui
+
+
+def test_lite_app_catalog_details_prefer_fresh_action_state():
+    ui = _lite_ui_source()
+    progress = Path("src/lite/LiteActionProgress.jsx").read_text()
+    for marker in (
+        "refreshAppActions",
+        "liteApi.appActions",
+        "normalizeAppActionsPayload",
+        "actionFromSnapshot",
+        "actionSnapshots",
+        "bestResultForAction",
+        "detailsForAction",
+        "last_result",
+        "Run history",
+    ):
+        assert marker in ui
+    assert "detailsAvailable ||" not in progress
+    assert "hasRunEvidence" in progress
+    assert "Not run yet" in progress
+    assert "Evidence saved" in progress
 
 
 def test_lite_app_update_receipt_technical_details_show_versions(monkeypatch):
