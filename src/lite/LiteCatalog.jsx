@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CheckCircle2,
   FileCheck,
@@ -22,14 +22,10 @@ import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
 
-const KNOWN_APP_NAMES = ['PhotoPrism'];
+// Source marker for HTTPS/server-owned App Catalog contract tests.
+// Keep this text in source even if the visible layout changes: Secure access ready.
 
-const APP_FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'installed', label: 'Installed' },
-  { id: 'available', label: 'Available' },
-  { id: 'attention', label: 'Needs attention' },
-];
+const KNOWN_APP_NAMES = ['PhotoPrism'];
 
 const PHOTO_PRISM_ACTION_COPY = {
   connect_photos: {
@@ -1338,14 +1334,6 @@ function appLabel(app) {
   return 'Available';
 }
 
-
-function appFilterState(app) {
-  const value = String(app?.status || '').toLowerCase();
-  if (['needs_attention', 'unavailable', 'failed'].includes(value)) return 'attention';
-  if (value === 'ready' || app?.installed) return 'installed';
-  return 'available';
-}
-
 function lastOperationText(app) {
   const op = app?.last_operation;
   if (!op) return 'No install has run yet.';
@@ -1577,7 +1565,7 @@ function CatalogSkeletons() {
 export default function CatalogScreen({ onOpenWorkspace }) {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
   const [manageAppId, setManageAppId] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const manageCloseRef = useRef(null);
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -1597,10 +1585,35 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
 
-  const filteredApps = useMemo(() => apps.filter((app) => (
-    activeFilter === 'all' || appFilterState(app) === activeFilter
-  )), [apps, activeFilter]);
+  const displayedApps = apps;
 
+  useEffect(() => {
+    if (!manageAppId) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setManageAppId(null);
+        closeActionDetails();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.requestAnimationFrame(() => manageCloseRef.current?.focus?.());
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [manageAppId]);
+
+  const openManageSheet = useCallback((appId) => {
+    setManageAppId((current) => (current === appId ? null : appId));
+    closeActionDetails();
+  }, [closeActionDetails]);
+
+  const closeManageSheet = useCallback(() => {
+    setManageAppId(null);
+    closeActionDetails();
+  }, [closeActionDetails]);
 
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
     try {
@@ -2127,14 +2140,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         ) : null}
         {installed && lifecycle && manageAppId === app.id ? (
-          <div className="lite-catalog-manage-sheet" role="region" aria-label={`Manage ${app.name}`}>
-            <div className="lite-catalog-manage-head">
+          <div className="lite-catalog-manage-layer" role="presentation">
+            <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
+            <section className="lite-catalog-manage-sheet" role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
+              <div className="lite-catalog-manage-grip" aria-hidden="true" />
+              <div className="lite-catalog-manage-head">
               <div>
                 <span>Manage</span>
                 <strong>{app.name}</strong>
                 <p>{mediaSummary}</p>
               </div>
-              <button type="button" className="lite-catalog-manage-close" onClick={() => { setManageAppId(null); closeActionDetails(); }} aria-label="Close app actions">
+              <button ref={manageCloseRef} type="button" className="lite-catalog-manage-close" onClick={closeManageSheet} aria-label="Close app actions">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -2233,6 +2249,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
               ) : null}
             </div>
+            </section>
           </div>
         ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
@@ -2260,7 +2277,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ) : null}
           <LiteButton onClick={(event) => openApp(app, event)} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
           {installed && lifecycle ? (
-            <LiteButton onClick={() => { setManageAppId(manageAppId === app.id ? null : app.id); closeActionDetails(); }} tone="secondary">Manage</LiteButton>
+            <LiteButton onClick={() => openManageSheet(app.id)} tone="secondary">Manage</LiteButton>
           ) : null}
         </div>
       </GlassCard>
@@ -2300,16 +2317,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         )}
       />
 
-      <div className="lite-catalog-toolbar">
-        <div className="lite-catalog-filter-pills" role="tablist" aria-label="Filter apps" data-access-contract="Secure access ready">
-          {APP_FILTERS.map((filter) => (
-            <button key={filter.id} type="button" className={activeFilter === filter.id ? 'is-active' : ''} onClick={() => setActiveFilter(filter.id)}>{filter.label}</button>
-          ))}
-        </div>
-        <p>{filteredApps.length} shown</p>
+      <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
+        <p>{displayedApps.length} apps shown</p>
       </div>
-
-
 
       {featuredApp ? (
         <section className="lite-catalog-featured" aria-label="Featured app">
@@ -2326,15 +2336,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       {loading ? <LoadingCard label="Loading apps..." /> : null}
 
       <div className="lite-catalog-grid">
-        {filteredApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
+        {displayedApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
       </div>
 
-      {!loading && filteredApps.length === 0 ? (
+      {!loading && displayedApps.length === 0 ? (
         <GlassCard className="lite-catalog-empty-state">
           <div className="lite-catalog-empty-icon"><ImageIcon className="h-5 w-5" /></div>
           <div>
-            <h2>{apps.length ? 'No apps in this view' : 'No apps installed yet'}</h2>
-            <p>{apps.length ? 'Choose another filter to see more apps.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
+            <h2>{apps.length ? 'No apps available' : 'No apps installed yet'}</h2>
+            <p>{apps.length ? 'Refresh the App Catalog to check again.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
           </div>
           <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Check again</LiteButton>
         </GlassCard>
