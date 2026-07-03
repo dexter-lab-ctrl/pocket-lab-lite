@@ -12364,10 +12364,14 @@ textarea {
 }
 
 .theme-pocket-lite-daylight .lite-action-progress__track {
-  background: rgba(226, 232, 240, 0.88);
+  --lite-action-progress-head-size: 1.15rem;
+  --lite-action-progress-percent: 0%;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.46), transparent 12%),
+    rgba(226, 232, 240, 0.88);
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 999px;
-  height: 7px;
+  height: 0.5rem;
   overflow: hidden;
   position: relative;
 }
@@ -12377,53 +12381,43 @@ textarea {
   border-radius: inherit;
   display: block;
   height: 100%;
-  transition: width 180ms ease;
+  transition: width 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: var(--lite-action-progress-percent, 0%);
 }
 
-.theme-pocket-lite-daylight .lite-action-progress__packet {
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.96), rgba(14, 165, 233, 0.82));
+.theme-pocket-lite-daylight .lite-action-progress__head {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.92) 52%, rgba(14, 165, 233, 0.96)),
+    radial-gradient(circle, rgba(255, 255, 255, 0.98), rgba(14, 165, 233, 0.74));
   border-radius: 999px;
-  box-shadow: 0 0 0.55rem rgba(14, 165, 233, 0.34);
-  height: 0.44rem;
-  left: 0.18rem;
+  box-shadow:
+    0 0 0.5rem rgba(14, 165, 233, 0.45),
+    0 0 1rem rgba(59, 130, 246, 0.22);
+  height: calc(100% - 2px);
+  left: clamp(0px, calc(var(--lite-action-progress-percent, 0%) - var(--lite-action-progress-head-size)), calc(100% - var(--lite-action-progress-head-size)));
   opacity: 0;
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.44rem;
+  top: 1px;
+  transition:
+    left 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: var(--lite-action-progress-head-size);
 }
 
-.theme-pocket-lite-daylight .lite-action-progress__stamp {
-  align-items: center;
-  background: rgba(34, 197, 94, 0.96);
-  border-radius: 999px;
-  color: white;
-  display: inline-flex;
-  height: 1.1rem;
-  justify-content: center;
-  opacity: 0;
-  position: absolute;
-  right: 0.08rem;
-  top: 50%;
-  transform: translateY(-50%) scale(0.82);
-  width: 1.1rem;
-}
-
-.theme-pocket-lite-daylight .lite-action-progress--queued .lite-action-progress__fill,
-.theme-pocket-lite-daylight .lite-action-progress--running .lite-action-progress__fill,
-.theme-pocket-lite-daylight .lite-action-progress--waiting .lite-action-progress__fill {
-  animation: liteActionProgressCalmFill 1.35s ease-in-out infinite;
-}
-
-.theme-pocket-lite-daylight .lite-action-progress--queued .lite-action-progress__packet,
-.theme-pocket-lite-daylight .lite-action-progress--running .lite-action-progress__packet,
-.theme-pocket-lite-daylight .lite-action-progress--waiting .lite-action-progress__packet {
-  animation: liteActionProgressPacket 1.15s ease-in-out infinite;
+.theme-pocket-lite-daylight .lite-action-progress--queued .lite-action-progress__head,
+.theme-pocket-lite-daylight .lite-action-progress--running .lite-action-progress__head,
+.theme-pocket-lite-daylight .lite-action-progress--waiting .lite-action-progress__head,
+.theme-pocket-lite-daylight .lite-action-progress--review .lite-action-progress__head,
+.theme-pocket-lite-daylight .lite-action-progress--failed .lite-action-progress__head,
+.theme-pocket-lite-daylight .lite-action-progress--blocked .lite-action-progress__head {
+  animation: liteActionProgressHeadGlow 1.15s ease-in-out infinite;
   opacity: 1;
 }
 
-.theme-pocket-lite-daylight .lite-action-progress--evidence_saved .lite-action-progress__stamp {
-  animation: liteActionProgressStamp 180ms ease-out both;
+.theme-pocket-lite-daylight .lite-action-progress--evidence_saved .lite-action-progress__head {
+  animation: liteActionProgressHeadSettle 240ms ease-out both;
+  opacity: 1;
 }
 
 .theme-pocket-lite-daylight .lite-action-progress--evidence_saved .lite-action-progress__fill {
@@ -12531,21 +12525,22 @@ textarea {
   overflow-wrap: anywhere;
 }
 
-@keyframes liteActionProgressCalmFill {
-  0%, 100% { filter: saturate(1); opacity: 0.88; }
-  50% { filter: saturate(1.08); opacity: 1; }
+@keyframes liteActionProgressHeadGlow {
+  0%, 100% { filter: saturate(1); transform: scaleX(0.88); }
+  50% { filter: saturate(1.22) brightness(1.08); transform: scaleX(1); }
 }
 
-@keyframes liteActionProgressPacket {
-  0% { left: 0.18rem; opacity: 0; transform: translateY(-50%) scale(0.78); }
-  18% { opacity: 1; }
-  82% { opacity: 1; }
-  100% { left: calc(100% - 0.62rem); opacity: 0; transform: translateY(-50%) scale(0.98); }
+@keyframes liteActionProgressHeadSettle {
+  0% { filter: brightness(1.22); transform: scaleX(0.92); }
+  100% { filter: brightness(1); transform: scaleX(1); }
 }
 
-@keyframes liteActionProgressStamp {
-  0% { opacity: 0; transform: translateY(-50%) scale(0.82); }
-  100% { opacity: 1; transform: translateY(-50%) scale(1); }
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-action-progress__fill,
+  .theme-pocket-lite-daylight .lite-action-progress__head {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 .theme-pocket-lite-daylight .lite-app-action-result-card {

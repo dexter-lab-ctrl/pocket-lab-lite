@@ -3255,7 +3255,7 @@ def test_lite_app_update_frontend_source_is_readiness_only():
     assert "Checking update readiness" in ui
     assert "No update was applied" in ui
     assert "LiteActionProgress" in ui
-    assert "lite-action-progress__packet" in ui
+    assert "lite-action-progress__head" in ui
     assert "update_app: 'readiness'" in ui
     assert "lite-action-progress" in css
     assert "Update Readiness Conveyor" not in ui
@@ -3554,12 +3554,10 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "lite-action-progress__track",
         "lite-action-progress__fill",
         "lite-action-progress__nodes",
-        "lite-action-progress__packet",
-        "lite-action-progress__stamp",
+        "lite-action-progress__head",
         "lite-action-progress__meta",
-        "liteActionProgressCalmFill",
-        "liteActionProgressPacket",
-        "liteActionProgressStamp",
+        "liteActionProgressHeadGlow",
+        "liteActionProgressHeadSettle",
         "prefers-reduced-motion",
     ):
         assert marker in css
