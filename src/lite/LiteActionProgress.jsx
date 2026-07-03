@@ -216,10 +216,10 @@ export default function LiteActionProgress({
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow={Math.round(percent)}
+        style={{ '--lite-action-progress-percent': `${percent}%` }}
       >
-        <span className="lite-action-progress__fill" style={{ width: `${percent}%` }} />
-        <span className="lite-action-progress__packet" aria-hidden="true" />
-        <span className="lite-action-progress__stamp" aria-hidden="true"><CheckCircle2 className="h-3.5 w-3.5" /></span>
+        <span className="lite-action-progress__fill" />
+        <span className="lite-action-progress__head" aria-hidden="true" />
       </div>
       <div className="lite-action-progress__nodes" aria-hidden="true">
         {stages.map((stage, index) => {
