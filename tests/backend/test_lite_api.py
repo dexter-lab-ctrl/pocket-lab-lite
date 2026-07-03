@@ -2011,15 +2011,22 @@ def test_lite_security_and_recovery_include_lifecycle_profiles():
 def test_lite_unified_lifecycle_ui_source_is_present():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
-    assert "Unified App Lifecycle" in ui
     assert "apps/lifecycle" in Path("src/lib/liteApi.js").read_text()
+    assert "lite-catalog-summary-panel" in ui
+    assert "lite-catalog-manage-sheet" in ui
+    assert "Manage" in ui
+    assert "Open" in ui
     assert "Media connected" in ui
     assert "Media not connected" in ui
     assert "Protected app" in ui
     assert "Backup ready" in ui
     assert "Runs on Server Phone" in ui
     assert "Needs attention" in ui
-    assert "lite-catalog-lifecycle-panel" in css
+    assert "Unified App Lifecycle" not in ui
+    assert "lite-catalog-search-wrap" not in ui
+    assert "lite-catalog-search-wrap" not in css
+    assert "lite-catalog-summary-panel" in css
+    assert "lite-catalog-manage-sheet" in css
     assert "lite-security-app-lifecycle" in css
     assert "lite-recovery-app-lifecycle" in css
     assert "child_process" not in ui
@@ -2441,10 +2448,14 @@ def test_lite_media_new_command_resets_previous_operation_timestamps(monkeypatch
     assert "evidence_ref" not in stored
 
 
-def test_lite_app_action_center_ui_source_is_present():
+def test_lite_app_action_sheet_ui_source_is_present():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
-    assert "Action Center" in ui
+    assert "Manage" in ui
+    assert "lite-catalog-manage-sheet" in ui
+    assert "lite-catalog-summary-panel" in ui
+    assert "lite-catalog-search-wrap" not in ui
+    assert "lite-catalog-search-wrap" not in css
     assert "Import photos" in ui
     assert "Index photos" not in ui
     assert "Stop photo action" not in ui
@@ -2452,7 +2463,7 @@ def test_lite_app_action_center_ui_source_is_present():
     assert "Connect a photo folder first" in ui
     assert "runAppAction" in Path("src/lib/liteApi.js").read_text()
     assert "apps/${encodeURIComponent(appId)}/actions" in Path("src/lib/liteApi.js").read_text()
-    assert "lite-catalog-action-center" in css
+    assert "lite-catalog-manage-sheet" in css
     assert "child_process" not in ui
     assert "nats.connect" not in ui
     assert "photoprism import" not in ui.lower()
@@ -3541,6 +3552,8 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "AppActionDisabledReason",
         "LiteActionProgress",
         "lite-catalog-action-groups",
+        "lite-catalog-manage-sheet",
+        "lite-catalog-summary-panel",
         "Details",
         "No update was applied",
     ):
