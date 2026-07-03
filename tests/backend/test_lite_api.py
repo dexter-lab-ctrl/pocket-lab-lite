@@ -3587,6 +3587,9 @@ def test_lite_app_catalog_connect_photos_truthful_connected_state():
     backend = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_actions.py").read_text()
     for marker in (
         "phoneStorageConnected",
+        "actionSnapshot?.media",
+        "actionSnapshot?.actions?.connect_photos",
+        "refreshAppActions('photoprism')",
         "isPhoneStorageConnected",
         "PhoneStorageConnectedFolders",
         "Connected folders from Phone Storage",
@@ -3619,6 +3622,7 @@ def test_lite_app_catalog_import_photos_truthful_imported_state():
     backend = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_actions.py").read_text()
     for marker in (
         "photosAlreadyImported",
+        "actionSnapshot?.actions?.import_photos",
         "isPhotosImported",
         "Photos are imported. PhotoPrism will handle new photos.",
         "entry.actionId === 'import_photos' && isPhotosImported",

@@ -246,6 +246,7 @@ function normalizeAppActionsPayload(payload = {}) {
   });
   return {
     actions,
+    media: payload?.media && typeof payload.media === 'object' ? payload.media : null,
     updated_at: payload?.updated_at || null,
   };
 }
@@ -302,7 +303,8 @@ function normalizeAppAction(entry) {
   const actionId = entry?.actionId || action?.id || '';
   const copy = actionCopy(actionId);
   const busy = Boolean(entry?.busy);
-  const connected = Boolean(entry?.connected);
+  const actionStatus = normalizedActionValue(action?.status);
+  const connected = Boolean(entry?.connected || ['connected', 'already_connected'].includes(actionStatus));
   const progress = entry?.progress || action?.progress || null;
   const hasProgress = Boolean(progress?.running || ['queued', 'running'].includes(String(progress?.phase || '').toLowerCase()));
   const enabled = action?.enabled !== false && !entry?.disabled;
@@ -1317,8 +1319,18 @@ function isPhoneStorageMapping(mapping = {}) {
 }
 
 function phoneStorageConnected(app, lifecycle = null, actionSnapshot = null) {
+  const connectAction = actionSnapshot?.actions?.connect_photos || lifecycleAction(lifecycle, 'connect_photos') || {};
+  const connectText = [
+    connectAction.status,
+    connectAction.summary,
+    connectAction.disabled_reason,
+    connectAction.reason,
+  ].map((value) => String(value || '').toLowerCase()).join(' ');
+  if (connectText.includes('connected') || connectText.includes('already connected')) return true;
+
   const mediaSources = [
     actionSnapshot?.media,
+    actionSnapshot?.actions?.connect_photos?.media,
     lifecycle?.media,
     app?.lifecycle?.media,
     app?.media,
@@ -1337,9 +1349,18 @@ function phoneStorageConnected(app, lifecycle = null, actionSnapshot = null) {
   return mappings.some(isPhoneStorageMapping) || mappings.length === 1;
 }
 
-function photosAlreadyImported(lifecycle = null, actionSnapshot = null, app = null) {
+function photosAlreadyImported(lifecycle = null, actionSnapshot = null, app = null, action = null) {
+  const actionText = [
+    action?.status,
+    action?.summary,
+    action?.disabled_reason,
+    action?.reason,
+  ].map((value) => String(value || '').toLowerCase()).join(' ');
+  if (actionText.includes('imported')) return true;
+
   const mediaSources = [
     actionSnapshot?.media,
+    actionSnapshot?.actions?.import_photos?.media,
     lifecycle?.media,
     app?.lifecycle?.media,
     app?.media,
@@ -1525,6 +1546,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }
   }, []);
 
+
+  useEffect(() => {
+    if (!apps.some((app) => isPhotoPrismApp(app))) return undefined;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (!cancelled) refreshAppActions('photoprism');
+    }, 120);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [apps, refreshAppActions]);
 
   useEffect(() => {
     const notice = catalogActionNotice(result, actionError);
@@ -1830,7 +1863,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const repairAppAction = actionState('repair_app');
     const removeAppAction = actionState('remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
-    const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app);
+    const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
     const appActionEntries = [
       {
         actionId: 'open',
