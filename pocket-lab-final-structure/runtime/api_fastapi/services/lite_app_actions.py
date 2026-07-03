@@ -290,6 +290,8 @@ def _normalized_status(value: Any, *, enabled: bool) -> str:
         return "not_supported"
     if raw in {"not_ready", "unavailable"}:
         return "not_ready"
+    if raw in {"connected", "imported"}:
+        return raw
     if enabled:
         return "ready"
     return "not_ready"
@@ -478,6 +480,49 @@ def _apply_connect_photos_truth(actions: dict[str, Any], media: Any) -> None:
         }
 
 
+def _media_import_completed(media: Any) -> bool:
+    if not isinstance(media, dict):
+        return False
+    last_import = media.get("last_import") if isinstance(media.get("last_import"), dict) else {}
+    status = str(last_import.get("status") or media.get("last_import_status") or "").lower()
+    evidence_status = str(last_import.get("evidence_status") or (media.get("evidence") or {}).get("status") or "").lower() if isinstance(media.get("evidence"), dict) else str(last_import.get("evidence_status") or "").lower()
+    return bool(
+        media.get("last_imported_at")
+        or last_import.get("completed_at")
+        or status in {"succeeded", "success", "completed", "done"}
+        or evidence_status == "saved"
+    )
+
+
+def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
+    action = actions.get("import_photos")
+    if not isinstance(action, dict):
+        return
+    if _media_import_completed(media):
+        last_import = media.get("last_import") if isinstance(media, dict) and isinstance(media.get("last_import"), dict) else {}
+        completed_at = last_import.get("completed_at") or (media.get("last_imported_at") if isinstance(media, dict) else None)
+        action.update({
+            "enabled": False,
+            "status": "imported",
+            "summary": "Photos are imported. PhotoPrism will handle new photos.",
+            "disabled_reason": "Photos are already imported. PhotoPrism will handle new photos.",
+            "reason": "Photos are already imported. PhotoPrism will handle new photos.",
+            "last_result": "Photos imported",
+            "first_ran_at": completed_at or action.get("first_ran_at"),
+            "last_ran_at": completed_at or action.get("last_ran_at"),
+            "run_count": 1,
+        })
+        action["progress"] = {"phase": "idle", "step": "Imported.", "percent": None, "indeterminate": False, "bounded": True, "steps": []}
+        action["result"] = {"status": "imported", "summary": "Photos are imported. PhotoPrism will handle new photos.", "receipt_id": None, "backend_only": True}
+        action["troubleshooting"] = {
+            "available": False,
+            "backend_only": True,
+            "debug_only": True,
+            "receipt_id": None,
+            "summary": "No normal App Catalog troubleshooting view is needed after photos are imported.",
+        }
+
+
 def _details_payload(
     action_id: str,
     action: dict[str, Any],
@@ -611,6 +656,7 @@ def app_actions(app_id: str) -> dict[str, Any]:
             actions[action_id] = _normalize_action(action_id, action)
     media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
     _apply_connect_photos_truth(actions, media)
+    _apply_import_photos_truth(actions, media)
     return {
         "status": "healthy",
         "app_id": "photoprism",

@@ -155,12 +155,15 @@ function normalizeActionStatus(rawStatus, enabled, busy = false, hasProgress = f
   if (['blocked', 'disabled', 'paused'].includes(value)) return 'blocked';
   if (['not_supported', 'unsupported'].includes(value)) return 'not_supported';
   if (['not_ready', 'unavailable'].includes(value)) return 'not_ready';
+  if (['connected', 'imported'].includes(value)) return value;
   return enabled ? 'ready' : 'not_ready';
 }
 
 function getActionDisplayState(status, enabled = true) {
   const normalized = normalizeActionStatus(status, enabled);
   if (normalized === 'ready') return { status: 'healthy', label: 'Ready' };
+  if (normalized === 'connected') return { status: 'healthy', label: 'Connected' };
+  if (normalized === 'imported') return { status: 'healthy', label: 'Imported' };
   if (normalized === 'queued') return { status: 'degraded', label: 'Getting ready' };
   if (normalized === 'running') return { status: 'degraded', label: 'Working' };
   if (normalized === 'done') return { status: 'healthy', label: 'Done' };
@@ -314,6 +317,9 @@ function normalizeAppAction(entry) {
     } else {
       display = { status: 'unknown', label: 'Not connected' };
     }
+  }
+  if (actionId === 'import_photos' && String(action?.status || '').toLowerCase() === 'imported') {
+    display = { status: 'healthy', label: 'Imported' };
   }
   return {
     ...entry,
@@ -730,14 +736,16 @@ function PhotoPrismActionTile({
   const progressState = normalized.progress || null;
   const reason = normalized.disabledReason;
   const isConnectPhotos = actionId === 'connect_photos';
-  const progressDisablesAction = progressState?.running && !isConnectPhotos;
+  const isImportedPhotos = actionId === 'import_photos' && String(action?.status || '').toLowerCase() === 'imported';
+  const isSimpleMediaShortcut = isConnectPhotos || isImportedPhotos;
+  const progressDisablesAction = progressState?.running && !isSimpleMediaShortcut;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
-  const showProgress = Boolean(!isConnectPhotos && progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
+  const showProgress = Boolean(!isSimpleMediaShortcut && progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
-  const tileResult = isConnectPhotos ? null : tileResultForAction(actionId, action, result);
-  const detailsAvailable = !isConnectPhotos;
+  const tileResult = isSimpleMediaShortcut ? null : tileResultForAction(actionId, action, result);
+  const detailsAvailable = !isSimpleMediaShortcut;
   return (
-    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''}`} data-action-id={actionId}>
+    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''} ${isImportedPhotos ? 'is-imported' : ''}`} data-action-id={actionId}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
@@ -757,8 +765,8 @@ function PhotoPrismActionTile({
       >
         {busy || progressState?.running ? 'Working' : copy.label}
       </LiteButton>
-      <AppActionDisabledReason reason={!showProgress && !isConnectPhotos ? reason : ''} />
-      {!isConnectPhotos ? (
+      <AppActionDisabledReason reason={!showProgress && !isSimpleMediaShortcut ? reason : ''} />
+      {!isSimpleMediaShortcut ? (
         <LiteActionProgress
           actionId={actionId}
           status={normalized.status}
@@ -777,8 +785,8 @@ function PhotoPrismActionTile({
           executionOwner={action?.execution_owner || ''}
         />
       ) : null}
-      {!isConnectPhotos ? <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} /> : null}
-      {!isConnectPhotos && !tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
+      {!isSimpleMediaShortcut ? <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} /> : null}
+      {!isSimpleMediaShortcut && !tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
     </div>
   );
 }
@@ -1308,10 +1316,45 @@ function isPhoneStorageMapping(mapping = {}) {
   );
 }
 
-function phoneStorageConnected(app) {
+function phoneStorageConnected(app, lifecycle = null, actionSnapshot = null) {
+  const mediaSources = [
+    actionSnapshot?.media,
+    lifecycle?.media,
+    app?.lifecycle?.media,
+    app?.media,
+    app?.storage,
+  ].filter(Boolean);
+  for (const media of mediaSources) {
+    const labels = Array.isArray(media?.labels) ? media.labels : [];
+    const labelText = labels.map((label) => String(label || '').toLowerCase()).join(' ');
+    const mappingCount = Number(media?.mapping_count || media?.connected_count || media?.count || 0);
+    const statusText = String(media?.status || media?.summary || '').toLowerCase();
+    if (labelText.includes('phone storage') || labelText.includes('phone') || labelText.includes('android shared storage')) return true;
+    if (mappingCount > 0 && (statusText.includes('ready') || statusText.includes('connected') || statusText.includes('import'))) return true;
+  }
   const mappings = storageMappings(app);
   if (!mappings.length) return false;
   return mappings.some(isPhoneStorageMapping) || mappings.length === 1;
+}
+
+function photosAlreadyImported(lifecycle = null, actionSnapshot = null, app = null) {
+  const mediaSources = [
+    actionSnapshot?.media,
+    lifecycle?.media,
+    app?.lifecycle?.media,
+    app?.media,
+  ].filter(Boolean);
+  return mediaSources.some((media) => {
+    const lastImport = media?.last_import && typeof media.last_import === 'object' ? media.last_import : null;
+    const status = String(lastImport?.status || media?.last_import_status || '').toLowerCase();
+    const evidenceStatus = String(lastImport?.evidence_status || media?.evidence?.status || '').toLowerCase();
+    return Boolean(
+      media?.last_imported_at
+      || lastImport?.completed_at
+      || ['succeeded', 'success', 'completed', 'done'].includes(status)
+      || evidenceStatus === 'saved'
+    );
+  });
 }
 
 function storageConnectedFolderLabels() {
@@ -1769,7 +1812,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
     const openAction = actionState('open');
     const connectPhotosAction = actionState('connect_photos');
-    const isPhoneStorageConnected = phoneStorageConnected(app);
+    const isPhoneStorageConnected = phoneStorageConnected(app, lifecycle, actionSnapshot);
     const checkAppAction = actionState('check_app');
     const backupAppAction = actionState('backup_app');
     const importPhotosAction = actionState('import_photos');
@@ -1787,6 +1830,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const repairAppAction = actionState('repair_app');
     const removeAppAction = actionState('remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
+    const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app);
     const appActionEntries = [
       {
         actionId: 'open',
@@ -1817,14 +1861,24 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       },
       {
         actionId: 'import_photos',
-        action: importPhotosAction,
+        action: {
+          ...importPhotosAction,
+          status: isPhotosImported ? 'imported' : importPhotosAction.status,
+          summary: isPhotosImported ? 'Photos are imported. PhotoPrism will handle new photos.' : importPhotosAction.summary,
+          disabled_reason: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : importPhotosAction.disabled_reason,
+          reason: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : importPhotosAction.reason,
+          enabled: isPhotosImported ? false : importPhotosAction.enabled,
+        },
         busyKey: actionBusyKey,
-        progress: importProgress,
+        progress: isPhotosImported ? null : importProgress,
         tone: 'secondary',
-        onClick: (event) => runLifecycleAction(app, 'import_photos', event),
-        disabled: importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
-        title: lifecycleActionReason(importPhotosAction),
-        result,
+        onClick: (event) => {
+          if (isPhotosImported) return;
+          runLifecycleAction(app, 'import_photos', event);
+        },
+        disabled: isPhotosImported || importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
+        title: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : lifecycleActionReason(importPhotosAction),
+        result: isPhotosImported ? null : result,
       },
       {
         actionId: 'check_app',
@@ -2011,6 +2065,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                               onDismissNotice={() => setStoragePreviewNotice(null)}
                             />
                           </div>
+                        ) : null}
+                        {entry.actionId === 'import_photos' && isPhotosImported ? (
+                          <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
                         ) : null}
                         {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
                           <div className="lite-catalog-action-details-anchor">
