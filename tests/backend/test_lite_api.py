@@ -3485,7 +3485,7 @@ def test_lite_app_actions_phase5_unified_contract(monkeypatch):
         assert action["label"]
         assert action["category"] in {"access", "media", "safety", "recovery", "setup", "danger"}
         assert isinstance(action["enabled"], bool)
-        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected"}
+        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected", "imported"}
         assert action["summary"]
         assert action["risk"] in {"low", "review", "high", "destructive"}
         assert action["execution_owner"] in {"browser_navigation", "fastapi", "backend_worker"}
@@ -3597,7 +3597,7 @@ def test_lite_app_catalog_connect_photos_truthful_connected_state():
         "Downloads",
         "Music",
         "entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId",
-        "!isConnectPhotos ? (",
+        "!isSimpleMediaShortcut ? (",
         "category === 'access') return",
     ):
         assert marker in ui
@@ -3611,6 +3611,28 @@ def test_lite_app_catalog_connect_photos_truthful_connected_state():
     assert "_apply_connect_photos_truth" in backend
     assert "Phone storage is already connected." in backend
     assert "lite-app-action-group is-access" not in ui
+
+
+def test_lite_app_catalog_import_photos_truthful_imported_state():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    backend = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_actions.py").read_text()
+    for marker in (
+        "photosAlreadyImported",
+        "isPhotosImported",
+        "Photos are imported. PhotoPrism will handle new photos.",
+        "entry.actionId === 'import_photos' && isPhotosImported",
+        "isSimpleMediaShortcut",
+    ):
+        assert marker in ui
+    for marker in (
+        "_apply_import_photos_truth",
+        "_media_import_completed",
+        '"status": "imported"',
+        "PhotoPrism will handle new photos",
+    ):
+        assert marker in backend
+    assert "lite-catalog-media-note" in css
 
 def test_lite_app_catalog_reusable_action_progress_source():
     ui = _lite_ui_source()
