@@ -10,7 +10,6 @@ import {
   HardDrive,
   Image as ImageIcon,
   RefreshCw,
-  Search,
   X,
   Server,
   ShieldCheck,
@@ -1577,7 +1576,7 @@ function CatalogSkeletons() {
 
 export default function CatalogScreen({ onOpenWorkspace }) {
   const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
-  const [query, setQuery] = useState('');
+  const [manageAppId, setManageAppId] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -1598,14 +1597,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
 
-  const filteredApps = useMemo(() => {
-    const value = query.trim().toLowerCase();
-    return apps.filter((app) => {
-      const matchesQuery = !value || `${app.name || ''} ${app.summary || ''} ${app.category || ''}`.toLowerCase().includes(value);
-      const matchesFilter = activeFilter === 'all' || appFilterState(app) === activeFilter;
-      return matchesQuery && matchesFilter;
-    });
-  }, [apps, activeFilter, query]);
+  const filteredApps = useMemo(() => apps.filter((app) => (
+    activeFilter === 'all' || appFilterState(app) === activeFilter
+  )), [apps, activeFilter]);
 
 
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
@@ -2107,97 +2101,137 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         ) : null}
         {installed && lifecycle ? (
-          <div className="lite-catalog-lifecycle-panel" aria-label="Unified App Lifecycle status">
-            <div className="lite-catalog-lifecycle-head">
+          <div className="lite-catalog-summary-panel" aria-label="App summary">
+            <div className="lite-catalog-summary-head">
               <div>
-                <span>Unified App Lifecycle</span>
-                <strong>{lifecycle.status === 'ready' ? 'Ready' : lifecycle.status === 'review' ? 'Needs attention' : lifecycle.summary || 'Checking'}</strong>
+                <span>App status</span>
+                <strong>{lifecycle.status === 'ready' ? 'Running' : lifecycle.status === 'review' ? 'Needs attention' : lifecycle.summary || 'Checking'}</strong>
               </div>
               <StatusBadge status={backendBadgeStatus(lifecycle.status)}>
                 {backendLabel(lifecycle.status, { ready: 'Ready', review: 'Needs attention', danger: 'Needs attention', checking: 'Checking' })}
               </StatusBadge>
             </div>
-            <div className="lite-catalog-lifecycle-chips">
-              <span><Server className="h-4 w-4" />{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
+            <div className="lite-catalog-summary-chips" aria-label="App health summary">
+              <span><Server className="h-4 w-4" />Route</span>
               <span><FolderOpen className="h-4 w-4" />{lifecycleStorageLabel(lifecycle, app)}</span>
               <span><ShieldCheck className="h-4 w-4" />{lifecycleSecurityLabel(lifecycle, app)}</span>
               <span><FileCheck className="h-4 w-4" />{lifecycleBackupLabel(lifecycle, app)}</span>
             </div>
             {lifecycleAttention.length ? (
-              <div className="lite-catalog-lifecycle-attention">
-                {lifecycleAttention.map((item) => (
+              <div className="lite-catalog-summary-attention">
+                {lifecycleAttention.slice(0, 2).map((item) => (
                   <span key={item.id || item.title}><strong>{item.title || 'Needs attention'}</strong>{item.summary || 'Check again.'}</span>
                 ))}
               </div>
             ) : null}
-            <div className="lite-catalog-action-center" aria-label="Action Center">
-              <div className="lite-catalog-action-center-head">
+          </div>
+        ) : null}
+        {installed && lifecycle && manageAppId === app.id ? (
+          <div className="lite-catalog-manage-sheet" role="region" aria-label={`Manage ${app.name}`}>
+            <div className="lite-catalog-manage-head">
+              <div>
+                <span>Manage</span>
+                <strong>{app.name}</strong>
+                <p>{mediaSummary}</p>
+              </div>
+              <button type="button" className="lite-catalog-manage-close" onClick={() => { setManageAppId(null); closeActionDetails(); }} aria-label="Close app actions">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+            <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
+              <LiteButton onClick={(event) => openAppFullScreen(app, event)} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
+              {canInstallPhone ? (
+                <LiteButton onClick={(event) => installAppToPhone(app, event)} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
+              ) : null}
+            </div>
+            <div className="lite-catalog-action-groups">
+              {appActionGroups.map((group) => (
+                <AppActionGroup key={group.id} group={group}>
+                  {group.actions.map((entry) => (
+                    <React.Fragment key={entry.actionId}>
+                      <PhotoPrismActionTile
+                        app={app}
+                        actionId={entry.actionId}
+                        action={entry.action}
+                        busyKey={entry.busyKey || actionBusyKey}
+                        progress={entry.progress}
+                        result={entry.result}
+                        tone={entry.tone}
+                        onClick={entry.onClick}
+                        onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                        detailsExpanded={detailsActionId === entry.actionId}
+                        disabled={entry.disabled}
+                        title={entry.title}
+                      />
+                      {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? (
+                        <PhoneStorageConnectedFolders />
+                      ) : null}
+                      {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
+                        <div className="lite-catalog-storage-preview-anchor">
+                          <PhotoPrismStoragePreviewSheet
+                            preview={storagePreview}
+                            loading={storagePreviewLoading}
+                            error={storagePreviewError}
+                            connecting={Boolean(storageBusy)}
+                            notice={storagePreviewNotice}
+                            onClose={closeStoragePreview}
+                            onConfirm={connectPhoneStorageFromPreview}
+                            onRetry={loadStoragePreview}
+                            onDismissNotice={() => setStoragePreviewNotice(null)}
+                          />
+                        </div>
+                      ) : null}
+                      {entry.actionId === 'import_photos' && isPhotosImported ? (
+                        <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
+                      ) : null}
+                      {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
+                        <div className="lite-catalog-action-details-anchor">
+                          <AppActionDetailsPanel
+                            details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
+                            onClose={closeActionDetails}
+                          />
+                        </div>
+                      ) : null}
+                    </React.Fragment>
+                  ))}
+                </AppActionGroup>
+              ))}
+            </div>
+            <div className="lite-catalog-action-reasons">
+              {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
+              {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
+              {backupToStorageAction.enabled === false ? <span>Back up to storage device: {lifecycleActionReason(backupToStorageAction)}</span> : null}
+              {updateAppAction.enabled === false ? <span>Update: {lifecycleActionReason(updateAppAction)}</span> : null}
+              {repairAppAction.enabled === false ? <span>Repair: {lifecycleActionReason(repairAppAction)}</span> : null}
+            </div>
+            <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
+              <div className="lite-catalog-storage-head">
                 <div>
-                  <span>Action Center</span>
-                  <strong>{mediaSummary}</strong>
+                  <span>Media folders</span>
+                  <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
                 </div>
-                <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
+                <FolderOpen className="h-5 w-5" />
               </div>
-              <div className="lite-catalog-action-groups">
-                {appActionGroups.map((group) => (
-                  <AppActionGroup key={group.id} group={group}>
-                    {group.actions.map((entry) => (
-                      <React.Fragment key={entry.actionId}>
-                        <PhotoPrismActionTile
-                          app={app}
-                          actionId={entry.actionId}
-                          action={entry.action}
-                          busyKey={entry.busyKey || actionBusyKey}
-                          progress={entry.progress}
-                          result={entry.result}
-                          tone={entry.tone}
-                          onClick={entry.onClick}
-                          onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
-                          detailsExpanded={detailsActionId === entry.actionId}
-                          disabled={entry.disabled}
-                          title={entry.title}
-                        />
-                        {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? (
-                          <PhoneStorageConnectedFolders />
-                        ) : null}
-                        {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
-                          <div className="lite-catalog-storage-preview-anchor">
-                            <PhotoPrismStoragePreviewSheet
-                              preview={storagePreview}
-                              loading={storagePreviewLoading}
-                              error={storagePreviewError}
-                              connecting={Boolean(storageBusy)}
-                              notice={storagePreviewNotice}
-                              onClose={closeStoragePreview}
-                              onConfirm={connectPhoneStorageFromPreview}
-                              onRetry={loadStoragePreview}
-                              onDismissNotice={() => setStoragePreviewNotice(null)}
-                            />
-                          </div>
-                        ) : null}
-                        {entry.actionId === 'import_photos' && isPhotosImported ? (
-                          <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
-                        ) : null}
-                        {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
-                          <div className="lite-catalog-action-details-anchor">
-                            <AppActionDetailsPanel
-                              details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
-                              onClose={closeActionDetails}
-                            />
-                          </div>
-                        ) : null}
-                      </React.Fragment>
-                    ))}
-                  </AppActionGroup>
-                ))}
+              <div className="lite-catalog-storage-facts">
+                <span><Server className="h-4 w-4" /> Runs on {app?.host_device_name || targetName}</span>
+                <span><FolderPlus className="h-4 w-4" /> Media from: {storageMappings(app).length ? app?.storage?.summary || storageMediaSummary(app) : 'Not connected'}</span>
+                <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
               </div>
-              <div className="lite-catalog-action-reasons">
-                {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
-                {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
-                {backupToStorageAction.enabled === false ? <span>Back up to storage device: {lifecycleActionReason(backupToStorageAction)}</span> : null}
-                {updateAppAction.enabled === false ? <span>Update: {lifecycleActionReason(updateAppAction)}</span> : null}
-                {repairAppAction.enabled === false ? <span>Repair: {lifecycleActionReason(repairAppAction)}</span> : null}
-              </div>
+              {storageMappings(app).length ? (
+                <div className="lite-catalog-storage-chips">
+                  {storageMappings(app).map((mapping) => (
+                    <span key={mapping.mapping_id || mapping.label}>
+                      {mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>
+              )}
+              {storageDeviceCount(app) < 1 ? (
+                <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -2219,59 +2253,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div>
           </div>
         ) : null}
-        {isPhotoPrismApp(app) ? (
-          <div className="lite-catalog-storage-panel">
-            <div className="lite-catalog-storage-head">
-              <div>
-                <span>Media folders</span>
-                <strong>{storageMappings(app).length ? storageMediaSummary(app) : 'No folders connected'}</strong>
-              </div>
-              <FolderOpen className="h-5 w-5" />
-            </div>
-            <div className="lite-catalog-storage-facts">
-              <span><Server className="h-4 w-4" /> Runs on {app?.host_device_name || targetName}</span>
-              <span><FolderPlus className="h-4 w-4" /> Media from: {storageMappings(app).length ? app?.storage?.summary || storageMediaSummary(app) : 'Not connected'}</span>
-              <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
-            </div>
-            {storageMappings(app).length ? (
-              <div className="lite-catalog-storage-chips">
-                {storageMappings(app).map((mapping) => (
-                  <span key={mapping.mapping_id || mapping.label}>
-                    {mapping.label || 'Media folder'} · {mapping.mode_label || 'Read-only'}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="lite-catalog-storage-empty">No media folders connected yet. Connect a photo folder to start using PhotoPrism.</p>
-            )}
-            <div className="lite-catalog-storage-actions">
-              <PhotoPrismStorageTile
-                app={app}
-                preset="phone_storage"
-                busyKey={storageBusy}
-                disabled={Boolean(storageBusy)}
-                onClick={(event) => connectStorage(app, 'phone_storage', event)}
-              />
-              <PhotoPrismStorageTile
-                app={app}
-                preset="storage_device"
-                busyKey={storageBusy}
-                disabled={Boolean(storageBusy) || storageDeviceCount(app) < 1}
-                onClick={(event) => connectStorage(app, 'storage_device', event)}
-              />
-            </div>
-            {storageDeviceCount(app) < 1 ? (
-              <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
-            ) : null}
-          </div>
-        ) : null}
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
         <div className={actionsClassName}>
-          <LiteButton onClick={(event) => install(app, event)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : status === 'ready' ? 'Installed' : 'Install'}</LiteButton>
+          {!installed ? (
+            <LiteButton onClick={(event) => install(app, event)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
+          ) : null}
           <LiteButton onClick={(event) => openApp(app, event)} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
-          <LiteButton onClick={(event) => openAppFullScreen(app, event)} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
-          {canInstallPhone ? (
-            <LiteButton onClick={(event) => installAppToPhone(app, event)} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
+          {installed && lifecycle ? (
+            <LiteButton onClick={() => { setManageAppId(manageAppId === app.id ? null : app.id); closeActionDetails(); }} tone="secondary">Manage</LiteButton>
           ) : null}
         </div>
       </GlassCard>
@@ -2312,7 +2301,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       />
 
       <div className="lite-catalog-toolbar">
-        <div className="lite-catalog-search-wrap"><Search className="h-5 w-5" /><input className="lite-catalog-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search apps" aria-label="Search apps" /></div>
         <div className="lite-catalog-filter-pills" role="tablist" aria-label="Filter apps" data-access-contract="Secure access ready">
           {APP_FILTERS.map((filter) => (
             <button key={filter.id} type="button" className={activeFilter === filter.id ? 'is-active' : ''} onClick={() => setActiveFilter(filter.id)}>{filter.label}</button>
@@ -2345,8 +2333,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <GlassCard className="lite-catalog-empty-state">
           <div className="lite-catalog-empty-icon"><ImageIcon className="h-5 w-5" /></div>
           <div>
-            <h2>{query ? 'No matching apps' : apps.length ? 'No apps in this view' : 'No apps installed yet'}</h2>
-            <p>{query ? 'Try another search or clear the filter.' : apps.length ? 'Choose another filter to see more apps.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
+            <h2>{apps.length ? 'No apps in this view' : 'No apps installed yet'}</h2>
+            <p>{apps.length ? 'Choose another filter to see more apps.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
           </div>
           <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Check again</LiteButton>
         </GlassCard>
