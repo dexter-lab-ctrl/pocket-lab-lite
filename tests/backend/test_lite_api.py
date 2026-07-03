@@ -3489,6 +3489,10 @@ def test_lite_app_actions_phase5_unified_contract(monkeypatch):
         assert isinstance(action["result"], dict)
         assert isinstance(action["details"], dict)
         assert isinstance(action["troubleshooting"], dict)
+        assert "first_ran_at" in action
+        assert "last_ran_at" in action
+        assert "run_count" in action
+        assert action["run_count"] is None or isinstance(action["run_count"], int)
         assert action["details"]["saved_for_troubleshooting"]["backend_only"] is True
         if action["enabled"] is False:
             assert action["disabled_reason"]
@@ -3751,12 +3755,16 @@ def test_lite_app_catalog_details_prefer_fresh_action_state():
         "detailsForAction",
         "last_result",
         "Run history",
+        "formatRunHistoryValue",
+        "has_run_evidence",
+        "Run count",
     ):
         assert marker in ui
     assert "detailsAvailable ||" not in progress
     assert "hasRunEvidence" in progress
     assert "Not run yet" in progress
     assert "Evidence saved" in progress
+    assert "Last run: recorded" in progress
 
 
 def test_lite_app_update_receipt_technical_details_show_versions(monkeypatch):

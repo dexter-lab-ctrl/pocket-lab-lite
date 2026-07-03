@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+import re
 
 from fastapi import HTTPException
 
@@ -352,6 +353,41 @@ def _troubleshooting_payload(action: dict[str, Any], result: dict[str, Any]) -> 
     }
 
 
+
+
+def _timestamp_from_text(*values: Any) -> str | None:
+    """Extract a safe ISO-like UTC timestamp from known action IDs/evidence refs."""
+    for value in values:
+        text = _safe_text(value, "")
+        if not text:
+            continue
+        # Existing backend values may already be ISO timestamps.
+        iso_match = re.search(r"(20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)", text)
+        if iso_match:
+            return iso_match.group(1)
+        compact_match = re.search(r"(20\d{2}-\d{2}-\d{2})T(\d{2})(\d{2})(\d{2})Z", text)
+        if compact_match:
+            date, hour, minute, second = compact_match.groups()
+            return f"{date}T{hour}:{minute}:{second}Z"
+    return None
+
+
+def _has_backend_record(action: dict[str, Any], result: dict[str, Any]) -> bool:
+    troubleshooting = action.get("troubleshooting") if isinstance(action.get("troubleshooting"), dict) else {}
+    latest_check = action.get("latest_check") if isinstance(action.get("latest_check"), dict) else {}
+    return bool(
+        action.get("last_result")
+        or action.get("evidence_ref")
+        or action.get("receipt_id")
+        or action.get("latest_backup_id")
+        or action.get("latest_restore_preview_id")
+        or result.get("summary")
+        or result.get("receipt_id")
+        or troubleshooting.get("available")
+        or latest_check.get("summary")
+        or latest_check.get("evidence_ref")
+    )
+
 def _safe_list(values: Any, fallback: list[str] | None = None, *, max_items: int = 6) -> list[str]:
     raw_items = values if isinstance(values, list) else (fallback or [])
     items: list[str] = []
@@ -366,11 +402,39 @@ def _safe_list(values: Any, fallback: list[str] | None = None, *, max_items: int
 
 def _last_ran_at(action: dict[str, Any]) -> str | None:
     latest_check = action.get("latest_check") if isinstance(action.get("latest_check"), dict) else {}
-    for key in ("completed_at", "updated_at", "started_at"):
+    for key in ("last_ran_at", "completed_at", "updated_at", "verified_at", "created_at", "started_at", "queued_at"):
         value = action.get(key) or latest_check.get(key)
         if value:
             return _safe_text(value, "")
-    return None
+    return _timestamp_from_text(
+        action.get("evidence_ref"),
+        action.get("receipt_id"),
+        action.get("latest_backup_id"),
+        action.get("latest_restore_preview_id"),
+        latest_check.get("evidence_ref"),
+        latest_check.get("operation_id"),
+        latest_check.get("command_id"),
+    )
+
+
+def _first_ran_at(action: dict[str, Any], result: dict[str, Any]) -> str | None:
+    latest_check = action.get("latest_check") if isinstance(action.get("latest_check"), dict) else {}
+    for key in ("first_ran_at", "created_at", "started_at", "queued_at", "completed_at", "updated_at"):
+        value = action.get(key) or latest_check.get(key)
+        if value:
+            return _safe_text(value, "")
+    return _last_ran_at(action) if _has_backend_record(action, result) else None
+
+
+def _run_count(action: dict[str, Any], result: dict[str, Any]) -> int:
+    for key in ("run_count", "backup_count", "operation_count"):
+        try:
+            count = int(action.get(key) or 0)
+        except (TypeError, ValueError):
+            count = 0
+        if count > 0:
+            return count
+    return 1 if _has_backend_record(action, result) else 0
 
 
 def _details_payload(
@@ -445,6 +509,9 @@ def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
     troubleshooting = _troubleshooting_payload(action, result)
     category = str(action.get("category") or definition.get("category") or "setup").replace("app_setup", "setup")
     normalized = dict(action)
+    first_ran_at = _first_ran_at(action, result)
+    last_ran_at = _last_ran_at(action) or first_ran_at
+    run_count = _run_count(action, result)
     normalized.update({
         "id": action_id,
         "app_id": "photoprism",
@@ -463,7 +530,9 @@ def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
         "progress": _progress_payload(action_id, action, status),
         "result": result,
         "last_result": result.get("summary"),
-        "last_ran_at": _last_ran_at(action),
+        "first_ran_at": first_ran_at,
+        "last_ran_at": last_ran_at,
+        "run_count": run_count,
         "details": _details_payload(action_id, action, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
         "troubleshooting": troubleshooting,
     })

@@ -426,6 +426,8 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
     app = _validate_app_id(app_id)
     backups = list_app_backups(app)
     latest = backups.get("latest_backup")
+    backup_items = backups.get("items") if isinstance(backups.get("items"), list) else []
+    preview = _latest_restore_preview(app)
     verified = bool(latest and latest.get("verification_status") == "verified")
     pending_backup = _pending_backup(app)
     backup_running = _pending_backup_active(app)
@@ -444,10 +446,18 @@ def app_backup_status(app_id: str) -> dict[str, Any]:
         "restore_preview_supported": True,
         "restore_apply_supported": False,
         "latest_backup": latest,
+        "backup_count": len(backup_items),
+        "first_backup_at": (backup_items[-1].get("created_at") if backup_items else None),
+        "latest_backup_created_at": latest.get("created_at") if latest else None,
+        "latest_backup_verified_at": latest.get("verified_at") if latest else None,
         "latest_verified_backup_id": latest.get("backup_id") if verified else None,
         "pending_backup": pending_backup,
         "backup_running": backup_running,
-        "latest_restore_preview": _latest_restore_preview(app),
+        "latest_restore_preview": preview,
+        "latest_restore_preview_id": preview.get("preview_id") if isinstance(preview, dict) else None,
+        "latest_restore_preview_created_at": preview.get("created_at") if isinstance(preview, dict) else None,
+        "first_restore_preview_at": preview.get("created_at") if isinstance(preview, dict) else None,
+        "restore_preview_count": 1 if isinstance(preview, dict) and preview.get("preview_id") else 0,
         "restore_preview_ready": restore_preview_enabled,
         "restore_preview_disabled_reason": restore_disabled_reason,
         "storage_target": {
