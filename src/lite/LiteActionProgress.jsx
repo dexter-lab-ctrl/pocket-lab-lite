@@ -5,14 +5,14 @@ const DEFAULT_STAGES = ['Getting ready', 'Working', 'Evidence saved'];
 
 const ACTION_STAGE_COPY = {
   check_app: ['Getting ready', 'Route', 'Health', 'Storage', 'Safety', 'Logs created', 'Done'],
-  backup_app: ['Getting ready', 'Saving app settings', 'Evidence saved'],
-  preview_restore: ['Getting ready', 'Preparing preview', 'Evidence saved'],
-  repair_app: ['Getting ready', 'Safe repair', 'Evidence saved'],
-  update_app: ['Getting ready', 'Checking readiness', 'Evidence saved'],
-  import_photos: ['Getting ready', 'Importing photos', 'Evidence saved'],
-  connect_photos: ['Getting ready', 'Connecting photos', 'Ready'],
-  phone_storage: ['Getting ready', 'Connecting photos', 'Ready'],
-  storage_device: ['Getting ready', 'Connecting photos', 'Ready'],
+  backup_app: ['Getting ready', 'Settings', 'Files', 'Verify', 'Safety', 'Logs created', 'Done'],
+  preview_restore: ['Getting ready', 'Find backup', 'Compare', 'Preview', 'Safety', 'Logs created', 'Done'],
+  repair_app: ['Getting ready', 'Route', 'Health', 'Storage', 'Safety', 'Logs created', 'Done'],
+  update_app: ['Getting ready', 'Current version', 'Latest source', 'Compare', 'Safety', 'Logs created', 'Done'],
+  import_photos: ['Getting ready', 'Phone folders', 'Import', 'Verify', 'Safety', 'Logs created', 'Done'],
+  connect_photos: ['Getting ready', 'Phone folders', 'Access', 'Storage', 'Safety', 'Logs created', 'Done'],
+  phone_storage: ['Getting ready', 'Phone folders', 'Access', 'Storage', 'Safety', 'Logs created', 'Done'],
+  storage_device: ['Getting ready', 'Storage node', 'Access', 'Target', 'Safety', 'Logs created', 'Done'],
 };
 
 const ACTION_WORKING_COPY = {
@@ -128,7 +128,7 @@ function activeStageForState(state, stageCount = 3) {
   return -1;
 }
 
-function checkAppProgressPercentForState(state, progress) {
+function segmentedProgressPercentForState(state, progress) {
   const rawPercent = Number(progress?.percent);
   if (Number.isFinite(rawPercent) && rawPercent > 0 && state !== 'idle') {
     return Math.min(100, Math.max(0, rawPercent));
@@ -140,35 +140,69 @@ function checkAppProgressPercentForState(state, progress) {
   return 0;
 }
 
-function checkAppStageIndex({ state, progress, stageCount }) {
+function segmentedStageIndex({ actionId, state, progress, stageCount }) {
   if (state === 'idle') return -1;
   if (state === 'queued' || state === 'blocked') return 0;
   if (state === 'evidence_saved' || state === 'review' || state === 'failed') return Math.max(0, stageCount - 1);
+
   const step = normalizedStatus(progress?.step || progress?.label || progress?.phase);
-  if (step.includes('route')) return 1;
-  if (step.includes('health')) return 2;
-  if (step.includes('storage')) return 3;
-  if (step.includes('safety') || step.includes('protect')) return 4;
-  if (step.includes('log') || step.includes('evidence') || step.includes('troubleshoot')) return 5;
-  const percent = checkAppProgressPercentForState(state, progress);
-  if (percent >= 92) return 5;
-  if (percent >= 74) return 4;
-  if (percent >= 56) return 3;
-  if (percent >= 38) return 2;
-  if (percent >= 18) return 1;
+  const stageIndex = (ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES).findIndex((stage) => {
+    const stageKey = normalizedStatus(stage);
+    return stageKey && step.includes(stageKey.split('_')[0]);
+  });
+  if (stageIndex > 0) return Math.min(stageCount - 2, stageIndex);
+
+  if (actionId === 'check_app' || actionId === 'repair_app') {
+    if (step.includes('route')) return 1;
+    if (step.includes('health')) return 2;
+    if (step.includes('storage')) return 3;
+    if (step.includes('safety') || step.includes('protect')) return 4;
+  }
+  if (actionId === 'backup_app') {
+    if (step.includes('setting')) return 1;
+    if (step.includes('file') || step.includes('backup')) return 2;
+    if (step.includes('verify')) return 3;
+    if (step.includes('safety')) return 4;
+  }
+  if (actionId === 'preview_restore') {
+    if (step.includes('backup')) return 1;
+    if (step.includes('compare')) return 2;
+    if (step.includes('preview')) return 3;
+    if (step.includes('safety')) return 4;
+  }
+  if (actionId === 'update_app') {
+    if (step.includes('current')) return 1;
+    if (step.includes('latest') || step.includes('source')) return 2;
+    if (step.includes('compare') || step.includes('readiness')) return 3;
+    if (step.includes('safety')) return 4;
+  }
+  if (actionId === 'import_photos') {
+    if (step.includes('phone') || step.includes('folder')) return 1;
+    if (step.includes('import')) return 2;
+    if (step.includes('verify')) return 3;
+    if (step.includes('safety')) return 4;
+  }
+  if (step.includes('log') || step.includes('evidence') || step.includes('troubleshoot')) return Math.max(0, stageCount - 2);
+
+  const percent = segmentedProgressPercentForState(state, progress);
+  const runningStageMax = Math.max(0, stageCount - 2);
+  if (percent >= 92) return runningStageMax;
+  if (percent >= 74) return Math.min(runningStageMax, 4);
+  if (percent >= 56) return Math.min(runningStageMax, 3);
+  if (percent >= 38) return Math.min(runningStageMax, 2);
+  if (percent >= 18) return Math.min(runningStageMax, 1);
   return 0;
 }
 
-
-function checkAppSegmentCount() {
-  return ACTION_STAGE_COPY.check_app.length;
+function isSegmentedAction(actionId) {
+  return Boolean(ACTION_STAGE_COPY[actionId]);
 }
 
-function isCheckAppRunningState(state) {
+function isSegmentedRunningState(state) {
   return ['queued', 'running', 'waiting'].includes(state);
 }
 
-function nextCheckAppVisualStep(current, target, maxIndex) {
+function nextSegmentedVisualStep(current, target, maxIndex) {
   const safeCurrent = Number.isFinite(current) ? current : 0;
   const safeTarget = Math.max(0, Math.min(maxIndex, Number.isFinite(target) ? target : 0));
   if (safeCurrent < safeTarget) return safeCurrent + 1;
@@ -177,12 +211,12 @@ function nextCheckAppVisualStep(current, target, maxIndex) {
   return safeCurrent;
 }
 
-function checkAppBlockState({ state, index, visualStep, stageCount }) {
+function segmentedBlockState({ state, index, visualStep }) {
   const complete = state === 'evidence_saved';
   const attention = ['review', 'failed', 'blocked'].includes(state);
   if (complete || visualStep > index) return attention ? 'attention-done' : 'done';
   if (state !== 'idle' && visualStep === index) return attention ? 'attention-leading' : 'leading';
-  if (attention && index <= Math.max(0, stageCount - 1)) return 'attention-empty';
+  if (attention) return 'attention-empty';
   return 'empty';
 }
 
@@ -245,45 +279,45 @@ export default function LiteActionProgress({
   }), [status, enabled, disabledReason, progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId]);
   const stages = ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES;
   const workflowKind = ACTION_WORKFLOW_KIND[actionId] || 'default';
-  const isCheckApp = actionId === 'check_app';
-  const percent = isCheckApp ? checkAppProgressPercentForState(state, progress) : progressPercentForState(state, progress);
-  const activeStage = isCheckApp ? checkAppStageIndex({ state, progress, stageCount: stages.length }) : activeStageForState(state, stages.length);
-  const [checkVisualStep, setCheckVisualStep] = useState(() => Math.max(0, Math.min(stages.length - 1, activeStage)));
-  const lastCheckRunRef = useRef('');
+  const isSegmented = isSegmentedAction(actionId);
+  const percent = isSegmented ? segmentedProgressPercentForState(state, progress) : progressPercentForState(state, progress);
+  const activeStage = isSegmented ? segmentedStageIndex({ actionId, state, progress, stageCount: stages.length }) : activeStageForState(state, stages.length);
+  const [segmentedVisualStep, setSegmentedVisualStep] = useState(() => Math.max(0, Math.min(stages.length - 1, activeStage)));
+  const lastSegmentedRunRef = useRef('');
 
   useEffect(() => {
-    if (!isCheckApp) return undefined;
-    const stageMax = Math.max(0, checkAppSegmentCount() - 1);
-    const runKey = `${progress?.command_id || progress?.run_id || progress?.phase || ''}:${lastRanAt || ''}:${firstRanAt || ''}`;
-    if (runKey && runKey !== lastCheckRunRef.current && isCheckAppRunningState(state)) {
-      lastCheckRunRef.current = runKey;
-      setCheckVisualStep(0);
+    if (!isSegmented) return undefined;
+    const stageMax = Math.max(0, stages.length - 1);
+    const runKey = `${actionId}:${progress?.command_id || progress?.run_id || progress?.phase || ''}:${lastRanAt || ''}:${firstRanAt || ''}`;
+    if (runKey && runKey !== lastSegmentedRunRef.current && isSegmentedRunningState(state)) {
+      lastSegmentedRunRef.current = runKey;
+      setSegmentedVisualStep(0);
     }
     if (state === 'idle') {
-      setCheckVisualStep(-1);
+      setSegmentedVisualStep(-1);
       return undefined;
     }
     if (state === 'evidence_saved') {
-      setCheckVisualStep(stageMax);
+      setSegmentedVisualStep(stageMax);
       return undefined;
     }
     if (['review', 'failed', 'blocked'].includes(state)) {
-      setCheckVisualStep(Math.max(0, Math.min(stageMax, activeStage)));
+      setSegmentedVisualStep(Math.max(0, Math.min(stageMax, activeStage)));
       return undefined;
     }
     const target = Math.max(0, Math.min(stageMax - 1, activeStage >= 0 ? activeStage : 0));
-    setCheckVisualStep((current) => {
+    setSegmentedVisualStep((current) => {
       if (current < 0) return 0;
       return Math.min(stageMax - 1, current);
     });
     const timer = window.setInterval(() => {
-      setCheckVisualStep((current) => nextCheckAppVisualStep(current, target, stageMax));
+      setSegmentedVisualStep((current) => nextSegmentedVisualStep(current, target, stageMax));
     }, 420);
     return () => window.clearInterval(timer);
-  }, [isCheckApp, state, activeStage, progress?.command_id, progress?.run_id, progress?.phase, lastRanAt, firstRanAt]);
+  }, [isSegmented, actionId, state, activeStage, stages.length, progress?.command_id, progress?.run_id, progress?.phase, lastRanAt, firstRanAt]);
 
-  const effectiveCheckStage = isCheckApp ? Math.max(-1, checkVisualStep) : activeStage;
-  const visibleStages = isCheckApp && state === 'evidence_saved' ? ['Done'] : stages;
+  const effectiveStage = isSegmented ? Math.max(-1, segmentedVisualStep) : activeStage;
+  const visibleStages = isSegmented && state === 'evidence_saved' ? ['Done'] : stages;
   const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult });
   const hasEvidence = hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId });
   const metaLabel = runMetaLabel({ state, lastRanAt, executionOwner, hasEvidence });
@@ -297,7 +331,7 @@ export default function LiteActionProgress({
 
   return (
     <div
-      className={`lite-action-progress lite-action-progress--${state} lite-action-progress--${workflowKind} ${isCheckApp ? 'lite-action-progress--stepped lite-action-progress--check-app' : ''} ${isCheckApp && state === 'evidence_saved' ? 'lite-action-progress--check-complete' : ''} ${className}`.trim()}
+      className={`lite-action-progress lite-action-progress--${state} lite-action-progress--${workflowKind} ${isSegmented ? 'lite-action-progress--stepped' : ''} ${actionId === 'check_app' ? 'lite-action-progress--check-app' : ''} ${isSegmented && state === 'evidence_saved' ? 'lite-action-progress--complete' : ''} ${className}`.trim()}
       data-action-id={actionId}
       data-run-count={Number(runCount) || 0}
     >
@@ -312,14 +346,17 @@ export default function LiteActionProgress({
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow={Math.round(percent)}
-        style={{ '--lite-action-progress-percent': `${percent}%` }}
+        style={{
+          '--lite-action-progress-percent': `${percent}%`,
+          '--lite-action-progress-segment-count': stages.length,
+        }}
       >
         <span className="lite-action-progress__fill" />
         <span className="lite-action-progress__head" aria-hidden="true" />
-        {isCheckApp ? (
-          <span className="lite-action-progress__segments" aria-hidden="true" data-visual-step={effectiveCheckStage}>
+        {isSegmented ? (
+          <span className="lite-action-progress__segments" aria-hidden="true" data-visual-step={effectiveStage}>
             {stages.map((stage, index) => {
-              const blockState = checkAppBlockState({ state, index, visualStep: effectiveCheckStage, stageCount: stages.length });
+              const blockState = segmentedBlockState({ state, index, visualStep: effectiveStage });
               const done = blockState === 'done' || blockState === 'attention-done';
               const leading = blockState === 'leading' || blockState === 'attention-leading';
               const attention = blockState.startsWith('attention');
@@ -336,12 +373,12 @@ export default function LiteActionProgress({
       </div>
       <div className="lite-action-progress__nodes" aria-hidden="true">
         {visibleStages.map((stage, index) => {
-          const actualIndex = isCheckApp && state === 'evidence_saved' ? stages.length - 1 : index;
-          const done = effectiveCheckStage > actualIndex || state === 'evidence_saved';
-          const active = effectiveCheckStage === actualIndex && state !== 'idle';
+          const actualIndex = isSegmented && state === 'evidence_saved' ? stages.length - 1 : index;
+          const done = effectiveStage > actualIndex || state === 'evidence_saved';
+          const active = effectiveStage === actualIndex && state !== 'idle';
           return (
             <span key={stage} className={`lite-action-progress__node ${done ? 'is-done' : ''} ${active ? 'is-active' : ''}`}>
-              <i>{isCheckApp && state === 'evidence_saved' && stage === 'Done' ? '✓' : ''}</i>
+              <i>{isSegmented && state === 'evidence_saved' && stage === 'Done' ? '✓' : ''}</i>
               <b className="lite-action-progress__stage">{stage}</b>
             </span>
           );
