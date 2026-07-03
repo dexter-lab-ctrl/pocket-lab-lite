@@ -294,6 +294,9 @@ def _operation_action(action_id: str, installed: bool, operations: dict[str, Any
             "category": "safety",
             "progress": op.get("progress"),
             "last_result": op.get("summary"),
+            "first_ran_at": op.get("started_at") or op.get("queued_at") or op.get("completed_at"),
+            "last_ran_at": op.get("completed_at") or op.get("updated_at") or op.get("started_at") or op.get("queued_at"),
+            "run_count": 1 if op.get("summary") or op.get("evidence_ref") else 0,
             "evidence_ref": op.get("evidence_ref"),
         }
     return _action(
@@ -334,6 +337,9 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             "last_result": "App backup saved." if backup.get("latest_backup_id") else None,
             "latest_backup_id": backup.get("latest_backup_id"),
             "receipt_id": backup.get("latest_backup_id"),
+            "first_ran_at": backup.get("first_backup_at") or backup.get("latest_backup_created_at"),
+            "last_ran_at": backup.get("latest_backup_created_at") or backup.get("latest_backup_verified_at"),
+            "run_count": backup.get("backup_count") or (1 if backup.get("latest_backup_id") else 0),
             "evidence_ref": f"apps/photoprism/backups/{backup.get('latest_backup_id')}.json" if backup.get("latest_backup_id") else None,
         },
         "backup_to_storage": _backup_to_storage_action(backup),
@@ -348,6 +354,9 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
             "last_result": "Restore preview ready. No changes were applied." if backup.get("latest_restore_preview_id") else None,
             "latest_restore_preview_id": backup.get("latest_restore_preview_id"),
             "receipt_id": backup.get("latest_restore_preview_id"),
+            "first_ran_at": backup.get("first_restore_preview_at") or backup.get("latest_restore_preview_created_at"),
+            "last_ran_at": backup.get("latest_restore_preview_created_at"),
+            "run_count": backup.get("restore_preview_count") or (1 if backup.get("latest_restore_preview_id") else 0),
             "evidence_ref": f"apps/photoprism/restore-previews/{backup.get('latest_restore_preview_id')}.json" if backup.get("latest_restore_preview_id") else None,
         },
         "import_photos": _action(
@@ -381,6 +390,9 @@ def _actions(app: dict[str, Any], installed: bool, backup: dict[str, Any], recov
         "progress": (update_pending or {}).get("progress"),
         "last_result": (update_latest or {}).get("summary"),
         "latest_check": update_latest,
+        "first_ran_at": (update_latest or {}).get("started_at") or (update_latest or {}).get("completed_at"),
+        "last_ran_at": (update_latest or {}).get("completed_at") or (update_latest or {}).get("updated_at") or (update_pending or {}).get("started_at"),
+        "run_count": 1 if update_latest else 0,
         "evidence_ref": (update_latest or update_pending or {}).get("evidence_ref"),
         "receipt_id": (update_latest or update_pending or {}).get("operation_id") or (update_latest or update_pending or {}).get("command_id"),
     }

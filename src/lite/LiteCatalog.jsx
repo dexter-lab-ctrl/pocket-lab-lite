@@ -1058,6 +1058,12 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
   };
 }
 
+
+function formatRunHistoryValue(value, hasEvidence) {
+  if (value) return formatLiteTime(value);
+  return hasEvidence ? 'Recorded' : 'Not run yet';
+}
+
 function detailsForAction(actionId, action = {}, result = null) {
   const details = result?.details && typeof result.details === 'object'
     ? result.details
@@ -1067,17 +1073,21 @@ function detailsForAction(actionId, action = {}, result = null) {
         ? action.details
         : fallbackActionDetails(actionId, action, result);
   const summary = result?.summary || action?.last_result || action?.result?.summary || details.summary;
+  const hasEvidence = actionHasRunEvidence(action, result, action?.progress);
+  const firstRanAt = actionRunTimestamp(action, result, 'first') || details.first_ran_at || '';
+  const lastRanAt = actionRunTimestamp(action, result, 'last') || details.last_ran_at || firstRanAt || '';
   return {
     ...details,
     summary,
     last_result: action?.last_result || result?.summary || action?.result?.summary || details.last_result || summary,
-    first_ran_at: actionRunTimestamp(action, result, 'first') || details.first_ran_at || '',
-    last_ran_at: actionRunTimestamp(action, result, 'last') || details.last_ran_at || '',
-    run_count: Number(action?.run_count || details.run_count || 0),
+    first_ran_at: firstRanAt,
+    last_ran_at: lastRanAt,
+    run_count: Number(action?.run_count || details.run_count || (hasEvidence ? 1 : 0)),
+    has_run_evidence: hasEvidence,
     saved_for_troubleshooting: details.saved_for_troubleshooting || {
-      saved: actionHasRunEvidence(action, result, action?.progress),
+      saved: hasEvidence,
       backend_only: true,
-      summary: actionHasRunEvidence(action, result, action?.progress)
+      summary: hasEvidence
         ? 'A backend record was saved for troubleshooting.'
         : 'No backend record was saved because this action did not run.',
     },
@@ -1117,8 +1127,9 @@ function AppActionDetailsPanel({ details, onClose }) {
       <div className="lite-app-action-details-grid">
         <div className="lite-app-action-detail-section lite-app-action-detail-section--run-history">
           <strong>Run history</strong>
-          <p>First run: {details.first_ran_at ? formatLiteTime(details.first_ran_at) : 'Not run yet'}</p>
-          <p>Last run: {details.last_ran_at ? formatLiteTime(details.last_ran_at) : (saved.saved ? 'Recorded' : 'Not run yet')}</p>
+          <p>First run: {formatRunHistoryValue(details.first_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
+          <p>Last run: {formatRunHistoryValue(details.last_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
+          {details.run_count ? <p>Run count: {details.run_count}</p> : null}
         </div>
         <div className="lite-app-action-detail-section">
           <strong>What happened</strong>
