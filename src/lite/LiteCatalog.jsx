@@ -100,6 +100,16 @@ const PHOTO_PRISM_STORAGE_COPY = {
   },
 };
 
+const PHONE_STORAGE_CONNECTED_FOLDERS = [
+  'Android shared storage',
+  'Camera photos',
+  'Pictures',
+  'Videos',
+  'Downloads',
+  'Music',
+];
+
+
 function actionCopy(actionId) {
   return PHOTO_PRISM_ACTION_COPY[actionId] || {
     eyebrow: 'Action',
@@ -124,10 +134,9 @@ function busyActionLabel(actionId) {
   return 'Working';
 }
 
-const APP_ACTION_CATEGORY_ORDER = ['access', 'media', 'safety', 'recovery', 'setup', 'danger'];
+const APP_ACTION_CATEGORY_ORDER = ['media', 'safety', 'recovery', 'setup', 'danger'];
 
 const APP_ACTION_CATEGORY_COPY = {
-  access: { label: 'Open', summary: 'Open the app through Pocket Lab.' },
   media: { label: 'Photos', summary: 'Connect and import photos through backend-owned actions.' },
   safety: { label: 'Safety', summary: 'Check app health and protected records.' },
   recovery: { label: 'Recovery', summary: 'Back up, preview restore, and repair safely.' },
@@ -290,12 +299,22 @@ function normalizeAppAction(entry) {
   const actionId = entry?.actionId || action?.id || '';
   const copy = actionCopy(actionId);
   const busy = Boolean(entry?.busy);
+  const connected = Boolean(entry?.connected);
   const progress = entry?.progress || action?.progress || null;
   const hasProgress = Boolean(progress?.running || ['queued', 'running'].includes(String(progress?.phase || '').toLowerCase()));
   const enabled = action?.enabled !== false && !entry?.disabled;
   const status = normalizeActionStatus(action?.status, enabled, busy, hasProgress);
   const category = appActionCategory(actionId, action);
-  const display = getActionDisplayState(status, enabled);
+  let display = getActionDisplayState(status, enabled);
+  if (actionId === 'connect_photos') {
+    if (connected) {
+      display = { status: 'healthy', label: 'Connected' };
+    } else if (busy) {
+      display = { status: 'degraded', label: 'Connecting' };
+    } else {
+      display = { status: 'unknown', label: 'Not connected' };
+    }
+  }
   return {
     ...entry,
     id: actionId,
@@ -304,13 +323,14 @@ function normalizeAppAction(entry) {
     copy,
     category,
     categoryLabel: APP_ACTION_CATEGORY_COPY[category]?.label || category,
+    connected,
     enabled,
     status,
     display,
     progress,
     disabledReason: !enabled ? actionDisabledReason(action) || entry?.title || 'Action is not ready yet.' : '',
     risk: action?.risk || (category === 'danger' ? 'destructive' : category === 'recovery' || category === 'setup' ? 'review' : 'low'),
-    detailsAvailable: true,
+    detailsAvailable: actionId !== 'connect_photos',
     summary: action?.summary || copy.description,
   };
 }
@@ -320,6 +340,7 @@ function groupAppActions(entries) {
   entries.map(normalizeAppAction).forEach((entry) => {
     if (!entry?.actionId) return;
     const category = entry.category || 'setup';
+    if (category === 'access') return;
     if (!grouped.has(category)) {
       grouped.set(category, {
         id: category,
@@ -708,14 +729,15 @@ function PhotoPrismActionTile({
   const copy = normalized.copy;
   const progressState = normalized.progress || null;
   const reason = normalized.disabledReason;
-  const progressDisablesAction = progressState?.running;
+  const isConnectPhotos = actionId === 'connect_photos';
+  const progressDisablesAction = progressState?.running && !isConnectPhotos;
   const isDisabled = Boolean(disabled || action?.enabled === false || busy || progressDisablesAction);
-  const showProgress = Boolean(progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
+  const showProgress = Boolean(!isConnectPhotos && progressState?.running && ['import_photos', 'check_app', 'repair_app', 'backup_app', 'preview_restore', 'backup_to_storage', 'update_app'].includes(actionId));
   const progressLabel = progressState?.running ? progressState.step || busyActionLabel(actionId) : '';
-  const tileResult = tileResultForAction(actionId, action, result);
-  const detailsAvailable = true;
+  const tileResult = isConnectPhotos ? null : tileResultForAction(actionId, action, result);
+  const detailsAvailable = !isConnectPhotos;
   return (
-    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''}`} data-action-id={actionId}>
+    <div className={`lite-catalog-action-tile lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''}`} data-action-id={actionId}>
       <div className="lite-catalog-action-tile-copy">
         <span className="lite-catalog-action-tile-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div>
@@ -735,26 +757,41 @@ function PhotoPrismActionTile({
       >
         {busy || progressState?.running ? 'Working' : copy.label}
       </LiteButton>
-      <AppActionDisabledReason reason={!showProgress ? reason : ''} />
-      <LiteActionProgress
-        actionId={actionId}
-        status={normalized.status}
-        enabled={!(action?.enabled === false || (disabled && !busy && !progressState?.running))}
-        disabledReason={(action?.enabled === false || (disabled && !busy && !progressState?.running)) && !showProgress ? reason : ''}
-        progress={progressState || action?.progress}
-        result={tileResult || action?.result}
-        detailsAvailable={detailsAvailable}
-        lastResult={action?.last_result || tileResult?.summary || ''}
-        firstRanAt={actionRunTimestamp(action, tileResult, 'first')}
-        lastRanAt={actionRunTimestamp(action, tileResult, 'last')}
-        runCount={action?.run_count || 0}
-        troubleshooting={action?.troubleshooting}
-        evidenceRef={action?.evidence_ref || ''}
-        receiptId={action?.receipt_id || action?.result?.receipt_id || tileResult?.receipt_id || ''}
-        executionOwner={action?.execution_owner || ''}
-      />
-      <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} />
-      {!tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
+      <AppActionDisabledReason reason={!showProgress && !isConnectPhotos ? reason : ''} />
+      {!isConnectPhotos ? (
+        <LiteActionProgress
+          actionId={actionId}
+          status={normalized.status}
+          enabled={!(action?.enabled === false || (disabled && !busy && !progressState?.running))}
+          disabledReason={(action?.enabled === false || (disabled && !busy && !progressState?.running)) && !showProgress ? reason : ''}
+          progress={progressState || action?.progress}
+          result={tileResult || action?.result}
+          detailsAvailable={detailsAvailable}
+          lastResult={action?.last_result || tileResult?.summary || ''}
+          firstRanAt={actionRunTimestamp(action, tileResult, 'first')}
+          lastRanAt={actionRunTimestamp(action, tileResult, 'last')}
+          runCount={action?.run_count || 0}
+          troubleshooting={action?.troubleshooting}
+          evidenceRef={action?.evidence_ref || ''}
+          receiptId={action?.receipt_id || action?.result?.receipt_id || tileResult?.receipt_id || ''}
+          executionOwner={action?.execution_owner || ''}
+        />
+      ) : null}
+      {!isConnectPhotos ? <AppActionResultCard actionId={actionId} action={action} result={tileResult} onViewDetails={onViewDetails} detailsExpanded={detailsExpanded} /> : null}
+      {!isConnectPhotos && !tileResult ? <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} /> : null}
+    </div>
+  );
+}
+
+function PhoneStorageConnectedFolders() {
+  return (
+    <div className="lite-catalog-connected-folders" role="status" aria-live="polite">
+      <p>Connected folders from Phone Storage</p>
+      <div className="lite-catalog-connected-folder-list">
+        {storageConnectedFolderLabels().map((folder) => (
+          <span key={folder}>{folder}</span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1253,6 +1290,34 @@ function storageMappings(app) {
   return Array.isArray(mappings) ? mappings : [];
 }
 
+function isPhoneStorageMapping(mapping = {}) {
+  const text = [
+    mapping.mapping_id,
+    mapping.id,
+    mapping.label,
+    mapping.source_label,
+    mapping.source_type,
+    mapping.preset,
+    mapping.kind,
+  ].map((value) => String(value || '').toLowerCase()).join(' ');
+  return Boolean(
+    text.includes('phone')
+    || text.includes('android')
+    || text.includes('shared storage')
+    || text.includes('phone_storage')
+  );
+}
+
+function phoneStorageConnected(app) {
+  const mappings = storageMappings(app);
+  if (!mappings.length) return false;
+  return mappings.some(isPhoneStorageMapping) || mappings.length === 1;
+}
+
+function storageConnectedFolderLabels() {
+  return PHONE_STORAGE_CONNECTED_FOLDERS;
+}
+
 function storageMediaSummary(app) {
   const mappings = storageMappings(app);
   if (!mappings.length) return 'Not connected';
@@ -1704,6 +1769,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
     const openAction = actionState('open');
     const connectPhotosAction = actionState('connect_photos');
+    const isPhoneStorageConnected = phoneStorageConnected(app);
     const checkAppAction = actionState('check_app');
     const backupAppAction = actionState('backup_app');
     const importPhotosAction = actionState('import_photos');
@@ -1733,13 +1799,21 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       },
       {
         actionId: 'connect_photos',
-        action: connectPhotosAction,
+        action: {
+          ...connectPhotosAction,
+          status: isPhoneStorageConnected ? 'connected' : connectPhotosAction.status,
+          summary: isPhoneStorageConnected ? 'Phone storage is connected.' : connectPhotosAction.summary,
+        },
         busyKey: storageBusy || actionBusyKey,
         tone: 'secondary',
-        onClick: (event) => openPhoneStoragePreview(app, event),
-        disabled: connectPhotosAction.enabled === false || Boolean(storageBusy),
-        title: lifecycleActionReason(connectPhotosAction),
-        result,
+        connected: isPhoneStorageConnected,
+        onClick: (event) => {
+          if (isPhoneStorageConnected) return;
+          openPhoneStoragePreview(app, event);
+        },
+        disabled: isPhoneStorageConnected || connectPhotosAction.enabled === false || Boolean(storageBusy),
+        title: isPhoneStorageConnected ? 'Phone storage is already connected.' : lifecycleActionReason(connectPhotosAction),
+        result: isPhoneStorageConnected ? null : result,
       },
       {
         actionId: 'import_photos',
@@ -1920,7 +1994,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           disabled={entry.disabled}
                           title={entry.title}
                         />
-                        {entry.actionId === 'connect_photos' && storagePreviewApp?.id === app.id ? (
+                        {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? (
+                          <PhoneStorageConnectedFolders />
+                        ) : null}
+                        {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
                           <div className="lite-catalog-storage-preview-anchor">
                             <PhotoPrismStoragePreviewSheet
                               preview={storagePreview}
@@ -1935,7 +2012,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                             />
                           </div>
                         ) : null}
-                        {detailsActionId === entry.actionId ? (
+                        {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
                           <div className="lite-catalog-action-details-anchor">
                             <AppActionDetailsPanel
                               details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}

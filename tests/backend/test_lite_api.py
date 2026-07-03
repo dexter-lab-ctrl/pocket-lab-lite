@@ -1726,6 +1726,11 @@ def test_lite_photoprism_connect_photos_preview_ui_contract_is_present():
     assert "lite-catalog-storage-preview-sheet" in css
     assert 'role="region"' in ui
     assert "lite-catalog-storage-preview-anchor" in ui
+    assert "PhoneStorageConnectedFolders" in ui
+    assert "Connected folders from Phone Storage" in ui
+    assert "Android shared storage" in ui
+    assert "Camera photos" in ui
+    assert "lite-catalog-connected-folders" in css
     assert 'type="checkbox"' not in ui
     assert "selectedFolders" not in ui
     assert "folderPicker" not in ui
@@ -3480,7 +3485,7 @@ def test_lite_app_actions_phase5_unified_contract(monkeypatch):
         assert action["label"]
         assert action["category"] in {"access", "media", "safety", "recovery", "setup", "danger"}
         assert isinstance(action["enabled"], bool)
-        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported"}
+        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected"}
         assert action["summary"]
         assert action["risk"] in {"low", "review", "high", "destructive"}
         assert action["execution_owner"] in {"browser_navigation", "fastapi", "backend_worker"}
@@ -3573,6 +3578,39 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
     assert "nats.connect" not in ui
     assert "exec(" not in ui
 
+
+
+
+def test_lite_app_catalog_connect_photos_truthful_connected_state():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    backend = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_actions.py").read_text()
+    for marker in (
+        "phoneStorageConnected",
+        "isPhoneStorageConnected",
+        "PhoneStorageConnectedFolders",
+        "Connected folders from Phone Storage",
+        "Android shared storage",
+        "Camera photos",
+        "Pictures",
+        "Videos",
+        "Downloads",
+        "Music",
+        "entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId",
+        "!isConnectPhotos ? (",
+        "category === 'access') return",
+    ):
+        assert marker in ui
+    for marker in (
+        "lite-catalog-connected-folders",
+        "lite-catalog-connected-folder-list",
+    ):
+        assert marker in css
+    assert "Phone storage is already connected" in ui
+    assert "status: isPhoneStorageConnected ? 'connected'" in ui
+    assert "_apply_connect_photos_truth" in backend
+    assert "Phone storage is already connected." in backend
+    assert "lite-app-action-group is-access" not in ui
 
 def test_lite_app_catalog_reusable_action_progress_source():
     ui = _lite_ui_source()

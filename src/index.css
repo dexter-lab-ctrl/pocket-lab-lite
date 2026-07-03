@@ -12288,6 +12288,47 @@ textarea {
   padding: 0.55rem 0.65rem;
 }
 
+
+.theme-pocket-lite-daylight .lite-catalog-connected-folders {
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(240, 253, 250, 0.92), rgba(236, 253, 245, 0.82));
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.08);
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+  padding: 0.75rem 0.8rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-connected-folders p {
+  color: rgba(15, 118, 110, 0.94);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-connected-folder-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-connected-folder-list span {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 999px;
+  color: rgba(15, 81, 73, 0.94);
+  font-size: 0.72rem;
+  font-weight: 760;
+  line-height: 1.25;
+  padding: 0.26rem 0.52rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-action-tile[data-action-id="connect_photos"].is-connected .pocket-button {
+  cursor: not-allowed;
+}
+
 .theme-pocket-lite-daylight .lite-action-progress {
   display: grid;
   gap: 0.5rem;

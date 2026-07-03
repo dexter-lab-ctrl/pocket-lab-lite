@@ -437,6 +437,47 @@ def _run_count(action: dict[str, Any], result: dict[str, Any]) -> int:
     return 1 if _has_backend_record(action, result) else 0
 
 
+def _phone_storage_connected(media: Any) -> bool:
+    if not isinstance(media, dict):
+        return False
+    try:
+        mapping_count = int(media.get("mapping_count") or 0)
+    except (TypeError, ValueError):
+        mapping_count = 0
+    labels = media.get("labels") if isinstance(media.get("labels"), list) else []
+    label_text = " ".join(str(label or "").lower() for label in labels)
+    if "phone storage" in label_text or "phone" in label_text:
+        return True
+    return mapping_count > 0 and not labels
+
+
+def _apply_connect_photos_truth(actions: dict[str, Any], media: Any) -> None:
+    action = actions.get("connect_photos")
+    if not isinstance(action, dict):
+        return
+    if _phone_storage_connected(media):
+        action.update({
+            "enabled": False,
+            "status": "connected",
+            "summary": "Phone storage is connected.",
+            "disabled_reason": "Phone storage is already connected.",
+            "reason": "Phone storage is already connected.",
+            "last_result": None,
+            "first_ran_at": None,
+            "last_ran_at": None,
+            "run_count": 0,
+        })
+        action["progress"] = {"phase": "idle", "step": "Connected.", "percent": None, "indeterminate": False, "bounded": True, "steps": []}
+        action["result"] = {"status": None, "summary": None, "receipt_id": None, "backend_only": True}
+        action["troubleshooting"] = {
+            "available": False,
+            "backend_only": True,
+            "debug_only": True,
+            "receipt_id": None,
+            "summary": "No backend troubleshooting record is needed for an already connected phone storage shortcut.",
+        }
+
+
 def _details_payload(
     action_id: str,
     action: dict[str, Any],
@@ -568,6 +609,8 @@ def app_actions(app_id: str) -> dict[str, Any]:
     for action_id, action in raw_actions.items():
         if action_id not in actions:
             actions[action_id] = _normalize_action(action_id, action)
+    media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
+    _apply_connect_photos_truth(actions, media)
     return {
         "status": "healthy",
         "app_id": "photoprism",
@@ -581,7 +624,7 @@ def app_actions(app_id: str) -> dict[str, Any]:
         "current_operation": profile.get("current_action"),
         "latest_results": {key: value.get("result") for key, value in actions.items() if isinstance(value, dict) and isinstance(value.get("result"), dict) and value["result"].get("summary")},
         "latest_troubleshooting_records": {key: value.get("troubleshooting") for key, value in actions.items() if isinstance(value, dict) and isinstance(value.get("troubleshooting"), dict) and value["troubleshooting"].get("available")},
-        "media": profile.get("media") or lite_photoprism_media.media_status("photoprism"),
+        "media": media,
         "updated_at": profile.get("updated_at"),
     }
 
