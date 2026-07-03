@@ -87,7 +87,7 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-catalog-launcher" not in css
     assert "lite-catalog-drawer" not in ui
     assert "lite-catalog-drawer" not in css
-    assert "Details" not in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "AppActionDetailsPanel" in Path("src/lite/LiteCatalog.jsx").read_text()
     assert "Ready to open" not in ui
     assert "Ready to open" not in css
     assert ">Ready<" in ui or "'Ready'" in ui
@@ -1235,7 +1235,8 @@ def test_lite_device_connection_lines_render_on_stacked_mobile_layout():
     assert "lite-device-mobile-flow" in css
     assert "top: calc(-1rem - 1px)" in css
     assert "repeating-linear-gradient(180deg" in css
-    assert "display: none" not in css.split("@media (max-width: 1100px)")[-1]
+    mobile_block = css.split("@media (max-width: 1100px)")[-1].split("@keyframes lite-device-mobile-flow")[0]
+    assert "display: none" not in mobile_block
 
 
 def test_lite_security_ui_has_remediation_guidance_and_health_banner():
@@ -2985,6 +2986,10 @@ def test_lite_app_evidence_endpoint_handles_missing_receipts_safely():
     assert payload["app_id"] == "photoprism"
     assert payload["latest"] is None
     assert payload["items"] == []
+    assert payload["backend_only"] is True
+    assert payload["debug_only"] is True
+    assert payload["normal_ui_dependency"] is False
+    assert "normal App Catalog UI does not load" in payload["summary"]
     assert payload["fallback_receipt"]["summary"] == "No detailed receipt yet. Future actions will include proof details."
     text = response.text.lower()
     assert "/data/data" not in text
@@ -3000,6 +3005,9 @@ def test_lite_app_evidence_exposes_action_state_receipts_without_making_them_lat
     payload = response.json()
     assert payload["latest"] is None
     assert payload["items"] == []
+    assert payload["backend_only"] is True
+    assert payload["debug_only"] is True
+    assert payload["normal_ui_dependency"] is False
     assert payload["by_action"]["open"]["backend_trace"]["execution_owner"] == "Browser navigation"
     assert payload["by_action"]["install_app"]["backend_trace"]["summary"]
     assert payload["by_action"]["remove_app"]["what_did_not_happen"]
@@ -3077,23 +3085,41 @@ def test_lite_app_evidence_unknown_app_returns_safe_404():
     assert "password" not in text
 
 
-def test_lite_app_catalog_ui_has_evidence_receipt_surface():
+def test_lite_app_catalog_ui_uses_lightweight_action_details():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
-    assert "PhotoPrismEvidenceCard" in ui
-    assert "PhotoPrismEvidenceReceiptModal" in ui
-    assert "View receipt" in ui
-    assert "What changed" in ui
-    assert "What did not happen" in ui
-    assert "Technical details" in ui
-    assert "Backend trace" in ui
-    assert "What Pocket Lab did" in ui
-    assert "Duplicates hidden" in ui
-    assert "No evidence receipt yet" in ui
-    assert "lite-catalog-evidence-card" in css
-    assert "lite-evidence-modal" in css
-    assert "liteEvidenceSheetIn" in css
-    assert "prefers-reduced-motion" in css
+    for marker in (
+        "AppActionDetailsButton",
+        "AppActionDetailsPanel",
+        "Details",
+        "Last result",
+        "What happened",
+        "What changed",
+        "What did not happen",
+        "Saved for troubleshooting",
+        "Technical details",
+    ):
+        assert marker in ui
+    for marker in (
+        "lite-app-action-details-button",
+        "lite-app-action-details-panel",
+        "lite-catalog-action-details-anchor",
+    ):
+        assert marker in css
+    for removed_marker in (
+        "PhotoPrismEvidenceCard",
+        "PhotoPrismEvidenceReceiptModal",
+        "View receipt",
+        "Receipt ready",
+        "No evidence receipt yet",
+        "Evidence needs a moment",
+        "lite-catalog-evidence-card",
+        "lite-catalog-action-receipt-anchor",
+        "selectedReceiptActionId",
+        "openEvidenceReceipt",
+    ):
+        assert removed_marker not in ui
+    assert "Plain Language" not in ui
 
 
 def test_lite_app_safety_repair_actions_are_enabled_when_installed(monkeypatch):
@@ -3404,7 +3430,7 @@ def test_lite_app_safety_repair_frontend_source_is_mobile_safe():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
     mocks = Path("src/mocks/handlers.js").read_text()
-    assert "Check PhotoPrism health, route, storage, and safety evidence." in ui
+    assert "Check PhotoPrism health, route, storage, and safety record." in ui
     assert "Fix PhotoPrism route, health, and storage connection safely." in ui
     assert "Checking safely" in ui
     assert "Checking repair" in ui
@@ -3458,7 +3484,9 @@ def test_lite_app_actions_phase5_unified_contract(monkeypatch):
         assert isinstance(action["progress"], dict)
         assert {"phase", "step", "indeterminate", "steps"}.issubset(action["progress"])
         assert isinstance(action["result"], dict)
-        assert isinstance(action["receipt"], dict)
+        assert isinstance(action["details"], dict)
+        assert isinstance(action["troubleshooting"], dict)
+        assert action["details"]["saved_for_troubleshooting"]["backend_only"] is True
         if action["enabled"] is False:
             assert action["disabled_reason"]
     assert actions["update_app"]["summary"].lower().count("no update") >= 1
@@ -3480,7 +3508,8 @@ def test_lite_app_actions_phase5_disabled_response_shape(monkeypatch):
     assert payload["action_id"] == "import_photos"
     assert payload["disabled_reason"] == payload["summary"]
     assert payload["progress"]["phase"] == "blocked"
-    assert payload["evidence"]["status"] == "not_started"
+    assert payload["troubleshooting"]["status"] == "not_started"
+    assert payload["troubleshooting"]["backend_only"] is True
     text = response.text.lower()
     for forbidden in ("password", "token", "nats://", "/data/data", "raw log"):
         assert forbidden not in text
@@ -3495,18 +3524,20 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "getActionDisplayState",
         "AppActionGroup",
         "AppActionResultCard",
-        "AppActionReceiptButton",
+        "AppActionDetailsButton",
+        "AppActionDetailsPanel",
         "AppActionDisabledReason",
         "LiteActionProgress",
         "lite-catalog-action-groups",
-        "View receipt",
+        "Details",
         "No update was applied",
     ):
         assert marker in ui
     for marker in (
         "lite-app-action-group",
         "lite-app-action-result-card",
-        "lite-app-action-receipt-button",
+        "lite-app-action-details-button",
+        "lite-app-action-details-panel",
         "lite-action-progress",
         "lite-action-progress__track",
         "lite-action-progress__fill",
@@ -3538,7 +3569,7 @@ def test_lite_app_catalog_reusable_action_progress_source():
     for marker in (
         "Getting ready",
         "Working",
-        "Evidence saved",
+        "Saved for troubleshooting",
         "Paused for safety",
         "Needs review",
         "Checking safely",
@@ -3576,6 +3607,9 @@ def test_lite_app_evidence_exposes_latest_receipt_and_by_action(monkeypatch):
     assert payload["receipt_id"] == result["operation_id"]
     assert payload["action_id"] == "update_app"
     assert payload["evidence_ref"].startswith("apps/photoprism/update/")
+    assert payload["backend_only"] is True
+    assert payload["debug_only"] is True
+    assert payload["normal_ui_dependency"] is False
     assert payload["by_action"]["update_app"]["receipt_id"] == result["operation_id"]
     assert payload["latest_by_action"]["update_app"]["proofs"]
     assert payload["by_action"]["open"]["backend_trace"]["execution_owner"] == "Browser navigation"
@@ -3639,12 +3673,15 @@ def test_lite_app_actions_surface_backup_preview_and_update_receipt_links(monkey
     response = client().get("/api/lite/apps/photoprism/actions")
     assert response.status_code == 200
     actions = response.json()["actions"]
-    assert actions["backup_app"]["receipt"]["available"] is True
-    assert actions["backup_app"]["receipt"]["receipt_id"] == "app-backup-photoprism-test"
-    assert actions["preview_restore"]["receipt"]["available"] is True
-    assert actions["preview_restore"]["receipt"]["receipt_id"] == "app-restore-preview-photoprism-test"
-    assert actions["update_app"]["receipt"]["available"] is True
-    assert actions["update_app"]["receipt"]["receipt_id"] == update_result["operation_id"]
+    assert actions["backup_app"]["troubleshooting"]["available"] is True
+    assert actions["backup_app"]["troubleshooting"]["receipt_id"] == "app-backup-photoprism-test"
+    assert actions["backup_app"]["details"]["saved_for_troubleshooting"]["backend_only"] is True
+    assert actions["preview_restore"]["troubleshooting"]["available"] is True
+    assert actions["preview_restore"]["troubleshooting"]["receipt_id"] == "app-restore-preview-photoprism-test"
+    assert actions["preview_restore"]["details"]["saved_for_troubleshooting"]["backend_only"] is True
+    assert actions["update_app"]["troubleshooting"]["available"] is True
+    assert actions["update_app"]["troubleshooting"]["receipt_id"] == update_result["operation_id"]
+    assert actions["update_app"]["details"]["saved_for_troubleshooting"]["backend_only"] is True
     assert "password" not in response.text.lower()
     assert "nats://" not in response.text.lower()
 
@@ -3676,20 +3713,20 @@ def test_lite_app_preview_restore_waits_for_current_backup(monkeypatch):
     assert "nats://" not in run_response.text.lower()
 
 
-def test_lite_app_catalog_receipt_selection_is_action_specific():
+def test_lite_app_catalog_details_selection_is_action_specific():
     ui = _lite_ui_source()
     css = Path("src/index.css").read_text()
-    assert "selectedReceiptActionId" in ui
-    assert "openEvidenceReceipt(entry.actionId)" in ui
-    assert "selectedReceiptActionId === entry.actionId" in ui
-    assert "lite-catalog-action-receipt-anchor" in ui
-    assert "PhotoPrismEvidenceReceiptModal" in ui
-    assert "inline" in ui
-    assert "No unrelated receipt was shown for this action." in ui
-    assert "lite-evidence-modal-inline" in css
-    assert "liteEvidenceBorderRailOrbit" in css
-    assert "liteEvidenceRailPerimeterFlow" in css
-    assert "Hide receipt" in ui
+    assert "detailsActionId" in ui
+    assert "openActionDetails(entry.actionId)" in ui
+    assert "detailsActionId === entry.actionId" in ui
+    assert "lite-catalog-action-details-anchor" in ui
+    assert "AppActionDetailsPanel" in ui
+    assert "Hide details" in ui
+    assert "Saved for troubleshooting" in ui
+    assert "lite-app-action-details-panel" in css
+    assert "liteEvidenceBorderRailOrbit" not in ui
+    assert "liteEvidenceRailPerimeterFlow" not in ui
+    assert "Hide receipt" not in ui
 
 
 def test_lite_app_update_receipt_technical_details_show_versions(monkeypatch):

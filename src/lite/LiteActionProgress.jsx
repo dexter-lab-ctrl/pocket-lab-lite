@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { CheckCircle2, PauseCircle, AlertTriangle } from 'lucide-react';
 
-const DEFAULT_STAGES = ['Getting ready', 'Working', 'Evidence saved'];
+const DEFAULT_STAGES = ['Getting ready', 'Working', 'Saved for troubleshooting'];
 
 const ACTION_STAGE_COPY = {
-  check_app: ['Getting ready', 'Checking safely', 'Evidence saved'],
-  backup_app: ['Getting ready', 'Saving app settings', 'Evidence saved'],
-  preview_restore: ['Getting ready', 'Preparing preview', 'Evidence saved'],
-  repair_app: ['Getting ready', 'Checking repair', 'Evidence saved'],
-  update_app: ['Getting ready', 'Checking readiness', 'Evidence saved'],
-  import_photos: ['Getting ready', 'Importing safely', 'Evidence saved'],
+  check_app: ['Getting ready', 'Checking safely', 'Saved for troubleshooting'],
+  backup_app: ['Getting ready', 'Saving app settings', 'Saved for troubleshooting'],
+  preview_restore: ['Getting ready', 'Preparing preview', 'Saved for troubleshooting'],
+  repair_app: ['Getting ready', 'Checking repair', 'Saved for troubleshooting'],
+  update_app: ['Getting ready', 'Checking readiness', 'Saved for troubleshooting'],
+  import_photos: ['Getting ready', 'Importing safely', 'Saved for troubleshooting'],
   connect_photos: ['Getting ready', 'Connecting photos', 'Ready'],
   phone_storage: ['Getting ready', 'Connecting photos', 'Ready'],
   storage_device: ['Getting ready', 'Connecting photos', 'Ready'],
@@ -28,25 +28,25 @@ const ACTION_WORKING_COPY = {
 };
 
 const ACTION_COMPLETE_COPY = {
-  check_app: 'Evidence saved',
+  check_app: 'Saved for troubleshooting',
   backup_app: 'App backup saved',
   preview_restore: 'Restore preview ready. No changes made.',
   repair_app: 'Repair completed. No photos changed.',
   update_app: 'Update readiness checked. No update was applied.',
-  import_photos: 'Evidence saved. PhotoPrism will handle indexing.',
+  import_photos: 'Saved for troubleshooting. PhotoPrism will handle indexing.',
   connect_photos: 'Photos connected',
   phone_storage: 'Photos connected',
   storage_device: 'Photos connected',
 };
 
-function normalizeProgressState({ status, enabled, disabledReason, progress, result, receiptAvailable }) {
+function normalizeProgressState({ status, enabled, disabledReason, progress, result, detailsAvailable }) {
   const raw = String(status || progress?.phase || result?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
   if (enabled === false || disabledReason) return 'blocked';
   if (progress?.running || ['queued', 'pending'].includes(raw)) return 'queued';
   if (['running', 'working', 'executing', 'waiting'].includes(raw)) return raw === 'waiting' ? 'waiting' : 'running';
   if (['review', 'degraded', 'warning', 'needs_attention'].includes(raw)) return 'review';
   if (['failed', 'failure', 'error'].includes(raw)) return 'failed';
-  if (receiptAvailable || ['succeeded', 'success', 'done', 'completed', 'verified'].includes(raw)) return 'receipt_saved';
+  if (detailsAvailable || ['succeeded', 'success', 'done', 'completed', 'verified'].includes(raw)) return 'saved_for_troubleshooting';
   return 'idle';
 }
 
@@ -57,17 +57,17 @@ function progressPercentForState(state, progress) {
   }
   if (state === 'queued') return 22;
   if (state === 'running' || state === 'waiting') return 58;
-  if (state === 'receipt_saved') return 100;
+  if (state === 'saved_for_troubleshooting') return 100;
   if (state === 'review' || state === 'failed') return 100;
   if (state === 'blocked') return 34;
   return 0;
 }
 
-function currentLabelForState({ actionId, state, progress, disabledReason, result, receiptAvailable }) {
+function currentLabelForState({ actionId, state, progress, disabledReason, result, detailsAvailable }) {
   if (state === 'blocked') return disabledReason || 'Paused for safety';
   if (state === 'queued') return 'Getting ready';
   if (state === 'running' || state === 'waiting') return ACTION_WORKING_COPY[actionId] || progress?.step || 'Working';
-  if (state === 'receipt_saved') return ACTION_COMPLETE_COPY[actionId] || (receiptAvailable ? 'Evidence saved' : 'Done');
+  if (state === 'saved_for_troubleshooting') return ACTION_COMPLETE_COPY[actionId] || (detailsAvailable ? 'Saved for troubleshooting' : 'Done');
   if (state === 'review') return 'Needs review';
   if (state === 'failed') return 'Needs review';
   if (result?.summary) return result.summary;
@@ -77,7 +77,7 @@ function currentLabelForState({ actionId, state, progress, disabledReason, resul
 function activeStageForState(state) {
   if (state === 'queued') return 0;
   if (state === 'running' || state === 'waiting') return 1;
-  if (state === 'receipt_saved' || state === 'review' || state === 'failed') return 2;
+  if (state === 'saved_for_troubleshooting' || state === 'review' || state === 'failed') return 2;
   if (state === 'blocked') return 0;
   return -1;
 }
@@ -89,19 +89,19 @@ export default function LiteActionProgress({
   disabledReason = '',
   progress = null,
   result = null,
-  receiptAvailable = false,
+  detailsAvailable = false,
   className = '',
 }) {
-  const state = useMemo(() => normalizeProgressState({ status, enabled, disabledReason, progress, result, receiptAvailable }), [status, enabled, disabledReason, progress, result, receiptAvailable]);
+  const state = useMemo(() => normalizeProgressState({ status, enabled, disabledReason, progress, result, detailsAvailable }), [status, enabled, disabledReason, progress, result, detailsAvailable]);
   const stages = ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES;
   const activeStage = activeStageForState(state);
   const percent = progressPercentForState(state, progress);
-  const label = currentLabelForState({ actionId, state, progress, disabledReason, result, receiptAvailable });
+  const label = currentLabelForState({ actionId, state, progress, disabledReason, result, detailsAvailable });
   const icon = state === 'blocked'
     ? <PauseCircle className="h-4 w-4" />
     : ['review', 'failed'].includes(state)
       ? <AlertTriangle className="h-4 w-4" />
-      : state === 'receipt_saved'
+      : state === 'saved_for_troubleshooting'
         ? <CheckCircle2 className="h-4 w-4" />
         : null;
 
@@ -109,7 +109,7 @@ export default function LiteActionProgress({
     <div className={`lite-action-progress lite-action-progress--${state} ${className}`.trim()} data-action-id={actionId}>
       <div className="lite-action-progress__label">
         <span>{icon}{label}</span>
-        {state === 'receipt_saved' && receiptAvailable ? <small>Receipt ready</small> : null}
+        {state === 'saved_for_troubleshooting' && detailsAvailable ? <small>Saved for troubleshooting</small> : null}
       </div>
       <div
         className="lite-action-progress__track"
@@ -123,7 +123,7 @@ export default function LiteActionProgress({
       </div>
       <div className="lite-action-progress__nodes" aria-hidden="true">
         {stages.map((stage, index) => {
-          const done = activeStage > index || state === 'receipt_saved';
+          const done = activeStage > index || state === 'saved_for_troubleshooting';
           const active = activeStage === index && state !== 'idle';
           return (
             <span key={stage} className={`lite-action-progress__node ${done ? 'is-done' : ''} ${active ? 'is-active' : ''}`}>
