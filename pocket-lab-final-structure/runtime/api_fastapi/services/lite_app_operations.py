@@ -509,7 +509,7 @@ def _repair_summary(status: str, changed: bool) -> str:
     if status == "succeeded":
         return "Nothing needed repair"
     if status == "review":
-        return "Repair needs review"
+        return "Repair needs attention"
     return "Repair could not complete"
 
 
@@ -574,7 +574,7 @@ def _check_details(*, status: str, process_state: str, local_health: bool, route
         "what_did_not_happen": [
             "No photos were scanned.",
             "No database was changed.",
-            "No app password was changed.",
+            "No app login was changed.",
             "No repair was started.",
         ],
         "saved_for_troubleshooting": {
@@ -619,7 +619,7 @@ def _repair_details(*, status: str, changed: bool, restart_performed: bool, loca
         happened = ["Pocket Lab checked PhotoPrism and it was already running."]
         what_changed = ["Nothing changed."]
     else:
-        summary = "Repair needs review"
+        summary = "Repair needs attention"
         happened = ["Pocket Lab checked PhotoPrism repair steps, but the app still needs attention."]
         what_changed = ["No unsafe changes were made."]
     return {
@@ -634,7 +634,7 @@ def _repair_details(*, status: str, changed: bool, restart_performed: bool, loca
         "what_did_not_happen": [
             "No photos were changed.",
             "No database was changed.",
-            "No app password was changed.",
+            "No app login was changed.",
             "No reinstall was started.",
         ],
         "saved_for_troubleshooting": {
@@ -806,7 +806,7 @@ def _restart_photoprism_if_safe(health_failed: bool) -> tuple[str, bool]:
     return ("changed" if proc.returncode == 0 else "review"), proc.returncode == 0
 
 
-def _wait_for_photoprism_health(*, attempts: int = 10, delay_seconds: float = 0.7) -> tuple[bool, bool]:
+def _wait_for_photoprism_health(*, attempts: int = 24, delay_seconds: float = 1.0) -> tuple[bool, bool]:
     local_ready = False
     route_ready = False
     for _ in range(max(1, attempts)):
@@ -1000,6 +1000,81 @@ def _reconcile_stale_state(state: dict[str, Any]) -> dict[str, Any]:
     return state
 
 
+def _operation_completed_after(candidate: dict[str, Any] | None, baseline: dict[str, Any] | None) -> bool:
+    if not isinstance(candidate, dict) or not isinstance(baseline, dict):
+        return False
+    candidate_at = str(candidate.get("completed_at") or candidate.get("updated_at") or "")
+    baseline_at = str(baseline.get("completed_at") or baseline.get("updated_at") or "")
+    return bool(candidate_at and baseline_at and candidate_at >= baseline_at)
+
+
+def _repair_restart_was_performed(repair: dict[str, Any]) -> bool:
+    technical = repair.get("technical_details") if isinstance(repair.get("technical_details"), dict) else {}
+    if technical.get("restart_performed") is True:
+        return True
+    for step in repair.get("repair_steps") if isinstance(repair.get("repair_steps"), list) else []:
+        if not isinstance(step, dict):
+            continue
+        if step.get("id") == "app_restart" and str(step.get("status") or "").lower() in {"changed", "passed"}:
+            return True
+    return False
+
+
+def _reconcile_repair_with_followup_check(repair: dict[str, Any] | None, check: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Show Repair as complete when a newer Check app proves the restarted app is healthy.
+
+    Repair may run its post-restart health probe before PhotoPrism is fully warm on
+    Termux/Android. A later successful Check app is stronger evidence than that early
+    probe, so the read API can reconcile the visible Repair state without exposing logs
+    or raw process details.
+    """
+    if not isinstance(repair, dict):
+        return repair
+    if str(repair.get("status") or "").lower() == "succeeded":
+        return repair
+    if not _repair_restart_was_performed(repair):
+        return repair
+    if not isinstance(check, dict) or str(check.get("status") or "").lower() != "succeeded":
+        return repair
+    if not _operation_completed_after(check, repair):
+        return repair
+
+    reconciled = dict(repair)
+    reconciled["status"] = "succeeded"
+    reconciled["summary"] = "Repair completed"
+    progress = dict(reconciled.get("progress") if isinstance(reconciled.get("progress"), dict) else {})
+    progress.update({"phase": "completed", "status": "succeeded", "step": "Evidence saved", "percent": 100})
+    reconciled["progress"] = progress
+
+    repair_details = dict(reconciled.get("details") if isinstance(reconciled.get("details"), dict) else {})
+    check_details = check.get("details") if isinstance(check.get("details"), dict) else {}
+    repair_details.update({
+        "status": "ready",
+        "summary": "Repair completed",
+        "last_result": "Repair completed",
+        "what_happened": ["Pocket Lab restarted PhotoPrism. A follow-up check confirmed the app is now stable."],
+        "what_changed": ["PhotoPrism was restarted.", "PhotoPrism is now online."],
+        "what_needs_attention": [],
+        "status_checks": check_details.get("status_checks") if isinstance(check_details.get("status_checks"), list) else repair_details.get("status_checks", []),
+        "technical_details": [
+            "Execution owner: backend worker",
+            "Action: repair_app",
+            "Before status: not ready",
+            "After status: ready",
+            "App restart: performed",
+            "Confirmed by follow-up Check app.",
+            "Backend troubleshooting records stay backend-only.",
+        ],
+    })
+    reconciled["details"] = repair_details
+    technical = dict(reconciled.get("technical_details") if isinstance(reconciled.get("technical_details"), dict) else {})
+    after = dict(technical.get("after") if isinstance(technical.get("after"), dict) else {})
+    after.update({"local_health_ready": True, "route_health_ready": True})
+    technical.update({"after": after, "reconciled_by_followup_check": True})
+    reconciled["technical_details"] = technical
+    return reconciled
+
+
 def app_operation_status(app_id: str) -> dict[str, Any]:
     app = _validate_app_id(app_id)
     state = _read_state()
@@ -1010,6 +1085,8 @@ def app_operation_status(app_id: str) -> dict[str, Any]:
     operations = state.get("operations") if isinstance(state.get("operations"), dict) else {}
     last_safety = operations.get(latest_by_action.get(CHECK_APP_ACTION)) if latest_by_action.get(CHECK_APP_ACTION) else app_state.get("last_safety_check")
     last_repair = operations.get(latest_by_action.get(REPAIR_APP_ACTION)) if latest_by_action.get(REPAIR_APP_ACTION) else app_state.get("last_repair")
+    if isinstance(last_repair, dict):
+        last_repair = _reconcile_repair_with_followup_check(last_repair, last_safety if isinstance(last_safety, dict) else None)
     current = app_state.get("current_action") if isinstance(app_state.get("current_action"), dict) else None
     return _sanitize_payload({
         "status": "healthy",

@@ -1124,7 +1124,11 @@ function photoPrismMediaFlowState(lifecycle, busyKey = '') {
 
 function safeDetailList(items, fallback = []) {
   const values = Array.isArray(items) ? items : fallback;
-  return values.filter(Boolean).map((item) => String(item)).slice(0, 6);
+  return values
+    .filter(Boolean)
+    .map((item) => String(item).trim())
+    .filter((item) => item && item.toLowerCase() !== 'hidden')
+    .slice(0, 6);
 }
 
 function fallbackActionDetails(actionId, action = {}, result = null) {
@@ -1195,6 +1199,16 @@ function detailsForAction(actionId, action = {}, result = null) {
   };
 }
 
+function actionDetailsTone(details = {}, saved = {}) {
+  const raw = `${details.status || ''} ${details.summary || ''} ${details.last_result || ''}`.toLowerCase();
+  const hasAttention = Array.isArray(details.what_needs_attention) && details.what_needs_attention.some(Boolean);
+  if (hasAttention || ['review', 'needs_attention', 'failed', 'error'].some((term) => raw.includes(term)) || raw.includes('something changed') || raw.includes('not ready')) {
+    return 'review';
+  }
+  if (saved?.saved || raw.includes('completed') || raw.includes('protected') || raw.includes('ready')) return 'ready';
+  return 'neutral';
+}
+
 function AppActionDetailsPanel({ details, onClose }) {
   if (!details) return null;
   const happened = safeDetailList(details.what_happened, [details.summary || 'Action details are available.']);
@@ -1207,9 +1221,10 @@ function AppActionDetailsPanel({ details, onClose }) {
   const saved = details.saved_for_troubleshooting && typeof details.saved_for_troubleshooting === 'object'
     ? details.saved_for_troubleshooting
     : { saved: false, backend_only: true, summary: 'No backend record was saved because this action did not run.' };
+  const detailsTone = actionDetailsTone(details, saved);
 
   return (
-    <section className="lite-app-action-details-panel" role="region" aria-label={`${details.title || 'Action'} details`}>
+    <section className={`lite-app-action-details-panel is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
       <div className="lite-app-action-details-head">
         <div>
           <span>Details</span>

@@ -564,6 +564,7 @@ def _details_payload(
         "title": label,
         "status": status,
         "summary": base_summary,
+        "last_result": result_summary or base_summary,
         "what_happened": what_happened,
         "what_changed": what_changed,
         "what_did_not_happen": what_did_not_happen,
