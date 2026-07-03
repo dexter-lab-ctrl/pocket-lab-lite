@@ -4,7 +4,7 @@ import { CheckCircle2, PauseCircle, AlertTriangle } from 'lucide-react';
 const DEFAULT_STAGES = ['Getting ready', 'Working', 'Evidence saved'];
 
 const ACTION_STAGE_COPY = {
-  check_app: ['Getting ready', 'Checking app', 'Evidence saved'],
+  check_app: ['Getting ready', 'Route', 'Health', 'Storage', 'Safety', 'Logs created', 'Done'],
   backup_app: ['Getting ready', 'Saving app settings', 'Evidence saved'],
   preview_restore: ['Getting ready', 'Preparing preview', 'Evidence saved'],
   repair_app: ['Getting ready', 'Safe repair', 'Evidence saved'],
@@ -113,18 +113,50 @@ function currentLabelForState({ actionId, state, progress, disabledReason, resul
   if (state === 'blocked') return disabledReason || 'Paused for safety';
   if (state === 'queued') return 'Getting ready';
   if (state === 'running' || state === 'waiting') return ACTION_WORKING_COPY[actionId] || progress?.step || 'Working';
+  if (state === 'evidence_saved' && actionId === 'check_app') return 'Done';
   if (state === 'evidence_saved') return lastResult || result?.summary || ACTION_COMPLETE_COPY[actionId] || 'Evidence saved';
   if (state === 'review') return result?.summary || 'Needs review';
   if (state === 'failed') return result?.summary || 'Needs review';
   return 'Not run yet';
 }
 
-function activeStageForState(state) {
+function activeStageForState(state, stageCount = 3) {
   if (state === 'queued') return 0;
-  if (state === 'running' || state === 'waiting') return 1;
-  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return 2;
+  if (state === 'running' || state === 'waiting') return Math.min(1, stageCount - 1);
+  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return Math.max(0, stageCount - 1);
   if (state === 'blocked') return 0;
   return -1;
+}
+
+function checkAppProgressPercentForState(state, progress) {
+  const rawPercent = Number(progress?.percent);
+  if (Number.isFinite(rawPercent) && rawPercent > 0 && state !== 'idle') {
+    return Math.min(100, Math.max(0, rawPercent));
+  }
+  if (state === 'queued') return 14;
+  if (state === 'running' || state === 'waiting') return 68;
+  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return 100;
+  if (state === 'blocked') return 14;
+  return 0;
+}
+
+function checkAppStageIndex({ state, progress, stageCount }) {
+  if (state === 'idle') return -1;
+  if (state === 'queued' || state === 'blocked') return 0;
+  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return Math.max(0, stageCount - 1);
+  const step = normalizedStatus(progress?.step || progress?.label || progress?.phase);
+  if (step.includes('route')) return 1;
+  if (step.includes('health')) return 2;
+  if (step.includes('storage')) return 3;
+  if (step.includes('safety') || step.includes('protect')) return 4;
+  if (step.includes('log') || step.includes('evidence') || step.includes('troubleshoot')) return 5;
+  const percent = checkAppProgressPercentForState(state, progress);
+  if (percent >= 92) return 5;
+  if (percent >= 74) return 4;
+  if (percent >= 56) return 3;
+  if (percent >= 38) return 2;
+  if (percent >= 18) return 1;
+  return 0;
 }
 
 function formatActionRunTime(value) {
@@ -186,8 +218,10 @@ export default function LiteActionProgress({
   }), [status, enabled, disabledReason, progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId]);
   const stages = ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES;
   const workflowKind = ACTION_WORKFLOW_KIND[actionId] || 'default';
-  const activeStage = activeStageForState(state);
-  const percent = progressPercentForState(state, progress);
+  const isCheckApp = actionId === 'check_app';
+  const percent = isCheckApp ? checkAppProgressPercentForState(state, progress) : progressPercentForState(state, progress);
+  const activeStage = isCheckApp ? checkAppStageIndex({ state, progress, stageCount: stages.length }) : activeStageForState(state, stages.length);
+  const visibleStages = isCheckApp && state === 'evidence_saved' ? ['Done'] : stages;
   const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult });
   const hasEvidence = hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId });
   const metaLabel = runMetaLabel({ state, lastRanAt, executionOwner, hasEvidence });
@@ -201,7 +235,7 @@ export default function LiteActionProgress({
 
   return (
     <div
-      className={`lite-action-progress lite-action-progress--${state} lite-action-progress--${workflowKind} ${className}`.trim()}
+      className={`lite-action-progress lite-action-progress--${state} lite-action-progress--${workflowKind} ${isCheckApp ? 'lite-action-progress--stepped lite-action-progress--check-app' : ''} ${isCheckApp && state === 'evidence_saved' ? 'lite-action-progress--check-complete' : ''} ${className}`.trim()}
       data-action-id={actionId}
       data-run-count={Number(runCount) || 0}
     >
@@ -220,14 +254,24 @@ export default function LiteActionProgress({
       >
         <span className="lite-action-progress__fill" />
         <span className="lite-action-progress__head" aria-hidden="true" />
+        {isCheckApp ? (
+          <span className="lite-action-progress__segments" aria-hidden="true">
+            {stages.map((stage, index) => {
+              const done = state === 'evidence_saved' || activeStage > index;
+              const leading = state !== 'idle' && state !== 'evidence_saved' && activeStage === index;
+              return <i key={stage} className={`lite-action-progress__segment ${done ? 'is-done' : ''} ${leading ? 'is-leading' : ''}`} />;
+            })}
+          </span>
+        ) : null}
       </div>
       <div className="lite-action-progress__nodes" aria-hidden="true">
-        {stages.map((stage, index) => {
-          const done = activeStage > index || state === 'evidence_saved';
-          const active = activeStage === index && state !== 'idle';
+        {visibleStages.map((stage, index) => {
+          const actualIndex = isCheckApp && state === 'evidence_saved' ? stages.length - 1 : index;
+          const done = activeStage > actualIndex || state === 'evidence_saved';
+          const active = activeStage === actualIndex && state !== 'idle';
           return (
             <span key={stage} className={`lite-action-progress__node ${done ? 'is-done' : ''} ${active ? 'is-active' : ''}`}>
-              <i />
+              <i>{isCheckApp && state === 'evidence_saved' && stage === 'Done' ? '✓' : ''}</i>
               <b className="lite-action-progress__stage">{stage}</b>
             </span>
           );
