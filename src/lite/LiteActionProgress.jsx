@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, PauseCircle, AlertTriangle } from 'lucide-react';
 
 const DEFAULT_STAGES = ['Getting ready', 'Working', 'Evidence saved'];
@@ -159,6 +159,33 @@ function checkAppStageIndex({ state, progress, stageCount }) {
   return 0;
 }
 
+
+function checkAppSegmentCount() {
+  return ACTION_STAGE_COPY.check_app.length;
+}
+
+function isCheckAppRunningState(state) {
+  return ['queued', 'running', 'waiting'].includes(state);
+}
+
+function nextCheckAppVisualStep(current, target, maxIndex) {
+  const safeCurrent = Number.isFinite(current) ? current : 0;
+  const safeTarget = Math.max(0, Math.min(maxIndex, Number.isFinite(target) ? target : 0));
+  if (safeCurrent < safeTarget) return safeCurrent + 1;
+  if (safeCurrent > safeTarget) return safeCurrent - 1;
+  if (safeCurrent < Math.max(0, maxIndex - 1)) return safeCurrent + 1;
+  return safeCurrent;
+}
+
+function checkAppBlockState({ state, index, visualStep, stageCount }) {
+  const complete = state === 'evidence_saved';
+  const attention = ['review', 'failed', 'blocked'].includes(state);
+  if (complete || visualStep > index) return attention ? 'attention-done' : 'done';
+  if (state !== 'idle' && visualStep === index) return attention ? 'attention-leading' : 'leading';
+  if (attention && index <= Math.max(0, stageCount - 1)) return 'attention-empty';
+  return 'empty';
+}
+
 function formatActionRunTime(value) {
   if (!value) return '';
   const parsed = new Date(value);
@@ -221,6 +248,41 @@ export default function LiteActionProgress({
   const isCheckApp = actionId === 'check_app';
   const percent = isCheckApp ? checkAppProgressPercentForState(state, progress) : progressPercentForState(state, progress);
   const activeStage = isCheckApp ? checkAppStageIndex({ state, progress, stageCount: stages.length }) : activeStageForState(state, stages.length);
+  const [checkVisualStep, setCheckVisualStep] = useState(() => Math.max(0, Math.min(stages.length - 1, activeStage)));
+  const lastCheckRunRef = useRef('');
+
+  useEffect(() => {
+    if (!isCheckApp) return undefined;
+    const stageMax = Math.max(0, checkAppSegmentCount() - 1);
+    const runKey = `${progress?.command_id || progress?.run_id || progress?.phase || ''}:${lastRanAt || ''}:${firstRanAt || ''}`;
+    if (runKey && runKey !== lastCheckRunRef.current && isCheckAppRunningState(state)) {
+      lastCheckRunRef.current = runKey;
+      setCheckVisualStep(0);
+    }
+    if (state === 'idle') {
+      setCheckVisualStep(-1);
+      return undefined;
+    }
+    if (state === 'evidence_saved') {
+      setCheckVisualStep(stageMax);
+      return undefined;
+    }
+    if (['review', 'failed', 'blocked'].includes(state)) {
+      setCheckVisualStep(Math.max(0, Math.min(stageMax, activeStage)));
+      return undefined;
+    }
+    const target = Math.max(0, Math.min(stageMax - 1, activeStage >= 0 ? activeStage : 0));
+    setCheckVisualStep((current) => {
+      if (current < 0) return 0;
+      return Math.min(stageMax - 1, current);
+    });
+    const timer = window.setInterval(() => {
+      setCheckVisualStep((current) => nextCheckAppVisualStep(current, target, stageMax));
+    }, 420);
+    return () => window.clearInterval(timer);
+  }, [isCheckApp, state, activeStage, progress?.command_id, progress?.run_id, progress?.phase, lastRanAt, firstRanAt]);
+
+  const effectiveCheckStage = isCheckApp ? Math.max(-1, checkVisualStep) : activeStage;
   const visibleStages = isCheckApp && state === 'evidence_saved' ? ['Done'] : stages;
   const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult });
   const hasEvidence = hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId });
@@ -255,11 +317,19 @@ export default function LiteActionProgress({
         <span className="lite-action-progress__fill" />
         <span className="lite-action-progress__head" aria-hidden="true" />
         {isCheckApp ? (
-          <span className="lite-action-progress__segments" aria-hidden="true">
+          <span className="lite-action-progress__segments" aria-hidden="true" data-visual-step={effectiveCheckStage}>
             {stages.map((stage, index) => {
-              const done = state === 'evidence_saved' || activeStage > index;
-              const leading = state !== 'idle' && state !== 'evidence_saved' && activeStage === index;
-              return <i key={stage} className={`lite-action-progress__segment ${done ? 'is-done' : ''} ${leading ? 'is-leading' : ''}`} />;
+              const blockState = checkAppBlockState({ state, index, visualStep: effectiveCheckStage, stageCount: stages.length });
+              const done = blockState === 'done' || blockState === 'attention-done';
+              const leading = blockState === 'leading' || blockState === 'attention-leading';
+              const attention = blockState.startsWith('attention');
+              return (
+                <i
+                  key={stage}
+                  className={`lite-action-progress__segment ${done ? 'is-done' : ''} ${leading ? 'is-leading' : ''} ${attention ? 'is-attention' : ''}`}
+                  data-step-label={stage}
+                />
+              );
             })}
           </span>
         ) : null}
@@ -267,8 +337,8 @@ export default function LiteActionProgress({
       <div className="lite-action-progress__nodes" aria-hidden="true">
         {visibleStages.map((stage, index) => {
           const actualIndex = isCheckApp && state === 'evidence_saved' ? stages.length - 1 : index;
-          const done = activeStage > actualIndex || state === 'evidence_saved';
-          const active = activeStage === actualIndex && state !== 'idle';
+          const done = effectiveCheckStage > actualIndex || state === 'evidence_saved';
+          const active = effectiveCheckStage === actualIndex && state !== 'idle';
           return (
             <span key={stage} className={`lite-action-progress__node ${done ? 'is-done' : ''} ${active ? 'is-active' : ''}`}>
               <i>{isCheckApp && state === 'evidence_saved' && stage === 'Done' ? '✓' : ''}</i>
