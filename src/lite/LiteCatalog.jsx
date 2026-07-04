@@ -33,6 +33,10 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
 ];
 void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
 
+function stopGestureEvent(event) {
+  event?.stopPropagation?.();
+}
+
 const KNOWN_APP_NAMES = ['PhotoPrism'];
 
 const PHOTO_PRISM_ACTION_COPY = {
@@ -2420,9 +2424,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             </div>
             <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
             <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
-              <LiteButton onClick={(event) => openAppFullScreen(app, event)} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
+              <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
               {canInstallPhone ? (
-                <LiteButton onClick={(event) => installAppToPhone(app, event)} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
+                <LiteButton onClick={(event) => { stopGestureEvent(event); installAppToPhone(app, event); }} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
               ) : null}
             </div>
             <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
@@ -2433,7 +2437,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   role="tab"
                   aria-selected={manageSection === sectionId}
                   className={manageSection === sectionId ? 'is-active' : ''}
-                  onClick={() => { setManageSection(sectionId); closeActionDetails(); }}
+                  onClick={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
                 >
                   {MANAGE_SECTION_LABELS[sectionId] || sectionId}
                 </button>
@@ -2559,13 +2563,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         ) : null}
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
-        <div className={actionsClassName}>
+        <div className={actionsClassName} onPointerDownCapture={stopGestureEvent} onTouchStartCapture={stopGestureEvent} onClickCapture={stopGestureEvent}>
           {!installed ? (
-            <LiteButton onClick={(event) => install(app, event)} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
+            <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
           ) : null}
-          <LiteButton onClick={(event) => openApp(app, event)} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
+          <LiteButton onClick={(event) => { stopGestureEvent(event); openApp(app, event); }} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
           {installed && lifecycle ? (
-            <LiteButton onClick={() => openManageSheet(app.id)} tone="secondary">Manage</LiteButton>
+            <LiteButton onClick={(event) => { stopGestureEvent(event); openManageSheet(app.id); }} tone="secondary">Manage</LiteButton>
           ) : null}
         </div>
       </GlassCard>
