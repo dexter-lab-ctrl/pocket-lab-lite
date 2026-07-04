@@ -2466,6 +2466,9 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-manage-scroll" in ui
     assert "createPortal" in ui
     assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in ui
+    assert "APP_CATALOG_MANAGE_PORTAL_STABLE_APP_KEY" in ui
+    assert "function catalogAppKey(" in ui
+    assert "setManageAppId(appKey)" in ui
     assert "updateLiteCatalogVisualViewportVar" in ui
     assert "visualViewport" in ui
     assert "lite-catalog-summary-panel" in ui
