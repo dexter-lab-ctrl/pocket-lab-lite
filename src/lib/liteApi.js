@@ -1,3 +1,5 @@
+import { attachFreshSnapshotMeta, isSafeLiteSnapshotPath, readLiteSnapshot, writeLiteSnapshot } from './liteSafeSnapshots.js';
+
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
 
 function endpoint(path) {
@@ -5,7 +7,19 @@ function endpoint(path) {
 }
 
 async function readJson(path, options = {}) {
-  const response = await fetch(endpoint(path), {
+  const method = String(options.method || 'GET').toUpperCase();
+  const safeSnapshot = method === 'GET' && isSafeLiteSnapshotPath(path);
+
+  if (method !== 'GET' && typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const error = new Error('Pocket Lab is not reachable. Reconnect to continue.');
+    error.status = 0;
+    error.payload = { status: 'offline', summary: 'Pocket Lab is not reachable. Reconnect to continue.' };
+    throw error;
+  }
+
+  let response;
+  try {
+    response = await fetch(endpoint(path), {
     cache: 'no-store',
     headers: {
       Accept: 'application/json',
@@ -14,6 +28,16 @@ async function readJson(path, options = {}) {
     },
     ...options,
   });
+  } catch (networkError) {
+    if (safeSnapshot) {
+      const cached = readLiteSnapshot(path);
+      if (cached) return cached;
+    }
+    const error = new Error('Pocket Lab is not reachable. Saved state only.');
+    error.status = 0;
+    error.payload = { status: 'unreachable', summary: 'Pocket Lab is not reachable. Saved state only.', cause: networkError?.message || 'network_error' };
+    throw error;
+  }
 
   const text = await response.text();
   let data = {};
@@ -24,11 +48,20 @@ async function readJson(path, options = {}) {
   }
 
   if (!response.ok) {
+    if (safeSnapshot) {
+      const cached = readLiteSnapshot(path);
+      if (cached) return cached;
+    }
     const message = data?.summary || data?.detail?.summary || data?.detail || data?.error || response.statusText;
     const error = new Error(typeof message === 'string' ? message : 'Pocket Lab Lite action could not be completed.');
     error.status = response.status;
     error.payload = data;
     throw error;
+  }
+
+  if (safeSnapshot) {
+    writeLiteSnapshot(path, data);
+    return attachFreshSnapshotMeta(path, data);
   }
 
   return data;
@@ -38,12 +71,21 @@ function postJson(path, body = {}) {
   return readJson(path, { method: 'POST', body: JSON.stringify(body) });
 }
 
+function safeGet(path) {
+  const loader = () => readJson(path);
+  loader.safeSnapshotPath = path;
+  return loader;
+}
+
 export const liteApi = {
-  status: () => readJson('/api/lite/status'),
-  catalog: () => readJson('/api/lite/catalog'),
+  status: safeGet('/api/lite/status'),
+  catalog: safeGet('/api/lite/catalog'),
   appLifecycle: () => readJson('/api/lite/apps/lifecycle'),
   appLifecycleProfile: (appId = 'photoprism') => readJson(`/api/lite/apps/lifecycle/${encodeURIComponent(appId)}`),
-  appActions: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/actions`),
+  appActions: Object.assign((appId = 'photoprism') => {
+    const path = `/api/lite/apps/${encodeURIComponent(appId)}/actions`;
+    return readJson(path);
+  }, { safeSnapshotPath: '/api/lite/apps/photoprism/actions' }),
   appEvidence: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/evidence`),
   appBackupStatus: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/backup`),
   appBackups: (appId = 'photoprism') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/backups`),
@@ -53,13 +95,13 @@ export const liteApi = {
   applyAppUpdate: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/update/apply`, payload),
   runAppAction: (appId = 'photoprism', actionId, payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/actions/${encodeURIComponent(actionId || '')}`, payload),
   identity: () => readJson('/api/lite/identity'),
-  security: () => readJson('/api/lite/security'),
+  security: safeGet('/api/lite/security'),
   securityApps: () => readJson('/api/lite/security/apps'),
   securityApp: (appId = 'photoprism') => readJson(`/api/lite/security/apps/${encodeURIComponent(appId)}`),
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
-  fleet: () => readJson('/api/lite/fleet'),
+  fleet: safeGet('/api/lite/fleet'),
   policy: () => readJson('/api/lite/policy'),
-  recovery: () => readJson('/api/lite/recovery'),
+  recovery: safeGet('/api/lite/recovery'),
   recoveryApps: () => readJson('/api/lite/recovery/apps'),
   recoveryBackupTargets: () => readJson('/api/lite/recovery/backup-targets'),
   recoveryAppBackupTargets: (appId = 'photoprism') => readJson(`/api/lite/recovery/apps/${encodeURIComponent(appId)}/backup-targets`),

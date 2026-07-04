@@ -21,6 +21,7 @@ import RecoveryScreen from './LiteRecovery.jsx';
 import {
   GlassCard,
   LiteButton,
+  LiteSavedStateBanner,
   NAV_ITEMS,
   StatusBadge,
   appWorkspaceEmbedAllowed,
@@ -405,7 +406,7 @@ function LiteAppShell() {
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
   const [menuOpen, setMenuOpen] = useState(false);
   const online = useOnlineStatus();
-  const { status, loading, error, refresh } = useLiteStatus();
+  const { status, loading, error, refresh, cacheStatus } = useLiteStatus();
 
   useEffect(() => {
     const syncWorkspaceFromHistory = () => {
@@ -545,6 +546,7 @@ function LiteAppShell() {
       </aside>
 
       <main id="pocket-lite-main" key={workspaceApp ? `workspace-${workspaceApp.appId}` : active} className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
+        <LiteSavedStateBanner cacheStatus={cacheStatus} error={error} />
         {content}
       </main>
     </div>

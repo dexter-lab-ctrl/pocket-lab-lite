@@ -13,6 +13,25 @@ import { actionReference } from '../lib/liteApi.js';
 
 export { GlassCard, StatusBadge, StateSurface };
 
+export function LiteSavedStateBanner({ cacheStatus, error, className = '' }) {
+  if (!cacheStatus && !error) return null;
+  const stale = Boolean(cacheStatus?.stale || error);
+  const title = cacheStatus?.title || (stale ? 'Showing saved state' : 'Refreshing…');
+  const summary = cacheStatus?.summary || error || (stale ? 'Pocket Lab is not reachable. Saved state only.' : 'Pocket Lab is checking for fresh state.');
+  const detail = cacheStatus?.detail || '';
+  return (
+    <div className={`lite-saved-state-banner ${stale ? 'is-stale' : 'is-live'} ${className}`.trim()} role="status" aria-live="polite">
+      <span className="lite-saved-state-dot" aria-hidden="true" />
+      <div>
+        <strong>{title}</strong>
+        <p>{summary}</p>
+        {detail ? <small>{detail}</small> : null}
+      </div>
+    </div>
+  );
+}
+
+
 export const DEVICE_ROLE_OPTIONS = [
   {
     value: 'compute',
