@@ -2465,9 +2465,12 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-manage-sheet" in ui
     assert "lite-catalog-summary-panel" in ui
     assert "lite-app-action-row" in ui
-    assert "beginManageDrag" in ui
-    assert "moveManageDrag" in ui
-    assert "endManageDrag" in ui
+    assert "@use-gesture/react" in ui
+    assert "@react-spring/web" in ui
+    assert "bindManageSheetDrag" in ui
+    assert "bindCatalogPull" in ui
+    assert "bindAppCardLongPress" in ui
+    assert "bindManageSectionSwipe" in ui
     assert "Drag app actions sheet" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
@@ -2488,12 +2491,10 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "touch-action: none" in css
     assert "safe-area-inset-top" in css
     assert "lite-catalog-pull-refresh" in ui
-    assert "beginCatalogPull" in ui
-    assert "moveCatalogPull" in ui
-    assert "endCatalogPull" in ui
-    assert "beginAppLongPress" in ui
+    assert "lite-catalog-gesture-layer" in ui
+    assert "useSpring" in ui
+    assert "useDrag" in ui
     assert "lite-catalog-quick-actions" in ui
-    assert "beginManageSectionSwipe" in ui
     assert "lite-catalog-manage-section-tabs" in ui
     assert "lite-catalog-manage-section-viewport" in ui
     assert "lite-catalog-pull-refresh" in css

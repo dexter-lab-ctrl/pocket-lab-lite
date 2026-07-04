@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDrag } from '@use-gesture/react';
+import { animated, config, useSpring } from '@react-spring/web';
 import {
   CheckCircle2,
   FileCheck,
@@ -162,6 +164,19 @@ const MANAGE_SECTION_SUMMARY = {
   setup: 'Install or check updates.',
   danger: 'Advanced actions.',
 };
+
+
+function prefersReducedMotion() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function clampNumber(value, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return min;
+  return Math.min(max, Math.max(min, number));
+}
+
 
 function normalizeActionStatus(rawStatus, enabled, busy = false, hasProgress = false) {
   if (busy || hasProgress) return 'running';
@@ -1625,6 +1640,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [manageAppId, setManageAppId] = useState(null);
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
+  const longPressRef = useRef(null);
   const manageDragRef = useRef({ pointerId: null, startY: 0, offsetY: 0, startedAt: 0 });
   const [manageDrag, setManageDrag] = useState({ dragging: false, offsetY: 0 });
   const [result, setResult] = useState(null);
@@ -1641,13 +1657,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
   const [detailsActionId, setDetailsActionId] = useState(null);
   const [actionSnapshots, setActionSnapshots] = useState({});
-  const catalogPullRef = useRef({ pointerId: null, startY: 0, offsetY: 0, active: false });
-  const longPressRef = useRef({ timer: null, pointerId: null, appId: null, startX: 0, startY: 0 });
-  const manageSectionSwipeRef = useRef({ pointerId: null, startX: 0, startY: 0, active: false });
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
   const [quickActionsAppId, setQuickActionsAppId] = useState(null);
   const [manageSection, setManageSection] = useState('media');
   const [manageSectionSwipe, setManageSectionSwipe] = useState({ dragging: false, offsetX: 0 });
+  const reduceMotion = useMemo(prefersReducedMotion, []);
+  const [{ manageSheetY }, manageSheetSpring] = useSpring(() => ({ manageSheetY: 0, config: config.gentle }));
+  const [{ manageSectionX }, manageSectionSpring] = useSpring(() => ({ manageSectionX: 0, config: config.stiff }));
+  const [{ catalogPullY }, catalogPullSpring] = useSpring(() => ({ catalogPullY: 0, config: config.gentle }));
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -1700,154 +1717,133 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [closeActionDetails]);
 
 
-  const shouldUseBottomSheetDrag = useCallback(() => {
-    try {
-      return window.matchMedia?.('(max-width: 959px)')?.matches !== false;
-    } catch {
-      return true;
-    }
-  }, []);
-
-  const beginManageDrag = useCallback((event) => {
-    if (!shouldUseBottomSheetDrag()) return;
-    event.preventDefault?.();
-    event.stopPropagation?.();
-    manageDragRef.current = {
-      pointerId: event.pointerId,
-      startY: event.clientY,
-      offsetY: 0,
-      startedAt: Date.now(),
-    };
-    event.currentTarget?.setPointerCapture?.(event.pointerId);
-    setManageDrag({ dragging: true, offsetY: 0 });
-  }, [shouldUseBottomSheetDrag]);
-
-  const moveManageDrag = useCallback((event) => {
-    const drag = manageDragRef.current;
-    if (drag.pointerId !== event.pointerId || !manageDrag.dragging) return;
-    const rawOffset = event.clientY - drag.startY;
-    const offsetY = rawOffset < 0 ? Math.max(rawOffset, -28) : Math.min(rawOffset, 260);
-    drag.offsetY = offsetY;
-    setManageDrag({ dragging: true, offsetY });
-  }, [manageDrag.dragging]);
-
-  const endManageDrag = useCallback((event) => {
-    const drag = manageDragRef.current;
-    if (drag.pointerId !== event.pointerId) return;
-    const elapsed = Math.max(1, Date.now() - drag.startedAt);
-    const velocity = drag.offsetY / elapsed;
-    const shouldClose = drag.offsetY > 118 || velocity > 0.65;
-    event.currentTarget?.releasePointerCapture?.(event.pointerId);
-    manageDragRef.current = { pointerId: null, startY: 0, offsetY: 0, startedAt: 0 };
+  const settleManageSheetDrag = useCallback((movementY, velocityY = 0) => {
+    const shouldClose = movementY > 92 || (movementY > 40 && velocityY > 0.35);
     setManageDrag({ dragging: false, offsetY: 0 });
-    if (shouldClose) closeManageSheet();
-  }, [closeManageSheet]);
-
-  const manageSheetStyle = manageDrag.offsetY
-    ? { transform: `translateY(${manageDrag.offsetY}px)`, transition: manageDrag.dragging ? 'none' : undefined }
-    : undefined;
-
-  const clearLongPress = useCallback(() => {
-    if (longPressRef.current.timer) {
-      window.clearTimeout(longPressRef.current.timer);
+    if (shouldClose) {
+      manageSheetSpring.start({ manageSheetY: reduceMotion ? 0 : 28, immediate: reduceMotion, config: config.gentle });
+      closeManageSheet();
+      window.setTimeout(() => manageSheetSpring.start({ manageSheetY: 0, immediate: true }), 80);
+      return;
     }
-    longPressRef.current = { timer: null, pointerId: null, appId: null, startX: 0, startY: 0 };
-  }, []);
+    manageSheetSpring.start({ manageSheetY: 0, immediate: reduceMotion, config: config.gentle });
+  }, [closeManageSheet, manageSheetSpring, reduceMotion]);
 
-  const beginCatalogPull = useCallback((event) => {
-    const target = event.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-sheet');
-    if (target || manageAppId || loading) return;
-    if (window.scrollY > 2) return;
-    catalogPullRef.current = { pointerId: event.pointerId, startY: event.clientY, offsetY: 0, active: true };
-  }, [loading, manageAppId]);
+  const bindManageSheetDrag = useDrag(({ active, movement: [, my], velocity: [, vy], event }) => {
+    event?.stopPropagation?.();
+    const offsetY = active ? clampNumber(my, -24, 190) : 0;
+    setManageDrag({ dragging: active, offsetY });
+    manageSheetSpring.start({ manageSheetY: offsetY, immediate: active || reduceMotion, config: config.gentle });
+    if (!active) settleManageSheetDrag(my, vy);
+  }, {
+    axis: 'y',
+    pointer: { touch: true },
+    filterTaps: true,
+    preventScroll: true,
+  });
 
-  const moveCatalogPull = useCallback((event) => {
-    const pull = catalogPullRef.current;
-    if (!pull.active || pull.pointerId !== event.pointerId) return;
-    const rawOffset = event.clientY - pull.startY;
-    if (rawOffset <= 0) return;
-    const offsetY = Math.min(96, Math.round(rawOffset * 0.45));
-    pull.offsetY = offsetY;
-    setPullRefresh({ pulling: true, ready: offsetY > 54, offsetY });
-  }, []);
+  const manageSheetStyle = useMemo(() => ({
+    y: manageSheetY,
+    touchAction: 'pan-y',
+  }), [manageSheetY]);
 
-  const endCatalogPull = useCallback((event) => {
-    const pull = catalogPullRef.current;
-    if (!pull.active || pull.pointerId !== event.pointerId) return;
-    const shouldRefresh = pull.offsetY > 54;
-    catalogPullRef.current = { pointerId: null, startY: 0, offsetY: 0, active: false };
+  const runCatalogRefresh = useCallback(() => {
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
-    if (shouldRefresh) {
-      safeHaptic(12);
-      refresh();
-      refreshAppActions('photoprism');
+    catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
+    refresh();
+    refreshAppActions('photoprism');
+    setQuickActionsAppId(null);
+  }, [catalogPullSpring, reduceMotion, refresh]);
+
+  const bindCatalogPull = useDrag(({ active, movement: [, my], direction: [, dy], cancel, event }) => {
+    if (typeof window !== 'undefined' && window.scrollY > 4) {
+      cancel?.();
+      return;
     }
-  }, [refresh]);
+    if (event?.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-layer')) {
+      cancel?.();
+      return;
+    }
+    const pullingDown = dy >= 0 || my > 0;
+    const offsetY = active && pullingDown ? clampNumber(my * 0.42, 0, 92) : 0;
+    const ready = offsetY >= 54;
+    setPullRefresh({ pulling: active && offsetY > 2, ready, offsetY });
+    catalogPullSpring.start({ catalogPullY: offsetY, immediate: active || reduceMotion, config: config.gentle });
+    if (!active) {
+      if (ready) runCatalogRefresh();
+      else {
+        setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
+        catalogPullSpring.start({ catalogPullY: 0, immediate: reduceMotion, config: config.gentle });
+      }
+    }
+  }, {
+    axis: 'y',
+    pointer: { touch: true },
+    preventScroll: true,
+    filterTaps: true,
+  });
 
-  const beginAppLongPress = useCallback((app, event) => {
-    if (!app?.id) return;
-    const target = event.target?.closest?.('button, a, input, textarea, select, [role="button"]');
-    if (target) return;
-    clearLongPress();
-    longPressRef.current = {
-      timer: window.setTimeout(() => {
+  const bindAppCardLongPress = useDrag(({ first, last, tap, movement: [mx, my], event, args: [appId] }) => {
+    if (event?.target?.closest?.('button, a, input, textarea, select, [role="button"]')) return;
+    if (first) {
+      window.clearTimeout(longPressRef.current);
+      longPressRef.current = window.setTimeout(() => {
         safeHaptic(14);
-        setQuickActionsAppId(app.id);
-      }, 520),
-      pointerId: event.pointerId,
-      appId: app.id,
-      startX: event.clientX,
-      startY: event.clientY,
-    };
-  }, [clearLongPress]);
+        setQuickActionsAppId(appId);
+      }, 420);
+    }
+    if (Math.abs(mx) + Math.abs(my) > 16) {
+      window.clearTimeout(longPressRef.current);
+    }
+    if (last || tap) {
+      window.clearTimeout(longPressRef.current);
+    }
+  }, {
+    filterTaps: true,
+    pointer: { touch: true },
+  });
 
-  const moveAppLongPress = useCallback((event) => {
-    const press = longPressRef.current;
-    if (press.pointerId !== event.pointerId || !press.timer) return;
-    const moved = Math.abs(event.clientX - press.startX) + Math.abs(event.clientY - press.startY);
-    if (moved > 14) clearLongPress();
-  }, [clearLongPress]);
-
-  const endAppLongPress = useCallback((event) => {
-    if (longPressRef.current.pointerId === event.pointerId) clearLongPress();
-  }, [clearLongPress]);
-
-  const beginManageSectionSwipe = useCallback((event) => {
-    const target = event.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-grip');
-    if (target) return;
-    manageSectionSwipeRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, active: true };
-  }, []);
-
-  const moveManageSectionSwipe = useCallback((event) => {
-    const swipe = manageSectionSwipeRef.current;
-    if (!swipe.active || swipe.pointerId !== event.pointerId) return;
-    const dx = event.clientX - swipe.startX;
-    const dy = event.clientY - swipe.startY;
-    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) return;
-    if (Math.abs(dx) < 10) return;
-    setManageSectionSwipe({ dragging: true, offsetX: Math.max(-90, Math.min(90, dx)) });
-  }, []);
-
-  const endManageSectionSwipe = useCallback((event) => {
-    const swipe = manageSectionSwipeRef.current;
-    if (!swipe.active || swipe.pointerId !== event.pointerId) return;
-    const dx = event.clientX - swipe.startX;
-    const currentIndex = availableManageSections.indexOf(manageSection);
-    let nextIndex = currentIndex;
-    if (dx < -64) nextIndex = Math.min(availableManageSections.length - 1, currentIndex + 1);
-    if (dx > 64) nextIndex = Math.max(0, currentIndex - 1);
-    if (nextIndex !== currentIndex) {
+  const settleManageSectionSwipe = useCallback((movementX, velocityX = 0) => {
+    const currentIndex = Math.max(0, availableManageSections.indexOf(manageSection));
+    const shouldAdvance = movementX < -54 || (movementX < -24 && velocityX > 0.25);
+    const shouldGoBack = movementX > 54 || (movementX > 24 && velocityX > 0.25);
+    const direction = shouldAdvance ? 1 : shouldGoBack ? -1 : 0;
+    const nextIndex = clampNumber(currentIndex + direction, 0, Math.max(0, availableManageSections.length - 1));
+    const nextSection = availableManageSections[nextIndex];
+    if (nextSection && nextSection !== manageSection) {
       safeHaptic(8);
-      setManageSection(availableManageSections[nextIndex]);
+      setManageSection(nextSection);
       closeActionDetails();
     }
-    manageSectionSwipeRef.current = { pointerId: null, startX: 0, startY: 0, active: false };
     setManageSectionSwipe({ dragging: false, offsetX: 0 });
-  }, [availableManageSections, closeActionDetails, manageSection]);
+    manageSectionSpring.start({ manageSectionX: 0, immediate: reduceMotion, config: config.stiff });
+  }, [availableManageSections, closeActionDetails, manageSection, manageSectionSpring, reduceMotion]);
 
-  const manageSectionStyle = manageSectionSwipe.offsetX
-    ? { transform: `translateX(${manageSectionSwipe.offsetX}px)`, transition: manageSectionSwipe.dragging ? 'none' : undefined }
-    : undefined;
+  const bindManageSectionSwipe = useDrag(({ active, movement: [mx, my], velocity: [vx], cancel, event }) => {
+    if (event?.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-grip')) {
+      cancel?.();
+      return;
+    }
+    if (Math.abs(my) > Math.abs(mx) * 1.35) {
+      cancel?.();
+      return;
+    }
+    const offsetX = active ? clampNumber(mx, -96, 96) : 0;
+    setManageSectionSwipe({ dragging: active, offsetX });
+    manageSectionSpring.start({ manageSectionX: offsetX, immediate: active || reduceMotion, config: config.stiff });
+    if (!active) settleManageSectionSwipe(mx, vx);
+  }, {
+    enabled: Boolean(manageAppId && availableManageSections.length > 1),
+    axis: 'x',
+    pointer: { touch: true },
+    preventScroll: true,
+    filterTaps: true,
+  });
+
+  const manageSectionStyle = useMemo(() => ({
+    x: manageSectionX,
+    touchAction: 'pan-y',
+  }), [manageSectionX]);
 
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
     try {
@@ -2327,10 +2323,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       <GlassCard
         key={app.id}
         className={`${cardClassName} ${quickActionsOpen ? 'has-quick-actions' : ''}`}
-        onPointerDown={(event) => beginAppLongPress(app, event)}
-        onPointerMove={moveAppLongPress}
-        onPointerUp={endAppLongPress}
-        onPointerCancel={endAppLongPress}
+        {...bindAppCardLongPress(app.id || 'photoprism')}
       >
         <div className="lite-catalog-card-top">
           <div className="lite-catalog-icon"><AppIcon app={app} /></div>
@@ -2391,15 +2384,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed && lifecycle && manageAppId === app.id ? (
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
-            <section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
+            <animated.section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
               <button
                 type="button"
                 className="lite-catalog-manage-grip"
                 aria-label="Drag app actions sheet"
-                onPointerDown={beginManageDrag}
-                onPointerMove={moveManageDrag}
-                onPointerUp={endManageDrag}
-                onPointerCancel={endManageDrag}
+                {...bindManageSheetDrag()}
               >
                 <span aria-hidden="true" />
               </button>
@@ -2434,13 +2424,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 </button>
               ))}
             </div>
-            <div
+            <animated.div
               className={`lite-catalog-manage-section-viewport ${manageSectionSwipe.dragging ? 'is-swiping' : ''}`}
               style={manageSectionStyle}
-              onPointerDown={beginManageSectionSwipe}
-              onPointerMove={moveManageSectionSwipe}
-              onPointerUp={endManageSectionSwipe}
-              onPointerCancel={endManageSectionSwipe}
+              {...bindManageSectionSwipe()}
             >
               <div className="lite-catalog-manage-section-hint" aria-live="polite">
                 <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
@@ -2499,7 +2486,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                   </AppActionGroup>
                 ))}
               </div>
-            </div>
+            </animated.div>
             <div className="lite-catalog-action-reasons">
               {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
               {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
@@ -2535,7 +2522,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
               ) : null}
             </div>
-            </section>
+            </animated.section>
           </div>
         ) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
@@ -2587,13 +2574,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
 
   return (
-    <div
-      className={`lite-catalog-screen ${pullRefresh.pulling ? 'is-pulling' : ''}`}
-      onPointerDown={(event) => { handleCatalogPointerDown(event); beginCatalogPull(event); }}
-      onPointerMove={moveCatalogPull}
-      onPointerUp={endCatalogPull}
-      onPointerCancel={endCatalogPull}
-      style={pullRefresh.offsetY ? { '--lite-catalog-pull-offset': `${pullRefresh.offsetY}px` } : undefined}
+    <animated.div
+      className={`lite-catalog-screen lite-catalog-gesture-layer ${pullRefresh.pulling ? 'is-pulling' : ''}`}
+      {...bindCatalogPull()}
+      style={{ '--lite-catalog-pull-offset': catalogPullY.to((value) => `${value}px`) }}
     >
       <div className={`lite-catalog-pull-refresh ${pullRefresh.ready ? 'is-ready' : ''}`} aria-live="polite">
         <RefreshCw className="h-4 w-4" />
@@ -2666,6 +2650,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
       <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />
 
-    </div>
+    </animated.div>
   );
 }
