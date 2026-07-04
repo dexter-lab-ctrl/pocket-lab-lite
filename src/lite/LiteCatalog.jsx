@@ -2563,7 +2563,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         ) : null}
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
-        <div className={actionsClassName} onPointerDownCapture={stopGestureEvent} onTouchStartCapture={stopGestureEvent} onClickCapture={stopGestureEvent}>
+        <div className={actionsClassName} onPointerDownCapture={stopGestureEvent} onTouchStartCapture={stopGestureEvent}>
           {!installed ? (
             <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
           ) : null}
