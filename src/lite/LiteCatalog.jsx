@@ -1782,7 +1782,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       refresh();
       refreshAppActions('photoprism');
     }
-  }, [refresh, refreshAppActions]);
+  }, [refresh]);
 
   const beginAppLongPress = useCallback((app, event) => {
     if (!app?.id) return;
