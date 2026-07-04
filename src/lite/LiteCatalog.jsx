@@ -1641,6 +1641,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
   const longPressRef = useRef(null);
+
+  const clearLongPress = useCallback(() => {
+    if (longPressRef.current) {
+      window.clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
+  }, []);
+
   const manageDragRef = useRef({ pointerId: null, startY: 0, offsetY: 0, startedAt: 0 });
   const [manageDrag, setManageDrag] = useState({ dragging: false, offsetY: 0 });
   const [result, setResult] = useState(null);
@@ -1672,6 +1680,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const displayedApps = apps;
   const availableManageSections = useMemo(() => MANAGE_SECTION_ORDER, []);
+
+
+  useEffect(() => {
+    return () => {
+      clearLongPress();
+    };
+  }, [clearLongPress]);
 
   useEffect(() => {
     if (!manageAppId) return undefined;
