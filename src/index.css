@@ -13956,3 +13956,119 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Premium PWA foundation: safe saved-state and reusable Lite overlays. */
+:root { --lite-visual-viewport-height: 100vh; }
+
+.theme-pocket-lite-daylight .lite-saved-state-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.95rem 1rem;
+  color: #334155;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.theme-pocket-lite-daylight .lite-saved-state-banner.is-stale {
+  border-color: rgba(245, 158, 11, 0.26);
+  background: rgba(255, 251, 235, 0.94);
+}
+
+.theme-pocket-lite-daylight .lite-saved-state-dot {
+  margin-top: 0.28rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #22c55e;
+}
+
+.theme-pocket-lite-daylight .lite-saved-state-banner.is-stale .lite-saved-state-dot { background: #f59e0b; }
+.theme-pocket-lite-daylight .lite-saved-state-banner strong { display: block; color: #0f172a; font-size: 0.9rem; font-weight: 900; }
+.theme-pocket-lite-daylight .lite-saved-state-banner p,
+.theme-pocket-lite-daylight .lite-saved-state-banner small { display: block; margin: 0.2rem 0 0; color: #64748b; font-size: 0.82rem; line-height: 1.45; }
+.theme-pocket-lite-daylight .lite-catalog-saved-state-inline { margin: 0 0 0.9rem; }
+
+.theme-pocket-lite-daylight .lite-overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  pointer-events: auto;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-surface {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(100%, 720px);
+  max-height: calc(var(--lite-visual-viewport-height, 100vh) - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)));
+  min-height: min(44rem, calc(var(--lite-visual-viewport-height, 100vh) - 2rem));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 2rem 2rem 1.35rem 1.35rem;
+  background: rgba(248, 250, 252, 0.98);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+  transform: translate3d(0, 0, 0);
+}
+
+.theme-pocket-lite-daylight .lite-overlay-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 0.9rem 1rem 1rem;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.theme-pocket-lite-daylight .lite-overlay-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.95rem;
+}
+
+.theme-pocket-lite-daylight .lite-overlay-close { min-width: 44px; min-height: 44px; }
+.theme-pocket-lite-daylight .lite-overlay-grip { flex: 0 0 auto; min-height: 34px; border: 0; background: transparent; cursor: grab; touch-action: none; }
+.theme-pocket-lite-daylight .lite-overlay-grip span { display: block; width: 3.6rem; height: 0.32rem; margin: 0.78rem auto 0.45rem; border-radius: 999px; background: rgba(100, 116, 139, 0.42); }
+.theme-pocket-lite-daylight .lite-details-overlay-layer { z-index: 155; }
+.theme-pocket-lite-daylight .lite-details-panel { width: min(100%, 620px); }
+.theme-pocket-lite-daylight .lite-details-panel .lite-app-action-details-panel { border: 0; box-shadow: none; }
+
+@media (min-width: 900px) {
+  .theme-pocket-lite-daylight .lite-overlay-root { align-items: stretch; justify-content: flex-end; padding: 1.2rem; }
+  .theme-pocket-lite-daylight .lite-overlay-surface { width: min(42rem, 44vw); min-height: 0; height: 100%; border-radius: 1.75rem; }
+  .theme-pocket-lite-daylight .lite-overlay-grip { display: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .theme-pocket-lite-daylight .lite-overlay-backdrop { animation: liteOverlayFadeIn 140ms ease-out both; }
+  .theme-pocket-lite-daylight .lite-overlay-surface { animation: liteOverlaySheetIn 170ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+  .theme-pocket-lite-daylight .lite-saved-state-banner { animation: liteSavedStateSettle 160ms ease-out both; }
+}
+
+@keyframes liteOverlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes liteOverlaySheetIn { from { opacity: 0; transform: translate3d(0, 22px, 0) scale(0.99); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes liteSavedStateSettle { from { opacity: 0; transform: translate3d(0, -4px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }

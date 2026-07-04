@@ -21,9 +21,11 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, LiteSavedStateBanner, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
+import { LiteDetailsPanel, LiteSheet } from './LiteOverlay.jsx';
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -42,6 +44,10 @@ const APP_CATALOG_ACTION_ROWS_OWN_CLICKS = true;
 void APP_CATALOG_ACTION_ROWS_OWN_CLICKS;
 
 const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
+const APP_CATALOG_BROAD_GESTURES_DISABLED = true;
+const APP_CATALOG_SAFE_SNAPSHOT_UI_READY = true;
+void APP_CATALOG_BROAD_GESTURES_DISABLED;
+void APP_CATALOG_SAFE_SNAPSHOT_UI_READY;
 // Enterprise UI rule: Open and Manage are primary visible buttons.
 // Gesture handlers must not be bound to the same surface that owns these clicks.
 void APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS;
@@ -1680,10 +1686,12 @@ function CatalogSkeletons() {
 
 
 export default function CatalogScreen({ onOpenWorkspace }) {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
+  const { data, loading, error, refresh, cacheStatus, savedStateOnly } = useLiteResource(liteApi.catalog, []);
+  const online = useOnlineStatus();
   const [manageAppId, setManageAppId] = useState(null);
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
+  const manageSheetBodyRef = useRef(null);
   const manageScrollRef = useRef(null);
   const longPressRef = useRef(null);
 
@@ -1709,6 +1717,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
   const [detailsActionId, setDetailsActionId] = useState(null);
+  const [detailsPanel, setDetailsPanel] = useState(null);
   const [actionSnapshots, setActionSnapshots] = useState({});
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
   const [quickActionsAppId, setQuickActionsAppId] = useState(null);
@@ -1725,6 +1734,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const displayedApps = apps;
   const availableManageSections = useMemo(() => MANAGE_SECTION_ORDER, []);
+  const savedStateWriteDisabled = Boolean(savedStateOnly || online === false || (error && !data));
+  const savedStateDisabledReason = online === false
+    ? 'Pocket Lab is not reachable. Reconnect to continue.'
+    : cacheStatus?.disabledReason || (savedStateWriteDisabled ? 'Saved state only. Reconnect to continue.' : '');
 
 
   useEffect(() => {
@@ -1974,16 +1987,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [actionBusyKey, apps, refresh, refreshAppActions]);
 
 
-  function openActionDetails(actionId, appId = 'photoprism') {
-    setDetailsActionId((current) => {
-      const next = current === actionId ? null : actionId;
-      if (next) refreshAppActions(appId || 'photoprism');
-      return next;
-    });
+  function openActionDetails(actionId, appId = 'photoprism', details = null) {
+    setDetailsActionId(actionId);
+    setDetailsPanel({ actionId, appId, details });
+    refreshAppActions(appId || 'photoprism');
   }
 
   function closeActionDetails() {
     setDetailsActionId(null);
+    setDetailsPanel(null);
   }
 
 
@@ -1996,6 +2008,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function install(app, event) {
     event?.stopPropagation?.();
     if (!app) return;
+    if (savedStateWriteDisabled) {
+      setActionError(savedStateDisabledReason || 'Reconnect to continue.');
+      return;
+    }
     setBusyId(app.id);
     setResult({ status: 'queued', message: `${app.name || 'App'} install started.` });
     setActionError(null);
@@ -2071,6 +2087,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function openPhoneStoragePreview(app, event) {
     event?.stopPropagation?.();
     if (!isPhotoPrismApp(app)) return;
+    if (savedStateWriteDisabled) {
+      setActionError(savedStateDisabledReason || 'Reconnect to continue.');
+      return;
+    }
     setStoragePreviewApp(app);
     setStoragePreview(null);
     setStoragePreviewNotice(null);
@@ -2089,6 +2109,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function connectPhoneStorageFromPreview() {
     const app = storagePreviewApp;
     if (!isPhotoPrismApp(app) || !storagePreview?.connect_payload) return;
+    if (savedStateWriteDisabled) {
+      setStoragePreviewNotice({ tone: 'review', title: 'Saved state only', message: savedStateDisabledReason || 'Reconnect to continue.' });
+      return;
+    }
     setStorageBusy(`${app.id}:phone_storage`);
     setActionError(null);
     setStoragePreviewNotice(null);
@@ -2128,6 +2152,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function connectStorage(app, preset, event) {
     event?.stopPropagation?.();
     if (!isPhotoPrismApp(app)) return;
+    if (savedStateWriteDisabled) {
+      setActionError(savedStateDisabledReason || 'Reconnect to continue.');
+      return;
+    }
     if (preset === 'phone_storage') {
       await openPhoneStoragePreview(app, event);
       return;
@@ -2174,6 +2202,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function runLifecycleAction(app, actionId, event, extraPayload = {}) {
     event?.stopPropagation?.();
     if (!isPhotoPrismApp(app) || !actionId) return;
+    if (savedStateWriteDisabled) {
+      setActionError(savedStateDisabledReason || 'Reconnect to continue.');
+      return;
+    }
     const busyKey = `${app.id}:${actionId}`;
     setActionBusyKey(busyKey);
     setActionError(null);
@@ -2216,6 +2248,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const canInstall = Boolean(app?.actions?.install) && !installing;
     const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
     const installed = isAppInstalled(app);
+    const writeDisabled = savedStateWriteDisabled;
+    const writeDisabledReason = savedStateDisabledReason;
     const canInstallPhone = Boolean(canOpen && canInstallAppToPhone(app));
     const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
     const reason = attentionReason(app, canOpen);
@@ -2272,8 +2306,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           if (isPhoneStorageConnected) return;
           openPhoneStoragePreview(app, event);
         },
-        disabled: isPhoneStorageConnected || connectPhotosAction.enabled === false || Boolean(storageBusy),
-        title: isPhoneStorageConnected ? 'Phone storage is already connected.' : lifecycleActionReason(connectPhotosAction),
+        disabled: writeDisabled || isPhoneStorageConnected || connectPhotosAction.enabled === false || Boolean(storageBusy),
+        title: writeDisabled ? writeDisabledReason : isPhoneStorageConnected ? 'Phone storage is already connected.' : lifecycleActionReason(connectPhotosAction),
         result: isPhoneStorageConnected ? null : result,
       },
       {
@@ -2293,8 +2327,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           if (isPhotosImported) return;
           runLifecycleAction(app, 'import_photos', event);
         },
-        disabled: isPhotosImported || importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
-        title: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : lifecycleActionReason(importPhotosAction),
+        disabled: writeDisabled || isPhotosImported || importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
+        title: writeDisabled ? writeDisabledReason : isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : lifecycleActionReason(importPhotosAction),
         result: isPhotosImported ? null : result,
       },
       {
@@ -2304,8 +2338,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: checkAppProgress,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'check_app', event),
-        disabled: checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`,
-        title: lifecycleActionReason(checkAppAction),
+        disabled: writeDisabled || checkAppAction.enabled === false || actionBusyKey === `${app.id}:check_app`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(checkAppAction),
         result,
       },
       {
@@ -2315,8 +2349,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: backupAppProgress,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'backup_app', event),
-        disabled: backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`,
-        title: lifecycleActionReason(backupAppAction),
+        disabled: writeDisabled || backupAppAction.enabled === false || actionBusyKey === `${app.id}:backup_app`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(backupAppAction),
         result,
       },
       {
@@ -2326,8 +2360,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: previewRestoreProgress,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'preview_restore', event),
-        disabled: previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`,
-        title: lifecycleActionReason(previewRestoreAction),
+        disabled: writeDisabled || previewRestoreAction.enabled === false || actionBusyKey === `${app.id}:preview_restore`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(previewRestoreAction),
         result,
       },
       {
@@ -2337,8 +2371,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: backupToStorageProgress,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'backup_to_storage', event, { target_device_id: lifecycle?.backup?.target_device_id || lifecycle?.backup?.target_id }),
-        disabled: backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`,
-        title: lifecycleActionReason(backupToStorageAction),
+        disabled: writeDisabled || backupToStorageAction.enabled === false || actionBusyKey === `${app.id}:backup_to_storage`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(backupToStorageAction),
         result,
       },
       {
@@ -2348,8 +2382,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: repairAppProgress,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'repair_app', event),
-        disabled: repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`,
-        title: lifecycleActionReason(repairAppAction),
+        disabled: writeDisabled || repairAppAction.enabled === false || actionBusyKey === `${app.id}:repair_app`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(repairAppAction),
         result,
       },
       {
@@ -2358,8 +2392,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         busyKey: actionBusyKey,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'install_app', event),
-        disabled: installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`,
-        title: lifecycleActionReason(installAppAction),
+        disabled: writeDisabled || installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(installAppAction),
         result,
       },
       {
@@ -2369,8 +2403,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: updateAppProgress,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'update_app', event),
-        disabled: updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`,
-        title: lifecycleActionReason(updateAppAction),
+        disabled: writeDisabled || updateAppAction.enabled === false || actionBusyKey === `${app.id}:update_app`,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(updateAppAction),
         result,
       },
       {
@@ -2379,8 +2413,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         busyKey: actionBusyKey,
         tone: 'danger',
         onClick: (event) => { event?.stopPropagation?.(); setRemoveConfirmApp(app); },
-        disabled: removeAppAction.enabled === false,
-        title: lifecycleActionReason(removeAppAction),
+        disabled: writeDisabled || removeAppAction.enabled === false,
+        title: writeDisabled ? writeDisabledReason : lifecycleActionReason(removeAppAction),
         result,
       },
     ];
@@ -2516,7 +2550,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           result={entry.result}
                           tone={entry.tone}
                           onClick={entry.onClick}
-                          onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                          onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism', detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result)))}
                           detailsExpanded={detailsActionId === entry.actionId}
                           disabled={entry.disabled}
                           title={entry.title}
@@ -2616,7 +2650,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
         <div className={actionsClassName}>
           {!installed ? (
-            <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
+            <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall || writeDisabled} title={writeDisabled ? writeDisabledReason : undefined} tone={canInstall && !writeDisabled ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
           ) : null}
           <LiteButton onClick={(event) => { stopGestureEvent(event); openApp(app, event); }} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
           {installed && lifecycle ? (
@@ -2667,6 +2701,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         )}
       />
 
+      <LiteSavedStateBanner cacheStatus={cacheStatus} error={error} />
+
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
         <p>{displayedApps.length} apps shown</p>
       </div>
@@ -2716,6 +2752,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         </GlassCard>
       ) : null}
+
+      <LiteDetailsPanel
+        open={Boolean(detailsPanel)}
+        onClose={closeActionDetails}
+        title={detailsPanel?.details?.title || 'Action details'}
+        description={detailsPanel?.details?.summary || 'Pocket Lab keeps troubleshooting records on the backend.'}
+      >
+        <AppActionDetailsPanel details={detailsPanel?.details} onClose={closeActionDetails} />
+      </LiteDetailsPanel>
 
       <AppCatalogResultNotice result={result} error={actionError} onDismiss={dismissActionNotice} />
 
