@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useDrag } from '@use-gesture/react';
 import { animated, config, useSpring } from '@react-spring/web';
 import {
@@ -44,6 +45,19 @@ const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
 // Enterprise UI rule: Open and Manage are primary visible buttons.
 // Gesture handlers must not be bound to the same surface that owns these clicks.
 void APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS;
+
+const APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY = true;
+// Enterprise UI rule: Manage opens as a top-level portal overlay so app cards,
+// transforms, animation wrappers, and overflow containers cannot clip the sheet.
+void APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY;
+
+function updateLiteCatalogVisualViewportVar() {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  const height = window.visualViewport?.height || window.innerHeight;
+  if (height) {
+    document.documentElement.style.setProperty('--pl-visual-vh', `${height}px`);
+  }
+}
 
 function stopGestureEvent(event) {
   event?.stopPropagation?.();
@@ -1656,6 +1670,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [manageAppId, setManageAppId] = useState(null);
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
+  const manageScrollRef = useRef(null);
   const longPressRef = useRef(null);
 
   const clearLongPress = useCallback(() => {
@@ -1715,14 +1730,22 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     document.addEventListener('keydown', onKeyDown);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    updateLiteCatalogVisualViewportVar();
+    const viewport = window.visualViewport;
+    viewport?.addEventListener?.('resize', updateLiteCatalogVisualViewportVar);
+    viewport?.addEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
+    window.addEventListener('resize', updateLiteCatalogVisualViewportVar);
     window.requestAnimationFrame(() => {
-      if (manageSheetRef.current) {
-        manageSheetRef.current.scrollTop = 0;
+      if (manageScrollRef.current) {
+        manageScrollRef.current.scrollTop = 0;
       }
       manageCloseRef.current?.focus?.({ preventScroll: true });
     });
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      viewport?.removeEventListener?.('resize', updateLiteCatalogVisualViewportVar);
+      viewport?.removeEventListener?.('scroll', updateLiteCatalogVisualViewportVar);
+      window.removeEventListener('resize', updateLiteCatalogVisualViewportVar);
       document.body.style.overflow = previousOverflow;
     };
   }, [manageAppId]);
@@ -1734,8 +1757,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setManageAppId((current) => (current === appId ? null : appId));
     closeActionDetails();
     window.requestAnimationFrame(() => {
-      if (manageSheetRef.current) {
-        manageSheetRef.current.scrollTop = 0;
+      if (manageScrollRef.current) {
+        manageScrollRef.current.scrollTop = 0;
       }
     });
   }, [closeActionDetails]);
@@ -2411,7 +2434,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
           </div>
         ) : null}
-        {installed && lifecycle && manageAppId === app.id ? (
+        {installed && lifecycle && manageAppId === app.id && typeof document !== 'undefined' ? createPortal((
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
             <animated.section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
@@ -2454,6 +2477,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 </button>
               ))}
             </div>
+            <div ref={manageScrollRef} className="lite-catalog-manage-scroll">
             <animated.div
               className={`lite-catalog-manage-section-viewport ${manageSectionSwipe.dragging ? 'is-swiping' : ''}`}
               style={manageSectionStyle}
@@ -2552,9 +2576,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <p className="lite-catalog-storage-hint">Join a storage device to use remote media folders.</p>
               ) : null}
             </div>
+            </div>
             </animated.section>
           </div>
-        ) : null}
+        ), document.body) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {canOpen ? 'Ready' : app?.access?.message || 'Available after install'}</span>

@@ -2463,6 +2463,11 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-manage-layer" in ui
     assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
+    assert "lite-catalog-manage-scroll" in ui
+    assert "createPortal" in ui
+    assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in ui
+    assert "updateLiteCatalogVisualViewportVar" in ui
+    assert "visualViewport" in ui
     assert "lite-catalog-summary-panel" in ui
     assert "lite-app-action-row" in ui
     assert "@use-gesture/react" in ui
@@ -2471,6 +2476,9 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "bindCatalogPull" in ui
     assert "bindAppCardLongPress" in ui
     assert "bindManageSectionSwipe" in ui
+    assert "{...bindCatalogPull()}" not in ui
+    assert "{...bindAppCardLongPress(" not in ui
+    assert "{...bindManageSectionSwipe()}" not in ui
     assert "Drag app actions sheet" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
@@ -2486,6 +2494,9 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-catalog-manage-layer" in css
     assert "lite-catalog-manage-backdrop" in css
     assert "lite-catalog-manage-sheet" in css
+    assert "lite-catalog-manage-scroll" in css
+    assert "--pl-visual-vh" in css
+    assert "grid-template-rows: auto auto auto minmax(0, 1fr)" in css
     assert "lite-app-action-row" in css
     assert "lite-app-action-row-result" in css
     assert "touch-action: none" in css
