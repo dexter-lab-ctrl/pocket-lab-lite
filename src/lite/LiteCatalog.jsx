@@ -46,6 +46,12 @@ const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
 // Gesture handlers must not be bound to the same surface that owns these clicks.
 void APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS;
 
+
+const APP_CATALOG_MANAGE_PORTAL_STABLE_APP_KEY = true;
+// Enterprise UI rule: Manage open state uses a stable app key and the Manage
+// button opens the portal. Closing is handled only by close controls.
+void APP_CATALOG_MANAGE_PORTAL_STABLE_APP_KEY;
+
 const APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY = true;
 // Enterprise UI rule: Manage opens as a top-level portal overlay so app cards,
 // transforms, animation wrappers, and overflow containers cannot clip the sheet.
@@ -57,6 +63,14 @@ function updateLiteCatalogVisualViewportVar() {
   if (height) {
     document.documentElement.style.setProperty('--pl-visual-vh', `${height}px`);
   }
+}
+
+
+function catalogAppKey(appOrId) {
+  if (appOrId && typeof appOrId === 'object') {
+    return String(appOrId.id || appOrId.name || 'photoprism').trim().toLowerCase() || 'photoprism';
+  }
+  return String(appOrId || 'photoprism').trim().toLowerCase() || 'photoprism';
 }
 
 function stopGestureEvent(event) {
@@ -1750,11 +1764,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     };
   }, [manageAppId]);
 
-  const openManageSheet = useCallback((appId, section = 'media') => {
+  const openManageSheet = useCallback((appOrId, section = 'media') => {
+    const appKey = catalogAppKey(appOrId);
     setManageDrag({ dragging: false, offsetY: 0 });
     setManageSection(MANAGE_SECTION_ORDER.includes(section) ? section : 'media');
     setQuickActionsAppId(null);
-    setManageAppId((current) => (current === appId ? null : appId));
+    setManageAppId(appKey);
     closeActionDetails();
     window.requestAnimationFrame(() => {
       if (manageScrollRef.current) {
@@ -2392,7 +2407,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {quickActionsOpen ? (
           <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
             <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
-            {installed && lifecycle ? <button type="button" onClick={(event) => { event.stopPropagation(); openManageSheet(app.id, 'safety'); }}>Manage</button> : null}
+            {installed && lifecycle ? <button type="button" onClick={(event) => { event.stopPropagation(); openManageSheet(app, 'safety'); }}>Manage</button> : null}
             <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id || 'photoprism'); }}>Refresh</button>
           </div>
         ) : null}
@@ -2434,7 +2449,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
           </div>
         ) : null}
-        {installed && lifecycle && manageAppId === app.id && typeof document !== 'undefined' ? createPortal((
+        {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined' ? createPortal((
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
             <animated.section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
@@ -2605,7 +2620,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ) : null}
           <LiteButton onClick={(event) => { stopGestureEvent(event); openApp(app, event); }} disabled={!canOpen} tone={canOpen ? 'primary' : 'ghost'}><ExternalLink className="h-4 w-4" />{opening ? 'Opening...' : 'Open'}</LiteButton>
           {installed && lifecycle ? (
-            <LiteButton onClick={(event) => { stopGestureEvent(event); openManageSheet(app.id); }} tone="secondary">Manage</LiteButton>
+            <LiteButton onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }} tone="secondary">Manage</LiteButton>
           ) : null}
         </div>
       </GlassCard>
