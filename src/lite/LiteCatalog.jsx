@@ -33,6 +33,12 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
 ];
 void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
 
+
+const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
+// Enterprise UI rule: Open and Manage are primary visible buttons.
+// Gesture handlers must not be bound to the same surface that owns these clicks.
+void APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS;
+
 function stopGestureEvent(event) {
   event?.stopPropagation?.();
 }
@@ -2342,7 +2348,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       <GlassCard
         key={app.id}
         className={`${cardClassName} ${quickActionsOpen ? 'has-quick-actions' : ''}`}
-        {...bindAppCardLongPress(app.id || 'photoprism')}
       >
         <div className="lite-catalog-card-top">
           <div className="lite-catalog-icon"><AppIcon app={app} /></div>
@@ -2563,7 +2568,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         ) : null}
         <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
-        <div className={actionsClassName} onPointerDownCapture={stopGestureEvent} onTouchStartCapture={stopGestureEvent}>
+        <div className={actionsClassName}>
           {!installed ? (
             <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>
           ) : null}
@@ -2595,7 +2600,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   return (
     <animated.div
       className={`lite-catalog-screen lite-catalog-gesture-layer ${pullRefresh.pulling ? 'is-pulling' : ''}`}
-      {...bindCatalogPull()}
       style={{ '--lite-catalog-pull-offset': catalogPullY.to((value) => `${value}px`) }}
     >
       <div className={`lite-catalog-pull-refresh ${pullRefresh.ready ? 'is-ready' : ''}`} aria-live="polite">
