@@ -13375,3 +13375,63 @@ textarea {
     transition: none !important;
   }
 }
+
+
+/* Pocket Lab Lite App Catalog — production Manage sheet clipping fix */
+.theme-pocket-lite-daylight .lite-catalog-manage-layer {
+  align-items: flex-end;
+  box-sizing: border-box;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  padding-right: max(0.65rem, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.65rem);
+  padding-left: max(0.65rem, env(safe-area-inset-left, 0px));
+  z-index: 120;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+  box-sizing: border-box;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.4rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: 0.72rem;
+  scroll-padding-top: 3.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-grip {
+  align-self: center;
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  margin: -0.1rem auto 0.15rem;
+  padding: 0.5rem 0;
+  top: 0;
+  width: 5.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-head {
+  scroll-margin-top: 3.75rem;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-catalog-manage-layer {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.85rem);
+    padding-right: 0.55rem;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.55rem);
+    padding-left: 0.55rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+    width: 100%;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.4rem);
+    border-radius: 1.55rem 1.55rem 1.1rem 1.1rem;
+    padding-top: 0.72rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-manage-grip {
+    position: sticky;
+    top: -0.05rem;
+    z-index: 6;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72));
+  }
+}
