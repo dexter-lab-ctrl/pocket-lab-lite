@@ -34,6 +34,12 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
 void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
 
 
+
+const APP_CATALOG_ACTION_ROWS_OWN_CLICKS = true;
+// Enterprise UI rule: action rows, action buttons, and Details buttons own their clicks.
+// Swipe gestures must not be bound to the action-row viewport.
+void APP_CATALOG_ACTION_ROWS_OWN_CLICKS;
+
 const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
 // Enterprise UI rule: Open and Manage are primary visible buttons.
 // Gesture handlers must not be bound to the same surface that owns these clicks.
@@ -2451,7 +2457,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <animated.div
               className={`lite-catalog-manage-section-viewport ${manageSectionSwipe.dragging ? 'is-swiping' : ''}`}
               style={manageSectionStyle}
-              {...bindManageSectionSwipe()}
+
             >
               <div className="lite-catalog-manage-section-hint" aria-live="polite">
                 <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
