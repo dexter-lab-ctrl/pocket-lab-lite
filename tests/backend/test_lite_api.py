@@ -2487,6 +2487,19 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-app-action-row-result" in css
     assert "touch-action: none" in css
     assert "safe-area-inset-top" in css
+    assert "lite-catalog-pull-refresh" in ui
+    assert "beginCatalogPull" in ui
+    assert "moveCatalogPull" in ui
+    assert "endCatalogPull" in ui
+    assert "beginAppLongPress" in ui
+    assert "lite-catalog-quick-actions" in ui
+    assert "beginManageSectionSwipe" in ui
+    assert "lite-catalog-manage-section-tabs" in ui
+    assert "lite-catalog-manage-section-viewport" in ui
+    assert "lite-catalog-pull-refresh" in css
+    assert "lite-catalog-quick-actions" in css
+    assert "lite-catalog-manage-section-tabs" in css
+    assert "lite-catalog-manage-section-viewport" in css
     assert "child_process" not in ui
     assert "nats.connect" not in ui
     assert "photoprism import" not in ui.lower()

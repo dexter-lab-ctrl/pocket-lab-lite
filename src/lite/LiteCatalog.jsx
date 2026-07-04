@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CheckCircle2,
   FileCheck,
@@ -143,6 +143,24 @@ const APP_ACTION_CATEGORY_COPY = {
   recovery: { label: 'Recovery', summary: 'Back up, preview restore, and repair safely.' },
   setup: { label: 'App setup', summary: 'Install or check update readiness.' },
   danger: { label: 'Remove', summary: 'Advanced actions require explicit confirmation.' },
+};
+
+const MANAGE_SECTION_ORDER = ['media', 'safety', 'recovery', 'setup', 'danger'];
+
+const MANAGE_SECTION_LABELS = {
+  media: 'Photos',
+  safety: 'Safety',
+  recovery: 'Recovery',
+  setup: 'App setup',
+  danger: 'Remove',
+};
+
+const MANAGE_SECTION_SUMMARY = {
+  media: 'Connect and import photos.',
+  safety: 'Check whether the app is safe.',
+  recovery: 'Back up, preview restore, and repair.',
+  setup: 'Install or check updates.',
+  danger: 'Advanced actions.',
 };
 
 function normalizeActionStatus(rawStatus, enabled, busy = false, hasProgress = false) {
@@ -1623,12 +1641,20 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
   const [detailsActionId, setDetailsActionId] = useState(null);
   const [actionSnapshots, setActionSnapshots] = useState({});
+  const catalogPullRef = useRef({ pointerId: null, startY: 0, offsetY: 0, active: false });
+  const longPressRef = useRef({ timer: null, pointerId: null, appId: null, startX: 0, startY: 0 });
+  const manageSectionSwipeRef = useRef({ pointerId: null, startX: 0, startY: 0, active: false });
+  const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
+  const [quickActionsAppId, setQuickActionsAppId] = useState(null);
+  const [manageSection, setManageSection] = useState('media');
+  const [manageSectionSwipe, setManageSectionSwipe] = useState({ dragging: false, offsetX: 0 });
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
 
   const displayedApps = apps;
+  const availableManageSections = useMemo(() => MANAGE_SECTION_ORDER, []);
 
   useEffect(() => {
     if (!manageAppId) return undefined;
@@ -1653,8 +1679,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     };
   }, [manageAppId]);
 
-  const openManageSheet = useCallback((appId) => {
+  const openManageSheet = useCallback((appId, section = 'media') => {
     setManageDrag({ dragging: false, offsetY: 0 });
+    setManageSection(MANAGE_SECTION_ORDER.includes(section) ? section : 'media');
+    setQuickActionsAppId(null);
     setManageAppId((current) => (current === appId ? null : appId));
     closeActionDetails();
     window.requestAnimationFrame(() => {
@@ -1666,6 +1694,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const closeManageSheet = useCallback(() => {
     setManageDrag({ dragging: false, offsetY: 0 });
+    setManageSectionSwipe({ dragging: false, offsetX: 0 });
     setManageAppId(null);
     closeActionDetails();
   }, [closeActionDetails]);
@@ -1718,6 +1747,108 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     ? { transform: `translateY(${manageDrag.offsetY}px)`, transition: manageDrag.dragging ? 'none' : undefined }
     : undefined;
 
+  const clearLongPress = useCallback(() => {
+    if (longPressRef.current.timer) {
+      window.clearTimeout(longPressRef.current.timer);
+    }
+    longPressRef.current = { timer: null, pointerId: null, appId: null, startX: 0, startY: 0 };
+  }, []);
+
+  const beginCatalogPull = useCallback((event) => {
+    const target = event.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-sheet');
+    if (target || manageAppId || loading) return;
+    if (window.scrollY > 2) return;
+    catalogPullRef.current = { pointerId: event.pointerId, startY: event.clientY, offsetY: 0, active: true };
+  }, [loading, manageAppId]);
+
+  const moveCatalogPull = useCallback((event) => {
+    const pull = catalogPullRef.current;
+    if (!pull.active || pull.pointerId !== event.pointerId) return;
+    const rawOffset = event.clientY - pull.startY;
+    if (rawOffset <= 0) return;
+    const offsetY = Math.min(96, Math.round(rawOffset * 0.45));
+    pull.offsetY = offsetY;
+    setPullRefresh({ pulling: true, ready: offsetY > 54, offsetY });
+  }, []);
+
+  const endCatalogPull = useCallback((event) => {
+    const pull = catalogPullRef.current;
+    if (!pull.active || pull.pointerId !== event.pointerId) return;
+    const shouldRefresh = pull.offsetY > 54;
+    catalogPullRef.current = { pointerId: null, startY: 0, offsetY: 0, active: false };
+    setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
+    if (shouldRefresh) {
+      safeHaptic(12);
+      refresh();
+      refreshAppActions('photoprism');
+    }
+  }, [refresh, refreshAppActions]);
+
+  const beginAppLongPress = useCallback((app, event) => {
+    if (!app?.id) return;
+    const target = event.target?.closest?.('button, a, input, textarea, select, [role="button"]');
+    if (target) return;
+    clearLongPress();
+    longPressRef.current = {
+      timer: window.setTimeout(() => {
+        safeHaptic(14);
+        setQuickActionsAppId(app.id);
+      }, 520),
+      pointerId: event.pointerId,
+      appId: app.id,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  }, [clearLongPress]);
+
+  const moveAppLongPress = useCallback((event) => {
+    const press = longPressRef.current;
+    if (press.pointerId !== event.pointerId || !press.timer) return;
+    const moved = Math.abs(event.clientX - press.startX) + Math.abs(event.clientY - press.startY);
+    if (moved > 14) clearLongPress();
+  }, [clearLongPress]);
+
+  const endAppLongPress = useCallback((event) => {
+    if (longPressRef.current.pointerId === event.pointerId) clearLongPress();
+  }, [clearLongPress]);
+
+  const beginManageSectionSwipe = useCallback((event) => {
+    const target = event.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-grip');
+    if (target) return;
+    manageSectionSwipeRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, active: true };
+  }, []);
+
+  const moveManageSectionSwipe = useCallback((event) => {
+    const swipe = manageSectionSwipeRef.current;
+    if (!swipe.active || swipe.pointerId !== event.pointerId) return;
+    const dx = event.clientX - swipe.startX;
+    const dy = event.clientY - swipe.startY;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) return;
+    if (Math.abs(dx) < 10) return;
+    setManageSectionSwipe({ dragging: true, offsetX: Math.max(-90, Math.min(90, dx)) });
+  }, []);
+
+  const endManageSectionSwipe = useCallback((event) => {
+    const swipe = manageSectionSwipeRef.current;
+    if (!swipe.active || swipe.pointerId !== event.pointerId) return;
+    const dx = event.clientX - swipe.startX;
+    const currentIndex = availableManageSections.indexOf(manageSection);
+    let nextIndex = currentIndex;
+    if (dx < -64) nextIndex = Math.min(availableManageSections.length - 1, currentIndex + 1);
+    if (dx > 64) nextIndex = Math.max(0, currentIndex - 1);
+    if (nextIndex !== currentIndex) {
+      safeHaptic(8);
+      setManageSection(availableManageSections[nextIndex]);
+      closeActionDetails();
+    }
+    manageSectionSwipeRef.current = { pointerId: null, startX: 0, startY: 0, active: false };
+    setManageSectionSwipe({ dragging: false, offsetX: 0 });
+  }, [availableManageSections, closeActionDetails, manageSection]);
+
+  const manageSectionStyle = manageSectionSwipe.offsetX
+    ? { transform: `translateX(${manageSectionSwipe.offsetX}px)`, transition: manageSectionSwipe.dragging ? 'none' : undefined }
+    : undefined;
+
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
     try {
       const payload = await liteApi.appActions(appId || 'photoprism');
@@ -1744,6 +1875,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       window.clearTimeout(timer);
     };
   }, [apps, refreshAppActions]);
+
+  useEffect(() => () => clearLongPress(), [clearLongPress]);
 
   useEffect(() => {
     const notice = catalogActionNotice(result, actionError);
@@ -2187,11 +2320,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       },
     ];
     const appActionGroups = groupAppActions(appActionEntries);
+    const activeAppActionGroups = appActionGroups.filter((group) => group.id === manageSection);
+    const quickActionsOpen = quickActionsAppId === app.id;
 
     return (
       <GlassCard
         key={app.id}
-        className={cardClassName}
+        className={`${cardClassName} ${quickActionsOpen ? 'has-quick-actions' : ''}`}
+        onPointerDown={(event) => beginAppLongPress(app, event)}
+        onPointerMove={moveAppLongPress}
+        onPointerUp={endAppLongPress}
+        onPointerCancel={endAppLongPress}
       >
         <div className="lite-catalog-card-top">
           <div className="lite-catalog-icon"><AppIcon app={app} /></div>
@@ -2204,6 +2343,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           </div>
         </div>
         <p>{app.summary}</p>
+        {quickActionsOpen ? (
+          <div className="lite-catalog-quick-actions" role="menu" aria-label={`${app.name} quick actions`}>
+            <button type="button" onClick={(event) => { event.stopPropagation(); openApp(app, event); setQuickActionsAppId(null); }} disabled={!canOpen}>Open</button>
+            {installed && lifecycle ? <button type="button" onClick={(event) => { event.stopPropagation(); openManageSheet(app.id, 'safety'); }}>Manage</button> : null}
+            <button type="button" onClick={(event) => { event.stopPropagation(); setQuickActionsAppId(null); refresh(); refreshAppActions(app.id || 'photoprism'); }}>Refresh</button>
+          </div>
+        ) : null}
         {installed ? (
           <div className="lite-catalog-trust-marker" aria-label="Self-hosted app">
             <ShieldCheck className="h-4 w-4" />
@@ -2274,59 +2420,85 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <LiteButton onClick={(event) => installAppToPhone(app, event)} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
               ) : null}
             </div>
-            <div className="lite-catalog-action-groups">
-              {appActionGroups.map((group) => (
-                <AppActionGroup key={group.id} group={group}>
-                  {group.actions.map((entry) => (
-                    <React.Fragment key={entry.actionId}>
-                      <PhotoPrismActionTile
-                        app={app}
-                        actionId={entry.actionId}
-                        action={entry.action}
-                        busyKey={entry.busyKey || actionBusyKey}
-                        progress={entry.progress}
-                        result={entry.result}
-                        tone={entry.tone}
-                        onClick={entry.onClick}
-                        onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
-                        detailsExpanded={detailsActionId === entry.actionId}
-                        disabled={entry.disabled}
-                        title={entry.title}
-                      />
-                      {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? (
-                        <PhoneStorageConnectedFolders />
-                      ) : null}
-                      {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
-                        <div className="lite-catalog-storage-preview-anchor">
-                          <PhotoPrismStoragePreviewSheet
-                            preview={storagePreview}
-                            loading={storagePreviewLoading}
-                            error={storagePreviewError}
-                            connecting={Boolean(storageBusy)}
-                            notice={storagePreviewNotice}
-                            onClose={closeStoragePreview}
-                            onConfirm={connectPhoneStorageFromPreview}
-                            onRetry={loadStoragePreview}
-                            onDismissNotice={() => setStoragePreviewNotice(null)}
-                          />
-                        </div>
-                      ) : null}
-                      {entry.actionId === 'import_photos' && isPhotosImported ? (
-                        <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
-                      ) : null}
-
-                      {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
-                        <div className="lite-catalog-action-details-anchor">
-                          <AppActionDetailsPanel
-                            details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
-                            onClose={closeActionDetails}
-                          />
-                        </div>
-                      ) : null}
-                    </React.Fragment>
-                  ))}
-                </AppActionGroup>
+            <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
+              {availableManageSections.map((sectionId) => (
+                <button
+                  key={sectionId}
+                  type="button"
+                  role="tab"
+                  aria-selected={manageSection === sectionId}
+                  className={manageSection === sectionId ? 'is-active' : ''}
+                  onClick={() => { setManageSection(sectionId); closeActionDetails(); }}
+                >
+                  {MANAGE_SECTION_LABELS[sectionId] || sectionId}
+                </button>
               ))}
+            </div>
+            <div
+              className={`lite-catalog-manage-section-viewport ${manageSectionSwipe.dragging ? 'is-swiping' : ''}`}
+              style={manageSectionStyle}
+              onPointerDown={beginManageSectionSwipe}
+              onPointerMove={moveManageSectionSwipe}
+              onPointerUp={endManageSectionSwipe}
+              onPointerCancel={endManageSectionSwipe}
+            >
+              <div className="lite-catalog-manage-section-hint" aria-live="polite">
+                <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
+                <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
+              </div>
+              <div className="lite-catalog-action-groups">
+                {activeAppActionGroups.map((group) => (
+                  <AppActionGroup key={group.id} group={group}>
+                    {group.actions.map((entry) => (
+                      <React.Fragment key={entry.actionId}>
+                        <PhotoPrismActionTile
+                          app={app}
+                          actionId={entry.actionId}
+                          action={entry.action}
+                          busyKey={entry.busyKey || actionBusyKey}
+                          progress={entry.progress}
+                          result={entry.result}
+                          tone={entry.tone}
+                          onClick={entry.onClick}
+                          onViewDetails={() => openActionDetails(entry.actionId, app.id || 'photoprism')}
+                          detailsExpanded={detailsActionId === entry.actionId}
+                          disabled={entry.disabled}
+                          title={entry.title}
+                        />
+                        {entry.actionId === 'connect_photos' && isPhoneStorageConnected ? (
+                          <PhoneStorageConnectedFolders />
+                        ) : null}
+                        {entry.actionId === 'connect_photos' && !isPhoneStorageConnected && storagePreviewApp?.id === app.id ? (
+                          <div className="lite-catalog-storage-preview-anchor">
+                            <PhotoPrismStoragePreviewSheet
+                              preview={storagePreview}
+                              loading={storagePreviewLoading}
+                              error={storagePreviewError}
+                              connecting={Boolean(storageBusy)}
+                              notice={storagePreviewNotice}
+                              onClose={closeStoragePreview}
+                              onConfirm={connectPhoneStorageFromPreview}
+                              onRetry={loadStoragePreview}
+                              onDismissNotice={() => setStoragePreviewNotice(null)}
+                            />
+                          </div>
+                        ) : null}
+                        {entry.actionId === 'import_photos' && isPhotosImported ? (
+                          <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
+                        ) : null}
+                        {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
+                          <div className="lite-catalog-action-details-anchor">
+                            <AppActionDetailsPanel
+                              details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
+                              onClose={closeActionDetails}
+                            />
+                          </div>
+                        ) : null}
+                      </React.Fragment>
+                    ))}
+                  </AppActionGroup>
+                ))}
+              </div>
             </div>
             <div className="lite-catalog-action-reasons">
               {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
@@ -2415,7 +2587,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
 
   return (
-    <div className="lite-catalog-screen" onPointerDown={handleCatalogPointerDown}>
+    <div
+      className={`lite-catalog-screen ${pullRefresh.pulling ? 'is-pulling' : ''}`}
+      onPointerDown={(event) => { handleCatalogPointerDown(event); beginCatalogPull(event); }}
+      onPointerMove={moveCatalogPull}
+      onPointerUp={endCatalogPull}
+      onPointerCancel={endCatalogPull}
+      style={pullRefresh.offsetY ? { '--lite-catalog-pull-offset': `${pullRefresh.offsetY}px` } : undefined}
+    >
+      <div className={`lite-catalog-pull-refresh ${pullRefresh.ready ? 'is-ready' : ''}`} aria-live="polite">
+        <RefreshCw className="h-4 w-4" />
+        <span>{pullRefresh.ready ? 'Release to refresh' : 'Pull to refresh'}</span>
+      </div>
       <PageHeader
         eyebrow="Apps"
         title="App Catalog"

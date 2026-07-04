@@ -13513,3 +13513,198 @@ textarea {
     z-index: 31 !important;
   }
 }
+
+/* Pocket Lab Lite App Catalog Phase 4 — native gesture layer */
+.theme-pocket-lite-daylight .lite-catalog-screen {
+  transform: translateY(var(--lite-catalog-pull-offset, 0px));
+  transition: transform 180ms ease;
+  touch-action: pan-y;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-screen.is-pulling {
+  transition: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-pull-refresh {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  color: #64748b;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 950;
+  gap: 0.45rem;
+  left: 50%;
+  opacity: 0;
+  padding: 0.48rem 0.8rem;
+  pointer-events: none;
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 0.35rem);
+  transform: translate(-50%, -0.75rem) scale(0.96);
+  transition: opacity 160ms ease, transform 160ms ease, color 160ms ease, border-color 160ms ease;
+  width: max-content;
+  z-index: 70;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-screen.is-pulling .lite-catalog-pull-refresh {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-pull-refresh.is-ready {
+  border-color: rgba(34, 197, 94, 0.34);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-pull-refresh svg {
+  animation: lite-catalog-pull-spin 900ms linear infinite;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-quick-actions {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.2);
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  z-index: 8;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-quick-actions button {
+  background: rgba(255, 255, 255, 0.11);
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 950;
+  min-height: 2.1rem;
+  padding: 0.45rem 0.62rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-quick-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-card.has-quick-actions {
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: 0 24px 52px rgba(15, 23, 42, 0.14);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-tabs {
+  display: flex;
+  gap: 0.45rem;
+  margin: 0.55rem 0 0.8rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.05rem 0.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-tabs button {
+  background: rgba(241, 245, 249, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  color: #64748b;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 950;
+  min-height: 2.35rem;
+  padding: 0.5rem 0.72rem;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-tabs button.is-active {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.26);
+  color: #1d4ed8;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.1);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-tabs button:active {
+  transform: scale(0.98);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-viewport {
+  transition: transform 180ms ease, opacity 180ms ease;
+  touch-action: pan-y;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-viewport.is-swiping {
+  transition: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-hint {
+  align-items: flex-start;
+  background: rgba(239, 246, 255, 0.72);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 1rem;
+  color: #475569;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 0.65rem;
+  padding: 0.72rem 0.82rem;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-hint strong {
+  color: #0f3c88;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-section-hint span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+@keyframes lite-catalog-pull-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-catalog-quick-actions {
+    left: 1rem;
+    right: 1rem;
+    justify-content: center;
+    top: 0.85rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-quick-actions button {
+    flex: 1 1 0;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-manage-section-tabs {
+    margin-left: -0.1rem;
+    margin-right: -0.1rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-manage-section-tabs button {
+    min-width: 5.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-catalog-screen,
+  .theme-pocket-lite-daylight .lite-catalog-pull-refresh,
+  .theme-pocket-lite-daylight .lite-catalog-manage-section-viewport,
+  .theme-pocket-lite-daylight .lite-catalog-manage-section-tabs button,
+  .theme-pocket-lite-daylight .lite-catalog-pull-refresh svg {
+    animation: none !important;
+    transition: none !important;
+  }
+}
