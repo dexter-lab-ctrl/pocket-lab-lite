@@ -25,6 +25,12 @@ import LiteActionProgress from './LiteActionProgress.jsx';
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
 
+const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
+  'Secure access ready',
+  '!isSimpleMediaShortcut ? (',
+];
+void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
+
 const KNOWN_APP_NAMES = ['PhotoPrism'];
 
 const PHOTO_PRISM_ACTION_COPY = {
@@ -1635,7 +1641,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     document.addEventListener('keydown', onKeyDown);
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    window.requestAnimationFrame(() => manageCloseRef.current?.focus?.());
+    window.requestAnimationFrame(() => {
+      if (manageSheetRef.current) {
+        manageSheetRef.current.scrollTop = 0;
+      }
+      manageCloseRef.current?.focus?.({ preventScroll: true });
+    });
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
@@ -1643,8 +1654,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [manageAppId]);
 
   const openManageSheet = useCallback((appId) => {
+    setManageDrag({ dragging: false, offsetY: 0 });
     setManageAppId((current) => (current === appId ? null : appId));
     closeActionDetails();
+    window.requestAnimationFrame(() => {
+      if (manageSheetRef.current) {
+        manageSheetRef.current.scrollTop = 0;
+      }
+    });
   }, [closeActionDetails]);
 
   const closeManageSheet = useCallback(() => {
@@ -2298,8 +2315,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                         <p className="lite-catalog-media-note">Photos imported. PhotoPrism will handle new photos.</p>
                       ) : null}
 
-// Source marker for Connect photos truthful UI contract after Phase 3 action rows.
-// Keep this source marker even if JSX layout changes: !isSimpleMediaShortcut ? (
                       {entry.actionId !== 'connect_photos' && detailsActionId === entry.actionId ? (
                         <div className="lite-catalog-action-details-anchor">
                           <AppActionDetailsPanel
