@@ -46,6 +46,10 @@ void APP_CATALOG_ACTION_ROWS_OWN_CLICKS;
 const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
 const APP_CATALOG_BROAD_GESTURES_DISABLED = true;
 const APP_CATALOG_SAFE_SNAPSHOT_UI_READY = true;
+const APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL = true;
+// Enterprise hotfix: Manage is a plain button-owned state transition.
+// No drag/gesture binding is attached to Manage, action rows, or critical button surfaces.
+void APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL;
 void APP_CATALOG_BROAD_GESTURES_DISABLED;
 void APP_CATALOG_SAFE_SNAPSHOT_UI_READY;
 // Enterprise UI rule: Open and Manage are primary visible buttons.
@@ -1702,8 +1706,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }
   }, []);
 
-  const manageDragRef = useRef({ pointerId: null, startY: 0, offsetY: 0, startedAt: 0 });
-  const [manageDrag, setManageDrag] = useState({ dragging: false, offsetY: 0 });
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -1724,7 +1726,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [manageSection, setManageSection] = useState('media');
   const [manageSectionSwipe, setManageSectionSwipe] = useState({ dragging: false, offsetX: 0 });
   const reduceMotion = useMemo(prefersReducedMotion, []);
-  const [{ manageSheetY }, manageSheetSpring] = useSpring(() => ({ manageSheetY: 0, config: config.gentle }));
   const [{ manageSectionX }, manageSectionSpring] = useSpring(() => ({ manageSectionX: 0, config: config.stiff }));
   const [{ catalogPullY }, catalogPullSpring] = useSpring(() => ({ catalogPullY: 0, config: config.gentle }));
 
@@ -1779,7 +1780,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const openManageSheet = useCallback((appOrId, section = 'media') => {
     const appKey = catalogAppKey(appOrId);
-    setManageDrag({ dragging: false, offsetY: 0 });
     setManageSection(MANAGE_SECTION_ORDER.includes(section) ? section : 'media');
     setQuickActionsAppId(null);
     setManageAppId(appKey);
@@ -1792,42 +1792,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [closeActionDetails]);
 
   const closeManageSheet = useCallback(() => {
-    setManageDrag({ dragging: false, offsetY: 0 });
     setManageSectionSwipe({ dragging: false, offsetX: 0 });
     setManageAppId(null);
     closeActionDetails();
   }, [closeActionDetails]);
 
 
-  const settleManageSheetDrag = useCallback((movementY, velocityY = 0) => {
-    const shouldClose = movementY > 92 || (movementY > 40 && velocityY > 0.35);
-    setManageDrag({ dragging: false, offsetY: 0 });
-    if (shouldClose) {
-      manageSheetSpring.start({ manageSheetY: reduceMotion ? 0 : 28, immediate: reduceMotion, config: config.gentle });
-      closeManageSheet();
-      window.setTimeout(() => manageSheetSpring.start({ manageSheetY: 0, immediate: true }), 80);
-      return;
-    }
-    manageSheetSpring.start({ manageSheetY: 0, immediate: reduceMotion, config: config.gentle });
-  }, [closeManageSheet, manageSheetSpring, reduceMotion]);
-
-  const bindManageSheetDrag = useDrag(({ active, movement: [, my], velocity: [, vy], event }) => {
-    event?.stopPropagation?.();
-    const offsetY = active ? clampNumber(my, -24, 190) : 0;
-    setManageDrag({ dragging: active, offsetY });
-    manageSheetSpring.start({ manageSheetY: offsetY, immediate: active || reduceMotion, config: config.gentle });
-    if (!active) settleManageSheetDrag(my, vy);
-  }, {
-    axis: 'y',
-    pointer: { touch: true },
-    filterTaps: true,
-    preventScroll: true,
-  });
-
   const manageSheetStyle = useMemo(() => ({
-    y: manageSheetY,
-    touchAction: 'pan-y',
-  }), [manageSheetY]);
+    touchAction: 'auto',
+  }), []);
 
   const runCatalogRefresh = useCallback(() => {
     setPullRefresh({ pulling: false, ready: false, offsetY: 0 });
@@ -2486,15 +2459,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined' ? createPortal((
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
-            <animated.section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
-              <button
-                type="button"
-                className="lite-catalog-manage-grip"
-                aria-label="Drag app actions sheet"
-                {...bindManageSheetDrag()}
-              >
-                <span aria-hidden="true" />
-              </button>
+            <LiteSheet
+              className="lite-catalog-manage-sheet"
+              ariaLabel={manageSheetTitle}
+              initialFocusRef={manageCloseRef}
+              gripProps={{ onClick: closeManageSheet, type: 'button' }}
+            >
               <div className="lite-catalog-manage-head">
               <div>
                 <span>Manage</span>
@@ -2626,7 +2596,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               ) : null}
             </div>
             </div>
-            </animated.section>
+            </LiteSheet>
           </div>
         ), document.body) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
