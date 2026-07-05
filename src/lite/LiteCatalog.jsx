@@ -2449,8 +2449,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             ) : null}
           </div>
         ) : null}
-        {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined' ? createPortal((
-          <div className="lite-catalog-manage-layer" role="presentation">
+        {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined'
+          ? createPortal(
+              (
+<div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
             <section
               ref={manageSheetRef}
@@ -2600,7 +2602,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             </div>
             </section>
           </div>
-        ), document.body) : null}
+              ),
+              document.body
+            )
+          : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {canOpen ? 'Ready' : app?.access?.message || 'Available after install'}</span>
