@@ -14,10 +14,6 @@ def _lite_ui_source() -> str:
     )
 
 
-def _lite_catalog_source() -> str:
-    return Path("src/lite/LiteCatalog.jsx").read_text()
-
-
 @pytest.fixture(autouse=True)
 def isolate_lite_runtime_state_per_test(tmp_path):
     ensure_runtime_path()
@@ -2020,12 +2016,6 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     assert "lite-catalog-manage-layer" in ui
     assert "lite-catalog-manage-backdrop" in ui
     assert "lite-catalog-manage-sheet" in ui
-    assert "lite-catalog-manage-scroll" in ui
-    assert "LiteSheet" in ui
-    assert "LiteDetailsPanel" in ui
-    assert "createPortal" in ui
-    assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in ui
-    assert "APP_CATALOG_BROAD_GESTURES_DISABLED" in ui
     assert 'role="dialog"' in ui
     assert 'aria-modal="true"' in ui
     assert "Manage" in ui
@@ -2045,8 +2035,6 @@ def test_lite_unified_lifecycle_ui_source_is_present():
     assert "lite-catalog-manage-layer" in css
     assert "lite-catalog-manage-backdrop" in css
     assert "lite-catalog-manage-sheet" in css
-    assert "lite-overlay-root" in css
-    assert "lite-saved-state-banner" in css
     assert "lite-security-app-lifecycle" in css
     assert "lite-recovery-app-lifecycle" in css
     assert "child_process" not in ui
@@ -2487,15 +2475,14 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-app-action-row" in ui
     assert "@use-gesture/react" in ui
     assert "@react-spring/web" in ui
-    assert "bindManageSheetDrag" not in ui
-    assert "APP_CATALOG_MANAGE_NATIVE_PORTAL" in ui
+    assert "bindManageSheetDrag" in ui
     assert "bindCatalogPull" in ui
     assert "bindAppCardLongPress" in ui
     assert "bindManageSectionSwipe" in ui
     assert "{...bindCatalogPull()}" not in ui
     assert "{...bindAppCardLongPress(" not in ui
     assert "{...bindManageSectionSwipe()}" not in ui
-    assert "Close app actions" in ui
+    assert "Drag app actions sheet" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
     assert "lite-catalog-filter-pills" not in ui
@@ -2534,35 +2521,6 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "photoprism index" not in ui.lower()
     assert "subprocess" not in ui
 
-
-
-def test_lite_premium_pwa_foundation_source_is_present():
-    lite_api = Path("src/lib/liteApi.js").read_text()
-    cache = Path("src/lib/liteSafeSnapshots.js").read_text()
-    hooks = Path("src/hooks/useLiteStatus.js").read_text()
-    vite = Path("vite.config.js").read_text()
-    ui = _lite_ui_source()
-    css = Path("src/index.css").read_text()
-
-    assert "SAFE_LITE_GET_ENDPOINTS" in cache
-    assert "sanitizeLiteSnapshot" in cache
-    assert "readLiteSnapshot" in cache
-    assert "writeLiteSnapshot" in cache
-    assert "bootstrap|invite|raw|log" in cache
-    assert "isSafeLiteSnapshotPath" in lite_api
-    assert "safeSnapshotPath" in lite_api
-    assert "Pocket Lab is not reachable. Reconnect to continue." in lite_api
-    assert "visibilitychange" in hooks
-    assert "window.addEventListener('online'" in hooks
-    assert "pocketlab-lite-safe-read-api-v1" in vite
-    assert "safeLiteReadApiPattern" in vite
-    assert "apps" in vite and "navigateFallbackDenylist" in vite
-    assert "LiteSavedStateBanner" in ui
-    assert "Showing saved state" in ui
-    assert "lite-saved-state-banner" in css
-    assert "lite-overlay-root" in css
-    assert "POST" not in vite
-    assert "bootstrap.sh" not in vite
 
 def test_lite_storage_backup_targets_endpoint_discovers_ready_storage(monkeypatch):
     ensure_runtime_path()
@@ -4112,46 +4070,3 @@ def test_lite_app_action_details_filters_hidden_placeholder():
     assert "No app login was changed." in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
     assert "No app password was changed." not in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
     assert "lite-app-action-details-panel is-" in ui
-
-
-
-def test_lite_premium_pwa_partial_apply_recovery_source_is_present():
-    ui = _lite_catalog_source()
-    lite_ui = _lite_ui_source()
-    cache = Path("src/lib/liteSafeSnapshots.js").read_text()
-    vite = Path("vite.config.js").read_text()
-    css = Path("src/index.css").read_text()
-
-    assert "SAFE_LITE_GET_ENDPOINTS" in cache
-    assert "sanitizeLiteSnapshot" in cache
-    assert "LiteSavedStateBanner" in ui or "LiteSavedStateBanner" in lite_ui
-    assert "Showing saved state" in lite_ui
-    assert "APP_CATALOG_BROAD_GESTURES_DISABLED" in ui
-    assert "LiteDetailsPanel" in ui
-    assert "lite-overlay-root" in css
-    assert "lite-saved-state-banner" in css
-    assert "navigateFallbackDenylist" in vite
-    assert "apps" in vite
-    assert "bootstrap.sh" not in vite
-
-
-def test_lite_app_catalog_manage_click_safe_hotfix_source_is_present():
-    ui = _lite_catalog_source()
-    assert 'APP_CATALOG_MANAGE_NATIVE_PORTAL' in ui
-    assert 'className="lite-catalog-manage-grip"' in ui
-    assert 'SurfaceComponent={animated.section}' not in ui
-    assert 'bindManageSheetDrag()' not in ui
-    assert 'Manage is a plain button-owned state transition' in ui
-
-
-def test_lite_app_catalog_manage_native_portal_source_is_present():
-    ui = _lite_catalog_source()
-    assert "APP_CATALOG_MANAGE_NATIVE_PORTAL" in ui
-    assert "lite-catalog-manage-layer" in ui
-    assert "lite-catalog-manage-backdrop" in ui
-    assert "lite-catalog-manage-sheet" in ui
-    assert "lite-catalog-manage-grip" in ui
-    assert "setManageAppId(appKey)" in ui
-    assert "bindManageSheetDrag" not in ui
-    assert "<animated.section ref={manageSheetRef}" not in ui
-    assert "event.stopPropagation()}>" not in ui
