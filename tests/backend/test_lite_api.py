@@ -2487,14 +2487,15 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "lite-app-action-row" in ui
     assert "@use-gesture/react" in ui
     assert "@react-spring/web" in ui
-    assert "bindManageSheetDrag" in ui
+    assert "bindManageSheetDrag" not in ui
+    assert "APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL" in ui
     assert "bindCatalogPull" in ui
     assert "bindAppCardLongPress" in ui
     assert "bindManageSectionSwipe" in ui
     assert "{...bindCatalogPull()}" not in ui
     assert "{...bindAppCardLongPress(" not in ui
     assert "{...bindManageSectionSwipe()}" not in ui
-    assert "Drag app actions sheet" in ui
+    assert "Close app actions" in ui
     assert "lite-catalog-search-wrap" not in ui
     assert "lite-catalog-search-wrap" not in css
     assert "lite-catalog-filter-pills" not in ui
@@ -4132,3 +4133,12 @@ def test_lite_premium_pwa_partial_apply_recovery_source_is_present():
     assert "navigateFallbackDenylist" in vite
     assert "apps" in vite
     assert "bootstrap.sh" not in vite
+
+
+def test_lite_app_catalog_manage_click_safe_hotfix_source_is_present():
+    ui = _lite_catalog_source()
+    assert 'APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL' in ui
+    assert "gripProps={{ onClick: closeManageSheet" in ui
+    assert 'SurfaceComponent={animated.section}' not in ui
+    assert 'bindManageSheetDrag()' not in ui
+    assert 'Manage is a plain button-owned state transition' in ui
