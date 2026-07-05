@@ -2452,14 +2452,61 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined'
           ? createPortal(
               (
-<div className="lite-catalog-manage-layer" role="presentation">
-            <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
+<div
+              className="lite-catalog-manage-layer"
+              role="presentation"
+              data-lite-manage-portal="true"
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 10000,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                padding: 'max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left))',
+                pointerEvents: 'auto',
+                isolation: 'isolate',
+                color: '#0f172a',
+              }}
+            >
+            <button
+              type="button"
+              className="lite-catalog-manage-backdrop"
+              onClick={closeManageSheet}
+              aria-label="Close app management"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 0,
+                border: 0,
+                background: 'rgba(15, 23, 42, 0.42)',
+                pointerEvents: 'auto',
+              }}
+            />
             <section
               ref={manageSheetRef}
               className="lite-catalog-manage-sheet"
               role="dialog"
               aria-modal="true"
               aria-label={`Manage ${app.name}`}
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                width: 'min(100%, 44rem)',
+                maxHeight: 'min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom))))',
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                opacity: 1,
+                visibility: 'visible',
+                pointerEvents: 'auto',
+                transform: 'none',
+                background: '#f8fafc',
+                border: '1px solid rgba(148, 163, 184, 0.34)',
+                borderRadius: '2rem 2rem 1.35rem 1.35rem',
+                boxShadow: '0 30px 80px rgba(15, 23, 42, 0.35)',
+              }}
             >
               <button
                 type="button"

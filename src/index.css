@@ -14263,3 +14263,162 @@ textarea {
     max-height: none !important;
   }
 }
+
+/* App Catalog Manage body-portal visual hardening.
+   The Manage layer is attached to document.body, so the layer itself must be
+   self-contained, opaque, and above the app shell. */
+.lite-catalog-manage-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
+  pointer-events: auto !important;
+  isolation: isolate !important;
+  color: #0f172a !important;
+}
+
+.lite-catalog-manage-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  border: 0 !important;
+  background: rgba(15, 23, 42, 0.42) !important;
+  pointer-events: auto !important;
+}
+
+.lite-catalog-manage-sheet {
+  position: relative !important;
+  z-index: 1 !important;
+  width: min(100%, 44rem) !important;
+  max-height: min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom)))) !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  translate: none !important;
+  background: #f8fafc !important;
+  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  border-radius: 2rem 2rem 1.35rem 1.35rem !important;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35) !important;
+}
+
+.lite-catalog-manage-head,
+.lite-catalog-manage-section-tabs,
+.lite-catalog-manage-grip {
+  flex: 0 0 auto !important;
+}
+
+.lite-catalog-manage-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  background: #f8fafc !important;
+}
+
+.lite-catalog-manage-grip,
+.lite-catalog-manage-close,
+.lite-catalog-manage-section-tabs button,
+.lite-app-action-row button,
+.lite-app-action-row [role="button"] {
+  pointer-events: auto !important;
+}
+
+@media (min-width: 900px) {
+  .lite-catalog-manage-layer {
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    padding: 1.2rem !important;
+  }
+
+  .lite-catalog-manage-sheet {
+    width: min(42rem, 44vw) !important;
+    height: 100% !important;
+    max-height: none !important;
+    border-radius: 1.75rem !important;
+  }
+}
+
+/* POCKETLAB_MANAGE_BODY_PORTAL_CRITICAL_CSS_START */
+[data-lite-manage-portal="true"].lite-catalog-manage-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
+  pointer-events: auto !important;
+  isolation: isolate !important;
+  color: #0f172a !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  border: 0 !important;
+  background: rgba(15, 23, 42, 0.42) !important;
+  pointer-events: auto !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+  position: relative !important;
+  z-index: 1 !important;
+  width: min(100%, 44rem) !important;
+  max-height: min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom)))) !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  translate: none !important;
+  background: #f8fafc !important;
+  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  border-radius: 2rem 2rem 1.35rem 1.35rem !important;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35) !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  background: #f8fafc !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-grip,
+[data-lite-manage-portal="true"] .lite-catalog-manage-close,
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button,
+[data-lite-manage-portal="true"] .lite-app-action-row button,
+[data-lite-manage-portal="true"] .lite-app-action-row [role="button"] {
+  pointer-events: auto !important;
+}
+
+@media (min-width: 900px) {
+  [data-lite-manage-portal="true"].lite-catalog-manage-layer {
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    padding: 1.2rem !important;
+  }
+
+  [data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+    width: min(42rem, 44vw) !important;
+    height: 100% !important;
+    max-height: none !important;
+    border-radius: 1.75rem !important;
+  }
+}
+/* POCKETLAB_MANAGE_BODY_PORTAL_CRITICAL_CSS_END */
