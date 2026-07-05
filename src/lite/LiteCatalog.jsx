@@ -25,7 +25,7 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, LiteSavedStateBanner, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
-import { LiteDetailsPanel, LiteSheet } from './LiteOverlay.jsx';
+import { LiteDetailsPanel } from './LiteOverlay.jsx';
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -46,10 +46,10 @@ void APP_CATALOG_ACTION_ROWS_OWN_CLICKS;
 const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
 const APP_CATALOG_BROAD_GESTURES_DISABLED = true;
 const APP_CATALOG_SAFE_SNAPSHOT_UI_READY = true;
-const APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL = true;
+const APP_CATALOG_MANAGE_NATIVE_PORTAL = true;
 // Enterprise hotfix: Manage is a plain button-owned state transition.
 // No drag/gesture binding is attached to Manage, action rows, or critical button surfaces.
-void APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL;
+void APP_CATALOG_MANAGE_NATIVE_PORTAL;
 void APP_CATALOG_BROAD_GESTURES_DISABLED;
 void APP_CATALOG_SAFE_SNAPSHOT_UI_READY;
 // Enterprise UI rule: Open and Manage are primary visible buttons.
@@ -2460,12 +2460,21 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined' ? createPortal((
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
-            <LiteSheet
+            <section
+              ref={manageSheetRef}
               className="lite-catalog-manage-sheet"
-              ariaLabel={manageSheetTitle}
-              initialFocusRef={manageCloseRef}
-              gripProps={{ onClick: closeManageSheet, type: 'button' }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={manageSheetTitle}
             >
+              <button
+                type="button"
+                className="lite-catalog-manage-grip"
+                onClick={closeManageSheet}
+                aria-label="Close app actions"
+              >
+                <span aria-hidden="true" />
+              </button>
               <div className="lite-catalog-manage-head">
               <div>
                 <span>Manage</span>
@@ -2597,7 +2606,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               ) : null}
             </div>
             </div>
-            </LiteSheet>
+            </section>
           </div>
         ), document.body) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">

@@ -2488,7 +2488,7 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "@use-gesture/react" in ui
     assert "@react-spring/web" in ui
     assert "bindManageSheetDrag" not in ui
-    assert "APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL" in ui
+    assert "APP_CATALOG_MANAGE_NATIVE_PORTAL" in ui
     assert "bindCatalogPull" in ui
     assert "bindAppCardLongPress" in ui
     assert "bindManageSectionSwipe" in ui
@@ -4137,8 +4137,21 @@ def test_lite_premium_pwa_partial_apply_recovery_source_is_present():
 
 def test_lite_app_catalog_manage_click_safe_hotfix_source_is_present():
     ui = _lite_catalog_source()
-    assert 'APP_CATALOG_MANAGE_CLICK_SAFE_PORTAL' in ui
-    assert "gripProps={{ onClick: closeManageSheet" in ui
+    assert 'APP_CATALOG_MANAGE_NATIVE_PORTAL' in ui
+    assert 'className="lite-catalog-manage-grip"' in ui
     assert 'SurfaceComponent={animated.section}' not in ui
     assert 'bindManageSheetDrag()' not in ui
     assert 'Manage is a plain button-owned state transition' in ui
+
+
+def test_lite_app_catalog_manage_native_portal_source_is_present():
+    ui = _lite_catalog_source()
+    assert "APP_CATALOG_MANAGE_NATIVE_PORTAL" in ui
+    assert "lite-catalog-manage-layer" in ui
+    assert "lite-catalog-manage-backdrop" in ui
+    assert "lite-catalog-manage-sheet" in ui
+    assert "lite-catalog-manage-grip" in ui
+    assert "setManageAppId(appKey)" in ui
+    assert "bindManageSheetDrag" not in ui
+    assert "<animated.section ref={manageSheetRef}" not in ui
+    assert "event.stopPropagation()}>" not in ui
