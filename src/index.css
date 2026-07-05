@@ -14138,3 +14138,61 @@ textarea {
     max-height: none;
   }
 }
+
+/* App Catalog Manage viewport hardening.
+   This must stay last: Manage is a critical control surface. */
+.theme-pocket-lite-daylight .lite-catalog-manage-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
+  pointer-events: auto !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: auto !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+  position: relative !important;
+  z-index: 1 !important;
+  width: min(100%, 44rem) !important;
+  max-height: min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom)))) !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  translate: none !important;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+@media (min-width: 900px) {
+  .theme-pocket-lite-daylight .lite-catalog-manage-layer {
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    padding: 1.2rem !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+    width: min(42rem, 44vw) !important;
+    height: 100% !important;
+    max-height: none !important;
+  }
+}
