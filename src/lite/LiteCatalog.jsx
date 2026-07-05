@@ -2452,12 +2452,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed && lifecycle && manageAppId === catalogAppKey(app) && typeof document !== 'undefined' ? createPortal((
           <div className="lite-catalog-manage-layer" role="presentation">
             <button type="button" className="lite-catalog-manage-backdrop" onClick={closeManageSheet} aria-label="Close app management" />
-            <animated.section ref={manageSheetRef} className={`lite-catalog-manage-sheet ${manageDrag.dragging ? 'is-dragging' : ''}`} style={manageSheetStyle} role="dialog" aria-modal="true" aria-label={`Manage ${app.name}`} onPointerDown={(event) => event.stopPropagation()}>
+            <section
+              ref={manageSheetRef}
+              className="lite-catalog-manage-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Manage ${app.name}`}
+            >
               <button
                 type="button"
                 className="lite-catalog-manage-grip"
-                aria-label="Drag app actions sheet"
-                {...bindManageSheetDrag()}
+                aria-label="Close app actions"
+                onClick={closeManageSheet}
               >
                 <span aria-hidden="true" />
               </button>
@@ -2592,7 +2598,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               ) : null}
             </div>
             </div>
-            </animated.section>
+            </section>
           </div>
         ), document.body) : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">

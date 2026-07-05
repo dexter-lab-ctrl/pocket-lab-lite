@@ -14072,3 +14072,69 @@ textarea {
 @keyframes liteOverlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes liteOverlaySheetIn { from { opacity: 0; transform: translate3d(0, 22px, 0) scale(0.99); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
 @keyframes liteSavedStateSettle { from { opacity: 0; transform: translate3d(0, -4px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+/* App Catalog Manage reliability override.
+   Keep Manage visible, fixed, and scrollable on Android/PWA browsers. */
+.theme-pocket-lite-daylight .lite-catalog-manage-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  pointer-events: auto;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 44rem);
+  max-height: min(86vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.5rem, env(safe-area-inset-top)) - max(1.5rem, env(safe-area-inset-bottom))));
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  translate: none;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.theme-pocket-lite-daylight .lite-catalog-manage-grip,
+.theme-pocket-lite-daylight .lite-catalog-manage-close,
+.theme-pocket-lite-daylight .lite-catalog-manage-section-tabs button,
+.theme-pocket-lite-daylight .lite-app-action-row button,
+.theme-pocket-lite-daylight .lite-app-action-row [role="button"] {
+  pointer-events: auto;
+}
+
+@media (min-width: 900px) {
+  .theme-pocket-lite-daylight .lite-catalog-manage-layer {
+    align-items: stretch;
+    justify-content: flex-end;
+    padding: 1.2rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-catalog-manage-sheet {
+    width: min(42rem, 44vw);
+    height: 100%;
+    max-height: none;
+  }
+}
