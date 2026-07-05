@@ -2254,6 +2254,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const repairAppAction = actionState('repair_app');
     const removeAppAction = actionState('remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
+    const manageSheetTitle = `Manage ${app?.name || 'app'}`;
     const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
     const appActionEntries = [
       {
