@@ -819,6 +819,32 @@ export function LoadingCard({ label = 'Loading Pocket Lab Lite...' }) {
   );
 }
 
+
+export function LiteFlowStatusPanel({ title = 'Guided step', label = 'Getting ready', steps = [], note = '', tone = 'info', className = '' }) {
+  const safeSteps = Array.isArray(steps) ? steps.filter(Boolean) : [];
+  if (!safeSteps.length && !label && !note) return null;
+
+  return (
+    <div className={`lite-flow-status-panel lite-flow-status-${tone} ${className}`.trim()} aria-live="polite">
+      <div className="lite-flow-status-head">
+        <span>{title}</span>
+        <strong>{label}</strong>
+      </div>
+      {note ? <p>{note}</p> : null}
+      {safeSteps.length ? (
+        <ol className="lite-flow-status-steps">
+          {safeSteps.map((step) => (
+            <li key={step.id || step.label} className={`lite-flow-status-step is-${step.state || 'waiting'}`}>
+              <span aria-hidden="true" />
+              <em>{step.label}</em>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
 export function friendlyOverallLabel(overall) {
   return backendLabel(overall, {
     ready: 'Everything looks good',

@@ -4539,3 +4539,76 @@ def test_lite_zustand_preserves_safe_snapshot_and_pwa_boundaries_source():
     assert "navigateFallbackDenylist" in vite
     assert "safeLiteReadApiPattern" in vite
     assert "apps" in vite
+
+
+
+def test_lite_xstate_dependencies_are_declared_source():
+    package = json.loads(Path("package.json").read_text())
+    lockfile = json.loads(Path("package-lock.json").read_text())
+    assert "xstate" in package["dependencies"]
+    assert "@xstate/react" in package["dependencies"]
+    assert "xstate" in lockfile["packages"][""]["dependencies"]
+    assert "@xstate/react" in lockfile["packages"][""]["dependencies"]
+
+
+def test_lite_xstate_machine_files_and_required_states_source():
+    machines = {
+        "src/machines/liteAddDeviceMachine.js": ["validatingName", "checkingDuplicates", "creatingInvite", "inviteReady", "waitingForDevice", "joined", "online", "blocked", "failed"],
+        "src/machines/liteRecoveryFlowMachine.js": ["backupRequested", "backupQueued", "backupRunning", "backupDone", "verifyRequested", "verifying", "verified", "previewRequested", "previewReady", "restoreConfirmationRequired", "checkpointCreating", "restoring", "validatingHealth"],
+        "src/machines/liteSecurityCheckMachine.js": ["requestAccepted", "workerPickedUp", "lynisRunning", "trivyRunning", "evidenceSaving", "evidenceSaved", "partialResults"],
+        "src/machines/liteAppActionFlowMachine.js": ["reviewing", "confirmationRequired", "submitting", "accepted", "queued", "running", "waitingForBackendState", "resultReady", "detailsReady", "blocked", "failed"],
+    }
+    for machine_path, required_states in machines.items():
+        source = Path(machine_path).read_text()
+        assert "createMachine" in source
+        for state in required_states:
+            assert state in source
+
+
+def test_lite_xstate_machines_do_not_import_unsafe_runtime_sources():
+    unsafe_terms = ["from 'fs'", 'from "fs"', "child_process", "exec(", "spawn(", "pm2", "nats", "jetstream", "shell", "fetch(", "localStorage", "sessionStorage", "browser_action_queue"]
+    for machine_path in Path("src/machines").glob("lite*Machine.js"):
+        source = machine_path.read_text()
+        for unsafe in unsafe_terms:
+            assert unsafe.lower() not in source.lower(), machine_path
+
+
+def test_lite_xstate_hooks_and_screens_preserve_backend_ownership_source():
+    hooks = [Path("src/hooks/useLiteAddDeviceFlow.js"), Path("src/hooks/useLiteRecoveryFlow.js"), Path("src/hooks/useLiteSecurityCheckFlow.js"), Path("src/hooks/useLiteAppActionFlow.js")]
+    for hook in hooks:
+        source = hook.read_text()
+        assert "@xstate/react" in source
+        assert "useMachine" in source
+        assert "fetch(" not in source
+        assert "child_process" not in source
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    ui = Path("src/lite/LiteUi.jsx").read_text()
+    assert "useLiteAddDeviceFlow" in devices and "liteApi.addDevice" in devices and "addDeviceFlow.inviteReady" in devices
+    assert "useLiteRecoveryFlow" in recovery and "recoveryFlow.requestRestore" in recovery and "confirm: true" in recovery and "latestBackup.backup_id !== 'latest'" in recovery
+    assert "useLiteSecurityCheckFlow" in security and "securityFlow.requestRun" in security and "liteApi.runSecurityScan" in security and "securityExecutionTimeline" in security
+    assert "useLiteAppActionFlow" in catalog and "appActionFlow.review" in catalog and "appActionFlow.submit" in catalog and "liteApi.runAppAction" in catalog
+    assert "window.location.assign(target)" in catalog
+    assert 'data-lite-manage-portal="true"' in catalog
+    assert "onClickCapture" not in catalog
+    assert "LiteFlowStatusPanel" in ui
+    assert "lite-flow-status-panel" in Path("src/index.css").read_text()
+
+
+def test_lite_xstate_preserves_query_snapshot_zustand_boundaries_source():
+    guards = Path("src/machines/liteFlowGuards.js").read_text()
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    store = Path("src/stores/liteUiStore.js").read_text()
+    vite = Path("vite.config.js").read_text()
+    assert "LITE_XSTATE_WORKFLOW_ONLY" in guards
+    assert "LITE_XSTATE_NO_BROWSER_ACTION_QUEUE" in guards
+    assert "LITE_XSTATE_NO_OPTIMISTIC_SUCCESS" in guards
+    assert "LITE_BROWSER_ACTION_QUEUE_DISABLED" in mutation
+    assert "retry: false" in mutation
+    assert "SAFE_LITE_GET_ENDPOINTS" in snapshots
+    assert "LITE_UI_STORE_IS_UI_ONLY" in store
+    assert "navigateFallbackDenylist" in vite and "safeLiteReadApiPattern" in vite and "apps" in vite
+    assert "lite-saved-state-banner" not in snapshots

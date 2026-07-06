@@ -29,9 +29,10 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
 import { liteMutationInvalidations, useLiteMutation } from '../hooks/useLiteMutation.js';
+import { useLiteAppActionFlow } from '../hooks/useLiteAppActionFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, LiteFlowStatusPanel, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteActionProgress from './LiteActionProgress.jsx';
 import { LiteContextualActionCue, LiteElevationSurface, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
@@ -1787,7 +1788,7 @@ function CatalogSkeletons() {
 
 
 export default function CatalogScreen({ onOpenWorkspace }) {
-  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.catalog, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.catalog, []);
   const manageAppId = useLiteUiStore((state) => state.manageAppId);
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
   const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
@@ -1824,6 +1825,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [actionSnapshots, setActionSnapshots] = useState({});
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
   const [quickActionsAppId, setQuickActionsAppId] = useState(null);
+  const appActionFlow = useLiteAppActionFlow({ backendReachable, savedStateOnly });
   const manageSection = useLiteUiStore((state) => state.activeManageSection);
   const setManageSection = useLiteUiStore((state) => state.setManageSection);
   const [manageSectionSwipe, setManageSectionSwipe] = useState({ dragging: false, offsetX: 0 });
@@ -2239,6 +2241,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       window.setTimeout(refresh, 700);
       window.setTimeout(refresh, 1800);
     } catch (err) {
+      appActionFlow.fail(err);
       const detail = err?.payload?.detail;
       if (detail?.status === 'duplicate_mapping') {
         setResult(null);
@@ -2297,6 +2300,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       await refreshPhotoPrismState();
       window.setTimeout(refresh, 700);
     } catch (err) {
+      appActionFlow.fail(err);
       const detail = err?.payload?.detail;
       if (detail?.status === 'duplicate_mapping') {
         setResult({ action_id: 'connect_photos', status: 'already_connected', summary: detail.summary || 'This media folder is already connected to PhotoPrism.' });
@@ -2312,6 +2316,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function runLifecycleAction(app, actionId, event, extraPayload = {}) {
     event?.stopPropagation?.();
     if (!isPhotoPrismApp(app) || !actionId) return;
+    const flowAction = actionFromSnapshot(actionSnapshots[appSnapshotKey(app)] || null, actionId, lifecycleAction(lifecycleProfile(app), actionId));
+    appActionFlow.review({ appId: app.id || 'photoprism', actionId, actionLabel: flowAction?.label, risk: flowAction?.risk, destructive: flowAction?.destructive, confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', disabledReason: flowAction?.disabled_reason || flowAction?.reason });
+    const flowSubmit = appActionFlow.submit({ actionId, confirmed: Boolean(extraPayload.confirm), confirmationRequired: flowAction?.confirmation_required || actionId === 'remove_app', destructive: flowAction?.destructive });
+    if (!flowSubmit.ok) { setActionError(flowSubmit.reason); return; }
     const busyKey = `${app.id}:${actionId}`;
     setActionBusyKey(busyKey);
     setActionError(null);
@@ -2323,12 +2331,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         actionId,
         payload: { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload },
       });
+      appActionFlow.accepted(response);
+      appActionFlow.resultReady(response);
       setResult({ action_id: actionId, ...response });
       await refreshAppActions(appId);
       refresh();
       window.setTimeout(() => { refresh(); refreshAppActions(appId); }, 700);
       window.setTimeout(() => { refresh(); refreshAppActions(appId); }, 1800);
     } catch (err) {
+      appActionFlow.fail(err);
       const detail = err?.payload?.detail;
       setActionError(detail?.summary || err.message);
     } finally {
@@ -2693,6 +2704,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
                 <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
               </div>
+              <LiteFlowStatusPanel title="Guided action" label={appActionFlow.label} steps={appActionFlow.steps} note={appActionFlow.writeBlocked ? appActionFlow.blockedReason : 'Risky app actions stay backend-owned and details stay lightweight.'} className="lite-catalog-flow-panel" />
               <div className="lite-catalog-action-groups">
                 {activeAppActionGroups.map((group) => (
                   <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
