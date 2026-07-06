@@ -20,6 +20,8 @@ import SecurityScreen from './LiteSecurity.jsx';
 import DevicesScreen from './LiteDevices.jsx';
 import RulesScreen from './LiteRules.jsx';
 import RecoveryScreen from './LiteRecovery.jsx';
+import LiteToastHost from './LiteToastHost.jsx';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
   GlassCard,
   LiteButton,
@@ -403,9 +405,11 @@ class LiteErrorBoundary extends React.Component {
 }
 
 function LiteAppShell() {
-  const [active, setActive] = useState('home');
+  const active = useLiteUiStore((state) => state.activeTab);
+  const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
+  const menuOpen = useLiteUiStore((state) => state.mobileMenuOpen);
+  const setMenuOpen = useLiteUiStore((state) => state.setMobileMenuOpen);
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
-  const [menuOpen, setMenuOpen] = useState(false);
   const online = useOnlineStatus();
   const { status, loading, error, refresh, cacheStatus, refreshing } = useLiteStatus();
 
@@ -428,14 +432,14 @@ function LiteAppShell() {
       embedAllowed: appWorkspaceEmbedAllowed(app),
       fromTab: active || 'catalog',
     });
-    setActive('catalog');
+    setActiveTab('catalog');
     setMenuOpen(false);
     pushPocketLabPath(workspacePathForApp(appId));
   };
 
   const closeWorkspaceToTab = (tabId = 'catalog') => {
     setWorkspaceApp(null);
-    setActive(tabId);
+    setActiveTab(tabId);
     setMenuOpen(false);
     pushPocketLabPath('/');
   };
@@ -458,7 +462,7 @@ function LiteAppShell() {
       onOpenFullScreen={openFullScreen}
     />
   ) : ({
-    home: <HomeScreen status={status} loading={loading} error={error} refresh={refresh} cacheStatus={cacheStatus} refreshing={refreshing} onNavigate={setActive} />,
+    home: <HomeScreen status={status} loading={loading} error={error} refresh={refresh} cacheStatus={cacheStatus} refreshing={refreshing} onNavigate={setActiveTab} />,
     catalog: <CatalogScreen onOpenWorkspace={openWorkspace} />,
     identity: <IdentityScreen />,
     security: <SecurityScreen />,
@@ -473,6 +477,7 @@ function LiteAppShell() {
     <div className={shellClassName}>
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
+      <LiteToastHost />
 
       {!online && (
         <div className="fixed left-1/2 top-4 z-[90] w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 rounded-3xl border border-slate-300/20 bg-slate-950/95 px-4 py-3 text-slate-100 shadow-2xl shadow-black/40 backdrop-blur-xl" role="status">
@@ -504,7 +509,7 @@ function LiteAppShell() {
           const Icon = item.icon;
           const isActive = active === item.id;
           return (
-            <button key={item.id} type="button" onClick={() => setActive(item.id)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
+            <button key={item.id} type="button" onClick={() => setActiveTab(item.id)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon relative z-10 h-5 w-5" />
               <span className="relative z-10 mt-1 text-[0.68rem] font-bold tracking-wide">{item.label.split(' ')[0]}</span>
             </button>
@@ -517,7 +522,7 @@ function LiteAppShell() {
           const Icon = item.icon;
           const isActive = active === item.id;
           return (
-            <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : setActive(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
+            <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : setActiveTab(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon h-5 w-5" />
             </button>
           );
@@ -537,7 +542,7 @@ function LiteAppShell() {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : (setActive(item.id), setMenuOpen(false))} className="mobile-more-item nav-active-rail-item">
+              <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : (setActiveTab(item.id), setMenuOpen(false))} className="mobile-more-item nav-active-rail-item">
                 <Icon className="nav-active-rail-icon h-5 w-5" />
                 <span>{item.label}</span>
               </button>

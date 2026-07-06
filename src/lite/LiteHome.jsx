@@ -91,7 +91,7 @@ export default function HomeScreen({ status, loading, error, refresh, cacheStatu
         eyebrow="Home"
         title={backendHeroTitle(status.overall, { ready: 'Your Pocket Lab is ready', review: 'Your Pocket Lab needs review', danger: 'Your Pocket Lab needs attention', checking: 'Checking your Pocket Lab' })}
         description="A calm overview of your apps, devices, safety, and backups. Start common tasks from here without digging through settings."
-        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       {error ? (
