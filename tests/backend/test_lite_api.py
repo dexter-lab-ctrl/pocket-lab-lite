@@ -4648,6 +4648,9 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
     assert "'Working'" in progress
     assert "'Done'" in progress
     assert "Done ✓" in progress
+    assert "function nodeState({ state, index, activeStage, finalIndex })" in progress
+    assert "activeStage: displayActiveStage" in progress
+    assert "index < activeStage" in progress
     assert "shouldAnimateProgress" in progress
     assert "setInterval" in progress
     assert "progress?.running || ['running', 'working'" in progress
