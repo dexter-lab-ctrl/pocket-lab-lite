@@ -24,6 +24,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
+import { LiteElevationSurface, LitePressableButton, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -204,6 +205,7 @@ const MANAGE_SECTION_LABELS = {
 
 function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
   const [pressed, setPressed] = React.useState(false);
+  const { rippleHandlers, rippleNode } = useLiteRipple();
   const spring = useSpring({
     transform: active ? 'translateY(-1px)' : pressed ? 'translateY(1px)' : 'translateY(0px)',
     opacity: active ? 1 : 0.92,
@@ -223,11 +225,11 @@ function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
       aria-selected={active}
       className={active ? 'is-active' : ''}
       style={spring}
-      onPointerDown={() => setPressed(true)}
+      onPointerDown={(event) => { rippleHandlers.onPointerDown(event); setPressed(true); }}
       onPointerUp={() => setPressed(false)}
       onPointerCancel={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
-      onClick={onSelect}
+      onClick={(event) => { triggerLiteTactileFeedback('selection'); onSelect?.(event); }}
     >
       <span className="lite-catalog-manage-tab-label">{label}</span>
       <animated.span
@@ -235,6 +237,7 @@ function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
         aria-hidden="true"
         style={indicatorSpring}
       />
+      {rippleNode}
     </animated.button>
   );
 }
@@ -576,15 +579,16 @@ function tileResultForAction(actionId, action = {}, result = null) {
 function AppActionDetailsButton({ available, onClick, expanded = false }) {
   if (!available) return null;
   return (
-    <button
+    <LitePressableButton
       type="button"
       className={`lite-app-action-details-button ${expanded ? 'is-expanded' : ''}`}
       onClick={onClick}
       aria-expanded={expanded}
+      haptic="selection"
     >
       <FileCheck className="h-4 w-4" />
       <span>{expanded ? 'Hide details' : 'Details'}</span>
-    </button>
+    </LitePressableButton>
   );
 }
 
@@ -941,7 +945,12 @@ function PhotoPrismActionTile({
   const rowStateLabel = progressLabel || reason || actionRowStateLabel(actionId, action, tileResult || result);
   const actionButtonLabel = busy || progressState?.running ? 'Working' : copy.label;
   return (
-    <div className={`lite-catalog-action-tile lite-app-action-row lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} is-${rowTone} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''} ${isImportedPhotos ? 'is-imported' : ''}`} data-action-id={actionId}>
+    <LiteElevationSurface
+      className={`lite-catalog-action-tile lite-app-action-row lite-app-action-tile ${isDisabled ? 'is-disabled' : ''} ${showProgress ? 'has-progress' : ''} ${progressState?.running ? 'is-running' : ''} is-${rowTone} ${actionId === 'remove_app' ? 'is-danger' : ''} ${isConnectPhotos && normalized.connected ? 'is-connected' : ''} ${isImportedPhotos ? 'is-imported' : ''}`}
+      data-action-id={actionId}
+      disabled={isDisabled}
+      active={showProgress || Boolean(detailsExpanded)}
+    >
       <div className="lite-app-action-row-main">
         <span className="lite-catalog-action-tile-icon lite-app-action-row-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
         <div className="lite-app-action-row-copy">
@@ -957,6 +966,7 @@ function PhotoPrismActionTile({
           onClick={onClick}
           disabled={isDisabled}
           title={title || reason || copy.description}
+          haptic={!isDisabled}
         >
           {actionButtonLabel}
         </LiteButton>
@@ -993,7 +1003,7 @@ function PhotoPrismActionTile({
           <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
         </div>
       ) : null}
-    </div>
+    </LiteElevationSurface>
   );
 }
 
