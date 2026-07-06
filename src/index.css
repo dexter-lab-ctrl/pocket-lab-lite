@@ -14422,3 +14422,34 @@ textarea {
   }
 }
 /* POCKETLAB_MANAGE_BODY_PORTAL_CRITICAL_CSS_END */
+
+/* App Catalog Manage mobile scroll containment.
+   Only the grip/header stay fixed; all app management content scrolls inside
+   the body-level sheet to prevent clipping on mobile devices. */
+[data-lite-manage-portal="true"] .lite-catalog-manage-sheet {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-head,
+[data-lite-manage-portal="true"] .lite-catalog-manage-grip {
+  flex: 0 0 auto !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-media-flow-card,
+[data-lite-manage-portal="true"] .lite-catalog-manage-quick-actions,
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs,
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-viewport,
+[data-lite-manage-portal="true"] .lite-catalog-action-reasons,
+[data-lite-manage-portal="true"] .lite-catalog-storage-panel--sheet {
+  flex: 0 0 auto !important;
+}
