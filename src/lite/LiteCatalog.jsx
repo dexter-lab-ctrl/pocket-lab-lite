@@ -32,6 +32,7 @@ import { liteMutationInvalidations, useLiteMutation } from '../hooks/useLiteMuta
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteActionProgress from './LiteActionProgress.jsx';
 import { LiteContextualActionCue, LiteElevationSurface, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
 
@@ -1787,7 +1788,9 @@ function CatalogSkeletons() {
 
 export default function CatalogScreen({ onOpenWorkspace }) {
   const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.catalog, []);
-  const [manageAppId, setManageAppId] = useState(null);
+  const manageAppId = useLiteUiStore((state) => state.manageAppId);
+  const setManageApp = useLiteUiStore((state) => state.setManageApp);
+  const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
   const manageScrollRef = useRef(null);
@@ -1814,11 +1817,15 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [storagePreviewLoading, setStoragePreviewLoading] = useState(false);
   const [storagePreviewError, setStoragePreviewError] = useState(null);
   const [storagePreviewNotice, setStoragePreviewNotice] = useState(null);
-  const [detailsActionId, setDetailsActionId] = useState(null);
+  const detailsActionId = useLiteUiStore((state) => state.activeDetailsActionId);
+  const setActiveAction = useLiteUiStore((state) => state.setActiveAction);
+  const setActiveDetailsAction = useLiteUiStore((state) => state.setActiveDetailsAction);
+  const clearActiveDetailsAction = useLiteUiStore((state) => state.clearActiveDetailsAction);
   const [actionSnapshots, setActionSnapshots] = useState({});
   const [pullRefresh, setPullRefresh] = useState({ pulling: false, ready: false, offsetY: 0 });
   const [quickActionsAppId, setQuickActionsAppId] = useState(null);
-  const [manageSection, setManageSection] = useState('media');
+  const manageSection = useLiteUiStore((state) => state.activeManageSection);
+  const setManageSection = useLiteUiStore((state) => state.setManageSection);
   const [manageSectionSwipe, setManageSectionSwipe] = useState({ dragging: false, offsetX: 0 });
   const reduceMotion = useMemo(prefersReducedMotion, []);
   const [{ manageSheetY }, manageSheetSpring] = useSpring(() => ({ manageSheetY: 0, config: config.gentle }));
@@ -1860,7 +1867,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     if (!manageAppId) return undefined;
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
-        setManageAppId(null);
+        clearManageApp();
         closeActionDetails();
       }
     };
@@ -1885,28 +1892,28 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       window.removeEventListener('resize', updateLiteCatalogVisualViewportVar);
       document.body.style.overflow = previousOverflow;
     };
-  }, [manageAppId]);
+  }, [clearManageApp, manageAppId]);
 
-  const openManageSheet = useCallback((appOrId, section = 'media') => {
+  const openManageSheet = useCallback((appOrId, section = '') => {
     const appKey = catalogAppKey(appOrId);
+    const nextSection = MANAGE_SECTION_ORDER.includes(section) ? section : undefined;
     setManageDrag({ dragging: false, offsetY: 0 });
-    setManageSection(MANAGE_SECTION_ORDER.includes(section) ? section : 'media');
     setQuickActionsAppId(null);
-    setManageAppId(appKey);
+    setManageApp(appKey, nextSection);
     closeActionDetails();
     window.requestAnimationFrame(() => {
       if (manageScrollRef.current) {
         manageScrollRef.current.scrollTop = 0;
       }
     });
-  }, [closeActionDetails]);
+  }, [closeActionDetails, setManageApp]);
 
   const closeManageSheet = useCallback(() => {
     setManageDrag({ dragging: false, offsetY: 0 });
     setManageSectionSwipe({ dragging: false, offsetX: 0 });
-    setManageAppId(null);
+    clearManageApp();
     closeActionDetails();
-  }, [closeActionDetails]);
+  }, [clearManageApp, closeActionDetails]);
 
 
   const settleManageSheetDrag = useCallback((movementY, velocityY = 0) => {
@@ -2009,7 +2016,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }
     setManageSectionSwipe({ dragging: false, offsetX: 0 });
     manageSectionSpring.start({ manageSectionX: 0, immediate: reduceMotion, config: config.stiff });
-  }, [availableManageSections, closeActionDetails, manageSection, manageSectionSpring, reduceMotion]);
+  }, [availableManageSections, closeActionDetails, manageSection, manageSectionSpring, reduceMotion, setManageSection]);
 
   const bindManageSectionSwipe = useDrag(({ active, movement: [mx, my], velocity: [vx], cancel, event }) => {
     if (event?.target?.closest?.('button, a, input, textarea, select, [role="button"], .lite-catalog-manage-grip')) {
@@ -2110,15 +2117,19 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
 
   function openActionDetails(actionId, appId = 'photoprism') {
-    setDetailsActionId((current) => {
-      const next = current === actionId ? null : actionId;
-      if (next) refreshAppActions(appId || 'photoprism');
-      return next;
-    });
+    const next = detailsActionId === actionId ? null : actionId;
+    setActiveAction(next);
+    if (next) {
+      setActiveDetailsAction(next);
+      refreshAppActions(appId || 'photoprism');
+      return;
+    }
+    clearActiveDetailsAction();
   }
 
   function closeActionDetails() {
-    setDetailsActionId(null);
+    setActiveAction(null);
+    clearActiveDetailsAction();
   }
 
 
@@ -2845,7 +2856,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               {isCatalogSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
               {isCatalogSecure ? 'Secure Access' : 'Not Secure'}
             </div>
-            <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
+            <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
         )}
       />
@@ -2879,7 +2890,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2>{apps.length ? 'No apps available' : 'No apps installed yet'}</h2>
             <p>{apps.length ? 'Refresh the App Catalog to check again.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
           </div>
-          <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Check again" />
+          <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Check again" />
         </GlassCard>
       ) : null}
       {removeConfirmApp ? (

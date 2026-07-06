@@ -112,7 +112,7 @@ export default function RulesScreen() {
         eyebrow="Rules"
         title="Safety Rules"
         description="Choose how careful Pocket Lab should be before making changes. Keep protection on for everyday use."
-        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="rules" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-rules-hero">

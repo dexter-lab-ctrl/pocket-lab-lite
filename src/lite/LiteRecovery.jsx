@@ -347,7 +347,7 @@ export default function RecoveryScreen() {
         eyebrow="Recovery"
         title="Backup & Restore"
         description="Create a safety copy before changes. Restore stays protected until backup checks and preview are ready."
-        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="recovery" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-recovery-hero lite-recovery-hero-premium">
@@ -376,7 +376,7 @@ export default function RecoveryScreen() {
             <LiteButton onClick={backup} disabled={busy === 'backup'}>
               {busy === 'backup' ? 'Starting backup...' : 'Backup Now'}
             </LiteButton>
-            <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
+            <LiteRefreshButton scope="recovery" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
         </div>
 

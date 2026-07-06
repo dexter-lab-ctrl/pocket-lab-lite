@@ -239,7 +239,7 @@ export default function DevicesScreen() {
         eyebrow="Devices"
         title="My Devices"
         description="See this device and any others connected to your Pocket Lab. Add a new device when you are ready to expand."
-        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-devices-hero">
@@ -390,7 +390,7 @@ export default function DevicesScreen() {
                     <LiteButton onClick={copyInvite} tone="secondary">
                       <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
                     </LiteButton>
-                    <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Refresh devices" tone="secondary" />
+                    <LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Refresh devices" tone="secondary" />
                   </div>
 
                   <details className="lite-invite-details">

@@ -2467,7 +2467,8 @@ def test_lite_app_action_sheet_ui_source_is_present():
     assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in ui
     assert "APP_CATALOG_MANAGE_PORTAL_STABLE_APP_KEY" in ui
     assert "function catalogAppKey(" in ui
-    assert "setManageAppId(appKey)" in ui
+    assert "setManageApp(appKey" in ui
+    assert "setManageAppId" not in ui
     assert "updateLiteCatalogVisualViewportVar" in ui
     assert "visualViewport" in ui
     assert "lite-catalog-summary-panel" in ui
@@ -4417,6 +4418,121 @@ def test_lite_dexie_phase_preserves_no_browser_action_queue_and_pwa_denylist_sou
     assert "LiteSavedStateBanner()" in ui
     assert "return null;" in ui
     assert "lite-refresh-status-popover" in ui
+    assert "navigateFallbackDenylist" in vite
+    assert "safeLiteReadApiPattern" in vite
+    assert "apps" in vite
+
+
+def test_lite_zustand_dependency_and_ui_store_source():
+    package = json.loads(Path("package.json").read_text())
+    lockfile = json.loads(Path("package-lock.json").read_text())
+    store = Path("src/stores/liteUiStore.js").read_text()
+
+    assert "zustand" in package["dependencies"]
+    assert "zustand" in lockfile["packages"][""]["dependencies"]
+    assert "create } from 'zustand'" in store
+    assert "activeTab" in store
+    assert "mobileMenuOpen" in store
+    assert "moreSheetOpen" in store
+    assert "activeOverlay" in store
+    assert "openOverlay" in store
+    assert "closeAllOverlays" in store
+    assert "toasts" in store
+    assert "pushToast" in store
+    assert "dismissToast" in store
+    assert "refreshByScope" in store
+    assert "beginRefresh" in store
+    assert "finishRefresh" in store
+    assert "manageAppId" in store
+    assert "activeManageSection" in store
+    assert "activeDetailsActionId" in store
+    assert "setManageApp" in store
+    assert "setManageSection" in store
+    assert "LITE_UI_STORE_IS_UI_ONLY" in store
+
+
+def test_lite_zustand_store_remains_ui_only_source():
+    store = Path("src/stores/liteUiStore.js").read_text()
+
+    assert "../lib/liteApi" not in store
+    assert "liteApi" not in store
+    assert "useLiteQuery" not in store
+    assert "useLiteMutation" not in store
+    assert "localStorage" not in store
+    assert "sessionStorage" not in store
+    assert "shell" not in store.lower()
+    assert "exec(" not in store
+    assert "fetch(" not in store
+    assert "browser_action_queue" not in store.lower()
+    for forbidden in [
+        "deviceStatusTruth",
+        "securityTruth",
+        "backupTruth",
+        "actionResultTruth",
+        "commandPayload",
+    ]:
+        assert forbidden not in store
+    for forbidden_lower in ["token", "password", "secret", "api_key", "apikey", "credential", "nats"]:
+        assert forbidden_lower not in store.lower()
+
+
+def test_lite_zustand_toast_and_refresh_are_wired_into_ui_source():
+    app = Path("src/lite/LiteApp.jsx").read_text()
+    ui = Path("src/lite/LiteUi.jsx").read_text()
+    toast_host = Path("src/lite/LiteToastHost.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "LiteToastHost" in app
+    assert "useLiteUiStore" in app
+    assert "useLiteUiStore" in ui
+    assert "useLiteRefreshFeedback" in ui
+    assert "beginRefresh(scope)" in ui
+    assert "finishRefresh(scope" in ui
+    assert "lite-refresh-status-popover" in ui
+    assert "LiteSavedStateBanner()" in ui
+    assert "return null;" in ui
+    assert "useLiteUiStore" in toast_host
+    assert "LITE_TOAST_HOST_USES_ZUSTAND" in toast_host
+    assert "lite-toast-host" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+
+
+def test_lite_zustand_app_catalog_manage_state_source():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+
+    assert "useLiteUiStore" in catalog
+    assert "state.manageAppId" in catalog
+    assert "state.setManageApp" in catalog
+    assert "state.clearManageApp" in catalog
+    assert "state.activeManageSection" in catalog
+    assert "state.setManageSection" in catalog
+    assert "state.activeDetailsActionId" in catalog
+    assert "state.setActiveDetailsAction" in catalog
+    assert "state.clearActiveDetailsAction" in catalog
+    assert "setManageAppId" not in catalog
+    assert "setDetailsActionId" not in catalog
+    assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
+    assert "APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS" in catalog
+    assert "APP_CATALOG_ACTION_ROWS_OWN_CLICKS" in catalog
+    assert "window.location.assign(target)" in catalog
+    assert "data-lite-manage-portal=\"true\"" in catalog
+    assert "onClick={closeManageSheet}" in catalog
+    assert "openActionDetails" in catalog
+    assert "AppActionDetailsPanel" in catalog
+    assert "onClickCapture" not in catalog
+    assert "browser action queue" not in catalog.lower()
+
+
+def test_lite_zustand_preserves_safe_snapshot_and_pwa_boundaries_source():
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    vite = Path("vite.config.js").read_text()
+
+    assert "LITE_BROWSER_ACTION_QUEUE_DISABLED" in mutation
+    assert "retry: false" in mutation
+    assert "SAFE_LITE_GET_ENDPOINTS" in snapshots
+    assert "/api/lite/apps/photoprism/actions" in snapshots
+    assert "lite-saved-state-banner" not in snapshots
     assert "navigateFallbackDenylist" in vite
     assert "safeLiteReadApiPattern" in vite
     assert "apps" in vite

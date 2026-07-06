@@ -11,21 +11,29 @@ import {
 } from 'lucide-react';
 import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
 import { actionReference } from '../lib/liteApi.js';
+import { useLiteUiStore, useLiteRefreshFeedback } from '../stores/liteUiStore.js';
 
 export { GlassCard, StatusBadge, StateSurface };
 
-function refreshStatusCopy(cacheStatus, error, refreshing = false) {
-  const stale = Boolean(cacheStatus?.stale || error);
+function refreshStatusCopy(cacheStatus, error, refreshing = false, refreshFeedback = null) {
+  const stale = Boolean(cacheStatus?.stale || error || ['saved', 'stale', 'expired', 'unreachable', 'failed'].includes(refreshFeedback?.result));
   return {
     stale,
-    title: cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved state' : 'Fresh state'),
-    summary: cacheStatus?.summary || error || (refreshing
+    title: refreshFeedback?.title || cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved state' : 'Fresh state'),
+    summary: refreshFeedback?.summary || cacheStatus?.summary || error || (refreshing
       ? 'Pocket Lab is checking for fresh state.'
       : stale
         ? 'Pocket Lab is not reachable. Saved state only.'
         : 'Pocket Lab is showing the latest saved status.'),
-    detail: cacheStatus?.detail || '',
+    detail: refreshFeedback?.detail || cacheStatus?.detail || '',
   };
+}
+
+function refreshResultFromMeta(cacheStatus, error) {
+  if (error) return 'unreachable';
+  if (cacheStatus?.expired) return 'expired';
+  if (cacheStatus?.stale) return 'saved';
+  return 'fresh';
 }
 
 export function LiteSavedStateBanner() {
@@ -40,10 +48,14 @@ export function LiteRefreshButton({
   label = 'Refresh',
   tone = 'secondary',
   className = '',
+  scope = 'global',
 }) {
   const [open, setOpen] = React.useState(false);
   const closeTimerRef = React.useRef(null);
-  const copy = refreshStatusCopy(cacheStatus, error, refreshing);
+  const beginRefresh = useLiteUiStore((state) => state.beginRefresh);
+  const finishRefresh = useLiteUiStore((state) => state.finishRefresh);
+  const refreshFeedback = useLiteRefreshFeedback(scope);
+  const copy = refreshStatusCopy(cacheStatus, error, refreshing, refreshFeedback);
 
   React.useEffect(() => () => {
     if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
@@ -57,13 +69,16 @@ export function LiteRefreshButton({
 
   async function handleClick(event) {
     event?.stopPropagation?.();
+    beginRefresh(scope);
     showStatus();
     try {
       const maybeResult = refresh?.({ force: true });
       if (maybeResult && typeof maybeResult.then === 'function') {
         await maybeResult;
       }
+      finishRefresh(scope, refreshResultFromMeta(cacheStatus, error));
     } catch (_error) {
+      finishRefresh(scope, 'failed');
       // The owning screen already renders the safe error state.
     } finally {
       showStatus();

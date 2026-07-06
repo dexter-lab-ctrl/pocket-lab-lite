@@ -106,7 +106,7 @@ export default function IdentityScreen() {
         eyebrow="Access"
         title="Identity & Access"
         description="Keep passwords and local access in a safe state. Change access only when you need to, with a clear record of the request."
-        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="identity" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-identity-hero">
