@@ -317,6 +317,8 @@ export function LiteSharedElementCue({
       <span className="lite-shared-element-cue__glow" />
       <span className="lite-shared-element-cue__line" />
       <span className="lite-shared-element-cue__dot" />
+      <span className="lite-shared-element-cue__wake" />
+      <span className="lite-shared-element-cue__arrival" />
     </span>
   );
 }
