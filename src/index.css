@@ -14649,3 +14649,108 @@ textarea {
     display: none !important;
   }
 }
+
+/* App Catalog action row polish.
+   Presentation-only: row settle, active expansion, disabled reason reveal,
+   result/detail settle, and progress morphing. No drag, swipe, queue, shell, or NATS behavior. */
+[data-lite-manage-portal="true"] .lite-motion-reveal,
+.theme-pocket-lite-daylight .lite-motion-reveal {
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-progress-morph,
+.theme-pocket-lite-daylight .lite-motion-progress-morph {
+  display: block;
+  min-width: 0;
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-progress-motion {
+  animation: lite-action-row-progress-reveal 320ms ease-out both;
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-row.has-progress .lite-app-action-row-main,
+[data-lite-manage-portal="true"] .lite-app-action-row.is-running .lite-app-action-row-main {
+  transition: transform 220ms ease-out, opacity 220ms ease-out;
+  transform: translateY(-1px);
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-disabled-reason {
+  animation: lite-action-row-disabled-reveal 240ms ease-out both;
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-result-card,
+[data-lite-manage-portal="true"] .lite-app-action-row-result {
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-result-card {
+  animation: lite-action-row-result-settle 300ms ease-out both;
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-row-result {
+  transition: border-color 180ms ease-out, background 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+[data-lite-manage-portal="true"] .lite-action-progress__fill,
+[data-lite-manage-portal="true"] .lite-action-progress__head,
+[data-lite-manage-portal="true"] .lite-action-progress__segment,
+[data-lite-manage-portal="true"] .lite-action-progress__node i {
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes lite-action-row-progress-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lite-action-row-disabled-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lite-action-row-result-settle {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.992);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.002);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-manage-portal="true"] .lite-motion-reveal,
+  [data-lite-manage-portal="true"] .lite-motion-progress-morph,
+  [data-lite-manage-portal="true"] .lite-app-action-progress-motion,
+  [data-lite-manage-portal="true"] .lite-app-action-disabled-reason,
+  [data-lite-manage-portal="true"] .lite-app-action-result-card,
+  [data-lite-manage-portal="true"] .lite-app-action-row-result,
+  [data-lite-manage-portal="true"] .lite-app-action-row.has-progress .lite-app-action-row-main,
+  [data-lite-manage-portal="true"] .lite-app-action-row.is-running .lite-app-action-row-main {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
