@@ -32,7 +32,7 @@ import { liteMutationInvalidations, useLiteMutation } from '../hooks/useLiteMuta
 import { useLiteAppActionFlow } from '../hooks/useLiteAppActionFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, LiteFlowStatusPanel, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import LiteActionProgress from './LiteActionProgress.jsx';
 import { LiteContextualActionCue, LiteElevationSurface, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
@@ -748,7 +748,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       running: true,
       percent: actionId === 'preview_restore' ? 28 : 20,
       indeterminate: true,
-      phase: 'queued',
+      phase: 'running',
       step,
       steps: [
         { id: 'ready', label: 'Getting ready', status: 'completed' },
@@ -772,7 +772,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
     running: true,
     percent,
     indeterminate: progress?.indeterminate !== false,
-    phase: progress?.phase || rawStatus || 'queued',
+    phase: progress?.phase || rawStatus || (busy ? 'running' : 'queued'),
     step: progress?.step || (actionId === 'check_app' ? 'Checking safely' : 'Checking repair'),
     steps: Array.isArray(progress?.steps) ? progress.steps : [],
   };
@@ -1354,6 +1354,57 @@ function safeDetailList(items, fallback = []) {
     .slice(0, 6);
 }
 
+function actionDetailList(actionId, items, fallback = []) {
+  const filtered = safeDetailList(items, fallback)
+    .filter((item) => !(item.toLowerCase().includes('troubleshooting records') && item.toLowerCase().includes('backend-only')));
+  if (actionId !== 'backup_app') return filtered;
+  return filtered
+    .map((item) => {
+      if (item === 'Pocket Lab queued or ran an app backup through the backend worker path.') {
+        return 'Pocket Lab asked the backend worker to save PhotoPrism app records.';
+      }
+      if (item === 'PhotoPrism settings, mappings, route records, and safe app records may be saved.') {
+        return 'PhotoPrism settings, mappings, route records, and safe app records were prepared for backup.';
+      }
+      if (item === 'Photo files were not backed up by this app-record backup.') {
+        return 'Your photo files were not copied by this app-record backup.';
+      }
+      if (item === 'Raw backup internals were not shown.') {
+        return 'Private backup details stayed hidden.';
+      }
+      if (item === 'Raw secrets were not exposed.') {
+        return 'Secrets stayed hidden.';
+      }
+      return item;
+    });
+}
+
+function actionDetailSavedSummary(actionId, saved) {
+  if (actionId === 'backup_app') {
+    return saved?.saved
+      ? 'A safe backend troubleshooting record was saved.'
+      : 'No backend troubleshooting record was saved because this action did not run.';
+  }
+  return saved?.summary || (saved?.saved ? 'A backend record was saved for troubleshooting.' : 'No backend record was saved because this action did not run.');
+}
+
+function actionDetailRunHistoryLabels(actionId) {
+  if (actionId === 'backup_app') {
+    return {
+      title: 'Backup history',
+      first: 'First backup',
+      last: 'Latest backup',
+      count: 'Backups saved',
+    };
+  }
+  return {
+    title: 'Run history',
+    first: 'First run',
+    last: 'Last run',
+    count: 'Run count',
+  };
+}
+
 function fallbackActionDetails(actionId, action = {}, result = null) {
   const copy = actionCopy(actionId);
   const summary = result?.summary || action?.summary || copy.description || 'Action details are available.';
@@ -1381,7 +1432,6 @@ function fallbackActionDetails(actionId, action = {}, result = null) {
       `Execution owner: ${String(action?.execution_owner || (browserOnly ? 'browser navigation' : 'backend worker')).replace(/_/g, ' ')}`,
       `Action: ${actionId}`,
       `Status: ${action?.status || 'ready'}`,
-      'Backend troubleshooting records stay backend-only.',
     ],
   };
 }
@@ -1432,24 +1482,25 @@ function actionDetailsTone(details = {}, saved = {}) {
   return 'neutral';
 }
 
-function AppActionDetailsPanel({ details, onClose }) {
+function AppActionDetailsPanel({ details, actionId = '', onClose }) {
   if (!details) return null;
-  const happened = safeDetailList(details.what_happened, [details.summary || 'Action details are available.']);
-  const changed = safeDetailList(details.what_changed, ['Nothing changed.']);
-  const needsAttention = safeDetailList(details.what_needs_attention);
-  const didNotHappen = safeDetailList(details.what_did_not_happen, ['No unsafe action was started.']);
-  const wouldHappen = safeDetailList(details.what_would_happen_after_confirmation);
-  const willNotHappen = safeDetailList(details.what_will_not_happen_by_default);
-  const technical = safeDetailList(details.technical_details);
+  const happened = actionDetailList(actionId, details.what_happened, [details.summary || 'Action details are available.']);
+  const changed = actionDetailList(actionId, details.what_changed, ['Nothing changed.']);
+  const needsAttention = actionDetailList(actionId, details.what_needs_attention);
+  const didNotHappen = actionDetailList(actionId, details.what_did_not_happen, ['No unsafe action was started.']);
+  const wouldHappen = actionDetailList(actionId, details.what_would_happen_after_confirmation);
+  const willNotHappen = actionDetailList(actionId, details.what_will_not_happen_by_default);
+  const technical = actionDetailList(actionId, details.technical_details);
   const saved = details.saved_for_troubleshooting && typeof details.saved_for_troubleshooting === 'object'
     ? details.saved_for_troubleshooting
     : { saved: false, backend_only: true, summary: 'No backend record was saved because this action did not run.' };
   const detailsTone = actionDetailsTone(details, saved);
+  const runLabels = actionDetailRunHistoryLabels(actionId);
 
   return (
     <section className={`lite-app-action-details-panel is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
       <div className="lite-app-action-details-head">
-        <LiteSharedElementCue kind="row-to-details" active label={details.title || 'Action details'} />
+        {actionId !== 'check_app' && actionId !== 'repair_app' ? <LiteSharedElementCue kind="row-to-details" active label={details.title || 'Action details'} /> : null}
         <div>
           <span>Details</span>
           <h3>{details.title || 'Action details'}</h3>
@@ -1467,10 +1518,10 @@ function AppActionDetailsPanel({ details, onClose }) {
 
       <div className="lite-app-action-details-grid">
         <div className="lite-app-action-detail-section lite-app-action-detail-section--run-history">
-          <strong>Run history</strong>
-          <p>First run: {formatRunHistoryValue(details.first_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
-          <p>Last run: {formatRunHistoryValue(details.last_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
-          {details.run_count ? <p>Run count: {details.run_count}</p> : null}
+          <strong>{runLabels.title}</strong>
+          <p>{runLabels.first}: {formatRunHistoryValue(details.first_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
+          <p>{runLabels.last}: {formatRunHistoryValue(details.last_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
+          {details.run_count ? <p>{runLabels.count}: {details.run_count}</p> : null}
         </div>
         <div className="lite-app-action-detail-section">
           <strong>What happened</strong>
@@ -1504,7 +1555,7 @@ function AppActionDetailsPanel({ details, onClose }) {
         ) : null}
         <div className="lite-app-action-detail-section lite-app-action-detail-section--saved">
           <strong>Saved for troubleshooting</strong>
-          <p>{saved.summary || (saved.saved ? 'A backend record was saved for troubleshooting.' : 'No backend record was saved because this action did not run.')}</p>
+          <p>{actionDetailSavedSummary(actionId, saved)}</p>
         </div>
       </div>
 
@@ -2704,9 +2755,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
                 <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
               </div>
-              {appActionFlow.visible ? (
-                <LiteFlowStatusPanel title="Guided action" label={appActionFlow.label} steps={appActionFlow.steps} note={appActionFlow.writeBlocked ? appActionFlow.blockedReason : 'Risky app actions stay backend-owned and details stay lightweight.'} className="lite-catalog-flow-panel" />
-              ) : null}
               <div className="lite-catalog-action-groups">
                 {activeAppActionGroups.map((group) => (
                   <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
@@ -2751,6 +2799,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                           <div className="lite-catalog-action-details-anchor">
                             <AppActionDetailsPanel
                               details={detailsForAction(entry.actionId, entry.action, tileResultForAction(entry.actionId, entry.action, entry.result))}
+                              actionId={entry.actionId}
                               onClose={closeActionDetails}
                             />
                           </div>

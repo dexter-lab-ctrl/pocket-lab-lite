@@ -1,18 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, PauseCircle, AlertTriangle } from 'lucide-react';
 
 const DEFAULT_STAGES = ['Request accepted', 'Working', 'Details saved'];
 
 const ACTION_STAGE_COPY = {
-  check_app: ['Request accepted', 'Worker picked it up', 'Route checked', 'Health checked', 'Details saved'],
-  backup_app: ['Request accepted', 'Worker picked it up', 'Saving app records', 'Verifying backup', 'Details saved'],
-  preview_restore: ['Request accepted', 'Worker picked it up', 'Backup checked', 'Preview prepared', 'No changes made', 'Details saved'],
-  repair_app: ['Request accepted', 'Worker picked it up', 'Route checked', 'Health checked', 'Repair details saved'],
-  update_app: ['Request accepted', 'Worker picked it up', 'Checking current app', 'Backup checked', 'Restore preview checked', 'Readiness saved'],
-  import_photos: ['Request accepted', 'Worker picked it up', 'Phone folders checked', 'Importing photos', 'Details saved'],
-  connect_photos: ['Request accepted', 'Worker picked it up', 'Phone folders checked', 'Access checked', 'Details saved'],
-  phone_storage: ['Request accepted', 'Worker picked it up', 'Phone folders checked', 'Access checked', 'Details saved'],
-  storage_device: ['Request accepted', 'Worker picked it up', 'Storage node checked', 'Target checked', 'Details saved'],
+  check_app: ['Request accepted', 'Working', 'Route checked', 'Health checked', 'Done'],
+  backup_app: ['Request accepted', 'Working', 'Saving app records', 'Verifying backup', 'Done'],
+  preview_restore: ['Request accepted', 'Working', 'Backup checked', 'Preview prepared', 'No changes made', 'Done'],
+  repair_app: ['Request accepted', 'Working', 'Route checked', 'Health checked', 'Done'],
+  update_app: ['Request accepted', 'Working', 'Checking current app', 'Backup checked', 'Restore preview checked', 'Done'],
+  import_photos: ['Request accepted', 'Working', 'Phone folders checked', 'Importing photos', 'Done'],
+  connect_photos: ['Request accepted', 'Working', 'Phone folders checked', 'Access checked', 'Done'],
+  phone_storage: ['Request accepted', 'Working', 'Phone folders checked', 'Access checked', 'Done'],
+  storage_device: ['Request accepted', 'Working', 'Storage node checked', 'Target checked', 'Done'],
 };
 
 const ACTION_WORKING_COPY = {
@@ -54,21 +54,21 @@ const ACTION_WORKFLOW_KIND = {
 const ACTION_STAGE_ALIASES = {
   check_app: [
     ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'picked', 'claim'],
+    ['worker', 'working', 'picked', 'claim'],
     ['route', 'caddy', 'open'],
     ['health', 'status', 'ready'],
     ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
   ],
   backup_app: [
     ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'picked', 'claim'],
+    ['worker', 'working', 'picked', 'claim'],
     ['saving', 'record', 'setting', 'config', 'metadata'],
     ['verify', 'verified', 'backup'],
     ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
   ],
   preview_restore: [
     ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'picked', 'claim'],
+    ['worker', 'working', 'picked', 'claim'],
     ['backup', 'snapshot'],
     ['preview', 'compare', 'plan'],
     ['no_change', 'no_changes', 'read_only'],
@@ -76,7 +76,7 @@ const ACTION_STAGE_ALIASES = {
   ],
   update_app: [
     ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'picked', 'claim'],
+    ['worker', 'working', 'picked', 'claim'],
     ['current', 'version', 'installed'],
     ['backup', 'rollback'],
     ['restore', 'preview', 'safety'],
@@ -84,7 +84,7 @@ const ACTION_STAGE_ALIASES = {
   ],
   import_photos: [
     ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'picked', 'claim'],
+    ['worker', 'working', 'picked', 'claim'],
     ['phone', 'folder', 'storage'],
     ['import', 'media', 'photo'],
     ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
@@ -129,8 +129,8 @@ function normalizeProgressState({
   const raw = normalizedStatus(progress?.phase || status || result?.status);
   if (enabled === false || disabledReason) return 'blocked';
   if (['saved_state', 'saved', 'cached', 'stale', 'expired', 'offline_saved'].includes(raw)) return 'saved_state';
-  if (progress?.running || ['queued', 'pending', 'accepted'].includes(raw)) return 'queued';
-  if (['running', 'working', 'executing', 'waiting', 'in_progress'].includes(raw)) return raw === 'waiting' ? 'waiting' : 'running';
+  if (['queued', 'pending', 'accepted'].includes(raw)) return 'queued';
+  if (progress?.running || ['running', 'working', 'executing', 'waiting', 'in_progress'].includes(raw)) return raw === 'waiting' ? 'waiting' : 'running';
   if (['review', 'degraded', 'warning', 'needs_attention'].includes(raw)) return 'review';
   if (['failed', 'failure', 'error'].includes(raw)) return 'failed';
   if (hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId })) return 'evidence_saved';
@@ -166,6 +166,14 @@ function stageIndexFromPercent({ state, progress, stages }) {
   if (state === 'evidence_saved' || state === 'review' || state === 'failed') return stages.length - 1;
   const index = Math.floor((rawPercent / 100) * stages.length);
   return Math.max(0, Math.min(stages.length - 2, index));
+}
+
+function shouldAnimateProgress(state, progress) {
+  return Boolean(progress?.running && progress?.indeterminate !== false && (state === 'running' || state === 'waiting'));
+}
+
+function animatedStageLimit(stages) {
+  return Math.max(1, stages.length - 2);
 }
 
 function activeStageForState({ actionId, state, progress, stages }) {
@@ -251,7 +259,7 @@ function runMetaLabel({ state, actionId, lastRanAt, executionOwner, hasEvidence 
   return '';
 }
 
-function nodeState({ state, index, activeStage, finalIndex }) {
+function nodeState({ state, index, activeStage: displayActiveStage, finalIndex }) {
   if (state === 'idle') return 'empty';
   if (state === 'blocked' || state === 'saved_state') return index === 0 ? 'paused' : 'empty';
   if (state === 'review' || state === 'failed') {
@@ -310,7 +318,24 @@ export default function LiteActionProgress({
   const stages = ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES;
   const workflowKind = ACTION_WORKFLOW_KIND[actionId] || 'signal';
   const activeStage = activeStageForState({ actionId, state, progress, stages });
-  const percent = progressPercentForStage({ state, activeStage, stages, progress });
+  const [animatedStage, setAnimatedStage] = useState(activeStage);
+  const animateProgress = shouldAnimateProgress(state, progress);
+
+  useEffect(() => {
+    setAnimatedStage(activeStage);
+    if (!animateProgress) return undefined;
+    const limit = animatedStageLimit(stages);
+    const timer = window.setInterval(() => {
+      setAnimatedStage((current) => {
+        const next = Math.max(1, current + 1);
+        return next > limit ? 1 : next;
+      });
+    }, 1050);
+    return () => window.clearInterval(timer);
+  }, [actionId, activeStage, animateProgress, stages.length]);
+
+  const displayActiveStage = animateProgress ? Math.max(1, Math.min(animatedStage, animatedStageLimit(stages))) : activeStage;
+  const percent = progressPercentForStage({ state, activeStage: displayActiveStage, stages, progress });
   const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult });
   const chip = statusChipForState({ actionId, state });
   const finalIndex = stages.length - 1;
@@ -321,8 +346,10 @@ export default function LiteActionProgress({
     : actionId === 'preview_restore' && state === 'evidence_saved'
       ? 'No changes were made.'
       : state === 'evidence_saved' && detailsAvailable
-        ? 'Details saved.'
-        : '';
+        ? 'Done ✓'
+        : state === 'evidence_saved'
+          ? 'Done ✓'
+          : '';
 
   const icon = state === 'blocked' || state === 'saved_state'
     ? <PauseCircle className="h-4 w-4" />
@@ -340,7 +367,7 @@ export default function LiteActionProgress({
       style={{
         '--lite-action-progress-percent': `${percent}%`,
         '--lite-action-progress-steps': stages.length,
-        '--lite-action-progress-active-step': Math.max(0, activeStage),
+        '--lite-action-progress-active-step': Math.max(0, displayActiveStage),
       }}
     >
       <div className="lite-action-progress__topline">
@@ -364,7 +391,7 @@ export default function LiteActionProgress({
         <span className="lite-action-progress__rail-pulse" aria-hidden="true" />
         <span className="lite-action-progress__nodes" aria-hidden="true">
           {stages.map((stage, index) => {
-            const visualState = nodeState({ state, index, activeStage, finalIndex });
+            const visualState = nodeState({ state, index, activeStage: displayActiveStage, finalIndex });
             const active = visualState === 'active';
             const done = visualState === 'done';
             const attention = visualState === 'attention';
@@ -383,7 +410,7 @@ export default function LiteActionProgress({
 
       <div className="lite-action-progress__stages">
         {stages.map((stage, index) => {
-          const visualState = nodeState({ state, index, activeStage, finalIndex });
+          const visualState = nodeState({ state, index, activeStage: displayActiveStage, finalIndex });
           return (
             <span key={stage} className={`lite-action-progress__stage lite-action-progress__stage--${visualState}`}>
               {stage}
