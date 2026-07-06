@@ -15472,6 +15472,12 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-safety .lite-app-action-details-head .lite-shared-element-cue.is-row-to-details,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-safety .lite-app-action-details-head .lite-shared-element-cue.is-row-to-details {
+  display: none !important;
+}
+
 .theme-pocket-lite-daylight .lite-app-action-group.is-safety .lite-catalog-action-details-anchor .lite-app-action-details-panel,
 [data-lite-manage-portal="true"] .lite-app-action-group.is-safety .lite-catalog-action-details-anchor .lite-app-action-details-panel {
   border-color: rgba(16, 185, 129, 0.28);
@@ -15522,6 +15528,21 @@ textarea {
   }
 }
 
+/* App Catalog follow-up cleanup.
+   The catalog no longer renders the XState flow panel inside every action group. */
+[data-lite-manage-portal="true"] .lite-action-progress--evidence_saved .lite-action-progress__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 999px;
+  background: rgba(220, 252, 231, 0.82);
+  color: #166534;
+  font-weight: 900;
+  padding: 0.35rem 0.55rem;
+}
+
 /* Phase 4 XState guided flow panels: UI workflow state only. */
 .theme-pocket-lite-daylight .lite-flow-status-panel,
 [data-lite-manage-portal="true"] .lite-flow-status-panel {
@@ -15560,5 +15581,4 @@ textarea {
 [data-lite-manage-portal="true"] .lite-flow-status-step.is-failed { border-color: rgba(225, 29, 72, 0.24); background: rgba(255, 228, 230, 0.78); color: #be123c; }
 .theme-pocket-lite-daylight .lite-flow-status-step.is-failed span,
 [data-lite-manage-portal="true"] .lite-flow-status-step.is-failed span { background: #e11d48; }
-[data-lite-manage-portal="true"] .lite-catalog-flow-panel { margin: 0.75rem 0; }
 @media (max-width: 640px) { .theme-pocket-lite-daylight .lite-flow-status-head, [data-lite-manage-portal="true"] .lite-flow-status-head { align-items: flex-start; flex-direction: column; } .theme-pocket-lite-daylight .lite-flow-status-head strong, [data-lite-manage-portal="true"] .lite-flow-status-head strong { text-align: left; } .theme-pocket-lite-daylight .lite-flow-status-steps, [data-lite-manage-portal="true"] .lite-flow-status-steps { grid-template-columns: 1fr; } }

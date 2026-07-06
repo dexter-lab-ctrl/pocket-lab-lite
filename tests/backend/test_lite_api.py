@@ -4548,7 +4548,7 @@ def test_lite_app_catalog_safety_details_and_flow_panel_styling_source():
     catalog = Path("src/lite/LiteCatalog.jsx").read_text()
     hook = Path("src/hooks/useLiteAppActionFlow.js").read_text()
     css = Path("src/index.css").read_text()
-    assert "appActionFlow.visible ?" in catalog
+    assert "lite-catalog-flow-panel" not in catalog
     assert "visible: value !== 'idle' || writeBlocked" in hook
     for marker in (
         ".lite-catalog-action-details-anchor",
@@ -4615,7 +4615,7 @@ def test_lite_xstate_hooks_and_screens_preserve_backend_ownership_source():
     assert 'data-lite-manage-portal="true"' in catalog
     assert "onClickCapture" not in catalog
     assert "LiteFlowStatusPanel" in ui
-    assert "appActionFlow.visible" in catalog
+    assert "lite-catalog-flow-panel" not in catalog
     assert "visible: value !== 'idle' || writeBlocked" in Path("src/hooks/useLiteAppActionFlow.js").read_text()
     assert "lite-flow-status-panel" in Path("src/index.css").read_text()
 
@@ -4635,3 +4635,29 @@ def test_lite_xstate_preserves_query_snapshot_zustand_boundaries_source():
     assert "LITE_UI_STORE_IS_UI_ONLY" in store
     assert "navigateFallbackDenylist" in vite and "safeLiteReadApiPattern" in vite and "apps" in vite
     assert "lite-saved-state-banner" not in snapshots
+
+
+def test_lite_app_catalog_progress_and_safety_details_followup_source():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    progress = Path("src/lite/LiteActionProgress.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "lite-catalog-flow-panel" not in catalog
+    assert "LiteFlowStatusPanel" not in catalog
+    assert "Worker picked it up" not in progress
+    assert "'Working'" in progress
+    assert "'Done'" in progress
+    assert "Done ✓" in progress
+    assert "shouldAnimateProgress" in progress
+    assert "setInterval" in progress
+    assert "progress?.running || ['running', 'working'" in progress
+    assert "troubleshooting records stay backend-only" not in catalog.lower()
+    assert "actionId !== 'check_app' && actionId !== 'repair_app'" in catalog
+    assert 'kind="row-to-details"' in catalog
+    assert 'kind="card-to-sheet"' in catalog
+    assert "lite-app-action-group.is-safety .lite-app-action-details-head .lite-shared-element-cue.is-row-to-details" in css
+    assert "lite-catalog-flow-panel" not in css
+    assert "Pocket Lab asked the backend worker to save PhotoPrism app records." in catalog
+    assert "Private backup details stayed hidden." in catalog
+    assert "Backup history" in catalog
+    assert "Latest backup" in catalog
