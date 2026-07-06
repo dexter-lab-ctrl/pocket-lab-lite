@@ -14491,3 +14491,161 @@ textarea {
     animation: none !important;
   }
 }
+
+/* App Catalog safe micro-interaction primitives.
+   Presentation-only: no gesture ownership, no action execution, no NATS/shell path. */
+[data-lite-manage-portal="true"] .lite-motion-pressable,
+.theme-pocket-lite-daylight .lite-motion-pressable {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-pressable-content,
+.theme-pocket-lite-daylight .lite-motion-pressable-content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: inherit;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-ripples,
+.theme-pocket-lite-daylight .lite-motion-ripples {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-ripple,
+.theme-pocket-lite-daylight .lite-motion-ripple {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.16;
+  pointer-events: none;
+  animation: lite-motion-ripple-out 560ms ease-out forwards;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button,
+[data-lite-manage-portal="true"] .lite-app-action-details-button,
+[data-lite-manage-portal="true"] .pocket-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button::before,
+[data-lite-manage-portal="true"] .lite-app-action-details-button::before,
+[data-lite-manage-portal="true"] .pocket-button::before {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 0;
+  height: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button:active::before,
+[data-lite-manage-portal="true"] .lite-app-action-details-button:active::before,
+[data-lite-manage-portal="true"] .pocket-button:not(:disabled):active::before {
+  width: 160%;
+  height: 160%;
+  opacity: 0.08;
+  transition: width 180ms ease-out, height 180ms ease-out, opacity 260ms ease-out;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-elevation-surface {
+  will-change: transform, opacity, box-shadow;
+  transform-origin: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-lite-manage-portal="true"] .lite-app-action-row:not(.is-disabled):hover {
+    border-color: rgba(59, 130, 246, 0.32) !important;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.11), 0 0 0 1px rgba(59, 130, 246, 0.08) !important;
+    transform: translateY(-1px);
+  }
+
+  [data-lite-manage-portal="true"] .lite-app-action-details-button:hover,
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button:hover,
+  [data-lite-manage-portal="true"] .pocket-button:not(:disabled):hover {
+    filter: brightness(1.015);
+  }
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-row.has-progress,
+[data-lite-manage-portal="true"] .lite-app-action-row.is-running {
+  animation: lite-motion-progress-morph 520ms ease-out both;
+}
+
+[data-lite-manage-portal="true"] .lite-app-action-row-result,
+[data-lite-manage-portal="true"] .lite-catalog-action-details-anchor {
+  animation: lite-motion-soft-settle 260ms ease-out both;
+}
+
+@keyframes lite-motion-ripple-out {
+  from {
+    opacity: 0.18;
+    scale: 0.2;
+  }
+  to {
+    opacity: 0;
+    scale: 1;
+  }
+}
+
+@keyframes lite-motion-soft-settle {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lite-motion-progress-morph {
+  from {
+    box-shadow: 0 0 0 rgba(59, 130, 246, 0);
+  }
+  35% {
+    box-shadow: 0 18px 46px rgba(59, 130, 246, 0.14);
+  }
+  to {
+    box-shadow: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-manage-portal="true"] .lite-motion-ripple,
+  [data-lite-manage-portal="true"] .lite-app-action-row.has-progress,
+  [data-lite-manage-portal="true"] .lite-app-action-row.is-running,
+  [data-lite-manage-portal="true"] .lite-app-action-row-result,
+  [data-lite-manage-portal="true"] .lite-catalog-action-details-anchor {
+    animation: none !important;
+  }
+
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button::before,
+  [data-lite-manage-portal="true"] .lite-app-action-details-button::before,
+  [data-lite-manage-portal="true"] .pocket-button::before {
+    display: none !important;
+  }
+}

@@ -4070,3 +4070,23 @@ def test_lite_app_action_details_filters_hidden_placeholder():
     assert "No app login was changed." in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
     assert "No app password was changed." not in Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py").read_text()
     assert "lite-app-action-details-panel is-" in ui
+
+
+def test_lite_app_catalog_safe_micro_interaction_source_is_scoped():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    motion = Path("src/lite/LiteMotion.jsx").read_text()
+
+    assert "LitePressableButton" in ui
+    assert "LiteElevationSurface" in ui
+    assert "useLiteRipple" in ui
+    assert "triggerLiteTactileFeedback('selection')" in ui
+    assert "haptic={!isDisabled}" in ui
+    assert "App Catalog safe micro-interaction primitives" in css
+    assert "[data-lite-manage-portal=\"true\"] .lite-motion-ripple" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "navigator.vibrate" in motion
+    assert "pointer-events: none" in css
+    assert "useDrag" not in motion
+    assert "shell" not in motion.lower()
+    assert "nats" not in motion.lower()
