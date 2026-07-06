@@ -201,6 +201,44 @@ const MANAGE_SECTION_LABELS = {
   danger: 'Remove',
 };
 
+
+function LiteManageSectionTab({ sectionId, active, label, onSelect }) {
+  const [pressed, setPressed] = React.useState(false);
+  const spring = useSpring({
+    transform: active ? 'translateY(-1px)' : pressed ? 'translateY(1px)' : 'translateY(0px)',
+    opacity: active ? 1 : 0.92,
+    config: { tension: 360, friction: 30, clamp: true },
+  });
+
+  const indicatorSpring = useSpring({
+    opacity: active ? 1 : 0,
+    transform: active ? 'scaleX(1)' : 'scaleX(0.62)',
+    config: { tension: 420, friction: 34, clamp: true },
+  });
+
+  return (
+    <animated.button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      className={active ? 'is-active' : ''}
+      style={spring}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerCancel={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      onClick={onSelect}
+    >
+      <span className="lite-catalog-manage-tab-label">{label}</span>
+      <animated.span
+        className="lite-catalog-manage-tab-indicator"
+        aria-hidden="true"
+        style={indicatorSpring}
+      />
+    </animated.button>
+  );
+}
+
 const MANAGE_SECTION_SUMMARY = {
   media: 'Connect and import photos.',
   safety: 'Check whether the app is safe.',
@@ -2536,16 +2574,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             </div>
             <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
               {availableManageSections.map((sectionId) => (
-                <button
+                <LiteManageSectionTab
                   key={sectionId}
-                  type="button"
-                  role="tab"
-                  aria-selected={manageSection === sectionId}
-                  className={manageSection === sectionId ? 'is-active' : ''}
-                  onClick={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
-                >
-                  {MANAGE_SECTION_LABELS[sectionId] || sectionId}
-                </button>
+                  sectionId={sectionId}
+                  active={manageSection === sectionId}
+                  label={MANAGE_SECTION_LABELS[sectionId] || sectionId}
+                  onSelect={(event) => { stopGestureEvent(event); setManageSection(sectionId); closeActionDetails(); }}
+                />
               ))}
             </div>
             <animated.div
