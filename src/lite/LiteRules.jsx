@@ -69,6 +69,7 @@ import {
   securityExecutionTimeline,
   PageHeader,
   LiteButton,
+  LiteRefreshButton,
   ResultNotice,
   LoadingCard,
   friendlyOverallLabel,
@@ -79,7 +80,7 @@ import {
 } from './LiteUi.jsx';
 
 export default function RulesScreen() {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.policy, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.policy, []);
   const [enabled, setEnabled] = useState(false);
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -111,7 +112,7 @@ export default function RulesScreen() {
         eyebrow="Rules"
         title="Safety Rules"
         description="Choose how careful Pocket Lab should be before making changes. Keep protection on for everyday use."
-        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-rules-hero">

@@ -5,6 +5,12 @@ import { animated, config, useSpring } from '@react-spring/web';
 import {
   CheckCircle2,
   FileCheck,
+  PlugZap,
+  ImageUp,
+  DatabaseBackup,
+  RotateCcw,
+  Toolbox,
+  Megaphone,
   HeartPulse,
   Camera,
   ExternalLink,
@@ -22,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
+import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
 import { LiteContextualActionCue, LiteElevationSurface, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
 
@@ -775,14 +781,18 @@ function hasRunningPhotoPrismMedia(apps) {
 }
 
 function PhotoPrismActionIcon({ actionId }) {
-  if (actionId === 'connect_photos') return <FolderPlus className="h-4 w-4" />;
-  if (actionId === 'import_photos') return <RefreshCw className="h-4 w-4" />;
-  if (actionId === 'backup_app' || actionId === 'backup_to_storage' || actionId === 'preview_restore') return <FileCheck className="h-4 w-4" />;
-  if (actionId === 'check_app') return <ShieldCheck className="h-4 w-4" />;
-  if (actionId === 'install_app') return <Smartphone className="h-4 w-4" />;
-  if (actionId === 'update_app' || actionId === 'repair_app') return <HeartPulse className="h-4 w-4" />;
-  if (actionId === 'remove_app') return <Trash2 className="h-4 w-4" />;
-  return <CheckCircle2 className="h-4 w-4" />;
+  const iconClassName = 'h-4 w-4 lite-catalog-action-lucide';
+  if (actionId === 'connect_photos') return <PlugZap className={iconClassName} />;
+  if (actionId === 'import_photos') return <ImageUp className={iconClassName} />;
+  if (actionId === 'backup_app') return <DatabaseBackup className={iconClassName} />;
+  if (actionId === 'preview_restore') return <RotateCcw className={iconClassName} />;
+  if (actionId === 'backup_to_storage') return <HardDrive className={iconClassName} />;
+  if (actionId === 'repair_app') return <Toolbox className={iconClassName} />;
+  if (actionId === 'update_app') return <Megaphone className={iconClassName} />;
+  if (actionId === 'check_app') return <ShieldCheck className={iconClassName} />;
+  if (actionId === 'install_app') return <Smartphone className={iconClassName} />;
+  if (actionId === 'remove_app') return <Trash2 className={iconClassName} />;
+  return <CheckCircle2 className={iconClassName} />;
 }
 
 function PhotoPrismStorageIcon({ preset }) {
@@ -1568,10 +1578,6 @@ function isPhotoPrismApp(app) {
   return String(app?.id || '').toLowerCase() === 'photoprism' || String(app?.name || '').toLowerCase() === 'photoprism';
 }
 
-function canInstallAppToPhone(app) {
-  return Boolean(isPhotoPrismApp(app) && isAppInstalled(app) && resolveAppOpenUrl(app));
-}
-
 function storageMappings(app) {
   const mappings = app?.storage?.mappings;
   return Array.isArray(mappings) ? mappings : [];
@@ -1777,7 +1783,7 @@ function CatalogSkeletons() {
 
 
 export default function CatalogScreen({ onOpenWorkspace }) {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.catalog, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.catalog, []);
   const [manageAppId, setManageAppId] = useState(null);
   const manageCloseRef = useRef(null);
   const manageSheetRef = useRef(null);
@@ -2131,17 +2137,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     window.location.assign(target);
   }
 
-  function installAppToPhone(app, event) {
-    event?.stopPropagation?.();
-    const target = resolveAppOpenUrl(app);
-    if (!canInstallAppToPhone(app) || !target) return;
-    setResult({
-      accepted: true,
-      summary: `Opening ${app?.name || 'this app'} full screen. Use your browser menu to install it on this phone.`,
-    });
-    window.setTimeout(() => window.location.assign(target), 160);
-  }
-
 
   async function refreshPhotoPrismState() {
     await Promise.allSettled([
@@ -2313,13 +2308,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const canInstall = Boolean(app?.actions?.install) && !installing;
     const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
     const installed = isAppInstalled(app);
-    const canInstallPhone = Boolean(canOpen && canInstallAppToPhone(app));
     const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
     const reason = attentionReason(app, canOpen);
     const progress = app?.progress;
     const percent = Math.min(100, Math.max(0, ((progress?.current || 1) / (progress?.total || 7)) * 100));
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
-    const actionsClassName = `lite-catalog-actions ${canInstallPhone ? 'has-phone-install' : ''}`;
+    const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
     const actionSnapshot = actionSnapshots[appSnapshotKey(app)] || null;
     const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
@@ -2628,9 +2622,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
             <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
               <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
-              {canInstallPhone ? (
-                <LiteButton onClick={(event) => { stopGestureEvent(event); installAppToPhone(app, event); }} tone="secondary"><Smartphone className="h-4 w-4" />Install to phone</LiteButton>
-              ) : null}
             </div>
             <div className="lite-catalog-manage-section-tabs" role="tablist" aria-label="Manage app sections">
               {availableManageSections.map((sectionId) => (
@@ -2815,7 +2806,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               {isCatalogSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
               {isCatalogSecure ? 'Secure Access' : 'Not Secure'}
             </div>
-            <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Refresh</LiteButton>
+            <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
         )}
       />
@@ -2849,7 +2840,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <h2>{apps.length ? 'No apps available' : 'No apps installed yet'}</h2>
             <p>{apps.length ? 'Refresh the App Catalog to check again.' : 'Install your first local app to start using this self-hosted workspace.'}</p>
           </div>
-          <LiteButton onClick={refresh} tone="secondary"><RefreshCw className="h-4 w-4" />Check again</LiteButton>
+          <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Check again" />
         </GlassCard>
       ) : null}
       {removeConfirmApp ? (
