@@ -14453,3 +14453,41 @@ textarea {
 [data-lite-manage-portal="true"] .lite-catalog-storage-panel--sheet {
   flex: 0 0 auto !important;
 }
+
+/* App Catalog Manage section tabs polish.
+   Scoped to the body-level Manage portal and intentionally avoids drag/swipe behavior. */
+[data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button {
+  position: relative;
+  min-height: 44px;
+  overflow: hidden;
+  touch-action: manipulation;
+  will-change: transform, opacity;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-tab-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-tab-indicator {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 0.36rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: currentColor;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-manage-portal="true"] .lite-catalog-manage-section-tabs button,
+  [data-lite-manage-portal="true"] .lite-catalog-manage-tab-indicator {
+    transition: none !important;
+    animation: none !important;
+  }
+}
