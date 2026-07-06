@@ -1,5 +1,19 @@
+import {
+  checkLiteOfflineDbAvailability,
+  estimateLiteCacheHealth,
+  getLiteOfflineCacheHealth,
+  markLiteBackendReachable,
+  markLiteBackendUnreachable,
+  markLiteSnapshotRejected,
+  normalizeOfflineEndpoint,
+  pruneExpiredOfflineSnapshots,
+  readOfflineSafeSnapshot,
+  setOfflineCacheMeta,
+  writeOfflineSafeSnapshot,
+} from './liteOfflineDb.js';
+
 const SNAPSHOT_PREFIX = 'pocketlab:lite:safe-snapshot:';
-const SAFE_LITE_GET_ENDPOINTS = new Set([
+export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/status',
   '/api/lite/catalog',
   '/api/lite/apps/photoprism/actions',
@@ -8,31 +22,116 @@ const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/recovery',
 ]);
 
-const UNSAFE_KEY_PATTERN = /token|secret|password|credential|api[_-]?key|nats|bootstrap|invite|raw|log|private[_-]?path|hash|signature|authorization/i;
-const UNSAFE_VALUE_PATTERN = /(bearer\s+|nats:\/\/[^\s]+@|token=|password=|api[_-]?key=|secret=)/i;
+export const LITE_SNAPSHOT_TTL_MS = {
+  '/api/lite/status': 5 * 60 * 1000,
+  '/api/lite/fleet': 3 * 60 * 1000,
+  '/api/lite/catalog': 8 * 60 * 1000,
+  '/api/lite/apps/photoprism/actions': 8 * 60 * 1000,
+  '/api/lite/security': 20 * 60 * 1000,
+  '/api/lite/recovery': 20 * 60 * 1000,
+};
+
+const DEFAULT_TTL_MS = 10 * 60 * 1000;
+const SCHEMA_VERSION = 1;
+const REDACTION_VERSION = 1;
+const UNSAFE_KEY_PATTERN = /token|secret|password|credential|api[_-]?key|apikey|hash|private[_-]?key|invite[_-]?token|bootstrap|command[_-]?payload|raw[_-]?log|raw[_-]?logs|evidence[_-]?path|private[_-]?path|restic[_-]?password|vault|unseal|bearer|authorization|nats[_-]?(password|credential|credentials|token|secret|url)/i;
+const UNSAFE_VALUE_PATTERN = /(bearer\s+[^\s]+|token=|password=|api[_-]?key=|secret=|authorization:\s*bearer|nats:\/\/[^\s/]+:[^\s@]+@|-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----)/i;
 const MAX_ARRAY_ITEMS = 80;
 const MAX_STRING_LENGTH = 1200;
+const MAX_SCAN_DEPTH = 8;
+const inMemorySnapshots = new Map();
+let hydrationStarted = false;
+let pruneStarted = false;
 
 function canUseStorage() {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
 export function normalizeLiteSnapshotPath(path = '') {
-  try {
-    const url = new URL(path, typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1');
-    return url.pathname;
-  } catch {
-    return String(path || '').split('?')[0];
-  }
+  return normalizeOfflineEndpoint(path);
 }
 
 export function isSafeLiteSnapshotPath(path = '') {
   return SAFE_LITE_GET_ENDPOINTS.has(normalizeLiteSnapshotPath(path));
 }
 
+export function ttlForLiteSnapshotPath(path = '') {
+  return LITE_SNAPSHOT_TTL_MS[normalizeLiteSnapshotPath(path)] || DEFAULT_TTL_MS;
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function addMsIso(value, ms) {
+  const start = value ? new Date(value).getTime() : Date.now();
+  const safeStart = Number.isFinite(start) ? start : Date.now();
+  return new Date(safeStart + ms).toISOString();
+}
+
+function isExpiredAt(value) {
+  if (!value) return false;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) && timestamp < Date.now();
+}
+
+function storageKey(path = '') {
+  return `${SNAPSHOT_PREFIX}${normalizeLiteSnapshotPath(path)}`;
+}
+
+function stripSnapshotMeta(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return data;
+  const { __liteSnapshot: _snapshot, ...rest } = data;
+  return rest;
+}
+
+function safeApproximateSize(payload) {
+  try {
+    return new Blob([JSON.stringify(payload ?? null)]).size;
+  } catch {
+    try {
+      return JSON.stringify(payload ?? null).length;
+    } catch {
+      return 0;
+    }
+  }
+}
+
+export function findUnsafeLiteSnapshotContent(value, depth = 0, trail = 'payload') {
+  if (value == null) return null;
+  if (depth > MAX_SCAN_DEPTH) return null;
+  if (typeof value === 'string') {
+    if (UNSAFE_VALUE_PATTERN.test(value)) return `${trail}:unsafe_value`;
+    return null;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return null;
+  if (Array.isArray(value)) {
+    const limit = Math.min(value.length, MAX_ARRAY_ITEMS);
+    for (let index = 0; index < limit; index += 1) {
+      const reason = findUnsafeLiteSnapshotContent(value[index], depth + 1, `${trail}[${index}]`);
+      if (reason) return reason;
+    }
+    return null;
+  }
+  if (typeof value === 'object') {
+    for (const [key, entry] of Object.entries(value)) {
+      const safeKey = String(key || '');
+      if (safeKey.startsWith('__lite')) continue;
+      if (UNSAFE_KEY_PATTERN.test(safeKey)) return `${trail}.${safeKey}:unsafe_key`;
+      const reason = findUnsafeLiteSnapshotContent(entry, depth + 1, `${trail}.${safeKey}`);
+      if (reason) return reason;
+    }
+  }
+  return null;
+}
+
+export function isLiteSnapshotPayloadSafe(value) {
+  return !findUnsafeLiteSnapshotContent(value);
+}
+
 export function sanitizeLiteSnapshot(value, depth = 0) {
   if (value == null) return value;
-  if (depth > 8) return '[hidden]';
+  if (depth > MAX_SCAN_DEPTH) return '[hidden]';
   if (typeof value === 'string') {
     if (UNSAFE_VALUE_PATTERN.test(value)) return '[hidden]';
     return value.length > MAX_STRING_LENGTH ? `${value.slice(0, MAX_STRING_LENGTH)}…` : value;
@@ -49,60 +148,227 @@ export function sanitizeLiteSnapshot(value, depth = 0) {
   return undefined;
 }
 
-function storageKey(path = '') {
-  return `${SNAPSHOT_PREFIX}${normalizeLiteSnapshotPath(path)}`;
+function toSnapshotRecord(path = '', data, overrides = {}) {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  const checkedAt = overrides.checkedAt || nowIso();
+  const savedAt = overrides.savedAt || checkedAt;
+  const expiresAt = overrides.expiresAt || addMsIso(savedAt, ttlForLiteSnapshotPath(normalizedPath));
+  const payload = sanitizeLiteSnapshot(stripSnapshotMeta(data));
+  return {
+    key: normalizedPath,
+    endpoint: normalizedPath,
+    payload,
+    checked_at: checkedAt,
+    saved_at: savedAt,
+    expires_at: expiresAt,
+    schema_version: SCHEMA_VERSION,
+    redaction_version: REDACTION_VERSION,
+    source: overrides.source || 'network',
+    payload_kind: overrides.payloadKind || 'lite-safe-read',
+    status: overrides.status || 'saved',
+    approximate_size_bytes: safeApproximateSize(payload),
+  };
 }
 
 function withMeta(data, meta) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return data;
+  const expiresAt = meta.expiresAt || meta.expires_at || null;
+  const expired = Boolean(meta.expired || meta.isExpired || isExpiredAt(expiresAt));
   return {
     ...data,
     __liteSnapshot: {
       source: meta.source,
-      path: normalizeLiteSnapshotPath(meta.path),
+      path: normalizeLiteSnapshotPath(meta.path || meta.endpoint),
       cached: meta.source === 'cache',
-      stale: Boolean(meta.stale),
+      stale: Boolean(meta.stale || meta.source === 'cache'),
+      expired,
+      isExpired: expired,
       refreshing: Boolean(meta.refreshing),
-      checkedAt: meta.checkedAt || null,
-      savedAt: meta.savedAt || null,
+      checkedAt: meta.checkedAt || meta.checked_at || null,
+      savedAt: meta.savedAt || meta.saved_at || null,
+      expiresAt,
+      schemaVersion: meta.schemaVersion || meta.schema_version || SCHEMA_VERSION,
+      redactionVersion: meta.redactionVersion || meta.redaction_version || REDACTION_VERSION,
+      payloadKind: meta.payloadKind || meta.payload_kind || 'lite-safe-read',
+      status: meta.status || 'saved',
+      approximateSizeBytes: meta.approximateSizeBytes || meta.approximate_size_bytes || null,
+      cacheAvailable: getLiteOfflineCacheHealth().cacheAvailable,
       error: meta.error || null,
     },
   };
 }
 
-export function readLiteSnapshot(path = '') {
-  if (!isSafeLiteSnapshotPath(path) || !canUseStorage()) return null;
+function parseStoredSnapshot(path = '', raw) {
+  if (!raw) return null;
   try {
-    const raw = window.localStorage.getItem(storageKey(path));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed?.data) return null;
-    return withMeta(parsed.data, {
-      source: 'cache', path, stale: true, savedAt: parsed.savedAt || null, checkedAt: parsed.checkedAt || parsed.savedAt || null,
-    });
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const payload = parsed?.payload || parsed?.data;
+    if (!payload) return null;
+    const record = {
+      endpoint: parsed.endpoint || parsed.path || path,
+      payload,
+      checked_at: parsed.checked_at || parsed.checkedAt || parsed.savedAt || parsed.saved_at || null,
+      saved_at: parsed.saved_at || parsed.savedAt || null,
+      expires_at: parsed.expires_at || parsed.expiresAt || null,
+      source: 'cache',
+      payload_kind: parsed.payload_kind || parsed.payloadKind || 'lite-safe-read',
+      status: parsed.status || 'saved',
+      schema_version: parsed.schema_version || parsed.version || SCHEMA_VERSION,
+      redaction_version: parsed.redaction_version || REDACTION_VERSION,
+      approximate_size_bytes: parsed.approximate_size_bytes || parsed.approximateSizeBytes || null,
+    };
+    return withMeta(record.payload, { ...record, path: record.endpoint, source: 'cache' });
   } catch {
     return null;
   }
 }
 
-export function writeLiteSnapshot(path = '', data) {
-  if (!isSafeLiteSnapshotPath(path) || !canUseStorage() || !data || typeof data !== 'object') return;
+function readLocalStorageSnapshot(path = '') {
+  if (!canUseStorage()) return null;
   try {
-    const now = new Date().toISOString();
-    window.localStorage.setItem(storageKey(path), JSON.stringify({
-      version: 1,
-      path: normalizeLiteSnapshotPath(path),
-      savedAt: now,
-      checkedAt: now,
-      data: sanitizeLiteSnapshot(data),
-    }));
+    return parseStoredSnapshot(path, window.localStorage.getItem(storageKey(path)));
   } catch {
-    // localStorage can be unavailable or full; the app still works without snapshots.
+    return null;
   }
 }
 
+function writeLocalStorageSnapshot(path = '', record) {
+  if (!canUseStorage()) return;
+  try {
+    window.localStorage.setItem(storageKey(path), JSON.stringify({
+      version: SCHEMA_VERSION,
+      path: normalizeLiteSnapshotPath(path),
+      endpoint: record.endpoint,
+      savedAt: record.saved_at,
+      checkedAt: record.checked_at,
+      expiresAt: record.expires_at,
+      status: record.status,
+      payloadKind: record.payload_kind,
+      approximateSizeBytes: record.approximate_size_bytes,
+      data: record.payload,
+    }));
+  } catch {
+    // localStorage is a best-effort mirror so startup can remain instant.
+  }
+}
+
+function rememberSnapshot(path = '', record) {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  inMemorySnapshots.set(normalizedPath, record);
+  return withMeta(record.payload, { ...record, path: normalizedPath, source: 'cache' });
+}
+
+function rememberDexieRecord(record) {
+  if (!record?.endpoint || !record?.payload) return null;
+  const normalizedPath = normalizeLiteSnapshotPath(record.endpoint);
+  const normalized = {
+    ...record,
+    endpoint: normalizedPath,
+    source: 'cache',
+  };
+  inMemorySnapshots.set(normalizedPath, normalized);
+  writeLocalStorageSnapshot(normalizedPath, normalized);
+  return withMeta(normalized.payload, { ...normalized, path: normalizedPath, source: 'cache' });
+}
+
+export function hydrateLiteSnapshotsFromDexie() {
+  if (hydrationStarted) return;
+  hydrationStarted = true;
+  checkLiteOfflineDbAvailability().then((available) => {
+    if (!available) return;
+    SAFE_LITE_GET_ENDPOINTS.forEach((endpoint) => {
+      readOfflineSafeSnapshot(endpoint).then((record) => {
+        if (record) rememberDexieRecord(record);
+      });
+    });
+  });
+}
+
+export function pruneLiteSnapshots() {
+  if (pruneStarted) return;
+  pruneStarted = true;
+  pruneExpiredOfflineSnapshots().finally(() => {
+    pruneStarted = false;
+  });
+}
+
+export function readLiteSnapshot(path = '') {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  if (!isSafeLiteSnapshotPath(normalizedPath)) return null;
+  const memory = inMemorySnapshots.get(normalizedPath);
+  if (memory) return withMeta(memory.payload, { ...memory, path: normalizedPath, source: 'cache' });
+  const local = readLocalStorageSnapshot(normalizedPath);
+  if (local) return local;
+  hydrateLiteSnapshotsFromDexie();
+  return null;
+}
+
+export async function readLiteSnapshotAsync(path = '') {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  if (!isSafeLiteSnapshotPath(normalizedPath)) return null;
+  const syncSnapshot = readLiteSnapshot(normalizedPath);
+  if (syncSnapshot) return syncSnapshot;
+  const record = await readOfflineSafeSnapshot(normalizedPath);
+  if (!record) return null;
+  return rememberDexieRecord(record);
+}
+
+export function writeLiteSnapshot(path = '', data) {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  if (!isSafeLiteSnapshotPath(normalizedPath) || !data || typeof data !== 'object') return { stored: false, reason: 'unsafe_path_or_payload' };
+  const payload = stripSnapshotMeta(data);
+  const unsafeReason = findUnsafeLiteSnapshotContent(payload);
+  if (unsafeReason) {
+    markLiteSnapshotRejected(normalizedPath, unsafeReason);
+    return { stored: false, rejected: true, reason: unsafeReason };
+  }
+  const record = toSnapshotRecord(normalizedPath, payload);
+  inMemorySnapshots.set(normalizedPath, record);
+  writeLocalStorageSnapshot(normalizedPath, record);
+  writeOfflineSafeSnapshot({
+    endpoint: normalizedPath,
+    payload: record.payload,
+    checkedAt: record.checked_at,
+    savedAt: record.saved_at,
+    expiresAt: record.expires_at,
+    status: record.status,
+    source: record.source,
+    payloadKind: record.payload_kind,
+  });
+  setOfflineCacheMeta('lastCacheWriteAt', record.saved_at);
+  pruneLiteSnapshots();
+  return { stored: true, savedAt: record.saved_at, expiresAt: record.expires_at };
+}
+
+export async function writeLiteSnapshotAsync(path = '', data) {
+  const result = writeLiteSnapshot(path, data);
+  return result;
+}
+
 export function attachFreshSnapshotMeta(path = '', data) {
-  return withMeta(data, { source: 'network', path, stale: false, savedAt: new Date().toISOString(), checkedAt: new Date().toISOString() });
+  const timestamp = nowIso();
+  markLiteBackendReachable();
+  return withMeta(data, {
+    source: 'network',
+    path,
+    stale: false,
+    savedAt: timestamp,
+    checkedAt: timestamp,
+    expiresAt: addMsIso(timestamp, ttlForLiteSnapshotPath(path)),
+    status: 'fresh',
+  });
+}
+
+export function markLiteSnapshotBackendUnreachable() {
+  markLiteBackendUnreachable();
+}
+
+export function getLiteSnapshotCacheHealth() {
+  return getLiteOfflineCacheHealth();
+}
+
+export function refreshLiteSnapshotCacheHealth() {
+  return estimateLiteCacheHealth();
 }
 
 export function snapshotAgeLabel(value) {
@@ -122,17 +388,24 @@ export function snapshotAgeLabel(value) {
 export function describeLiteSnapshot(meta = null, fallbackError = '') {
   if (!meta) return null;
   const detail = snapshotAgeLabel(meta.checkedAt || meta.savedAt);
+  const expired = Boolean(meta.expired || meta.isExpired);
   if (meta.source === 'cache' || meta.cached || meta.stale) {
     return {
-      title: 'Showing saved state',
-      summary: fallbackError || meta.error || 'Pocket Lab is not reachable. Saved state only.',
+      title: expired ? 'Saved state expired' : 'Showing saved state',
+      summary: expired
+        ? 'Pocket Lab is not reachable. This saved state may be old.'
+        : fallbackError || meta.error || 'Pocket Lab is not reachable. Saved state only.',
       detail,
       stale: true,
-      disabledReason: 'Saved state only. Reconnect to continue.',
+      expired,
+      disabledReason: expired ? 'Saved state expired. Reconnect to continue.' : 'Saved state only. Reconnect to continue.',
     };
   }
   if (meta.refreshing) {
-    return { title: 'Refreshing…', summary: 'Pocket Lab is checking for fresh state.', detail, stale: false, disabledReason: '' };
+    return { title: 'Refreshing…', summary: 'Pocket Lab is checking for fresh state.', detail, stale: false, expired: false, disabledReason: '' };
   }
-  return { title: 'Live state', summary: 'Pocket Lab is reachable.', detail, stale: false, disabledReason: '' };
+  return { title: 'Updated just now', summary: 'Pocket Lab is reachable.', detail, stale: false, expired: false, disabledReason: '' };
 }
+
+hydrateLiteSnapshotsFromDexie();
+pruneLiteSnapshots();

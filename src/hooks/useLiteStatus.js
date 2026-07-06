@@ -47,6 +47,7 @@ export function useLiteStatus(intervalMs = 30000) {
     savedStateOnly: query.savedStateOnly,
     backendReachable: query.backendReachable,
     lastUpdatedLabel: query.lastUpdatedLabel,
+    isExpired: query.isExpired,
   };
 }
 
@@ -67,5 +68,6 @@ export function useLiteResource(loader, dependencies = []) {
     savedStateOnly: query.savedStateOnly,
     backendReachable: query.backendReachable,
     lastUpdatedLabel: query.lastUpdatedLabel,
+    isExpired: query.isExpired,
   };
 }

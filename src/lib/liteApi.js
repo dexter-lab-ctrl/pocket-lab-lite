@@ -1,4 +1,4 @@
-import { attachFreshSnapshotMeta, isSafeLiteSnapshotPath, readLiteSnapshot, writeLiteSnapshot } from './liteSafeSnapshots.js';
+import { attachFreshSnapshotMeta, isSafeLiteSnapshotPath, markLiteSnapshotBackendUnreachable, readLiteSnapshotAsync, writeLiteSnapshot } from './liteSafeSnapshots.js';
 
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
 
@@ -30,7 +30,8 @@ async function readJson(path, options = {}) {
   });
   } catch (networkError) {
     if (safeSnapshot) {
-      const cached = readLiteSnapshot(path);
+      markLiteSnapshotBackendUnreachable();
+      const cached = await readLiteSnapshotAsync(path);
       if (cached) return cached;
     }
     const error = new Error('Pocket Lab is not reachable. Saved state only.');
@@ -49,7 +50,8 @@ async function readJson(path, options = {}) {
 
   if (!response.ok) {
     if (safeSnapshot) {
-      const cached = readLiteSnapshot(path);
+      markLiteSnapshotBackendUnreachable();
+      const cached = await readLiteSnapshotAsync(path);
       if (cached) return cached;
     }
     const message = data?.summary || data?.detail?.summary || data?.detail || data?.error || response.statusText;
