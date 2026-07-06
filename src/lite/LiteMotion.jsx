@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 
 export function useLiteReducedMotion() {
@@ -221,6 +221,102 @@ export function LiteContextualActionCue({
       <span className="lite-contextual-action-cue__track" />
       <span className="lite-contextual-action-cue__node" />
       <span className="lite-contextual-action-cue__spark" />
+    </span>
+  );
+}
+
+
+export function useLiteFlipList(keys = [], { enabled = true } = {}) {
+  const reducedMotion = useLiteReducedMotion();
+  const nodesRef = useRef(new Map());
+  const previousRectsRef = useRef(new Map());
+  const keySignature = Array.isArray(keys) ? keys.map((key) => String(key)).join('|') : String(keys || '');
+
+  const register = useCallback((key) => (node) => {
+    const id = String(key || 'item');
+    if (node) {
+      nodesRef.current.set(id, node);
+    } else {
+      nodesRef.current.delete(id);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!enabled || reducedMotion || typeof window === 'undefined') {
+      const nextRects = new Map();
+      nodesRef.current.forEach((node, key) => {
+        if (node?.getBoundingClientRect) nextRects.set(key, node.getBoundingClientRect());
+      });
+      previousRectsRef.current = nextRects;
+      return;
+    }
+
+    const previousRects = previousRectsRef.current;
+    const nextRects = new Map();
+
+    nodesRef.current.forEach((node, key) => {
+      if (!node?.getBoundingClientRect) return;
+      const next = node.getBoundingClientRect();
+      nextRects.set(key, next);
+      const previous = previousRects.get(key);
+      if (!previous || typeof node.animate !== 'function') return;
+
+      const dx = previous.left - next.left;
+      const dy = previous.top - next.top;
+      const dw = previous.width && next.width ? previous.width / Math.max(next.width, 1) : 1;
+      const dh = previous.height && next.height ? previous.height / Math.max(next.height, 1) : 1;
+      const moved = Math.abs(dx) > 1 || Math.abs(dy) > 1 || Math.abs(dw - 1) > 0.015 || Math.abs(dh - 1) > 0.015;
+      if (!moved) return;
+
+      node.animate(
+        [
+          { transform: `translate3d(${dx}px, ${dy}px, 0) scale(${dw}, ${dh})`, opacity: 0.96 },
+          { transform: 'translate3d(0, 0, 0) scale(1, 1)', opacity: 1 },
+        ],
+        {
+          duration: 240,
+          easing: 'cubic-bezier(0.2, 0.86, 0.22, 1)',
+          fill: 'both',
+        },
+      );
+    });
+
+    previousRectsRef.current = nextRects;
+  }, [enabled, reducedMotion, keySignature]);
+
+  return register;
+}
+
+export function LiteFlipGroup({
+  keys = [],
+  children,
+  className = '',
+  enabled = true,
+}) {
+  const register = useLiteFlipList(keys, { enabled });
+  return (
+    <div className={`lite-motion-flip-group ${className}`.trim()} data-lite-flip-group="true">
+      {typeof children === 'function' ? children(register) : children}
+    </div>
+  );
+}
+
+export function LiteSharedElementCue({
+  kind = 'card-to-sheet',
+  active = true,
+  label = '',
+}) {
+  if (!active) return null;
+  return (
+    <span
+      className={`lite-shared-element-cue is-${kind}`.trim()}
+      aria-hidden="true"
+      data-shared-motion="visual-clone-only"
+      data-shared-label={label || undefined}
+    >
+      <span className="lite-shared-element-cue__glow" />
+      <span className="lite-shared-element-cue__line" />
+      <span className="lite-shared-element-cue__dot" />
     </span>
   );
 }

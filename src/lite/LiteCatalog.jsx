@@ -24,7 +24,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
-import { LiteContextualActionCue, LiteElevationSurface, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
+import { LiteContextualActionCue, LiteElevationSurface, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -57,6 +57,13 @@ const APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY = true;
 // Enterprise UI rule: Manage opens as a top-level portal overlay so app cards,
 // transforms, animation wrappers, and overflow containers cannot clip the sheet.
 void APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY;
+
+
+const APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY = true;
+// Enterprise UI rule: FLIP and shared visual continuity animate cloned or
+// decorative surfaces only. They must not move real buttons, own gestures,
+// intercept clicks, or change backend-owned action execution.
+void APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY;
 
 function updateLiteCatalogVisualViewportVar() {
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
@@ -641,7 +648,8 @@ function AppActionResultCard({ actionId, action, result, onViewDetails, detailsE
   );
 }
 
-function AppActionGroup({ group, children }) {
+function AppActionGroup({ group, children, actionIds = [] }) {
+  const flipKeys = actionIds.length ? actionIds : React.Children.toArray(children).map((_, index) => `${group.id}:${index}`);
   return (
     <section className={`lite-app-action-group is-${group.id}`} aria-label={`${group.label} actions`}>
       <div className="lite-app-action-group-head">
@@ -650,9 +658,21 @@ function AppActionGroup({ group, children }) {
           <p>{group.summary}</p>
         </div>
       </div>
-      <div className="lite-app-action-group-grid">
-        {children}
-      </div>
+      <LiteFlipGroup keys={flipKeys} className="lite-app-action-group-grid" enabled={flipKeys.length > 1}>
+        {(registerFlipItem) => React.Children.toArray(children).map((child, index) => {
+          const flipKey = String(flipKeys[index] || `${group.id}:${index}`);
+          return (
+            <div
+              key={flipKey}
+              ref={registerFlipItem(flipKey)}
+              className="lite-motion-flip-item"
+              data-lite-flip-key={flipKey}
+            >
+              {child}
+            </div>
+          );
+        })}
+      </LiteFlipGroup>
     </section>
   );
 }
@@ -1414,6 +1434,7 @@ function AppActionDetailsPanel({ details, onClose }) {
   return (
     <section className={`lite-app-action-details-panel is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
       <div className="lite-app-action-details-head">
+        <LiteSharedElementCue kind="row-to-details" active label={details.title || 'Action details'} />
         <div>
           <span>Details</span>
           <h3>{details.title || 'Action details'}</h3>
@@ -2593,6 +2614,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <span aria-hidden="true" />
               </button>
               <div className="lite-catalog-manage-head">
+              <LiteSharedElementCue kind="card-to-sheet" active label={app.name} />
               <div>
                 <span>Manage</span>
                 <strong>{app.name}</strong>
@@ -2632,7 +2654,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               </div>
               <div className="lite-catalog-action-groups">
                 {activeAppActionGroups.map((group) => (
-                  <AppActionGroup key={group.id} group={group}>
+                  <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
                     {group.actions.map((entry) => (
                       <React.Fragment key={entry.actionId}>
                         <PhotoPrismActionTile
