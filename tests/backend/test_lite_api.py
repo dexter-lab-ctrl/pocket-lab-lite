@@ -4542,6 +4542,27 @@ def test_lite_zustand_preserves_safe_snapshot_and_pwa_boundaries_source():
 
 
 
+
+
+def test_lite_app_catalog_safety_details_and_flow_panel_styling_source():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    hook = Path("src/hooks/useLiteAppActionFlow.js").read_text()
+    css = Path("src/index.css").read_text()
+    assert "appActionFlow.visible ?" in catalog
+    assert "visible: value !== 'idle' || writeBlocked" in hook
+    for marker in (
+        ".lite-catalog-action-details-anchor",
+        ".lite-app-action-details-head",
+        ".lite-app-action-details-status",
+        ".lite-app-action-details-grid",
+        ".lite-app-action-detail-section",
+        ".lite-app-action-technical-details",
+        ".lite-app-action-group.is-safety .lite-catalog-action-details-anchor .lite-app-action-details-panel",
+        ".lite-app-action-group.is-safety .lite-app-action-details-status strong",
+        "rgba(16, 185, 129",
+    ):
+        assert marker in css
+
 def test_lite_xstate_dependencies_are_declared_source():
     package = json.loads(Path("package.json").read_text())
     lockfile = json.loads(Path("package-lock.json").read_text())
@@ -4594,6 +4615,8 @@ def test_lite_xstate_hooks_and_screens_preserve_backend_ownership_source():
     assert 'data-lite-manage-portal="true"' in catalog
     assert "onClickCapture" not in catalog
     assert "LiteFlowStatusPanel" in ui
+    assert "appActionFlow.visible" in catalog
+    assert "visible: value !== 'idle' || writeBlocked" in Path("src/hooks/useLiteAppActionFlow.js").read_text()
     assert "lite-flow-status-panel" in Path("src/index.css").read_text()
 
 

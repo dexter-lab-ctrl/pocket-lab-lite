@@ -2704,7 +2704,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <strong>{MANAGE_SECTION_LABELS[manageSection] || 'Manage'}</strong>
                 <span>{MANAGE_SECTION_SUMMARY[manageSection] || 'Swipe left or right to switch sections.'}</span>
               </div>
-              <LiteFlowStatusPanel title="Guided action" label={appActionFlow.label} steps={appActionFlow.steps} note={appActionFlow.writeBlocked ? appActionFlow.blockedReason : 'Risky app actions stay backend-owned and details stay lightweight.'} className="lite-catalog-flow-panel" />
+              {appActionFlow.visible ? (
+                <LiteFlowStatusPanel title="Guided action" label={appActionFlow.label} steps={appActionFlow.steps} note={appActionFlow.writeBlocked ? appActionFlow.blockedReason : 'Risky app actions stay backend-owned and details stay lightweight.'} className="lite-catalog-flow-panel" />
+              ) : null}
               <div className="lite-catalog-action-groups">
                 {activeAppActionGroups.map((group) => (
                   <AppActionGroup key={group.id} group={group} actionIds={group.actions.map((entry) => entry.actionId)}>
