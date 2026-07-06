@@ -120,29 +120,101 @@ export function LitePressableButton({
   );
 }
 
+function animatedElement(as = 'div') {
+  if (as === 'section') return animated.section;
+  if (as === 'article') return animated.article;
+  if (as === 'p') return animated.p;
+  if (as === 'span') return animated.span;
+  return animated.div;
+}
+
 export function LiteElevationSurface({
   as = 'div',
   children,
   className = '',
   disabled = false,
   active = false,
+  settle = false,
   ...props
 }) {
-  const Component = as === 'section' ? animated.section : animated.div;
+  const Component = animatedElement(as);
   const reducedMotion = useLiteReducedMotion();
   const spring = useSpring({
+    from: settle && !reducedMotion ? { opacity: 0.01, transform: 'translateY(6px) scale(0.992)' } : undefined,
     opacity: disabled ? 0.72 : 1,
-    transform: !reducedMotion && active ? 'translateY(-1px)' : 'translateY(0px)',
+    transform: !reducedMotion && active ? 'translateY(-1px) scale(1.002)' : 'translateY(0px) scale(1)',
     config: { tension: 360, friction: 34, clamp: true },
   });
 
   return (
     <Component
       {...props}
-      className={`lite-motion-elevation-surface ${className}`.trim()}
+      className={`lite-motion-elevation-surface ${settle ? 'lite-motion-settle-in' : ''} ${className}`.trim()}
       style={{ ...(props.style || {}), ...spring }}
     >
       {children}
     </Component>
+  );
+}
+
+export function LiteMotionReveal({
+  as = 'div',
+  children,
+  className = '',
+  show = true,
+  role,
+  ariaLive,
+  motionKey = '',
+  ...props
+}) {
+  const Component = animatedElement(as);
+  const reducedMotion = useLiteReducedMotion();
+  const spring = useSpring({
+    from: !reducedMotion ? { opacity: 0, transform: 'translateY(5px) scale(0.992)' } : { opacity: 1, transform: 'none' },
+    opacity: show ? 1 : 0,
+    transform: !reducedMotion && show ? 'translateY(0px) scale(1)' : 'translateY(5px) scale(0.992)',
+    config: { tension: 380, friction: 32, clamp: true },
+  });
+
+  if (!show) return null;
+
+  return (
+    <Component
+      {...props}
+      role={role}
+      aria-live={ariaLive}
+      className={`lite-motion-reveal ${className}`.trim()}
+      style={{ ...(props.style || {}), ...spring }}
+      data-motion-key={motionKey || undefined}
+    >
+      {children}
+    </Component>
+  );
+}
+
+export function LiteProgressMorphPanel({
+  children,
+  className = '',
+  active = false,
+  motionKey = '',
+  ...props
+}) {
+  const reducedMotion = useLiteReducedMotion();
+  const spring = useSpring({
+    from: !reducedMotion ? { opacity: 0, transform: 'translateY(6px) scale(0.992)' } : { opacity: 1, transform: 'none' },
+    opacity: 1,
+    transform: !reducedMotion && active ? 'translateY(0px) scale(1)' : 'translateY(0px) scale(1)',
+    config: { tension: 420, friction: 36, clamp: true },
+  });
+
+  return (
+    <animated.div
+      {...props}
+      className={`lite-motion-progress-morph ${active ? 'is-active' : ''} ${className}`.trim()}
+      style={{ ...(props.style || {}), ...spring }}
+      data-motion-key={motionKey || undefined}
+    >
+      {children}
+    </animated.div>
   );
 }

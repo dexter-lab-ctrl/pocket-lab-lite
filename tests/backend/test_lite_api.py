@@ -4090,3 +4090,24 @@ def test_lite_app_catalog_safe_micro_interaction_source_is_scoped():
     assert "useDrag" not in motion
     assert "shell" not in motion.lower()
     assert "nats" not in motion.lower()
+
+def test_lite_app_catalog_action_row_polish_source_is_scoped():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    motion = Path("src/lite/LiteMotion.jsx").read_text()
+
+    assert "LiteMotionReveal" in ui
+    assert "LiteProgressMorphPanel" in ui
+    assert "settle" in ui
+    assert "lite-app-action-progress-motion" in ui
+    assert "App Catalog action row polish" in css
+    assert "lite-action-row-progress-reveal" in css
+    assert "lite-action-row-disabled-reveal" in css
+    assert "lite-action-row-result-settle" in css
+    assert "[data-lite-manage-portal=\"true\"] .lite-motion-progress-morph" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "export function LiteMotionReveal" in motion
+    assert "export function LiteProgressMorphPanel" in motion
+    assert "useDrag" not in motion
+    assert "shell" not in motion.lower()
+    assert "nats" not in motion.lower()

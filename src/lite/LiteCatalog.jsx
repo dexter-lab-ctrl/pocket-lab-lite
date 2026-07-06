@@ -24,7 +24,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
-import { LiteElevationSurface, LitePressableButton, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
+import { LiteElevationSurface, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -593,8 +593,16 @@ function AppActionDetailsButton({ available, onClick, expanded = false }) {
 }
 
 function AppActionDisabledReason({ reason }) {
-  if (!reason) return null;
-  return <p className="lite-app-action-disabled-reason">{reason}</p>;
+  return (
+    <LiteMotionReveal
+      as="p"
+      show={Boolean(reason)}
+      className="lite-app-action-disabled-reason"
+      motionKey={reason || ''}
+    >
+      {reason}
+    </LiteMotionReveal>
+  );
 }
 
 function AppActionResultCard({ actionId, action, result, onViewDetails, detailsExpanded = false }) {
@@ -604,7 +612,12 @@ function AppActionResultCard({ actionId, action, result, onViewDetails, detailsE
   const detailsAvailable = true;
   const tone = copy.tone || normalizedResultTone(actionId, payload, action);
   return (
-    <div className={`lite-app-action-result-card is-${tone}`} role="status" aria-live="polite">
+    <LiteMotionReveal
+      className={`lite-app-action-result-card is-${tone}`}
+      role="status"
+      ariaLive="polite"
+      motionKey={`${actionId}:${payload?.status || ''}:${payload?.receipt_id || payload?.summary || ''}`}
+    >
       <div>
         <strong>{copy.title}</strong>
         <p>{copy.summary}</p>
@@ -624,7 +637,7 @@ function AppActionResultCard({ actionId, action, result, onViewDetails, detailsE
       ) : null}
       {copy.badges?.length ? <div className="lite-app-action-result-badges">{copy.badges.map((badge) => <span key={badge}>{badge}</span>)}</div> : null}
       <AppActionDetailsButton available={detailsAvailable} onClick={onViewDetails} expanded={detailsExpanded} />
-    </div>
+    </LiteMotionReveal>
   );
 }
 
@@ -950,6 +963,7 @@ function PhotoPrismActionTile({
       data-action-id={actionId}
       disabled={isDisabled}
       active={showProgress || Boolean(detailsExpanded)}
+      settle
     >
       <div className="lite-app-action-row-main">
         <span className="lite-catalog-action-tile-icon lite-app-action-row-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
@@ -973,6 +987,11 @@ function PhotoPrismActionTile({
       </div>
       <AppActionDisabledReason reason={!showProgress && !isSimpleMediaShortcut ? reason : ''} />
       {showProgress ? (
+        <LiteProgressMorphPanel
+          active={showProgress}
+          className="lite-app-action-progress-motion"
+          motionKey={`${actionId}:${progressState?.phase || ''}:${progressState?.step || ''}:${progressState?.percent || ''}`}
+        >
         <LiteActionProgress
           actionId={actionId}
           status={normalized.status}
@@ -990,6 +1009,7 @@ function PhotoPrismActionTile({
           receiptId={action?.receipt_id || action?.result?.receipt_id || tileResult?.receipt_id || ''}
           executionOwner={action?.execution_owner || ''}
         />
+        </LiteProgressMorphPanel>
       ) : null}
       {!showProgress && !isSimpleMediaShortcut && tileResult ? (
         <div className={`lite-app-action-row-result is-${rowTone}`}>
