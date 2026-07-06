@@ -69,6 +69,7 @@ import {
   securityExecutionTimeline,
   PageHeader,
   LiteButton,
+  LiteRefreshButton,
   ResultNotice,
   LoadingCard,
   friendlyOverallLabel,
@@ -79,7 +80,7 @@ import {
 } from './LiteUi.jsx';
 
 export default function IdentityScreen() {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.identity, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.identity, []);
   const [target, setTarget] = useState('local-admin');
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -105,7 +106,7 @@ export default function IdentityScreen() {
         eyebrow="Access"
         title="Identity & Access"
         description="Keep passwords and local access in a safe state. Change access only when you need to, with a clear record of the request."
-        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-identity-hero">

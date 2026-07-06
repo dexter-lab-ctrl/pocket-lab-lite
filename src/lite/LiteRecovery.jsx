@@ -69,6 +69,7 @@ import {
   securityExecutionTimeline,
   PageHeader,
   LiteButton,
+  LiteRefreshButton,
   ResultNotice,
   LoadingCard,
   friendlyOverallLabel,
@@ -79,7 +80,7 @@ import {
 } from './LiteUi.jsx';
 
 export default function RecoveryScreen() {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.recovery, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.recovery, []);
   const [backupResult, setBackupResult] = useState(null);
   const [verifyResult, setVerifyResult] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
@@ -346,7 +347,7 @@ export default function RecoveryScreen() {
         eyebrow="Recovery"
         title="Backup & Restore"
         description="Create a safety copy before changes. Restore stays protected until backup checks and preview are ready."
-        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-recovery-hero lite-recovery-hero-premium">
@@ -375,7 +376,7 @@ export default function RecoveryScreen() {
             <LiteButton onClick={backup} disabled={busy === 'backup'}>
               {busy === 'backup' ? 'Starting backup...' : 'Backup Now'}
             </LiteButton>
-            <LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>
+            <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
         </div>
 

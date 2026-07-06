@@ -70,6 +70,7 @@ import {
   securityExecutionTimeline,
   PageHeader,
   LiteButton,
+  LiteRefreshButton,
   ResultNotice,
   LoadingCard,
   friendlyOverallLabel,
@@ -80,7 +81,7 @@ import {
 } from './LiteUi.jsx';
 
 export default function DevicesScreen() {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.fleet, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.fleet, []);
   const [hostname, setHostname] = useState('');
   const [selectedRole, setSelectedRole] = useState('compute');
   const [result, setResult] = useState(null);
@@ -238,7 +239,7 @@ export default function DevicesScreen() {
         eyebrow="Devices"
         title="My Devices"
         description="See this device and any others connected to your Pocket Lab. Add a new device when you are ready to expand."
-        actions={<LiteButton onClick={refresh} tone="secondary">Refresh</LiteButton>}
+        actions={<LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <section className="lite-devices-hero">
@@ -389,7 +390,7 @@ export default function DevicesScreen() {
                     <LiteButton onClick={copyInvite} tone="secondary">
                       <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
                     </LiteButton>
-                    <LiteButton onClick={refresh} tone="ghost">Refresh devices</LiteButton>
+                    <LiteRefreshButton refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Refresh devices" tone="secondary" />
                   </div>
 
                   <details className="lite-invite-details">

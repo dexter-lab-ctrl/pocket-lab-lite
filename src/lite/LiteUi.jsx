@@ -6,6 +6,7 @@ import {
   Fingerprint,
   LayoutGrid,
   Network,
+  RefreshCw,
   ShieldCheck,
 } from 'lucide-react';
 import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
@@ -13,20 +14,78 @@ import { actionReference } from '../lib/liteApi.js';
 
 export { GlassCard, StatusBadge, StateSurface };
 
-export function LiteSavedStateBanner({ cacheStatus, error, className = '' }) {
-  if (!cacheStatus && !error) return null;
+function refreshStatusCopy(cacheStatus, error, refreshing = false) {
   const stale = Boolean(cacheStatus?.stale || error);
-  const title = cacheStatus?.title || (stale ? 'Showing saved state' : 'Refreshing…');
-  const summary = cacheStatus?.summary || error || (stale ? 'Pocket Lab is not reachable. Saved state only.' : 'Pocket Lab is checking for fresh state.');
-  const detail = cacheStatus?.detail || '';
+  return {
+    stale,
+    title: cacheStatus?.title || (refreshing ? 'Refreshing…' : stale ? 'Showing saved state' : 'Fresh state'),
+    summary: cacheStatus?.summary || error || (refreshing
+      ? 'Pocket Lab is checking for fresh state.'
+      : stale
+        ? 'Pocket Lab is not reachable. Saved state only.'
+        : 'Pocket Lab is showing the latest saved status.'),
+    detail: cacheStatus?.detail || '',
+  };
+}
+
+export function LiteSavedStateBanner() {
+  return null;
+}
+
+export function LiteRefreshButton({
+  refresh,
+  cacheStatus,
+  error,
+  refreshing = false,
+  label = 'Refresh',
+  tone = 'secondary',
+  className = '',
+}) {
+  const [open, setOpen] = React.useState(false);
+  const closeTimerRef = React.useRef(null);
+  const copy = refreshStatusCopy(cacheStatus, error, refreshing);
+
+  React.useEffect(() => () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+  }, []);
+
+  function showStatus() {
+    setOpen(true);
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => setOpen(false), 4200);
+  }
+
+  async function handleClick(event) {
+    event?.stopPropagation?.();
+    showStatus();
+    try {
+      const maybeResult = refresh?.({ force: true });
+      if (maybeResult && typeof maybeResult.then === 'function') {
+        await maybeResult;
+      }
+    } catch (_error) {
+      // The owning screen already renders the safe error state.
+    } finally {
+      showStatus();
+    }
+  }
+
   return (
-    <div className={`lite-saved-state-banner ${stale ? 'is-stale' : 'is-live'} ${className}`.trim()} role="status" aria-live="polite">
-      <span className="lite-saved-state-dot" aria-hidden="true" />
-      <div>
-        <strong>{title}</strong>
-        <p>{summary}</p>
-        {detail ? <small>{detail}</small> : null}
-      </div>
+    <div className={`lite-refresh-control ${copy.stale ? 'is-stale' : 'is-live'} ${open ? 'is-open' : ''} ${className}`.trim()}>
+      <LiteButton onClick={handleClick} tone={tone} haptic>
+        <RefreshCw className={`h-4 w-4 lite-refresh-icon ${refreshing ? 'is-refreshing' : ''}`} />
+        {refreshing ? 'Refreshing…' : label}
+      </LiteButton>
+      {open ? (
+        <div className="lite-refresh-status-popover" role="status" aria-live="polite">
+          <span className="lite-refresh-status-dot" aria-hidden="true" />
+          <div>
+            <strong>{copy.title}</strong>
+            <p>{copy.summary}</p>
+            {copy.detail ? <small>{copy.detail}</small> : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

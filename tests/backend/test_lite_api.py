@@ -110,11 +110,10 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "No apps installed yet" in ui
     assert "lite-catalog-empty-state" in ui
     assert "lite-catalog-actions" in css
-    assert "has-phone-install" in ui
-    assert "has-phone-install" in css
-    assert "Install to phone" in ui
-    assert "canInstallAppToPhone" in ui
-    assert "Use your browser menu to install it on this phone." in ui
+    assert "has-phone-install" not in ui
+    assert "Install to phone" not in ui
+    assert "canInstallAppToPhone" not in ui
+    assert "Use your browser menu to install it on this phone." not in ui
     assert "Smartphone" in Path("src/lite/LiteCatalog.jsx").read_text()
     assert "Add to phone" not in ui
     assert "isStandalonePwa" in ui
@@ -4159,3 +4158,28 @@ def test_lite_app_catalog_flip_shared_continuity_source_is_scoped():
     assert "shell" not in motion.lower()
     assert "nats" not in motion.lower()
 
+
+
+def test_lite_app_catalog_refresh_and_icon_source_is_scoped():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    ui = Path("src/lite/LiteUi.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "Install to phone" not in catalog
+    assert "installAppToPhone" not in catalog
+    assert "canInstallAppToPhone" not in catalog
+    assert "LiteSavedStateBanner()" in ui
+    assert "return null;" in ui
+    assert "LiteRefreshButton" in ui
+    assert "lite-refresh-status-popover" in ui
+    assert "lite-saved-state-banner" not in catalog
+    assert "PlugZap" in catalog
+    assert "ImageUp" in catalog
+    assert "DatabaseBackup" in catalog
+    assert "RotateCcw" in catalog
+    assert "Toolbox" in catalog
+    assert "Megaphone" in catalog
+    assert "lite-catalog-action-lucide" in catalog
+    assert "liteCatalogActionIconPop" in css
+    assert "lite-refresh-control" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
