@@ -4111,3 +4111,25 @@ def test_lite_app_catalog_action_row_polish_source_is_scoped():
     assert "useDrag" not in motion
     assert "shell" not in motion.lower()
     assert "nats" not in motion.lower()
+
+def test_lite_app_catalog_contextual_action_animation_source_is_scoped():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    motion = Path("src/lite/LiteMotion.jsx").read_text()
+
+    assert "LiteContextualActionCue" in ui
+    assert "LiteContextualActionCue" in motion
+    assert "liteContextualActionKind" in motion
+    assert "data-action-kind={kind}" in motion
+    assert 'aria-hidden="true"' in motion
+    assert "pointer-events: none" in css
+    assert "App Catalog contextual action animations" in css
+    assert "lite-contextual-photos-pulse" in css
+    assert "lite-contextual-shield-sweep" in css
+    assert "lite-contextual-vault-seal" in css
+    assert "lite-contextual-readiness-conveyor" in css
+    assert "lite-contextual-danger-attention" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "useDrag" not in motion
+    assert "shell" not in motion.lower()
+    assert "nats" not in motion.lower()
