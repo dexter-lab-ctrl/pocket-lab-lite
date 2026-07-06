@@ -4133,3 +4133,29 @@ def test_lite_app_catalog_contextual_action_animation_source_is_scoped():
     assert "useDrag" not in motion
     assert "shell" not in motion.lower()
     assert "nats" not in motion.lower()
+
+def test_lite_app_catalog_flip_shared_continuity_source_is_scoped():
+    ui = _lite_ui_source()
+    css = Path("src/index.css").read_text()
+    motion = Path("src/lite/LiteMotion.jsx").read_text()
+
+    assert "APP_CATALOG_FLIP_SHARED_CONTINUITY_IS_PRESENTATION_ONLY" in ui
+    assert "LiteFlipGroup" in ui
+    assert "LiteSharedElementCue" in ui
+    assert "data-lite-flip-key" in ui
+    assert "card-to-sheet" in ui
+    assert "row-to-details" in ui
+    assert "export function useLiteFlipList" in motion
+    assert "export function LiteFlipGroup" in motion
+    assert "export function LiteSharedElementCue" in motion
+    assert "node.animate" in motion
+    assert "data-shared-motion=\"visual-clone-only\"" in motion
+    assert "App Catalog FLIP and shared visual continuity" in css
+    assert "lite-motion-flip-item" in css
+    assert "lite-shared-element-cue" in css
+    assert "pointer-events: none" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "useDrag" not in motion
+    assert "shell" not in motion.lower()
+    assert "nats" not in motion.lower()
+

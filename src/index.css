@@ -14898,3 +14898,121 @@ textarea {
     transform: none !important;
   }
 }
+
+/* App Catalog FLIP and shared visual continuity.
+   Presentation-only: these rules animate decorative wrappers and cloned cues.
+   Real buttons, action execution, Manage portal ownership, and Details controls
+   stay unchanged and own their clicks. */
+[data-lite-manage-portal="true"] .lite-motion-flip-group {
+  display: grid;
+  gap: 0.82rem;
+  min-width: 0;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-flip-item {
+  min-width: 0;
+  transform-origin: center;
+  will-change: transform, opacity;
+  contain: layout style;
+}
+
+[data-lite-manage-portal="true"] .lite-motion-flip-item > * {
+  min-width: 0;
+}
+
+[data-lite-manage-portal="true"] .lite-shared-element-cue {
+  position: absolute;
+  inset: auto 3.5rem auto auto;
+  top: 0.72rem;
+  width: 3.2rem;
+  height: 1.6rem;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+[data-lite-manage-portal="true"] .lite-catalog-manage-head,
+[data-lite-manage-portal="true"] .lite-app-action-details-head {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-lite-manage-portal="true"] .lite-shared-element-cue__glow,
+[data-lite-manage-portal="true"] .lite-shared-element-cue__line,
+[data-lite-manage-portal="true"] .lite-shared-element-cue__dot {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+[data-lite-manage-portal="true"] .lite-shared-element-cue__glow {
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle at 28% 50%, rgba(59, 130, 246, 0.22), transparent 56%), rgba(148, 163, 184, 0.08);
+  animation: lite-shared-visual-glow 680ms cubic-bezier(0.2, 0.86, 0.22, 1) both;
+}
+
+[data-lite-manage-portal="true"] .lite-shared-element-cue__line {
+  left: 0.58rem;
+  right: 0.58rem;
+  top: 50%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0.62), rgba(14, 165, 233, 0));
+  transform: translateY(-50%) scaleX(0.2);
+  transform-origin: left center;
+  animation: lite-shared-visual-line 720ms cubic-bezier(0.2, 0.86, 0.22, 1) both;
+}
+
+[data-lite-manage-portal="true"] .lite-shared-element-cue__dot {
+  left: 0.48rem;
+  top: 50%;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.8);
+  box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.12);
+  transform: translate3d(0, -50%, 0);
+  animation: lite-shared-visual-dot 720ms cubic-bezier(0.2, 0.86, 0.22, 1) both;
+}
+
+[data-lite-manage-portal="true"] .lite-shared-element-cue.is-row-to-details {
+  inset: 0.62rem 3.1rem auto auto;
+  width: 2.8rem;
+  opacity: 0.72;
+}
+
+@keyframes lite-shared-visual-glow {
+  0% { opacity: 0; transform: scale(0.88); }
+  48% { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0.54; transform: scale(1); }
+}
+
+@keyframes lite-shared-visual-line {
+  0% { opacity: 0; transform: translateY(-50%) scaleX(0.18); }
+  58% { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  100% { opacity: 0.48; transform: translateY(-50%) scaleX(0.72); }
+}
+
+@keyframes lite-shared-visual-dot {
+  0% { opacity: 0; transform: translate3d(0, -50%, 0) scale(0.86); }
+  58% { opacity: 1; transform: translate3d(1.65rem, -50%, 0) scale(1); }
+  100% { opacity: 0.52; transform: translate3d(2.05rem, -50%, 0) scale(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-manage-portal="true"] .lite-motion-flip-item,
+  [data-lite-manage-portal="true"] .lite-shared-element-cue,
+  [data-lite-manage-portal="true"] .lite-shared-element-cue__glow,
+  [data-lite-manage-portal="true"] .lite-shared-element-cue__line,
+  [data-lite-manage-portal="true"] .lite-shared-element-cue__dot {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  [data-lite-manage-portal="true"] .lite-shared-element-cue {
+    display: none !important;
+  }
+}
