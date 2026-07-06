@@ -3613,6 +3613,9 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         assert marker in ui
     for marker in (
         "lite-app-action-group",
+        "lite-app-action-group.is-safety",
+        "[data-lite-manage-portal=\"true\"] .lite-app-action-group.is-safety",
+        "rgba(16, 185, 129",
         "lite-app-action-result-card",
         "lite-app-action-details-button",
         "lite-app-action-details-panel",

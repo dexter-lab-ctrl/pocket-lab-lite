@@ -12560,6 +12560,60 @@ textarea {
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* App Catalog Manage category accents.
+   Scoped to the portal and theme path so body-level Manage sheets keep the
+   same category styling as in-app surfaces. UI-only: no action ownership. */
+.theme-pocket-lite-daylight .lite-app-action-group.is-media,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-media {
+  border-color: rgba(14, 165, 233, 0.20);
+  background: linear-gradient(145deg, rgba(240, 249, 255, 0.94), rgba(255, 255, 255, 0.9));
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-safety,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-safety {
+  border-color: rgba(16, 185, 129, 0.24);
+  background: linear-gradient(145deg, rgba(236, 253, 245, 0.96), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 14px 34px rgba(5, 150, 105, 0.09);
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-recovery,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-recovery {
+  border-color: rgba(99, 102, 241, 0.20);
+  background: linear-gradient(145deg, rgba(238, 242, 255, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-setup,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-setup {
+  border-color: rgba(245, 158, 11, 0.20);
+  background: linear-gradient(145deg, rgba(255, 251, 235, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-danger,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-danger {
+  border-color: rgba(244, 63, 94, 0.22);
+  background: linear-gradient(145deg, rgba(255, 241, 242, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-safety .lite-app-action-group-head span,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-safety .lite-app-action-group-head span {
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-safety .lite-app-action-row-icon,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-safety .lite-app-action-row-icon {
+  color: #047857;
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.98), rgba(236, 253, 245, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 8px 18px rgba(5, 150, 105, 0.10);
+}
+
+.theme-pocket-lite-daylight .lite-app-action-group.is-safety .lite-app-action-row:not(.is-disabled):focus-within,
+.theme-pocket-lite-daylight .lite-app-action-group.is-safety .lite-app-action-row:not(.is-disabled):hover,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-safety .lite-app-action-row:not(.is-disabled):focus-within,
+[data-lite-manage-portal="true"] .lite-app-action-group.is-safety .lite-app-action-row:not(.is-disabled):hover {
+  border-color: rgba(16, 185, 129, 0.34) !important;
+  box-shadow: 0 16px 34px rgba(5, 150, 105, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.08) !important;
+}
+
 .theme-pocket-lite-daylight .lite-app-action-row {
   align-items: center;
   background: rgba(255, 255, 255, 0.88);
