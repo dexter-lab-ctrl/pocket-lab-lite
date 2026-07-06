@@ -4154,6 +4154,10 @@ def test_lite_app_catalog_flip_shared_continuity_source_is_scoped():
     assert "lite-shared-element-cue" in css
     assert "pointer-events: none" in css
     assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "lite-card-to-sheet-glow" in css
+    assert "lite-card-to-sheet-arrival" in css
+    assert "lite-shared-element-cue__wake" in motion
+    assert "lite-shared-element-cue__arrival" in motion
     assert "useDrag" not in motion
     assert "shell" not in motion.lower()
     assert "nats" not in motion.lower()
