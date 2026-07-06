@@ -259,7 +259,7 @@ function runMetaLabel({ state, actionId, lastRanAt, executionOwner, hasEvidence 
   return '';
 }
 
-function nodeState({ state, index, activeStage: displayActiveStage, finalIndex }) {
+function nodeState({ state, index, activeStage, finalIndex }) {
   if (state === 'idle') return 'empty';
   if (state === 'blocked' || state === 'saved_state') return index === 0 ? 'paused' : 'empty';
   if (state === 'review' || state === 'failed') {
