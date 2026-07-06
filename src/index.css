@@ -15240,3 +15240,44 @@ textarea {
     animation: none;
   }
 }
+
+/* Phase 4 XState guided flow panels: UI workflow state only. */
+.theme-pocket-lite-daylight .lite-flow-status-panel,
+[data-lite-manage-portal="true"] .lite-flow-status-panel {
+  margin-top: 0.85rem;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.94), rgba(255, 255, 255, 0.84));
+  border-radius: 1.15rem;
+  padding: 0.85rem;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+.theme-pocket-lite-daylight .lite-flow-status-head,
+[data-lite-manage-portal="true"] .lite-flow-status-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.theme-pocket-lite-daylight .lite-flow-status-head span,
+[data-lite-manage-portal="true"] .lite-flow-status-head span { color: #475569; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+.theme-pocket-lite-daylight .lite-flow-status-head strong,
+[data-lite-manage-portal="true"] .lite-flow-status-head strong { color: #0f172a; font-size: 0.95rem; font-weight: 900; text-align: right; }
+.theme-pocket-lite-daylight .lite-flow-status-panel p,
+[data-lite-manage-portal="true"] .lite-flow-status-panel p { margin: 0.45rem 0 0; color: #475569; font-size: 0.82rem; line-height: 1.45; }
+.theme-pocket-lite-daylight .lite-flow-status-steps,
+[data-lite-manage-portal="true"] .lite-flow-status-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.45rem; list-style: none; margin: 0.75rem 0 0; padding: 0; }
+.theme-pocket-lite-daylight .lite-flow-status-step,
+[data-lite-manage-portal="true"] .lite-flow-status-step { display: flex; align-items: center; gap: 0.45rem; min-width: 0; border: 1px solid rgba(148, 163, 184, 0.18); border-radius: 999px; background: rgba(255, 255, 255, 0.72); padding: 0.38rem 0.55rem; color: #64748b; font-size: 0.76rem; font-weight: 800; }
+.theme-pocket-lite-daylight .lite-flow-status-step span,
+[data-lite-manage-portal="true"] .lite-flow-status-step span { width: 0.48rem; height: 0.48rem; flex: 0 0 auto; border-radius: 999px; background: #cbd5e1; }
+.theme-pocket-lite-daylight .lite-flow-status-step em,
+[data-lite-manage-portal="true"] .lite-flow-status-step em { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: normal; }
+.theme-pocket-lite-daylight .lite-flow-status-step.is-active,
+[data-lite-manage-portal="true"] .lite-flow-status-step.is-active { border-color: rgba(37, 99, 235, 0.28); background: rgba(219, 234, 254, 0.82); color: #1d4ed8; }
+.theme-pocket-lite-daylight .lite-flow-status-step.is-active span,
+[data-lite-manage-portal="true"] .lite-flow-status-step.is-active span { background: #2563eb; box-shadow: 0 0 0 0.28rem rgba(37, 99, 235, 0.12); }
+.theme-pocket-lite-daylight .lite-flow-status-step.is-done,
+[data-lite-manage-portal="true"] .lite-flow-status-step.is-done { border-color: rgba(22, 163, 74, 0.24); background: rgba(220, 252, 231, 0.76); color: #15803d; }
+.theme-pocket-lite-daylight .lite-flow-status-step.is-done span,
+[data-lite-manage-portal="true"] .lite-flow-status-step.is-done span { background: #16a34a; }
+.theme-pocket-lite-daylight .lite-flow-status-step.is-failed,
+[data-lite-manage-portal="true"] .lite-flow-status-step.is-failed { border-color: rgba(225, 29, 72, 0.24); background: rgba(255, 228, 230, 0.78); color: #be123c; }
+.theme-pocket-lite-daylight .lite-flow-status-step.is-failed span,
+[data-lite-manage-portal="true"] .lite-flow-status-step.is-failed span { background: #e11d48; }
+[data-lite-manage-portal="true"] .lite-catalog-flow-panel { margin: 0.75rem 0; }
+@media (max-width: 640px) { .theme-pocket-lite-daylight .lite-flow-status-head, [data-lite-manage-portal="true"] .lite-flow-status-head { align-items: flex-start; flex-direction: column; } .theme-pocket-lite-daylight .lite-flow-status-head strong, [data-lite-manage-portal="true"] .lite-flow-status-head strong { text-align: left; } .theme-pocket-lite-daylight .lite-flow-status-steps, [data-lite-manage-portal="true"] .lite-flow-status-steps { grid-template-columns: 1fr; } }

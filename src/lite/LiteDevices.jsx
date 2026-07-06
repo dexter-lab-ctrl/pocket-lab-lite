@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
   GlassCard,
@@ -73,6 +74,7 @@ import {
   LiteRefreshButton,
   ResultNotice,
   LoadingCard,
+  LiteFlowStatusPanel,
   friendlyOverallLabel,
   deviceLinkState,
   restartProgressTitle,
@@ -81,7 +83,7 @@ import {
 } from './LiteUi.jsx';
 
 export default function DevicesScreen() {
-  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.fleet, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, []);
   const [hostname, setHostname] = useState('');
   const [selectedRole, setSelectedRole] = useState('compute');
   const [result, setResult] = useState(null);
@@ -103,9 +105,13 @@ export default function DevicesScreen() {
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
   const localNameConflict = findDeviceNameConflict(candidateDeviceName, devices);
   const activeNameConflict = localNameConflict || serverConflict;
-  const addDeviceDisabled = busy || Boolean(activeNameConflict);
+  const addDeviceFlow = useLiteAddDeviceFlow({ devices, latestInvite, backendReachable, savedStateOnly, remoteAccessReady });
+  const addDeviceDisabled = busy || addDeviceFlow.writeBlocked || Boolean(activeNameConflict);
 
   async function addDevice() {
+    const validation = addDeviceFlow.validateName(candidateDeviceName, selectedRole);
+    if (!validation.ok) { setActionError(validation.reason); return; }
+    addDeviceFlow.createInvite();
     setBusy(true);
     setResult({ status: 'queued', summary: 'Preparing invite...' });
     setInvite(null);
@@ -117,7 +123,9 @@ export default function DevicesScreen() {
       setResult(payload);
       if (payload?.status === 'invite_ready' && payload?.invite) {
         setInvite(payload.invite);
+        addDeviceFlow.inviteReady(payload);
       } else if (payload?.status === 'queued') {
+        addDeviceFlow.queued(payload);
         window.setTimeout(() => refresh(), 1800);
       }
       refresh();
@@ -126,8 +134,10 @@ export default function DevicesScreen() {
       setResult(null);
       if (detail?.status === 'duplicate_device') {
         setServerConflict(detail.existing_device || null);
+        addDeviceFlow.block(detail.message || detail.summary || 'This name is already used.');
         setActionError(detail.message || detail.summary || 'A device with this name already exists.');
       } else {
+        addDeviceFlow.fail(err);
         setActionError(err.message);
       }
     } finally {
@@ -305,6 +315,7 @@ export default function DevicesScreen() {
             onChange={(event) => {
               setHostname(event.target.value);
               setServerConflict(null);
+              addDeviceFlow.enterDevice(event.target.value, selectedRole);
             }}
             placeholder="Optional, for example: Kitchen tablet"
             aria-label="Device name"
@@ -327,6 +338,7 @@ export default function DevicesScreen() {
                 onClick={() => {
                   setSelectedRole(role.value);
                   setServerConflict(null);
+                  addDeviceFlow.enterDevice(candidateDeviceName, role.value);
                 }}
                 role="radio"
                 aria-checked={selectedRole === role.value}
@@ -342,9 +354,17 @@ export default function DevicesScreen() {
             <span>Pocket Lab prepares an invite. Open it on the new device while it is connected to the same Pocket Lab private network.</span>
           </div>
 
+          <LiteFlowStatusPanel
+            title="Add Device"
+            label={addDeviceFlow.label}
+            steps={addDeviceFlow.steps}
+            note={addDeviceFlow.writeBlocked ? addDeviceFlow.blockedReason : 'Invite creation stays backend-owned.'}
+            className="mt-4"
+          />
+
           <div className="mt-5">
             <LiteButton onClick={addDevice} disabled={addDeviceDisabled}>
-              {busy ? 'Preparing invite...' : (activeNameConflict ? 'Device already added' : 'Add Device')}
+              {busy ? 'Preparing invite...' : (addDeviceFlow.writeBlocked ? 'Reconnect to continue' : activeNameConflict ? 'Device already added' : 'Add Device')}
             </LiteButton>
           </div>
 

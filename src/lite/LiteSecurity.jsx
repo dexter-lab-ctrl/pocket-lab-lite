@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
   GlassCard,
@@ -71,6 +72,7 @@ import {
   LiteButton,
   ResultNotice,
   LoadingCard,
+  LiteFlowStatusPanel,
   friendlyOverallLabel,
   deviceLinkState,
   restartProgressTitle,
@@ -1167,7 +1169,7 @@ function SecurityScanQualityCard({ quality, collapsed = false, onToggle }) {
 }
 
 export default function SecurityScreen() {
-  const { data, loading, error, refresh } = useLiteResource(liteApi.security, []);
+  const { data, loading, error, refresh, backendReachable, savedStateOnly } = useLiteResource(liteApi.security, []);
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -1321,6 +1323,7 @@ export default function SecurityScreen() {
   const healthBanner = deriveSecurityHealthBanner(data, null, allReviewFindings);
   const latestEvidenceReceipt = deriveLatestEvidenceReceipt(data, { evidence, evidenceRefs, latestHistory, toolNames, sbomSaved });
   const scanQuality = deriveScanQuality(data, latestEvidenceReceipt, executionSteps);
+  const securityFlow = useLiteSecurityCheckFlow({ security: data, backendReachable, savedStateOnly });
   const lastKnownGood = deriveLastKnownGood(data, allReviewFindings);
   const postureComparison = deriveSecurityPostureComparison(data);
   const remediationContext = { data, lastRun, evidence, evidenceRefs, toolResults };
@@ -1403,6 +1406,8 @@ export default function SecurityScreen() {
   }
 
   async function scan() {
+    const flowCheck = securityFlow.requestRun();
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setBusy(true);
     setResult({ status: 'queued', summary: 'Safety check queued.' });
     setActionError(null);
@@ -1412,9 +1417,11 @@ export default function SecurityScreen() {
     setReceiptCopied(false);
     try {
       const payload = await liteApi.runSecurityScan('local', { reason: 'manual safety check' });
+      securityFlow.accepted(payload);
       setResult(payload);
       scheduleSecurityRefresh();
     } catch (err) {
+      securityFlow.fail(err);
       setResult(null);
       setActionError(err.message);
     } finally {
@@ -1509,7 +1516,7 @@ export default function SecurityScreen() {
         eyebrow="Safety"
         title="Security"
         description="Check whether your Pocket Lab needs attention. The results are summarized clearly so you know what to do next."
-        actions={<LiteButton onClick={scan} disabled={scanInProgress} haptic>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>}
+        actions={<LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton>}
       />
 
       <section className="lite-security-hero">
@@ -1542,6 +1549,7 @@ export default function SecurityScreen() {
               );
             })}
           </div>
+          <LiteFlowStatusPanel title="Safety check" label={securityFlow.label} steps={securityFlow.steps} note={securityFlow.writeBlocked ? securityFlow.blockedReason : 'Request, worker, Lynis, Trivy, and Evidence steps follow backend state.'} className="mt-4" />
           {scanInProgress ? (
             <div className="lite-security-progress-card" aria-live="polite">
               <div className="lite-security-progress-head">
@@ -1558,7 +1566,7 @@ export default function SecurityScreen() {
             </div>
           ) : null}
           <div className="lite-security-actions">
-            <LiteButton onClick={scan} disabled={scanInProgress} haptic>{scanInProgress ? 'Checking...' : 'Run Safety Check'}</LiteButton>
+            <LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton>
             <LiteButton onClick={showEvidence} tone="secondary">{evidenceLoading ? 'Opening...' : (evidence || evidenceError) ? 'Hide Evidence' : 'Evidence'}</LiteButton>
           </div>
         </div>

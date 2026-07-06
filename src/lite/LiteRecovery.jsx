@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
   GlassCard,
@@ -72,6 +73,7 @@ import {
   LiteRefreshButton,
   ResultNotice,
   LoadingCard,
+  LiteFlowStatusPanel,
   friendlyOverallLabel,
   deviceLinkState,
   restartProgressTitle,
@@ -80,7 +82,7 @@ import {
 } from './LiteUi.jsx';
 
 export default function RecoveryScreen() {
-  const { data, loading, error, refresh, cacheStatus, refreshing } = useLiteResource(liteApi.recovery, []);
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.recovery, []);
   const [backupResult, setBackupResult] = useState(null);
   const [verifyResult, setVerifyResult] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
@@ -125,6 +127,7 @@ export default function RecoveryScreen() {
   const serviceRestart = lastRestore?.service_restart || {};
   const healthValidation = lastRestore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
+  const recoveryFlow = useLiteRecoveryFlow({ recovery: data, latestBackup, latestPreview, backendReachable, savedStateOnly });
 
   const appBackups = Array.isArray(data?.app_backups)
     ? data.app_backups
@@ -236,11 +239,16 @@ export default function RecoveryScreen() {
   }
 
   async function backup() {
+    const flowCheck = recoveryFlow.requestBackup();
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setBusy('backup');
     setBackupResult(null);
     setActionError(null);
     try {
-      setBackupResult(await liteApi.backupNow({ include_app_data: false, reason: 'manual backup' }));
+      const payload = await liteApi.backupNow({ include_app_data: false, reason: 'manual backup' });
+      recoveryFlow.backupAccepted(payload);
+      recoveryFlow.backupDone(payload);
+      setBackupResult(payload);
       refresh();
     } catch (err) {
       setActionError(err.message);
@@ -286,12 +294,17 @@ export default function RecoveryScreen() {
 
   async function verifyLatestBackup() {
     if (!latestBackup?.backup_id) return;
+    const flowCheck = recoveryFlow.requestVerify();
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     openActionPanel('verify');
     setBusy('verify');
     setVerifyResult(null);
     setActionError(null);
     try {
-      setVerifyResult(await liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' }));
+      const payload = await liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' });
+      recoveryFlow.verifyAccepted(payload);
+      recoveryFlow.verified(payload);
+      setVerifyResult(payload);
       setHighlightedAction('preview');
       refresh();
     } catch (err) {
@@ -303,12 +316,17 @@ export default function RecoveryScreen() {
 
   async function previewLatestRestore() {
     if (!latestBackup?.backup_id) return;
+    const flowCheck = recoveryFlow.requestPreview();
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     openActionPanel('preview');
     setBusy('preview');
     setPreviewResult(null);
     setActionError(null);
     try {
-      setPreviewResult(await liteApi.previewRestore({ backup_id: latestBackup.backup_id, reason: 'manual restore preview' }));
+      const payload = await liteApi.previewRestore({ backup_id: latestBackup.backup_id, reason: 'manual restore preview' });
+      recoveryFlow.previewAccepted(payload);
+      recoveryFlow.previewReady(payload);
+      setPreviewResult(payload);
       setHighlightedAction('restore');
       refresh();
     } catch (err) {
@@ -320,18 +338,24 @@ export default function RecoveryScreen() {
 
   async function restoreLatestBackup() {
     if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
+    const flowCheck = recoveryFlow.requestRestore({ verified: latestBackupVerified, previewReady: latestPreviewReady, explicitBackup: Boolean(latestBackup?.backup_id && latestBackup.backup_id !== 'latest') });
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     openActionPanel('restore');
     const confirmed = window.confirm('Restore will change local Lite state. Pocket Lab will create a checkpoint first. Continue?');
-    if (!confirmed) return;
+    if (!confirmed) { recoveryFlow.cancel(); return; }
+    recoveryFlow.confirmRestore();
     setBusy('restore');
     setRestoreResult(null);
     setActionError(null);
     try {
-      setRestoreResult(await liteApi.restoreBackup({
+      const payload = await liteApi.restoreBackup({
         backup_id: latestBackup.backup_id,
         preview_id: latestPreview.preview_id,
         confirm: true,
-      }));
+      });
+      recoveryFlow.restoreAccepted(payload);
+      recoveryFlow.complete(payload);
+      setRestoreResult(payload);
       setHighlightedAction('evidence');
       refresh();
     } catch (err) {
@@ -373,11 +397,12 @@ export default function RecoveryScreen() {
             ))}
           </div>
           <div className="lite-recovery-actions">
-            <LiteButton onClick={backup} disabled={busy === 'backup'}>
-              {busy === 'backup' ? 'Starting backup...' : 'Backup Now'}
+            <LiteButton onClick={backup} disabled={busy === 'backup' || recoveryFlow.writeBlocked}>
+              {busy === 'backup' ? 'Starting backup...' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Backup Now'}
             </LiteButton>
             <LiteRefreshButton scope="recovery" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
+          <LiteFlowStatusPanel title="Backup & Restore" label={recoveryFlow.label} steps={recoveryFlow.steps} note={recoveryFlow.writeBlocked ? recoveryFlow.blockedReason : 'Backup, verify, preview, and restore stay backend-owned.'} className="mt-4" />
         </div>
 
         <div className="lite-recovery-status-card lite-recovery-confidence-card">
