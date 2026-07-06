@@ -2526,6 +2526,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <X className="h-4 w-4" />
               </button>
             </div>
+            <div ref={manageScrollRef} className="lite-catalog-manage-scroll">
             <PhotoPrismMediaFlowCard lifecycle={lifecycle} busyKey={actionBusyKey} />
             <div className="lite-catalog-manage-quick-actions" aria-label="Quick app actions">
               <LiteButton onClick={(event) => { stopGestureEvent(event); openAppFullScreen(app, event); }} disabled={!canOpen} tone="secondary"><ExternalLink className="h-4 w-4" />Open full screen</LiteButton>
@@ -2547,7 +2548,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 </button>
               ))}
             </div>
-            <div ref={manageScrollRef} className="lite-catalog-manage-scroll">
             <animated.div
               className={`lite-catalog-manage-section-viewport ${manageSectionSwipe.dragging ? 'is-swiping' : ''}`}
               style={manageSectionStyle}
