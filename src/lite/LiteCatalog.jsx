@@ -27,7 +27,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteQuery } from '../hooks/useLiteQuery.js';
+import { liteMutationInvalidations, useLiteMutation } from '../hooks/useLiteMutation.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
 import { LiteContextualActionCue, LiteElevationSurface, LiteFlipGroup, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, LiteSharedElementCue, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
@@ -1825,6 +1828,23 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
+  const {
+    data: appActionsData,
+    refresh: refreshPhotoprismActions,
+  } = useLiteQuery({
+    queryKey: liteQueryKeys.appActions('photoprism'),
+    path: liteQueryPaths.appActions('photoprism'),
+    queryFn: () => liteApi.appActions('photoprism'),
+    enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
+  });
+  const appActionMutation = useLiteMutation({
+    mutationFn: ({ appId = 'photoprism', actionId, payload = {} }) => liteApi.runAppAction(appId, actionId, payload),
+    invalidateForAction: ({ actionId }) => liteMutationInvalidations[actionId] || [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+  });
+  const installAppMutation = useLiteMutation({
+    mutationFn: ({ appId, targetNodeId }) => liteApi.installApp(appId, { target_node_id: targetNodeId }),
+    invalidate: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+  });
 
   const displayedApps = apps;
   const availableManageSections = useMemo(() => MANAGE_SECTION_ORDER, []);
@@ -2019,18 +2039,30 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   const refreshAppActions = useCallback(async (appId = 'photoprism') => {
     try {
-      const payload = await liteApi.appActions(appId || 'photoprism');
+      const normalizedAppId = String(appId || 'photoprism').toLowerCase();
+      const payload = normalizedAppId === 'photoprism'
+        ? await refreshPhotoprismActions()
+        : await liteApi.appActions(appId || 'photoprism');
       const snapshot = normalizeAppActionsPayload(payload || {});
       setActionSnapshots((current) => ({
         ...current,
-        [String(appId || 'photoprism').toLowerCase()]: snapshot,
+        [normalizedAppId]: snapshot,
       }));
       return snapshot;
     } catch (_error) {
       return null;
     }
-  }, []);
+  }, [refreshPhotoprismActions]);
 
+
+  useEffect(() => {
+    if (!appActionsData) return;
+    const snapshot = normalizeAppActionsPayload(appActionsData || {});
+    setActionSnapshots((current) => ({
+      ...current,
+      photoprism: snapshot,
+    }));
+  }, [appActionsData]);
 
   useEffect(() => {
     if (!apps.some((app) => isPhotoPrismApp(app))) return undefined;
@@ -2100,14 +2132,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     event?.stopPropagation?.();
     if (!app) return;
     setBusyId(app.id);
-    setResult({ status: 'queued', message: `${app.name || 'App'} install started.` });
+    setResult({ status: 'queued', message: `Sending ${app.name || 'app'} install request to Pocket Lab...` });
     setActionError(null);
     try {
       const targetNodeId = app?.target?.default_node_id || 'pocket-lab-lite-server';
-      setResult(await liteApi.installApp(app.id, { target_node_id: targetNodeId }));
+      setResult(await installAppMutation.run({ appId: app.id, targetNodeId }));
       refresh();
+      refreshAppActions(app.id || 'photoprism');
       window.setTimeout(refresh, 700);
+      window.setTimeout(refreshAppActions, 700, app.id || 'photoprism');
       window.setTimeout(refresh, 1800);
+      window.setTimeout(refreshAppActions, 1800, app.id || 'photoprism');
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -2272,7 +2307,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     setResult({ status: 'queued', action_id: actionId, summary: 'Sending app action to Pocket Lab...' });
     try {
       const appId = app.id || 'photoprism';
-      const response = await liteApi.runAppAction(appId, actionId, { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload });
+      const response = await appActionMutation.run({
+        appId,
+        actionId,
+        payload: { reason: `manual ${actionId.replace(/_/g, ' ')}`, ...extraPayload },
+      });
       setResult({ action_id: actionId, ...response });
       await refreshAppActions(appId);
       refresh();
