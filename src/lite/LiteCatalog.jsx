@@ -2453,7 +2453,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           ? createPortal(
               (
 <div
-              className="lite-catalog-manage-layer"
+              className="theme-pocket-lite-daylight lite-catalog-manage-layer"
               role="presentation"
               data-lite-manage-portal="true"
               style={{
