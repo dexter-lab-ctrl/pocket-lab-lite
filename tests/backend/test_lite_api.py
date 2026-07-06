@@ -4271,3 +4271,136 @@ def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
     assert "safeLiteReadApiPattern" in vite
     assert "apps" in vite
     assert "bootstrap" not in vite.lower()
+
+
+def test_lite_dexie_dependency_and_offline_db_source():
+    package = json.loads(Path("package.json").read_text())
+    offline_db = Path("src/lib/liteOfflineDb.js").read_text()
+
+    assert "dexie" in package["dependencies"]
+    assert "from 'dexie'" in offline_db
+    assert "pocketlab_lite_safe_snapshots" in offline_db
+    assert "safe_snapshots" in offline_db
+    assert "snapshot_events" in offline_db
+    assert "ui_cache_meta" in offline_db
+    assert "version(LITE_OFFLINE_DB_VERSION).stores" in offline_db
+    assert "readOfflineSafeSnapshot" in offline_db
+    assert "writeOfflineSafeSnapshot" in offline_db
+    assert "deleteOfflineSafeSnapshot" in offline_db
+    assert "clearOfflineSafeSnapshots" in offline_db
+    assert "recordOfflineSnapshotEvent" in offline_db
+    assert "setOfflineCacheMeta" in offline_db
+    assert "getOfflineCacheMeta" in offline_db
+    assert "pruneExpiredOfflineSnapshots" in offline_db
+    assert "estimateLiteCacheHealth" in offline_db
+
+
+def test_lite_safe_snapshots_use_dexie_under_public_api_source():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+
+    assert "./liteOfflineDb.js" in snapshots
+    assert "readOfflineSafeSnapshot" in snapshots
+    assert "writeOfflineSafeSnapshot" in snapshots
+    assert "readLiteSnapshot(path" in snapshots
+    assert "readLiteSnapshotAsync" in snapshots
+    assert "writeLiteSnapshot(path" in snapshots
+    assert "hydrateLiteSnapshotsFromDexie" in snapshots
+    assert "SAFE_LITE_GET_ENDPOINTS" in snapshots
+    assert "LITE_SNAPSHOT_TTL_MS" in snapshots
+    assert "expires_at" in snapshots
+    assert "expired" in snapshots
+    assert "Saved state expired" in snapshots
+    assert "lite-saved-state-banner" not in snapshots
+
+
+def test_lite_dexie_safe_endpoint_allowlist_and_ttl_source():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+
+    for endpoint in [
+        "/api/lite/status",
+        "/api/lite/catalog",
+        "/api/lite/apps/photoprism/actions",
+        "/api/lite/fleet",
+        "/api/lite/security",
+        "/api/lite/recovery",
+    ]:
+        assert endpoint in snapshots
+
+    for unsafe in [
+        "/api/lite/fleet/add-device",
+        "/api/lite/security/check",
+        "/api/lite/recovery/backup",
+        "/api/lite/apps/photoprism/evidence",
+        "/api/lite/apps/photoprism/actions/import_photos",
+        "/api/lite/fleet/agent/bootstrap.sh",
+    ]:
+        assert unsafe not in snapshots
+
+    assert "5 * 60 * 1000" in snapshots
+    assert "20 * 60 * 1000" in snapshots
+
+
+def test_lite_dexie_snapshot_rejection_guard_source():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+
+    assert "findUnsafeLiteSnapshotContent" in snapshots
+    assert "isLiteSnapshotPayloadSafe" in snapshots
+    assert "markLiteSnapshotRejected" in snapshots
+    for forbidden in [
+        "token",
+        "secret",
+        "password",
+        "api[_-]?key",
+        "credential",
+        "private[_-]?key",
+        "invite[_-]?token",
+        "bootstrap",
+        "command[_-]?payload",
+        "raw[_-]?log",
+        "evidence[_-]?path",
+        "private[_-]?path",
+        "restic[_-]?password",
+        "vault",
+        "unseal",
+        "bearer",
+        "authorization",
+        "nats",
+    ]:
+        assert forbidden in snapshots
+    assert "return { stored: false, rejected: true" in snapshots
+
+
+def test_lite_query_and_api_fall_back_to_dexie_snapshots_source():
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+
+    assert "readLiteSnapshotAsync" in hook
+    assert "markLiteSnapshotBackendUnreachable" in hook
+    assert "isExpired" in hook
+    assert "Saved state expired. Reconnect to continue." in hook
+    assert "readLiteSnapshotAsync" in api
+    assert "markLiteSnapshotBackendUnreachable" in api
+    assert "writeLiteSnapshot(path, data)" in api
+    assert "attachFreshSnapshotMeta(path, data)" in api
+
+
+def test_lite_dexie_phase_preserves_no_browser_action_queue_and_pwa_denylist_source():
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    ui = Path("src/lite/LiteUi.jsx").read_text()
+    vite = Path("vite.config.js").read_text()
+
+    assert "LITE_BROWSER_ACTION_QUEUE_DISABLED" in mutation
+    assert "retry: false" in mutation
+    assert "localStorage" not in mutation
+    assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
+    assert "APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS" in catalog
+    assert "APP_CATALOG_ACTION_ROWS_OWN_CLICKS" in catalog
+    assert "AppActionDetailsPanel" in catalog
+    assert "window.location.assign(target)" in catalog
+    assert "LiteSavedStateBanner()" in ui
+    assert "return null;" in ui
+    assert "lite-refresh-status-popover" in ui
+    assert "navigateFallbackDenylist" in vite
+    assert "safeLiteReadApiPattern" in vite
+    assert "apps" in vite

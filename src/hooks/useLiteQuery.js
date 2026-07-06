@@ -4,7 +4,9 @@ import {
   attachFreshSnapshotMeta,
   describeLiteSnapshot,
   isSafeLiteSnapshotPath,
+  markLiteSnapshotBackendUnreachable,
   readLiteSnapshot,
+  readLiteSnapshotAsync,
   snapshotAgeLabel,
   writeLiteSnapshot,
 } from '../lib/liteSafeSnapshots.js';
@@ -59,7 +61,8 @@ async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET' }) 
     return data;
   } catch (error) {
     if (safePath) {
-      const cached = readLiteSnapshot(path);
+      markLiteSnapshotBackendUnreachable();
+      const cached = await readLiteSnapshotAsync(path);
       if (cached) return cached;
     }
     throw error;
@@ -101,6 +104,7 @@ export function useLiteQuery({
 
   const meta = snapshotMeta(query.data, query.isFetching);
   const saved = isSavedSnapshot(query.data);
+  const expired = Boolean(meta?.expired || meta?.isExpired);
   const errorMessage = query.error instanceof Error ? query.error.message : query.error ? 'Pocket Lab Lite could not load this area.' : null;
   const checkedAt = meta?.checkedAt || meta?.savedAt || null;
   const cacheStatus = describeLiteSnapshot(meta, errorMessage);
@@ -113,14 +117,15 @@ export function useLiteQuery({
     refetch: refresh,
     isSavedState: saved,
     savedStateOnly: Boolean(saved || (query.error && query.data?.__liteSnapshot)),
-    isStale: Boolean(saved || query.isStale),
+    isStale: Boolean(saved || expired || query.isStale),
+    isExpired: expired,
     savedAt: meta?.savedAt || null,
     checkedAt,
     lastUpdatedLabel: checkedAt ? snapshotAgeLabel(checkedAt) : '',
     cacheStatus,
     backendReachable: Boolean(query.data && !saved && !query.error),
     degraded: Boolean(saved || query.error),
-    disabledReason: saved || query.error ? 'Saved state only. Reconnect to continue.' : '',
+    disabledReason: expired ? 'Saved state expired. Reconnect to continue.' : saved || query.error ? 'Saved state only. Reconnect to continue.' : '',
     error: errorMessage,
   };
 }
