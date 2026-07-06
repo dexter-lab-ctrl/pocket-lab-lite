@@ -4187,3 +4187,87 @@ def test_lite_app_catalog_refresh_and_icon_source_is_scoped():
     assert "liteCatalogActionIconPop" in css
     assert "lite-refresh-control" in css
     assert "@media (prefers-reduced-motion: reduce)" in css
+
+
+def test_lite_tanstack_query_dependency_and_provider_source():
+    package = json.loads(Path("package.json").read_text())
+    app = Path("src/lite/LiteApp.jsx").read_text()
+    query_client = Path("src/lib/liteQueryClient.js").read_text()
+
+    assert "@tanstack/react-query" in package["dependencies"]
+    assert "QueryClientProvider" in app
+    assert "liteQueryClient" in app
+    assert "createLiteQueryClient" in query_client
+    assert "refetchOnReconnect: true" in query_client
+    assert "refetchOnWindowFocus: true" in query_client
+    assert "retry: false" in query_client
+    assert "refetchInterval: false" in query_client
+
+
+def test_lite_query_wrapper_keeps_safe_snapshot_fallback_source():
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+
+    assert "useQuery" in hook
+    assert "readLiteSnapshot" in hook
+    assert "writeLiteSnapshot" in hook
+    assert "attachFreshSnapshotMeta" in hook
+    assert "isSafeLiteSnapshotPath" in hook
+    assert "isUnsafeLiteSnapshotRequest" in hook
+    assert "bootstrap|invite|token|secret|password|evidence|receipt|debug|raw" in hook
+    assert "UNSAFE_KEY_PATTERN" in snapshots
+    assert "SAFE_LITE_GET_ENDPOINTS" in snapshots
+    assert "/api/lite/apps/photoprism/actions" in snapshots
+
+
+def test_lite_mutation_wrapper_invalidates_after_fastapi_acceptance_source():
+    hook = Path("src/hooks/useLiteMutation.js").read_text()
+
+    assert "useMutation" in hook
+    assert "isAcceptedLiteMutationResponse" in hook
+    assert "invalidateQueries" in hook
+    assert "retry: false" in hook
+    assert "LITE_BROWSER_ACTION_QUEUE_DISABLED" in hook
+    assert "import_photos" in hook
+    assert "restart_agent" in hook
+    assert "add_device" in hook
+    assert "localStorage" not in hook
+    assert "queueMicrotask" not in hook
+
+
+def test_lite_safe_reads_use_query_backed_resource_source():
+    status_hook = Path("src/hooks/useLiteStatus.js").read_text()
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+
+    assert "useLiteQuery" in status_hook
+    assert "liteQueryKeys.status()" in status_hook
+    assert "liteQueryKeys.catalog()" in status_hook
+    assert "liteQueryKeys.fleet()" in status_hook
+    assert "liteQueryKeys.security()" in status_hook
+    assert "liteQueryKeys.recovery()" in status_hook
+    assert "useState" not in status_hook
+    assert "setInterval" not in status_hook
+    assert "useLiteQuery" in catalog
+    assert "liteQueryPaths.appActions('photoprism')" in catalog
+    assert "useLiteMutation" in catalog
+    assert "liteMutationInvalidations" in catalog
+
+
+def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    ui = Path("src/lite/LiteUi.jsx").read_text()
+    vite = Path("vite.config.js").read_text()
+
+    assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
+    assert "APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS" in catalog
+    assert "APP_CATALOG_ACTION_ROWS_OWN_CLICKS" in catalog
+    assert "AppActionDetailsPanel" in catalog
+    assert "resolveAppOpenUrl" in catalog
+    assert "window.location.assign(target)" in catalog
+    assert "LiteSavedStateBanner()" in ui
+    assert "return null;" in ui
+    assert "lite-refresh-status-popover" in ui
+    assert "navigateFallbackDenylist" in vite
+    assert "safeLiteReadApiPattern" in vite
+    assert "apps" in vite
+    assert "bootstrap" not in vite.lower()

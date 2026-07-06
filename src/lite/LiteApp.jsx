@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Download,
@@ -11,6 +12,7 @@ import {
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
 import { liteApi } from '../lib/liteApi.js';
+import { liteQueryClient } from '../lib/liteQueryClient.js';
 import HomeScreen from './LiteHome.jsx';
 import CatalogScreen from './LiteCatalog.jsx';
 import IdentityScreen from './LiteIdentity.jsx';
@@ -553,8 +555,10 @@ function LiteAppShell() {
 
 export default function LiteApp() {
   return (
-    <LiteErrorBoundary>
-      <LiteAppShell />
-    </LiteErrorBoundary>
+    <QueryClientProvider client={liteQueryClient}>
+      <LiteErrorBoundary>
+        <LiteAppShell />
+      </LiteErrorBoundary>
+    </QueryClientProvider>
   );
 }
