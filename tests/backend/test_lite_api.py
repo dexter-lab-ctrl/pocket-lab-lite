@@ -3316,7 +3316,7 @@ def test_lite_app_update_frontend_source_is_readiness_only():
     assert "Checking update readiness" in ui
     assert "No update was applied" in ui
     assert "LiteActionProgress" in ui
-    assert "lite-action-progress__head" in ui
+    assert "lite-action-progress__rail" in ui
     assert "update_app: 'readiness'" in ui
     assert "lite-action-progress" in css
     assert "Update Readiness Conveyor" not in ui
@@ -3616,21 +3616,31 @@ def test_lite_app_catalog_phase5_unified_action_ui_source():
         "lite-app-action-details-button",
         "lite-app-action-details-panel",
         "lite-action-progress",
-        "lite-action-progress__track",
-        "lite-action-progress__fill",
+        "lite-action-progress__rail",
+        "lite-action-progress__rail-base",
+        "lite-action-progress__rail-fill",
+        "lite-action-progress__rail-pulse",
         "lite-action-progress__nodes",
-        "lite-action-progress__head",
-        "lite-action-progress__segments",
-        "lite-action-progress__segment",
-        "lite-action-progress--check-app",
-        "lite-action-progress--complete",
-        "lite-action-progress--stepped",
+        "lite-action-progress__stage",
+        "lite-action-progress--signal",
+        "lite-action-progress--vault",
+        "lite-action-progress--preview",
+        "lite-action-progress--readiness",
+        "lite-action-progress--media",
+        "lite-action-progress--saved_state",
         "lite-action-progress__meta",
-        "liteActionProgressHeadGlow",
-        "liteActionProgressHeadSettle",
         "prefers-reduced-motion",
     ):
         assert marker in css
+    for old_marker in (
+        "lite-action-progress__track",
+        "lite-action-progress__head",
+        "lite-action-progress__segments",
+        "lite-action-progress__segment",
+        "liteActionProgressHeadGlow",
+        "liteActionProgressHeadSettle",
+    ):
+        assert old_marker not in css
     for removed_marker in (
         "AppActionFlowAnimation",
         "lite-app-action-flow",
@@ -3711,28 +3721,33 @@ def test_lite_app_catalog_reusable_action_progress_source():
     css = Path("src/index.css").read_text()
     progress = Path("src/lite/LiteActionProgress.jsx").read_text()
     for marker in (
-        "Getting ready",
-        "Working",
-        "Evidence saved",
+        "Request accepted",
+        "Worker picked it up",
+        "Details saved",
         "Paused for safety",
         "Needs review",
-        "Checking PhotoPrism safely",
-        "Route",
-        "Health",
-        "Storage",
-        "Safety",
-        "Logs created",
-        "Done",
+        "Checking PhotoPrism",
+        "Route checked",
+        "Health checked",
+        "Saving app records",
+        "Verifying backup",
+        "Preparing restore preview",
+        "No changes made",
+        "Checking update readiness",
+        "Readiness saved",
+        "No update was applied",
+        "ACTION_STAGE_ALIASES",
+        "activeStageForState",
+        "progressPercentForStage",
+    ):
+        assert marker in progress
+    for old_marker in (
+        "lite-action-progress__head",
         "segmentedStageIndex",
         "segmentedProgressPercentForState",
         "isSegmentedAction",
-        "Saving app settings",
-        "Preparing restore preview",
-        "Checking readiness only",
-        "No changes made",
-        "No update was applied",
     ):
-        assert marker in progress
+        assert old_marker not in progress
     assert "<LiteActionProgress" in ui
     assert "lite-catalog-media-flow" in ui
     assert "lite-catalog-media-flow" in css
@@ -3904,8 +3919,9 @@ def test_lite_app_catalog_details_prefer_fresh_action_state():
     assert "detailsAvailable ||" not in progress
     assert "hasRunEvidence" in progress
     assert "Not run yet" in progress
-    assert "Evidence saved" in progress
-    assert "Last run: recorded" in progress
+    assert "Details saved" in progress
+    assert "No backend run needed" in progress
+    assert "Reconnect to continue" in progress
 
 
 def test_lite_app_update_receipt_technical_details_show_versions(monkeypatch):
