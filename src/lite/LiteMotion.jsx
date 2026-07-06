@@ -192,6 +192,39 @@ export function LiteMotionReveal({
   );
 }
 
+
+export function liteContextualActionKind(actionId = '') {
+  const id = String(actionId || '').toLowerCase();
+  if (['connect_photos', 'import_photos'].includes(id)) return 'photos';
+  if (id === 'check_app') return 'safety';
+  if (['backup_app', 'preview_restore', 'backup_to_storage', 'repair_app'].includes(id)) return 'recovery';
+  if (['install_app', 'update_app'].includes(id)) return 'setup';
+  if (id === 'remove_app') return 'danger';
+  return 'neutral';
+}
+
+export function LiteContextualActionCue({
+  actionId,
+  active = false,
+  completed = false,
+  review = false,
+}) {
+  const kind = liteContextualActionKind(actionId);
+  if (kind === 'neutral') return null;
+
+  return (
+    <span
+      className={`lite-contextual-action-cue is-${kind} ${active ? 'is-active' : ''} ${completed ? 'is-complete' : ''} ${review ? 'is-review' : ''}`.trim()}
+      aria-hidden="true"
+      data-action-kind={kind}
+    >
+      <span className="lite-contextual-action-cue__track" />
+      <span className="lite-contextual-action-cue__node" />
+      <span className="lite-contextual-action-cue__spark" />
+    </span>
+  );
+}
+
 export function LiteProgressMorphPanel({
   children,
   className = '',

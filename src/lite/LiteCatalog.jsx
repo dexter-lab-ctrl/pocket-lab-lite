@@ -24,7 +24,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from './LiteUi.jsx';
 import LiteActionProgress from './LiteActionProgress.jsx';
-import { LiteElevationSurface, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
+import { LiteContextualActionCue, LiteElevationSurface, LiteMotionReveal, LitePressableButton, LiteProgressMorphPanel, triggerLiteTactileFeedback, useLiteRipple } from './LiteMotion.jsx';
 
 // Source marker for HTTPS/server-owned App Catalog contract tests.
 // Keep this text in source even if the visible layout changes: Secure access ready.
@@ -966,7 +966,15 @@ function PhotoPrismActionTile({
       settle
     >
       <div className="lite-app-action-row-main">
-        <span className="lite-catalog-action-tile-icon lite-app-action-row-icon"><PhotoPrismActionIcon actionId={actionId} /></span>
+        <span className="lite-catalog-action-tile-icon lite-app-action-row-icon">
+          <PhotoPrismActionIcon actionId={actionId} />
+          <LiteContextualActionCue
+            actionId={actionId}
+            active={showProgress || Boolean(progressState?.running)}
+            completed={Boolean(tileResult)}
+            review={rowTone === 'review'}
+          />
+        </span>
         <div className="lite-app-action-row-copy">
           <span>{copy.eyebrow || normalized.categoryLabel}</span>
           <strong>{copy.label}</strong>
