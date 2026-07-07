@@ -16536,3 +16536,303 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Security overlay hotfix: Security details are rendered in a body portal and
+   must not inherit App Catalog Manage sheet rules. The classes below are
+   intentionally unscoped so they apply after createPortal moves the surface
+   outside .theme-pocket-lite-daylight. Gestures are limited to the grip only. */
+.lite-security-phase3-layer,
+.lite-security-overlay-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10020 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: max(0.7rem, env(safe-area-inset-top)) max(0.7rem, env(safe-area-inset-right)) max(0.7rem, env(safe-area-inset-bottom)) max(0.7rem, env(safe-area-inset-left)) !important;
+  pointer-events: auto !important;
+  isolation: isolate !important;
+  color: #0f172a !important;
+}
+
+.lite-security-overlay-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  border: 0 !important;
+  background:
+    radial-gradient(circle at 22% 10%, rgba(59, 130, 246, 0.2), transparent 32%),
+    rgba(15, 23, 42, 0.48) !important;
+  backdrop-filter: blur(12px) saturate(1.08) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.08) !important;
+  pointer-events: auto !important;
+}
+
+.lite-security-overlay-surface,
+.lite-security-phase3-panel {
+  position: relative !important;
+  z-index: 1 !important;
+  width: min(100%, 44rem) !important;
+  max-height: min(88vh, calc(var(--lite-visual-viewport-height, 100vh) - max(1.4rem, env(safe-area-inset-top)) - max(1.4rem, env(safe-area-inset-bottom)))) !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98)) !important;
+  border: 1px solid rgba(148, 163, 184, 0.34) !important;
+  border-radius: 2rem 2rem 1.25rem 1.25rem !important;
+  box-shadow: 0 34px 90px rgba(15, 23, 42, 0.38), 0 1px 0 rgba(255, 255, 255, 0.75) inset !important;
+  color: #0f172a !important;
+  transform-origin: center bottom !important;
+  will-change: transform, opacity !important;
+}
+
+.lite-security-overlay-grip,
+.lite-security-phase3-grip {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 2.25rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: grab !important;
+  touch-action: none !important;
+  pointer-events: auto !important;
+}
+
+.lite-security-overlay-grip:active,
+.lite-security-phase3-grip:active {
+  cursor: grabbing !important;
+}
+
+.lite-security-overlay-grip span,
+.lite-security-phase3-grip span {
+  width: 3.6rem !important;
+  height: 0.34rem !important;
+  border-radius: 999px !important;
+  background: rgba(100, 116, 139, 0.42) !important;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.08) inset !important;
+}
+
+.lite-security-overlay-head,
+.lite-security-phase3-head {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  padding: 0.25rem clamp(1rem, 2vw, 1.25rem) 1rem !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.92) !important;
+  background: rgba(248, 250, 252, 0.94) !important;
+}
+
+.lite-security-overlay-head > div,
+.lite-security-phase3-head > div {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 0.22rem !important;
+}
+
+.lite-security-overlay-head span,
+.lite-security-phase3-head span {
+  color: #2563eb !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.lite-security-overlay-head strong,
+.lite-security-phase3-head strong {
+  color: #0f172a !important;
+  font-size: clamp(1.05rem, 2vw, 1.3rem) !important;
+  line-height: 1.15 !important;
+}
+
+.lite-security-overlay-head p,
+.lite-security-phase3-head p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.88rem !important;
+  line-height: 1.45 !important;
+}
+
+.lite-security-overlay-close,
+.lite-security-phase3-close {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  border: 1px solid rgba(148, 163, 184, 0.38) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #334155 !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease !important;
+}
+
+.lite-security-overlay-close:hover,
+.lite-security-phase3-close:hover,
+.lite-security-overlay-close:focus-visible,
+.lite-security-phase3-close:focus-visible {
+  transform: translateY(-1px) !important;
+  border-color: rgba(59, 130, 246, 0.46) !important;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.14) !important;
+  outline: none !important;
+}
+
+.lite-security-overlay-scroll,
+.lite-security-phase3-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: clamp(0.9rem, 2vw, 1.15rem) !important;
+  background: #f8fafc !important;
+}
+
+.lite-security-phase3-panel .lite-security-phase2-details-panel,
+.lite-security-phase3-panel .lite-finding-detail-modal {
+  margin: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.lite-security-phase3-panel .lite-security-phase2-details-head,
+.lite-security-phase3-panel .lite-finding-detail-header {
+  display: none !important;
+}
+
+.lite-security-phase3-panel .lite-progressive-details,
+.lite-security-phase3-panel .lite-finding-detail-section {
+  min-width: 0 !important;
+}
+
+.lite-security-phase3-panel .lite-finding-detail-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 1 !important;
+  margin: 1rem -0.15rem -0.15rem !important;
+  padding: 0.78rem 0.15rem max(0.2rem, env(safe-area-inset-bottom)) !important;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0), rgba(248, 250, 252, 0.98) 36%) !important;
+}
+
+.lite-security-phase3-panel button,
+.lite-security-phase3-panel [role="button"] {
+  pointer-events: auto !important;
+}
+
+@media (min-width: 900px) {
+  .lite-security-phase3-layer,
+  .lite-security-overlay-layer {
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    padding: 1.15rem !important;
+  }
+
+  .lite-security-overlay-surface,
+  .lite-security-phase3-panel {
+    width: min(43rem, 46vw) !important;
+    height: 100% !important;
+    max-height: none !important;
+    border-radius: 1.75rem !important;
+    transform-origin: right center !important;
+  }
+
+  .lite-security-overlay-grip,
+  .lite-security-phase3-grip {
+    min-height: 0.75rem !important;
+    cursor: default !important;
+    touch-action: auto !important;
+  }
+
+  .lite-security-overlay-grip span,
+  .lite-security-phase3-grip span {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .lite-security-phase3-layer,
+  .lite-security-overlay-layer {
+    padding: max(0.55rem, env(safe-area-inset-top)) max(0.55rem, env(safe-area-inset-right)) max(0.55rem, env(safe-area-inset-bottom)) max(0.55rem, env(safe-area-inset-left)) !important;
+  }
+
+  .lite-security-overlay-surface,
+  .lite-security-phase3-panel {
+    max-height: min(90vh, calc(var(--lite-visual-viewport-height, 100vh) - 0.8rem)) !important;
+    border-radius: 1.55rem 1.55rem 1rem 1rem !important;
+  }
+
+  .lite-security-overlay-head,
+  .lite-security-phase3-head {
+    padding: 0.15rem 0.9rem 0.85rem !important;
+  }
+
+  .lite-security-overlay-scroll,
+  .lite-security-phase3-scroll {
+    padding: 0.85rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lite-security-phase3-layer .lite-security-overlay-backdrop {
+    animation: lite-security-overlay-backdrop-in 150ms ease-out both !important;
+  }
+
+  .lite-security-overlay-surface[data-lite-safe-motion="safe-grip"],
+  .lite-security-phase3-panel[data-lite-safe-motion="safe-grip"] {
+    animation: lite-security-safe-sheet-settle 190ms cubic-bezier(0.2, 0.9, 0.22, 1) both !important;
+  }
+
+  .lite-security-overlay-grip span,
+  .lite-security-phase3-grip span {
+    transition: transform 140ms ease, background 140ms ease !important;
+  }
+
+  .lite-security-overlay-grip:hover span,
+  .lite-security-phase3-grip:hover span,
+  .lite-security-overlay-grip:focus-visible span,
+  .lite-security-phase3-grip:focus-visible span {
+    transform: scaleX(1.08) !important;
+    background: rgba(59, 130, 246, 0.46) !important;
+  }
+}
+
+@keyframes lite-security-overlay-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lite-security-safe-sheet-settle {
+  from { opacity: 0.96; transform: translate3d(0, 14px, 0) scale(0.992); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-phase3-layer .lite-security-overlay-backdrop,
+  .lite-security-overlay-surface[data-lite-safe-motion="safe-grip"],
+  .lite-security-phase3-panel[data-lite-safe-motion="safe-grip"],
+  .lite-security-overlay-grip span,
+  .lite-security-phase3-grip span,
+  .lite-security-overlay-close,
+  .lite-security-phase3-close {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,6 +1,8 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { animated, useSpring } from '@react-spring/web';
+import { useDrag } from '@use-gesture/react';
 
 export function useVisualViewportHeight(open = true) {
   useEffect(() => {
@@ -62,6 +64,19 @@ export function useFocusReturn(open, closeRef) {
   }, [open, closeRef]);
 }
 
+function useReducedMotionPreference() {
+  const reducedMotionRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => { reducedMotionRef.current = Boolean(query.matches); };
+    update();
+    query.addEventListener?.('change', update);
+    return () => query.removeEventListener?.('change', update);
+  }, []);
+  return reducedMotionRef;
+}
+
 export function LiteOverlayRoot({ children }) {
   if (typeof document === 'undefined') return null;
   return createPortal(children, document.body);
@@ -71,11 +86,40 @@ export function LiteBackdrop({ onClose, label = 'Close overlay', className = '' 
   return <button type="button" className={`lite-overlay-backdrop ${className}`.trim()} onClick={onClose} aria-label={label} />;
 }
 
+const LITE_SHEET_VARIANTS = {
+  manage: {
+    layer: 'lite-catalog-manage-layer',
+    backdrop: 'lite-catalog-manage-backdrop',
+    surface: 'lite-catalog-manage-sheet',
+    grip: 'lite-catalog-manage-grip',
+    head: 'lite-catalog-manage-head',
+    close: 'lite-catalog-manage-close',
+    scroll: 'lite-catalog-manage-scroll',
+    eyebrow: 'Manage',
+    closeLabel: 'Close app actions',
+    backdropLabel: 'Close app management',
+    gripLabel: 'Drag app actions sheet',
+  },
+  security: {
+    layer: 'lite-security-overlay-layer',
+    backdrop: 'lite-security-overlay-backdrop',
+    surface: 'lite-security-overlay-surface',
+    grip: 'lite-security-overlay-grip',
+    head: 'lite-security-overlay-head',
+    close: 'lite-security-overlay-close',
+    scroll: 'lite-security-overlay-scroll',
+    eyebrow: 'Security Details',
+    closeLabel: 'Close security details',
+    backdropLabel: 'Close security details',
+    gripLabel: 'Drag security details sheet',
+  },
+};
+
 export function LiteSheet({
   open,
   onClose,
   title,
-  eyebrow = 'Manage',
+  eyebrow,
   description = '',
   children,
   className = '',
@@ -92,46 +136,106 @@ export function LiteSheet({
   gripProps = {},
   closeRef: externalCloseRef,
   SurfaceComponent = 'section',
+  variant = 'manage',
+  motion = 'none',
 }) {
   const generatedId = useId();
   const titleId = labelledBy || `lite-sheet-title-${generatedId}`;
   const internalCloseRef = useRef(null);
   const closeRef = externalCloseRef || internalCloseRef;
+  const variantClasses = LITE_SHEET_VARIANTS[variant] || LITE_SHEET_VARIANTS.manage;
+  const reducedMotionRef = useReducedMotionPreference();
+  const safeMotionEnabled = motion === 'safe-grip' && open;
 
   useVisualViewportHeight(open);
   useBodyScrollLock(open);
   useEscapeToClose(open, onClose);
   useFocusReturn(open, closeRef);
 
+  const [{ y, scale, opacity }, api] = useSpring(() => ({
+    y: 0,
+    scale: 1,
+    opacity: 1,
+    config: { tension: 420, friction: 36, clamp: false },
+  }));
+
+  useEffect(() => {
+    if (!open) return;
+    api.start({ y: 0, scale: 1, opacity: 1, immediate: reducedMotionRef.current });
+  }, [api, open, reducedMotionRef]);
+
+  const bindGripDrag = useDrag(
+    ({ active, movement: [, my], velocity: [, vy], direction: [, dy], cancel }) => {
+      if (!safeMotionEnabled || reducedMotionRef.current) return;
+      const nextY = Math.max(0, my);
+      if (active) {
+        api.start({ y: nextY, scale: 1 - Math.min(nextY / 2400, 0.018), immediate: true });
+        return;
+      }
+      const shouldClose = nextY > 96 || (vy > 0.45 && dy > 0);
+      if (shouldClose) {
+        cancel?.();
+        api.start({ y: 36, opacity: 0.96, immediate: false });
+        window.setTimeout(() => onClose?.(), 80);
+        return;
+      }
+      api.start({ y: 0, scale: 1, opacity: 1, immediate: false });
+    },
+    {
+      axis: 'y',
+      pointer: { touch: true },
+      filterTaps: true,
+      rubberband: true,
+      from: () => [0, y.get()],
+    },
+  );
+
+  const mergedGripProps = safeMotionEnabled
+    ? { ...bindGripDrag(), ...gripProps }
+    : gripProps;
+
+  const AnimatedSurface = useMemo(() => animated(SurfaceComponent), [SurfaceComponent]);
+  const Surface = safeMotionEnabled ? AnimatedSurface : SurfaceComponent;
+  const motionStyle = safeMotionEnabled
+    ? {
+        y,
+        scale,
+        opacity,
+        touchAction: 'none',
+        ...surfaceStyle,
+      }
+    : surfaceStyle;
+
   if (!open) return null;
-  const Surface = SurfaceComponent;
   return (
     <LiteOverlayRoot>
-      <div className={`lite-overlay-root lite-catalog-manage-layer ${layerClassName}`.trim()} role="presentation">
-        <LiteBackdrop onClose={onClose} label="Close app management" className="lite-catalog-manage-backdrop" />
+      <div className={`lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation">
+        <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
           ref={surfaceRef}
-          className={`lite-overlay-surface lite-catalog-manage-sheet ${className}`.trim()}
-          style={surfaceStyle}
+          className={`lite-overlay-surface ${variantClasses.surface} ${className}`.trim()}
+          style={motionStyle}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
+          data-lite-sheet-variant={variant}
+          data-lite-safe-motion={safeMotionEnabled ? 'safe-grip' : 'none'}
           {...surfaceProps}
         >
-          <button type="button" className={`lite-overlay-grip lite-catalog-manage-grip ${gripClassName}`.trim()} aria-label="Drag app actions sheet" {...gripProps}>
+          <button type="button" className={`lite-overlay-grip ${variantClasses.grip} ${gripClassName}`.trim()} aria-label={variantClasses.gripLabel} {...mergedGripProps}>
             <span aria-hidden="true" />
           </button>
-          <div className={`lite-overlay-head lite-catalog-manage-head ${headerClassName}`.trim()}>
+          <div className={`lite-overlay-head ${variantClasses.head} ${headerClassName}`.trim()}>
             <div>
-              <span>{eyebrow}</span>
+              <span>{eyebrow || variantClasses.eyebrow}</span>
               <strong id={titleId}>{title}</strong>
               {description ? <p>{description}</p> : null}
             </div>
-            <button ref={closeRef} type="button" className={`lite-overlay-close lite-catalog-manage-close ${closeClassName}`.trim()} onClick={onClose} aria-label="Close app actions">
+            <button ref={closeRef} type="button" className={`lite-overlay-close ${variantClasses.close} ${closeClassName}`.trim()} onClick={onClose} aria-label={variantClasses.closeLabel}>
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div ref={bodyRef} className={`lite-overlay-scroll lite-catalog-manage-scroll ${bodyClassName}`.trim()}>
+          <div ref={bodyRef} className={`lite-overlay-scroll ${variantClasses.scroll} ${bodyClassName}`.trim()}>
             {children}
           </div>
         </Surface>
@@ -150,3 +254,4 @@ export function LiteDetailsPanel({ open, onClose, title = 'Details', description
 
 export const APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY = true;
 export const LITE_OVERLAY_PRIMITIVES_READY = true;
+export const LITE_OVERLAY_SAFE_GESTURE_SPRING_READY = true;
