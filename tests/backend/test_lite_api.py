@@ -5849,12 +5849,12 @@ def test_lite_security_phase1_progressive_default_render():
     assert "SecurityHistoryLazy" in security
     assert "isSecurityCardCollapsed('securityHistory')" in security
     assert "isSecurityCardCollapsed('moreSecurityDetails')" in security
-    assert "isSecurityCardCollapsed('executionTimeline')" in security
+    assert "openSecurityDetails('checkPath'" in security
     assert "Show check path" in security
     assert "Open history" in security
     assert "More security details" in security
     assert "hidden={isSecurityCardCollapsed('moreSecurityDetails')}" in security
-    assert "executionTimelineLive || !isSecurityCardCollapsed('executionTimeline')" in security
+    assert "openSecurityDetails('checkPath'" in security
 
 
 def test_lite_security_phase1_preserves_security_boundaries():
@@ -5876,3 +5876,83 @@ def test_lite_security_phase1_preserves_security_boundaries():
     assert "setInterval" not in security
     assert "onClickCapture" not in security
     assert "onPointerDownCapture" not in security
+
+
+
+def test_lite_security_phase2_progressive_details_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "SecurityProgressiveDetailsLazy" in security
+    assert "activeSecurityDetails" in security
+    assert "securityProgressiveDetailsModel" in security
+    assert "openSecurityDetails('changes'" in security
+    assert "openSecurityDetails('attention'" in security
+    assert "openSecurityDetails('checkPath'" in security
+    assert "data-security-phase2-progressive-details" in details
+    assert "LiteProgressiveDetails" in details
+    assert "Technical details stay collapsed" in details
+    assert "lite-security-phase2-details-panel" in css
+    assert "lite-security-phase2-summary-only" in css
+
+
+def test_lite_security_phase2_summary_first_and_lazy_details():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+    history = Path("src/lite/components/LiteHistorySection.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "lite-security-phase2-summary-only" in security
+    assert "Open changes" in security
+    assert "Open all review items" in security
+    assert "Show check path" in security
+    assert "activeSecurityDetails === 'legacyEvidenceNeverMounts'" in security
+    assert "SECURITY_PHASE2_SUMMARY_FIRST" in details
+    assert "SECURITY_PHASE2_EVIDENCE_ON_DEMAND" in details
+    assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
+    assert "HISTORY_CONTENT_MOUNTS_ONLY_WHEN_OPENED" in history
+    assert "shouldMountHistory" in history
+
+
+def test_lite_security_phase2_preserves_backend_owned_security_boundary():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "liteApi.securityEvidence" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "fetch(" not in security
+    assert "fetch(" not in details
+    assert "child_process" not in security + details
+    assert "exec(" not in security + details
+    assert "spawn(" not in security + details
+    assert "nats://" not in (security + details).lower()
+    assert "window.setInterval" not in security
+    assert "setInterval" not in security
+    assert "onClickCapture" not in security
+    assert "onPointerDownCapture" not in security
+
+
+def test_lite_security_phase2_redaction_guards_present():
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "SENSITIVE_TEXT_PATTERN" in details
+    for forbidden_guard in [
+        "token",
+        "password",
+        "api[_-]?key",
+        "command payload",
+        "raw log",
+        "raw evidence",
+        "\\/data\\/data",
+        "\\/storage\\/emulated",
+        "restic password",
+        "backend secret",
+    ]:
+        assert forbidden_guard in details
+    assert "Raw scanner output was not shown." in details
+    assert "Secrets, tokens, private paths, and backend command payloads stay hidden." in details
