@@ -4806,7 +4806,9 @@ def test_lite_app_catalog_phase3_polling_policy_source():
     assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
     assert "...options" in status_hook
     assert "liteQueryPollingInterval" in policy
-    assert "window.setInterval" in catalog  # legacy manual refresh loop remains outside Phase 3 query polling scope
+    assert "window.setInterval" not in catalog
+    assert "refreshAppActions('photoprism')" in catalog
+    assert "Adaptive polling for App Catalog actions is owned by useLiteQuery" in catalog
 
 
 def test_lite_devices_phase4_polling_policy_source():
