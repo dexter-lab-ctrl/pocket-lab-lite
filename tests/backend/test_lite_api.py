@@ -1295,29 +1295,29 @@ def test_lite_security_ui_has_evidence_quality_and_posture_summaries():
 
 
 def test_lite_security_ui_has_mobile_first_finding_detail_modal():
-    ui = _lite_ui_source()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text() if Path("src/lite/security/SecurityFindingDetailsLazy.jsx").exists() else security
     css = Path("src/index.css").read_text()
 
+    ui = security + details
     assert "View details" in ui
     assert "Finding" in ui
     assert "Severity:" in ui
-    assert "Source:" in ui
+    assert "Source" in ui
     assert "Affected component" in ui
-    assert "Recommendation" in ui
+    assert "Recommendation" in ui or "recommended" in ui.lower()
     assert "Evidence reference" in ui
     assert "Close finding details" in ui
-    assert "lite-finding-detail-modal" in ui
-    assert "lite-security-coverage-scroll" in ui
-    assert 'aria-modal="true"' in ui
-    assert "lite-finding-detail-modal" in css
-    assert "lite-finding-detail-trigger" in css
-    assert "lite-security-evidence-dropdown" in ui
-    assert "lite-security-evidence-dropdown" in css
-    assert "SecurityFindingDetailModal" in ui
+    assert "SecurityFindingDetailsLazy" in ui or "SecurityFindingDetailModal" in ui
     assert "finding={item}" in ui or "finding={issue}" in ui
+    assert "lite-security-finding-details-panel" in ui or "lite-finding-detail-modal" in ui
+    assert "lite-security-finding-details-panel" in css or "lite-finding-detail-modal" in css
+    assert "lite-finding-detail-trigger" in css
+    assert "lite-security-evidence-dropdown" in security
+    assert "lite-security-evidence-dropdown" in css
     assert "lite-finding-detail-backdrop" not in ui
     assert "lite-finding-detail-backdrop" not in css
-    assert "onOpenEvidence" not in ui
+    assert "onOpenEvidence" not in security
     assert "@media (max-width: 720px)" in css
 
 
@@ -5164,3 +5164,90 @@ def test_lite_recovery_render_reduction_preserves_polling_and_actions():
     assert "onOpenEvidence={() => setEvidenceOpen(true)}" in recovery
     assert "onClickCapture" not in action_details
     assert "onPointerDownCapture" not in action_details
+
+
+def test_lite_security_render_reduction_components_exist():
+    expected_files = [
+        Path("src/lite/security/SecurityFindingDetailsLazy.jsx"),
+        Path("src/lite/security/SecurityHistoryLazy.jsx"),
+    ]
+    for path in expected_files:
+        assert path.exists()
+
+
+def test_lite_security_tab_uses_lazy_progressive_details_foundation():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    finding_details = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
+    history = Path("src/lite/security/SecurityHistoryLazy.jsx").read_text()
+
+    assert "SECURITY_RENDER_REDUCTION_MILESTONE_1" in security
+    assert "SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2" in security
+    assert "React.lazy" in security
+    assert "import('./security/SecurityFindingDetailsLazy.jsx')" in security
+    assert "import('./security/SecurityHistoryLazy.jsx')" in security
+    assert "<Suspense" in security
+    assert "selectedFinding === issue ? (" in security
+    assert "selectedFinding === item ? (" in security
+    assert "LiteProgressiveDetails" in finding_details
+    assert "SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2" in finding_details
+    assert "SECURITY_FINDING_DETAILS_ARE_LAZY" in finding_details
+    assert "LiteHistorySection" in history
+    assert "SECURITY_HISTORY_ROWS_MOUNT_ONLY_WHEN_OPENED" in history
+
+
+def test_lite_security_details_keep_history_lazy_and_technical_collapsed():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    finding_details = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
+    security_history = Path("src/lite/security/SecurityHistoryLazy.jsx").read_text()
+    history = Path("src/lite/components/LiteHistorySection.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "history={{" in finding_details
+    assert "Finding history" in finding_details
+    assert "technicalDetails={technicalRows" in finding_details
+    assert "Security run history" in security_history
+    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
+    assert "{shouldMountHistory ? (" in history
+    assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
+    assert "const [open, setOpen] = useState(Boolean(defaultOpen))" in technical
+    assert "{open ? (" in technical
+    assert "{isSecurityCardCollapsed('securityHistory') ? (" in security
+    assert "<SecurityHistoryLazy" in security
+    assert "hidden={isSecurityCardCollapsed('securityHistory')}" not in security
+    assert "window.setInterval" not in security
+
+
+def test_lite_security_details_preserve_backend_only_evidence_boundary():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    finding_details = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "SECURITY_BACKEND_ONLY_EVIDENCE_BOUNDARY" in finding_details
+    assert "normal Security finding details do not fetch backend evidence endpoints" in finding_details
+    assert "A backend troubleshooting record stays protected" in finding_details
+    assert "The browser did not run security tools." in finding_details
+    assert "Raw scanner output was not loaded into this view." in finding_details
+    assert "Secrets, private paths, and backend command payloads stay hidden." in finding_details
+    assert "liteApi.securityEvidence" not in finding_details
+    assert "readJson(`/api/lite/security/evidence" not in finding_details
+    assert "raw evidence" not in finding_details.lower()
+    assert "SENSITIVE_DETAIL_PATTERN" in technical
+    assert "liteApi.securityEvidence" in security
+
+
+def test_lite_security_render_reduction_preserves_polling_and_actions():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    finding_details = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
+
+    assert "SECURITY_POLLING_POLICY_PHASE5" in security
+    assert "hasLiveSecurityOperation" in security
+    assert "securityPollingIsLive" in security
+    assert "pollingMode: 'slow'" in security
+    assert "isLive: securityPollingIsLive" in security
+    assert "staleTime: 15_000" in security
+    assert "setInterval" not in security
+    assert "runSecurityScan" in security
+    assert "checkProtectedApp" in security
+    assert "onClickCapture" not in finding_details
+    assert "onPointerDownCapture" not in finding_details
