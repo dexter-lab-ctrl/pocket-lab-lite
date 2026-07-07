@@ -27,10 +27,11 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
-import { liteMutationInvalidations, useLiteMutation } from '../../hooks/useLiteMutation.js';
+import { getLiteAppActionInvalidations, useLiteMutation } from '../../hooks/useLiteMutation.js';
 import { useLiteAppActionFlow } from '../../hooks/useLiteAppActionFlow.js';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
+import { isLiteAppActionsViewLive, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
@@ -1826,6 +1827,26 @@ function CatalogSkeletons() {
   );
 }
 
+function shouldRefreshCatalogAfterAppAction(actionId = '', response = {}) {
+  const normalized = String(actionId || response?.action_id || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const hints = response?.hints || response?.changed || {};
+  const changed = (name) => response?.[name] === true || hints?.[name] === true;
+  if (['install_app', 'remove_app', 'repair_app'].includes(normalized)) return true;
+  if (['connect_photos', 'import_photos'].includes(normalized)) return true;
+  if (normalized === 'check_app' && (changed('catalog_changed') || changed('security_changed') || changed('safety_changed'))) return true;
+  return [
+    'catalog_changed',
+    'app_changed',
+    'route_changed',
+    'route_readiness_changed',
+    'openability_changed',
+    'media_changed',
+    'storage_changed',
+    'mapping_changed',
+    'lifecycle_changed',
+  ].some(changed);
+}
+
 
 export default function CatalogScreen({ onOpenWorkspace }) {
   const {
@@ -1842,7 +1863,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     path: liteQueryPaths.catalog,
     queryFn: liteApi.catalog,
     pollingMode: 'relaxed',
+    staleTime: 60_000,
     isLive: () => false,
+    select: selectCatalogSummaryView,
+    snapshotSelect: selectCatalogSummaryView,
   });
   const manageAppId = useLiteUiStore((state) => state.manageAppId);
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
@@ -1892,7 +1916,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
-  const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
+  const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || isLiteAppActionsViewLive(payload) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
     data: appActionsData,
     refresh: refreshPhotoprismActions,
@@ -1903,11 +1927,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
     pollingMode: 'normal',
     isLive: appActionsLive,
-    staleTime: 5_000,
+    staleTime: 10_000,
+    select: selectPhotoPrismActionsView,
+    snapshotSelect: selectPhotoPrismActionsView,
   });
   const appActionMutation = useLiteMutation({
     mutationFn: ({ appId = 'photoprism', actionId, payload = {} }) => liteApi.runAppAction(appId, actionId, payload),
-    invalidateForAction: ({ actionId }) => liteMutationInvalidations[actionId] || [liteQueryKeys.appActions('photoprism')],
+    invalidateForAction: ({ appId = 'photoprism', actionId }, response) => getLiteAppActionInvalidations(appId, actionId, response),
   });
   const installAppMutation = useLiteMutation({
     mutationFn: ({ appId, targetNodeId }) => liteApi.installApp(appId, { target_node_id: targetNodeId }),
@@ -2132,18 +2158,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     }));
   }, [appActionsData]);
 
-  useEffect(() => {
-    if (!apps.some((app) => isPhotoPrismApp(app))) return undefined;
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      if (!cancelled) refreshAppActions('photoprism');
-    }, 120);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [apps, refreshAppActions]);
-
   useEffect(() => () => clearLongPress(), [clearLongPress]);
 
   useEffect(() => {
@@ -2198,12 +2212,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     try {
       const targetNodeId = app?.target?.default_node_id || 'pocket-lab-lite-server';
       setResult(await installAppMutation.run({ appId: app.id, targetNodeId }));
-      refresh();
-      refreshAppActions(app.id || 'photoprism');
-      window.setTimeout(refresh, 700);
-      window.setTimeout(refreshAppActions, 700, app.id || 'photoprism');
-      window.setTimeout(refresh, 1800);
-      window.setTimeout(refreshAppActions, 1800, app.id || 'photoprism');
+      await refresh();
+      await refreshAppActions(app.id || 'photoprism');
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -2286,8 +2296,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       setResult({ action_id: 'connect_photos', ...response, summary: 'Phone storage connected. PhotoPrism can now look there. Run Import photos to update your library.' });
       closeStoragePreview(true);
       await refreshPhotoPrismState();
-      window.setTimeout(refresh, 700);
-      window.setTimeout(refresh, 1800);
     } catch (err) {
       appActionFlow.fail(err);
       const detail = err?.payload?.detail;
@@ -2346,7 +2354,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       const response = await liteApi.connectPhotoPrismStorage(payload);
       setResult({ action_id: 'connect_photos', ...response });
       await refreshPhotoPrismState();
-      window.setTimeout(refresh, 700);
     } catch (err) {
       appActionFlow.fail(err);
       const detail = err?.payload?.detail;
@@ -2383,9 +2390,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       appActionFlow.resultReady(response);
       setResult({ action_id: actionId, ...response });
       await refreshAppActions(appId);
-      refresh();
-      window.setTimeout(() => { refresh(); refreshAppActions(appId); }, 700);
-      window.setTimeout(() => { refresh(); refreshAppActions(appId); }, 1800);
+      if (shouldRefreshCatalogAfterAppAction(actionId, response)) {
+        await refresh();
+      }
     } catch (err) {
       appActionFlow.fail(err);
       const detail = err?.payload?.detail;

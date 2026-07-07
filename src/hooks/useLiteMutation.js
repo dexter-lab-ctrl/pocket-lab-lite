@@ -10,9 +10,9 @@ export const liteMutationInvalidations = {
   check_app: [liteQueryKeys.appActions('photoprism')],
   repair_app: [liteQueryKeys.appActions('photoprism')],
   update_app: [liteQueryKeys.appActions('photoprism')],
-  backup_app: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
-  backup_to_storage: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
-  preview_restore: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
+  backup_app: [liteQueryKeys.appActions('photoprism')],
+  backup_to_storage: [liteQueryKeys.appActions('photoprism')],
+  preview_restore: [liteQueryKeys.appActions('photoprism')],
   install_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   remove_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   security_check: [liteQueryKeys.security()],
@@ -20,6 +20,61 @@ export const liteMutationInvalidations = {
   restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
 };
+
+function normalizeActionId(actionId = '') {
+  return String(actionId || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+function actionResultHint(payload = {}, names = []) {
+  return names.some((name) => payload?.[name] === true || payload?.hints?.[name] === true || payload?.changed?.[name] === true);
+}
+
+function uniqueQueryKeys(keys = []) {
+  const seen = new Set();
+  return keys.filter((key) => {
+    if (!key) return false;
+    const marker = JSON.stringify(key);
+    if (seen.has(marker)) return false;
+    seen.add(marker);
+    return true;
+  });
+}
+
+export function getLiteAppActionInvalidations(appId = 'photoprism', actionId = '', result = {}) {
+  const normalizedAppId = String(appId || 'photoprism').toLowerCase();
+  const normalizedActionId = normalizeActionId(actionId || result?.action_id || result?.actionId);
+  const keys = [liteQueryKeys.appActions(normalizedAppId)];
+
+  const routeOrCatalogChanged = actionResultHint(result, [
+    'catalog_changed',
+    'app_changed',
+    'route_changed',
+    'route_readiness_changed',
+    'openability_changed',
+    'open_url_changed',
+    'lifecycle_changed',
+  ]);
+  const mediaSummaryChanged = actionResultHint(result, ['media_changed', 'storage_changed', 'mapping_changed', 'import_state_changed']);
+  const recoverySummaryChanged = actionResultHint(result, ['recovery_changed', 'backup_changed', 'restore_preview_changed']);
+
+  if (
+    routeOrCatalogChanged
+    || ['install_app', 'remove_app', 'repair_app'].includes(normalizedActionId)
+    || (['connect_photos', 'import_photos'].includes(normalizedActionId) && (mediaSummaryChanged || result?.accepted || result?.queued))
+    || (normalizedActionId === 'check_app' && actionResultHint(result, ['security_changed', 'safety_changed']))
+  ) {
+    keys.push(liteQueryKeys.catalog());
+  }
+
+  if (
+    recoverySummaryChanged
+    || ['backup_app', 'backup_to_storage', 'preview_restore'].includes(normalizedActionId)
+  ) {
+    keys.push(liteQueryKeys.recovery());
+  }
+
+  return uniqueQueryKeys(keys);
+}
 
 export function isAcceptedLiteMutationResponse(payload) {
   const status = String(payload?.status || payload?.state || '').toLowerCase();

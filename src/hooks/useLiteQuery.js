@@ -51,12 +51,23 @@ function defaultQueryKey(path, explicitKey) {
   return liteQueryKeys.resource(normalizeQueryPath(path || 'unknown'));
 }
 
-async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET' }) {
+function preserveSelectedSnapshotMeta(input, output) {
+  if (!input?.__liteSnapshot || !output || typeof output !== 'object' || Array.isArray(output) || output.__liteSnapshot) return output;
+  return { ...output, __liteSnapshot: input.__liteSnapshot };
+}
+
+function applyLiteQuerySelector(select, data) {
+  if (typeof select !== 'function') return data;
+  return preserveSelectedSnapshotMeta(data, select(data));
+}
+
+async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET', snapshotSelect }) {
   const safePath = isSafeLiteSnapshotPath(path) && !isUnsafeSnapshotRequest(path, method);
   try {
     const data = await queryFn();
     if (safePath && data && typeof data === 'object' && !isSavedSnapshot(data)) {
-      writeLiteSnapshot(path, data);
+      const snapshotPayload = typeof snapshotSelect === 'function' ? applyLiteQuerySelector(snapshotSelect, data) : data;
+      writeLiteSnapshot(path, snapshotPayload);
       return data.__liteSnapshot ? data : attachFreshSnapshotMeta(path, data);
     }
     return data;
@@ -97,6 +108,8 @@ export function useLiteQuery({
   refetchOnWindowFocus = true,
   refetchOnReconnect = true,
   placeholderData,
+  select,
+  snapshotSelect,
 } = {}) {
   const normalizedPath = normalizeQueryPath(path || queryFn?.safeSnapshotPath || '');
   const safeSnapshotPath = isSafeLiteSnapshotPath(normalizedPath) && !isUnsafeSnapshotRequest(normalizedPath, method)
@@ -123,11 +136,12 @@ export function useLiteQuery({
   const query = useQuery({
     queryKey: defaultQueryKey(normalizedPath || queryFn?.name || 'lite-query', queryKey),
     enabled: Boolean(enabled && queryFn),
-    queryFn: () => queryWithSafeSnapshotFallback({ path: normalizedPath, queryFn, method }),
+    queryFn: () => queryWithSafeSnapshotFallback({ path: normalizedPath, queryFn, method, snapshotSelect: snapshotSelect || select }),
     initialData: cached || undefined,
     initialDataUpdatedAt: initialDataUpdatedAt(cached),
     placeholderData,
     staleTime,
+    select: typeof select === 'function' ? (payload) => applyLiteQuerySelector(select, payload) : undefined,
     refetchInterval: resolvedRefetchInterval,
     refetchIntervalInBackground: Boolean(enabledWhenHidden),
     refetchOnWindowFocus,
