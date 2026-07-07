@@ -347,7 +347,10 @@ export default function LiteActionProgress({
   const steps = useMemo(() => progressStepsForAction({ actionId, state, progress, disabledReason }), [actionId, state, progress, disabledReason]);
   const workflowKind = ACTION_WORKFLOW_KIND[actionId] || 'signal';
   const activeStage = activeStageForSteps(steps);
-  const percent = progressPercentForSteps({ state, steps });
+  const syntheticIndeterminate = Boolean(progress?.synthetic || progress?.indeterminate);
+  const percent = syntheticIndeterminate && state !== 'evidence_saved'
+    ? 0
+    : progressPercentForSteps({ state, steps });
   const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult, steps });
   const chip = statusChipForState({ actionId, state, steps });
   const finalIndex = steps.length - 1;
@@ -378,6 +381,7 @@ export default function LiteActionProgress({
       data-run-count={Number(runCount) || 0}
       style={{
         '--lite-action-progress-percent': `${percent}%`,
+        '--lite-action-progress-indeterminate': syntheticIndeterminate ? 1 : 0,
         '--lite-action-progress-steps': steps.length,
         '--lite-action-progress-active-step': Math.max(0, activeStage),
       }}
