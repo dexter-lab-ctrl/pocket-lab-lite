@@ -15600,3 +15600,194 @@ textarea {
 .lite-action-progress[data-indeterminate="true"] .lite-action-progress__meta {
   margin-top: 0;
 }
+
+/* Lite progressive details foundation: summary-first, lazy hidden sections, safe mobile cards. */
+.theme-pocket-lite-daylight .lite-progressive-details,
+[data-lite-manage-portal="true"] .lite-progressive-details {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-details-summary,
+[data-lite-manage-portal="true"] .lite-progressive-details-summary {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.1rem;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-progressive-details-summary > span,
+[data-lite-manage-portal="true"] .lite-progressive-details-summary > span,
+.theme-pocket-lite-daylight .lite-progressive-disclosure-summary,
+[data-lite-manage-portal="true"] .lite-progressive-disclosure-summary {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-details-summary h3,
+[data-lite-manage-portal="true"] .lite-progressive-details-summary h3,
+.theme-pocket-lite-daylight .lite-progressive-details-summary p,
+[data-lite-manage-portal="true"] .lite-progressive-details-summary p {
+  margin: 0;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-details-status,
+[data-lite-manage-portal="true"] .lite-progressive-details-status {
+  justify-self: start;
+  padding: 0.32rem 0.68rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  font-size: 0.82rem;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-details-grid,
+[data-lite-manage-portal="true"] .lite-progressive-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-detail-section,
+[data-lite-manage-portal="true"] .lite-progressive-detail-section {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.theme-pocket-lite-daylight .lite-progressive-detail-section strong,
+[data-lite-manage-portal="true"] .lite-progressive-detail-section strong,
+.theme-pocket-lite-daylight .lite-technical-details dt,
+[data-lite-manage-portal="true"] .lite-technical-details dt {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-detail-section p,
+[data-lite-manage-portal="true"] .lite-progressive-detail-section p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-detail-section.is-attention,
+[data-lite-manage-portal="true"] .lite-progressive-detail-section.is-attention,
+.theme-pocket-lite-daylight .lite-progressive-detail-section.is-next-step,
+[data-lite-manage-portal="true"] .lite-progressive-detail-section.is-next-step {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(255, 251, 235, 0.84);
+}
+
+.theme-pocket-lite-daylight .lite-progressive-detail-section.is-saved,
+[data-lite-manage-portal="true"] .lite-progressive-detail-section.is-saved {
+  border-color: rgba(20, 184, 166, 0.24);
+  background: rgba(240, 253, 250, 0.82);
+}
+
+.theme-pocket-lite-daylight .lite-technical-details,
+[data-lite-manage-portal="true"] .lite-technical-details,
+.theme-pocket-lite-daylight .lite-history-section,
+[data-lite-manage-portal="true"] .lite-history-section {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-progressive-disclosure-toggle,
+[data-lite-manage-portal="true"] .lite-progressive-disclosure-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-disclosure-toggle span,
+[data-lite-manage-portal="true"] .lite-progressive-disclosure-toggle span {
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-progressive-disclosure-toggle small,
+[data-lite-manage-portal="true"] .lite-progressive-disclosure-toggle small {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.28rem 0.58rem;
+  background: rgba(15, 23, 42, 0.06);
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-technical-details-list,
+[data-lite-manage-portal="true"] .lite-technical-details-list,
+.theme-pocket-lite-daylight .lite-history-section-list,
+[data-lite-manage-portal="true"] .lite-history-section-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-pocket-lite-daylight .lite-technical-details-row,
+[data-lite-manage-portal="true"] .lite-technical-details-row,
+.theme-pocket-lite-daylight .lite-history-section-list li,
+[data-lite-manage-portal="true"] .lite-history-section-list li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.42fr) 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  min-width: 0;
+  padding: 0.58rem 0.65rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-technical-details dd,
+[data-lite-manage-portal="true"] .lite-technical-details dd,
+.theme-pocket-lite-daylight .lite-history-section-list small,
+[data-lite-manage-portal="true"] .lite-history-section-list small {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #475569;
+}
+
+.theme-pocket-lite-daylight .lite-history-section-body,
+[data-lite-manage-portal="true"] .lite-history-section-body {
+  display: grid;
+  gap: 0.55rem;
+}
+
+@media (max-width: 680px) {
+  .theme-pocket-lite-daylight .lite-progressive-details-grid,
+  [data-lite-manage-portal="true"] .lite-progressive-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-technical-details-row,
+  [data-lite-manage-portal="true"] .lite-technical-details-row,
+  .theme-pocket-lite-daylight .lite-history-section-list li,
+  [data-lite-manage-portal="true"] .lite-history-section-list li {
+    grid-template-columns: 1fr;
+  }
+}
