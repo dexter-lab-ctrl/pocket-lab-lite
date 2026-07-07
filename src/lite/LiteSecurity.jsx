@@ -1392,9 +1392,21 @@ export default function SecurityScreen() {
 
   React.useEffect(() => {
     if (!scanInProgress) return undefined;
-    setProgressNow(Date.now());
-    const timer = window.setInterval(() => setProgressNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
+    let cancelled = false;
+    let timer = null;
+
+    function tick() {
+      if (cancelled) return;
+      setProgressNow(Date.now());
+      timer = window.setTimeout(tick, 1000);
+    }
+
+    tick();
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [scanInProgress]);
 
   React.useEffect(() => {

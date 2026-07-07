@@ -2263,19 +2263,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     return () => window.clearTimeout(timer);
   }, [storagePreviewNotice]);
 
-  useEffect(() => {
-    const busyAppAction = /:(import_photos|check_app|repair_app)$/.test(actionBusyKey || '');
-    const runningCatalogAction = apps.some((app) => {
-      const current = lifecycleProfile(app)?.current_action || lifecycleProfile(app)?.operations?.current_action;
-      return ['check_app', 'repair_app'].includes(String(current?.action_id || '')) && ['queued', 'running'].includes(String(current?.status || '').toLowerCase());
-    });
-    if (!busyAppAction && !runningCatalogAction && !hasRunningPhotoPrismMedia(apps)) return undefined;
-    const timer = window.setInterval(() => {
-      refresh();
-      refreshAppActions('photoprism');
-    }, 4000);
-    return () => window.clearInterval(timer);
-  }, [actionBusyKey, apps, refresh, refreshAppActions]);
+  // Adaptive polling for App Catalog actions is owned by useLiteQuery.
+  // Do not add manual refresh intervals here; live actions should use isLive polling.
 
 
   function openActionDetails(actionId, appId = 'photoprism') {
