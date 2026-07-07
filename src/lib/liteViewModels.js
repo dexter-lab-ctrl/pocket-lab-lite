@@ -1155,3 +1155,392 @@ export function getLiteSecurityMutationInvalidations(actionId = '', result = {})
   }
   return [['lite', 'security']];
 }
+
+const RECOVERY_LIVE_STATUSES = new Set([
+  'queued',
+  'pending',
+  'accepted',
+  'running',
+  'working',
+  'in_progress',
+  'creating',
+  'verifying',
+  'previewing',
+  'restoring',
+  'checkpointing',
+  'validating',
+]);
+
+function normalizeRecoveryStatus(value = '') {
+  return normalizeStatus(value || '');
+}
+
+function normalizeRecoveryEvidenceRef(value = '') {
+  return safeString(value || '').slice(0, 120);
+}
+
+function normalizeRecoveryRepository(repository = {}) {
+  if (!isObject(repository)) return {};
+  return copySafeKeys(repository, [
+    'status',
+    'ready',
+    'engine',
+    'encrypted',
+    'initialized',
+    'repository_initialized',
+    'location_label',
+    'summary',
+    'updated_at',
+    'checked_at',
+  ]);
+}
+
+function normalizeRecoveryBackup(backup = {}) {
+  if (!isObject(backup)) return null;
+  return copySafeKeys(backup, [
+    'backup_id',
+    'snapshot_id',
+    'manifest_checksum',
+    'status',
+    'state',
+    'summary',
+    'created_at',
+    'completed_at',
+    'updated_at',
+    'pending',
+    'verification_status',
+    'verified_at',
+    'evidence_saved',
+    'receipt_id',
+  ]);
+}
+
+function normalizeRecoveryPreview(preview = {}) {
+  if (!isObject(preview)) return null;
+  return copySafeKeys(preview, [
+    'preview_id',
+    'backup_id',
+    'status',
+    'state',
+    'phase',
+    'summary',
+    'change_count',
+    'restic_item_count',
+    'skipped_change_count',
+    'restore_allowed',
+    'restore_supported',
+    'verification_status',
+    'created_at',
+    'completed_at',
+    'updated_at',
+  ]);
+}
+
+function normalizeRecoveryCheckpoint(checkpoint = {}) {
+  if (!isObject(checkpoint)) return null;
+  return copySafeKeys(checkpoint, [
+    'checkpoint_id',
+    'restore_id',
+    'status',
+    'state',
+    'summary',
+    'created_at',
+    'completed_at',
+    'updated_at',
+  ]);
+}
+
+function normalizeRecoveryRestore(restore = {}) {
+  if (!isObject(restore)) return null;
+  const selected = copySafeKeys(restore, [
+    'restore_id',
+    'backup_id',
+    'preview_id',
+    'checkpoint_id',
+    'status',
+    'state',
+    'phase',
+    'summary',
+    'restored_file_count',
+    'skipped_change_count',
+    'created_at',
+    'completed_at',
+    'updated_at',
+  ]);
+  if (isObject(restore.service_restart)) {
+    selected.service_restart = copySafeKeys(restore.service_restart, ['status', 'summary', 'updated_at']);
+  }
+  if (isObject(restore.health_validation)) {
+    selected.health_validation = copySafeKeys(restore.health_validation, ['status', 'summary', 'checked_at', 'updated_at']);
+  }
+  return selected;
+}
+
+function normalizeRecoveryTarget(target = {}) {
+  if (!isObject(target)) return null;
+  return copySafeKeys(target, [
+    'device_id',
+    'name',
+    'label',
+    'ready',
+    'status',
+    'reason',
+    'summary',
+    'available_gb',
+    'updated_at',
+  ]);
+}
+
+function normalizeRecoveryAppBackup(app = {}) {
+  if (!isObject(app)) return null;
+  const selected = copySafeKeys(app, [
+    'app_id',
+    'name',
+    'label',
+    'status',
+    'summary',
+    'default_mode',
+    'updated_at',
+  ]);
+  selected.included = safeList(app.included, []);
+  selected.excluded = safeList(app.excluded, []);
+  if (isObject(app.media)) selected.media = copySafeKeys(app.media, ['status', 'summary', 'updated_at']);
+  if (isObject(app.backup_target)) selected.backup_target = copySafeKeys(app.backup_target, ['label', 'target_label', 'status', 'ready', 'summary']);
+  if (isObject(app.evidence)) selected.evidence = copySafeKeys(app.evidence, ['status', 'summary', 'receipt_id', 'updated_at']);
+  if (isObject(app.lifecycle)) selected.lifecycle = selectRecoveryAppLifecycle(app.lifecycle);
+  return selected;
+}
+
+function selectRecoveryAppLifecycle(lifecycle = {}) {
+  if (!isObject(lifecycle)) return null;
+  return {
+    app_id: safeString(lifecycle.app_id || ''),
+    host_device: isObject(lifecycle.host_device) ? copySafeKeys(lifecycle.host_device, ['id', 'label', 'status']) : null,
+    storage: isObject(lifecycle.storage) ? copySafeKeys(lifecycle.storage, ['status', 'mapping_count', 'summary']) : null,
+    media: isObject(lifecycle.media) ? copySafeKeys(lifecycle.media, ['status', 'summary', 'last_indexed_at', 'updated_at']) : null,
+    backup: isObject(lifecycle.backup) ? copySafeKeys(lifecycle.backup, ['status', 'summary', 'updated_at']) : null,
+  };
+}
+
+function normalizeRecoveryOperation(operation = {}) {
+  if (!isObject(operation)) return null;
+  const selected = copySafeKeys(operation, [
+    'operation_id',
+    'action_id',
+    'action',
+    'status',
+    'state',
+    'phase',
+    'summary',
+    'started_at',
+    'updated_at',
+    'completed_at',
+    'percent',
+  ]);
+  if (isObject(operation.progress)) selected.progress = normalizeProgress(operation.progress);
+  selected.live = isLiteRecoveryOperationLive(selected);
+  return selected;
+}
+
+function isLiteRecoveryOperationLive(operation = {}) {
+  if (!isObject(operation)) return false;
+  const progress = operation.progress || {};
+  const statuses = [
+    operation.status,
+    operation.state,
+    operation.phase,
+    progress.status,
+    progress.state,
+    progress.phase,
+  ].map(normalizeRecoveryStatus);
+  return Boolean(
+    operation.live === true
+    || operation.running === true
+    || operation.operation_running === true
+    || operation.in_progress === true
+    || progress.running === true
+    || statuses.some((status) => RECOVERY_LIVE_STATUSES.has(status))
+  );
+}
+
+export function selectRecoverySummaryView(payload = {}) {
+  const latestBackup = selectRecoveryLatestBackupView(payload);
+  const latestPreview = selectRecoveryRestorePreviewView(payload);
+  const checkpoint = selectRecoveryCheckpointView(payload);
+  const lastRestore = selectRecoveryLastRestoreView(payload);
+  const repository = selectRecoveryRepositoryView(payload);
+  return withSnapshotMeta(payload, {
+    status: normalizeRecoveryStatus(payload?.status || latestBackup?.status || 'unknown'),
+    summary: safeString(payload?.summary || 'Recovery status is available.'),
+    updated_at: safeString(payload?.updated_at || payload?.checked_at || ''),
+    repository,
+    last_backup: latestBackup,
+    latest_backup: latestBackup,
+    latest_restore_preview: latestPreview,
+    restore_preview: latestPreview,
+    pre_restore_checkpoint: checkpoint,
+    last_restore: lastRestore,
+    last_verification_result: safeString(payload?.last_verification_result || latestBackup?.verification_status || ''),
+    action_progress: selectRecoveryActionStateView(payload),
+    evidence_summary: selectRecoveryEvidenceSummaryView(payload),
+    history: selectRecoveryHistorySummaryView(payload),
+    live: isLiteRecoveryViewLive(payload),
+  });
+}
+
+export function selectRecoveryRepositoryView(payload = {}) {
+  return normalizeRecoveryRepository(payload?.repository || payload?.repository_readiness || {});
+}
+
+export function selectRecoveryLatestBackupView(payload = {}) {
+  return normalizeRecoveryBackup(payload?.last_backup || payload?.latest_backup || payload?.pending_backup || {});
+}
+
+export function selectRecoveryVerificationView(payload = {}) {
+  const backup = selectRecoveryLatestBackupView(payload);
+  return {
+    status: normalizeRecoveryStatus(payload?.verification_status || backup?.verification_status || payload?.last_verification_result || ''),
+    backup_id: safeString(backup?.backup_id || ''),
+    verified_at: safeString(backup?.verified_at || ''),
+    summary: safeString(payload?.verification_summary || backup?.summary || ''),
+  };
+}
+
+export function selectRecoveryRestorePreviewView(payload = {}) {
+  return normalizeRecoveryPreview(payload?.latest_restore_preview || payload?.restore_preview || payload?.preview || {});
+}
+
+export function selectRecoveryCheckpointView(payload = {}) {
+  return normalizeRecoveryCheckpoint(payload?.pre_restore_checkpoint || payload?.checkpoint || payload?.last_checkpoint || {});
+}
+
+export function selectRecoveryLastRestoreView(payload = {}) {
+  return normalizeRecoveryRestore(payload?.last_restore || payload?.latest_restore || {});
+}
+
+export function selectRecoveryActionStateView(payload = {}) {
+  const operation = normalizeRecoveryOperation(payload?.current_operation || payload?.latest_operation || payload?.operation || {});
+  const progress = normalizeProgress(payload?.action_progress || payload?.progress || {});
+  const selected = operation || (progress ? { progress, status: normalizeRecoveryStatus(progress.status || progress.state || '') } : null);
+  if (!selected) return null;
+  selected.live = isLiteRecoveryOperationLive(selected);
+  return selected;
+}
+
+export function selectRecoveryHistorySummaryView(payload = {}) {
+  const history = Array.isArray(payload?.backup_history)
+    ? payload.backup_history
+    : Array.isArray(payload?.available_restore_points)
+      ? payload.available_restore_points
+      : Array.isArray(payload?.history)
+        ? payload.history
+        : [];
+  return history.slice(0, 10).map(normalizeRecoveryBackup).filter(Boolean);
+}
+
+export function selectRecoveryEvidenceSummaryView(payload = {}) {
+  const latestBackup = selectRecoveryLatestBackupView(payload);
+  const latestPreview = selectRecoveryRestorePreviewView(payload);
+  const checkpoint = selectRecoveryCheckpointView(payload);
+  const lastRestore = selectRecoveryLastRestoreView(payload);
+  return {
+    status: normalizeRecoveryStatus(payload?.evidence?.status || payload?.receipt?.status || (latestBackup?.receipt_id ? 'saved' : 'unknown')),
+    summary: safeString(payload?.evidence?.summary || payload?.receipt?.summary || 'Evidence is saved by the backend when recovery work runs.'),
+    backup_id: normalizeRecoveryEvidenceRef(latestBackup?.backup_id),
+    snapshot_id: normalizeRecoveryEvidenceRef(latestBackup?.snapshot_id),
+    manifest_checksum: normalizeRecoveryEvidenceRef(latestBackup?.manifest_checksum),
+    preview_id: normalizeRecoveryEvidenceRef(latestPreview?.preview_id),
+    checkpoint_id: normalizeRecoveryEvidenceRef(checkpoint?.checkpoint_id || lastRestore?.checkpoint_id),
+    restore_id: normalizeRecoveryEvidenceRef(lastRestore?.restore_id),
+    updated_at: safeString(payload?.evidence?.updated_at || payload?.updated_at || ''),
+  };
+}
+
+export function selectRecoveryScreenView(payload = {}) {
+  const summary = selectRecoverySummaryView(payload || {});
+  const appBackups = Array.isArray(payload?.app_backups)
+    ? payload.app_backups
+    : Array.isArray(payload?.app_backup_profiles?.apps)
+      ? payload.app_backup_profiles.apps
+      : [];
+  const lifecycleApps = Array.isArray(payload?.app_lifecycle_profiles?.apps) ? payload.app_lifecycle_profiles.apps : [];
+  return withSnapshotMeta(payload, {
+    ...summary,
+    view_model: 'recovery-s3-v1',
+    repository: selectRecoveryRepositoryView(payload),
+    latest_backup: selectRecoveryLatestBackupView(payload),
+    last_backup: selectRecoveryLatestBackupView(payload),
+    verification: selectRecoveryVerificationView(payload),
+    latest_restore_preview: selectRecoveryRestorePreviewView(payload),
+    restore_preview: selectRecoveryRestorePreviewView(payload),
+    pre_restore_checkpoint: selectRecoveryCheckpointView(payload),
+    last_restore: selectRecoveryLastRestoreView(payload),
+    current_operation: selectRecoveryActionStateView(payload),
+    backup_history: selectRecoveryHistorySummaryView(payload),
+    available_restore_points: selectRecoveryHistorySummaryView(payload),
+    evidence_summary: selectRecoveryEvidenceSummaryView(payload),
+    what_will_be_backed_up: safeList(payload?.what_will_be_backed_up, []),
+    what_will_not_be_backed_up: safeList(payload?.what_will_not_be_backed_up, []),
+    backup_targets: (Array.isArray(payload?.backup_targets) ? payload.backup_targets : []).slice(0, 8).map(normalizeRecoveryTarget).filter(Boolean),
+    app_backups: appBackups.slice(0, 8).map(normalizeRecoveryAppBackup).filter(Boolean),
+    app_backup_profiles: { apps: appBackups.slice(0, 8).map(normalizeRecoveryAppBackup).filter(Boolean) },
+    app_lifecycle_profiles: { apps: lifecycleApps.slice(0, 8).map(selectRecoveryAppLifecycle).filter(Boolean) },
+    live: isLiteRecoveryViewLive(payload),
+  });
+}
+
+export function isLiteRecoveryViewLive(payload = {}) {
+  if (!payload || typeof payload !== 'object') return false;
+  const latestBackup = payload.last_backup || payload.latest_backup || payload.pending_backup || {};
+  const preview = payload.latest_restore_preview || payload.restore_preview || payload.preview || {};
+  const checkpoint = payload.pre_restore_checkpoint || payload.checkpoint || {};
+  const restore = payload.last_restore || payload.latest_restore || {};
+  const operation = payload.current_operation || payload.latest_operation || payload.operation || payload.action_progress || payload.progress || {};
+  const statuses = [
+    payload.status,
+    payload.state,
+    payload.phase,
+    latestBackup.status,
+    latestBackup.state,
+    latestBackup.verification_status,
+    preview.status,
+    preview.state,
+    preview.phase,
+    checkpoint.status,
+    checkpoint.state,
+    restore.status,
+    restore.state,
+    restore.phase,
+    operation.status,
+    operation.state,
+    operation.phase,
+    operation.progress?.status,
+    operation.progress?.state,
+    operation.progress?.phase,
+  ].map(normalizeRecoveryStatus);
+  if (payload.live === true || payload.running === true || payload.operation_running === true || payload.in_progress === true) return true;
+  if (operation.running === true || operation.operation_running === true || operation.in_progress === true) return true;
+  if (statuses.some((status) => RECOVERY_LIVE_STATUSES.has(status))) return true;
+  const operations = Array.isArray(payload.operations) ? payload.operations : Array.isArray(payload.history) ? payload.history : [];
+  return operations.some(isLiteRecoveryOperationLive);
+}
+
+export function getLiteRecoveryMutationInvalidations(actionId = '', result = {}) {
+  const normalized = normalizeRecoveryStatus(actionId || result?.action_id || result?.action || result?.status || '');
+  if ([
+    'backup_now',
+    'recovery_backup',
+    'backup',
+    'verify_backup',
+    'recovery_verify',
+    'preview_restore',
+    'preview_restore_recovery',
+    'recovery_preview',
+    'restore_latest',
+    'recovery_restore',
+    'restore_backup',
+  ].includes(normalized)) {
+    return [['lite', 'recovery']];
+  }
+  return [['lite', 'recovery']];
+}
