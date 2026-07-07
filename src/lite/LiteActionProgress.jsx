@@ -276,6 +276,8 @@ function formatActionRunTime(value) {
 }
 
 function runMetaLabel({ state, actionId, lastRanAt, executionOwner, hasEvidence }) {
+  if (state === 'queued') return 'Request sent';
+  if (state === 'running' || state === 'waiting') return 'Working now';
   const lastRun = formatActionRunTime(lastRanAt);
   if (lastRun) return `Last run: ${lastRun}`;
   if (state === 'idle' && executionOwner === 'browser_navigation') return 'No backend run needed';
@@ -379,6 +381,7 @@ export default function LiteActionProgress({
       className={`lite-action-progress lite-action-progress--${state} lite-action-progress--${workflowKind} ${className}`.trim()}
       data-action-id={actionId}
       data-run-count={Number(runCount) || 0}
+      data-indeterminate={syntheticIndeterminate && state !== 'evidence_saved' ? 'true' : 'false'}
       style={{
         '--lite-action-progress-percent': `${percent}%`,
         '--lite-action-progress-indeterminate': syntheticIndeterminate ? 1 : 0,
