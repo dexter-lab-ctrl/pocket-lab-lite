@@ -717,10 +717,11 @@ function syntheticBusyProgress(actionId) {
               : 'Checking safely';
   return {
     running: true,
-    percent: actionId === 'preview_restore' ? 28 : 20,
+    percent: 0,
     indeterminate: true,
     phase: 'running',
     step,
+    synthetic: true,
     steps: [],
     timeline: [],
   };
