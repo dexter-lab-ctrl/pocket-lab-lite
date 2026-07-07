@@ -95,9 +95,11 @@ void SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2;
 const SECURITY_PHASE1_SOURCE_GUARDS = ['Execution timeline', 'Protection dashboard', 'lite-security-protection-dashboard-body', 'selectedFinding === issue ? ('];
 const SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS = ['SecurityProgressiveDetailsLazy', 'data-security-phase2-progressive-details', 'Technical details stay collapsed'];
 const SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS = ['LiteSheet', 'lite-security-phase3-details-shell', 'bottom sheet on mobile', 'side panel on desktop'];
+const SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS = ['lite-security-phase4-motion', 'lite-security-phase4-score-settle', 'lite-security-phase4-delta-count', 'lite-security-phase4-evidence-stamp', 'lite-security-phase4-step-handoff', 'motion polish respects reduced motion'];
 void SECURITY_PHASE1_SOURCE_GUARDS;
 void SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS;
 void SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS;
+void SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS;
 
 
 const SECURITY_DETAIL_SHELL_META = {
@@ -1662,10 +1664,10 @@ export default function SecurityScreen() {
         eyebrow="Safety Center"
         title="Security"
         description="A calmer safety overview with clear next steps. Details stay available when you need them."
-        actions={<LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton>}
+        actions={<span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button"><LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton></span>}
       />
 
-      <section className="lite-security-phase1-shell" aria-label="Safety Center overview">
+      <section className="lite-security-phase1-shell lite-security-phase4-motion" aria-label="Safety Center overview" data-security-phase4-motion="shell">
         <GlassCard className={`lite-security-phase1-hero lite-security-phase1-hero-${safetyState}`}>
           <div className="lite-security-phase1-hero-copy">
             <div className="lite-home-pill">
@@ -1682,13 +1684,13 @@ export default function SecurityScreen() {
               })}</h2>
             <p>{safetyScoreSummary}</p>
             <div className="lite-security-phase1-actions">
-              <LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton>
+              <span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button"><LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton></span>
               <LiteButton tone="secondary" onClick={showEvidence}>{evidenceLoading ? 'Opening...' : 'View safe summary'}</LiteButton>
             </div>
             {securityFlow.writeBlocked ? <p className="lite-security-phase1-note">{securityFlow.blockedReason || 'Reconnect to continue.'}</p> : null}
           </div>
 
-          <div className="lite-security-phase1-score" aria-label="Safety score">
+          <div className="lite-security-phase1-score lite-security-phase4-score-settle" aria-label="Safety score" data-security-phase4-motion="score-settle">
             <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}>
               <span>{safetyScore}</span>
             </div>
@@ -1699,14 +1701,14 @@ export default function SecurityScreen() {
         </GlassCard>
 
         {scanInProgress ? (
-          <GlassCard className="lite-security-phase1-live" aria-live="polite">
+          <GlassCard className="lite-security-phase1-live lite-security-phase4-live-motion" aria-live="polite" data-security-phase4-motion="live-check">
             <div className="lite-security-card-head">
               <div className="lite-security-icon"><Activity className="h-5 w-5" /></div>
               <span className="lite-security-soft-badge">Live check</span>
             </div>
             <h2>{scanProgressLabel}</h2>
             <p>{scanProgress?.message || 'Pocket Lab is checking host readiness and dependency risks in the backend worker.'}</p>
-            <div className="lite-security-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
+            <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
               <span style={{ width: `${scanProgressPercent}%` }} />
             </div>
             <div className="lite-security-phase1-live-meta">
@@ -1741,7 +1743,7 @@ export default function SecurityScreen() {
             <h2>{deltaSummary || 'Baseline ready'}</h2>
             <div className="lite-security-delta-stats" aria-label="Finding changes">
               {deltaStats.map((item) => (
-                <div key={item.key} className={`lite-security-delta-stat lite-security-delta-${item.tone}`}>
+                <div key={item.key} className={`lite-security-delta-stat lite-security-delta-${item.tone} lite-security-phase4-delta-count`}>
                   <strong>{item.value}</strong>
                   <span>{item.label}</span>
                 </div>
@@ -1834,7 +1836,7 @@ export default function SecurityScreen() {
             {!executionTimelineLive ? <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('checkPath', event)}>Show check path</button> : null}
           </GlassCard>
 
-          <GlassCard className="lite-security-card lite-security-phase1-evidence-card">
+          <GlassCard className="lite-security-card lite-security-phase1-evidence-card lite-security-phase4-evidence-stamp" data-security-phase4-motion="evidence-stamp">
             <div className="lite-security-card-head">
               <div className="lite-security-icon"><FileCheck className="h-5 w-5" /></div>
               <span className="lite-security-soft-badge">Evidence</span>
@@ -1875,7 +1877,7 @@ export default function SecurityScreen() {
         title={activeSecurityDetailsMeta.title}
         description={activeSecurityDetailsMeta.description}
         layerClassName="lite-security-phase3-layer"
-        className="lite-security-phase3-panel lite-security-phase3-details-shell"
+        className="lite-security-phase3-panel lite-security-phase3-details-shell lite-security-phase4-panel-motion"
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
         closeClassName="lite-security-phase3-close"
@@ -1894,7 +1896,7 @@ export default function SecurityScreen() {
         title={selectedFinding ? securityFindingLabel(selectedFinding) : 'Finding details'}
         description="Review one finding at a time. Technical details stay collapsed and sanitized."
         layerClassName="lite-security-phase3-layer"
-        className="lite-security-phase3-panel lite-security-phase3-finding-shell"
+        className="lite-security-phase3-panel lite-security-phase3-finding-shell lite-security-phase4-panel-motion"
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
         closeClassName="lite-security-phase3-close"
