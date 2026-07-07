@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { litePollingIntervals } from '../lib/litePollingPolicy.js';
 import { liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import { useLiteQuery } from './useLiteQuery.js';
@@ -27,12 +28,13 @@ function pathForLoader(loader) {
   return loader?.safeSnapshotPath || '';
 }
 
-export function useLiteStatus(intervalMs = 30000) {
+export function useLiteStatus(intervalMs = litePollingIntervals.relaxed) {
   const query = useLiteQuery({
     queryKey: liteQueryKeys.status(),
     path: liteQueryPaths.status,
     queryFn: liteApi.status,
-    refetchInterval: Math.max(30000, intervalMs),
+    pollingMode: 'relaxed',
+    refetchInterval: Math.max(litePollingIntervals.relaxed, intervalMs),
   });
 
   const status = useMemo(() => ({ ...initialStatus, ...(query.data || {}) }), [query.data]);
@@ -51,11 +53,12 @@ export function useLiteStatus(intervalMs = 30000) {
   };
 }
 
-export function useLiteResource(loader, dependencies = []) {
+export function useLiteResource(loader, dependencies = [], options = {}) {
   const query = useLiteQuery({
     queryKey: queryKeyForLoader(loader, dependencies),
     path: pathForLoader(loader),
     queryFn: loader,
+    ...options,
   });
 
   return {

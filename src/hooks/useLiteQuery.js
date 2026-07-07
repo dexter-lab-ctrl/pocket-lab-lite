@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   attachFreshSnapshotMeta,
@@ -10,6 +10,7 @@ import {
   snapshotAgeLabel,
   writeLiteSnapshot,
 } from '../lib/liteSafeSnapshots.js';
+import { hasLiteLiveOperation, isLiteDocumentVisible, liteQueryPollingInterval } from '../lib/litePollingPolicy.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
 
 const UNSAFE_METHOD_PATTERN = /^(POST|PUT|PATCH|DELETE)$/i;
@@ -69,6 +70,19 @@ async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET' }) 
   }
 }
 
+function useLiteDocumentVisibility() {
+  const [visible, setVisible] = useState(isLiteDocumentVisible);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const updateVisibility = () => setVisible(isLiteDocumentVisible());
+    document.addEventListener('visibilitychange', updateVisibility);
+    return () => document.removeEventListener('visibilitychange', updateVisibility);
+  }, []);
+
+  return visible;
+}
+
 export function useLiteQuery({
   queryKey,
   path,
@@ -77,6 +91,11 @@ export function useLiteQuery({
   method = 'GET',
   staleTime,
   refetchInterval,
+  pollingMode = 'normal',
+  isLive,
+  enabledWhenHidden = false,
+  refetchOnWindowFocus = true,
+  refetchOnReconnect = true,
   placeholderData,
 } = {}) {
   const normalizedPath = normalizeQueryPath(path || queryFn?.safeSnapshotPath || '');
@@ -84,6 +103,22 @@ export function useLiteQuery({
     ? normalizedPath
     : null;
   const cached = useMemo(() => (safeSnapshotPath ? readLiteSnapshot(safeSnapshotPath) : null), [safeSnapshotPath]);
+  const documentVisible = useLiteDocumentVisibility();
+  const resolvedRefetchInterval = useCallback((queryState) => {
+    if (typeof refetchInterval === 'function') return refetchInterval(queryState);
+    if (refetchInterval !== undefined) return refetchInterval;
+    const data = queryState?.state?.data;
+    const live = typeof isLive === 'function' ? Boolean(isLive(data)) : hasLiteLiveOperation(data);
+    return liteQueryPollingInterval({
+      visible: documentVisible,
+      live,
+      mode: pollingMode,
+      enabledWhenHidden,
+      failureCount: queryState?.state?.failureCount || 0,
+      error: queryState?.state?.error || null,
+      savedState: isSavedSnapshot(data),
+    });
+  }, [documentVisible, enabledWhenHidden, isLive, pollingMode, refetchInterval]);
 
   const query = useQuery({
     queryKey: defaultQueryKey(normalizedPath || queryFn?.name || 'lite-query', queryKey),
@@ -93,8 +128,10 @@ export function useLiteQuery({
     initialDataUpdatedAt: initialDataUpdatedAt(cached),
     placeholderData,
     staleTime,
-    refetchInterval,
-    refetchIntervalInBackground: false,
+    refetchInterval: resolvedRefetchInterval,
+    refetchIntervalInBackground: Boolean(enabledWhenHidden),
+    refetchOnWindowFocus,
+    refetchOnReconnect,
   });
 
   const refresh = useCallback(async () => {
