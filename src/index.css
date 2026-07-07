@@ -16140,3 +16140,68 @@ textarea {
     animation: none;
   }
 }
+
+/* Security Phase 2: progressive details, summary-first panels, and safe on-demand detail surfaces. */
+.theme-pocket-lite-daylight .lite-security-phase2-details-panel {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: clamp(0.9rem, 2vw, 1.2rem);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 1.35rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.82));
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.1);
+  color: #0f172a;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-details-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-details-head span {
+  display: inline-flex;
+  color: #2563eb;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-details-head h2 {
+  margin: 0.2rem 0 0.35rem;
+  font-size: clamp(1.2rem, 2.6vw, 1.65rem);
+  letter-spacing: -0.03em;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-details-head p {
+  margin: 0;
+  color: rgba(71, 85, 105, 0.84);
+  line-height: 1.5;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-summary-only {
+  margin-top: 0.9rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-details-panel .lite-progressive-details {
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase2-details-panel .lite-technical-details,
+.theme-pocket-lite-daylight .lite-security-phase2-details-panel .lite-history-section {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-phase2-details-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-phase2-details-head .lite-finding-detail-close {
+    align-self: flex-end;
+  }
+}

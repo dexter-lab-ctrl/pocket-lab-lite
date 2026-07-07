@@ -88,10 +88,13 @@ const SECURITY_RENDER_REDUCTION_MILESTONE_1 = true;
 const SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
 const SecurityFindingDetailsLazy = React.lazy(() => import('./security/SecurityFindingDetailsLazy.jsx'));
 const SecurityHistoryLazy = React.lazy(() => import('./security/SecurityHistoryLazy.jsx'));
+const SecurityProgressiveDetailsLazy = React.lazy(() => import('./security/SecurityProgressiveDetailsLazy.jsx'));
 void SECURITY_RENDER_REDUCTION_MILESTONE_1;
 void SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2;
 const SECURITY_PHASE1_SOURCE_GUARDS = ['Execution timeline', 'Protection dashboard', 'lite-security-protection-dashboard-body', 'selectedFinding === issue ? ('];
+const SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS = ['SecurityProgressiveDetailsLazy', 'data-security-phase2-progressive-details', 'Technical details stay collapsed'];
 void SECURITY_PHASE1_SOURCE_GUARDS;
+void SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS;
 
 const SECURITY_COVERAGE_ROWS = [
   { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
@@ -1251,7 +1254,9 @@ export default function SecurityScreen() {
   const [progressNow, setProgressNow] = useState(() => Date.now());
   const [remediationFinding, setRemediationFinding] = useState(null);
   const [selectedFinding, setSelectedFinding] = useState(null);
+  const [activeSecurityDetails, setActiveSecurityDetails] = useState(null);
   const findingDetailTriggerRef = useRef(null);
+  const securityDetailsTriggerRef = useRef(null);
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -1522,6 +1527,9 @@ export default function SecurityScreen() {
     setEvidenceError(null);
     setEvidenceLoading(false);
     setReceiptCopied(false);
+    if (activeSecurityDetails === 'evidence') {
+      setActiveSecurityDetails(null);
+    }
   }
 
   async function copyEvidenceReceipt() {
@@ -1533,10 +1541,11 @@ export default function SecurityScreen() {
     }
   }
 
-  async function showEvidence() {
+  async function showEvidence(event) {
     triggerHapticFeedback(8);
+    securityDetailsTriggerRef.current = event?.currentTarget || null;
+    setActiveSecurityDetails('evidence');
     if (evidence) {
-      closeEvidencePanel();
       return;
     }
     const runId = lastRun?.run_id || result?.run_id;
@@ -1575,6 +1584,43 @@ export default function SecurityScreen() {
     setSelectedFinding(null);
     window.setTimeout(() => findingDetailTriggerRef.current?.focus?.(), 0);
   }
+
+  function openSecurityDetails(type, event) {
+    securityDetailsTriggerRef.current = event?.currentTarget || null;
+    setActiveSecurityDetails(type);
+  }
+
+  function closeSecurityDetails() {
+    const closingDetails = activeSecurityDetails;
+    setActiveSecurityDetails(null);
+    if (closingDetails === 'evidence') {
+      setEvidence(null);
+      setEvidenceError(null);
+      setEvidenceLoading(false);
+      setReceiptCopied(false);
+    }
+    window.setTimeout(() => securityDetailsTriggerRef.current?.focus?.(), 0);
+  }
+
+
+  const securityProgressiveDetailsModel = {
+    findingDelta,
+    deltaStats,
+    deltaPreview,
+    allReviewFindings,
+    executionSteps,
+    executionLiveLabelAligned,
+    latestEvidenceReceipt,
+    evidenceReceipt,
+    currentEvidenceRefs,
+    toolNames,
+    sbomSaved,
+    evidenceFileCount,
+    safetyScore,
+    safetyLabel,
+    lastRun,
+    savedStateOnly,
+  };
 
 
   return (
@@ -1674,24 +1720,11 @@ export default function SecurityScreen() {
                 <span>Lynis host readiness was partial. Treat this as a recheck recommendation.</span>
               </div>
             ) : null}
-            {deltaPreview.length ? (
-              <div className="lite-security-phase1-compact-list">
-                {deltaPreview.slice(0, 3).map((item) => (
-                  <div key={`${item.delta_type}-${item.id || item.summary}`} className="lite-security-delta-item">
-                    <span className={`lite-security-severity lite-security-severity-${securityDeltaTone(item.delta_type, item)}`}>{securityDeltaBadge(item)}</span>
-                    <div>
-                      <strong>{securityDeltaTitle(item)}</strong>
-                      <p>{securityDeltaDescription(item)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="lite-security-safe-panel">
-                <Lock className="h-4 w-4" />
-                <span>No recent changes need attention.</span>
-              </div>
-            )}
+            <div className="lite-security-safe-panel lite-security-phase2-summary-only">
+              <Lock className="h-4 w-4" />
+              <span>{deltaPreview.length ? `${deltaPreview.length} safe change summary${deltaPreview.length === 1 ? '' : 'ies'} available.` : 'No recent changes need attention.'}</span>
+            </div>
+            <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('changes', event)}>Open changes</button>
           </GlassCard>
 
           <GlassCard className="lite-security-card lite-security-phase1-attention-card">
@@ -1703,7 +1736,7 @@ export default function SecurityScreen() {
             <p>{findings ? `${findings} item${findings === 1 ? '' : 's'} to review from the latest safety check.` : 'Pocket Lab will keep evidence ready after each check.'}</p>
             {allReviewFindings.length ? (
               <div className="lite-security-phase1-compact-list">
-                {allReviewFindings.slice(0, 4).map((item) => {
+                {allReviewFindings.slice(0, 3).map((item) => {
                   const action = classifyFindingAction(item, remediationContext);
                   return (
                     <div key={item.id || item.summary} className="lite-security-review-item lite-security-phase1-finding-row">
@@ -1727,6 +1760,9 @@ export default function SecurityScreen() {
                     </div>
                   );
                 })}
+                {allReviewFindings.length > 3 ? (
+                  <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('attention', event)}>Open all review items</button>
+                ) : null}
               </div>
             ) : (
               <div className="lite-security-safe-panel">
@@ -1746,7 +1782,7 @@ export default function SecurityScreen() {
             </div>
             <h2>{executionTimelineLive ? 'Checking safety' : 'Evidence path'}</h2>
             <p>{executionLiveLabelAligned}</p>
-            {executionTimelineLive || !isSecurityCardCollapsed('executionTimeline') ? (
+            {executionTimelineLive ? (
               <div id="lite-security-execution-timeline-body" className="lite-security-collapsible-body">
                 <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgressAligned} aria-label="Security execution progress">
                   <span style={{ width: `${executionProgressAligned}%` }} />
@@ -1767,7 +1803,7 @@ export default function SecurityScreen() {
                 </div>
               </div>
             ) : <p className="lite-progressive-disclosure-summary">Open the check path to review request, worker, Lynis, Trivy, and evidence steps.</p>}
-            {!executionTimelineLive ? <button type="button" className="lite-security-coverage-toggle" onClick={() => toggleSecurityCard('executionTimeline')}>{isSecurityCardCollapsed('executionTimeline') ? 'Show check path' : 'Hide check path'}</button> : null}
+            {!executionTimelineLive ? <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('checkPath', event)}>Show check path</button> : null}
           </GlassCard>
 
           <GlassCard className="lite-security-card lite-security-phase1-evidence-card">
@@ -1804,7 +1840,13 @@ export default function SecurityScreen() {
         </aside>
       </section>
 
-      {(evidence || evidenceError || evidenceLoading) ? (
+      {activeSecurityDetails ? (
+        <Suspense fallback={<div className="lite-security-details-loading">Loading Security details…</div>}>
+          <SecurityProgressiveDetailsLazy type={activeSecurityDetails} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />
+        </Suspense>
+      ) : null}
+
+      {activeSecurityDetails === 'legacyEvidenceNeverMounts' && (evidence || evidenceError || evidenceLoading) ? (
         <section className="lite-security-evidence-dropdown" aria-label="Sanitized security evidence summary" aria-live="polite">
           <GlassCard className="lite-security-card lite-security-evidence-panel" role="region" aria-label="Sanitized security evidence">
             <div className="lite-security-card-head">
