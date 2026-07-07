@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -80,6 +80,13 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
+
+const SECURITY_RENDER_REDUCTION_MILESTONE_1 = true;
+const SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
+const SecurityFindingDetailsLazy = React.lazy(() => import('./security/SecurityFindingDetailsLazy.jsx'));
+const SecurityHistoryLazy = React.lazy(() => import('./security/SecurityHistoryLazy.jsx'));
+void SECURITY_RENDER_REDUCTION_MILESTONE_1;
+void SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2;
 
 const SECURITY_COVERAGE_ROWS = [
   { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
@@ -1215,7 +1222,7 @@ export default function SecurityScreen() {
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [receiptCopied, setReceiptCopied] = useState(false);
   const [coverageExpanded, setCoverageExpanded] = useState(false);
-  const [collapsedSecurityCards, setCollapsedSecurityCards] = useState({});
+  const [collapsedSecurityCards, setCollapsedSecurityCards] = useState({ securityHistory: true });
 
   const isSecurityCardCollapsed = (key) => Boolean(collapsedSecurityCards[key]);
 
@@ -1865,42 +1872,24 @@ export default function SecurityScreen() {
               <span className="lite-security-soft-badge">Security history</span>
               <SecurityCollapseToggle label="Security history" collapsed={isSecurityCardCollapsed('securityHistory')} onToggle={() => toggleSecurityCard('securityHistory')} controls="lite-security-history-body" />
             </div>
-            <div id="lite-security-history-body" className="lite-security-collapsible-body" hidden={isSecurityCardCollapsed('securityHistory')}>
-            <h2>Trend timeline</h2>
-            <p>Recent checks show whether the safety score is improving, stable, or needs attention.</p>
-            <div className="lite-security-trend-summary">
-              <div>
-                <span>Latest score</span>
-                <strong>{latestHistory?.score ?? safetyScore}</strong>
-              </div>
-              <div>
-                <span>Trend</span>
-                <strong className={`lite-security-trend-tone lite-security-trend-${scoreTrendView.tone}`}>{scoreTrendView.label}</strong>
-                <small>{scoreTrendView.detail}</small>
-              </div>
-              <div>
-                <span>Last duration</span>
-                <strong>{formatSecurityDuration(latestHistory?.duration_seconds)}</strong>
-              </div>
-            </div>
-            <div className="lite-security-timeline" role="list">
-              {securityHistory.slice(0, 6).map((entry, index) => {
-                const reviewCount = Number(entry.items_to_review || 0);
-                return (
-                  <div key={entry.run_id || index} className="lite-security-timeline-row" role="listitem">
-                    <span className={`lite-security-timeline-dot lite-security-timeline-${normalizeBackendState(entry.status)}`} />
-                    <div>
-                      <strong>{entry.completed_at ? formatLiteTime(entry.completed_at) : entry.status || 'recorded'}</strong>
-                      <p>{reviewCount ? `${reviewCount} review item${reviewCount === 1 ? '' : 's'}` : 'No urgent items'} · {entry.evidence_count || 0} evidence file{entry.evidence_count === 1 ? '' : 's'}</p>
-                    </div>
-                    <div className="lite-security-timeline-score">
-                      <span>{entry.score ?? '—'}</span>
-                      <small>{formatSecurityDuration(entry.duration_seconds)}</small>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <div id="lite-security-history-body" className="lite-security-collapsible-body">
+              <h2>Trend timeline</h2>
+              <p>Recent checks show whether the safety score is improving, stable, or needs attention.</p>
+              {isSecurityCardCollapsed('securityHistory') ? (
+                <p className="lite-progressive-disclosure-summary">
+                  {securityHistory.length ? `${securityHistory.length} safe security run${securityHistory.length === 1 ? '' : 's'} available. Open history to load the run list.` : 'History will appear here after more safety checks.'}
+                </p>
+              ) : (
+                <Suspense fallback={<div className="lite-security-details-loading">Loading security history…</div>}>
+                  <SecurityHistoryLazy
+                    history={securityHistory}
+                    latestScore={latestHistory?.score ?? safetyScore}
+                    trendLabel={scoreTrendView.label}
+                    trendDetail={scoreTrendView.detail}
+                    savedStateOnly={savedStateOnly}
+                  />
+                </Suspense>
+              )}
             </div>
           </GlassCard>
 
@@ -1995,11 +1984,13 @@ export default function SecurityScreen() {
                       <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(issue)}>What should I do?</button>
                     </div>
                     {selectedFinding === issue ? (
-                      <SecurityFindingDetailModal
-                        finding={issue}
-                        context={remediationContext}
-                        onClose={closeFindingDetails}
-                      />
+                      <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
+                        <SecurityFindingDetailsLazy
+                          finding={issue}
+                          context={remediationContext}
+                          onClose={closeFindingDetails}
+                        />
+                      </Suspense>
                     ) : null}
                   </div>
                 );
@@ -2027,11 +2018,13 @@ export default function SecurityScreen() {
                         <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
                       </div>
                       {selectedFinding === item ? (
-                        <SecurityFindingDetailModal
-                          finding={item}
-                          context={remediationContext}
-                          onClose={closeFindingDetails}
-                        />
+                        <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
+                          <SecurityFindingDetailsLazy
+                            finding={item}
+                            context={remediationContext}
+                            onClose={closeFindingDetails}
+                          />
+                        </Suspense>
                       ) : null}
                     </div>
                   </div>

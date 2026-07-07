@@ -15884,3 +15884,74 @@ textarea {
     margin-top: 2.25rem;
   }
 }
+
+/* Lite Security Milestone 1 + 2 progressive render foundation */
+.theme-pocket-lite-daylight .lite-security-finding-details-panel {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.85rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 16px 36px rgba(15, 23, 42, 0.08);
+  padding: clamp(0.9rem, 2vw, 1.15rem);
+  color: #0f172a;
+}
+
+.theme-pocket-lite-daylight .lite-security-finding-details-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-finding-details-head span {
+  display: inline-flex;
+  color: #2563eb;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-security-finding-details-head h3 {
+  margin: 0.25rem 0 0.35rem;
+  font-size: clamp(1.1rem, 2.6vw, 1.45rem);
+  line-height: 1.12;
+}
+
+.theme-pocket-lite-daylight .lite-security-finding-details-head p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-security-details-loading {
+  margin-top: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(248, 250, 252, 0.78);
+  color: #475569;
+  padding: 0.85rem 1rem;
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-security-history-lazy {
+  margin-top: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-history-lazy .lite-history-section {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-finding-details-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-finding-details-head .lite-finding-detail-close {
+    align-self: flex-end;
+  }
+}
