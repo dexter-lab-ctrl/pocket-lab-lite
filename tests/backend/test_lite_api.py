@@ -6009,3 +6009,60 @@ def test_lite_security_phase3_mobile_desktop_shell_preserves_boundaries():
     assert "setInterval" not in security
     assert "onClickCapture" not in security
     assert "onPointerDownCapture" not in security
+
+
+def test_lite_security_phase4_motion_polish_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS" in security
+    assert "lite-security-phase4-motion" in security
+    assert "lite-security-phase4-score-settle" in security
+    assert "lite-security-phase4-safety-action" in security
+    assert "lite-security-phase4-delta-count" in security
+    assert "lite-security-phase4-evidence-stamp" in security
+    assert "lite-security-phase4-panel-motion" in security
+    assert "data-security-phase4-motion" in security
+    assert "lite-security-phase4-score-settle" in css
+    assert "lite-security-phase4-button-sheen" in css
+    assert "lite-security-phase4-delta-count" in css
+    assert "lite-security-phase4-step-handoff" in css
+    assert "lite-security-phase4-progress-shine" in css
+    assert "lite-security-phase4-evidence-stamp" in css
+    assert "lite-security-phase4-panel-enter" in css
+    assert "motion polish respects reduced motion" in security
+
+
+def test_lite_security_phase4_motion_is_css_only_and_reduced_motion_safe():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert ".lite-security-phase4" in css
+    assert "animation: none !important" in css
+    assert "transition: none !important" in css
+    assert "useSpring" not in security
+    assert "useGesture" not in security
+    assert "requestAnimationFrame" not in security
+    assert "setInterval" not in security
+    assert "window.setInterval" not in security
+
+
+def test_lite_security_phase4_preserves_backend_owned_security_boundary():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "fetch(" not in security
+    assert "fetch(" not in details
+    assert "child_process" not in security + details
+    assert "exec(" not in security + details
+    assert "spawn(" not in security + details
+    assert "nats://" not in (security + details).lower()
+    assert "onClickCapture" not in security
+    assert "onPointerDownCapture" not in security

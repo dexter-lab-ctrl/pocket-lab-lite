@@ -16332,3 +16332,207 @@ textarea {
     animation: none !important;
   }
 }
+
+/* Security Phase 4: motion polish for Safety Center. CSS-only, short, and reduced-motion safe. */
+.theme-pocket-lite-daylight .lite-security-phase4-motion .lite-security-phase1-hero,
+.theme-pocket-lite-daylight .lite-security-phase4-motion + .lite-security-phase1-layout,
+.theme-pocket-lite-daylight .lite-security-phase1-layout .lite-security-card {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-score-settle .lite-security-score-ring {
+  animation: lite-security-phase4-score-settle 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-score-settle .lite-security-score-ring::before {
+  content: '';
+  position: absolute;
+  inset: -0.28rem;
+  border-radius: inherit;
+  border: 1px solid rgba(16, 185, 129, 0.26);
+  opacity: 0;
+  transform: scale(0.92);
+  animation: lite-security-phase4-score-ring 560ms ease-out 120ms both;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-safety-action .pocket-button {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: transform 120ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-safety-action .pocket-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-130%);
+  background: linear-gradient(100deg, transparent 16%, rgba(255, 255, 255, 0.28) 48%, transparent 78%);
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-safety-action .pocket-button:not(:disabled):hover::after,
+.theme-pocket-lite-daylight .lite-security-phase4-safety-action .pocket-button:not(:disabled):focus-visible::after {
+  animation: lite-security-phase4-button-sheen 620ms ease-out both;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-safety-action .pocket-button:not(:disabled):active {
+  transform: scale(0.985) translateY(1px);
+  filter: saturate(1.04);
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-delta-count {
+  animation: lite-security-phase4-delta-count 340ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-delta-count:nth-child(2) { animation-delay: 45ms; }
+.theme-pocket-lite-daylight .lite-security-phase4-delta-count:nth-child(3) { animation-delay: 90ms; }
+
+.theme-pocket-lite-daylight .lite-security-phase4-delta-count strong {
+  animation: lite-security-phase4-number-settle 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-live-motion {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-live-motion::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-115%);
+  background: linear-gradient(100deg, transparent 20%, rgba(14, 165, 233, 0.08) 46%, rgba(16, 185, 129, 0.08) 58%, transparent 82%);
+  animation: lite-security-phase4-step-handoff 1.7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-progress-shine span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-105%);
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.5) 50%, transparent 82%);
+  animation: lite-security-phase4-progress-shine 1.5s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-motion .lite-flow-status-step.is-active,
+.theme-pocket-lite-daylight .lite-security-phase4-panel-motion .lite-progressive-detail-section:first-of-type {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-motion .lite-flow-status-step.is-active::after,
+.theme-pocket-lite-daylight .lite-security-phase4-panel-motion .lite-progressive-detail-section:first-of-type::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateX(-110%);
+  background: linear-gradient(100deg, transparent 14%, rgba(59, 130, 246, 0.12) 48%, transparent 82%);
+  animation: lite-security-phase4-step-handoff 1.6s ease-in-out infinite;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-evidence-stamp {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-evidence-stamp::after {
+  content: 'Evidence saved';
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  transform: rotate(2deg) scale(0.96);
+  opacity: 0.74;
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  border-radius: 999px;
+  background: rgba(236, 253, 245, 0.88);
+  color: #047857;
+  padding: 0.34rem 0.58rem;
+  font-size: 0.64rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: lite-security-phase4-evidence-stamp 420ms ease-out 120ms both;
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-security-phase4-panel-motion {
+  animation: lite-security-phase4-panel-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes lite-security-phase4-score-settle {
+  0% { opacity: 0.72; transform: scale(0.94); }
+  58% { opacity: 1; transform: scale(1.025); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes lite-security-phase4-score-ring {
+  0% { opacity: 0; transform: scale(0.92); }
+  42% { opacity: 0.82; }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+
+@keyframes lite-security-phase4-button-sheen {
+  to { transform: translateX(130%); }
+}
+
+@keyframes lite-security-phase4-delta-count {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lite-security-phase4-number-settle {
+  0% { transform: translateY(2px) scale(0.96); }
+  60% { transform: translateY(0) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes lite-security-phase4-step-handoff {
+  0% { transform: translateX(-115%); opacity: 0.18; }
+  35%, 70% { opacity: 1; }
+  100% { transform: translateX(115%); opacity: 0.18; }
+}
+
+@keyframes lite-security-phase4-progress-shine {
+  to { transform: translateX(110%); }
+}
+
+@keyframes lite-security-phase4-evidence-stamp {
+  from { opacity: 0; transform: rotate(2deg) scale(0.88); }
+  to { opacity: 0.74; transform: rotate(2deg) scale(0.96); }
+}
+
+@keyframes lite-security-phase4-panel-enter {
+  from { opacity: 0.92; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 560px) {
+  .theme-pocket-lite-daylight .lite-security-phase4-evidence-stamp::after {
+    position: static;
+    justify-self: start;
+    margin-bottom: 0.35rem;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-security-phase4-score-settle .lite-security-score-ring,
+  .theme-pocket-lite-daylight .lite-security-phase4-score-settle .lite-security-score-ring::before,
+  .theme-pocket-lite-daylight .lite-security-phase4-safety-action .pocket-button::after,
+  .theme-pocket-lite-daylight .lite-security-phase4-delta-count,
+  .theme-pocket-lite-daylight .lite-security-phase4-delta-count strong,
+  .theme-pocket-lite-daylight .lite-security-phase4-live-motion::before,
+  .theme-pocket-lite-daylight .lite-security-phase4-progress-shine span::after,
+  .theme-pocket-lite-daylight .lite-security-phase4-motion .lite-flow-status-step.is-active::after,
+  .theme-pocket-lite-daylight .lite-security-phase4-panel-motion,
+  .theme-pocket-lite-daylight .lite-security-phase4-panel-motion .lite-progressive-detail-section:first-of-type::after,
+  .theme-pocket-lite-daylight .lite-security-phase4-evidence-stamp::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
