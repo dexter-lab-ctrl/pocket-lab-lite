@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
+import { isLiteDevicesViewLive, selectDevicesScreenView } from '../lib/liteViewModels.js';
 import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
@@ -152,12 +153,16 @@ export default function DevicesScreen() {
     || Boolean(restartBusy)
     || removeBusy
     || deviceRestartProgressIsLive(restartProgress)
+    || ['queued', 'accepted', 'running', 'working', 'joining', 'waiting', 'repairing'].includes(devicePollingValue(result?.status || result?.state))
+    || isLiteDevicesViewLive(fleetPayload)
     || hasLiveDeviceFleetOperation(fleetPayload)
-  ), [busy, restartBusy, removeBusy, restartProgress]);
+  ), [busy, restartBusy, removeBusy, restartProgress, result]);
   const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, [], {
     pollingMode: 'active',
     isLive: fleetPollingIsLive,
-    staleTime: 5_000,
+    staleTime: 15_000,
+    select: selectDevicesScreenView,
+    snapshotSelect: selectDevicesScreenView,
   });
   const devices = data?.devices || [];
   const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
@@ -190,7 +195,6 @@ export default function DevicesScreen() {
         addDeviceFlow.inviteReady(payload);
       } else if (payload?.status === 'queued') {
         addDeviceFlow.queued(payload);
-        window.setTimeout(() => refresh(), 1800);
       }
       refresh();
     } catch (err) {
@@ -224,7 +228,6 @@ export default function DevicesScreen() {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     }
-    refresh();
   }
 
   async function restartAgent(device) {
@@ -268,8 +271,10 @@ export default function DevicesScreen() {
             node_id: nodeId,
             device_name: device?.name || device?.hostname || nodeId,
           });
-          refresh();
-          if (['completed', 'failed'].includes(nextProgress?.status)) break;
+          if (['completed', 'failed'].includes(nextProgress?.status)) {
+            refresh();
+            break;
+          }
         }
       }
     } catch (err) {
