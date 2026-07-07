@@ -15582,3 +15582,21 @@ textarea {
 .theme-pocket-lite-daylight .lite-flow-status-step.is-failed span,
 [data-lite-manage-portal="true"] .lite-flow-status-step.is-failed span { background: #e11d48; }
 @media (max-width: 640px) { .theme-pocket-lite-daylight .lite-flow-status-head, [data-lite-manage-portal="true"] .lite-flow-status-head { align-items: flex-start; flex-direction: column; } .theme-pocket-lite-daylight .lite-flow-status-head strong, [data-lite-manage-portal="true"] .lite-flow-status-head strong { text-align: left; } .theme-pocket-lite-daylight .lite-flow-status-steps, [data-lite-manage-portal="true"] .lite-flow-status-steps { grid-template-columns: 1fr; } }
+
+/* Lite App Catalog: synthetic action progress should not pretend to be a real percentage timeline. */
+.lite-action-progress[data-indeterminate="true"] .lite-action-progress__rail,
+.lite-action-progress[data-indeterminate="true"] .lite-action-progress__stages {
+  display: none;
+}
+
+.lite-action-progress[data-indeterminate="true"] {
+  gap: 0.75rem;
+}
+
+.lite-action-progress[data-indeterminate="true"] .lite-action-progress__topline {
+  margin-bottom: 0;
+}
+
+.lite-action-progress[data-indeterminate="true"] .lite-action-progress__meta {
+  margin-top: 0;
+}
