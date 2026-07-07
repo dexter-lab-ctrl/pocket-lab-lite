@@ -4993,3 +4993,83 @@ def test_lite_app_catalog_phase_s1_preserves_click_ownership_source():
     assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }}" in catalog
     assert "onPointerDownCapture" not in action_row
     assert "onClickCapture" not in action_row
+
+
+def test_lite_devices_render_reduction_components_exist():
+    expected_files = [
+        Path("src/lite/devices/DeviceCard.jsx"),
+        Path("src/lite/devices/DeviceDetailsLazy.jsx"),
+    ]
+    for path in expected_files:
+        assert path.exists()
+
+
+def test_lite_devices_tab_uses_lazy_progressive_details_foundation():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    card = Path("src/lite/devices/DeviceCard.jsx").read_text()
+    details = Path("src/lite/devices/DeviceDetailsLazy.jsx").read_text()
+
+    assert "DEVICES_PROGRESSIVE_DETAILS_MILESTONE_2" in devices
+    assert "React.lazy" in devices
+    assert "import('./devices/DeviceDetailsLazy.jsx')" in devices
+    assert "<Suspense" in devices
+    assert "activeDetailsDevice ? (" in devices
+    assert "React.memo(DeviceCard" in card
+    assert "DEVICES_CARD_ACTIONS_OWN_CLICKS" in card
+    assert "LiteProgressiveDetails" in details
+    assert "DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION" in details
+    assert "DEVICE_DETAILS_HISTORY_IS_LAZY" in details
+    assert "DEVICE_DETAILS_TECHNICAL_DETAILS_COLLAPSED" in details
+
+
+def test_lite_devices_details_keep_history_lazy_and_technical_collapsed():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    details = Path("src/lite/devices/DeviceDetailsLazy.jsx").read_text()
+    history = Path("src/lite/components/LiteHistorySection.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "history={{" in details
+    assert "Device history" in details
+    assert "technicalDetails={technicalRows(device)}" in details
+    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
+    assert "{shouldMountHistory ? (" in history
+    assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
+    assert "const [open, setOpen] = useState(Boolean(defaultOpen))" in technical
+    assert "{open ? (" in technical
+    assert "hidden={" not in devices
+    assert "hidden={!" not in devices
+    assert "window.setInterval" not in devices
+
+
+def test_lite_devices_details_preserve_backend_only_evidence_boundary():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    details = Path("src/lite/devices/DeviceDetailsLazy.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY" in details
+    assert "normal Devices details do not fetch backend evidence endpoints" in details
+    assert "Device events and troubleshooting records stay backend-owned and protected." in details
+    assert "No secrets, raw logs, or private paths were loaded into this view." in details
+    assert "liteApi.appEvidence" not in devices
+    assert "/api/lite/apps/{app_id}/evidence" not in devices
+    assert "raw evidence" not in devices.lower()
+    assert "raw logs" not in devices.lower()
+    assert "SENSITIVE_DETAIL_PATTERN" in technical
+
+
+def test_lite_devices_render_reduction_preserves_polling_and_click_boundaries():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    card = Path("src/lite/devices/DeviceCard.jsx").read_text()
+
+    assert "DEVICES_POLLING_POLICY_PHASE4" in devices
+    assert "hasLiveDeviceFleetOperation" in devices
+    assert "isLive: fleetPollingIsLive" in devices
+    assert "pollingMode: 'active'" in devices
+    assert "staleTime: 5_000" in devices
+    assert "setInterval" not in devices
+    assert "onClickCapture" not in card
+    assert "onPointerDownCapture" not in card
+    assert "onOpenDetails" in card
+    assert "onRestartAgent" in card
+    assert "onRemoveDevice" in card

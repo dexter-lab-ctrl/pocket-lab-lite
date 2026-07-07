@@ -15791,3 +15791,49 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.theme-pocket-lite-daylight .lite-device-details-panel {
+  border: 1px solid rgba(14, 116, 144, 0.16);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.09);
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-details-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-details-panel-head span {
+  color: rgba(15, 23, 42, 0.56);
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-device-details-panel-head h3 {
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 850;
+  margin: 0.16rem 0 0;
+}
+
+.theme-pocket-lite-daylight .lite-device-details-panel-head p {
+  color: rgba(51, 65, 85, 0.82);
+  font-size: 0.9rem;
+  margin: 0.3rem 0 0;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-device-details-panel {
+    margin-inline: 0;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-details-panel-head {
+    align-items: flex-start;
+  }
+}
