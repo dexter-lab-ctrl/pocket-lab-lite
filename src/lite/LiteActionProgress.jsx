@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { CheckCircle2, PauseCircle, AlertTriangle } from 'lucide-react';
 
-const DEFAULT_STAGES = ['Request accepted', 'Working', 'Details saved'];
+const DEFAULT_STAGES = ['Request accepted', 'Working', 'Done'];
 
 const ACTION_STAGE_COPY = {
   check_app: ['Request accepted', 'Working', 'Route checked', 'Health checked', 'Done'],
@@ -51,46 +51,6 @@ const ACTION_WORKFLOW_KIND = {
   storage_device: 'media',
 };
 
-const ACTION_STAGE_ALIASES = {
-  check_app: [
-    ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'working', 'picked', 'claim'],
-    ['route', 'caddy', 'open'],
-    ['health', 'status', 'ready'],
-    ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
-  ],
-  backup_app: [
-    ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'working', 'picked', 'claim'],
-    ['saving', 'record', 'setting', 'config', 'metadata'],
-    ['verify', 'verified', 'backup'],
-    ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
-  ],
-  preview_restore: [
-    ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'working', 'picked', 'claim'],
-    ['backup', 'snapshot'],
-    ['preview', 'compare', 'plan'],
-    ['no_change', 'no_changes', 'read_only'],
-    ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
-  ],
-  update_app: [
-    ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'working', 'picked', 'claim'],
-    ['current', 'version', 'installed'],
-    ['backup', 'rollback'],
-    ['restore', 'preview', 'safety'],
-    ['readiness', 'saved', 'no_update', 'done'],
-  ],
-  import_photos: [
-    ['request', 'accepted', 'queued', 'getting_ready'],
-    ['worker', 'working', 'picked', 'claim'],
-    ['phone', 'folder', 'storage'],
-    ['import', 'media', 'photo'],
-    ['detail', 'saved', 'evidence', 'troubleshoot', 'done'],
-  ],
-};
-
 function normalizedStatus(value) {
   return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
 }
@@ -137,83 +97,97 @@ function normalizeProgressState({
   return 'idle';
 }
 
-function percentFromProgress(progress) {
-  const rawPercent = Number(progress?.percent);
-  if (Number.isFinite(rawPercent) && rawPercent > 0) return Math.min(100, Math.max(0, rawPercent));
-  return null;
+function normalizeBackendStepStatus(value) {
+  const status = normalizedStatus(value);
+  if (['complete', 'completed', 'done', 'success', 'succeeded', 'verified', 'passed', 'saved'].includes(status)) return 'completed';
+  if (['active', 'current', 'running', 'working', 'in_progress', 'executing'].includes(status)) return 'active';
+  if (['failed', 'failure', 'error'].includes(status)) return 'failed';
+  if (['blocked', 'paused', 'cancelled', 'canceled'].includes(status)) return 'blocked';
+  if (['waiting', 'pending', 'queued', 'ready', 'idle', 'not_started'].includes(status)) return 'pending';
+  return status || 'pending';
 }
 
-function stageIndexFromBackend({ actionId, progress, stages }) {
-  const rawStep = normalizedStatus(progress?.step || progress?.label || progress?.stage || progress?.phase || progress?.summary);
-  if (!rawStep) return -1;
-
-  const aliases = ACTION_STAGE_ALIASES[actionId] || [];
-  const aliasIndex = aliases.findIndex((stageAliases) => stageAliases.some((alias) => rawStep.includes(alias)));
-  if (aliasIndex >= 0) return Math.min(stages.length - 1, aliasIndex);
-
-  const stageIndex = stages.findIndex((stage) => {
-    const stageKey = normalizedStatus(stage);
-    const words = stageKey.split('_').filter(Boolean);
-    return words.some((word) => word.length >= 4 && rawStep.includes(word));
-  });
-  return stageIndex >= 0 ? stageIndex : -1;
+function normalizeBackendStep(step, index) {
+  if (!step || typeof step !== 'object') return null;
+  const label = String(step.label || step.title || step.name || step.step || step.id || '').trim();
+  if (!label) return null;
+  return {
+    id: String(step.id || step.key || step.name || `step-${index}`).trim() || `step-${index}`,
+    label,
+    status: normalizeBackendStepStatus(step.status || step.state || step.phase),
+  };
 }
 
-function stageIndexFromPercent({ state, progress, stages }) {
-  const rawPercent = percentFromProgress(progress);
-  if (rawPercent == null) return -1;
-  if (state === 'idle') return -1;
-  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return stages.length - 1;
-  const index = Math.floor((rawPercent / 100) * stages.length);
-  return Math.max(0, Math.min(stages.length - 2, index));
+function backendProgressSteps(progress) {
+  const source = Array.isArray(progress?.steps) && progress.steps.length
+    ? progress.steps
+    : Array.isArray(progress?.timeline) && progress.timeline.length
+      ? progress.timeline
+      : [];
+  return source
+    .map((step, index) => normalizeBackendStep(step, index))
+    .filter(Boolean)
+    .slice(0, 8);
 }
 
-function shouldAnimateProgress(state, progress) {
-  return Boolean(progress?.running && progress?.indeterminate !== false && (state === 'running' || state === 'waiting'));
+function fallbackProgressSteps({ actionId, state, progress, disabledReason }) {
+  if (state === 'idle') return (ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES).map((label, index) => ({
+    id: `idle-${index}`,
+    label,
+    status: 'pending',
+  }));
+  if (state === 'blocked') return [{ id: 'blocked', label: disabledReason || 'Paused for safety', status: 'blocked' }];
+  if (state === 'saved_state') return [{ id: 'saved-state', label: 'Showing saved state', status: 'blocked' }];
+  if (state === 'failed') return [{ id: 'failed', label: progress?.step || 'Could not complete', status: 'failed' }];
+  if (state === 'review') return [{ id: 'review', label: progress?.step || 'Needs attention', status: 'failed' }];
+  if (state === 'evidence_saved') return [{ id: 'done', label: 'Done', status: 'completed' }];
+  if (state === 'queued') return [{ id: 'accepted', label: 'Request accepted', status: 'active' }];
+  if (state === 'running' || state === 'waiting') return [{ id: 'working', label: progress?.step || ACTION_WORKING_COPY[actionId] || 'Working', status: 'active' }];
+  return [{ id: 'ready', label: 'Ready', status: 'pending' }];
 }
 
-function animatedStageLimit(stages) {
-  return Math.max(1, stages.length - 2);
+function progressStepsForAction({ actionId, state, progress, disabledReason }) {
+  const backendSteps = backendProgressSteps(progress);
+  if (backendSteps.length) return backendSteps;
+  return fallbackProgressSteps({ actionId, state, progress, disabledReason });
 }
 
-function activeStageForState({ actionId, state, progress, stages }) {
-  if (state === 'idle') return -1;
-  if (state === 'blocked' || state === 'saved_state' || state === 'queued') return 0;
-  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return stages.length - 1;
-
-  const backendIndex = stageIndexFromBackend({ actionId, progress, stages });
-  if (backendIndex >= 0) return Math.min(stages.length - 2, backendIndex);
-
-  const percentIndex = stageIndexFromPercent({ state, progress, stages });
-  if (percentIndex >= 0) return percentIndex;
-
-  return Math.min(stages.length - 2, Math.max(1, Math.floor(stages.length / 2)));
+function activeStageForSteps(steps) {
+  const activeIndex = steps.findIndex((step) => step.status === 'active');
+  if (activeIndex >= 0) return activeIndex;
+  const failedIndex = steps.findIndex((step) => step.status === 'failed' || step.status === 'blocked');
+  if (failedIndex >= 0) return failedIndex;
+  const completedIndexes = steps
+    .map((step, index) => (step.status === 'completed' ? index : -1))
+    .filter((index) => index >= 0);
+  if (!completedIndexes.length) return -1;
+  return Math.max(...completedIndexes);
 }
 
-function progressPercentForStage({ state, activeStage, stages, progress }) {
-  const rawPercent = percentFromProgress(progress);
-  if (rawPercent != null && state !== 'idle') return rawPercent;
-  if (state === 'idle') return 0;
-  if (state === 'evidence_saved' || state === 'review' || state === 'failed') return 100;
+function progressPercentForSteps({ state, steps }) {
+  if (!steps.length || state === 'idle') return 0;
   if (state === 'blocked' || state === 'saved_state') return 0;
-  if (stages.length <= 1 || activeStage < 0) return 0;
-  return Math.round((activeStage / (stages.length - 1)) * 100);
+  if (steps.every((step) => step.status === 'completed')) return 100;
+  const completed = steps.filter((step) => step.status === 'completed').length;
+  return Math.round((completed / steps.length) * 100);
 }
 
-function currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult }) {
+function currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult, steps }) {
+  const activeStep = steps.find((step) => step.status === 'active');
+  const lastCompleted = [...steps].reverse().find((step) => step.status === 'completed');
   if (state === 'blocked') return disabledReason || 'Paused for safety';
   if (state === 'saved_state') return 'Showing saved state';
-  if (state === 'queued') return 'Getting ready';
-  if (state === 'running' || state === 'waiting') return progress?.summary || ACTION_WORKING_COPY[actionId] || progress?.step || 'Working';
-  if (state === 'evidence_saved') return lastResult || result?.summary || ACTION_COMPLETE_COPY[actionId] || 'Details saved';
+  if (state === 'queued') return activeStep?.label || 'Request accepted';
+  if (state === 'running' || state === 'waiting') return activeStep?.label || progress?.summary || ACTION_WORKING_COPY[actionId] || progress?.step || 'Working';
+  if (state === 'evidence_saved') return lastResult || result?.summary || ACTION_COMPLETE_COPY[actionId] || lastCompleted?.label || 'Done';
   if (state === 'review') return result?.summary || 'Needs review';
   if (state === 'failed') return result?.summary || 'Could not complete';
   return 'Not run yet';
 }
 
-function statusChipForState({ actionId, state }) {
+function statusChipForState({ actionId, state, steps }) {
   if (state === 'queued') return 'Queued';
-  if (state === 'running' || state === 'waiting') return actionId === 'update_app' ? 'Checking readiness' : 'Working';
+  if (state === 'running' || state === 'waiting') return steps.find((step) => step.status === 'active')?.label || (actionId === 'update_app' ? 'Checking readiness' : 'Working');
   if (state === 'evidence_saved') {
     if (actionId === 'check_app') return 'Protected app';
     if (actionId === 'backup_app') return 'Saved';
@@ -259,22 +233,19 @@ function runMetaLabel({ state, actionId, lastRanAt, executionOwner, hasEvidence 
   return '';
 }
 
-function nodeState({ state, index, activeStage, finalIndex }) {
+function nodeState({ state, step }) {
   if (state === 'idle') return 'empty';
-  if (state === 'blocked' || state === 'saved_state') return index === 0 ? 'paused' : 'empty';
-  if (state === 'review' || state === 'failed') {
-    if (index < activeStage || index === finalIndex) return 'attention';
-    return 'empty';
-  }
-  if (state === 'evidence_saved') return 'done';
-  if (index < activeStage) return 'done';
-  if (index === activeStage) return 'active';
+  if (step.status === 'completed') return 'done';
+  if (step.status === 'active') return 'active';
+  if (step.status === 'failed') return 'attention';
+  if (step.status === 'blocked') return 'paused';
   return 'empty';
 }
 
-function nodeSymbol({ kind, actionId, state, index, finalIndex }) {
-  if (state === 'evidence_saved' && index === finalIndex) return '✓';
-  if ((state === 'review' || state === 'failed') && index === finalIndex) return '!';
+function nodeSymbol({ kind, actionId, state, step, index, finalIndex }) {
+  if (step.status === 'completed' && (state === 'evidence_saved' || index === finalIndex)) return '✓';
+  if (step.status === 'failed') return '!';
+  if (step.status === 'blocked') return 'Ⅱ';
   if (kind === 'vault') return index === finalIndex ? '✓' : '▣';
   if (kind === 'preview') return index === finalIndex ? '✓' : '◇';
   if (kind === 'readiness') return index === finalIndex ? '✓' : '▭';
@@ -315,30 +286,13 @@ export default function LiteActionProgress({
     receiptId,
   }), [status, enabled, disabledReason, progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId]);
 
-  const stages = ACTION_STAGE_COPY[actionId] || DEFAULT_STAGES;
+  const steps = useMemo(() => progressStepsForAction({ actionId, state, progress, disabledReason }), [actionId, state, progress, disabledReason]);
   const workflowKind = ACTION_WORKFLOW_KIND[actionId] || 'signal';
-  const activeStage = activeStageForState({ actionId, state, progress, stages });
-  const [animatedStage, setAnimatedStage] = useState(activeStage);
-  const animateProgress = shouldAnimateProgress(state, progress);
-
-  useEffect(() => {
-    setAnimatedStage(activeStage);
-    if (!animateProgress) return undefined;
-    const limit = animatedStageLimit(stages);
-    const timer = window.setInterval(() => {
-      setAnimatedStage((current) => {
-        const next = Math.max(1, current + 1);
-        return next > limit ? 1 : next;
-      });
-    }, 1050);
-    return () => window.clearInterval(timer);
-  }, [actionId, activeStage, animateProgress, stages.length]);
-
-  const displayActiveStage = animateProgress ? Math.max(1, Math.min(animatedStage, animatedStageLimit(stages))) : activeStage;
-  const percent = progressPercentForStage({ state, activeStage: displayActiveStage, stages, progress });
-  const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult });
-  const chip = statusChipForState({ actionId, state });
-  const finalIndex = stages.length - 1;
+  const activeStage = activeStageForSteps(steps);
+  const percent = progressPercentForSteps({ state, steps });
+  const label = currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult, steps });
+  const chip = statusChipForState({ actionId, state, steps });
+  const finalIndex = steps.length - 1;
   const hasEvidence = hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId });
   const metaLabel = runMetaLabel({ state, actionId, lastRanAt, executionOwner, hasEvidence });
   const actionNote = actionId === 'update_app' && state === 'evidence_saved'
@@ -366,8 +320,8 @@ export default function LiteActionProgress({
       data-run-count={Number(runCount) || 0}
       style={{
         '--lite-action-progress-percent': `${percent}%`,
-        '--lite-action-progress-steps': stages.length,
-        '--lite-action-progress-active-step': Math.max(0, displayActiveStage),
+        '--lite-action-progress-steps': steps.length,
+        '--lite-action-progress-active-step': Math.max(0, activeStage),
       }}
     >
       <div className="lite-action-progress__topline">
@@ -381,7 +335,7 @@ export default function LiteActionProgress({
       <div
         className="lite-action-progress__rail"
         role="progressbar"
-        aria-label={`${stages.join(' to ')} progress`}
+        aria-label={`${steps.map((step) => step.label).join(' to ')} progress`}
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow={Math.round(percent)}
@@ -390,18 +344,18 @@ export default function LiteActionProgress({
         <span className="lite-action-progress__rail-fill" aria-hidden="true" />
         <span className="lite-action-progress__rail-pulse" aria-hidden="true" />
         <span className="lite-action-progress__nodes" aria-hidden="true">
-          {stages.map((stage, index) => {
-            const visualState = nodeState({ state, index, activeStage: displayActiveStage, finalIndex });
+          {steps.map((step, index) => {
+            const visualState = nodeState({ state, step });
             const active = visualState === 'active';
             const done = visualState === 'done';
             const attention = visualState === 'attention';
             const paused = visualState === 'paused';
             return (
               <span
-                key={`${stage}-${index}`}
+                key={`${step.id}-${step.label}-${index}`}
                 className={`lite-action-progress__node lite-action-progress__node--${visualState} ${active ? 'is-active' : ''} ${done ? 'is-done' : ''} ${attention ? 'is-attention' : ''} ${paused ? 'is-paused' : ''}`}
               >
-                <i>{nodeSymbol({ kind: workflowKind, actionId, state, index, finalIndex })}</i>
+                <i>{nodeSymbol({ kind: workflowKind, actionId, state, step, index, finalIndex })}</i>
               </span>
             );
           })}
@@ -409,11 +363,11 @@ export default function LiteActionProgress({
       </div>
 
       <div className="lite-action-progress__stages">
-        {stages.map((stage, index) => {
-          const visualState = nodeState({ state, index, activeStage: displayActiveStage, finalIndex });
+        {steps.map((step, index) => {
+          const visualState = nodeState({ state, step });
           return (
-            <span key={stage} className={`lite-action-progress__stage lite-action-progress__stage--${visualState}`}>
-              {stage}
+            <span key={`${step.id}-${index}`} className={`lite-action-progress__stage lite-action-progress__stage--${visualState}`}>
+              {step.label}
             </span>
           );
         })}
@@ -426,4 +380,11 @@ export default function LiteActionProgress({
   );
 }
 
-export { DEFAULT_STAGES, ACTION_STAGE_COPY, ACTION_WORKFLOW_KIND, hasRunEvidence };
+export {
+  DEFAULT_STAGES,
+  ACTION_STAGE_COPY,
+  ACTION_WORKFLOW_KIND,
+  backendProgressSteps,
+  hasRunEvidence,
+  normalizeBackendStepStatus,
+};

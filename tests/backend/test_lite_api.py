@@ -8,7 +8,7 @@ from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_di
 
 
 def _lite_ui_source() -> str:
-    return "\n".join(
+    return "".join(
         path.read_text()
         for path in sorted(Path("src/lite").glob("Lite*.jsx"))
     )
@@ -2244,7 +2244,7 @@ def test_lite_media_worker_applies_storage_mappings_before_photoprism_cli(tmp_pa
     app_root = tmp_path / "photoprism"
     env_file = app_root / "config" / "photoprism.env"
     env_file.parent.mkdir(parents=True)
-    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin")
 
     created = client().post(
         "/api/lite/apps/photoprism/storage-mappings",
@@ -2308,7 +2308,7 @@ def test_lite_media_worker_fails_safely_when_mapping_source_not_ready(tmp_path, 
     app_root = tmp_path / "photoprism"
     env_file = app_root / "config" / "photoprism.env"
     env_file.parent.mkdir(parents=True)
-    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin")
 
     created = client().post(
         "/api/lite/apps/photoprism/storage-mappings",
@@ -2694,7 +2694,7 @@ def test_lite_photoprism_media_optimizer_deduplicates_overlapping_mappings(tmp_p
     app_root = tmp_path / "photoprism"
     env_file = app_root / "config" / "photoprism.env"
     env_file.parent.mkdir(parents=True)
-    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin")
 
     for label, source_path in [
         ("Camera folder", "~/storage/shared/DCIM"),
@@ -2781,7 +2781,7 @@ def test_lite_photoprism_media_cancel_stops_running_operation_without_web_server
 
     class Completed:
         returncode = 0
-        stdout = "21400 photoprism import\n"
+        stdout = "21400 photoprism import"
         stderr = ""
 
     def fake_run(args, **kwargs):
@@ -2898,7 +2898,7 @@ def test_lite_photoprism_media_failure_hides_app_owned_output(tmp_path, monkeypa
     app_root = tmp_path / "photoprism"
     env_file = app_root / "config" / "photoprism.env"
     env_file.parent.mkdir(parents=True)
-    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin\n")
+    env_file.write_text("PHOTOPRISM_ADMIN_USER=admin")
 
     created = client().post(
         "/api/lite/apps/photoprism/storage-mappings",
@@ -2916,7 +2916,7 @@ def test_lite_photoprism_media_failure_hides_app_owned_output(tmp_path, monkeypa
         returncode = 1
         stdout = ""
         stderr = (
-            "proot warning: can\'t sanitize binding \"/proc/self/fd/0\": No such file or directory\n"
+            "proot warning: can\'t sanitize binding \"/proc/self/fd/0\": No such file or directory"
             'time="2026-07-01T14:16:13Z" level=error msg="index: could not create preview image for 2024/11/sample.pdf"'
         )
 
@@ -3509,7 +3509,7 @@ def test_lite_app_safety_repair_frontend_source_is_mobile_safe():
     assert "prefers-reduced-motion" in css
     assert "check_app" in mocks
     assert "repair_app" in mocks
-    forbidden = "\n".join([ui, mocks]).lower()
+    forbidden = "".join([ui, mocks]).lower()
     assert "index photos" not in forbidden
     assert "refresh library" not in forbidden
     assert "stop photo" not in forbidden
@@ -3756,7 +3756,7 @@ def test_lite_app_catalog_reusable_action_progress_source():
     assert "lite-catalog-media-flow" in ui
     assert "lite-catalog-media-flow" in css
     assert "prefers-reduced-motion" in css
-    forbidden = "\n".join([ui, progress]).lower()
+    forbidden = "".join([ui, progress]).lower()
     assert "index photos" not in forbidden
     assert "refresh library" not in forbidden
     assert "stop photo" not in forbidden
@@ -4648,11 +4648,13 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
     assert "'Working'" in progress
     assert "'Done'" in progress
     assert "Done ✓" in progress
-    assert "function nodeState({ state, index, activeStage, finalIndex })" in progress
-    assert "activeStage: displayActiveStage" in progress
-    assert "index < activeStage" in progress
-    assert "shouldAnimateProgress" in progress
-    assert "setInterval" in progress
+    assert "backendProgressSteps" in progress
+    assert "normalizeBackendStepStatus" in progress
+    assert "progress.steps" in progress
+    assert "progress.timeline" in progress
+    assert "setInterval" not in progress
+    assert "animatedStage" not in progress
+    assert "shouldAnimateProgress" not in progress
     assert "progress?.running || ['running', 'working'" in progress
     assert "troubleshooting records stay backend-only" not in catalog.lower()
     assert "actionId !== 'check_app' && actionId !== 'repair_app'" in catalog
@@ -4664,3 +4666,53 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
     assert "Private backup details stayed hidden." in catalog
     assert "Backup history" in catalog
     assert "Latest backup" in catalog
+
+
+
+def test_lite_app_action_progress_uses_backend_step_status_source():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    progress = Path("src/lite/LiteActionProgress.jsx").read_text()
+
+    assert "normalizeBackendStepStatus" in progress
+    assert "backendProgressSteps" in progress
+    assert "progress?.steps" in progress
+    assert "progress?.timeline" in progress
+    assert "step.status === 'completed'" in progress
+    assert "step.status === 'active'" in progress
+    assert "step.status === 'failed'" in progress
+    assert "step.status === 'blocked'" in progress
+    assert "progressPercentForSteps" in progress
+    assert "completed / steps.length" in progress
+    assert "setInterval" not in progress
+    assert "animatedStage" not in progress
+    assert "shouldAnimateProgress" not in progress
+    assert "steps: [        { id: 'ready'" not in catalog
+    assert "steps: []" in catalog
+    assert "timeline: []" in catalog
+    assert "Array.isArray(progress?.timeline) ? progress.timeline : []" in catalog
+
+
+def test_lite_action_progress_uses_backend_step_status_source():
+    progress_source = Path("src/lite/LiteActionProgress.jsx").read_text()
+    catalog_source = Path("src/lite/LiteCatalog.jsx").read_text()
+
+    assert "backendProgressSteps" in progress_source
+    assert "normalizeBackendStepStatus" in progress_source
+    assert "progress.steps" in progress_source
+    assert "progress.timeline" in progress_source
+
+    assert "completed" in progress_source
+    assert "active" in progress_source
+    assert "pending" in progress_source
+    assert "failed" in progress_source
+    assert "blocked" in progress_source
+
+    assert "setInterval" not in progress_source
+    assert "animatedStage" not in progress_source
+    assert "shouldAnimateProgress" not in progress_source
+
+    assert "No frontend-invented app action completion" not in progress_source
+    assert "progress.steps ||" not in catalog_source
+    assert "Saving app records" not in catalog_source
+    assert "Verifying backup" not in catalog_source
+    assert "Preparing preview" not in catalog_source
