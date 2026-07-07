@@ -5819,3 +5819,60 @@ def test_lite_recovery_s3_preserves_backend_owned_recovery_actions():
     assert "exec(" not in recovery
     assert "spawn(" not in recovery
     assert "pm2" not in recovery.lower()
+
+
+def test_lite_security_phase1_layout_simplification_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "Safety Center" in security
+    assert "lite-security-phase1-shell" in security
+    assert "lite-security-phase1-layout" in security
+    assert "lite-security-phase1-main" in security
+    assert "lite-security-phase1-side" in security
+    assert "lite-security-phase1-more" in security
+    assert "What changed" in security
+    assert "Needs attention" in security
+    assert "Last check path" in security
+    assert "View safe summary" in security
+    assert "moreSecurityDetails: true" in security
+    assert "executionTimeline: true" in security
+    assert "securityHistory: true" in security
+    assert "lite-security-phase1-hero" in css
+    assert "@media (max-width: 920px)" in css
+    assert "prefers-reduced-motion: reduce" in css
+
+
+def test_lite_security_phase1_progressive_default_render():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "SecurityHistoryLazy" in security
+    assert "isSecurityCardCollapsed('securityHistory')" in security
+    assert "isSecurityCardCollapsed('moreSecurityDetails')" in security
+    assert "isSecurityCardCollapsed('executionTimeline')" in security
+    assert "Show check path" in security
+    assert "Open history" in security
+    assert "More security details" in security
+    assert "hidden={isSecurityCardCollapsed('moreSecurityDetails')}" in security
+    assert "executionTimelineLive || !isSecurityCardCollapsed('executionTimeline')" in security
+
+
+def test_lite_security_phase1_preserves_security_boundaries():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "liteApi.securityEvidence" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() })" in security
+    assert "fetch(" not in security
+    assert "child_process" not in security
+    assert "exec(" not in security
+    assert "spawn(" not in security
+    assert "pm2" not in security.lower()
+    assert "window.setInterval" not in security
+    assert "setInterval" not in security
+    assert "onClickCapture" not in security
+    assert "onPointerDownCapture" not in security
