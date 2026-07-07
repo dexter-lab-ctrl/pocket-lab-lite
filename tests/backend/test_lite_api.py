@@ -8,10 +8,15 @@ from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_di
 
 
 def _lite_ui_source() -> str:
-    return "".join(
-        path.read_text()
-        for path in sorted(Path("src/lite").glob("Lite*.jsx"))
-    )
+    lite_files = list(Path("src/lite").glob("Lite*.jsx"))
+    lite_files.extend(Path("src/lite/catalog").glob("*.jsx"))
+    return "".join(path.read_text() for path in sorted(lite_files))
+
+
+def _lite_catalog_source() -> str:
+    paths = [Path("src/lite/LiteCatalog.jsx")]
+    paths.extend(sorted(Path("src/lite/catalog").glob("*.jsx")))
+    return "".join(path.read_text() for path in paths if path.exists())
 
 
 @pytest.fixture(autouse=True)
@@ -87,17 +92,17 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-catalog-launcher" not in css
     assert "lite-catalog-drawer" not in ui
     assert "lite-catalog-drawer" not in css
-    assert "AppActionDetailsPanel" in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "AppActionDetailsPanel" in _lite_catalog_source()
     assert "Ready to open" not in ui
     assert "Ready to open" not in css
     assert ">Ready<" in ui or "'Ready'" in ui
     assert "Open full screen" in ui
     assert "lite-home-pill lite-catalog-hero-pill is-secure" in ui
-    assert "Remove app" in Path("src/lite/LiteCatalog.jsx").read_text()
-    assert "Confirm remove" in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Remove app" in _lite_catalog_source()
+    assert "Confirm remove" in _lite_catalog_source()
     assert "lite-catalog-access-card" in css
-    assert "HeartPulse" in Path("src/lite/LiteCatalog.jsx").read_text()
-    assert "Clock3" not in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "HeartPulse" in _lite_catalog_source()
+    assert "Clock3" not in _lite_catalog_source()
     assert "lite-catalog-status-badge" in ui
     assert "lite-catalog-trust-marker" in ui
     assert "Self-hosted app" in ui
@@ -114,7 +119,7 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "Install to phone" not in ui
     assert "canInstallAppToPhone" not in ui
     assert "Use your browser menu to install it on this phone." not in ui
-    assert "Smartphone" in Path("src/lite/LiteCatalog.jsx").read_text()
+    assert "Smartphone" in _lite_catalog_source()
     assert "Add to phone" not in ui
     assert "isStandalonePwa" in ui
     assert "navigator.vibrate" in ui
@@ -1707,7 +1712,7 @@ def test_lite_photoprism_storage_mapping_still_rejects_private_and_system_paths(
 
 
 def test_lite_photoprism_connect_photos_preview_ui_contract_is_present():
-    ui = Path("src/lite/LiteCatalog.jsx").read_text()
+    ui = _lite_catalog_source()
     css = Path("src/index.css").read_text()
     api = Path("src/lib/liteApi.js").read_text()
 
@@ -3726,7 +3731,6 @@ def test_lite_app_catalog_reusable_action_progress_source():
     progress = Path("src/lite/LiteActionProgress.jsx").read_text()
     for marker in (
         "Request accepted",
-        "Worker picked it up",
         "Details saved",
         "Paused for safety",
         "Needs review",
@@ -3740,9 +3744,9 @@ def test_lite_app_catalog_reusable_action_progress_source():
         "Checking update readiness",
         "Readiness saved",
         "No update was applied",
-        "ACTION_STAGE_ALIASES",
-        "activeStageForState",
-        "progressPercentForStage",
+        "activeStageForSteps",
+        "progressPercentForSteps",
+        "backendProgressSteps",
     ):
         assert marker in progress
     for old_marker in (
@@ -4185,7 +4189,7 @@ def test_lite_app_catalog_flip_shared_continuity_source_is_scoped():
 
 
 def test_lite_app_catalog_refresh_and_icon_source_is_scoped():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     ui = Path("src/lite/LiteUi.jsx").read_text()
     css = Path("src/index.css").read_text()
 
@@ -4319,7 +4323,7 @@ def test_lite_mutation_wrapper_invalidates_after_fastapi_acceptance_source():
 
 def test_lite_safe_reads_use_query_backed_resource_source():
     status_hook = Path("src/hooks/useLiteStatus.js").read_text()
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
 
     assert "useLiteQuery" in status_hook
     assert "liteQueryKeys.status()" in status_hook
@@ -4336,7 +4340,7 @@ def test_lite_safe_reads_use_query_backed_resource_source():
 
 
 def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     ui = Path("src/lite/LiteUi.jsx").read_text()
     vite = Path("vite.config.js").read_text()
 
@@ -4468,7 +4472,7 @@ def test_lite_query_and_api_fall_back_to_dexie_snapshots_source():
 
 def test_lite_dexie_phase_preserves_no_browser_action_queue_and_pwa_denylist_source():
     mutation = Path("src/hooks/useLiteMutation.js").read_text()
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     ui = Path("src/lite/LiteUi.jsx").read_text()
     vite = Path("vite.config.js").read_text()
 
@@ -4563,7 +4567,7 @@ def test_lite_zustand_toast_and_refresh_are_wired_into_ui_source():
 
 
 def test_lite_zustand_app_catalog_manage_state_source():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
 
     assert "useLiteUiStore" in catalog
     assert "state.manageAppId" in catalog
@@ -4607,7 +4611,7 @@ def test_lite_zustand_preserves_safe_snapshot_and_pwa_boundaries_source():
 
 
 def test_lite_app_catalog_safety_details_and_flow_panel_styling_source():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     hook = Path("src/hooks/useLiteAppActionFlow.js").read_text()
     css = Path("src/index.css").read_text()
     assert "lite-catalog-flow-panel" not in catalog
@@ -4667,7 +4671,7 @@ def test_lite_xstate_hooks_and_screens_preserve_backend_ownership_source():
     devices = Path("src/lite/LiteDevices.jsx").read_text()
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
     security = Path("src/lite/LiteSecurity.jsx").read_text()
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     ui = Path("src/lite/LiteUi.jsx").read_text()
     assert "useLiteAddDeviceFlow" in devices and "liteApi.addDevice" in devices and "addDeviceFlow.inviteReady" in devices
     assert "useLiteRecoveryFlow" in recovery and "recoveryFlow.requestRestore" in recovery and "confirm: true" in recovery and "latestBackup.backup_id !== 'latest'" in recovery
@@ -4700,7 +4704,7 @@ def test_lite_xstate_preserves_query_snapshot_zustand_boundaries_source():
 
 
 def test_lite_app_catalog_progress_and_safety_details_followup_source():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     progress = Path("src/lite/LiteActionProgress.jsx").read_text()
     css = Path("src/index.css").read_text()
 
@@ -4734,7 +4738,7 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
 
 
 def test_lite_app_action_progress_uses_backend_step_status_source():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     progress = Path("src/lite/LiteActionProgress.jsx").read_text()
 
     assert "normalizeBackendStepStatus" in progress
@@ -4759,7 +4763,7 @@ def test_lite_app_action_progress_uses_backend_step_status_source():
 
 def test_lite_action_progress_uses_backend_step_status_source():
     progress_source = Path("src/lite/LiteActionProgress.jsx").read_text()
-    catalog_source = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog_source = _lite_catalog_source()
 
     assert "backendProgressSteps" in progress_source
     assert "normalizeBackendStepStatus" in progress_source
@@ -4785,7 +4789,7 @@ def test_lite_action_progress_uses_backend_step_status_source():
 
 
 def test_lite_app_catalog_phase3_polling_policy_source():
-    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
     status_hook = Path("src/hooks/useLiteStatus.js").read_text()
     policy = Path("src/lib/litePollingPolicy.js").read_text()
 
@@ -4869,3 +4873,57 @@ def test_lite_security_recovery_phase5_polling_policy_source():
     assert "hasLiteLiveOperation" in recovery
     assert "liteQueryPollingInterval" in policy
     assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
+
+
+def test_lite_app_catalog_phase_s1_render_reduction_source_contract():
+    catalog_wrapper = Path("src/lite/LiteCatalog.jsx").read_text()
+    catalog = _lite_catalog_source()
+    action_row = Path("src/lite/catalog/AppActionRow.jsx").read_text()
+    details_lazy = Path("src/lite/catalog/AppActionDetailsLazy.jsx").read_text()
+    progress_slot = Path("src/lite/catalog/AppActionProgressSlot.jsx").read_text()
+
+    expected_files = [
+        "AppCatalogScreen.jsx",
+        "AppActionRow.jsx",
+        "AppActionProgressSlot.jsx",
+        "AppActionDetailsLazy.jsx",
+        "AppManagePortal.jsx",
+        "AppManageSheet.jsx",
+        "AppManageSections.jsx",
+        "AppStatusChips.jsx",
+        "PhotoPrismMediaSummary.jsx",
+    ]
+    for filename in expected_files:
+        assert Path("src/lite/catalog", filename).exists()
+
+    assert "<AppCatalogScreen {...props} />" in catalog_wrapper
+    assert "React.memo" in action_row
+    assert "export default React.memo(AppActionRow)" in action_row
+    assert "React.lazy" in catalog
+    assert "import('./AppActionDetailsLazy.jsx')" in catalog
+    assert "Loading details…" in catalog
+    assert "LiteActionProgress" in progress_slot
+    assert "if (!active) return null" in progress_slot
+    assert "showProgress ? (" in catalog
+    assert "progressSlot={progressSlot}" in catalog
+    assert "detailsActionId === entry.actionId" in catalog
+    assert "Saved for troubleshooting" in details_lazy
+    assert "backend_only" in details_lazy
+    assert "window.setInterval" not in catalog
+    assert "hidden={!" not in catalog
+    assert "normal App Catalog UI does not load" not in catalog
+
+
+def test_lite_app_catalog_phase_s1_preserves_click_ownership_source():
+    catalog = _lite_catalog_source()
+    action_row = Path("src/lite/catalog/AppActionRow.jsx").read_text()
+
+    assert "APP_CATALOG_ACTION_ROWS_OWN_CLICKS" in catalog
+    assert "APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS" in catalog
+    assert "APP_CATALOG_MANAGE_PORTAL_STABLE_APP_KEY" in catalog
+    assert "APP_CATALOG_MANAGE_SHEET_PORTAL_OVERLAY" in catalog
+    assert "onClick={onClick}" in action_row
+    assert "openApp(app, event)" in catalog
+    assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }}" in catalog
+    assert "onPointerDownCapture" not in action_row
+    assert "onClickCapture" not in action_row
