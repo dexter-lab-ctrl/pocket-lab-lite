@@ -5073,3 +5073,94 @@ def test_lite_devices_render_reduction_preserves_polling_and_click_boundaries():
     assert "onOpenDetails" in card
     assert "onRestartAgent" in card
     assert "onRemoveDevice" in card
+
+
+def test_lite_recovery_render_reduction_components_exist():
+    expected_files = [
+        Path("src/lite/recovery/RecoveryActionDetailsLazy.jsx"),
+        Path("src/lite/recovery/RecoveryBackupHistory.jsx"),
+    ]
+    for path in expected_files:
+        assert path.exists()
+
+
+def test_lite_recovery_tab_uses_lazy_progressive_details_foundation():
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    action_details = Path("src/lite/recovery/RecoveryActionDetailsLazy.jsx").read_text()
+    backup_history = Path("src/lite/recovery/RecoveryBackupHistory.jsx").read_text()
+
+    assert "RECOVERY_RENDER_REDUCTION_MILESTONE_1" in recovery
+    assert "RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2" in recovery
+    assert "React.lazy" in recovery
+    assert "import('./recovery/RecoveryActionDetailsLazy.jsx')" in recovery
+    assert "import('./recovery/RecoveryBackupHistory.jsx')" in recovery
+    assert "<React.Suspense" in recovery
+    assert "activePanel ? (" in recovery
+    assert "LiteProgressiveDetails" in action_details
+    assert "RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2" in action_details
+    assert "RECOVERY_HISTORY_MOUNTS_ONLY_WHEN_OPENED" in action_details
+    assert "LiteHistorySection" in backup_history
+    assert "RECOVERY_HISTORY_NO_ALWAYS_RENDERED_ROWS" in backup_history
+
+
+def test_lite_recovery_details_keep_history_lazy_and_technical_collapsed():
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    action_details = Path("src/lite/recovery/RecoveryActionDetailsLazy.jsx").read_text()
+    backup_history = Path("src/lite/recovery/RecoveryBackupHistory.jsx").read_text()
+    history = Path("src/lite/components/LiteHistorySection.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "history={{" in action_details
+    assert "Recovery history" in action_details
+    assert "technicalDetails={technicalRows" in action_details
+    assert "title=\"Backup history\"" in backup_history
+    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
+    assert "{shouldMountHistory ? (" in history
+    assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
+    assert "const [open, setOpen] = useState(Boolean(defaultOpen))" in technical
+    assert "{open ? (" in technical
+    assert "hidden={" not in recovery
+    assert "hidden={!" not in recovery
+    assert "window.setInterval" not in recovery
+
+
+def test_lite_recovery_details_preserve_backend_only_evidence_boundary():
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    action_details = Path("src/lite/recovery/RecoveryActionDetailsLazy.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "RECOVERY_BACKEND_ONLY_TROUBLESHOOTING" in action_details
+    assert "backend troubleshooting record is kept" in action_details
+    assert "The normal UI shows only safe details" in action_details
+    assert "The browser did not run recovery commands." in action_details
+    assert "The browser did not read backup files." in action_details
+    assert "liteApi.recoveryReceipt" not in recovery
+    assert "liteApi.securityEvidence" not in recovery
+    assert "liteApi.appEvidence" not in recovery
+    assert "readJson(`/api/lite/recovery/receipts" not in recovery
+    assert "readJson(`/api/lite/security/evidence" not in recovery
+    assert "SENSITIVE_DETAIL_PATTERN" in technical
+
+
+def test_lite_recovery_render_reduction_preserves_polling_and_actions():
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    action_details = Path("src/lite/recovery/RecoveryActionDetailsLazy.jsx").read_text()
+
+    assert "RECOVERY_POLLING_POLICY_PHASE5" in recovery
+    assert "hasLiveRecoveryOperation" in recovery
+    assert "recoveryPollingIsLive" in recovery
+    assert "beginRecoveryPollingBurst" in recovery
+    assert "pollingMode: 'slow'" in recovery
+    assert "isLive: recoveryPollingIsLive" in recovery
+    assert "staleTime: 15_000" in recovery
+    assert "Date.now() + 45_000" in recovery
+    assert "setInterval" not in recovery
+    assert "backup()" in recovery
+    assert "verifyLatestBackup" in recovery
+    assert "previewLatestRestore" in recovery
+    assert "restoreLatestBackup" in recovery
+    assert "onClose={closeActionPanel}" in recovery
+    assert "onOpenEvidence={() => setEvidenceOpen(true)}" in recovery
+    assert "onClickCapture" not in action_details
+    assert "onPointerDownCapture" not in action_details
