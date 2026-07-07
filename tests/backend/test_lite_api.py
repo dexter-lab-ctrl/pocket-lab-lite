@@ -1309,7 +1309,7 @@ def test_lite_security_ui_has_mobile_first_finding_detail_modal():
     assert "Evidence reference" in ui
     assert "Close finding details" in ui
     assert "SecurityFindingDetailsLazy" in ui or "SecurityFindingDetailModal" in ui
-    assert "finding={item}" in ui or "finding={issue}" in ui
+    assert "finding={item}" in ui or "finding={issue}" in ui or "finding={selectedFinding}" in ui
     assert "lite-security-finding-details-panel" in ui or "lite-finding-detail-modal" in ui
     assert "lite-security-finding-details-panel" in css or "lite-finding-detail-modal" in css
     assert "lite-finding-detail-trigger" in css
@@ -5192,7 +5192,7 @@ def test_lite_security_tab_uses_lazy_progressive_details_foundation():
     assert "import('./security/SecurityHistoryLazy.jsx')" in security
     assert "<Suspense" in security
     assert "selectedFinding === issue ? (" in security
-    assert "selectedFinding === item ? (" in security
+    assert "selectedFinding === item ? (" in security or "open={Boolean(selectedFinding)}" in security
     assert "LiteProgressiveDetails" in finding_details
     assert "SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2" in finding_details
     assert "SECURITY_FINDING_DETAILS_ARE_LAZY" in finding_details
@@ -5956,3 +5956,56 @@ def test_lite_security_phase2_redaction_guards_present():
         assert forbidden_guard in details
     assert "Raw scanner output was not shown." in details
     assert "Secrets, tokens, private paths, and backend command payloads stay hidden." in details
+
+
+def test_lite_security_phase3_responsive_shell_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "LiteSheet" in security
+    assert "SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS" in security
+    assert "lite-security-phase3-details-shell" in security
+    assert "lite-security-phase3-finding-shell" in security
+    assert "data-security-phase3-responsive-shell" in security
+    assert "securityDetailShellMeta" in security
+    assert "bottom sheet on mobile" in security
+    assert "side panel on desktop" in security
+    assert "lite-security-phase3-layer" in css
+    assert "lite-security-phase3-panel" in css
+    assert "lite-security-phase3-scroll" in css
+    assert "@media (min-width: 900px)" in css
+    assert "@media (max-width: 899px)" in css
+    assert "prefers-reduced-motion: reduce" in css
+
+
+def test_lite_security_phase3_details_are_not_inline_mounted():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "selectedFinding === item" not in security
+    assert "open={Boolean(activeSecurityDetails)}" in security
+    assert "open={Boolean(selectedFinding)}" in security
+    assert "activeSecurityDetails === 'legacyEvidenceNeverMounts'" in security
+    assert "LiteSheet" in security
+    assert "SecurityProgressiveDetailsLazy type={activeSecurityDetails || 'evidence'}" in security
+    assert "SecurityFindingDetailsLazy finding={selectedFinding}" in security
+
+
+def test_lite_security_phase3_mobile_desktop_shell_preserves_boundaries():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "fetch(" not in security
+    assert "fetch(" not in details
+    assert "child_process" not in security + details
+    assert "exec(" not in security + details
+    assert "spawn(" not in security + details
+    assert "window.setInterval" not in security
+    assert "setInterval" not in security
+    assert "onClickCapture" not in security
+    assert "onPointerDownCapture" not in security

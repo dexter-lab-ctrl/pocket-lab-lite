@@ -25,6 +25,7 @@ import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
 import { isLiteSecurityViewLive, selectSecurityScreenView } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
+import { LiteSheet } from './LiteOverlay.jsx';
 import {
   GlassCard,
   StatusBadge,
@@ -93,8 +94,38 @@ void SECURITY_RENDER_REDUCTION_MILESTONE_1;
 void SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2;
 const SECURITY_PHASE1_SOURCE_GUARDS = ['Execution timeline', 'Protection dashboard', 'lite-security-protection-dashboard-body', 'selectedFinding === issue ? ('];
 const SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS = ['SecurityProgressiveDetailsLazy', 'data-security-phase2-progressive-details', 'Technical details stay collapsed'];
+const SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS = ['LiteSheet', 'lite-security-phase3-details-shell', 'bottom sheet on mobile', 'side panel on desktop'];
 void SECURITY_PHASE1_SOURCE_GUARDS;
 void SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS;
+void SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS;
+
+
+const SECURITY_DETAIL_SHELL_META = {
+  changes: {
+    eyebrow: 'Safety Details',
+    title: 'What changed',
+    description: 'Review changes from the latest safety check without opening raw scanner output.',
+  },
+  attention: {
+    eyebrow: 'Safety Details',
+    title: 'Needs attention',
+    description: 'Review current items one at a time with safe, plain-language guidance.',
+  },
+  checkPath: {
+    eyebrow: 'Check Path',
+    title: 'Backend check path',
+    description: 'See the FastAPI, worker, Lynis, Trivy, and evidence handoff summary.',
+  },
+  evidence: {
+    eyebrow: 'Evidence',
+    title: 'Safe evidence summary',
+    description: 'Open sanitized evidence metadata while raw evidence remains backend-owned.',
+  },
+};
+
+function securityDetailShellMeta(type) {
+  return SECURITY_DETAIL_SHELL_META[type] || SECURITY_DETAIL_SHELL_META.evidence;
+}
 
 const SECURITY_COVERAGE_ROWS = [
   { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
@@ -1622,6 +1653,8 @@ export default function SecurityScreen() {
     savedStateOnly,
   };
 
+  const activeSecurityDetailsMeta = securityDetailShellMeta(activeSecurityDetails);
+
 
   return (
     <>
@@ -1751,11 +1784,6 @@ export default function SecurityScreen() {
                           <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
                           <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
                         </div>
-                        {selectedFinding === item ? (
-                          <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
-                            <SecurityFindingDetailsLazy finding={item} context={remediationContext} onClose={closeFindingDetails} />
-                          </Suspense>
-                        ) : null}
                       </div>
                     </div>
                   );
@@ -1840,11 +1868,45 @@ export default function SecurityScreen() {
         </aside>
       </section>
 
-      {activeSecurityDetails ? (
+      <LiteSheet
+        open={Boolean(activeSecurityDetails)}
+        onClose={closeSecurityDetails}
+        eyebrow={activeSecurityDetailsMeta.eyebrow}
+        title={activeSecurityDetailsMeta.title}
+        description={activeSecurityDetailsMeta.description}
+        layerClassName="lite-security-phase3-layer"
+        className="lite-security-phase3-panel lite-security-phase3-details-shell"
+        bodyClassName="lite-security-phase3-scroll"
+        headerClassName="lite-security-phase3-head"
+        closeClassName="lite-security-phase3-close"
+        gripClassName="lite-security-phase3-grip"
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true' }}
+      >
         <Suspense fallback={<div className="lite-security-details-loading">Loading Security details…</div>}>
-          <SecurityProgressiveDetailsLazy type={activeSecurityDetails} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />
+          <SecurityProgressiveDetailsLazy type={activeSecurityDetails || 'evidence'} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />
         </Suspense>
-      ) : null}
+      </LiteSheet>
+
+      <LiteSheet
+        open={Boolean(selectedFinding)}
+        onClose={closeFindingDetails}
+        eyebrow="Finding Details"
+        title={selectedFinding ? securityFindingLabel(selectedFinding) : 'Finding details'}
+        description="Review one finding at a time. Technical details stay collapsed and sanitized."
+        layerClassName="lite-security-phase3-layer"
+        className="lite-security-phase3-panel lite-security-phase3-finding-shell"
+        bodyClassName="lite-security-phase3-scroll"
+        headerClassName="lite-security-phase3-head"
+        closeClassName="lite-security-phase3-close"
+        gripClassName="lite-security-phase3-grip"
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true' }}
+      >
+        {selectedFinding ? (
+          <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
+            <SecurityFindingDetailsLazy finding={selectedFinding} context={remediationContext} onClose={closeFindingDetails} />
+          </Suspense>
+        ) : null}
+      </LiteSheet>
 
       {activeSecurityDetails === 'legacyEvidenceNeverMounts' && (evidence || evidenceError || evidenceLoading) ? (
         <section className="lite-security-evidence-dropdown" aria-label="Sanitized security evidence summary" aria-live="polite">
