@@ -5236,6 +5236,23 @@ def test_lite_security_details_preserve_backend_only_evidence_boundary():
     assert "liteApi.securityEvidence" in security
 
 
+
+def test_lite_security_flow_guards_against_react_185_update_loop():
+    hook = Path("src/hooks/useLiteSecurityCheckFlow.js").read_text()
+
+    assert "useRef" in hook
+    assert "SECURITY_FLOW_BACKEND_STATE_SEND_GUARD" in hook
+    assert "lastBackendStateSignatureRef" in hook
+    assert "backendStateSignature" in hook
+    assert "lastBackendStateSignatureRef.current === backendStateSignature" in hook
+    assert "lastBackendStateSignatureRef.current = backendStateSignature" in hook
+    effect_body = hook.partition("useEffect(() =>")[2].partition("  }, [")[0]
+    assert "security," not in effect_body
+    assert "backendReachable" in hook
+    assert "runStatus" in hook
+    assert "workerPickedUp" in hook
+    assert "evidenceSaved" in hook
+
 def test_lite_security_render_reduction_preserves_polling_and_actions():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
     finding_details = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
