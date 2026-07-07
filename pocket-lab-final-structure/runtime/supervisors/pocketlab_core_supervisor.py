@@ -23,12 +23,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-SUPERVISOR_VERSION = "1.0.0-lite-core-supervisor"
+SUPERVISOR_VERSION = "1.0.1-lite-core-supervisor"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_API_PORT = 8080
 DEFAULT_CADDY_PORT = 8443
 DEFAULT_NATS_PORT = 4222
+API_NATS_CLIENT_UNHEALTHY_EVENT = "api_nats_client_unhealthy_observed"
 
 _STOP = False
 
@@ -281,8 +282,22 @@ class LiteCoreSupervisor:
             if not is_online(statuses.get("pocket-api", "missing")):
                 actions.append(self.restart_pm2("pocket-api", "api_pm2_not_online"))
             elif observed["checks"].get("api_nats_connected") is not True:
-                actions.append(self.restart_pm2("pocket-api", "api_nats_client_unhealthy"))
-                actions.append(self.restart_pm2("pocket-worker", "api_nats_client_unhealthy_refresh_worker"))
+                # Do not restart a healthy FastAPI process merely because its own
+                # NATS status probe is briefly degraded.  App actions and UI
+                # refetches can create a short reconnect window on Android/Termux;
+                # restarting the API here makes the UI stale and turns a recoverable
+                # NATS client reconnect into visible control-plane downtime.  Keep
+                # evidence for observability and let the API/worker NATS clients
+                # reconnect in-process.  Hard repairs remain reserved for missing
+                # PM2 processes or an actually unreachable NATS server.
+                event = {
+                    "event": API_NATS_CLIENT_UNHEALTHY_EVENT,
+                    "service": "pocket-api",
+                    "reason": "api_nats_client_probe_degraded",
+                    "acted": False,
+                }
+                self._append_event(event)
+                actions.append(event)
 
             if not is_online(statuses.get("pocket-worker", "missing")):
                 actions.append(self.restart_pm2("pocket-worker", "worker_pm2_not_online"))
