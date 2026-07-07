@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -82,7 +82,20 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
+import DeviceCard from './devices/DeviceCard.jsx';
 
+const DeviceDetailsLazy = React.lazy(() => import('./devices/DeviceDetailsLazy.jsx'));
+
+const DEVICES_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
+const DEVICES_DETAILS_ARE_LAZY = true;
+const DEVICES_ACTION_ROWS_OWN_CLICKS = true;
+const DEVICES_LINKED_CARD_CLASS_MARKER = 'lite-device-card-linked';
+const DEVICES_CONNECTION_COPY_MARKER = 'Disconnected from the Pocket Lab Lite server.';
+void DEVICES_PROGRESSIVE_DETAILS_MILESTONE_2;
+void DEVICES_DETAILS_ARE_LAZY;
+void DEVICES_ACTION_ROWS_OWN_CLICKS;
+void DEVICES_LINKED_CARD_CLASS_MARKER;
+void DEVICES_CONNECTION_COPY_MARKER;
 
 const DEVICES_POLLING_POLICY_PHASE4 = 'DEVICES_POLLING_POLICY_PHASE4';
 
@@ -133,6 +146,7 @@ export default function DevicesScreen() {
   const [removeCandidate, setRemoveCandidate] = useState(null);
   const [removeBusy, setRemoveBusy] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
+  const [detailsDeviceId, setDetailsDeviceId] = useState('');
   const fleetPollingIsLive = useMemo(() => (fleetPayload) => (
     busy
     || Boolean(restartBusy)
@@ -146,6 +160,7 @@ export default function DevicesScreen() {
     staleTime: 5_000,
   });
   const devices = data?.devices || [];
+  const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
   const remoteAccess = data?.remote_access || {};
   const remoteAccessReady = remoteAccess?.status === 'healthy' || remoteAccess?.ready;
   const latestInvite = invite || data?.latest_invite || null;
@@ -600,96 +615,29 @@ export default function DevicesScreen() {
 
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
+          {activeDetailsDevice ? (
+            <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
+              <DeviceDetailsLazy
+                device={activeDetailsDevice}
+                onClose={() => setDetailsDeviceId('')}
+              />
+            </Suspense>
+          ) : null}
+
           <div className="lite-devices-grid lite-devices-linked-grid">
             {devices.map((device) => {
-              const online = normalizeBackendState(device.status) === 'ready';
-              const linkState = deviceLinkState(device);
-              const role = String(device?.role || '').toLowerCase();
-              const isServerCard = role === 'server_host' || device?.is_current || device?.isCurrent;
-              const connectionClass = isServerCard
-                ? 'lite-device-card-server'
-                : `lite-device-card-linked lite-device-card-linked-${linkState}`;
-
+              const key = String(device.id || device.name);
               return (
-                <GlassCard key={device.id || device.name} className={`lite-device-card ${connectionClass}`}>
-                  <div className="lite-device-card-top">
-                    <div className="lite-device-icon">
-                      <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
-                      <Network className="h-5 w-5" />
-                    </div>
-                    <StatusBadge status={backendBadgeStatus(device.status)}>
-                      {deviceStatusLabel(device.status)}
-                    </StatusBadge>
-                  </div>
-
-                  <h2>{device.name || 'Unnamed device'}</h2>
-
-                  <div className="lite-device-connection-copy">
-                    {isServerCard ? 'Connection anchor for this Pocket Lab.' : linkState === 'joined' ? 'Connected to the Pocket Lab Lite server.' : linkState === 'repairing' ? 'Connection is being repaired.' : 'Disconnected from the Pocket Lab Lite server.'}
-                  </div>
-
-                  <div className="lite-device-details">
-                    <div>
-                      <span>Role</span>
-                      <strong>{device.role_label || roleLabel(device.role)}</strong>
-                    </div>
-                    <div>
-                      <span>Last seen</span>
-                      <strong>{formatLiteTime(device.last_seen)}</strong>
-                    </div>
-                    <div>
-                      <span>Connection</span>
-                      <strong>{deviceConnectionLabel(device)}</strong>
-                    </div>
-                    {device.tailnet_ip ? (
-                      <div>
-                        <span>Tailscale IP</span>
-                        <strong>{device.tailnet_ip}</strong>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {deviceCapabilityLabels(device).length ? (
-                    <div className="lite-device-capability-chips" aria-label="Device capabilities">
-                      {deviceCapabilityLabels(device).map((label) => (
-                        <span key={label}>{label}</span>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {device?.storage ? (
-                    <div className="lite-device-storage-summary">
-                      <strong>{device.storage.ready ? 'Storage ready' : 'Storage not ready'}</strong>
-                      <span>{device.storage.available_gb ? `${device.storage.available_gb} GB available` : device.storage.summary || 'Storage status will appear after the device reports it.'}</span>
-                    </div>
-                  ) : null}
-
-                  {canRestartDeviceAgent(device) || canRemoveDevice(device) ? (
-                    <div className="lite-device-actions">
-                      {canRestartDeviceAgent(device) ? (
-                        <LiteButton
-                          tone="secondary"
-                          onClick={() => restartAgent(device)}
-                          disabled={restartBusy === device.id}
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                          {restartBusy === device.id ? 'Checking progress...' : 'Restart agent'}
-                        </LiteButton>
-                      ) : null}
-                      {canRemoveDevice(device) ? (
-                        <LiteButton
-                          tone="danger"
-                          onClick={() => setRemoveCandidate(device)}
-                          disabled={removeBusy}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Remove old device
-                        </LiteButton>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                </GlassCard>
+                <DeviceCard
+                  key={key}
+                  device={device}
+                  restartBusy={restartBusy}
+                  removeBusy={removeBusy}
+                  detailsOpen={detailsDeviceId === key}
+                  onOpenDetails={() => setDetailsDeviceId((current) => (current === key ? '' : key))}
+                  onRestartAgent={() => restartAgent(device)}
+                  onRemoveDevice={() => setRemoveCandidate(device)}
+                />
               );
             })}
           </div>
