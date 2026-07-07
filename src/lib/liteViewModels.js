@@ -1,5 +1,5 @@
 const UNSAFE_VIEW_MODEL_KEY_PATTERN = /token|secret|password|credential|api[_-]?key|apikey|hash|private[_-]?key|invite[_-]?token|bootstrap|command[_-]?payload|raw[_-]?(log|logs|path|evidence)|evidence[_-]?path|private[_-]?path|restic[_-]?password|vault|unseal|bearer|authorization|nats/i;
-const UNSAFE_VIEW_MODEL_VALUE_PATTERN = /(bearer\s+[^\s]+|token=|password=|api[_-]?key=|secret=|authorization:\s*bearer|nats:\/\/[^\s/]+:[^\s@]+@|-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----)/i;
+const UNSAFE_VIEW_MODEL_VALUE_PATTERN = /(bearer\s+[^\s]+|token=|password=|api[_-]?key=|secret=|authorization:\s*bearer|nats:\/\/[^\s/]+:[^\s@]+@|-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----|\/data\/data\/|\/storage\/emulated\/|\/home\/[^\s/]+\/|\/mnt\/[a-z]\/)/i;
 const MAX_DETAIL_ITEMS = 6;
 const MAX_TECHNICAL_ITEMS = 8;
 
@@ -829,4 +829,329 @@ export function getLiteDeviceMutationInvalidations(actionId = '', result = {}) {
   );
   if (statusChanged) keys.push(['lite', 'status']);
   return keys;
+}
+
+
+export const LITE_SECURITY_VIEW_MODEL_VERSION = 'lite-security-s3-v1';
+
+const SECURITY_LIVE_STATUSES = new Set([
+  'queued',
+  'pending',
+  'accepted',
+  'running',
+  'working',
+  'executing',
+  'in_progress',
+  'scanning',
+  'checking',
+]);
+
+function normalizeSecurityStatus(value = '') {
+  return normalizeStatus(value || '');
+}
+
+function safeNumber(value, fallback = 0) {
+  const next = Number(value ?? fallback);
+  return Number.isFinite(next) ? next : fallback;
+}
+
+function safeBool(value) {
+  return Boolean(value === true || value === 'true' || value === 1 || value === '1');
+}
+
+function normalizeSecurityFinding(finding = {}) {
+  if (!isObject(finding)) return null;
+  return copySafeKeys({
+    id: safeString(finding.id || finding.finding_id || finding.title || finding.summary || 'finding'),
+    title: safeString(finding.title || finding.summary || finding.name || 'Security review item'),
+    summary: safeString(finding.summary || finding.detail || finding.message || ''),
+    detail: safeString(finding.detail || finding.description || ''),
+    status: normalizeSecurityStatus(finding.status || 'review'),
+    severity: safeString(finding.severity || finding.level || 'review'),
+    level: safeString(finding.level || finding.severity || 'review'),
+    category: safeString(finding.category || finding.type || finding.source_type || ''),
+    type: safeString(finding.type || finding.category || ''),
+    source: safeString(finding.source || finding.tool || finding.scanner || ''),
+    tool: safeString(finding.tool || finding.scanner || finding.source || ''),
+    scanner: safeString(finding.scanner || finding.tool || ''),
+    source_type: safeString(finding.source_type || ''),
+    component: safeString(finding.component || finding.package || finding.target || finding.resource || ''),
+    package: safeString(finding.package || ''),
+    target: safeString(finding.target || ''),
+    resource: safeString(finding.resource || ''),
+    location: safeString(finding.location || finding.relative_path || ''),
+    relative_path: safeString(finding.relative_path || ''),
+    file: safeString(finding.file || ''),
+    path: safeString(finding.path || ''),
+    recommendation: safeString(finding.recommendation || finding.fix || finding.next_step || ''),
+    evidence: safeString(finding.evidence || ''),
+    evidence_ref: safeString(finding.evidence_ref || ''),
+    evidence_file: safeString(finding.evidence_file || ''),
+    evidence_path: safeString(finding.evidence_path || ''),
+    evidence_refs: safeList(finding.evidence_refs),
+  }, [
+    'id', 'title', 'summary', 'detail', 'status', 'severity', 'level', 'category', 'type', 'source',
+    'tool', 'scanner', 'source_type', 'component', 'package', 'target', 'resource', 'location',
+    'relative_path', 'file', 'path', 'recommendation', 'evidence', 'evidence_ref', 'evidence_file',
+    'evidence_path', 'evidence_refs',
+  ]);
+}
+
+function normalizeSecurityRun(run = {}) {
+  if (!isObject(run)) return null;
+  return copySafeKeys({
+    run_id: safeString(run.run_id || run.id || ''),
+    status: normalizeSecurityStatus(run.status || run.state || ''),
+    state: normalizeSecurityStatus(run.state || run.status || ''),
+    phase: normalizeSecurityStatus(run.phase || ''),
+    started_at: safeIso(run.started_at),
+    completed_at: safeIso(run.completed_at),
+    updated_at: safeIso(run.updated_at || run.checked_at),
+    duration_seconds: safeNumber(run.duration_seconds, 0),
+    tools: safeList(run.tools || ['lynis', 'trivy']),
+    critical_count: safeNumber(run.critical_count, 0),
+    high_count: safeNumber(run.high_count, 0),
+    medium_count: safeNumber(run.medium_count, 0),
+    low_count: safeNumber(run.low_count, 0),
+    partial_results: safeBool(run.partial_results),
+    sbom_saved: safeBool(run.sbom_saved),
+    evidence_refs: safeList(run.evidence_refs),
+    tool_results: selectSecurityToolResultsView(run.tool_results),
+    execution_timeline: selectSecurityTimelineView({ execution_timeline: run.execution_timeline }),
+  }, [
+    'run_id', 'status', 'state', 'phase', 'started_at', 'completed_at', 'updated_at', 'duration_seconds',
+    'tools', 'critical_count', 'high_count', 'medium_count', 'low_count', 'partial_results', 'sbom_saved',
+    'evidence_refs', 'tool_results', 'execution_timeline',
+  ]);
+}
+
+export function selectSecurityProgressView(payload = {}) {
+  const progress = payload?.scan_progress || payload?.progress || payload?.current_progress || null;
+  if (!isObject(progress)) return null;
+  return copySafeKeys({
+    status: normalizeSecurityStatus(progress.status || progress.state || progress.phase || ''),
+    state: normalizeSecurityStatus(progress.state || progress.status || ''),
+    phase: normalizeSecurityStatus(progress.phase || ''),
+    stage: safeString(progress.stage || progress.label || ''),
+    step: safeNumber(progress.step, 0),
+    steps_total: safeNumber(progress.steps_total || progress.total_steps, 0),
+    elapsed_seconds: safeNumber(progress.elapsed_seconds, 0),
+    estimated_total_seconds: safeNumber(progress.estimated_total_seconds, 0),
+    estimated_remaining_seconds: safeNumber(progress.estimated_remaining_seconds, 0),
+    estimated_remaining_label: safeString(progress.estimated_remaining_label || ''),
+    percent: Math.max(0, Math.min(100, safeNumber(progress.percent, 0))),
+    running: safeBool(progress.running || progress.operation_running || progress.in_progress),
+    operation_running: safeBool(progress.operation_running || progress.running || progress.in_progress),
+    in_progress: safeBool(progress.in_progress || progress.running || progress.operation_running),
+    updated_at: safeIso(progress.updated_at || progress.checked_at),
+  }, [
+    'status', 'state', 'phase', 'stage', 'step', 'steps_total', 'elapsed_seconds', 'estimated_total_seconds',
+    'estimated_remaining_seconds', 'estimated_remaining_label', 'percent', 'running', 'operation_running',
+    'in_progress', 'updated_at',
+  ]);
+}
+
+export function selectSecurityTimelineView(payload = {}) {
+  const timeline = [payload?.execution_timeline, payload?.timeline, payload?.last_run?.execution_timeline]
+    .find((items) => Array.isArray(items)) || [];
+  return timeline.slice(0, 8).map((step, index) => copySafeKeys({
+    key: safeString(step?.key || step?.id || `step_${index + 1}`),
+    title: safeString(step?.title || step?.label || 'Security step'),
+    detail: safeString(step?.detail || step?.summary || ''),
+    status: normalizeSecurityStatus(step?.status || step?.state || 'waiting'),
+    state: normalizeSecurityStatus(step?.state || step?.status || 'waiting'),
+    tool: safeString(step?.tool || ''),
+    updated_at: safeIso(step?.updated_at || step?.checked_at),
+  }, ['key', 'title', 'detail', 'status', 'state', 'tool', 'updated_at']));
+}
+
+export function selectSecurityFindingDeltaView(payload = {}) {
+  const delta = isObject(payload?.finding_delta) ? payload.finding_delta : {};
+  const normalizeDeltaList = (items) => (Array.isArray(items) ? items : []).slice(0, 8).map(normalizeSecurityFinding).filter(Boolean);
+  return {
+    new_count: safeNumber(delta.new_count, 0),
+    resolved_count: safeNumber(delta.resolved_count, 0),
+    unchanged_count: safeNumber(delta.unchanged_count, 0),
+    still_present_count: safeNumber(delta.still_present_count ?? delta.unchanged_count, 0),
+    new: normalizeDeltaList(delta.new),
+    resolved: normalizeDeltaList(delta.resolved),
+    unchanged: normalizeDeltaList(delta.unchanged || delta.still_present),
+    still_present: normalizeDeltaList(delta.still_present || delta.unchanged),
+    summary: safeString(delta.summary || ''),
+    updated_at: safeIso(delta.updated_at || delta.checked_at),
+  };
+}
+
+export function selectSecurityHistorySummaryView(payload = {}) {
+  const history = Array.isArray(payload?.history) ? payload.history : [];
+  return history.slice(0, 8).map((item) => copySafeKeys({
+    run_id: safeString(item?.run_id || item?.id || ''),
+    status: normalizeSecurityStatus(item?.status || ''),
+    score: safeNumber(item?.score, 0),
+    summary: safeString(item?.summary || ''),
+    completed_at: safeIso(item?.completed_at || item?.updated_at || item?.checked_at),
+    started_at: safeIso(item?.started_at),
+    duration_seconds: safeNumber(item?.duration_seconds, 0),
+    critical_count: safeNumber(item?.critical_count, 0),
+    high_count: safeNumber(item?.high_count, 0),
+    medium_count: safeNumber(item?.medium_count, 0),
+    low_count: safeNumber(item?.low_count, 0),
+    evidence_count: safeNumber(item?.evidence_count, 0),
+  }, [
+    'run_id', 'status', 'score', 'summary', 'completed_at', 'started_at', 'duration_seconds',
+    'critical_count', 'high_count', 'medium_count', 'low_count', 'evidence_count',
+  ]));
+}
+
+export function selectSecurityToolResultsView(toolResults = {}) {
+  if (!isObject(toolResults)) return {};
+  return Object.entries(toolResults).reduce((safe, [tool, result]) => {
+    if (!isObject(result)) return safe;
+    const safeTool = safeString(tool || 'tool');
+    if (!safeTool) return safe;
+    safe[safeTool] = copySafeKeys({
+      status: normalizeSecurityStatus(result.status || result.state || ''),
+      summary: safeString(result.summary || result.message || ''),
+      completed_at: safeIso(result.completed_at),
+      duration_seconds: safeNumber(result.duration_seconds, 0),
+      finding_count: safeNumber(result.finding_count || result.findings_count, 0),
+      sbom_saved: safeBool(result.sbom_saved),
+      partial: safeBool(result.partial || result.partial_results),
+    }, ['status', 'summary', 'completed_at', 'duration_seconds', 'finding_count', 'sbom_saved', 'partial']);
+    return safe;
+  }, {});
+}
+
+export function selectSecurityEvidenceSummaryView(payload = {}) {
+  const evidenceRefs = safeList(payload?.evidence_refs).slice(0, 8);
+  const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
+  return {
+    evidence_saved: safeBool(payload?.evidence_saved || evidenceRefs.length > 0 || lastRun?.evidence_refs?.length > 0),
+    evidence_count: safeNumber(payload?.evidence_count || evidenceRefs.length || lastRun?.evidence_refs?.length, 0),
+    evidence_refs: evidenceRefs,
+    latest_run_id: safeString(lastRun?.run_id || ''),
+    sbom_saved: safeBool(payload?.sbom_saved || lastRun?.sbom_saved),
+    sanitized: true,
+    summary: safeString(payload?.evidence_summary || payload?.evidence?.summary || ''),
+    updated_at: safeIso(payload?.evidence_updated_at || payload?.updated_at || payload?.checked_at),
+  };
+}
+
+export function selectSecurityFindingsView(payload = {}) {
+  const findings = Array.isArray(payload?.findings) ? payload.findings : [];
+  const critical = Array.isArray(payload?.critical_issues) ? payload.critical_issues : [];
+  return {
+    findings: findings.slice(0, 20).map(normalizeSecurityFinding).filter(Boolean),
+    critical_issues: critical.slice(0, 12).map(normalizeSecurityFinding).filter(Boolean),
+    items_to_review: safeNumber(payload?.items_to_review ?? payload?.findings_count ?? findings.length, 0),
+    findings_count: safeNumber(payload?.findings_count ?? findings.length, findings.length),
+  };
+}
+
+export function selectSecuritySummaryView(payload = {}) {
+  if (payload?.view_model === 'security-screen-s3-v1' || payload?.view_model === 'security-summary-s3-v1') return payload;
+  const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
+  const findings = selectSecurityFindingsView(payload);
+  const evidence = selectSecurityEvidenceSummaryView(payload);
+  return withSnapshotMeta(payload, {
+    view_model: 'security-summary-s3-v1',
+    version: LITE_SECURITY_VIEW_MODEL_VERSION,
+    status: normalizeSecurityStatus(payload?.status || lastRun?.status || 'unknown'),
+    summary: safeString(payload?.summary || 'Security status is available.'),
+    score: Math.max(0, Math.min(100, safeNumber(payload?.score, 0))),
+    checks_reviewed: safeNumber(payload?.checks_reviewed ?? payload?.checks_count, 0),
+    checks_count: safeNumber(payload?.checks_count ?? payload?.checks_reviewed, 0),
+    items_to_review: findings.items_to_review,
+    findings_count: findings.findings_count,
+    evidence_count: evidence.evidence_count,
+    evidence_saved: evidence.evidence_saved,
+    evidence_refs: evidence.evidence_refs,
+    sbom_saved: evidence.sbom_saved,
+    last_run: lastRun,
+    scan_progress: selectSecurityProgressView(payload),
+    execution_timeline: selectSecurityTimelineView(payload),
+    tool_results: selectSecurityToolResultsView(payload?.tool_results || lastRun?.tool_results),
+    finding_delta: selectSecurityFindingDeltaView(payload),
+    history: selectSecurityHistorySummaryView(payload),
+    findings: findings.findings,
+    critical_issues: findings.critical_issues,
+    component_posture: Array.isArray(payload?.component_posture)
+      ? payload.component_posture.slice(0, 12).map((item) => copySafeKeys(item, ['id', 'label', 'name', 'status', 'summary', 'updated_at']))
+      : [],
+    guidance: safeList(payload?.guidance),
+    protected_apps: Array.isArray(payload?.protected_apps)
+      ? payload.protected_apps.slice(0, 8).map((item) => copySafeKeys(item, ['app_id', 'label', 'status', 'summary', 'last_checked_at', 'updated_at']))
+      : [],
+    app_security_profiles: isObject(payload?.app_security_profiles)
+      ? {
+          apps: Array.isArray(payload.app_security_profiles.apps)
+            ? payload.app_security_profiles.apps.slice(0, 8).map((item) => copySafeKeys(item, ['app_id', 'label', 'status', 'summary', 'last_checked_at', 'updated_at']))
+            : [],
+        }
+      : undefined,
+    app_lifecycle_profiles: isObject(payload?.app_lifecycle_profiles)
+      ? {
+          apps: Array.isArray(payload.app_lifecycle_profiles.apps)
+            ? payload.app_lifecycle_profiles.apps.slice(0, 8).map((item) => copySafeKeys(item, ['app_id', 'label', 'status', 'summary', 'last_checked_at', 'updated_at']))
+            : [],
+        }
+      : undefined,
+    updated_at: safeIso(payload?.updated_at || payload?.checked_at),
+    checked_at: safeIso(payload?.checked_at || payload?.updated_at),
+  });
+}
+
+export function selectSecurityScreenView(payload = {}) {
+  if (payload?.view_model === 'security-screen-s3-v1') return payload;
+  const summary = selectSecuritySummaryView(payload || {});
+  return withSnapshotMeta(payload, {
+    ...summary,
+    view_model: 'security-screen-s3-v1',
+    version: LITE_SECURITY_VIEW_MODEL_VERSION,
+    security_summary: {
+      status: summary.status,
+      summary: summary.summary,
+      score: summary.score,
+      items_to_review: summary.items_to_review,
+      evidence_count: summary.evidence_count,
+      checked_at: summary.checked_at,
+      updated_at: summary.updated_at,
+    },
+    progress_summary: summary.scan_progress,
+    timeline_summary: summary.execution_timeline,
+    finding_delta_summary: summary.finding_delta,
+    history_summary: summary.history,
+    evidence_summary: selectSecurityEvidenceSummaryView(summary),
+    live: isLiteSecurityViewLive(summary),
+  });
+}
+
+export function isLiteSecurityViewLive(payload = {}) {
+  if (!payload || typeof payload !== 'object') return false;
+  const progress = payload.scan_progress || payload.progress || payload.progress_summary || {};
+  const lastRun = payload.last_run || payload.current_run || payload.latest_run || {};
+  const statuses = [
+    payload.status,
+    payload.state,
+    payload.phase,
+    progress.status,
+    progress.state,
+    progress.phase,
+    lastRun.status,
+    lastRun.state,
+    lastRun.phase,
+  ].map(normalizeSecurityStatus);
+  if (payload.live === true) return true;
+  if (progress.running === true || progress.operation_running === true || progress.in_progress === true) return true;
+  if (statuses.some((status) => SECURITY_LIVE_STATUSES.has(status))) return true;
+  const timeline = Array.isArray(payload.execution_timeline) ? payload.execution_timeline : [];
+  return timeline.some((step) => SECURITY_LIVE_STATUSES.has(normalizeSecurityStatus(step?.status || step?.state)));
+}
+
+export function getLiteSecurityMutationInvalidations(actionId = '', result = {}) {
+  const normalized = normalizeSecurityStatus(actionId || result?.action_id || result?.action || result?.status || '');
+  if (['security_check', 'run_safety_check', 'safety_check', 'check_security_app', 'check_app_security'].includes(normalized)) {
+    return [['lite', 'security']];
+  }
+  return [['lite', 'security']];
 }
