@@ -2,9 +2,18 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteSharedElementCue } from '../LiteMotion.jsx';
+import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 
 const APP_ACTION_DETAILS_PANEL_SOURCE_MARKER = 'AppActionDetailsPanel';
+const APP_ACTION_DETAILS_USES_PROGRESSIVE_FOUNDATION = true;
+const APP_ACTION_DETAILS_HISTORY_IS_LAZY = true;
+const APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY = 'normal App Catalog details do not fetch backend evidence endpoints';
+const APP_ACTION_DETAILS_VISIBLE_SUMMARY_MARKERS = ['Last result', 'Saved for troubleshooting'];
 void APP_ACTION_DETAILS_PANEL_SOURCE_MARKER;
+void APP_ACTION_DETAILS_USES_PROGRESSIVE_FOUNDATION;
+void APP_ACTION_DETAILS_HISTORY_IS_LAZY;
+void APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY;
+void APP_ACTION_DETAILS_VISIBLE_SUMMARY_MARKERS;
 
 function normalizedActionStatus(value) {
   return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -95,6 +104,38 @@ function actionDetailsTone(details = {}, saved = {}) {
   return 'neutral';
 }
 
+function compactTechnicalRows(actionId, details = {}, saved = {}, technical = []) {
+  const rows = [
+    { label: 'Action id', value: actionId },
+    { label: 'Status', value: details.status || 'ready' },
+    { label: 'Backend owner', value: details.execution_owner || saved.execution_owner || 'FastAPI and backend worker' },
+    details.operation_id ? { label: 'Operation id', value: details.operation_id } : null,
+    details.sanitized_reference_id ? { label: 'Sanitized reference', value: details.sanitized_reference_id } : null,
+    details.first_ran_at ? { label: 'First run', value: formatLiteTime(details.first_ran_at) } : null,
+    details.last_ran_at ? { label: 'Last run', value: formatLiteTime(details.last_ran_at) } : null,
+    saved?.receipt_id ? { label: 'Backend record', value: saved.receipt_id } : null,
+  ].filter(Boolean);
+
+  technical.forEach((item) => rows.push({ label: 'Detail', value: item }));
+  return rows;
+}
+
+function compactHistoryItems(details = {}, runLabels, saved = {}) {
+  const history = Array.isArray(details.run_history) ? details.run_history : [];
+  if (history.length) return history;
+  return [];
+}
+
+function historySummary(details = {}, runLabels, saved = {}) {
+  const hasEvidence = Boolean(details.has_run_evidence || saved.saved);
+  const parts = [
+    `${runLabels.first}: ${formatRunHistoryValue(details.first_ran_at, hasEvidence)}`,
+    `${runLabels.last}: ${formatRunHistoryValue(details.last_ran_at, hasEvidence)}`,
+  ];
+  if (details.run_count) parts.push(`${runLabels.count}: ${details.run_count}`);
+  return parts.join(' · ');
+}
+
 export default function AppActionDetailsLazy({ details, actionId = '', onClose }) {
   if (!details) return null;
   const happened = actionDetailList(actionId, details.what_happened, [details.summary || 'Action details are available.']);
@@ -109,6 +150,7 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
     : { saved: false, backend_only: true, summary: 'No backend record was saved because this action did not run.' };
   const detailsTone = actionDetailsTone(details, saved);
   const runLabels = actionDetailRunHistoryLabels(actionId);
+  const display = getActionDisplayState(details.status || 'ready');
 
   return (
     <section className={`lite-app-action-details-panel is-${detailsTone}`} role="region" aria-label={`${details.title || 'Action'} details`}>
@@ -124,62 +166,28 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
         </button>
       </div>
 
-      <div className="lite-app-action-details-status">
-        <span>Last result</span>
-        <strong>{details.last_result || getActionDisplayState(details.status || 'ready').label}</strong>
-      </div>
-
-      <div className="lite-app-action-details-grid">
-        <div className="lite-app-action-detail-section lite-app-action-detail-section--run-history">
-          <strong>{runLabels.title}</strong>
-          <p>{runLabels.first}: {formatRunHistoryValue(details.first_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
-          <p>{runLabels.last}: {formatRunHistoryValue(details.last_ran_at, Boolean(details.has_run_evidence || saved.saved))}</p>
-          {details.run_count ? <p>{runLabels.count}: {details.run_count}</p> : null}
-        </div>
-        <div className="lite-app-action-detail-section">
-          <strong>What happened</strong>
-          {happened.map((item) => <p key={item}>{item}</p>)}
-        </div>
-        <div className="lite-app-action-detail-section">
-          <strong>What changed</strong>
-          {changed.map((item) => <p key={item}>{item}</p>)}
-        </div>
-        {needsAttention.length ? (
-          <div className="lite-app-action-detail-section lite-app-action-detail-section--attention">
-            <strong>What needs attention</strong>
-            {needsAttention.map((item) => <p key={item}>{item}</p>)}
-          </div>
-        ) : null}
-        <div className="lite-app-action-detail-section">
-          <strong>What did not happen</strong>
-          {didNotHappen.map((item) => <p key={item}>{item}</p>)}
-        </div>
-        {wouldHappen.length ? (
-          <div className="lite-app-action-detail-section">
-            <strong>What would happen after confirmation</strong>
-            {wouldHappen.map((item) => <p key={item}>{item}</p>)}
-          </div>
-        ) : null}
-        {willNotHappen.length ? (
-          <div className="lite-app-action-detail-section">
-            <strong>What will not happen by default</strong>
-            {willNotHappen.map((item) => <p key={item}>{item}</p>)}
-          </div>
-        ) : null}
-        <div className="lite-app-action-detail-section lite-app-action-detail-section--saved">
-          <strong>Saved for troubleshooting</strong>
-          <p>{actionDetailSavedSummary(actionId, saved)}</p>
-        </div>
-      </div>
-
-      {technical.length ? (
-        <details className="lite-app-action-technical-details">
-          <summary>Technical details</summary>
-          <div>
-            {technical.map((item) => <p key={item}>{item}</p>)}
-          </div>
-        </details>
-      ) : null}
+      <LiteProgressiveDetails
+        title={details.title || 'Action details'}
+        status={detailsTone}
+        statusLabel={details.last_result || display.label}
+        summary={details.summary || 'Action details are available.'}
+        what_happened={happened}
+        what_changed={changed}
+        what_needs_attention={needsAttention}
+        what_did_not_happen={didNotHappen}
+        what_would_happen_after_confirmation={wouldHappen}
+        what_will_not_happen_by_default={willNotHappen}
+        saved_for_troubleshooting={{ ...saved, summary: actionDetailSavedSummary(actionId, saved) }}
+        next_step={details.next_step || details.next_step_summary || ''}
+        technicalDetails={compactTechnicalRows(actionId, details, saved, technical)}
+        history={{
+          title: runLabels.title,
+          summary: historySummary(details, runLabels, saved),
+          items: compactHistoryItems(details, runLabels, saved),
+          enabled: true,
+          emptyMessage: 'History will appear here after more runs.',
+        }}
+      />
     </section>
   );
 }

@@ -10,12 +10,14 @@ from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_di
 def _lite_ui_source() -> str:
     lite_files = list(Path("src/lite").glob("Lite*.jsx"))
     lite_files.extend(Path("src/lite/catalog").glob("*.jsx"))
+    lite_files.extend(Path("src/lite/components").glob("*.jsx"))
     return "".join(path.read_text() for path in sorted(lite_files))
 
 
 def _lite_catalog_source() -> str:
     paths = [Path("src/lite/LiteCatalog.jsx")]
     paths.extend(sorted(Path("src/lite/catalog").glob("*.jsx")))
+    paths.extend(sorted(Path("src/lite/components").glob("*.jsx")))
     return "".join(path.read_text() for path in paths if path.exists())
 
 
@@ -4874,6 +4876,70 @@ def test_lite_security_recovery_phase5_polling_policy_source():
     assert "liteQueryPollingInterval" in policy
     assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
 
+
+
+def test_lite_progressive_details_components_exist():
+    expected_files = [
+        Path("src/lite/components/LiteProgressiveDetails.jsx"),
+        Path("src/lite/components/LiteTechnicalDetails.jsx"),
+        Path("src/lite/components/LiteHistorySection.jsx"),
+    ]
+    for path in expected_files:
+        assert path.exists()
+
+
+def test_lite_app_catalog_uses_progressive_details_foundation():
+    catalog = _lite_catalog_source()
+    details = Path("src/lite/catalog/AppActionDetailsLazy.jsx").read_text()
+    progressive = Path("src/lite/components/LiteProgressiveDetails.jsx").read_text()
+
+    assert "React.lazy" in Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+    assert "import('./AppActionDetailsLazy.jsx')" in Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+    assert "LiteProgressiveDetails" in details
+    assert "LiteTechnicalDetails" in progressive
+    assert "LiteHistorySection" in progressive
+    assert "Summary" not in details or "summary" in details
+    assert "What happened" in progressive
+    assert "What changed" in progressive
+    assert "What did not happen" in progressive
+    assert "Saved for troubleshooting" in progressive
+    assert "Next step" in progressive
+    assert "detailsActionId === entry.actionId" in catalog
+
+
+def test_lite_progressive_details_keeps_history_lazy_and_technical_collapsed():
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+    history = Path("src/lite/components/LiteHistorySection.jsx").read_text()
+    catalog = _lite_catalog_source()
+
+    assert "TECHNICAL_DETAILS_COLLAPSED_BY_DEFAULT" in technical
+    assert "const [open, setOpen] = useState(Boolean(defaultOpen))" in technical
+    assert "{open ? (" in technical
+    assert "HISTORY_SECTION_COLLAPSED_BY_DEFAULT" in history
+    assert "HISTORY_CONTENT_MOUNTS_ONLY_WHEN_OPENED" in history
+    assert "const [isOpen, setIsOpen] = useState(false)" in history
+    assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
+    assert "{shouldMountHistory ? (" in history
+    assert "data-lazy-history" in history
+    assert "hidden={!" not in catalog
+    assert "window.setInterval" not in catalog
+
+
+def test_lite_app_catalog_details_preserve_backend_only_evidence_boundary():
+    catalog = _lite_catalog_source()
+    details = Path("src/lite/catalog/AppActionDetailsLazy.jsx").read_text()
+    technical = Path("src/lite/components/LiteTechnicalDetails.jsx").read_text()
+
+    assert "APP_ACTION_DETAILS_BACKEND_EVIDENCE_BOUNDARY" in details
+    assert "normal App Catalog details do not fetch backend evidence endpoints" in details
+    assert "liteApi.appEvidence" not in catalog
+    assert "/api/lite/apps/{app_id}/evidence" not in catalog
+    assert "PhotoPrismEvidenceReceiptModal" not in catalog
+    assert "PhotoPrismEvidenceCard" not in catalog
+    assert "TECHNICAL_DETAILS_SANITIZED_GUARD" in technical
+    assert "SENSITIVE_DETAIL_PATTERN" in technical
+    assert "Technical details are sanitized and collapsed by default." in technical
+    assert "raw JSON" not in catalog
 
 def test_lite_app_catalog_phase_s1_render_reduction_source_contract():
     catalog_wrapper = Path("src/lite/LiteCatalog.jsx").read_text()
