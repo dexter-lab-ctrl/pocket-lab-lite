@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   Trash2,
   WifiOff,
-  X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
@@ -81,6 +80,14 @@ import {
   restartStepStateLabel,
   safeRestartSteps
 } from './LiteUi.jsx';
+
+
+const RECOVERY_RENDER_REDUCTION_MILESTONE_1 = true;
+const RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
+const RecoveryActionDetailsLazy = React.lazy(() => import('./recovery/RecoveryActionDetailsLazy.jsx'));
+const RecoveryBackupHistory = React.lazy(() => import('./recovery/RecoveryBackupHistory.jsx'));
+void RECOVERY_RENDER_REDUCTION_MILESTONE_1;
+void RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2;
 
 
 export const RECOVERY_POLLING_POLICY_PHASE5 = 'RECOVERY_POLLING_POLICY_PHASE5';
@@ -723,7 +730,7 @@ export default function RecoveryScreen() {
 
           <div className={`lite-recovery-flip-shell ${activePanel ? 'is-flipped' : ''}`}>
             <div className="lite-recovery-flip-inner">
-              <div className="lite-recovery-flip-face lite-recovery-flip-front" aria-hidden={Boolean(activePanel)}>
+              <div className="lite-recovery-flip-face lite-recovery-flip-front" data-active-panel={Boolean(activePanel)}>
                 <div className="lite-recovery-restore-chips">
                   <span className={latestBackupVerified ? 'is-ready' : ''}>Verified</span>
                   <span className={latestPreviewReady ? 'is-ready' : ''}>Preview ready</span>
@@ -758,36 +765,27 @@ export default function RecoveryScreen() {
                 ) : null}
               </div>
 
-              <div className="lite-recovery-flip-face lite-recovery-flip-back" aria-hidden={!activePanel}>
-                <button type="button" className="lite-recovery-flip-close" onClick={closeActionPanel} aria-label="Show restore controls">
-                  <X className="h-4 w-4" />
-                </button>
-                <div className="lite-recovery-flip-head">
-                  <span>{activePanel?.title || 'Restore readiness'}</span>
-                  <h3>{activePanel?.subtitle || 'Pocket Lab is preparing the restore path.'}</h3>
-                  {activePanel?.next ? <p>Next suggested action: <strong>{activePanel.next}</strong></p> : null}
-                </div>
-                <div className="lite-recovery-flip-readiness">
-                  {restoreSteps.map((step) => (
-                    <div key={step.key} className={step.complete ? 'is-complete' : ''}>
-                      <span>{step.complete ? '✓' : '•'}</span>
-                      <strong>{step.label}</strong>
-                      <small>{step.detail}</small>
-                    </div>
-                  ))}
-                </div>
-                <div className="lite-recovery-action-log">
-                  <strong>Friendly log</strong>
-                  {(activePanel?.logs || []).map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                </div>
-                {activeActionPanel === 'evidence' ? (
-                  <LiteButton disabled={!evidenceItems.length} tone="secondary" onClick={() => setEvidenceOpen(true)}>
-                    Open evidence details
-                  </LiteButton>
-                ) : null}
-              </div>
+              {activePanel ? (
+                <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading recovery details…</div>}>
+                  <RecoveryActionDetailsLazy
+                    actionKey={activeActionPanel}
+                    panel={activePanel}
+                    restoreSteps={restoreSteps}
+                    latestBackup={latestBackup}
+                    latestPreview={latestPreview}
+                    checkpoint={checkpoint}
+                    lastRestore={lastRestore}
+                    repository={repository}
+                    serviceRestart={serviceRestart}
+                    healthValidation={healthValidation}
+                    history={history}
+                    savedStateOnly={savedStateOnly}
+                    evidenceItems={evidenceItems}
+                    onClose={closeActionPanel}
+                    onOpenEvidence={() => setEvidenceOpen(true)}
+                  />
+                </React.Suspense>
+              ) : null}
             </div>
           </div>
 
@@ -816,44 +814,9 @@ export default function RecoveryScreen() {
         </GlassCard>
       </div>
 
-      <GlassCard className="lite-recovery-card mt-4 lite-recovery-history-card">
-        <div className="lite-recovery-card-head">
-          <div>
-            <h2>Backup history</h2>
-            <p>Available restore points and evidence receipts appear here.</p>
-          </div>
-          <StatusBadge status={history.length ? 'healthy' : 'unknown'}>{history.length} saved</StatusBadge>
-        </div>
-        {history.length ? (
-          <div className="lite-recovery-history">
-            {history.slice(0, 6).map((backup) => (
-              <div key={backup.backup_id} className="lite-recovery-history-row lite-recovery-history-row-premium">
-                <div>
-                  <strong>{backup.verification_status === 'verified' ? 'Backup verified and ready' : backup.summary || 'Backup created'}</strong>
-                  <span>{formatLiteTime(backup.created_at)} · {backup.engine || 'restic'} · {backup.included_file_count || 0} item(s)</span>
-                  <div className="lite-recovery-history-tags">
-                    <em>Encrypted</em>
-                    <em>{backup.verification_status === 'verified' ? 'Verified' : 'Needs verification'}</em>
-                    {latestPreviewReady ? <em>Preview ready</em> : null}
-                  </div>
-                </div>
-                <div className="lite-recovery-history-actions">
-                  <StatusBadge status={backup.verification_status === 'verified' ? 'healthy' : 'degraded'}>
-                    {backup.verification_status === 'verified' ? 'Verified' : 'Not verified'}
-                  </StatusBadge>
-                  <button type="button" onClick={() => setEvidenceOpen(true)}>Evidence</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <StateSurface
-            tone="empty"
-            title="No backups yet"
-            description="Use Backup Now to create your first encrypted local backup."
-          />
-        )}
-      </GlassCard>
+      <React.Suspense fallback={<div className="lite-recovery-history-loading">Loading backup history…</div>}>
+        <RecoveryBackupHistory history={history} latestPreviewReady={latestPreviewReady} savedStateOnly={savedStateOnly} />
+      </React.Suspense>
 
       {evidenceOpen ? (
         <div className="lite-recovery-evidence-backdrop" role="presentation" onClick={() => setEvidenceOpen(false)}>

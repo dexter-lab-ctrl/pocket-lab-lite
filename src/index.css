@@ -15837,3 +15837,50 @@ textarea {
     align-items: flex-start;
   }
 }
+
+/* Lite Recovery Milestone 1/2: render less and reveal details progressively. */
+.lite-recovery-details-loading,
+.lite-recovery-history-loading {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 20px;
+  padding: 1rem;
+  color: rgba(51, 65, 85, 0.78);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.lite-recovery-details-lazy {
+  display: block;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.lite-recovery-details-lazy .lite-progressive-details {
+  margin-top: 2.5rem;
+}
+
+.lite-recovery-readiness-section {
+  grid-column: 1 / -1;
+}
+
+.lite-recovery-history-card .lite-history-section {
+  margin-top: 1rem;
+}
+
+.lite-recovery-history-card .lite-history-section-list li {
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.lite-recovery-history-card[data-recovery-history-lazy="true"] .lite-progressive-disclosure-summary {
+  margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .lite-recovery-details-lazy {
+    padding: 0.75rem;
+  }
+
+  .lite-recovery-details-lazy .lite-progressive-details {
+    margin-top: 2.25rem;
+  }
+}
