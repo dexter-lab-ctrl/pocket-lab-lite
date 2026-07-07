@@ -26,7 +26,6 @@ import {
   Smartphone,
   Trash2,
 } from 'lucide-react';
-import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
 import { liteMutationInvalidations, useLiteMutation } from '../hooks/useLiteMutation.js';
 import { useLiteAppActionFlow } from '../hooks/useLiteAppActionFlow.js';
@@ -52,6 +51,11 @@ const APP_CATALOG_ACTION_ROWS_OWN_CLICKS = true;
 // Enterprise UI rule: action rows, action buttons, and Details buttons own their clicks.
 // Swipe gestures must not be bound to the action-row viewport.
 void APP_CATALOG_ACTION_ROWS_OWN_CLICKS;
+
+const APP_CATALOG_POLLING_POLICY_PHASE3 = true;
+// App Catalog polling is intentionally calmer at rest and faster only while
+// backend-owned app actions are live.
+void APP_CATALOG_POLLING_POLICY_PHASE3;
 
 const APP_CATALOG_PRIMARY_ACTIONS_OWN_CLICKS = true;
 // Enterprise UI rule: Open and Manage are primary visible buttons.
@@ -407,6 +411,67 @@ function normalizeAppActionsPayload(payload = {}) {
     media: payload?.media && typeof payload.media === 'object' ? payload.media : null,
     updated_at: payload?.updated_at || null,
   };
+}
+
+const APP_CATALOG_LIVE_ACTION_STATUSES = new Set([
+  'queued',
+  'pending',
+  'accepted',
+  'running',
+  'working',
+  'executing',
+  'waiting',
+  'in_progress',
+]);
+
+const APP_CATALOG_TERMINAL_ACTION_STATUSES = new Set([
+  'ready',
+  'succeeded',
+  'success',
+  'completed',
+  'complete',
+  'done',
+  'verified',
+  'failed',
+  'failure',
+  'error',
+  'blocked',
+  'cancelled',
+  'canceled',
+]);
+
+function isLiveAppCatalogActionStatus(value) {
+  return APP_CATALOG_LIVE_ACTION_STATUSES.has(normalizedActionValue(value));
+}
+
+function isTerminalAppCatalogActionStatus(value) {
+  return APP_CATALOG_TERMINAL_ACTION_STATUSES.has(normalizedActionValue(value));
+}
+
+function isLiveAppCatalogAction(action = {}) {
+  const progress = action?.progress || {};
+  const values = [
+    action?.status,
+    action?.state,
+    action?.phase,
+    progress?.status,
+    progress?.phase,
+    action?.result?.status,
+  ];
+  const live = Boolean(action?.running || progress?.running || action?.operation_running)
+    || values.some(isLiveAppCatalogActionStatus);
+  const terminal = values.some(isTerminalAppCatalogActionStatus);
+  return Boolean(live && !terminal);
+}
+
+function hasLivePhotoPrismAppActionsPayload(payload = {}) {
+  const snapshot = normalizeAppActionsPayload(payload || {});
+  const actions = Object.values(snapshot?.actions || {});
+  return Boolean(
+    snapshot?.media?.operation_running
+    || isLiveAppCatalogAction(snapshot?.media?.last_import || {})
+    || actions.some(isLiveAppCatalogAction)
+  );
 }
 
 function appSnapshotKey(app) {
@@ -1864,7 +1929,22 @@ function CatalogSkeletons() {
 
 
 export default function CatalogScreen({ onOpenWorkspace }) {
-  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.catalog, []);
+  const {
+    data,
+    loading,
+    error,
+    refresh,
+    cacheStatus,
+    refreshing,
+    backendReachable,
+    savedStateOnly,
+  } = useLiteQuery({
+    queryKey: liteQueryKeys.catalog(),
+    path: liteQueryPaths.catalog,
+    queryFn: liteApi.catalog,
+    pollingMode: 'relaxed',
+    isLive: () => false,
+  });
   const manageAppId = useLiteUiStore((state) => state.manageAppId);
   const setManageApp = useLiteUiStore((state) => state.setManageApp);
   const clearManageApp = useLiteUiStore((state) => state.clearManageApp);
@@ -1913,6 +1993,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
   const featuredApp = apps.find((app) => KNOWN_APP_NAMES.includes(app?.name) || String(app?.id || '').toLowerCase() === 'photoprism') || apps[0];
+  const appActionsLive = useCallback((payload) => Boolean(actionBusyKey) || hasLivePhotoPrismAppActionsPayload(payload), [actionBusyKey]);
   const {
     data: appActionsData,
     refresh: refreshPhotoprismActions,
@@ -1921,6 +2002,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     path: liteQueryPaths.appActions('photoprism'),
     queryFn: () => liteApi.appActions('photoprism'),
     enabled: apps.length === 0 || apps.some((app) => isPhotoPrismApp(app)),
+    pollingMode: 'normal',
+    isLive: appActionsLive,
+    staleTime: 5_000,
   });
   const appActionMutation = useLiteMutation({
     mutationFn: ({ appId = 'photoprism', actionId, payload = {} }) => liteApi.runAppAction(appId, actionId, payload),

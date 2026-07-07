@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -21,6 +21,7 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import {
   GlassCard,
   StatusBadge,
@@ -81,14 +82,54 @@ import {
   safeRestartSteps
 } from './LiteUi.jsx';
 
+
+export const RECOVERY_POLLING_POLICY_PHASE5 = 'RECOVERY_POLLING_POLICY_PHASE5';
+
+export function hasLiveRecoveryOperation(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  const latestBackup = payload.last_backup || payload.latest_backup || {};
+  const latestPreview = payload.latest_restore_preview || payload.restore_preview || {};
+  const lastRestore = payload.last_restore || payload.latest_restore || {};
+  const repository = payload.repository || {};
+  const operation = payload.current_operation || payload.latest_operation || payload.operation || {};
+  const statuses = [
+    payload.status,
+    payload.state,
+    payload.phase,
+    latestBackup.status,
+    latestBackup.verification_status,
+    latestPreview.status,
+    latestPreview.phase,
+    lastRestore.status,
+    lastRestore.phase,
+    repository.status,
+    operation.status,
+    operation.state,
+    operation.phase,
+  ];
+
+  if (statuses.some(isLiteLiveStatus)) return true;
+  if (payload.running === true || payload.operation_running === true || payload.in_progress === true) return true;
+  if (hasLiteLiveOperation(payload.operations || payload.history || payload.action_progress || operation.progress)) return true;
+  return false;
+}
+
 export default function RecoveryScreen() {
-  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.recovery, []);
   const [backupResult, setBackupResult] = useState(null);
   const [verifyResult, setVerifyResult] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
   const [restoreResult, setRestoreResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState('');
+  const [recoveryPollingBurstUntil, setRecoveryPollingBurstUntil] = useState(0);
+  const recoveryPollingIsLive = useCallback((payload) => (
+    Boolean(busy) || Date.now() < recoveryPollingBurstUntil || hasLiveRecoveryOperation(payload)
+  ), [busy, recoveryPollingBurstUntil]);
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.recovery, [], {
+    pollingMode: 'slow',
+    isLive: recoveryPollingIsLive,
+    staleTime: 15_000,
+  });
   const lastRecoveryActionRef = React.useRef('');
 
   React.useEffect(() => {
@@ -230,6 +271,11 @@ export default function RecoveryScreen() {
     setActiveActionPanel('');
   }
 
+  function beginRecoveryPollingBurst(action) {
+    lastRecoveryActionRef.current = action;
+    setRecoveryPollingBurstUntil(Date.now() + 45_000);
+  }
+
   async function copyEvidence(value, label) {
     const copied = await copyTextToClipboard(value);
     if (copied) {
@@ -242,6 +288,7 @@ export default function RecoveryScreen() {
     const flowCheck = recoveryFlow.requestBackup();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setBusy('backup');
+    beginRecoveryPollingBurst('backup');
     setBackupResult(null);
     setActionError(null);
     try {
@@ -260,6 +307,7 @@ export default function RecoveryScreen() {
   async function backUpApp(app) {
     if (!app?.app_id) return;
     setBusy(`app-backup:${app.app_id}`);
+    beginRecoveryPollingBurst(`app-backup:${app.app_id}`);
     setBackupResult(null);
     setActionError(null);
     try {
@@ -275,6 +323,7 @@ export default function RecoveryScreen() {
   async function previewAppRestore(app) {
     if (!app?.app_id) return;
     setBusy(`app-preview:${app.app_id}`);
+    beginRecoveryPollingBurst(`app-preview:${app.app_id}`);
     setPreviewResult(null);
     setActionError(null);
     try {
@@ -298,6 +347,7 @@ export default function RecoveryScreen() {
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     openActionPanel('verify');
     setBusy('verify');
+    beginRecoveryPollingBurst('verify');
     setVerifyResult(null);
     setActionError(null);
     try {
@@ -320,6 +370,7 @@ export default function RecoveryScreen() {
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     openActionPanel('preview');
     setBusy('preview');
+    beginRecoveryPollingBurst('preview');
     setPreviewResult(null);
     setActionError(null);
     try {
@@ -345,6 +396,7 @@ export default function RecoveryScreen() {
     if (!confirmed) { recoveryFlow.cancel(); return; }
     recoveryFlow.confirmRestore();
     setBusy('restore');
+    beginRecoveryPollingBurst('restore');
     setRestoreResult(null);
     setActionError(null);
     try {

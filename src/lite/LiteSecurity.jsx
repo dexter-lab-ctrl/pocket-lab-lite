@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -21,6 +21,7 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import {
   GlassCard,
   StatusBadge,
@@ -1168,11 +1169,47 @@ function SecurityScanQualityCard({ quality, collapsed = false, onToggle }) {
   );
 }
 
+
+export const SECURITY_POLLING_POLICY_PHASE5 = 'SECURITY_POLLING_POLICY_PHASE5';
+
+export function hasLiveSecurityOperation(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  const scanProgress = payload.scan_progress || payload.progress || {};
+  const lastRun = payload.last_run || payload.current_run || payload.latest_run || {};
+  const operation = payload.current_operation || payload.latest_operation || payload.operation || {};
+  const statuses = [
+    payload.status,
+    payload.state,
+    payload.phase,
+    scanProgress.status,
+    scanProgress.state,
+    scanProgress.phase,
+    lastRun.status,
+    lastRun.state,
+    lastRun.phase,
+    operation.status,
+    operation.state,
+    operation.phase,
+  ];
+
+  if (statuses.some(isLiteLiveStatus)) return true;
+  if (scanProgress.running === true || scanProgress.operation_running === true || scanProgress.in_progress === true) return true;
+  if (hasLiteLiveOperation(payload.execution_timeline || lastRun.execution_timeline || operation.timeline)) return true;
+  return false;
+}
+
 export default function SecurityScreen() {
-  const { data, loading, error, refresh, backendReachable, savedStateOnly } = useLiteResource(liteApi.security, []);
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const securityPollingIsLive = useCallback((payload) => (
+    Boolean(busy) || hasLiveSecurityOperation(payload) || hasLiveSecurityOperation(result)
+  ), [busy, result]);
+  const { data, loading, error, refresh, backendReachable, savedStateOnly } = useLiteResource(liteApi.security, [], {
+    pollingMode: 'slow',
+    isLive: securityPollingIsLive,
+    staleTime: 15_000,
+  });
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
@@ -1357,12 +1394,8 @@ export default function SecurityScreen() {
     if (!scanInProgress) return undefined;
     setProgressNow(Date.now());
     const timer = window.setInterval(() => setProgressNow(Date.now()), 1000);
-    const refreshTimer = window.setInterval(() => refresh(), 8000);
-    return () => {
-      window.clearInterval(timer);
-      window.clearInterval(refreshTimer);
-    };
-  }, [scanInProgress, refresh]);
+    return () => window.clearInterval(timer);
+  }, [scanInProgress]);
 
   React.useEffect(() => {
     const panelOpen = evidence || evidenceError || evidenceLoading;

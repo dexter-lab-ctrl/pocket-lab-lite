@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
@@ -82,8 +83,44 @@ import {
   safeRestartSteps
 } from './LiteUi.jsx';
 
+
+const DEVICES_POLLING_POLICY_PHASE4 = 'DEVICES_POLLING_POLICY_PHASE4';
+
+function devicePollingValue(value) {
+  return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+function deviceInviteIsLive(invite) {
+  if (!invite || typeof invite !== 'object') return false;
+  const status = devicePollingValue(invite.status || invite.state || invite.phase || invite.lifecycle);
+  if (!status) return Boolean(invite.token || invite.bootstrap_url || invite.bootstrap_command || invite.copy_text);
+  return !['completed', 'expired', 'cancelled', 'canceled', 'failed', 'removed', 'revoked'].includes(status);
+}
+
+function deviceRestartProgressIsLive(progress) {
+  if (!progress || typeof progress !== 'object') return false;
+  const status = devicePollingValue(progress.status || progress.state || progress.phase);
+  return Boolean(status && !['completed', 'failed', 'cancelled', 'canceled', 'done'].includes(status));
+}
+
+export function hasLiveDeviceFleetOperation(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  if (hasLiteLiveOperation(payload?.current_action) || hasLiteLiveOperation(payload?.latest_operation)) return true;
+  if (deviceInviteIsLive(payload?.latest_invite)) return true;
+
+  const devices = Array.isArray(payload?.devices) ? payload.devices : [];
+  return devices.some((device) => {
+    const status = devicePollingValue(device?.status || device?.connection || device?.state || device?.phase);
+    if (['joining', 'waiting', 'repairing', 'restarting', 'restart_pending', 'command_pending', 'command_running'].includes(status)) return true;
+    if (isLiteLiveStatus(status)) return true;
+    return hasLiteLiveOperation(device?.restart_progress)
+      || hasLiteLiveOperation(device?.command_progress)
+      || hasLiteLiveOperation(device?.latest_command)
+      || hasLiteLiveOperation(device?.supervisor);
+  });
+}
+
 export default function DevicesScreen() {
-  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, []);
   const [hostname, setHostname] = useState('');
   const [selectedRole, setSelectedRole] = useState('compute');
   const [result, setResult] = useState(null);
@@ -96,6 +133,18 @@ export default function DevicesScreen() {
   const [removeCandidate, setRemoveCandidate] = useState(null);
   const [removeBusy, setRemoveBusy] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
+  const fleetPollingIsLive = useMemo(() => (fleetPayload) => (
+    busy
+    || Boolean(restartBusy)
+    || removeBusy
+    || deviceRestartProgressIsLive(restartProgress)
+    || hasLiveDeviceFleetOperation(fleetPayload)
+  ), [busy, restartBusy, removeBusy, restartProgress]);
+  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, [], {
+    pollingMode: 'active',
+    isLive: fleetPollingIsLive,
+    staleTime: 5_000,
+  });
   const devices = data?.devices || [];
   const remoteAccess = data?.remote_access || {};
   const remoteAccessReady = remoteAccess?.status === 'healthy' || remoteAccess?.ready;

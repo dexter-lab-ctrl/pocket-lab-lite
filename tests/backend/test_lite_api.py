@@ -4224,6 +4224,68 @@ def test_lite_tanstack_query_dependency_and_provider_source():
     assert "refetchInterval: false" in query_client
 
 
+def test_lite_central_polling_policy_phase1_source():
+    policy = Path("src/lib/litePollingPolicy.js").read_text()
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+    status_hook = Path("src/hooks/useLiteStatus.js").read_text()
+    query_client = Path("src/lib/liteQueryClient.js").read_text()
+
+    assert "LITE_CENTRAL_POLLING_POLICY" in policy
+    assert "realtime: 2_000" in policy
+    assert "active: 5_000" in policy
+    assert "normal: 15_000" in policy
+    assert "relaxed: 30_000" in policy
+    assert "slow: 60_000" in policy
+    assert "background: false" in policy
+    assert "isLiteLiveStatus" in policy
+    assert "hasLiteLiveOperation" in policy
+    assert "liteVisiblePollingInterval" in policy
+    assert "liteQueryPollingInterval" in policy
+    assert "litePollingBackoffInterval" in policy
+    assert "litePollingModeFromValue" in policy
+    assert "document.visibilityState" in policy
+
+    assert "hasLiteLiveOperation" in hook
+    assert "useLiteDocumentVisibility" in hook
+    assert "pollingMode = 'normal'" in hook
+    assert "enabledWhenHidden = false" in hook
+    assert "refetchInterval: resolvedRefetchInterval" in hook
+    assert "refetchIntervalInBackground: Boolean(enabledWhenHidden)" in hook
+    assert "refetchOnWindowFocus" in hook
+    assert "refetchOnReconnect" in hook
+    assert "liteQueryPollingInterval" in hook
+    assert "failureCount: queryState?.state?.failureCount || 0" in hook
+    assert "savedState: isSavedSnapshot(data)" in hook
+    assert "setInterval" not in hook
+
+    assert "litePollingIntervals" in status_hook
+    assert "pollingMode: 'relaxed'" in status_hook
+    assert "Math.max(litePollingIntervals.relaxed, intervalMs)" in status_hook
+    assert "refetchInterval: false" in query_client
+
+
+def test_lite_use_lite_query_phase2_adaptive_polling_source():
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+    policy = Path("src/lib/litePollingPolicy.js").read_text()
+
+    assert "pollingMode = 'normal'" in hook
+    assert "enabledWhenHidden = false" in hook
+    assert "refetchOnWindowFocus = true" in hook
+    assert "refetchOnReconnect = true" in hook
+    assert "typeof refetchInterval === 'function'" in hook
+    assert "liteQueryPollingInterval" in hook
+    assert "failureCount: queryState?.state?.failureCount || 0" in hook
+    assert "savedState: isSavedSnapshot(data)" in hook
+    assert "refetchIntervalInBackground: Boolean(enabledWhenHidden)" in hook
+    assert "setInterval" not in hook
+
+    assert "litePollingBackoffInterval" in policy
+    assert "liteQueryPollingInterval" in policy
+    assert "if (!visible && !enabledWhenHidden) return litePollingIntervals.off" in policy
+    assert "if (live) return litePollingIntervals.realtime" in policy
+    assert "return litePollingIntervals.slow" in policy
+
+
 def test_lite_query_wrapper_keeps_safe_snapshot_fallback_source():
     hook = Path("src/hooks/useLiteQuery.js").read_text()
     snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
@@ -4719,3 +4781,89 @@ def test_lite_action_progress_uses_backend_step_status_source():
     assert "syntheticBusyProgress" in catalog_source
     assert "isTerminalCatalogActionStatus" in catalog_source
     assert "currentMatches && isLiveCatalogActionStatus" in catalog_source
+
+
+
+def test_lite_app_catalog_phase3_polling_policy_source():
+    catalog = Path("src/lite/LiteCatalog.jsx").read_text()
+    status_hook = Path("src/hooks/useLiteStatus.js").read_text()
+    policy = Path("src/lib/litePollingPolicy.js").read_text()
+
+    assert "APP_CATALOG_POLLING_POLICY_PHASE3" in catalog
+    assert "hasLivePhotoPrismAppActionsPayload" in catalog
+    assert "isLiveAppCatalogAction" in catalog
+    assert "APP_CATALOG_LIVE_ACTION_STATUSES" in catalog
+    assert "APP_CATALOG_TERMINAL_ACTION_STATUSES" in catalog
+    assert "pollingMode: 'relaxed'" in catalog
+    assert "queryKey: liteQueryKeys.catalog()" in catalog
+    assert "path: liteQueryPaths.catalog" in catalog
+    assert "pollingMode: 'normal'" in catalog
+    assert "isLive: appActionsLive" in catalog
+    assert "staleTime: 5_000" in catalog
+    assert "actionBusyKey" in catalog
+    assert "liteMutationInvalidations[actionId] || [liteQueryKeys.appActions('photoprism')]" in catalog
+    assert "useLiteResource(liteApi.catalog" not in catalog
+    assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
+    assert "...options" in status_hook
+    assert "liteQueryPollingInterval" in policy
+    assert "window.setInterval" in catalog  # legacy manual refresh loop remains outside Phase 3 query polling scope
+
+
+def test_lite_devices_phase4_polling_policy_source():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    status_hook = Path("src/hooks/useLiteStatus.js").read_text()
+    policy = Path("src/lib/litePollingPolicy.js").read_text()
+
+    assert "DEVICES_POLLING_POLICY_PHASE4" in devices
+    assert "hasLiveDeviceFleetOperation" in devices
+    assert "deviceInviteIsLive" in devices
+    assert "deviceRestartProgressIsLive" in devices
+    assert "hasLiteLiveOperation" in devices
+    assert "isLiteLiveStatus" in devices
+    assert "fleetPollingIsLive" in devices
+    assert "pollingMode: 'active'" in devices
+    assert "isLive: fleetPollingIsLive" in devices
+    assert "staleTime: 5_000" in devices
+    assert "busy" in devices
+    assert "restartBusy" in devices
+    assert "removeBusy" in devices
+    assert "restartProgress" in devices
+    assert "useLiteResource(liteApi.fleet, [], {" in devices
+    assert "setInterval" not in devices
+    assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
+    assert "liteQueryPollingInterval" in policy
+
+
+
+def test_lite_security_recovery_phase5_polling_policy_source():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    policy = Path("src/lib/litePollingPolicy.js").read_text()
+    status_hook = Path("src/hooks/useLiteStatus.js").read_text()
+
+    assert "SECURITY_POLLING_POLICY_PHASE5" in security
+    assert "hasLiveSecurityOperation" in security
+    assert "securityPollingIsLive" in security
+    assert "pollingMode: 'slow'" in security
+    assert "isLive: securityPollingIsLive" in security
+    assert "staleTime: 15_000" in security
+    assert "window.setInterval(() => refresh()" not in security
+    assert "window.setInterval(refresh" not in security
+
+    assert "RECOVERY_POLLING_POLICY_PHASE5" in recovery
+    assert "hasLiveRecoveryOperation" in recovery
+    assert "recoveryPollingIsLive" in recovery
+    assert "beginRecoveryPollingBurst" in recovery
+    assert "recoveryPollingBurstUntil" in recovery
+    assert "pollingMode: 'slow'" in recovery
+    assert "isLive: recoveryPollingIsLive" in recovery
+    assert "staleTime: 15_000" in recovery
+    assert "Date.now() + 45_000" in recovery
+    assert "window.setInterval" not in recovery
+
+    assert "isLiteLiveStatus" in security
+    assert "hasLiteLiveOperation" in security
+    assert "isLiteLiveStatus" in recovery
+    assert "hasLiteLiveOperation" in recovery
+    assert "liteQueryPollingInterval" in policy
+    assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
