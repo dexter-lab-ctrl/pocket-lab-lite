@@ -5,18 +5,18 @@ import { liteQueryKeys } from '../lib/liteQueryClient.js';
 export const LITE_BROWSER_ACTION_QUEUE_DISABLED = true;
 
 export const liteMutationInvalidations = {
-  import_photos: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  connect_photos: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  check_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  repair_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  update_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  backup_app: [liteQueryKeys.recovery(), liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  backup_to_storage: [liteQueryKeys.recovery(), liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
-  preview_restore: [liteQueryKeys.recovery(), liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+  import_photos: [liteQueryKeys.appActions('photoprism')],
+  connect_photos: [liteQueryKeys.appActions('photoprism')],
+  check_app: [liteQueryKeys.appActions('photoprism')],
+  repair_app: [liteQueryKeys.appActions('photoprism')],
+  update_app: [liteQueryKeys.appActions('photoprism')],
+  backup_app: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
+  backup_to_storage: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
+  preview_restore: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
   install_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   remove_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   security_check: [liteQueryKeys.security()],
-  recovery_backup: [liteQueryKeys.recovery(), liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+  recovery_backup: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
   restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
 };
