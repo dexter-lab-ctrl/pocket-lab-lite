@@ -4856,7 +4856,7 @@ def test_lite_security_recovery_phase5_polling_policy_source():
     assert "securityPollingIsLive" in security
     assert "pollingMode: 'slow'" in security
     assert "isLive: securityPollingIsLive" in security
-    assert "staleTime: 15_000" in security
+    assert "staleTime: 15_000" in security or "staleTime: 30_000" in security
     assert "window.setInterval(() => refresh()" not in security
     assert "window.setInterval(refresh" not in security
 
@@ -5264,7 +5264,7 @@ def test_lite_security_render_reduction_preserves_polling_and_actions():
     assert "securityPollingIsLive" in security
     assert "pollingMode: 'slow'" in security
     assert "isLive: securityPollingIsLive" in security
-    assert "staleTime: 15_000" in security
+    assert "staleTime: 15_000" in security or "staleTime: 30_000" in security
     assert "setInterval" not in security
     assert "runSecurityScan" in security
     assert "checkProtectedApp" in security
@@ -5525,3 +5525,144 @@ def test_lite_devices_s3_preserves_backend_owned_actions():
     assert "postJson('/api/lite/fleet/add-device'" in api
     assert "restart-agent" in api
     assert "remove-device" in api
+
+
+def test_lite_security_s3_view_model_selectors_exist():
+    view_models_path = Path("src/lib/liteViewModels.js")
+    assert view_models_path.exists()
+    view_models = view_models_path.read_text()
+
+    for selector in [
+        "selectSecuritySummaryView",
+        "selectSecurityProgressView",
+        "selectSecurityTimelineView",
+        "selectSecurityFindingDeltaView",
+        "selectSecurityHistorySummaryView",
+        "selectSecurityEvidenceSummaryView",
+        "selectSecurityFindingsView",
+        "selectSecurityScreenView",
+        "isLiteSecurityViewLive",
+        "getLiteSecurityMutationInvalidations",
+    ]:
+        assert selector in view_models
+
+    assert "LITE_SECURITY_VIEW_MODEL_VERSION" in view_models
+    assert "security-screen-s3-v1" in view_models
+    assert "progress_summary" in view_models
+    assert "timeline_summary" in view_models
+    assert "finding_delta_summary" in view_models
+    assert "history_summary" in view_models
+    assert "evidence_summary" in view_models
+
+
+def test_lite_security_s3_uses_selected_security_view_model():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+
+    assert "selectSecurityScreenView" in security
+    assert "isLiteSecurityViewLive" in security
+    assert "useLiteResource(liteApi.security" in security
+    assert "select: selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "applyLiteQuerySelector" in hook
+    assert "snapshotSelect: snapshotSelect || select" in hook
+    assert "preserveSelectedSnapshotMeta" in hook
+
+
+def test_lite_security_s3_uses_slow_polling_and_live_detector():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    polling = Path("src/lib/litePollingPolicy.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+
+    assert "pollingMode: 'slow'" in security
+    assert "staleTime: 30_000" in security or "staleTime: 45_000" in security or "staleTime: 60_000" in security
+    assert "securityPollingIsLive" in security
+    assert "isLive: securityPollingIsLive" in security
+    assert "isLiteSecurityViewLive(payload)" in security
+    assert "hasLiveSecurityOperation(result)" in security
+    assert "SECURITY_LIVE_STATUSES" in view_models
+    for live_state in ["queued", "accepted", "running", "working", "in_progress"]:
+        assert live_state in view_models
+    assert "liteQueryPollingInterval" in polling
+
+
+def test_lite_security_s3_uses_focused_invalidations():
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "getLiteSecurityActionInvalidations" in mutation
+    assert "getLiteSecurityMutationInvalidations" in mutation
+    assert "security_check: [liteQueryKeys.security()]" in mutation
+    assert "run_safety_check: [liteQueryKeys.security()]" in mutation
+    assert "safety_check: [liteQueryKeys.security()]" in mutation
+    assert "check_security_app: [liteQueryKeys.security()]" in mutation
+    security_slice = mutation.partition("security_check:")[2].partition("recovery_backup:")[0]
+    assert "catalog" not in security_slice
+    assert "fleet" not in security_slice
+    assert "recovery" not in security_slice
+    assert "queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() })" in security
+    assert "window.setTimeout(() => refresh()" not in security
+    assert "[700, 1800, 4000]" not in security
+
+
+def test_lite_security_s3_safe_snapshot_contract():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "/api/lite/security" in snapshots
+    assert "findUnsafeLiteSnapshotContent" in snapshots
+    assert "UNSAFE_KEY_PATTERN" in snapshots
+    assert "UNSAFE_VIEW_MODEL_KEY_PATTERN" in view_models
+    assert "UNSAFE_VIEW_MODEL_VALUE_PATTERN" in view_models
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "evidence_path" in view_models
+    assert "safeString" in view_models
+    assert "safeList" in view_models
+
+    lowered = view_models.lower() + security.lower()
+    for forbidden in [
+        "scanner raw output",
+        "lynis raw report",
+        "trivy raw report",
+        "nats credentials",
+        "private key",
+        "command payload",
+    ]:
+        assert forbidden not in lowered
+
+
+def test_lite_security_s3_no_manual_polling_regression():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "window.setInterval" not in security
+    assert "setInterval" not in security
+    assert "pollingMode: 'slow'" in security
+    assert "useLiteResource(liteApi.security" in security
+    assert "window.setTimeout(() => refresh()" not in security
+    assert "scheduleSecurityRefresh" not in security
+    assert "[700, 1800, 4000]" not in security
+    assert "onClickCapture" not in security
+    assert "onPointerDownCapture" not in security
+
+
+def test_lite_security_s3_preserves_backend_owned_safety_checks():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "useLiteSecurityCheckFlow" in security
+    assert "securityFlow.requestRun" in security
+    assert "securityFlow.accepted" in security
+    assert "securityFlow.fail" in security
+    assert "triggerHapticFeedback" in security
+    assert "liteApi.securityEvidence" in security
+    assert "postJson('/api/lite/security/check'" in api
+    assert "checkSecurityApp" in api
+    assert "fetch(" not in security
+    assert "child_process" not in security
+    assert "exec(" not in security
+    assert "spawn(" not in security
+    assert "pm2" not in security.lower()

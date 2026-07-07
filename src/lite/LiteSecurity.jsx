@@ -1,4 +1,5 @@
 import React, { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
   Copy,
@@ -21,6 +22,8 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { liteQueryKeys } from '../lib/liteQueryClient.js';
+import { isLiteSecurityViewLive, selectSecurityScreenView } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import {
   GlassCard,
@@ -1209,13 +1212,16 @@ export default function SecurityScreen() {
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const queryClient = useQueryClient();
   const securityPollingIsLive = useCallback((payload) => (
-    Boolean(busy) || hasLiveSecurityOperation(payload) || hasLiveSecurityOperation(result)
+    Boolean(busy) || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result)
   ), [busy, result]);
   const { data, loading, error, refresh, backendReachable, savedStateOnly } = useLiteResource(liteApi.security, [], {
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
-    staleTime: 15_000,
+    staleTime: 30_000,
+    select: selectSecurityScreenView,
+    snapshotSelect: selectSecurityScreenView,
   });
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
@@ -1452,9 +1458,8 @@ export default function SecurityScreen() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedFinding]);
 
-  function scheduleSecurityRefresh() {
-    refresh();
-    [700, 1800, 4000].forEach((delay) => window.setTimeout(() => refresh(), delay));
+  function invalidateSecurityQuery() {
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
   }
 
   async function scan() {
@@ -1471,7 +1476,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.runSecurityScan('local', { reason: 'manual safety check' });
       securityFlow.accepted(payload);
       setResult(payload);
-      scheduleSecurityRefresh();
+      invalidateSecurityQuery();
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
@@ -1489,7 +1494,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
       setResult(payload);
-      scheduleSecurityRefresh();
+      invalidateSecurityQuery();
     } catch (err) {
       const payload = err?.payload || {};
       if (err.status === 501 && payload?.status === 'not_implemented') {

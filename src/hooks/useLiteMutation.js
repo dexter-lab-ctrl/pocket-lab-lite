@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
-import { getLiteDeviceMutationInvalidations } from '../lib/liteViewModels.js';
+import { getLiteDeviceMutationInvalidations, getLiteSecurityMutationInvalidations } from '../lib/liteViewModels.js';
 
 export const LITE_BROWSER_ACTION_QUEUE_DISABLED = true;
 
@@ -17,6 +17,9 @@ export const liteMutationInvalidations = {
   install_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   remove_app: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   security_check: [liteQueryKeys.security()],
+  run_safety_check: [liteQueryKeys.security()],
+  safety_check: [liteQueryKeys.security()],
+  check_security_app: [liteQueryKeys.security()],
   recovery_backup: [liteQueryKeys.recovery(), liteQueryKeys.appActions('photoprism')],
   restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
@@ -82,6 +85,10 @@ export function getLiteAppActionInvalidations(appId = 'photoprism', actionId = '
 
 export function getLiteDeviceActionInvalidations(actionId = '', result = {}) {
   return uniqueQueryKeys(getLiteDeviceMutationInvalidations(actionId, result));
+}
+
+export function getLiteSecurityActionInvalidations(actionId = '', result = {}) {
+  return uniqueQueryKeys(getLiteSecurityMutationInvalidations(actionId, result));
 }
 
 export function isAcceptedLiteMutationResponse(payload) {
