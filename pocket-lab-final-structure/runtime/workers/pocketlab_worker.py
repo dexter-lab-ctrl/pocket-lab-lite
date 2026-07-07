@@ -76,6 +76,45 @@ async def publish(
     )
 
 
+async def connect_worker_bus(stop_event: asyncio.Event) -> None:
+    """Keep the worker process alive while NATS is temporarily unavailable.
+
+    PM2 should not need to restart the worker just because the Android device
+    slept, NATS restarted, or 127.0.0.1:4222 refused a connection during boot.
+    The worker remains idle and retries until JetStream is reachable again.
+    """
+    delay = int(os.environ.get("POCKETLAB_WORKER_NATS_RETRY_SECONDS", "3"))
+    while not stop_event.is_set():
+        try:
+            await BUS.start()
+            install_operation_event_publisher(
+                deps.operation_service(), asyncio.get_running_loop(), source=WORKER_NAME
+            )
+            await BUS.subscribe_durable(
+                COMMAND_SUBJECT,
+                command_callback,
+                durable=DURABLE_NAME,
+            )
+            await publish(
+                "pocketlab.events.worker.started",
+                "worker.started",
+                {
+                    "command_subject": COMMAND_SUBJECT,
+                    "queue": COMMAND_QUEUE,
+                    "durable": DURABLE_NAME,
+                    "pid": os.getpid(),
+                    "restart_safe": True,
+                },
+            )
+            return
+        except Exception as exc:
+            print(f"Pocket Lab worker waiting for NATS: {exc}", file=sys.stderr)
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=delay)
+            except asyncio.TimeoutError:
+                continue
+
+
 async def execute_operation_command(command: Dict[str, Any]) -> None:
     job_id = str(command.get("job_id") or "").strip()
     operation = str(command.get("operation") or "").strip()
@@ -272,15 +311,20 @@ async def command_callback(msg: Any) -> None:
 
 async def heartbeat(stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
-        await publish(
-            "pocketlab.events.worker.heartbeat",
-            "worker.heartbeat",
-            {
-                "command_subject": COMMAND_SUBJECT,
-                "queue": COMMAND_QUEUE,
-                "bus": BUS.status(),
-            },
-        )
+        try:
+            await publish(
+                "pocketlab.events.worker.heartbeat",
+                "worker.heartbeat",
+                {
+                    "command_subject": COMMAND_SUBJECT,
+                    "queue": COMMAND_QUEUE,
+                    "bus": BUS.status(),
+                },
+            )
+        except Exception as exc:
+            BUS.connected = False
+            BUS.fallback_reason = str(exc)
+            print(f"Pocket Lab worker heartbeat skipped: {exc}", file=sys.stderr)
         try:
             await asyncio.wait_for(stop_event.wait(), timeout=HEARTBEAT_SECONDS)
         except asyncio.TimeoutError:
@@ -343,32 +387,18 @@ async def main_async() -> int:
 
     os.environ.setdefault("POCKETLAB_NATS_REQUIRED", "1")
     BUS.required = True
-    await BUS.start()
-    install_operation_event_publisher(
-        deps.operation_service(), asyncio.get_running_loop(), source=WORKER_NAME
-    )
-    await BUS.subscribe_durable(
-        COMMAND_SUBJECT,
-        command_callback,
-        durable=DURABLE_NAME,
-    )
-    await publish(
-        "pocketlab.events.worker.started",
-        "worker.started",
-        {
-            "command_subject": COMMAND_SUBJECT,
-            "queue": COMMAND_QUEUE,
-            "durable": DURABLE_NAME,
-            "pid": os.getpid(),
-            "restart_safe": True,
-        },
-    )
+    await connect_worker_bus(stop_event)
+    if stop_event.is_set():
+        return 0
     hb_task = asyncio.create_task(heartbeat(stop_event))
     await stop_event.wait()
     hb_task.cancel()
-    await publish(
-        "pocketlab.events.worker.stopped", "worker.stopped", {"pid": os.getpid()}
-    )
+    try:
+        await publish(
+            "pocketlab.events.worker.stopped", "worker.stopped", {"pid": os.getpid()}
+        )
+    except Exception:
+        pass
     await BUS.stop()
     return 0
 

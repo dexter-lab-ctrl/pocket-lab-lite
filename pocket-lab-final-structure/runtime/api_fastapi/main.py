@@ -58,11 +58,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
-        await BUS.publish_json(
-            "pocketlab.events.api.stopped",
-            "api.stopped",
-            {"service": deps.settings().server_name},
-        )
+        try:
+            await BUS.publish_json(
+                "pocketlab.events.api.stopped",
+                "api.stopped",
+                {"service": deps.settings().server_name},
+            )
+        except Exception:
+            # Shutdown evidence is best effort. A transient NATS disconnect must
+            # not turn graceful FastAPI shutdown into a crash/restart loop.
+            pass
         await BUS.stop()
 
 

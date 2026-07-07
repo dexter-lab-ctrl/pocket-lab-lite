@@ -98,6 +98,41 @@ class PocketLabEventBus:
             "POCKETLAB_NATS_EVENT_FANOUT", True
         )
         self.durable_consumers: dict[str, str] = {}
+        self._last_error: str = ""
+
+    async def _nats_error(self, exc: Exception) -> None:
+        """Record client-level NATS errors without letting callbacks crash the process.
+
+        Termux/Android sleep-wake and short NATS restarts can surface nats-py
+        reader-loop errors such as InvalidStateError or BrokenPipeError. Those
+        should make the bus degraded and force the next publish to reconnect;
+        they must not take down FastAPI or the worker process.
+        """
+        self.connected = False
+        self._last_error = str(exc)
+        self.fallback_reason = self._last_error or exc.__class__.__name__
+
+    async def _nats_disconnected(self) -> None:
+        self.connected = False
+        self.fallback_reason = "NATS disconnected"
+
+    async def _nats_reconnected(self) -> None:
+        self.connected = True
+        self.fallback_reason = ""
+
+    async def _nats_closed(self) -> None:
+        self.connected = False
+        self.fallback_reason = self.fallback_reason or "NATS connection closed"
+
+    async def _close_stale_client(self) -> None:
+        if self.nc is None:
+            return
+        stale = self.nc
+        self.nc = None
+        self.js = None
+        self.connected = False
+        with contextlib.suppress(Exception):
+            await stale.close()
 
     async def start(self) -> None:
         async with self._lock:
@@ -109,12 +144,19 @@ class PocketLabEventBus:
                 )
                 raise RuntimeError(self.fallback_reason)
             try:
+                await self._close_stale_client()
                 connect_kwargs = {
                     "servers": self.servers,
                     "name": self.name,
                     "connect_timeout": self.connect_timeout,
-                    "reconnect_time_wait": 2,
+                    "reconnect_time_wait": float(os.environ.get("POCKETLAB_NATS_RECONNECT_WAIT", "2")),
                     "max_reconnect_attempts": -1,
+                    "ping_interval": float(os.environ.get("POCKETLAB_NATS_PING_INTERVAL", "20")),
+                    "max_outstanding_pings": int(os.environ.get("POCKETLAB_NATS_MAX_OUTSTANDING_PINGS", "3")),
+                    "error_cb": self._nats_error,
+                    "disconnected_cb": self._nats_disconnected,
+                    "reconnected_cb": self._nats_reconnected,
+                    "closed_cb": self._nats_closed,
                 }
                 if self.user:
                     connect_kwargs["user"] = self.user
@@ -141,9 +183,7 @@ class PocketLabEventBus:
                     raise RuntimeError("JetStream is required but unavailable")
                 await self._subscribe_event_fanout()
             except Exception as exc:
-                self.nc = None
-                self.js = None
-                self.connected = False
+                await self._close_stale_client()
                 self.fallback_reason = str(exc)
                 raise RuntimeError(
                     f"NATS connection failed: {self.fallback_reason}"
@@ -250,6 +290,7 @@ class PocketLabEventBus:
             except Exception as exc:
                 self.connected = False
                 self.fallback_reason = str(exc)
+                await self._close_stale_client()
                 raise RuntimeError(
                     f"NATS connection failed: {self.fallback_reason}"
                 ) from exc
