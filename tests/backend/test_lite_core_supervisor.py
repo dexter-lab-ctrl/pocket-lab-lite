@@ -53,3 +53,53 @@ def test_status_summary_reports_api_nats_health():
     assert summary["checks"]["nats_tcp_reachable"] is True
     assert summary["checks"]["api_nats_connected"] is True
     assert summary["checks"]["caddy_http_reachable"] is True
+
+
+def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeypatch, tmp_path):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    supervisor = supervisor_module.LiteCoreSupervisor()
+
+    observed = {
+        "services": {
+            "pocket-nats": "online",
+            "pocket-api": "online",
+            "pocket-worker": "online",
+            "caddy-proxy": "online",
+            "pocket-telemetry": "online",
+        },
+        "checks": {
+            "nats_tcp_reachable": True,
+            "api_nats_connected": False,
+            "caddy_http_reachable": True,
+        },
+        "api_nats_mode": "nats",
+        "api_nats_connected": False,
+        "api_nats_fallback_reason": "transient client reconnect",
+    }
+    calls = {"count": 0}
+
+    def fake_collect():
+        calls["count"] += 1
+        return observed
+
+    def fail_restart(service, reason):  # pragma: no cover - should not run
+        raise AssertionError(f"unexpected restart for {service}: {reason}")
+
+    monkeypatch.setattr(supervisor, "collect", fake_collect)
+    monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+
+    payload = supervisor.tick()
+
+    assert payload["actions"] == [
+        {
+            "event": supervisor_module.API_NATS_CLIENT_UNHEALTHY_EVENT,
+            "service": "pocket-api",
+            "reason": "api_nats_client_probe_degraded",
+            "acted": False,
+        }
+    ]
+    assert payload["supervisor_status"] == "repairing"
+    assert calls["count"] == 2
+    assert "api_nats_client_unhealthy_observed" in supervisor.events_file.read_text()
