@@ -4805,9 +4805,11 @@ def test_lite_app_catalog_phase3_polling_policy_source():
     assert "path: liteQueryPaths.catalog" in catalog
     assert "pollingMode: 'normal'" in catalog
     assert "isLive: appActionsLive" in catalog
-    assert "staleTime: 5_000" in catalog
+    assert "staleTime: 10_000" in catalog
+    assert "select: selectPhotoPrismActionsView" in catalog
+    assert "snapshotSelect: selectPhotoPrismActionsView" in catalog
     assert "actionBusyKey" in catalog
-    assert "liteMutationInvalidations[actionId] || [liteQueryKeys.appActions('photoprism')]" in catalog
+    assert "getLiteAppActionInvalidations(appId, actionId, response)" in catalog
     assert "useLiteResource(liteApi.catalog" not in catalog
     assert "export function useLiteResource(loader, dependencies = [], options = {})" in status_hook
     assert "...options" in status_hook
@@ -5268,3 +5270,113 @@ def test_lite_security_render_reduction_preserves_polling_and_actions():
     assert "checkProtectedApp" in security
     assert "onClickCapture" not in finding_details
     assert "onPointerDownCapture" not in finding_details
+
+
+
+def test_lite_app_catalog_s3_view_model_selectors_exist():
+    view_models_path = Path("src/lib/liteViewModels.js")
+    assert view_models_path.exists()
+    view_models = view_models_path.read_text()
+
+    assert "selectCatalogSummaryView" in view_models
+    assert "selectPhotoPrismActionsView" in view_models
+    assert "selectPhotoPrismManageView" in view_models
+    assert "selectLiteCatalogAppSummary" in view_models
+    assert "normalizeLiteAppAction" in view_models
+    assert "isLiteAppActionLive" in view_models
+    assert "isLiteAppActionsViewLive" in view_models
+    assert "health_chips" in view_models
+    assert "live_action_ids" in view_models
+
+    forbidden = [
+        "raw_logs",
+        "raw_log_path",
+        "command_payload",
+        "invite_token",
+        "bootstrap_command",
+        "private_key",
+        "nats_credentials",
+    ]
+    lowered = view_models.lower()
+    for item in forbidden:
+        assert item not in lowered
+
+
+def test_lite_use_lite_query_supports_select_for_view_models():
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+
+    assert "select," in hook
+    assert "snapshotSelect" in hook
+    assert "applyLiteQuerySelector" in hook
+    assert "preserveSelectedSnapshotMeta" in hook
+    assert "select: typeof select === 'function'" in hook
+    assert "snapshotSelect: snapshotSelect || select" in hook
+    assert "writeLiteSnapshot(path, snapshotPayload)" in hook
+    assert "readLiteSnapshotAsync" in hook
+    assert "attachFreshSnapshotMeta" in hook
+
+
+def test_lite_app_catalog_s3_uses_focused_staletime_and_live_actions():
+    catalog = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+
+    assert "selectCatalogSummaryView" in catalog
+    assert "selectPhotoPrismActionsView" in catalog
+    assert "snapshotSelect: selectCatalogSummaryView" in catalog
+    assert "snapshotSelect: selectPhotoPrismActionsView" in catalog
+    assert "queryKey: liteQueryKeys.catalog()" in catalog
+    assert "pollingMode: 'relaxed'" in catalog
+    assert "staleTime: 60_000" in catalog
+    assert "queryKey: liteQueryKeys.appActions('photoprism')" in catalog
+    assert "pollingMode: 'normal'" in catalog
+    assert "staleTime: 10_000" in catalog
+    assert "isLive: appActionsLive" in catalog
+    assert "isLiteAppActionsViewLive(payload)" in catalog
+    assert "Adaptive polling for App Catalog actions is owned by useLiteQuery" in catalog
+    assert "window.setInterval" not in catalog
+
+
+def test_lite_app_catalog_s3_uses_focused_invalidations():
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    catalog = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+
+    assert "getLiteAppActionInvalidations" in mutation
+    assert "liteQueryKeys.appActions(normalizedAppId)" in mutation
+    assert "liteQueryKeys.catalog()" in mutation
+    assert "liteQueryKeys.recovery()" in mutation
+    assert "restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()]" in mutation
+    assert "security_check: [liteQueryKeys.security()]" in mutation
+    assert "invalidateForAction: ({ appId = 'photoprism', actionId }, response) => getLiteAppActionInvalidations(appId, actionId, response)" in catalog
+    assert "liteMutationInvalidations[actionId] || [liteQueryKeys.appActions('photoprism')]" not in catalog
+    assert "window.setTimeout(() => { refresh(); refreshAppActions(appId);" not in catalog
+    assert "window.setTimeout(refreshAppActions" not in catalog
+
+
+def test_lite_app_catalog_s3_safe_snapshot_contract():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    catalog = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+
+    assert "/api/lite/catalog" in snapshots
+    assert "/api/lite/apps/photoprism/actions" in snapshots
+    assert "findUnsafeLiteSnapshotContent" in snapshots
+    assert "UNSAFE_KEY_PATTERN" in snapshots
+    assert "UNSAFE_VIEW_MODEL_KEY_PATTERN" in view_models
+    assert "safeStorageMappings" in view_models
+    assert "selectCatalogSummaryView" in catalog
+    assert "selectPhotoPrismActionsView" in catalog
+
+    for forbidden in ["raw_logs", "raw evidence", "command_payload", "private Android paths"]:
+        assert forbidden not in catalog
+
+
+def test_lite_app_catalog_s3_no_manual_polling_regression():
+    catalog = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+
+    assert "window.setInterval" not in catalog
+    assert "setInterval" not in catalog
+    assert "manual refresh intervals" in catalog
+    assert "refreshAppActions('photoprism');\n    }, 120)" not in catalog
+    assert "refetchInterval" not in catalog or "useLiteQuery" in catalog
+    assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }}" in catalog
+    assert "onClickCapture" not in catalog
+    assert "onPointerDownCapture" not in catalog
