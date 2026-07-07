@@ -708,7 +708,8 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing' || operationStatus === 'running'),
       phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
       step: progress?.step || operation?.summary || (busy ? 'Importing photos' : 'Importing photos'),
-      steps: progress?.steps || [],
+      steps: Array.isArray(progress?.steps) ? progress.steps : [],
+      timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
     };
   }
 
@@ -729,11 +730,8 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       indeterminate: progress?.indeterminate !== false,
       phase: progress?.phase || rawStatus || 'queued',
       step: progress?.step || 'Checking update readiness',
-      steps: Array.isArray(progress?.steps) && progress.steps.length ? progress.steps : [
-        { id: 'ready', label: 'Getting ready', status: 'active' },
-        { id: 'working', label: 'Checking readiness', status: 'waiting' },
-        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
-      ],
+      steps: Array.isArray(progress?.steps) ? progress.steps : [],
+      timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
     };
   }
 
@@ -750,11 +748,8 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
       indeterminate: true,
       phase: 'running',
       step,
-      steps: [
-        { id: 'ready', label: 'Getting ready', status: 'completed' },
-        { id: 'working', label: 'Working', status: 'active' },
-        { id: 'evidence', label: 'Evidence saved', status: 'waiting' },
-      ],
+      steps: [],
+      timeline: [],
     };
   }
 
@@ -775,6 +770,7 @@ function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
     phase: progress?.phase || rawStatus || (busy ? 'running' : 'queued'),
     step: progress?.step || (actionId === 'check_app' ? 'Checking safely' : 'Checking repair'),
     steps: Array.isArray(progress?.steps) ? progress.steps : [],
+    timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
   };
 }
 
