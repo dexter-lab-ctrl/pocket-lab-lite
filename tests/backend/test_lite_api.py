@@ -4833,7 +4833,7 @@ def test_lite_devices_phase4_polling_policy_source():
     assert "fleetPollingIsLive" in devices
     assert "pollingMode: 'active'" in devices
     assert "isLive: fleetPollingIsLive" in devices
-    assert "staleTime: 5_000" in devices
+    assert "staleTime: 15_000" in devices
     assert "busy" in devices
     assert "restartBusy" in devices
     assert "removeBusy" in devices
@@ -5068,7 +5068,7 @@ def test_lite_devices_render_reduction_preserves_polling_and_click_boundaries():
     assert "hasLiveDeviceFleetOperation" in devices
     assert "isLive: fleetPollingIsLive" in devices
     assert "pollingMode: 'active'" in devices
-    assert "staleTime: 5_000" in devices
+    assert "staleTime: 15_000" in devices
     assert "setInterval" not in devices
     assert "onClickCapture" not in card
     assert "onPointerDownCapture" not in card
@@ -5380,3 +5380,148 @@ def test_lite_app_catalog_s3_no_manual_polling_regression():
     assert "onClick={(event) => { stopGestureEvent(event); openManageSheet(app); }}" in catalog
     assert "onClickCapture" not in catalog
     assert "onPointerDownCapture" not in catalog
+
+
+def test_lite_devices_s3_view_model_selectors_exist():
+    view_models_path = Path("src/lib/liteViewModels.js")
+    assert view_models_path.exists()
+    view_models = view_models_path.read_text()
+
+    for selector in [
+        "selectFleetDevicesView",
+        "selectDeviceCardsView",
+        "selectServerHostView",
+        "selectRemoteAccessHealthView",
+        "selectDeviceActionStateView",
+        "selectDeviceEventsSummaryView",
+        "selectDeviceInviteView",
+        "selectDevicesScreenView",
+        "selectLiteDeviceCard",
+        "isLiteDeviceWorkflowLive",
+        "isLiteDevicesViewLive",
+        "getLiteDeviceMutationInvalidations",
+    ]:
+        assert selector in view_models
+
+    assert "LITE_DEVICES_VIEW_MODEL_VERSION" in view_models
+    assert "live_device_ids" in view_models
+    assert "protected_server_host" in view_models
+    assert "Remote access not ready" in view_models
+
+    lowered = view_models.lower()
+    for forbidden in [
+        "raw_logs",
+        "command_payload",
+        "invite_token",
+        "private_key",
+        "nats_credentials",
+        "raw_pm2",
+    ]:
+        assert forbidden not in lowered
+
+
+def test_lite_devices_s3_uses_selected_fleet_view_model():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    hook = Path("src/hooks/useLiteQuery.js").read_text()
+
+    assert "selectDevicesScreenView" in devices
+    assert "isLiteDevicesViewLive" in devices
+    assert "useLiteResource(liteApi.fleet" in devices
+    assert "select: selectDevicesScreenView" in devices
+    assert "snapshotSelect: selectDevicesScreenView" in devices
+    assert "applyLiteQuerySelector" in hook
+    assert "snapshotSelect: snapshotSelect || select" in hook
+    assert "preserveSelectedSnapshotMeta" in hook
+
+
+def test_lite_devices_s3_uses_active_polling_and_live_detector():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    polling = Path("src/lib/litePollingPolicy.js").read_text()
+
+    assert "pollingMode: 'active'" in devices
+    assert "staleTime: 15_000" in devices or "staleTime: 10_000" in devices
+    assert "fleetPollingIsLive" in devices
+    assert "isLive: fleetPollingIsLive" in devices
+    assert "isLiteDevicesViewLive(fleetPayload)" in devices
+    assert "hasLiveDeviceFleetOperation(fleetPayload)" in devices
+    assert "joining" in devices
+    assert "waiting" in devices
+    assert "repairing" in devices
+    assert "restartProgress" in devices
+    assert "liteQueryPollingInterval" in polling
+
+
+def test_lite_devices_s3_uses_focused_invalidations():
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+
+    assert "getLiteDeviceActionInvalidations" in mutation
+    assert "restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()]" in mutation
+    assert "add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()]" in mutation
+    assert "remove_device: [liteQueryKeys.fleet(), liteQueryKeys.status()]" in mutation
+    assert "refresh_remote_access: [liteQueryKeys.fleet()]" in mutation
+    device_slice = mutation.partition("restart_agent:")[2].partition("};")[0]
+    assert "catalog" not in device_slice
+    assert "recovery" not in device_slice
+    assert "copyInvite" in devices
+    copy_invite_body = devices.partition("async function copyInvite()")[2].partition("  async function restartAgent")[0]
+    assert "refresh()" not in copy_invite_body
+    assert "invalidate" not in copy_invite_body.lower()
+
+
+def test_lite_devices_s3_safe_snapshot_contract():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+
+    assert "/api/lite/fleet" in snapshots
+    assert "findUnsafeLiteSnapshotContent" in snapshots
+    assert "UNSAFE_KEY_PATTERN" in snapshots
+    assert "UNSAFE_VIEW_MODEL_KEY_PATTERN" in view_models
+    assert "selectDevicesScreenView" in devices
+    assert "snapshotSelect: selectDevicesScreenView" in devices
+
+    lowered = view_models.lower() + devices.lower()
+    for forbidden in [
+        "raw logs",
+        "raw evidence",
+        "private android paths",
+        "nats credentials",
+        "private key",
+        "command payload",
+    ]:
+        assert forbidden not in lowered
+
+
+def test_lite_devices_s3_no_manual_polling_regression():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+
+    assert "window.setInterval" not in devices
+    assert "setInterval" not in devices
+    assert "pollingMode: 'active'" in devices
+    assert "useLiteResource(liteApi.fleet" in devices
+    assert "window.setTimeout(() => refresh()" not in devices
+    assert "refresh();\n          if (['completed', 'failed']" not in devices
+    assert "onClickCapture" not in devices
+    assert "onPointerDownCapture" not in devices
+
+
+def test_lite_devices_s3_preserves_backend_owned_actions():
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+
+    assert "liteApi.addDevice" in devices
+    assert "liteApi.restartDeviceAgent" in devices
+    assert "liteApi.removeDevice" in devices
+    assert "copyTextToClipboard" in devices
+    assert "inviteCommand" in devices
+    assert "addDeviceFlow" in devices
+    assert "removeCandidate" in devices
+    assert "canRestartDeviceAgent" in devices
+    assert "canRemoveDevice" in devices
+    assert "fetch(" not in devices
+    assert "tailscale" not in devices.lower() or "Tailscale IP" in devices
+    assert "pm2" not in devices.lower()
+    assert "postJson('/api/lite/fleet/add-device'" in api
+    assert "restart-agent" in api
+    assert "remove-device" in api

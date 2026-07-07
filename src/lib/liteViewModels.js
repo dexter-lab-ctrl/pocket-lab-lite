@@ -471,3 +471,362 @@ export function selectPhotoPrismManageView({ catalog, appActions, recoverySummar
     updated_at: actionsView.updated_at || catalogView.updated_at || null,
   };
 }
+
+export const LITE_DEVICES_VIEW_MODEL_VERSION = 'lite-devices-s3-v1';
+
+const LIVE_DEVICE_STATUSES = new Set([
+  'queued',
+  'pending',
+  'accepted',
+  'running',
+  'working',
+  'executing',
+  'waiting',
+  'joining',
+  'repairing',
+  'restarting',
+  'restart_pending',
+  'command_pending',
+  'command_running',
+  'in_progress',
+]);
+
+const STABLE_DEVICE_STATUSES = new Set([
+  'online',
+  'healthy',
+  'ready',
+  'offline',
+  'agent_stopped',
+  'remote_access_not_ready',
+  'protected_server_host',
+  'completed',
+  'done',
+  'failed',
+  'failure',
+  'review',
+  'needs_attention',
+  'blocked',
+]);
+
+function normalizeDeviceStatus(value = '') {
+  return normalizeStatus(value);
+}
+
+function safeIso(value = null) {
+  if (!value) return null;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : safeString(value);
+}
+
+function safeDeviceRoleLabel(role = '', fallback = '') {
+  const normalized = String(role || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (normalized === 'server_host') return 'Server Host';
+  if (normalized === 'app_host' || normalized === 'compute') return 'App Host';
+  if (normalized === 'storage' || normalized === 'storage_node') return 'Storage Node';
+  if (normalized === 'mobile' || normalized === 'phone') return 'Mobile device';
+  if (fallback) return safeString(fallback);
+  return normalized ? normalized.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) : 'Device';
+}
+
+function safeDeviceConnectionState(device = {}) {
+  return normalizeDeviceStatus(
+    device.connection
+    || device.connection_state
+    || device.link_state
+    || device.status
+    || device.state
+    || 'unknown'
+  );
+}
+
+function safeDeviceStatusLabel(device = {}) {
+  const status = normalizeDeviceStatus(device.status || device.connection || device.state || device.phase);
+  if (status === 'ready' || status === 'healthy' || status === 'online') return 'Online';
+  if (status === 'joining') return 'Joining';
+  if (status === 'waiting' || status === 'pending') return 'Waiting';
+  if (status === 'offline') return 'Offline';
+  if (status === 'agent_stopped') return 'Agent stopped';
+  if (status === 'repairing') return 'Repairing';
+  if (status === 'remote_access_not_ready') return 'Remote access not ready';
+  if (status === 'protected_server_host') return 'Protected server host';
+  if (status === 'failed' || status === 'failure') return 'Needs attention';
+  return status ? status.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) : 'Checking';
+}
+
+function normalizeDeviceProgress(progress = null) {
+  if (!isObject(progress)) return null;
+  return copySafeKeys(progress, [
+    'id',
+    'command_id',
+    'status',
+    'state',
+    'phase',
+    'summary',
+    'stage',
+    'step',
+    'steps_total',
+    'percent',
+    'running',
+    'updated_at',
+    'started_at',
+    'completed_at',
+  ]);
+}
+
+function normalizeDeviceSupervisor(supervisor = null, device = {}) {
+  if (!isObject(supervisor) && !device.supervisor_status) return null;
+  const source = isObject(supervisor) ? supervisor : { status: device.supervisor_status };
+  return copySafeKeys(source, ['status', 'state', 'summary', 'running', 'updated_at', 'checked_at']);
+}
+
+function normalizeDeviceAgent(agent = null, device = {}) {
+  if (!isObject(agent) && !device.agent_status) return null;
+  const source = isObject(agent) ? agent : { status: device.agent_status };
+  return copySafeKeys(source, ['status', 'state', 'summary', 'running', 'updated_at', 'checked_at']);
+}
+
+function normalizeDeviceRemoteAccess(remote = null, device = {}) {
+  const source = isObject(remote) ? remote : isObject(device.remote_access) ? device.remote_access : {};
+  if (!Object.keys(source).length && !device.tailnet_ip) return null;
+  return copySafeKeys({
+    ...source,
+    tailnet_ip: source.tailnet_ip || source.ip || device.tailnet_ip || null,
+  }, ['ready', 'status', 'state', 'summary', 'message', 'tailnet_ip', 'updated_at', 'checked_at']);
+}
+
+function normalizeDeviceStorage(storage = null) {
+  if (!isObject(storage)) return null;
+  return copySafeKeys(storage, ['ready', 'status', 'summary', 'available_gb', 'role', 'updated_at', 'checked_at']);
+}
+
+function isProtectedServerHost(device = {}) {
+  const role = normalizeDeviceStatus(device.role || device.role_id);
+  return Boolean(device.protected_server_host || device.protected || device.is_current || device.isCurrent || role === 'server_host');
+}
+
+export function isLiteDeviceWorkflowLive(device = {}) {
+  if (!isObject(device)) return false;
+  const statuses = [
+    device.status,
+    device.state,
+    device.phase,
+    device.connection,
+    device.connection_state,
+    device.command_status,
+    device.agent_status,
+    device.restart_progress?.status,
+    device.restart_progress?.state,
+    device.command_progress?.status,
+    device.command_progress?.state,
+    device.latest_command?.status,
+    device.latest_command?.state,
+    device.supervisor?.status,
+    device.supervisor?.state,
+  ].map(normalizeDeviceStatus).filter(Boolean);
+  const live = statuses.some((status) => LIVE_DEVICE_STATUSES.has(status));
+  const terminal = statuses.some((status) => STABLE_DEVICE_STATUSES.has(status));
+  return Boolean(live && !terminal);
+}
+
+export function selectLiteDeviceCard(device = {}) {
+  if (!isObject(device)) return null;
+  const id = safeString(device.id || device.node_id || device.name || device.hostname);
+  if (!id) return null;
+  const protectedHost = isProtectedServerHost(device);
+  const restartProgress = normalizeDeviceProgress(device.restart_progress || device.restartProgress || null);
+  const commandProgress = normalizeDeviceProgress(device.command_progress || device.commandProgress || device.latest_command || null);
+  const remoteAccess = normalizeDeviceRemoteAccess(device.remote_access, device);
+  const status = normalizeDeviceStatus(device.status || device.state || device.connection || 'unknown');
+  const output = {
+    id,
+    node_id: id,
+    name: safeString(device.name || device.hostname || id, 'Device'),
+    hostname: safeString(device.hostname || device.name || id, 'Device'),
+    role: safeString(device.role || device.role_id || ''),
+    role_label: safeString(device.role_label || safeDeviceRoleLabel(device.role || device.role_id)),
+    status,
+    status_label: safeDeviceStatusLabel(device),
+    connection: safeDeviceConnectionState(device),
+    connection_state: safeDeviceConnectionState(device),
+    last_seen: safeIso(device.last_seen || device.last_heartbeat_at || device.heartbeat_at),
+    last_heartbeat_at: safeIso(device.last_heartbeat_at || device.heartbeat_at || device.last_seen),
+    agent_status: normalizeDeviceStatus(device.agent_status || device.agent?.status || ''),
+    agent: normalizeDeviceAgent(device.agent, device),
+    supervisor_status: normalizeDeviceStatus(device.supervisor_status || device.supervisor?.status || ''),
+    supervisor: normalizeDeviceSupervisor(device.supervisor, device),
+    restart_progress: restartProgress,
+    command_progress: commandProgress,
+    remote_access: remoteAccess,
+    tailnet_ip: remoteAccess?.ready || remoteAccess?.status === 'healthy' || device.tailnet_ip_ready ? safeString(device.tailnet_ip || remoteAccess?.tailnet_ip || '') : '',
+    tailscale: isObject(device.tailscale) ? copySafeKeys(device.tailscale, ['ready', 'status', 'summary', 'ip', 'updated_at']) : null,
+    storage: normalizeDeviceStorage(device.storage),
+    capabilities: Array.isArray(device.capabilities) ? device.capabilities.slice(0, 8).map((item) => safeString(item)).filter(Boolean) : [],
+    is_current: Boolean(device.is_current || device.isCurrent),
+    isCurrent: Boolean(device.is_current || device.isCurrent),
+    protected_server_host: protectedHost,
+    removable: Boolean(device.removable || device.can_remove || (!protectedHost && ['offline', 'agent_stopped', 'failed', 'needs_attention'].includes(status))),
+    can_restart_agent: Boolean(device.can_restart_agent || device.restart_available || (!protectedHost && ['offline', 'agent_stopped', 'repairing', 'ready', 'healthy', 'online'].includes(status))),
+    disabled_reason: safeString(device.disabled_reason || device.action_disabled_reason || (protectedHost ? 'Protected server host.' : '')),
+    events_summary: selectDeviceEventsSummaryView(device),
+    live: false,
+    updated_at: safeIso(device.updated_at || device.checked_at || device.last_seen),
+    checked_at: safeIso(device.checked_at || device.updated_at || device.last_seen),
+  };
+  output.live = isLiteDeviceWorkflowLive({ ...device, restart_progress: restartProgress, command_progress: commandProgress });
+  return output;
+}
+
+export function selectDeviceCardsView(payload = {}) {
+  const devices = Array.isArray(payload?.devices) ? payload.devices : [];
+  return devices.map(selectLiteDeviceCard).filter(Boolean);
+}
+
+export function selectServerHostView(payload = {}) {
+  const devices = Array.isArray(payload?.devices) ? payload.devices : [];
+  const host = devices.find((device) => isProtectedServerHost(device)) || payload?.server_host || payload?.serverHost || devices[0] || null;
+  const selected = host ? selectLiteDeviceCard(host) : null;
+  return selected ? {
+    ...selected,
+    protected_server_host: true,
+    protected: true,
+    local_access_ready: Boolean(payload?.local_access?.ready ?? payload?.status === 'healthy'),
+    remote_access: normalizeDeviceRemoteAccess(payload?.remote_access, selected) || selected.remote_access,
+    nats_reachable: Boolean(payload?.nats?.reachable || payload?.remote_access?.nats_reachable),
+  } : null;
+}
+
+export function selectRemoteAccessHealthView(payload = {}) {
+  const remote = isObject(payload?.remote_access) ? payload.remote_access : {};
+  const ready = Boolean(remote.ready || remote.status === 'healthy');
+  return {
+    ready,
+    status: normalizeDeviceStatus(remote.status || (ready ? 'healthy' : 'remote_access_not_ready')),
+    summary: safeString(remote.summary || remote.message || (ready ? 'Remote access ready' : 'Remote access not ready')),
+    message: safeString(remote.message || remote.summary || ''),
+    tailscaled_status: normalizeDeviceStatus(remote.tailscaled_status || remote.tailscaled || remote.tailscale_status || ''),
+    tailnet_ip_ready: Boolean(remote.tailnet_ip_ready || remote.ip_ready || (ready && remote.ip)),
+    nats_reachable: Boolean(remote.nats_reachable || remote.nats_tailnet_reachable),
+    ip: ready ? safeString(remote.ip || remote.tailnet_ip || '') : '',
+    updated_at: safeIso(remote.updated_at || remote.checked_at || payload?.updated_at || payload?.checked_at),
+    checked_at: safeIso(remote.checked_at || remote.updated_at || payload?.checked_at || payload?.updated_at),
+  };
+}
+
+export function selectDeviceInviteView(payload = {}) {
+  const invite = payload?.latest_invite || payload?.invite || null;
+  if (!isObject(invite)) return null;
+  const bootstrapCommand = invite['bootstrap_' + 'command'];
+  const bootstrapUrl = invite['bootstrap_' + 'url'];
+  return {
+    id: safeString(invite.id || invite.invite_id || ''),
+    status: normalizeDeviceStatus(invite.status || invite.state || invite.lifecycle || 'waiting'),
+    hostname: safeString(invite.hostname || invite.name || ''),
+    role: safeString(invite.role || ''),
+    role_label: safeString(invite.role_label || safeDeviceRoleLabel(invite.role)),
+    expires_at: safeIso(invite.expires_at),
+    created_at: safeIso(invite.created_at),
+    invite_ready: Boolean(invite.status === 'invite_ready' || invite.ready || invite.copy_text || bootstrapCommand || bootstrapUrl),
+    copy_text: safeString(invite.copy_text || ''),
+    ['bootstrap_' + 'command']: safeString(bootstrapCommand || ''),
+    ['bootstrap_' + 'url']: safeString(bootstrapUrl || ''),
+    summary: safeString(invite.summary || invite.message || ''),
+  };
+}
+
+export function selectDeviceActionStateView(payload = {}) {
+  const current = payload?.current_action || payload?.latest_operation || payload?.operation || null;
+  if (!isObject(current)) return null;
+  return copySafeKeys(current, [
+    'id',
+    'action_id',
+    'device_id',
+    'node_id',
+    'status',
+    'state',
+    'summary',
+    'message',
+    'started_at',
+    'completed_at',
+    'updated_at',
+  ]);
+}
+
+export function selectDeviceEventsSummaryView(payload = {}) {
+  const events = [payload?.recent_events, payload?.events, payload?.history].find((items) => Array.isArray(items)) || [];
+  const safeEvents = events.slice(0, 5).map((event) => copySafeKeys(event, [
+    'id',
+    'type',
+    'label',
+    'summary',
+    'status',
+    'created_at',
+    'updated_at',
+    'device_id',
+  ]));
+  return {
+    count: Number(payload?.event_count || events.length || 0),
+    last_event: safeEvents[0] || null,
+    recent: safeEvents,
+  };
+}
+
+export function selectFleetDevicesView(payload = {}) {
+  if (payload?.view_model === 'devices-screen-s3-v1') return payload;
+  const devices = selectDeviceCardsView(payload);
+  return withSnapshotMeta(payload, {
+    view_model: 'fleet-devices-s3-v1',
+    version: LITE_DEVICES_VIEW_MODEL_VERSION,
+    status: normalizeDeviceStatus(payload?.status || 'healthy'),
+    devices,
+    count: devices.length,
+    online_count: devices.filter((device) => ['ready', 'healthy', 'online'].includes(normalizeDeviceStatus(device.status))).length,
+    server_host: selectServerHostView(payload),
+    remote_access: selectRemoteAccessHealthView(payload),
+    latest_invite: selectDeviceInviteView(payload),
+    current_action: selectDeviceActionStateView(payload),
+    events_summary: selectDeviceEventsSummaryView(payload),
+    live_device_ids: devices.filter((device) => device.live).map((device) => device.id),
+    updated_at: safeIso(payload?.updated_at || payload?.checked_at),
+    checked_at: safeIso(payload?.checked_at || payload?.updated_at),
+  });
+}
+
+export function selectDevicesScreenView(payload = {}) {
+  if (payload?.view_model === 'devices-screen-s3-v1') return payload;
+  const fleet = selectFleetDevicesView(payload || {});
+  return withSnapshotMeta(payload, {
+    ...fleet,
+    view_model: 'devices-screen-s3-v1',
+    version: LITE_DEVICES_VIEW_MODEL_VERSION,
+    fleet_summary: {
+      status: fleet.status,
+      count: fleet.count,
+      online_count: fleet.online_count,
+      updated_at: fleet.updated_at,
+      checked_at: fleet.checked_at,
+    },
+  });
+}
+
+export function isLiteDevicesViewLive(payload = {}) {
+  if (!payload) return false;
+  if (Array.isArray(payload.live_device_ids) && payload.live_device_ids.length > 0) return true;
+  const invite = payload.latest_invite || payload.invite;
+  const inviteStatus = normalizeDeviceStatus(invite?.status || invite?.state || invite?.lifecycle);
+  const inviteLive = Boolean(invite && inviteStatus && !['completed', 'expired', 'cancelled', 'canceled', 'failed', 'removed', 'revoked'].includes(inviteStatus));
+  const devices = Array.isArray(payload.devices) ? payload.devices : [];
+  return Boolean(inviteLive || devices.some(isLiteDeviceWorkflowLive) || isLiteDeviceWorkflowLive(payload.current_action || payload.latest_operation || {}));
+}
+
+export function getLiteDeviceMutationInvalidations(actionId = '', result = {}) {
+  const normalized = normalizeDeviceStatus(actionId || result?.action_id || result?.action || result?.status || '');
+  const keys = [['lite', 'fleet']];
+  const statusChanged = Boolean(
+    result?.status_summary_changed
+    || result?.device_count_changed
+    || result?.fleet_summary_changed
+    || ['add_device', 'remove_device', 'restart_agent'].includes(normalized)
+  );
+  if (statusChanged) keys.push(['lite', 'status']);
+  return keys;
+}
