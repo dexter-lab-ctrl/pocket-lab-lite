@@ -689,90 +689,118 @@ function AppActionGroup({ group, children, actionIds = [] }) {
 }
 
 
+function normalizedActionStatus(value) {
+  return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
+}
+
+function isLiveCatalogActionStatus(value) {
+  return ['queued', 'pending', 'accepted', 'running', 'working', 'executing', 'waiting', 'in_progress'].includes(normalizedActionStatus(value));
+}
+
+function isTerminalCatalogActionStatus(value) {
+  return ['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'ready'].includes(normalizedActionStatus(value));
+}
+
+function syntheticBusyProgress(actionId) {
+  const step = actionId === 'backup_app'
+    ? 'Saving app records'
+    : actionId === 'preview_restore'
+      ? 'Preparing restore preview. No changes made.'
+      : actionId === 'backup_to_storage'
+        ? 'Checking storage-device readiness.'
+        : actionId === 'update_app'
+          ? 'Checking update readiness'
+          : actionId === 'import_photos'
+            ? 'Importing photos'
+            : actionId === 'repair_app'
+              ? 'Checking repair'
+              : 'Checking safely';
+  return {
+    running: true,
+    percent: actionId === 'preview_restore' ? 28 : 20,
+    indeterminate: true,
+    phase: 'running',
+    step,
+    steps: [],
+    timeline: [],
+  };
+}
+
+function progressFromLiveOperation({ actionId, progress, status, fallbackStep }) {
+  if (!progress || typeof progress !== 'object') return syntheticBusyProgress(actionId);
+  const rawPercent = Number(progress?.percent);
+  const percent = Number.isFinite(rawPercent) ? Math.min(95, Math.max(10, rawPercent)) : 22;
+  return {
+    running: true,
+    percent,
+    indeterminate: progress?.indeterminate !== false,
+    phase: progress?.phase || status || 'running',
+    step: progress?.step || fallbackStep || 'Working',
+    steps: Array.isArray(progress?.steps) ? progress.steps : [],
+    timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
+  };
+}
+
 function actionProgressFromLifecycle(lifecycle, actionId, busy = false) {
   if (actionId === 'import_photos') {
     const media = lifecycle?.media || {};
     const operation = media?.last_import || null;
-    const operationStatus = String(operation?.status || '').toLowerCase();
-    const isRunning = Boolean(busy || ['queued', 'running'].includes(operationStatus));
-    if (!isRunning) return null;
-    const progress = operation?.progress || {};
-    const rawPercent = Number(progress?.percent);
-    let percent = Number.isFinite(rawPercent) ? rawPercent : 18;
-    if (percent < 10) percent = 10;
-    if (percent >= 100) percent = 88;
-    percent = Math.min(92, Math.max(10, percent));
-    return {
-      running: isRunning,
-      percent,
-      indeterminate: Boolean(progress?.indeterminate || progress?.phase === 'executing' || operationStatus === 'running'),
-      phase: progress?.phase || operation?.phase || operationStatus || (busy ? 'queued' : 'idle'),
-      step: progress?.step || operation?.summary || (busy ? 'Importing photos' : 'Importing photos'),
-      steps: Array.isArray(progress?.steps) ? progress.steps : [],
-      timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
-    };
+    const operationStatus = normalizedActionStatus(operation?.status || operation?.phase);
+    const operationLive = Boolean(media?.operation_running || isLiveCatalogActionStatus(operationStatus));
+    if (!operationLive) return busy ? syntheticBusyProgress(actionId) : null;
+    return progressFromLiveOperation({
+      actionId,
+      progress: operation?.progress || {},
+      status: operationStatus,
+      fallbackStep: operation?.summary || 'Importing photos',
+    });
   }
 
   if (actionId === 'update_app') {
     const update = lifecycle?.update || {};
     const action = lifecycle?.actions?.update_app || {};
     const pending = update?.pending_check || null;
-    const latest = update?.latest_check || action?.latest_check || null;
-    const progress = pending?.progress || latest?.progress || action?.progress || {};
-    const rawStatus = String(pending?.status || action?.status || '').toLowerCase();
-    const isRunning = Boolean(busy || update?.operation_running || ['queued', 'running'].includes(rawStatus));
-    if (!isRunning) return null;
-    const rawPercent = Number(progress?.percent);
-    const percent = Number.isFinite(rawPercent) ? Math.min(92, Math.max(10, rawPercent)) : 24;
-    return {
-      running: true,
-      percent,
-      indeterminate: progress?.indeterminate !== false,
-      phase: progress?.phase || rawStatus || 'queued',
-      step: progress?.step || 'Checking update readiness',
-      steps: Array.isArray(progress?.steps) ? progress.steps : [],
-      timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
-    };
+    const pendingStatus = normalizedActionStatus(pending?.status || pending?.phase);
+    const actionStatus = normalizedActionStatus(action?.status);
+    const live = Boolean(update?.operation_running || isLiveCatalogActionStatus(pendingStatus) || isLiveCatalogActionStatus(actionStatus));
+    if (!live) return busy ? syntheticBusyProgress(actionId) : null;
+    return progressFromLiveOperation({
+      actionId,
+      progress: pending?.progress || action?.progress || {},
+      status: pendingStatus || actionStatus,
+      fallbackStep: 'Checking update readiness',
+    });
   }
 
   if (['backup_app', 'preview_restore', 'backup_to_storage'].includes(actionId)) {
-    if (!busy) return null;
-    const step = actionId === 'backup_app'
-      ? 'Saving app settings'
-      : actionId === 'preview_restore'
-        ? 'Preparing restore preview. No changes made.'
-        : 'Checking storage-device readiness.';
-    return {
-      running: true,
-      percent: actionId === 'preview_restore' ? 28 : 20,
-      indeterminate: true,
-      phase: 'running',
-      step,
-      steps: [],
-      timeline: [],
-    };
+    const action = lifecycle?.actions?.[actionId] || {};
+    const status = normalizedActionStatus(action?.status || action?.phase);
+    const live = isLiveCatalogActionStatus(status) && !isTerminalCatalogActionStatus(status);
+    if (!live) return busy ? syntheticBusyProgress(actionId) : null;
+    return progressFromLiveOperation({
+      actionId,
+      progress: action?.progress || {},
+      status,
+      fallbackStep: action?.summary || syntheticBusyProgress(actionId).step,
+    });
   }
 
   if (!['check_app', 'repair_app'].includes(actionId)) return null;
   const operationAction = lifecycle?.operations?.actions?.[actionId] || lifecycle?.actions?.[actionId] || {};
   const currentAction = lifecycle?.current_action || lifecycle?.operations?.current_action || null;
   const currentMatches = currentAction?.action_id === actionId;
-  const rawStatus = String((currentMatches ? currentAction?.status : operationAction?.status) || '').toLowerCase();
-  const isRunning = Boolean(busy || ['queued', 'running'].includes(rawStatus));
-  if (!isRunning) return null;
-  const progress = (currentMatches ? currentAction?.progress : operationAction?.progress) || {};
-  const rawPercent = Number(progress?.percent);
-  const percent = Number.isFinite(rawPercent) ? Math.min(92, Math.max(10, rawPercent)) : 22;
-  return {
-    running: true,
-    percent,
-    indeterminate: progress?.indeterminate !== false,
-    phase: progress?.phase || rawStatus || (busy ? 'running' : 'queued'),
-    step: progress?.step || (actionId === 'check_app' ? 'Checking safely' : 'Checking repair'),
-    steps: Array.isArray(progress?.steps) ? progress.steps : [],
-    timeline: Array.isArray(progress?.timeline) ? progress.timeline : [],
-  };
+  const source = currentMatches ? currentAction : operationAction;
+  const rawStatus = normalizedActionStatus(source?.status || source?.phase);
+  const live = currentMatches && isLiveCatalogActionStatus(rawStatus) && !isTerminalCatalogActionStatus(rawStatus);
+  if (!live) return busy ? syntheticBusyProgress(actionId) : null;
+  return progressFromLiveOperation({
+    actionId,
+    progress: source?.progress || {},
+    status: rawStatus,
+    fallbackStep: actionId === 'check_app' ? 'Checking safely' : 'Checking repair',
+  });
 }
+
 
 function hasRunningPhotoPrismMedia(apps) {
   return (Array.isArray(apps) ? apps : []).some((app) => (
@@ -1895,7 +1923,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   });
   const appActionMutation = useLiteMutation({
     mutationFn: ({ appId = 'photoprism', actionId, payload = {} }) => liteApi.runAppAction(appId, actionId, payload),
-    invalidateForAction: ({ actionId }) => liteMutationInvalidations[actionId] || [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
+    invalidateForAction: ({ actionId }) => liteMutationInvalidations[actionId] || [liteQueryKeys.appActions('photoprism')],
   });
   const installAppMutation = useLiteMutation({
     mutationFn: ({ appId, targetNodeId }) => liteApi.installApp(appId, { target_node_id: targetNodeId }),

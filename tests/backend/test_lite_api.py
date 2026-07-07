@@ -4655,7 +4655,9 @@ def test_lite_app_catalog_progress_and_safety_details_followup_source():
     assert "setInterval" not in progress
     assert "animatedStage" not in progress
     assert "shouldAnimateProgress" not in progress
-    assert "progress?.running || ['running', 'working'" in progress
+    assert "isLiveActionState" in progress
+    assert "TERMINAL_ACTION_STATES" in progress
+    assert "state === \'evidence_saved\' ? 100 : 95" in progress
     assert "troubleshooting records stay backend-only" not in catalog.lower()
     assert "actionId !== 'check_app' && actionId !== 'repair_app'" in catalog
     assert 'kind="row-to-details"' in catalog
@@ -4683,6 +4685,7 @@ def test_lite_app_action_progress_uses_backend_step_status_source():
     assert "step.status === 'blocked'" in progress
     assert "progressPercentForSteps" in progress
     assert "completed / steps.length" in progress
+    assert "Math.min(95, percent)" in progress
     assert "setInterval" not in progress
     assert "animatedStage" not in progress
     assert "shouldAnimateProgress" not in progress
@@ -4713,6 +4716,6 @@ def test_lite_action_progress_uses_backend_step_status_source():
 
     assert "No frontend-invented app action completion" not in progress_source
     assert "progress.steps ||" not in catalog_source
-    assert "Saving app records" not in catalog_source
-    assert "Verifying backup" not in catalog_source
-    assert "Preparing preview" not in catalog_source
+    assert "syntheticBusyProgress" in catalog_source
+    assert "isTerminalCatalogActionStatus" in catalog_source
+    assert "currentMatches && isLiveCatalogActionStatus" in catalog_source

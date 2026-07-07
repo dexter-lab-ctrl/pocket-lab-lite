@@ -55,6 +55,44 @@ function normalizedStatus(value) {
   return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
 }
 
+const TERMINAL_ACTION_STATES = new Set([
+  'ready',
+  'succeeded',
+  'success',
+  'completed',
+  'complete',
+  'done',
+  'verified',
+]);
+
+const LIVE_ACTION_STATES = new Set([
+  'queued',
+  'pending',
+  'accepted',
+  'running',
+  'working',
+  'executing',
+  'waiting',
+  'in_progress',
+]);
+
+function actionStateValues({ status, progress, result }) {
+  return [
+    status,
+    progress?.status,
+    progress?.phase,
+    result?.status,
+  ].filter(Boolean).map(normalizedStatus);
+}
+
+function isTerminalActionState({ status, progress, result }) {
+  return actionStateValues({ status, progress, result }).some((value) => TERMINAL_ACTION_STATES.has(value));
+}
+
+function isLiveActionState({ status, progress, result }) {
+  return Boolean(progress?.running) || actionStateValues({ status, progress, result }).some((value) => LIVE_ACTION_STATES.has(value));
+}
+
 function terminalProgressPhase(progress) {
   return ['completed', 'complete', 'done', 'succeeded', 'success', 'verified'].includes(normalizedStatus(progress?.phase));
 }
@@ -86,16 +124,20 @@ function normalizeProgressState({
   evidenceRef,
   receiptId,
 }) {
-  const raw = normalizedStatus(progress?.phase || status || result?.status);
+  const raw = normalizedStatus(progress?.phase || progress?.status || status || result?.status);
+  const terminal = isTerminalActionState({ status, progress, result });
+  const live = isLiveActionState({ status, progress, result });
   if (enabled === false || disabledReason) return 'blocked';
   if (['saved_state', 'saved', 'cached', 'stale', 'expired', 'offline_saved'].includes(raw)) return 'saved_state';
   if (['queued', 'pending', 'accepted'].includes(raw)) return 'queued';
-  if (progress?.running || ['running', 'working', 'executing', 'waiting', 'in_progress'].includes(raw)) return raw === 'waiting' ? 'waiting' : 'running';
+  if (live) return raw === 'waiting' ? 'waiting' : 'running';
   if (['review', 'degraded', 'warning', 'needs_attention'].includes(raw)) return 'review';
   if (['failed', 'failure', 'error'].includes(raw)) return 'failed';
+  if (terminal && hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId })) return 'evidence_saved';
   if (hasRunEvidence({ progress, result, lastRanAt, firstRanAt, lastResult, troubleshooting, evidenceRef, receiptId })) return 'evidence_saved';
   return 'idle';
 }
+
 
 function normalizeBackendStepStatus(value) {
   const status = normalizedStatus(value);
@@ -109,14 +151,23 @@ function normalizeBackendStepStatus(value) {
 
 function normalizeBackendStep(step, index) {
   if (!step || typeof step !== 'object') return null;
-  const label = String(step.label || step.title || step.name || step.step || step.id || '').trim();
-  if (!label) return null;
+  const rawId = String(step.id || step.key || step.name || `step-${index}`).trim() || `step-${index}`;
+  const rawLabel = String(step.label || step.title || step.name || step.step || step.id || '').trim();
+  if (!rawLabel) return null;
+  const normalizedId = normalizedStatus(rawId);
+  const normalizedLabel = normalizedStatus(rawLabel);
+  const label = normalizedId === 'worker_picked_up' || normalizedLabel === 'worker_picked_it_up'
+    ? 'Working'
+    : normalizedId === 'evidence_saved'
+      ? 'Done'
+      : rawLabel;
   return {
-    id: String(step.id || step.key || step.name || `step-${index}`).trim() || `step-${index}`,
+    id: rawId,
     label,
     status: normalizeBackendStepStatus(step.status || step.state || step.phase),
   };
 }
+
 
 function backendProgressSteps(progress) {
   const source = Array.isArray(progress?.steps) && progress.steps.length
@@ -167,10 +218,14 @@ function activeStageForSteps(steps) {
 function progressPercentForSteps({ state, steps }) {
   if (!steps.length || state === 'idle') return 0;
   if (state === 'blocked' || state === 'saved_state') return 0;
-  if (steps.every((step) => step.status === 'completed')) return 100;
+  if (steps.every((step) => step.status === 'completed')) {
+    return state === 'evidence_saved' ? 100 : 95;
+  }
   const completed = steps.filter((step) => step.status === 'completed').length;
-  return Math.round((completed / steps.length) * 100);
+  const percent = Math.round((completed / steps.length) * 100);
+  return state === 'evidence_saved' ? percent : Math.min(95, percent);
 }
+
 
 function currentLabelForState({ actionId, state, progress, disabledReason, result, lastResult, steps }) {
   const activeStep = steps.find((step) => step.status === 'active');
@@ -178,12 +233,13 @@ function currentLabelForState({ actionId, state, progress, disabledReason, resul
   if (state === 'blocked') return disabledReason || 'Paused for safety';
   if (state === 'saved_state') return 'Showing saved state';
   if (state === 'queued') return activeStep?.label || 'Request accepted';
-  if (state === 'running' || state === 'waiting') return activeStep?.label || progress?.summary || ACTION_WORKING_COPY[actionId] || progress?.step || 'Working';
+  if (state === 'running' || state === 'waiting') return activeStep?.label || progress?.summary || progress?.step || ACTION_WORKING_COPY[actionId] || 'Working';
   if (state === 'evidence_saved') return lastResult || result?.summary || ACTION_COMPLETE_COPY[actionId] || lastCompleted?.label || 'Done';
   if (state === 'review') return result?.summary || 'Needs review';
   if (state === 'failed') return result?.summary || 'Could not complete';
   return 'Not run yet';
 }
+
 
 function statusChipForState({ actionId, state, steps }) {
   if (state === 'queued') return 'Queued';
@@ -243,16 +299,18 @@ function nodeState({ state, step }) {
 }
 
 function nodeSymbol({ kind, actionId, state, step, index, finalIndex }) {
-  if (step.status === 'completed' && (state === 'evidence_saved' || index === finalIndex)) return '✓';
+  const terminalDone = state === 'evidence_saved' && step.status === 'completed';
+  if (terminalDone && index === finalIndex) return '✓';
   if (step.status === 'failed') return '!';
   if (step.status === 'blocked') return 'Ⅱ';
-  if (kind === 'vault') return index === finalIndex ? '✓' : '▣';
-  if (kind === 'preview') return index === finalIndex ? '✓' : '◇';
-  if (kind === 'readiness') return index === finalIndex ? '✓' : '▭';
-  if (kind === 'media') return index === finalIndex ? '✓' : '●';
-  if (actionId === 'check_app') return index === finalIndex ? '✓' : '●';
-  return index === finalIndex ? '✓' : '●';
+  if (kind === 'vault') return terminalDone && index === finalIndex ? '✓' : '▣';
+  if (kind === 'preview') return terminalDone && index === finalIndex ? '✓' : '◇';
+  if (kind === 'readiness') return terminalDone && index === finalIndex ? '✓' : '▭';
+  if (kind === 'media') return terminalDone && index === finalIndex ? '✓' : '●';
+  if (actionId === 'check_app') return terminalDone && index === finalIndex ? '✓' : '●';
+  return terminalDone && index === finalIndex ? '✓' : '●';
 }
+
 
 export default function LiteActionProgress({
   actionId,
