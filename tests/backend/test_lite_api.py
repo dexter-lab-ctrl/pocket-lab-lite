@@ -6066,3 +6066,59 @@ def test_lite_security_phase4_preserves_backend_owned_security_boundary():
     assert "nats://" not in (security + details).lower()
     assert "onClickCapture" not in security
     assert "onPointerDownCapture" not in security
+
+
+def test_lite_security_overlay_hotfix_removes_catalog_sheet_collision():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "variant = 'manage'" in overlay
+    assert "security: {" in overlay
+    assert "lite-security-overlay-surface" in overlay
+    assert "className={`lite-overlay-surface ${variantClasses.surface}" in overlay
+    assert 'variant="security"' in security
+    assert 'motion="safe-grip"' in security
+    assert "lite-catalog-manage-sheet lite-security-phase3" not in security
+    assert ".lite-security-overlay-surface," in css
+    assert "must not inherit App Catalog Manage sheet rules" in css
+    assert "data-lite-sheet-variant={variant}" in overlay
+
+
+def test_lite_security_safe_gesture_spring_interactions_are_grip_only():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "@react-spring/web" in overlay
+    assert "@use-gesture/react" in overlay
+    assert "useSpring" in overlay
+    assert "useDrag" in overlay
+    assert "motion === 'safe-grip'" in overlay
+    assert "filterTaps: true" in overlay
+    assert "touchAction: 'none'" in overlay
+    assert "window.setInterval" not in overlay + security
+    assert "onClickCapture" not in overlay + security
+    assert "onPointerDownCapture" not in overlay + security
+    assert ".lite-security-overlay-grip" in css
+    assert ".lite-security-phase3-grip" in css
+    assert "Gestures are limited to the grip only" in css
+
+
+def test_lite_security_overlay_hotfix_preserves_backend_owned_boundaries():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "fetch(" not in security
+    assert "fetch(" not in details
+    assert "child_process" not in overlay + security + details
+    assert "exec(" not in overlay + security + details
+    assert "spawn(" not in overlay + security + details
+    assert "nats://" not in (overlay + security + details).lower()

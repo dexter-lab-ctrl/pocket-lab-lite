@@ -1882,7 +1882,9 @@ export default function SecurityScreen() {
         headerClassName="lite-security-phase3-head"
         closeClassName="lite-security-phase3-close"
         gripClassName="lite-security-phase3-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true' }}
+        variant="security"
+        motion="safe-grip"
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
       >
         <Suspense fallback={<div className="lite-security-details-loading">Loading Security details…</div>}>
           <SecurityProgressiveDetailsLazy type={activeSecurityDetails || 'evidence'} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />
@@ -1901,7 +1903,9 @@ export default function SecurityScreen() {
         headerClassName="lite-security-phase3-head"
         closeClassName="lite-security-phase3-close"
         gripClassName="lite-security-phase3-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true' }}
+        variant="security"
+        motion="safe-grip"
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
       >
         {selectedFinding ? (
           <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
