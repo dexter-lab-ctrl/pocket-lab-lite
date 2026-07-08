@@ -179,8 +179,17 @@ const SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS = [
   'Still skips photos, backups, and large caches',
   'profile: full',
 ];
+const SECURITY_PROFILE3_APP_CHECK_GUARDS = [
+  'App Check',
+  'Check PhotoPrism',
+  'Checks PhotoPrism route, app files, settings, backup metadata, and action state',
+  'Skips photos and media',
+  'profile: app',
+  'app_id: photoprism',
+];
 void SECURITY_PROFILE1_QUICK_SAFETY_GUARDS;
 void SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS;
+void SECURITY_PROFILE3_APP_CHECK_GUARDS;
 
 const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
   'lite-security-score-ring-green-fill',
@@ -254,6 +263,39 @@ const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
   history: 'Recent safety trend summary with lazy details.',
   technical_details: 'Collapsed safe metadata for support and troubleshooting.',
 };
+
+const DEFAULT_APP_COVERAGE_SUMMARY = {
+  profile: 'app',
+  app_id: 'photoprism',
+  app_label: 'PhotoPrism',
+  checked_targets: [
+    'PhotoPrism route',
+    'PhotoPrism app files',
+    'PhotoPrism settings',
+    'PhotoPrism backup metadata',
+    'PhotoPrism action state',
+  ],
+  skipped_targets: [
+    'Photo library/media',
+    'PhotoPrism originals/import folder',
+    'PhotoPrism thumbnails/cache/sidecars',
+    'PhotoPrism database',
+    'Backup payloads',
+    'Android shared storage',
+    'Logs and large caches',
+  ],
+  excluded_groups: [
+    'Photo library/media',
+    'PhotoPrism originals/import folder',
+    'PhotoPrism thumbnails, cache, sidecars, and database',
+    'Backup payloads and restic repository contents',
+    'Android shared storage',
+    'Logs and large caches',
+  ],
+  partial_targets: [],
+  timed_out_targets: [],
+};
+
 
 const SECURITY_COVERAGE_ROWS = [
   { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
@@ -1580,6 +1622,8 @@ export default function SecurityScreen() {
   const [securityManageOpen, setSecurityManageOpen] = useState(false);
   const [securityManageSection, setSecurityManageSection] = useState('overview');
   const [fullLocalConfirmOpen, setFullLocalConfirmOpen] = useState(false);
+  const [appCheckConfirmOpen, setAppCheckConfirmOpen] = useState(false);
+  const [appCheckTarget, setAppCheckTarget] = useState({ app_id: 'photoprism', app_label: 'PhotoPrism' });
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
   const remediationTriggerRef = useRef(null);
@@ -1601,7 +1645,7 @@ export default function SecurityScreen() {
   const evidenceRun = evidence?.run || null;
   const toolResults = evidenceRun?.tool_results || lastRun?.tool_results || data?.tool_results || {};
   const scanProfile = String(data?.scan_profile || lastRun?.scan_profile || evidenceRun?.scan_profile || result?.scan_profile || 'quick').toLowerCase();
-  const coverageFallback = scanProfile === 'full' ? DEFAULT_FULL_COVERAGE_SUMMARY : DEFAULT_QUICK_COVERAGE_SUMMARY;
+  const coverageFallback = scanProfile === 'app' ? DEFAULT_APP_COVERAGE_SUMMARY : scanProfile === 'full' ? DEFAULT_FULL_COVERAGE_SUMMARY : DEFAULT_QUICK_COVERAGE_SUMMARY;
   const coverageSummary = data?.coverage_summary || lastRun?.coverage_summary || evidence?.coverage_summary || coverageFallback;
   const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, coverageFallback.checked_targets);
   const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, coverageFallback.skipped_targets);
@@ -1752,6 +1796,7 @@ export default function SecurityScreen() {
       : [];
   const lifecycleProfiles = Array.isArray(data?.app_lifecycle_profiles?.apps) ? data.app_lifecycle_profiles.apps : [];
   const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
+  const photoPrismAppCheckTarget = protectedApps.find((app) => app?.app_id === 'photoprism') || { app_id: 'photoprism', app_label: 'PhotoPrism', label: 'PhotoPrism' };
 
 
   React.useEffect(() => {
@@ -1846,6 +1891,19 @@ export default function SecurityScreen() {
     setFullLocalConfirmOpen(false);
   }
 
+  function openAppCheckConfirm(app = { app_id: 'photoprism', app_label: 'PhotoPrism' }, event) {
+    event?.stopPropagation?.();
+    setAppCheckTarget({
+      app_id: app?.app_id || 'photoprism',
+      app_label: app?.app_label || app?.label || app?.name || 'PhotoPrism',
+    });
+    setAppCheckConfirmOpen(true);
+  }
+
+  function closeAppCheckConfirm() {
+    setAppCheckConfirmOpen(false);
+  }
+
   async function startFullLocalCheck() {
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
@@ -1871,22 +1929,33 @@ export default function SecurityScreen() {
     }
   }
 
-  async function checkProtectedApp(app) {
+  function checkProtectedApp(app, event) {
     if (!app?.app_id) return;
+    openAppCheckConfirm(app, event);
+  }
+
+  async function startAppCheck() {
+    const app = appCheckTarget || { app_id: 'photoprism', app_label: 'PhotoPrism' };
+    if (!app?.app_id) return;
+    const flowCheck = securityFlow.requestRun();
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    setAppCheckConfirmOpen(false);
     setBusy(true);
-    setResult({ status: 'checking', summary: 'Check app request sent through Pocket Lab.' });
+    setResult({ status: 'queued', scan_profile: 'app', app_id: app.app_id, app_label: app.app_label || 'PhotoPrism', summary: `${app.app_label || 'PhotoPrism'} App Check queued.` });
     setActionError(null);
+    setEvidence(null);
+    setEvidenceError(null);
+    setEvidenceLoading(false);
+    setReceiptCopied(false);
     try {
       const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
+      securityFlow.accepted(payload);
       setResult(payload);
       invalidateSecurityQuery();
     } catch (err) {
-      const payload = err?.payload || {};
-      if (err.status === 501 && payload?.status === 'not_implemented') {
-        setResult(payload);
-      } else {
-        setActionError(err.message);
-      }
+      securityFlow.fail(err);
+      setResult(null);
+      setActionError(err.message);
     } finally {
       setBusy(false);
     }
@@ -2271,6 +2340,14 @@ export default function SecurityScreen() {
                 </div>
                 <LiteButton tone="secondary" onClick={openFullLocalConfirm} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel="Start Full Local Check confirmation">Full Local Check</LiteButton>
               </div>
+              <div className="lite-security-app-check-card">
+                <div>
+                  <strong>App Check</strong>
+                  <p>Check PhotoPrism route, app files, settings, backup metadata, and action state. Best after installing, repairing, updating, or changing PhotoPrism settings.</p>
+                  <small>Skips photos and media.</small>
+                </div>
+                <LiteButton tone="secondary" onClick={(event) => checkProtectedApp(photoPrismAppCheckTarget, event)} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel="Start PhotoPrism App Check confirmation">Check PhotoPrism</LiteButton>
+              </div>
             </div>
           ) : null}
 
@@ -2329,8 +2406,8 @@ export default function SecurityScreen() {
             <div className="lite-security-manage-card-list lite-security-quick-coverage-card">
               <div className="lite-security-manage-row">
                 <div>
-                  <strong>{scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
-                  <p>{scanProfile === 'full' ? 'Checks Termux, Pocket Lab, selected PROot Ubuntu areas, PhotoPrism app/config, route metadata, service status, and backup metadata while skipping heavy/private data.' : 'Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.'}</p>
+                  <strong>{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
+                  <p>{scanProfile === 'app' ? 'Checks PhotoPrism route, app files, settings, backup metadata, and action state while skipping photos, media, databases, backup payloads, logs, and large caches.' : scanProfile === 'full' ? 'Checks Termux, Pocket Lab, selected PROot Ubuntu areas, PhotoPrism app/config, route metadata, service status, and backup metadata while skipping heavy/private data.' : 'Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.'}</p>
                 </div>
                 <span className="lite-security-quick-profile-chip">Profile: {scanProfile}</span>
               </div>
@@ -2366,7 +2443,7 @@ export default function SecurityScreen() {
               ) : null}
               <SecurityTargetStatusRows targetStatuses={targetCoverageStatuses} />
               <QuickCoverageRows
-                title={scanProfile === 'full' ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check'}
+                title={scanProfile === 'app' ? 'Skipped by App Check' : scanProfile === 'full' ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check'}
                 items={skippedCoverageTargets}
                 statusLabel="Skipped"
                 statusTone="neutral"
@@ -2479,6 +2556,33 @@ export default function SecurityScreen() {
           <div className="lite-security-full-local-actions">
             <LiteButton tone="secondary" onClick={closeFullLocalConfirm}>Cancel</LiteButton>
             <LiteButton onClick={startFullLocalCheck} disabled={scanInProgress || securityFlow.writeBlocked}>Start Full Local Check</LiteButton>
+          </div>
+        </div>
+      </LiteSheet>
+
+      <LiteSheet
+        open={appCheckConfirmOpen}
+        onClose={closeAppCheckConfirm}
+        eyebrow="Security"
+        title="Check PhotoPrism"
+        description="Checks PhotoPrism app safety while keeping photos and media skipped."
+        layerClassName="lite-security-phase3-layer lite-security-detail-layer"
+        className="lite-security-phase3-panel lite-security-app-check-confirm"
+        bodyClassName="lite-security-phase3-scroll"
+        headerClassName="lite-security-phase3-head"
+      >
+        <div className="lite-security-full-local-confirm-body">
+          <p>This checks PhotoPrism route, app files, settings, backup metadata, and action state. It can take a few minutes. It skips your photo library, media folders, backup payloads, logs, and large caches.</p>
+          <div className="lite-security-phase1-meta-grid">
+            <span>Does not scan your photo library</span>
+            <span>Does not read app secrets into the browser</span>
+            <span>Does not change app settings</span>
+            <span>Does not restore backups</span>
+            <span>Does not run anything in the browser</span>
+          </div>
+          <div className="lite-security-full-local-actions">
+            <LiteButton tone="secondary" onClick={closeAppCheckConfirm}>Cancel</LiteButton>
+            <LiteButton onClick={startAppCheck} disabled={scanInProgress || securityFlow.writeBlocked}>Start App Check</LiteButton>
           </div>
         </div>
       </LiteSheet>

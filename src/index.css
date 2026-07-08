@@ -19839,14 +19839,17 @@ textarea {
 
 /* Security Profile 2 — Full Local Check */
 .lite-security-full-local-card,
-.lite-security-full-local-confirm-body {
+.lite-security-app-check-card,
+.lite-security-full-local-confirm-body,
+.lite-security-app-check-confirm-body {
   border: 1px solid rgba(37, 99, 235, 0.14);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
 }
 
-.lite-security-full-local-card {
+.lite-security-full-local-card,
+.lite-security-app-check-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
@@ -19857,24 +19860,30 @@ textarea {
 
 .lite-security-full-local-card p,
 .lite-security-full-local-card small,
-.lite-security-full-local-confirm-body p {
+.lite-security-app-check-card p,
+.lite-security-app-check-card small,
+.lite-security-full-local-confirm-body p,
+.lite-security-app-check-confirm-body p {
   margin: 4px 0 0;
   color: rgba(51, 65, 85, 0.82);
   line-height: 1.55;
 }
 
-.lite-security-full-local-card small {
+.lite-security-full-local-card small,
+.lite-security-app-check-card small {
   display: block;
   font-size: 0.78rem;
 }
 
-.lite-security-full-local-confirm-body {
+.lite-security-full-local-confirm-body,
+.lite-security-app-check-confirm-body {
   display: grid;
   gap: 16px;
   padding: 18px;
 }
 
-.lite-security-full-local-actions {
+.lite-security-full-local-actions,
+.lite-security-app-check-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -19885,17 +19894,28 @@ textarea {
   border-color: rgba(14, 165, 233, 0.18);
 }
 
+.lite-security-app-check-card {
+  border-color: rgba(16, 185, 129, 0.18);
+}
+
+.lite-security-app-check-confirm-body {
+  border-color: rgba(16, 185, 129, 0.16);
+}
+
 @media (max-width: 720px) {
-  .lite-security-full-local-card {
+  .lite-security-full-local-card,
+  .lite-security-app-check-card {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
 
-  .lite-security-full-local-actions {
+  .lite-security-full-local-actions,
+  .lite-security-app-check-actions {
     justify-content: stretch;
   }
 
-  .lite-security-full-local-actions .lite-button {
+  .lite-security-full-local-actions .lite-button,
+  .lite-security-app-check-actions .lite-button {
     flex: 1 1 160px;
   }
 }

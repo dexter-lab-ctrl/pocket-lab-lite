@@ -910,6 +910,8 @@ function normalizeSecurityRun(run = {}) {
     duration_seconds: safeNumber(run.duration_seconds, 0),
     tools: safeList(run.tools || ['lynis', 'trivy']),
     scan_profile: safeString(run.scan_profile || 'quick', 'quick'),
+    app_id: safeString(run.app_id || ''),
+    app_label: safeString(run.app_label || ''),
     coverage_summary: selectSecurityCoverageSummaryView(run),
     critical_count: safeNumber(run.critical_count, 0),
     high_count: safeNumber(run.high_count, 0),
@@ -922,7 +924,7 @@ function normalizeSecurityRun(run = {}) {
     execution_timeline: selectSecurityTimelineView({ execution_timeline: run.execution_timeline }),
   }, [
     'run_id', 'status', 'state', 'phase', 'started_at', 'completed_at', 'updated_at', 'duration_seconds',
-    'tools', 'scan_profile', 'coverage_summary', 'critical_count', 'high_count', 'medium_count', 'low_count', 'partial_results', 'sbom_saved',
+    'tools', 'scan_profile', 'app_id', 'app_label', 'coverage_summary', 'critical_count', 'high_count', 'medium_count', 'low_count', 'partial_results', 'sbom_saved',
     'evidence_refs', 'tool_results', 'execution_timeline',
   ]);
 }
@@ -1032,6 +1034,8 @@ export function selectSecurityCoverageSummaryView(payload = {}) {
       : {};
   return {
     profile: safeString(coverage.profile || payload?.scan_profile || payload?.last_run?.scan_profile || 'quick', 'quick'),
+    app_id: safeString(coverage.app_id || payload?.app_id || payload?.last_run?.app_id || ''),
+    app_label: safeString(coverage.app_label || payload?.app_label || payload?.last_run?.app_label || ''),
     checked_targets: safeList(coverage.checked_targets, [
       'Termux host posture',
       'Pocket Lab Lite files',
@@ -1109,6 +1113,8 @@ export function selectSecuritySummaryView(payload = {}) {
     findings_count: findings.findings_count,
     evidence_count: evidence.evidence_count,
     scan_profile: safeString(payload?.scan_profile || lastRun?.scan_profile || 'quick', 'quick'),
+    app_id: safeString(payload?.app_id || lastRun?.app_id || ''),
+    app_label: safeString(payload?.app_label || lastRun?.app_label || ''),
     coverage_summary: selectSecurityCoverageSummaryView(payload),
     evidence_saved: evidence.evidence_saved,
     evidence_refs: evidence.evidence_refs,
@@ -1158,6 +1164,8 @@ export function selectSecurityScreenView(payload = {}) {
       status: summary.status,
       summary: summary.summary,
       score: summary.score,
+      app_id: summary.app_id,
+      app_label: summary.app_label,
       items_to_review: summary.items_to_review,
       evidence_count: summary.evidence_count,
       checked_at: summary.checked_at,

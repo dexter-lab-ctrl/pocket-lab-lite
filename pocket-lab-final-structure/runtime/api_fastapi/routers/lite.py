@@ -64,6 +64,7 @@ class LiteSecurityScanRequest(BaseModel):
     scope: str = "local"
     reason: str | None = None
     profile: str = "quick"
+    app_id: str | None = None
 
 
 class LiteAppSecurityCheckRequest(BaseModel):
@@ -486,6 +487,33 @@ async def run_lite_app_action(app_id: str, action_id: str, payload: LiteAppActio
         })
         return submitted
 
+    if kind == "security_app_check":
+        command = action["command"]
+        await ensure_worker_execution_ready()
+        lite_security.record_queued_run(command)
+        try:
+            submitted = await submit_domain_command(
+                lite_security.policy.COMMAND_SUBJECT,
+                "lite.security.app_check.requested",
+                command,
+                trace_id=command.get("command_id"),
+            )
+        except Exception:
+            lite_security.discard_queued_run(command.get("run_id") or command.get("command_id"))
+            raise
+        submitted.update({
+            "accepted": True,
+            "status": submitted.get("status") or "queued",
+            "app_id": "photoprism",
+            "action_id": "check_app",
+            "run_id": command.get("run_id"),
+            "scan_profile": lite_security.policy.SCAN_PROFILE_APP,
+            "summary": "Checking PhotoPrism safety.",
+            "progress": {"phase": "queued", "step": "App Check queued.", "bounded": True},
+            "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend App Check record pending."},
+        })
+        return submitted
+
     if kind == "media":
         command = action["command"]
         try:
@@ -734,15 +762,24 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail="Unknown safety check profile. Choose Quick Safety Check or Full Local Check.",
+            detail="Unknown safety check profile. Choose Quick Safety Check, Full Local Check, or App Check.",
         )
+    app_id = None
+    if profile == lite_security.policy.SCAN_PROFILE_APP:
+        if not payload.app_id:
+            raise HTTPException(status_code=400, detail="App Check requires an app_id.")
+        try:
+            app_id = lite_security.policy.normalize_app_id(payload.app_id)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
     run_id = lite_security.new_run_id()
     command = {
         "run_id": run_id,
         "command_id": run_id,
         "scope": payload.scope or "local",
         "profile": profile,
-        "reason": payload.reason or ("manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
+        **({"app_id": app_id} if app_id else {}),
+        "reason": payload.reason or ("manual app check" if profile == lite_security.policy.SCAN_PROFILE_APP else "manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
         "requested_at": deps.now_utc_iso(),
     }
     # Record the queued state before publishing so a fast worker cannot complete
@@ -766,6 +803,7 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             "execution_mode": "worker",
             "summary": lite_security._profile_copy(profile)["queued"],
             "scan_profile": profile,
+            **({"app_id": app_id, "app_label": "PhotoPrism"} if app_id else {}),
         }
     )
     return queued
@@ -807,10 +845,47 @@ def get_lite_security_app(app_id: str, request: Request) -> dict[str, Any]:
     return lite_app_profiles.app_security_profile(app_id)
 
 
-@router.post("/security/apps/{app_id}/check", status_code=501)
-def check_lite_security_app(app_id: str, payload: LiteAppSecurityCheckRequest, request: Request) -> dict[str, Any]:
+@router.post("/security/apps/{app_id}/check", status_code=202)
+async def check_lite_security_app(app_id: str, request: Request, payload: LiteAppSecurityCheckRequest | None = Body(default=None)) -> dict[str, Any]:
     deps.require_auth(request, write=True)
-    return lite_app_profiles.app_security_check_not_implemented(app_id, reason=payload.reason)
+    try:
+        normalized_app_id = lite_security.policy.normalize_app_id(app_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
+    run_id = lite_security.new_run_id()
+    command = {
+        "run_id": run_id,
+        "command_id": run_id,
+        "scope": "local",
+        "profile": lite_security.policy.SCAN_PROFILE_APP,
+        "app_id": normalized_app_id,
+        "reason": (payload.reason if payload else None) or "manual app check",
+        "requested_at": deps.now_utc_iso(),
+    }
+    lite_security.record_queued_run(command)
+    try:
+        queued = await submit_domain_command(
+            lite_security.policy.COMMAND_SUBJECT,
+            "lite.security.app_check.requested",
+            command,
+        )
+    except Exception:
+        lite_security.discard_queued_run(run_id)
+        raise
+    queued.update({
+        "status": "queued",
+        "accepted": True,
+        "run_id": run_id,
+        "command_subject": lite_security.policy.COMMAND_SUBJECT,
+        "execution_mode": "worker",
+        "summary": "PhotoPrism App Check queued.",
+        "scan_profile": lite_security.policy.SCAN_PROFILE_APP,
+        "app_id": normalized_app_id,
+        "app_label": "PhotoPrism",
+        "progress": {"phase": "queued", "step": "App Check queued.", "bounded": True},
+        "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend App Check record pending."},
+    })
+    return queued
 
 
 @router.get("/fleet")

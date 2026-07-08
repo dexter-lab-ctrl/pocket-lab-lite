@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 import re
+import uuid
+
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup, lite_app_backup_targets, lite_app_lifecycle, lite_app_operations, lite_app_profiles, lite_app_update, lite_photoprism_lifecycle, lite_photoprism_media, lite_security
 
 SUPPORTED_APP_IDS = {"photoprism"}
 SUPPORTED_ACTIONS = {
@@ -72,7 +75,7 @@ ACTION_DEFINITIONS: dict[str, dict[str, Any]] = {
     "check_app": {
         "label": "Check app",
         "category": "safety",
-        "summary": "Check route, health, storage, and safety record.",
+        "summary": "Check PhotoPrism route, app files, settings, backup metadata, and action state. Skips photos and media.",
         "risk": "low",
         "execution_owner": "backend_worker",
     },
@@ -165,9 +168,10 @@ ACTION_DETAIL_DEFINITIONS: dict[str, dict[str, Any]] = {
     },
     "check_app": {
         "summary": "Pocket Lab checked PhotoPrism safety and readiness.",
-        "what_happened": ["Pocket Lab checked PhotoPrism route, health, storage, and protection state."],
+        "what_happened": ["Pocket Lab checked PhotoPrism route, app files, settings, backup metadata, and action state."],
         "what_changed": ["Nothing changed unless a backend action completed and recorded a new status."],
-        "what_did_not_happen": ["No photos were scanned.", "No database was changed.", "No app password was changed."],
+        "what_did_not_happen": ["No photos were scanned.", "No media folders were scanned.", "No database was changed.", "No app password was changed."],
+        "technical_details": ["This maps to the backend-owned Security App Check profile for PhotoPrism."],
     },
     "backup_app": {
         "summary": "Pocket Lab saved PhotoPrism app settings and safe records.",
@@ -763,14 +767,30 @@ def prepare_action(app_id: str, action_id: str, *, payload: dict[str, Any] | Non
         command = lite_app_backup.app_restore_preview_command("photoprism", backup_id=payload.get("backup_id") or "latest", reason=reason)
         return {"kind": "restore_preview", "command": command, "summary": "PhotoPrism restore preview queued."}
 
-    if action in {"check_app", "repair_app"}:
+    if action == "check_app":
+        run_id = f"security-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+        return {
+            "kind": "security_app_check",
+            "subject": lite_security.policy.COMMAND_SUBJECT,
+            "command": {
+                "run_id": run_id,
+                "command_id": run_id,
+                "scope": "local",
+                "profile": "app",
+                "app_id": "photoprism",
+                "reason": reason or "manual app check",
+                "requested_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            },
+            "summary": "Checking PhotoPrism safety.",
+        }
+
+    if action == "repair_app":
         command = lite_app_operations.command_for_operation("photoprism", action, reason=reason)
-        summary = "Checking PhotoPrism safety." if action == "check_app" else "Repairing PhotoPrism safely."
         return {
             "kind": "app_operation",
             "command": command,
             "subject": lite_app_operations.subject_for_action(action),
-            "summary": summary,
+            "summary": "Repairing PhotoPrism safely.",
         }
 
     if action == "import_photos":
