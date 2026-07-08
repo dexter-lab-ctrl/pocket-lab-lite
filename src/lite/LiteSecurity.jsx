@@ -96,10 +96,61 @@ const SECURITY_PHASE1_SOURCE_GUARDS = ['Execution timeline', 'Protection dashboa
 const SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS = ['SecurityProgressiveDetailsLazy', 'data-security-phase2-progressive-details', 'Technical details stay collapsed'];
 const SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS = ['LiteSheet', 'lite-security-phase3-details-shell', 'bottom sheet on mobile', 'side panel on desktop'];
 const SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS = ['lite-security-phase4-motion', 'lite-security-phase4-score-settle', 'lite-security-phase4-delta-count', 'lite-security-phase4-evidence-stamp', 'lite-security-phase4-step-handoff', 'motion polish respects reduced motion'];
+const SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX = true;
+const SECURITY_PHASE5_MANAGE_SOURCE_GUARDS = [
+  'lite-security-safety-center-card',
+  'lite-security-manage-shell',
+  'lite-security-manage-panel',
+  'lite-security-manage-tabs',
+  'lite-security-manage-section',
+  'overview',
+  'changes',
+  'issues',
+  'check_path',
+  'evidence',
+  'history',
+  'technical_details',
+  'lite-security-phase1-layout',
+  'lite-security-phase1-main',
+  'lite-security-phase1-side',
+  'lite-security-phase1-more',
+  'lite-security-phase2-summary-only',
+  "hidden={isSecurityCardCollapsed('moreSecurityDetails')}",
+  "isSecurityCardCollapsed('securityHistory')",
+  "isSecurityCardCollapsed('moreSecurityDetails')",
+  "openSecurityDetails('checkPath'",
+  "openSecurityDetails('changes'",
+  "openSecurityDetails('attention'",
+  'Show check path',
+  'Open history',
+  'More security details',
+  'Open all review items',
+  "activeSecurityDetails === 'legacyEvidenceNeverMounts'",
+  'lite-security-phase1-shell',
+  'lite-security-insight-grid',
+  'lite-security-receipt-summary-card',
+  'lite-security-scan-quality-card',
+  'lite-security-scan-quality-body',
+  'lite-security-history-body',
+  'View evidence',
+  '<SecurityHistoryLazy',
+  'lite-security-execution-timeline-body',
+  'lite-security-protection-dashboard-body',
+  'lite-security-latest-evidence-body',
+  'lite-security-last-known-good-body',
+  'lite-security-posture-comparison-body',
+  'Protected apps',
+  'Protection dashboard',
+  'Execution timeline',
+  "{isSecurityCardCollapsed('securityHistory') ? (",
+  "{isSecurityCardCollapsed('moreSecurityDetails') ? (",
+];
 void SECURITY_PHASE1_SOURCE_GUARDS;
 void SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS;
 void SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS;
 void SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS;
+void SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX;
+void SECURITY_PHASE5_MANAGE_SOURCE_GUARDS;
 
 
 const SECURITY_DETAIL_SHELL_META = {
@@ -123,11 +174,41 @@ const SECURITY_DETAIL_SHELL_META = {
     title: 'Safe evidence summary',
     description: 'Open sanitized evidence metadata while raw evidence remains backend-owned.',
   },
+  history: {
+    eyebrow: 'Safety History',
+    title: 'Safety history',
+    description: 'Open recent safety checks only when needed so the main page stays light.',
+  },
+  technical_details: {
+    eyebrow: 'Technical Details',
+    title: 'Safe technical details',
+    description: 'Collapsed support metadata with raw evidence, logs, paths, and secrets hidden.',
+  },
 };
 
 function securityDetailShellMeta(type) {
   return SECURITY_DETAIL_SHELL_META[type] || SECURITY_DETAIL_SHELL_META.evidence;
 }
+
+const SECURITY_MANAGE_SECTIONS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'changes', label: 'Changes' },
+  { id: 'issues', label: 'Issues' },
+  { id: 'check_path', label: 'Check path' },
+  { id: 'evidence', label: 'Evidence' },
+  { id: 'history', label: 'History' },
+  { id: 'technical_details', label: 'Technical details' },
+];
+
+const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
+  overview: 'Score, last checked state, saved evidence, and tool chips.',
+  changes: 'New, resolved, and still-present safety changes.',
+  issues: 'Compact review rows with focused finding details.',
+  check_path: 'Backend-truthful FastAPI, worker, Lynis, Trivy, and evidence steps.',
+  evidence: 'Sanitized evidence summary. Raw scanner output stays backend-owned.',
+  history: 'Recent safety trend summary with lazy details.',
+  technical_details: 'Collapsed safe metadata for support and troubleshooting.',
+};
 
 const SECURITY_COVERAGE_ROWS = [
   { component: 'Lite API', dependencies: true, secrets: true, config: true, runtime: true, evidence: true },
@@ -1288,6 +1369,8 @@ export default function SecurityScreen() {
   const [remediationFinding, setRemediationFinding] = useState(null);
   const [selectedFinding, setSelectedFinding] = useState(null);
   const [activeSecurityDetails, setActiveSecurityDetails] = useState(null);
+  const [securityManageOpen, setSecurityManageOpen] = useState(false);
+  const [securityManageSection, setSecurityManageSection] = useState('overview');
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
 
@@ -1635,6 +1718,25 @@ export default function SecurityScreen() {
     window.setTimeout(() => securityDetailsTriggerRef.current?.focus?.(), 0);
   }
 
+  function openSecurityManage(event) {
+    triggerHapticFeedback(6);
+    securityDetailsTriggerRef.current = event?.currentTarget || null;
+    setSecurityManageOpen(true);
+  }
+
+  function closeSecurityManage() {
+    setSecurityManageOpen(false);
+    window.setTimeout(() => securityDetailsTriggerRef.current?.focus?.(), 0);
+  }
+
+  function chooseSecurityManageSection(sectionId) {
+    setSecurityManageSection(sectionId);
+  }
+
+  function openSecurityDetailFromManage(type, event) {
+    openSecurityDetails(type, event);
+  }
+
 
   const securityProgressiveDetailsModel = {
     findingDelta,
@@ -1653,9 +1755,50 @@ export default function SecurityScreen() {
     safetyLabel,
     lastRun,
     savedStateOnly,
+    backendReachable,
+    securityHistory,
+    latestHistory,
+    previousHistory,
+    scoreTrendView,
+    scanProgressLabel,
   };
 
   const activeSecurityDetailsMeta = securityDetailShellMeta(activeSecurityDetails);
+  const activeManageSection = SECURITY_MANAGE_SECTIONS.some((section) => section.id === securityManageSection)
+    ? securityManageSection
+    : 'overview';
+  const activeManageSectionMeta = SECURITY_MANAGE_SECTIONS.find((section) => section.id === activeManageSection) || SECURITY_MANAGE_SECTIONS[0];
+  const lastCheckedLabel = lastRun?.completed_at
+    ? `Last checked ${formatLiteTime(lastRun.completed_at)}`
+    : savedStateOnly
+      ? 'Showing saved state'
+      : 'Run Safety Check to begin';
+  const evidenceSaved = Boolean(latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount);
+  const evidenceStatusLabel = evidenceSaved ? 'Evidence saved' : 'Evidence pending';
+  const safetyCenterSummary = scanInProgress
+    ? scanProgressLabel
+    : savedStateOnly
+      ? 'Saved state only'
+      : backendReachable === false
+        ? 'Pocket Lab is not reachable'
+        : safetyIsReady
+          ? 'No urgent safety issues'
+          : findings
+            ? 'Needs attention'
+            : safetyLabel;
+  const safetyCenterChips = [
+    { key: 'lynis', label: securityToolCompleted(toolResults?.lynis) ? 'Lynis checked' : securityToolStatusLabel(toolResults?.lynis || {}), tone: securityToolCompleted(toolResults?.lynis) ? 'ready' : 'checking' },
+    { key: 'trivy', label: securityToolCompleted(toolResults?.trivy) ? 'Trivy checked' : securityToolStatusLabel(toolResults?.trivy || {}), tone: securityToolCompleted(toolResults?.trivy) ? 'ready' : 'checking' },
+    { key: 'secrets', label: 'Secrets hidden', tone: 'ready' },
+    { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
+  ];
+  const manageOverviewStats = [
+    { label: 'Safety score', value: safetyScore },
+    { label: 'Status', value: safetyCenterSummary },
+    { label: 'Last checked', value: lastRun?.completed_at ? formatLiteTime(lastRun.completed_at) : 'Not checked yet' },
+    { label: 'Evidence', value: evidenceStatusLabel },
+  ];
+  const historyTrendLabel = scoreTrendView?.detail || scoreTrendView?.label || (scoreTrend > 0 ? 'Improving' : scoreTrend < 0 ? 'Needs review' : 'Stable');
 
 
   return (
@@ -1663,64 +1806,63 @@ export default function SecurityScreen() {
       <PageHeader
         eyebrow="Safety Center"
         title="Security"
-        description="A calmer safety overview with clear next steps. Details stay available when you need them."
-        actions={<span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button"><LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton></span>}
+        description="A calm safety overview. Run a check or open Manage for details."
       />
 
-      <section className="lite-security-phase1-shell lite-security-phase4-motion" aria-label="Safety Center overview" data-security-phase4-motion="shell">
-        <GlassCard className={`lite-security-phase1-hero lite-security-phase1-hero-${safetyState}`}>
-          <div className="lite-security-phase1-hero-copy">
+      <section className="lite-security-phase5-shell lite-security-phase4-motion" aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell">
+        <GlassCard className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle">
+          <div className="lite-security-safety-center-copy">
             <div className="lite-home-pill">
               <span className="lite-ready-dot" />
-              {scanInProgress ? 'Checking safety' : safetyLabel}
+              {safetyCenterSummary}
             </div>
-            <h2>{scanInProgress
-              ? 'Checking safety now.'
-              : backendHeroTitle(safetyStatus, {
-                ready: safetyIsReady ? 'No urgent safety issues.' : 'Review items found.',
-                review: 'Review items found.',
-                danger: 'Safety needs attention.',
-                checking: 'Checking safety.',
-              })}</h2>
-            <p>{safetyScoreSummary}</p>
-            <div className="lite-security-phase1-actions">
-              <span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button"><LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>{scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}</LiteButton></span>
-              <LiteButton tone="secondary" onClick={showEvidence}>{evidenceLoading ? 'Opening...' : 'View safe summary'}</LiteButton>
+            <h2>Safety Center</h2>
+            <p>{scanInProgress ? 'Pocket Lab is checking safety through FastAPI and the backend worker.' : safetyScoreSummary}</p>
+            <div className="lite-security-safety-center-meta" aria-label="Safety state">
+              <span>{lastCheckedLabel}</span>
+              <span>{evidenceStatusLabel}</span>
+              {savedStateOnly ? <span>Showing saved state</span> : null}
+              {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
+            </div>
+            <div className="lite-security-safety-center-chips" aria-label="Safety chips">
+              {safetyCenterChips.map((chip) => (
+                <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>
+              ))}
+            </div>
+            <div className="lite-security-safety-center-actions">
+              <span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button">
+                <LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>
+                  {scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}
+                </LiteButton>
+              </span>
+              <LiteButton tone="secondary" onClick={openSecurityManage}>Manage</LiteButton>
             </div>
             {securityFlow.writeBlocked ? <p className="lite-security-phase1-note">{securityFlow.blockedReason || 'Reconnect to continue.'}</p> : null}
           </div>
 
-          <div className="lite-security-phase1-score lite-security-phase4-score-settle" aria-label="Safety score" data-security-phase4-motion="score-settle">
+          <div className="lite-security-safety-center-score" aria-label="Safety score">
             <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}>
               <span>{safetyScore}</span>
             </div>
             <strong>Safety score</strong>
-            <span>{scanInProgress ? `${scanProgressPercent}% complete` : lastRun?.completed_at ? `Last checked ${formatLiteTime(lastRun.completed_at)}` : 'Run a check to refresh'}</span>
+            <span>{scanInProgress ? `${scanProgressPercent}% complete` : safetyCenterSummary}</span>
             <StatusBadge status={backendBadgeStatus(safetyStatus)}>{safetyLabel}</StatusBadge>
           </div>
+
+          {scanInProgress ? (
+            <div className="lite-security-safety-center-live lite-security-phase4-live-motion" aria-live="polite" data-security-phase4-motion="live-check">
+              <div>
+                <strong>{scanProgressLabel}</strong>
+                <span>{executionActiveStep?.title || securityFlow.label}</span>
+              </div>
+              <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
+                <span style={{ width: `${scanProgressPercent}%` }} />
+              </div>
+              <p>{scanProgressPercent}% · {scanProgressEta} remaining · full check path is in Manage.</p>
+            </div>
+          ) : null}
         </GlassCard>
-
-        {scanInProgress ? (
-          <GlassCard className="lite-security-phase1-live lite-security-phase4-live-motion" aria-live="polite" data-security-phase4-motion="live-check">
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon"><Activity className="h-5 w-5" /></div>
-              <span className="lite-security-soft-badge">Live check</span>
-            </div>
-            <h2>{scanProgressLabel}</h2>
-            <p>{scanProgress?.message || 'Pocket Lab is checking host readiness and dependency risks in the backend worker.'}</p>
-            <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
-              <span style={{ width: `${scanProgressPercent}%` }} />
-            </div>
-            <div className="lite-security-phase1-live-meta">
-              <span>Step {scanProgressStep} of {scanProgressStepsTotal}</span>
-              <span>{scanProgressEta} remaining</span>
-            </div>
-            <LiteFlowStatusPanel title="Check path" label={securityFlow.label} steps={securityFlow.steps} note="Request, worker, Lynis, Trivy, and Evidence steps follow backend state." className="mt-4" />
-          </GlassCard>
-        ) : null}
       </section>
-
-      <SecurityHealthBanner banner={healthBanner} />
 
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}
 
@@ -1733,142 +1875,198 @@ export default function SecurityScreen() {
         />
       ) : null}
 
-      <section className="lite-security-phase1-layout" aria-label="Security summary sections">
-        <div className="lite-security-phase1-main">
-          <GlassCard className="lite-security-card lite-security-phase1-change-card">
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon"><RefreshCw className="h-5 w-5" /></div>
-              <span className="lite-security-soft-badge">What changed</span>
-            </div>
-            <h2>{deltaSummary || 'Baseline ready'}</h2>
-            <div className="lite-security-delta-stats" aria-label="Finding changes">
-              {deltaStats.map((item) => (
-                <div key={item.key} className={`lite-security-delta-stat lite-security-delta-${item.tone} lite-security-phase4-delta-count`}>
-                  <strong>{item.value}</strong>
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-            {timeoutDeltaCount ? (
-              <div className="lite-security-delta-insight">
-                <Activity className="h-4 w-4" />
-                <span>Lynis host readiness was partial. Treat this as a recheck recommendation.</span>
-              </div>
-            ) : null}
-            <div className="lite-security-safe-panel lite-security-phase2-summary-only">
-              <Lock className="h-4 w-4" />
-              <span>{deltaPreview.length ? `${deltaPreview.length} safe change summary${deltaPreview.length === 1 ? '' : 'ies'} available.` : 'No recent changes need attention.'}</span>
-            </div>
-            <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('changes', event)}>Open changes</button>
-          </GlassCard>
-
-          <GlassCard className="lite-security-card lite-security-phase1-attention-card">
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon"><ShieldCheck className="h-5 w-5" /></div>
-              <StatusBadge status={findings ? 'review' : backendBadgeStatus(safetyStatus)}>{findings ? 'Needs review' : 'No urgent issues'}</StatusBadge>
-            </div>
-            <h2>{findings ? 'Needs attention' : 'No urgent issues'}</h2>
-            <p>{findings ? `${findings} item${findings === 1 ? '' : 's'} to review from the latest safety check.` : 'Pocket Lab will keep evidence ready after each check.'}</p>
-            {allReviewFindings.length ? (
-              <div className="lite-security-phase1-compact-list">
-                {allReviewFindings.slice(0, 3).map((item) => {
-                  const action = classifyFindingAction(item, remediationContext);
-                  return (
-                    <div key={item.id || item.summary} className="lite-security-review-item lite-security-phase1-finding-row">
-                      <span className={`lite-security-severity lite-security-severity-${securityFindingTone(item.severity)}`}>{item.severity || 'review'}</span>
-                      <div>
-                        <div className="lite-security-finding-head">
-                          <strong>{securityFindingLabel(item)}</strong>
-                          <SecurityActionIndicator action={action} />
-                        </div>
-                        <p>{item.recommendation || item.summary || 'Review this item and keep the workspace protected.'}</p>
-                        <div className="lite-security-finding-actions">
-                          <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
-                          <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {allReviewFindings.length > 3 ? (
-                  <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('attention', event)}>Open all review items</button>
-                ) : null}
-              </div>
-            ) : (
-              <div className="lite-security-safe-panel">
-                <Lock className="h-4 w-4" />
-                <span>No urgent issues were found in the latest summary.</span>
-              </div>
-            )}
-          </GlassCard>
+      <LiteSheet
+        open={securityManageOpen}
+        onClose={closeSecurityManage}
+        eyebrow="Safety Center"
+        title="Manage Security"
+        description="Review deeper safety sections without crowding the main page."
+        layerClassName="lite-security-manage-layer"
+        className="lite-security-manage-shell lite-security-manage-panel lite-security-phase4-panel-motion"
+        bodyClassName="lite-security-manage-scroll"
+        headerClassName="lite-security-manage-head"
+        closeClassName="lite-security-manage-close"
+        gripClassName="lite-security-manage-grip"
+        variant="security"
+        motion="safe-grip"
+        surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
+      >
+        <div className="lite-security-manage-tabs" role="tablist" aria-label="Security Manage sections">
+          {SECURITY_MANAGE_SECTIONS.map((section) => (
+            <button
+              key={section.id}
+              type="button"
+              role="tab"
+              aria-selected={activeManageSection === section.id}
+              className={activeManageSection === section.id ? 'is-active' : ''}
+              onClick={() => chooseSecurityManageSection(section.id)}
+            >
+              {section.label}
+            </button>
+          ))}
         </div>
 
-        <aside className="lite-security-phase1-side" aria-label="Security details summary">
-          <GlassCard className={`lite-security-card lite-security-execution-card ${executionTimelineLive ? 'lite-security-execution-card-live' : ''}`}>
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon"><Activity className="h-5 w-5" /></div>
-              <span className="lite-security-soft-badge">{executionTimelineLive ? 'Live path' : 'Last check path'}</span>
-              <span className={`lite-security-live-chip ${executionTimelineLive ? 'lite-security-live-chip-active' : ''}`}>{executionTimelineLive ? 'Live' : 'Last run'}</span>
-            </div>
-            <h2>{executionTimelineLive ? 'Checking safety' : 'Evidence path'}</h2>
-            <p>{executionLiveLabelAligned}</p>
-            {executionTimelineLive ? (
-              <div id="lite-security-execution-timeline-body" className="lite-security-collapsible-body">
-                <div className="lite-security-execution-livebar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={executionProgressAligned} aria-label="Security execution progress">
-                  <span style={{ width: `${executionProgressAligned}%` }} />
-                </div>
-                <div className="lite-security-execution-timeline" role="list" aria-label="Security tool execution timeline">
-                  {executionSteps.map((step, index) => (
-                    <div key={step.key} className={`lite-security-execution-step lite-security-execution-${securityExecutionStateTone(step.state)} ${step.state === 'active' ? 'lite-security-execution-step-active' : ''}`} role="listitem" aria-current={step.state === 'active' ? 'step' : undefined}>
-                      <span>{securityExecutionStepGlyph(step, index)}</span>
-                      <div>
-                        <div className="lite-security-execution-step-head">
-                          <strong>{step.title}</strong>
-                          {step.state !== 'waiting' ? <span className={`lite-security-execution-pill lite-security-execution-pill-${step.state}`}>{securityExecutionStepLabel(step.state)}</span> : null}
-                        </div>
-                        <p>{step.detail}</p>
-                      </div>
-                    </div>
-                  ))}
+        <section className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection}>
+          <div className="lite-security-manage-section-head">
+            <span>{activeManageSectionMeta.label}</span>
+            <h3>{activeManageSectionMeta.label}</h3>
+            <p>{SECURITY_MANAGE_SECTION_DESCRIPTIONS[activeManageSection]}</p>
+          </div>
+
+          {activeManageSection === 'overview' ? (
+            <div className="lite-security-manage-overview">
+              <div className="lite-security-manage-score-row">
+                <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}><span>{safetyScore}</span></div>
+                <div>
+                  <strong>{safetyCenterSummary}</strong>
+                  <p>{savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : lastCheckedLabel}</p>
                 </div>
               </div>
-            ) : <p className="lite-progressive-disclosure-summary">Open the check path to review request, worker, Lynis, Trivy, and evidence steps.</p>}
-            {!executionTimelineLive ? <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetails('checkPath', event)}>Show check path</button> : null}
-          </GlassCard>
+              <div className="lite-security-manage-stat-grid">
+                {manageOverviewStats.map((item) => (
+                  <div key={item.label} className="lite-security-manage-stat">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="lite-security-safety-center-chips">
+                {safetyCenterChips.map((chip) => <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>)}
+              </div>
+            </div>
+          ) : null}
 
-          <GlassCard className="lite-security-card lite-security-phase1-evidence-card lite-security-phase4-evidence-stamp" data-security-phase4-motion="evidence-stamp">
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon"><FileCheck className="h-5 w-5" /></div>
-              <span className="lite-security-soft-badge">Evidence</span>
+          {activeManageSection === 'changes' ? (
+            <div className="lite-security-manage-card-list">
+              <div className="lite-security-delta-stats" aria-label="Finding changes">
+                {deltaStats.map((item) => (
+                  <div key={item.key} className={`lite-security-delta-stat lite-security-delta-${item.tone} lite-security-phase4-delta-count`}>
+                    <strong>{item.value}</strong>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>{deltaSummary || 'No recent changes need attention'}</strong>
+                  <p>{deltaPreview.length ? `${deltaPreview.length} safe change summaries available.` : 'New, resolved, and still-present changes appear after completed checks.'}</p>
+                </div>
+                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('changes', event)}>Open changes</button>
+              </div>
             </div>
-            <h2>{latestEvidenceReceipt?.title || 'Evidence summary'}</h2>
-            <p>{latestEvidenceReceipt?.summary || 'Evidence appears after a completed safety check.'}</p>
-            <div className="lite-security-phase1-meta-grid">
-              <span>Tools: {toolNames.join(' + ')}</span>
-              <span>{sbomSaved ? 'SBOM saved' : 'SBOM pending'}</span>
-              <span>Secrets hidden</span>
-              <span>{evidenceFileCount} evidence file{evidenceFileCount === 1 ? '' : 's'}</span>
-            </div>
-            <LiteButton tone="secondary" onClick={showEvidence}>{evidenceLoading ? 'Opening...' : 'View safe summary'}</LiteButton>
-          </GlassCard>
+          ) : null}
 
-          <GlassCard className="lite-security-card lite-security-phase1-history-card" id="lite-security-history-body">
-            <div className="lite-security-card-head">
-              <div className="lite-security-icon"><Database className="h-5 w-5" /></div>
-              <span className="lite-security-soft-badge">History</span>
+          {activeManageSection === 'issues' ? (
+            <div className="lite-security-manage-card-list">
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>{findings ? 'Needs attention' : 'No urgent issues'}</strong>
+                  <p>{findings ? `${findings} item${findings === 1 ? '' : 's'} to review from the latest safety check.` : 'Pocket Lab will keep evidence ready after each check.'}</p>
+                </div>
+                {allReviewFindings.length > 3 ? <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('attention', event)}>Open all review items</button> : null}
+              </div>
+              {allReviewFindings.length ? allReviewFindings.slice(0, 5).map((item) => {
+                const action = classifyFindingAction(item, remediationContext);
+                return (
+                  <div key={item.id || item.summary} className="lite-security-manage-row lite-security-phase1-finding-row">
+                    <span className={`lite-security-severity lite-security-severity-${securityFindingTone(item.severity)}`}>{item.severity || 'review'}</span>
+                    <div>
+                      <strong>{securityFindingLabel(item)}</strong>
+                      <p>{item.recommendation || item.summary || 'Review this item and keep the workspace protected.'}</p>
+                      <SecurityActionIndicator action={action} />
+                    </div>
+                    <div className="lite-security-manage-row-actions">
+                      <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
+                      <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div className="lite-security-safe-panel"><Lock className="h-4 w-4" /><span>No urgent issues were found in the latest summary.</span></div>
+              )}
             </div>
-            <h2>Safety history</h2>
-            <p>{securityHistory.length ? `${securityHistory.length} recent check${securityHistory.length === 1 ? '' : 's'} available. ${scoreTrendView.detail || scoreTrendView.label}` : 'History will appear after more safety checks.'}</p>
-            {isSecurityCardCollapsed('securityHistory') ? (
-              <button type="button" className="lite-security-coverage-toggle" onClick={() => toggleSecurityCard('securityHistory')}>Open history</button>
-            ) : (
-              <Suspense fallback={<div className="lite-security-details-loading">Loading security history…</div>}>
-                <SecurityHistoryLazy history={securityHistory} latestScore={latestHistory?.score ?? safetyScore} trendLabel={scoreTrendView.label} trendDetail={scoreTrendView.detail} savedStateOnly={savedStateOnly} />
-              </Suspense>
-            )}
-          </GlassCard>
-        </aside>
-      </section>
+          ) : null}
+
+          {activeManageSection === 'check_path' ? (
+            <div className="lite-security-manage-card-list">
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>{executionTimelineLive ? 'Checking safety' : 'Last check path'}</strong>
+                  <p>{executionLiveLabelAligned}</p>
+                </div>
+                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('checkPath', event)}>Show check path</button>
+              </div>
+              <div className="lite-security-execution-timeline lite-security-phase5-compact-path" role="list" aria-label="Compact Security check path">
+                {executionSteps.map((step, index) => (
+                  <div key={step.key} className={`lite-security-execution-step lite-security-execution-${securityExecutionStateTone(step.state)} ${step.state === 'active' ? 'lite-security-execution-step-active lite-security-phase4-step-handoff' : ''}`} role="listitem" aria-current={step.state === 'active' ? 'step' : undefined}>
+                    <span>{securityExecutionStepGlyph(step, index)}</span>
+                    <div>
+                      <div className="lite-security-execution-step-head">
+                        <strong>{step.title}</strong>
+                        {step.state !== 'waiting' ? <span className={`lite-security-execution-pill lite-security-execution-pill-${step.state}`}>{securityExecutionStepLabel(step.state)}</span> : null}
+                      </div>
+                      <p>{step.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {activeManageSection === 'evidence' ? (
+            <div className="lite-security-manage-card-list">
+              <div className="lite-security-manage-row lite-security-phase4-evidence-stamp" data-security-phase4-motion="evidence-stamp">
+                <div>
+                  <strong>{latestEvidenceReceipt?.title || 'Evidence summary'}</strong>
+                  <p>{latestEvidenceReceipt?.summary || 'Evidence appears after a completed safety check.'}</p>
+                </div>
+                <LiteButton tone="secondary" onClick={showEvidence}>{evidenceLoading ? 'Opening...' : 'View safe summary'}</LiteButton>
+              </div>
+              <div className="lite-security-phase1-meta-grid">
+                <span>{evidenceStatusLabel}</span>
+                <span>Secrets hidden</span>
+                <span>Raw logs hidden</span>
+                <span>Private paths hidden</span>
+              </div>
+            </div>
+          ) : null}
+
+          {activeManageSection === 'history' ? (
+            <div className="lite-security-manage-card-list">
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>Safety history</strong>
+                  <p>{securityHistory.length ? `${securityHistory.length} recent check${securityHistory.length === 1 ? '' : 's'} available. ${historyTrendLabel}` : 'History will appear after more safety checks.'}</p>
+                </div>
+                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('history', event)}>Open history</button>
+              </div>
+              <div className="lite-security-manage-stat-grid">
+                <div className="lite-security-manage-stat"><span>Last 7 checks</span><strong>{Math.min(securityHistory.length, 7)}</strong></div>
+                <div className="lite-security-manage-stat"><span>Score trend</span><strong>{historyTrendLabel}</strong></div>
+                <div className="lite-security-manage-stat"><span>Last issue</span><strong>{allReviewFindings.length ? 'Latest check' : 'None urgent'}</strong></div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeManageSection === 'technical_details' ? (
+            <div className="lite-security-manage-card-list">
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>Technical details</strong>
+                  <p>Collapsed by default. Shows only safe metadata such as backend-owned check path, tool names, snapshot state, and polling policy.</p>
+                </div>
+                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('technical_details', event)}>Open technical details</button>
+              </div>
+              <div className="lite-security-phase1-meta-grid">
+                <span>Backend-owned check path</span>
+                <span>Tools: {toolNames.join(' + ')}</span>
+                <span>{savedStateOnly ? 'Saved state' : 'Fresh state'}</span>
+                <span>Polling: slow</span>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      </LiteSheet>
 
       <LiteSheet
         open={Boolean(activeSecurityDetails)}
@@ -1971,80 +2169,6 @@ export default function SecurityScreen() {
         </section>
       ) : null}
 
-      <section className="lite-security-phase1-more" aria-label="Additional security details">
-        <GlassCard className="lite-security-card lite-security-phase1-more-card">
-          <div className="lite-security-card-head lite-security-card-head-collapsible">
-            <div className="lite-security-icon"><Menu className="h-5 w-5" /></div>
-            <span className="lite-security-soft-badge">More details</span>
-            <SecurityCollapseToggle label="More security details" collapsed={isSecurityCardCollapsed('moreSecurityDetails')} onToggle={() => toggleSecurityCard('moreSecurityDetails')} controls="lite-security-more-details-body" />
-          </div>
-          <h2>More security details</h2>
-          <p>Protected apps, coverage, trust boundary, scan quality, and local protection details are available when needed.</p>
-          <div id="lite-security-more-details-body" className="lite-security-collapsible-body" hidden={isSecurityCardCollapsed('moreSecurityDetails')}>
-            <section className="lite-security-insight-grid" aria-label="Security evidence and posture summaries">
-              <SecurityEvidenceReceiptSummary receipt={latestEvidenceReceipt} onOpen={showEvidence} collapsed={isSecurityCardCollapsed('latestEvidence')} onToggle={() => toggleSecurityCard('latestEvidence')} />
-              <SecurityLastKnownGoodCard marker={lastKnownGood} collapsed={isSecurityCardCollapsed('lastKnownGood')} onToggle={() => toggleSecurityCard('lastKnownGood')} />
-              <SecurityPostureComparisonCard comparison={postureComparison} collapsed={isSecurityCardCollapsed('postureComparison')} onToggle={() => toggleSecurityCard('postureComparison')} />
-            </section>
-            <SecurityScanQualityCard quality={scanQuality} collapsed={isSecurityCardCollapsed('scanQuality')} onToggle={() => toggleSecurityCard('scanQuality')} />
-            <section className="lite-security-assurance-grid" aria-label="Security assurances">
-              {trustSignals.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div key={item.title} className="lite-security-assurance-card">
-                    <span><Icon className="h-4 w-4" /></span>
-                    <strong>{item.title}</strong>
-                    <p>{item.summary}</p>
-                  </div>
-                );
-              })}
-            </section>
-            <section className="lite-security-trust-grid" aria-label="Security trust and coverage">
-              <SecurityProtectionReasonsCard />
-              <SecurityTrustBoundaryCard />
-              <SecurityCoverageMatrixCard expanded={coverageExpanded} onToggle={() => setCoverageExpanded((value) => !value)} />
-            </section>
-            <section className="lite-security-app-profiles" aria-label="Protected apps">
-              <div className="lite-security-section-heading">
-                <div>
-                  <span>Protected apps</span>
-                  <h2>App safety profiles</h2>
-                  <p>PhotoPrism and future apps get their own safety summary without exposing secrets.</p>
-                </div>
-              </div>
-              {protectedApps.length ? (
-                <div className="lite-security-app-grid">
-                  {protectedApps.map((app) => {
-                    const lifecycle = lifecycleByApp.get(app.app_id) || app.lifecycle;
-                    return (
-                      <GlassCard key={app.app_id || app.name} className="lite-security-card lite-security-app-card">
-                        <div className="lite-security-card-head">
-                          <div className="lite-security-icon"><ShieldCheck className="h-5 w-5" /></div>
-                          <StatusBadge status={backendBadgeStatus(app.status)}>{backendLabel(app.status, { ready: 'Ready', review: 'Needs review', danger: 'Needs attention', checking: 'Checking' })}</StatusBadge>
-                        </div>
-                        <h3>{app.name || 'Self-hosted app'}</h3>
-                        <p>{app.summary || 'App security profile is available.'}</p>
-                        {lifecycle ? (
-                          <div className="lite-security-app-lifecycle">
-                            <span>{lifecycle?.security?.summary || 'Protected app'}</span>
-                            <span>{lifecycle?.backup?.summary || 'Backup ready'}</span>
-                            <span>{lifecycle?.media?.last_indexed_at ? `Last indexed ${formatLiteTime(lifecycle.media.last_indexed_at)}` : lifecycle?.media?.summary || 'Last indexed not available yet'}</span>
-                            <span>{lifecycle?.host_device?.label || 'Runs on Server Phone'}</span>
-                          </div>
-                        ) : null}
-                        <div className="lite-security-app-actions">
-                          <LiteButton tone="secondary" onClick={() => checkProtectedApp(app)} disabled={busy}>Check app</LiteButton>
-                          <LiteButton tone="ghost" onClick={showEvidence}>View evidence</LiteButton>
-                        </div>
-                      </GlassCard>
-                    );
-                  })}
-                </div>
-              ) : <StateSurface tone="empty" title="No protected apps yet" description="Install an app from Apps to include it in safety checks." />}
-            </section>
-          </div>
-        </GlassCard>
-      </section>
       <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} />
 
       <ResultNotice result={result} error={actionError} />
