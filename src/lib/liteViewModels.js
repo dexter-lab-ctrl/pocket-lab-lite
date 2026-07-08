@@ -4,6 +4,27 @@ const MAX_DETAIL_ITEMS = 6;
 const MAX_TECHNICAL_ITEMS = 8;
 
 export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-s3-v1';
+export const LITE_SECURITY_PROFILE_IDS = ['quick', 'full', 'app'];
+
+function normalizeSecurityProfileId(value = 'quick') {
+  const normalized = String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (normalized === 'full' || normalized === 'full_local' || normalized === 'full_local_check') return 'full';
+  if (normalized === 'app' || normalized === 'app_check' || normalized === 'application') return 'app';
+  return 'quick';
+}
+
+function securityRunTimestamp(run = {}) {
+  const value = run?.completed_at || run?.updated_at || run?.started_at || run?.requested_at || run?.checked_at || '';
+  const parsed = value ? Date.parse(value) : 0;
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function newerSecurityRun(current = null, candidate = null) {
+  if (!candidate) return current || null;
+  if (!current) return candidate;
+  return securityRunTimestamp(candidate) >= securityRunTimestamp(current) ? candidate : current;
+}
+
 
 const LIVE_ACTION_STATUSES = new Set([
   'queued',
@@ -1120,6 +1141,120 @@ export function selectSecurityFindingsView(payload = {}) {
   };
 }
 
+export function selectSecurityProfileLatestView(payload = {}) {
+  const latest = {};
+  const addRun = (input = null, fallbackProfile = '') => {
+    const run = normalizeSecurityRun(input || {}) || null;
+    if (!run?.run_id && !run?.status && !run?.completed_at && !run?.started_at) return;
+    const profile = normalizeSecurityProfileId(run.scan_profile || fallbackProfile || input?.profile || (run.app_id ? 'app' : 'quick'));
+    latest[profile] = newerSecurityRun(latest[profile], { ...run, scan_profile: profile });
+  };
+
+  if (isObject(payload?.profile_latest)) {
+    Object.entries(payload.profile_latest).forEach(([profile, run]) => addRun(run, profile));
+  }
+  selectSecurityHistorySummaryView(payload).forEach((run) => addRun(run));
+  addRun(payload?.last_run || payload?.current_run || payload?.latest_run);
+  if (payload?.run_id || payload?.status) addRun(payload);
+
+  return LITE_SECURITY_PROFILE_IDS.reduce((safe, profile) => {
+    if (latest[profile]) safe[profile] = latest[profile];
+    return safe;
+  }, {});
+}
+
+export function selectSecurityProfileHistoryView(payload = {}, profile = 'quick') {
+  const profileId = normalizeSecurityProfileId(profile);
+  return selectSecurityHistorySummaryView(payload)
+    .filter((run) => normalizeSecurityProfileId(run?.scan_profile || (run?.app_id ? 'app' : 'quick')) === profileId)
+    .sort((left, right) => securityRunTimestamp(right) - securityRunTimestamp(left))
+    .slice(0, 20);
+}
+
+export function selectSecurityProfileView(payload = {}, profile = 'quick') {
+  const profileId = normalizeSecurityProfileId(profile);
+  const latestByProfile = selectSecurityProfileLatestView(payload);
+  const profileHistory = selectSecurityProfileHistoryView(payload, profileId);
+  const latestRun = latestByProfile[profileId] || profileHistory[0] || null;
+  const payloadProfile = normalizeSecurityProfileId(payload?.scan_profile || payload?.last_run?.scan_profile || (payload?.app_id ? 'app' : 'quick'));
+  const latestRunId = payload?.last_run?.run_id || payload?.current_run?.run_id || payload?.latest_run?.run_id || payload?.run_id || '';
+  const isSelectedLatestPayload = Boolean(latestRun && latestRun.run_id && latestRunId && latestRun.run_id === latestRunId) || (!latestRunId && payloadProfile === profileId);
+  const profilePayload = latestRun
+    ? {
+        ...payload,
+        ...(isSelectedLatestPayload ? {} : { findings: [], critical_issues: [], finding_delta: {} }),
+        last_run: latestRun,
+        scan_profile: profileId,
+        app_id: latestRun.app_id || payload?.app_id || '',
+        app_label: latestRun.app_label || payload?.app_label || '',
+        coverage_summary: latestRun.coverage_summary || (isSelectedLatestPayload ? payload?.coverage_summary : undefined),
+        tool_results: latestRun.tool_results || (isSelectedLatestPayload ? payload?.tool_results : undefined),
+        execution_timeline: latestRun.execution_timeline || (isSelectedLatestPayload ? payload?.execution_timeline : undefined),
+        evidence_refs: latestRun.evidence_refs || (isSelectedLatestPayload ? payload?.evidence_refs : []),
+      }
+    : { ...payload, findings: [], critical_issues: [], finding_delta: {}, scan_profile: profileId, last_run: null, evidence_refs: [] };
+  const findings = isSelectedLatestPayload ? selectSecurityFindingsView(payload) : { findings: [], critical_issues: [], items_to_review: safeNumber(latestRun?.items_to_review, 0), findings_count: safeNumber(latestRun?.items_to_review, 0) };
+  const coverage = selectSecurityCoverageSummaryView(profilePayload);
+  const evidence = selectSecurityEvidenceSummaryView(profilePayload);
+  const timeline = selectSecurityTimelineView(profilePayload);
+  const toolResults = selectSecurityToolResultsView(profilePayload.tool_results || latestRun?.tool_results);
+
+  return {
+    view_model: 'security-profile-s3-v1',
+    profile: profileId,
+    scan_profile: profileId,
+    has_run: Boolean(latestRun?.run_id || latestRun?.status || latestRun?.completed_at),
+    run_id: safeString(latestRun?.run_id || ''),
+    latest_run: latestRun,
+    status: normalizeSecurityStatus(latestRun?.status || (isSelectedLatestPayload ? payload?.status : '') || ''),
+    score: Math.max(0, Math.min(100, safeNumber(latestRun?.score ?? (isSelectedLatestPayload ? payload?.score : 0), 0))),
+    summary: safeString(latestRun?.summary || (isSelectedLatestPayload ? payload?.summary : '') || ''),
+    requested_at: safeIso(latestRun?.requested_at),
+    started_at: safeIso(latestRun?.started_at),
+    completed_at: safeIso(latestRun?.completed_at),
+    updated_at: safeIso(latestRun?.updated_at || latestRun?.completed_at),
+    app_id: safeString(latestRun?.app_id || payload?.app_id || ''),
+    app_label: safeString(latestRun?.app_label || payload?.app_label || ''),
+    tools: safeList(latestRun?.tools || (profileId === 'app' ? ['trivy'] : ['lynis', 'trivy'])),
+    critical_count: safeNumber(latestRun?.critical_count, 0),
+    high_count: safeNumber(latestRun?.high_count, 0),
+    medium_count: safeNumber(latestRun?.medium_count, 0),
+    low_count: safeNumber(latestRun?.low_count, 0),
+    info_count: safeNumber(latestRun?.info_count, 0),
+    items_to_review: findings.items_to_review,
+    findings_count: findings.findings_count,
+    coverage_summary: coverage,
+    tool_results: toolResults,
+    execution_timeline: timeline,
+    evidence_summary: evidence,
+    evidence_refs: evidence.evidence_refs,
+    finding_delta: isSelectedLatestPayload ? selectSecurityFindingDeltaView(payload) : selectSecurityFindingDeltaView({}),
+    findings: findings.findings,
+    critical_issues: findings.critical_issues,
+    history: profileHistory,
+    is_latest_payload: isSelectedLatestPayload,
+  };
+}
+
+export function selectSecurityProfilesView(payload = {}) {
+  return LITE_SECURITY_PROFILE_IDS.reduce((profiles, profile) => {
+    profiles[profile] = selectSecurityProfileView(payload, profile);
+    return profiles;
+  }, {});
+}
+
+export function selectSecurityCoverageView(payload = {}, profile = 'quick') {
+  return selectSecurityProfileView(payload, profile).coverage_summary;
+}
+
+export function selectSecurityTimelineProfileView(payload = {}, profile = 'quick') {
+  return selectSecurityProfileView(payload, profile).execution_timeline;
+}
+
+export function selectSecurityEvidenceProfileView(payload = {}, profile = 'quick') {
+  return selectSecurityProfileView(payload, profile).evidence_summary;
+}
+
 export function selectSecuritySummaryView(payload = {}) {
   if (payload?.view_model === 'security-screen-s3-v1' || payload?.view_model === 'security-summary-s3-v1') return payload;
   const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
@@ -1149,10 +1284,8 @@ export function selectSecuritySummaryView(payload = {}) {
     tool_results: selectSecurityToolResultsView(payload?.tool_results || lastRun?.tool_results),
     finding_delta: selectSecurityFindingDeltaView(payload),
     history: selectSecurityHistorySummaryView(payload),
-    profile_latest: isObject(payload?.profile_latest) ? Object.entries(payload.profile_latest).reduce((safe, [profile, run]) => {
-      safe[safeString(profile)] = normalizeSecurityRun(run) || run;
-      return safe;
-    }, {}) : {},
+    profile_latest: selectSecurityProfileLatestView(payload),
+    security_profiles: selectSecurityProfilesView(payload),
     findings: findings.findings,
     critical_issues: findings.critical_issues,
     component_posture: Array.isArray(payload?.component_posture)
@@ -1204,6 +1337,8 @@ export function selectSecurityScreenView(payload = {}) {
     finding_delta_summary: summary.finding_delta,
     history_summary: summary.history,
     evidence_summary: selectSecurityEvidenceSummaryView(summary),
+    security_profiles: summary.security_profiles || selectSecurityProfilesView(summary),
+    profile_latest: summary.profile_latest || selectSecurityProfileLatestView(summary),
     live: isLiteSecurityViewLive(summary),
   });
 }

@@ -7001,6 +7001,39 @@ def test_lite_security_history_entries_keep_profile_safe_summary_contract():
     assert '"summary"' in service
 
 
+def test_lite_security_profile_aware_selectors_contract():
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "LITE_SECURITY_PROFILE_IDS" in view_models
+    assert "normalizeSecurityProfileId" in view_models
+    assert "selectSecurityProfileLatestView" in view_models
+    assert "selectSecurityProfileHistoryView" in view_models
+    assert "selectSecurityProfileView" in view_models
+    assert "selectSecurityProfilesView" in view_models
+    assert "selectSecurityCoverageView" in view_models
+    assert "selectSecurityTimelineProfileView" in view_models
+    assert "selectSecurityEvidenceProfileView" in view_models
+    assert "security_profiles" in view_models
+    assert "security-profile-s3-v1" in view_models
+    assert "is_latest_payload" in view_models
+    assert "securityRunTimestamp" in view_models
+    assert "newerSecurityRun" in view_models
+
+    assert "selectSecurityProfileView" in security
+    assert "activeProfileView" in security
+    assert "data?.security_profiles?.[scanProfile]" in security
+    assert "activeProfileView?.coverage_summary" in security
+    assert "activeProfileView?.tool_results" in security
+    assert "activeProfileView?.history" in security
+    assert "data?.security_profiles?.[profile.id]?.latest_run" in security
+    assert "profileRunsById[profile.id]" in security
+
+    assert "raw_evidence" not in view_models.lower()
+    assert "command_payload" not in view_models.lower()
+    assert "pm2 env" not in security.lower()
+
+
 def test_lite_security_enterprise_scanner_profile_history_contract():
     security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
     policy_source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py").read_text()

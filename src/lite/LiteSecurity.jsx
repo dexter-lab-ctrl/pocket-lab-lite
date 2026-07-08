@@ -24,7 +24,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
-import { isLiteSecurityViewLive, selectSecurityScreenView } from '../lib/liteViewModels.js';
+import { isLiteSecurityViewLive, selectSecurityProfileView, selectSecurityScreenView } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import {
@@ -1722,17 +1722,16 @@ export default function SecurityScreen() {
   const latestScanProfile = normalizeSecurityProfileId(data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || latestScanProfile);
   const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [data, lastRun, evidence, result, securityHistory]);
-  const activeProfileRun = profileRunsById[scanProfile] || null;
+  const activeProfileView = useMemo(() => (data?.security_profiles?.[scanProfile] || selectSecurityProfileView(data || {}, scanProfile)), [data, scanProfile]);
+  const activeProfileRun = activeProfileView?.latest_run || profileRunsById[scanProfile] || null;
   const activeProfileHasRun = Boolean(activeProfileRun?.run_id || activeProfileRun?.status);
   const activeProfileIsLatest = Boolean(activeProfileRun && lastRun && activeProfileRun.run_id && activeProfileRun.run_id === lastRun.run_id) || scanProfile === latestScanProfile;
   const activeProfileMeta = securityProfileMeta(scanProfile);
-  const findings = activeProfileIsLatest
-    ? Number(data?.items_to_review ?? data?.findings_count ?? activeProfileRun?.items_to_review ?? 0)
-    : Number(activeProfileRun?.items_to_review ?? activeProfileRun?.findings_count ?? activeProfileRun?.critical_count ?? 0);
+  const findings = Number(activeProfileView?.items_to_review ?? activeProfileView?.findings_count ?? activeProfileRun?.items_to_review ?? 0);
   const checks = Number(activeProfileRun?.checks_reviewed ?? activeProfileRun?.checks_count ?? data?.checks_reviewed ?? data?.checks_count ?? 0);
-  const criticalIssues = activeProfileIsLatest && Array.isArray(data?.critical_issues) ? data.critical_issues : [];
-  const reviewItems = activeProfileIsLatest && Array.isArray(data?.findings) ? data.findings : [];
-  const evidenceRefs = profileEvidenceRefs(activeProfileRun, activeProfileIsLatest ? data?.evidence_refs : []);
+  const criticalIssues = Array.isArray(activeProfileView?.critical_issues) ? activeProfileView.critical_issues : [];
+  const reviewItems = Array.isArray(activeProfileView?.findings) ? activeProfileView.findings : [];
+  const evidenceRefs = profileEvidenceRefs(activeProfileRun, activeProfileView?.evidence_refs || []);
   const componentPosture = Array.isArray(data?.component_posture) ? data.component_posture : [];
   const healthyComponents = componentPosture.filter((item) => normalizeBackendState(item?.status) === 'ready').length;
   const guidance = Array.isArray(data?.guidance) && data.guidance.length ? data.guidance : [
@@ -1741,9 +1740,9 @@ export default function SecurityScreen() {
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const allReviewFindings = [...criticalIssues, ...reviewItems];
   const evidenceRun = evidence?.run || null;
-  const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileRun?.tool_results || (activeProfileIsLatest ? data?.tool_results : null) || {};
+  const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileView?.tool_results || activeProfileRun?.tool_results || {};
   const coverageFallback = profileFallbackCoverage(scanProfile);
-  const coverageSummary = activeProfileRun?.coverage_summary || (activeProfileIsLatest ? data?.coverage_summary || evidence?.coverage_summary : null) || coverageFallback;
+  const coverageSummary = activeProfileView?.coverage_summary || activeProfileRun?.coverage_summary || (activeProfileIsLatest ? data?.coverage_summary || evidence?.coverage_summary : null) || coverageFallback;
   const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, coverageFallback.checked_targets);
   const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, coverageFallback.skipped_targets);
   const partialCoverageTargets = quickCoverageList(coverageSummary.partial_targets);
@@ -1769,8 +1768,10 @@ export default function SecurityScreen() {
     { label: 'Evidence files', value: evidenceFileCount, detail: sbomSaved ? 'SBOM saved' : 'saved after check' },
     { label: 'Protected areas', value: healthyComponents || componentPosture.length || 0, detail: 'components watched' },
   ];
-  const findingDelta = data?.finding_delta && typeof data.finding_delta === 'object' ? data.finding_delta : {};
-  const profileHistory = securityHistory.filter((item) => normalizeSecurityProfileId(item?.scan_profile || (item?.app_id ? 'app' : 'quick')) === scanProfile);
+  const findingDelta = activeProfileView?.finding_delta && typeof activeProfileView.finding_delta === 'object' ? activeProfileView.finding_delta : {};
+  const profileHistory = Array.isArray(activeProfileView?.history) && activeProfileView.history.length
+    ? activeProfileView.history
+    : securityHistory.filter((item) => normalizeSecurityProfileId(item?.scan_profile || (item?.app_id ? 'app' : 'quick')) === scanProfile);
   const latestHistory = activeProfileRun || profileHistory[0] || null;
   const previousHistory = profileHistory.find((item) => item?.run_id && item.run_id !== latestHistory?.run_id) || null;
   const scoreTrend = latestHistory && previousHistory ? Number(latestHistory.score || 0) - Number(previousHistory.score || 0) : 0;
@@ -2477,7 +2478,7 @@ export default function SecurityScreen() {
                     onClick={() => chooseSecurityProfile(profile.id)}
                   >
                     <strong>{profile.label}</strong>
-                    <span>{profileRunTimestampLabel(profileRunsById[profile.id])}</span>
+                    <span>{profileRunTimestampLabel(data?.security_profiles?.[profile.id]?.latest_run || profileRunsById[profile.id])}</span>
                   </button>
                 ))}
               </div>
@@ -2497,7 +2498,7 @@ export default function SecurityScreen() {
                   <div key={profile.id} className={`lite-security-profile-run-card ${scanProfile === profile.id ? 'is-active' : ''}`.trim()}>
                     <div>
                       <strong>{profile.label}</strong>
-                      <p>{profile.summary}</p>
+                      <p>{data?.security_profiles?.[profile.id]?.summary || profile.summary}</p>
                       <small>{profile.id === 'quick' ? 'Skips photos, backups, and large caches.' : profile.id === 'full' ? 'Best while charging. Still skips photos, backups, and large caches.' : 'Checks PhotoPrism route, files, settings, backup metadata, and action state. Skips photos and media.'}</small>
                     </div>
                     <LiteButton tone={scanProfile === profile.id ? 'primary' : 'secondary'} onClick={(event) => runSecurityProfile(profile.id, event)} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel={`Run ${profile.label}`}>{profile.actionLabel}</LiteButton>
