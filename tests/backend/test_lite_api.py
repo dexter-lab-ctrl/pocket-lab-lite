@@ -6041,7 +6041,8 @@ def test_lite_security_phase4_motion_is_css_only_and_reduced_motion_safe():
     assert ".lite-security-phase4" in css
     assert "animation: none !important" in css
     assert "transition: none !important" in css
-    assert "useSpring" not in security
+    assert "useSpring" in security
+    assert "@react-spring/web" in security
     assert "useGesture" not in security
     assert "requestAnimationFrame" not in security
     assert "setInterval" not in security
@@ -6235,7 +6236,9 @@ def test_lite_security_phase5_reduced_motion_and_safe_gestures():
     assert "animation: none !important" in css
     assert "transition: none !important" in css
     assert "useDrag" not in security
-    assert "useSpring" not in security
+    assert "useSpring" in security
+    assert "@react-spring/web" in security
+    assert "data-security-react-spring" in security
     assert "useDrag" in overlay
     assert "motion === 'safe-grip'" in overlay
     assert "filterTaps: true" in overlay
@@ -6304,3 +6307,78 @@ def test_lite_security_overlay_hotfix_preserves_no_frontend_execution_boundary()
     assert "nats.connect" not in combined
     assert "onClickCapture" not in combined
     assert "onPointerDownCapture" not in combined
+
+
+
+def test_lite_security_premium_visual_polish_uses_react_spring_safely():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "@react-spring/web" in security
+    assert "animated" in security
+    assert "useSpring" in security
+    assert "useSecurityReducedMotion" in security
+    assert "SECURITY_SPRING_CONFIG" in security
+    assert "data-security-react-spring=\"summary-shell\"" in security
+    assert "data-security-react-spring=\"safety-card\"" in security
+    assert "data-security-react-spring=\"manage-section\"" in security
+    assert "data-security-react-spring': 'manage-shell'" in security
+    assert "data-security-react-spring': 'focused-details'" in security
+    assert "data-security-react-spring': 'finding-details'" in security
+    assert "data-security-react-spring': 'remediation'" in security
+    assert "useDrag" not in security
+    assert "onClickCapture" not in security
+    assert "onPointerDownCapture" not in security
+    assert "Security premium visual polish" in css
+    assert "React Spring owns safe panel/card motion" in css
+
+
+def test_lite_security_premium_visual_polish_styles_all_security_surfaces():
+    css = Path("src/index.css").read_text()
+
+    for selector in [
+        ".lite-security-safety-center-card",
+        ".lite-security-overlay-surface",
+        ".lite-security-phase3-panel",
+        ".lite-security-manage-shell",
+        ".lite-security-phase3-details-shell",
+        ".lite-security-phase3-finding-shell",
+        ".lite-security-remediation-panel",
+        ".lite-security-manage-tabs",
+        ".lite-security-manage-tab-button",
+        ".lite-security-manage-section",
+        ".lite-security-manage-row",
+        ".lite-security-remediation-button",
+        ".lite-security-coverage-toggle",
+        ".lite-finding-detail-trigger",
+        ".lite-security-execution-step",
+    ]:
+        assert selector in css
+
+    assert "radial-gradient(circle at 18% 0%" in css
+    assert "linear-gradient(135deg, #2563eb, #0284c7)" in css
+    assert "backdrop-filter: blur(18px)" in css
+    assert "lite-security-premium-sheen" in css
+    assert "lite-security-premium-button-sheen" in css
+
+
+def test_lite_security_premium_visual_polish_preserves_reduced_motion_and_backend_boundaries():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    combined = security + css
+
+    assert "matchMedia('(prefers-reduced-motion: reduce)')" in security
+    assert "immediate: securityMotionReduced" in security
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "animation: none !important" in css
+    assert "transition: none !important" in css
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "fetch(" not in security
+    assert "child_process" not in combined
+    assert "exec(" not in combined
+    assert "spawn(" not in combined
+    assert "nats.connect" not in combined
