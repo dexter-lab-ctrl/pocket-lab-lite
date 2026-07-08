@@ -16836,3 +16836,402 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Security Phase 5 — Safety Center Manage UX.
+   Summary-first: the main Security tab stays a calm Safety Center card.
+   Deeper Security sections live in a Security-specific Manage sheet/panel.
+   Security Manage intentionally does not inherit App Catalog Manage classes. */
+.theme-pocket-lite-daylight .lite-security-phase5-shell {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 16rem);
+  gap: clamp(1rem, 2vw, 1.4rem);
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -12% -38% 42%;
+  height: 12rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12), transparent 62%);
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-copy,
+.theme-pocket-lite-daylight .lite-security-safety-center-score {
+  position: relative;
+  z-index: 1;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-copy {
+  display: grid;
+  gap: 0.78rem;
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-copy h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-weight: 950;
+  letter-spacing: -0.045em;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-copy p {
+  margin: 0;
+  max-width: 48rem;
+  color: #475569;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-meta,
+.theme-pocket-lite-daylight .lite-security-safety-center-chips,
+.lite-security-safety-center-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 850;
+  padding: 0.32rem 0.62rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-chip,
+.lite-security-safety-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.8);
+  color: #334155;
+  font-size: 0.74rem;
+  font-weight: 900;
+  padding: 0.32rem 0.62rem;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-chip-ready,
+.lite-security-safety-chip-ready {
+  border-color: rgba(16, 185, 129, 0.24);
+  background: rgba(236, 253, 245, 0.92);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-chip-checking,
+.lite-security-safety-chip-checking {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(239, 246, 255, 0.9);
+  color: #1d4ed8;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-chip-danger,
+.lite-security-safety-chip-danger {
+  border-color: rgba(244, 63, 94, 0.26);
+  background: rgba(255, 241, 242, 0.92);
+  color: #be123c;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.62rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-score {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.4rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 250, 252, 0.76));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  padding: 1rem;
+  text-align: center;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-score strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-score > span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-live {
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 1.1rem;
+  background: rgba(239, 246, 255, 0.74);
+  padding: 0.82rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-live > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #1e3a8a;
+  font-size: 0.86rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-live p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.lite-security-manage-layer {
+  z-index: 10030 !important;
+}
+
+.lite-security-manage-panel,
+.lite-security-manage-shell {
+  width: min(100%, 45rem) !important;
+}
+
+.lite-security-manage-scroll {
+  display: grid !important;
+  align-content: start !important;
+  gap: 0.9rem !important;
+}
+
+.lite-security-manage-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 0.15rem 0.05rem 0.4rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.lite-security-manage-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.lite-security-manage-tabs button {
+  flex: 0 0 auto;
+  min-height: 2.15rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 900;
+  padding: 0.42rem 0.72rem;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.lite-security-manage-tabs button.is-active {
+  border-color: rgba(37, 99, 235, 0.32);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(14, 165, 233, 0.08));
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.lite-security-manage-section {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+  animation: lite-security-phase5-section-settle 150ms ease-out both;
+}
+
+.lite-security-manage-section-head {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.lite-security-manage-section-head span {
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lite-security-manage-section-head h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.lite-security-manage-section-head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.lite-security-manage-overview,
+.lite-security-manage-card-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lite-security-manage-score-row,
+.lite-security-manage-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.78rem;
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.05rem;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  padding: 0.78rem;
+}
+
+.lite-security-manage-score-row {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.lite-security-manage-row > div,
+.lite-security-manage-score-row > div {
+  min-width: 0;
+}
+
+.lite-security-manage-row strong,
+.lite-security-manage-score-row strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.lite-security-manage-row p,
+.lite-security-manage-score-row p {
+  margin: 0.18rem 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
+.lite-security-manage-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.42rem;
+}
+
+.lite-security-manage-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.62rem;
+}
+
+.lite-security-manage-stat {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 0.7rem;
+}
+
+.lite-security-manage-stat span {
+  display: block;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lite-security-manage-stat strong {
+  display: block;
+  margin-top: 0.18rem;
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.lite-security-phase5-compact-path {
+  max-height: none;
+}
+
+@keyframes lite-security-phase5-section-settle {
+  from { opacity: 0; transform: translate3d(0, 0.35rem, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (min-width: 900px) {
+  .lite-security-manage-panel,
+  .lite-security-manage-shell {
+    width: min(45rem, 48vw) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-safety-center-card {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-safety-center-score {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .lite-security-manage-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .lite-security-manage-row-actions {
+    justify-content: flex-start;
+  }
+
+  .lite-security-manage-stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-phase5-shell,
+  .lite-security-safety-center-card,
+  .lite-security-safety-center-card::after,
+  .lite-security-manage-panel,
+  .lite-security-manage-shell,
+  .lite-security-manage-tabs button,
+  .lite-security-manage-section,
+  .lite-security-manage-row,
+  .lite-security-manage-grip,
+  .lite-security-phase5-compact-path,
+  .lite-security-phase5-compact-path * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -6122,3 +6122,121 @@ def test_lite_security_overlay_hotfix_preserves_backend_owned_boundaries():
     assert "exec(" not in overlay + security + details
     assert "spawn(" not in overlay + security + details
     assert "nats://" not in (overlay + security + details).lower()
+
+
+def test_lite_security_phase5_safety_center_manage_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX" in security
+    assert "lite-security-safety-center-card" in security
+    assert "lite-security-manage-shell" in security
+    assert "lite-security-manage-panel" in security
+    assert "lite-security-manage-tabs" in security
+    assert "lite-security-manage-section" in security
+    assert "data-security-phase5-summary-first" in security
+    assert "data-security-phase5-manage-shell" in security
+    assert "Run Safety Check" in security
+    assert ">Manage<" in security
+    assert "SECURITY_MANAGE_SECTIONS" in security
+    for section_id in ["overview", "changes", "issues", "check_path", "evidence", "history", "technical_details"]:
+        assert section_id in security
+    assert "lite-security-safety-center-card" in css
+    assert "lite-security-manage-shell" in css
+    assert "lite-security-manage-tabs" in css
+    assert "lite-security-manage-section" in css
+
+
+def test_lite_security_phase5_main_page_is_summary_first():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    main_start = security.index("data-security-phase5-summary-first")
+    manage_start = security.index("data-security-phase5-manage-shell")
+    main_section = security[main_start:manage_start]
+
+    assert "Safety Center" in main_section
+    assert "Run Safety Check" in main_section
+    assert "Manage" in main_section
+    assert "lite-security-safety-center-card" in main_section
+    assert "SecurityProgressiveDetailsLazy" not in main_section
+    assert "SecurityHistoryLazy" not in main_section
+    assert "lite-security-phase1-layout" not in main_section
+    assert "lite-security-phase1-more" not in main_section
+    assert "Open all review items" not in main_section
+    assert "Show check path" not in main_section
+    assert "Protected apps" not in main_section
+    assert "SecurityCoverageMatrixCard" not in main_section
+
+
+def test_lite_security_phase5_manage_uses_security_overlay_classes_only():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert 'variant="security"' in security
+    assert 'motion="safe-grip"' in security
+    assert "lite-security-overlay-surface" in overlay
+    assert "lite-security-manage-grip" in security
+    assert "lite-security-manage-layer" in security
+    assert "lite-security-manage-scroll" in security
+    assert "lite-security-manage-close" in security
+    assert "lite-catalog-manage-sheet lite-security" not in security
+    assert "lite-catalog-manage-sheet" not in security[security.index("data-security-phase5-manage-shell"):security.index("open={Boolean(activeSecurityDetails)}")]
+    assert "Security Manage intentionally does not inherit App Catalog Manage classes" in css
+
+
+def test_lite_security_phase5_focused_details_and_lazy_history():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "openSecurityDetailFromManage('changes'" in security
+    assert "openSecurityDetailFromManage('attention'" in security
+    assert "openSecurityDetailFromManage('checkPath'" in security
+    assert "openSecurityDetailFromManage('history'" in security
+    assert "openSecurityDetailFromManage('technical_details'" in security
+    assert "open={Boolean(activeSecurityDetails)}" in security
+    assert "open={Boolean(selectedFinding)}" in security
+    assert "type === 'history'" in details
+    assert "type === 'technical_details'" in details
+    assert "History rows mount only inside this details surface." in details
+    assert "Technical details are collapsed by default" in details
+
+
+def test_lite_security_phase5_preserves_backend_owned_security_boundary():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+    combined = security + details
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "liteApi.checkSecurityApp" in security
+    assert "selectSecurityScreenView" in security
+    assert "snapshotSelect: selectSecurityScreenView" in security
+    assert "pollingMode: 'slow'" in security
+    assert "fetch(" not in combined
+    assert "child_process" not in combined
+    assert "exec(" not in combined
+    assert "spawn(" not in combined
+    assert "new WebSocket" not in combined
+    assert "nats.connect" not in combined
+    assert "window.setInterval" not in combined
+    assert "setInterval" not in combined
+    assert "onClickCapture" not in combined
+    assert "onPointerDownCapture" not in combined
+
+
+def test_lite_security_phase5_reduced_motion_and_safe_gestures():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert ".lite-security-phase5" in css
+    assert ".lite-security-manage" in css
+    assert "animation: none !important" in css
+    assert "transition: none !important" in css
+    assert "useDrag" not in security
+    assert "useSpring" not in security
+    assert "useDrag" in overlay
+    assert "motion === 'safe-grip'" in overlay
+    assert "filterTaps: true" in overlay
+    assert "lite-security-manage-grip" in security

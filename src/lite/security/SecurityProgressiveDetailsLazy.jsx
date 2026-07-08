@@ -89,6 +89,12 @@ function buildDetails({ type, model = {} }) {
     safetyLabel = '',
     lastRun = null,
     savedStateOnly = false,
+    backendReachable = true,
+    securityHistory = [],
+    latestHistory = null,
+    previousHistory = null,
+    scoreTrendView = null,
+    scanProgressLabel = '',
   } = model;
 
   if (type === 'changes') {
@@ -148,6 +154,89 @@ function buildDetails({ type, model = {} }) {
         { label: 'Latest run', value: shortId(lastRun?.run_id) || 'not available' },
         { label: 'Safety score', value: safetyScore },
         { label: 'Status', value: safetyLabel },
+      ],
+    };
+  }
+
+
+
+  if (type === 'history') {
+    const safeHistory = Array.isArray(securityHistory) ? securityHistory.slice(0, 7) : [];
+    const historyItems = safeHistory.map((item, index) => ({
+      id: safeText(item?.run_id || `history-${index}`, `history-${index}`),
+      title: `Safety check ${index + 1}`,
+      meta: safeText(item?.completed_at || item?.started_at || item?.status || 'saved check', 'saved check'),
+      status: safeText(item?.status || 'recorded', 'recorded'),
+    }));
+    return {
+      title: 'Safety history',
+      status: safeHistory.length ? 'ready' : 'review',
+      statusLabel: safeHistory.length ? `${safeHistory.length} saved check${safeHistory.length === 1 ? '' : 's'}` : 'No history yet',
+      summary: safeHistory.length ? 'Recent safety checks are shown as safe saved summaries.' : 'History appears after completed safety checks.',
+      what_happened: safeHistory.length ? [
+        `${safeHistory.length} recent check${safeHistory.length === 1 ? '' : 's'} summarized.`,
+        `Score trend: ${safeText(scoreTrendView?.detail || scoreTrendView?.label, 'Stable')}`,
+      ] : ['Run Safety Check to create safety history.'],
+      what_changed: ['Opening history did not start a new check or change the device.'],
+      what_did_not_happen: [
+        'The browser did not load raw scanner output.',
+        'Raw evidence files were not opened in this view.',
+        'Private paths and backend logs stay hidden.',
+      ],
+      saved_for_troubleshooting: {
+        saved: Boolean(safeHistory.length),
+        backend_only: true,
+        summary: savedStateOnly ? 'Showing saved state. Fresh history will refresh when Pocket Lab is reachable.' : 'Backend keeps detailed history and evidence protected.',
+      },
+      next_step: safeHistory.length ? 'Use history to spot score drift, then run Safety Check when needed.' : 'Run Safety Check to create the first history entry.',
+      technicalDetails: [
+        { label: 'Latest run', value: shortId(latestHistory?.run_id || lastRun?.run_id) || 'not available' },
+        { label: 'Previous run', value: shortId(previousHistory?.run_id) || 'not available' },
+        { label: 'Shown checks', value: safeHistory.length },
+        { label: 'Snapshot state', value: savedStateOnly ? 'Saved state' : 'Fresh state' },
+      ],
+      history: {
+        title: 'Recent safety checks',
+        summary: safeHistory.length ? 'History rows mount only inside this details surface.' : 'No saved checks are available yet.',
+        items: historyItems,
+        enabled: true,
+        emptyMessage: 'Run Safety Check to create history.',
+      },
+    };
+  }
+
+  if (type === 'technical_details') {
+    const safeToolNames = safeList(toolNames.length ? toolNames : ['Lynis', 'Trivy']);
+    return {
+      title: 'Technical details',
+      status: backendReachable === false ? 'review' : 'ready',
+      statusLabel: savedStateOnly ? 'Saved state only' : backendReachable === false ? 'Pocket Lab not reachable' : 'Safe metadata',
+      summary: 'Technical details are collapsed by default and only show safe metadata.',
+      what_happened: [
+        'Security checks remain backend-owned.',
+        `Visible stage: ${safeText(scanProgressLabel, 'Ready for the next safety check')}`,
+        `Tools summarized: ${safeToolNames.join(' + ')}`,
+      ],
+      what_changed: ['Opening technical details did not start a check, repair, or system change.'],
+      what_did_not_happen: [
+        'No raw scanner output was shown.',
+        'No raw logs were shown.',
+        'No private Android paths were shown.',
+        'No backend command payloads or secrets were shown.',
+      ],
+      saved_for_troubleshooting: {
+        saved: Boolean(lastRun?.run_id),
+        backend_only: true,
+        summary: 'Detailed evidence and troubleshooting records stay backend-owned and sanitized before display.',
+      },
+      next_step: backendReachable === false ? 'Reconnect to Pocket Lab before running a new safety check.' : 'Use these details only for support or troubleshooting.',
+      technicalDetails: [
+        { label: 'Execution owner', value: 'FastAPI and worker' },
+        { label: 'Polling policy', value: 'slow' },
+        { label: 'Snapshot state', value: savedStateOnly ? 'Saved state' : 'Fresh state' },
+        { label: 'Backend reachable', value: backendReachable === false ? 'No' : 'Yes' },
+        { label: 'Latest run', value: shortId(lastRun?.run_id) || 'not available' },
+        { label: 'Evidence refs', value: Number(evidenceFileCount || currentEvidenceRefs.length || 0) },
       ],
     };
   }
