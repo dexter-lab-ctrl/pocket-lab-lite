@@ -6609,3 +6609,76 @@ def test_lite_security_execution_flow_glyphs_are_status_colored():
     assert "#92400e" in css
     assert "#be123c" in css
     assert "prefers-reduced-motion: reduce" in css
+
+
+def test_lite_security_premium_polish_v5_animates_details_panels_safely():
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+    finding = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
+    combined = details + finding
+
+    assert "SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS" in details
+    assert "SECURITY_FINDING_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS" in finding
+    assert "import { animated, useSpring } from '@react-spring/web'" in combined
+    assert "const detailsPanelSpring = useSpring" in details
+    assert "const detailsContentSpring = useSpring" in details
+    assert "const findingPanelSpring = useSpring" in finding
+    assert "const findingContentSpring = useSpring" in finding
+    assert 'data-security-react-spring="details-panel"' in details
+    assert 'data-security-react-spring="details-content"' in details
+    assert 'data-security-react-spring="finding-details-panel"' in finding
+    assert 'data-security-react-spring="finding-details-content"' in finding
+    assert "matchMedia('(prefers-reduced-motion: reduce)')" in combined
+    assert "immediate: securityDetailsMotionReduced" in details
+    assert "immediate: securityFindingMotionReduced" in finding
+
+
+def test_lite_security_premium_polish_v5_styles_all_details_panel_parts():
+    css = Path("src/index.css").read_text()
+
+    assert "Security premium polish v5: production-grade focused details panels" in css
+    for selector in [
+        ".lite-security-details-premium-panel",
+        ".lite-security-finding-premium-panel",
+        ".lite-security-details-premium-head",
+        ".lite-security-finding-premium-head",
+        ".lite-security-details-premium-content",
+        ".lite-security-finding-premium-content",
+        ".lite-progressive-details-summary",
+        ".lite-progressive-detail-section::before",
+        ".lite-progressive-detail-section.is-attention::before",
+        ".lite-progressive-detail-section.is-saved::before",
+        ".lite-progressive-detail-section.is-next-step::before",
+        ".lite-technical-details-row",
+        ".lite-history-section-list li",
+        ".lite-progressive-disclosure-toggle",
+    ]:
+        assert selector in css
+
+    assert "radial-gradient(circle at 14% 0%" in css
+    assert "grid-template-columns: minmax(7rem, 0.42fr) minmax(0, 1fr)" in css
+    assert "min-height: 6rem" in css
+    assert "text-wrap: balance" in css
+    assert "overflow-wrap: anywhere" in css
+
+
+def test_lite_security_premium_polish_v5_preserves_backend_boundaries_and_reduced_motion():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+    finding = Path("src/lite/security/SecurityFindingDetailsLazy.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    combined = security + details + finding + css
+
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "transition: none !important" in css
+    assert "transform: none !important" in css
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "fetch(" not in security
+    assert "fetch(" not in details
+    assert "fetch(" not in finding
+    assert "child_process" not in combined
+    assert "exec(" not in combined
+    assert "spawn(" not in combined
+    assert "nats.connect" not in combined
+    assert "onClickCapture" not in combined
+    assert "onPointerDownCapture" not in combined

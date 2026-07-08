@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { animated, useSpring } from '@react-spring/web';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 
 const SECURITY_PHASE2_PROGRESSIVE_DETAILS = true;
@@ -10,6 +11,32 @@ void SECURITY_PHASE2_PROGRESSIVE_DETAILS;
 void SECURITY_PHASE2_SUMMARY_FIRST;
 void SECURITY_PHASE2_NO_RAW_SCANNER_OUTPUT;
 void SECURITY_PHASE2_EVIDENCE_ON_DEMAND;
+
+const SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS = [
+  'details panels use safe React Spring polish',
+  'lite-security-details-premium-panel',
+  'lite-security-details-premium-content',
+];
+void SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS;
+
+function useReducedMotionPreference() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduced(Boolean(media.matches));
+    update();
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }
+    media.addListener?.(update);
+    return () => media.removeListener?.(update);
+  }, []);
+
+  return reduced;
+}
 
 const SENSITIVE_TEXT_PATTERN = /(token|password|api[_-]?key|authorization|private[_-]?key|nats:\/\/|command payload|raw log|raw evidence|\/data\/data|\/storage\/emulated|restic password|backend secret)/i;
 
@@ -310,9 +337,31 @@ function buildDetails({ type, model = {} }) {
 
 export default function SecurityProgressiveDetailsLazy({ type = 'evidence', model = {}, onClose }) {
   const details = buildDetails({ type, model });
+  const securityDetailsMotionReduced = useReducedMotionPreference();
+  const detailsPanelSpring = useSpring({
+    from: { opacity: 0, y: securityDetailsMotionReduced ? 0 : 12, scale: securityDetailsMotionReduced ? 1 : 0.985 },
+    to: { opacity: 1, y: 0, scale: 1 },
+    config: { tension: 260, friction: 28, mass: 0.9 },
+    immediate: securityDetailsMotionReduced,
+  });
+  const detailsContentSpring = useSpring({
+    from: { opacity: 0, y: securityDetailsMotionReduced ? 0 : 8 },
+    to: { opacity: 1, y: 0 },
+    delay: securityDetailsMotionReduced ? 0 : 70,
+    config: { tension: 240, friction: 30, mass: 0.8 },
+    immediate: securityDetailsMotionReduced,
+  });
+
   return (
-    <section className="lite-security-phase2-details-panel" role="region" aria-label={`${details.title} details`} data-security-phase2-progressive-details="true">
-      <div className="lite-security-phase2-details-head">
+    <animated.section
+      className={`lite-security-phase2-details-panel lite-security-details-premium-panel is-${details.status || 'neutral'}`}
+      role="region"
+      aria-label={`${details.title} details`}
+      data-security-phase2-progressive-details="true"
+      data-security-react-spring="details-panel"
+      style={detailsPanelSpring}
+    >
+      <div className="lite-security-phase2-details-head lite-security-details-premium-head">
         <div>
           <span>Progressive details</span>
           <h2>{details.title}</h2>
@@ -322,7 +371,9 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
           <X className="h-4 w-4" />
         </button>
       </div>
-      <LiteProgressiveDetails {...details} />
-    </section>
+      <animated.div className="lite-security-details-premium-content" data-security-react-spring="details-content" style={detailsContentSpring}>
+        <LiteProgressiveDetails {...details} />
+      </animated.div>
+    </animated.section>
   );
 }
