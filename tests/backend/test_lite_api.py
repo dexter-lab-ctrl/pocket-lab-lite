@@ -6382,3 +6382,71 @@ def test_lite_security_premium_visual_polish_preserves_reduced_motion_and_backen
     assert "exec(" not in combined
     assert "spawn(" not in combined
     assert "nats.connect" not in combined
+
+
+def test_lite_security_premium_polish_v2_uses_react_spring_for_tabs_and_live_progress():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS" in security
+    assert "const manageTabsSpring = useSpring" in security
+    assert "const liveProgressSpring = useSpring" in security
+    assert "data-security-react-spring=\"manage-tabs\"" in security
+    assert "data-security-react-spring=\"live-progress\"" in security
+    assert "lite-security-premium-v2-manage-tabs-motion" in security
+    assert "lite-security-premium-v2-live-progress-motion" in security
+    assert "Security premium polish v2" in css
+    assert "React Spring owns safe tab/live motion" in css
+
+
+def test_lite_security_premium_polish_v2_styles_complete_security_surface_contract():
+    css = Path("src/index.css").read_text()
+
+    for selector in [
+        ".lite-security-safety-center-copy h2",
+        ".lite-security-safety-center-meta span",
+        ".lite-security-safety-center-actions .lite-button",
+        ".lite-security-score-ring::after",
+        ".lite-security-manage-scroll",
+        ".lite-security-phase3-scroll",
+        ".lite-security-manage-head::after",
+        ".lite-security-phase3-head::after",
+        ".lite-security-manage-card-list",
+        ".lite-security-manage-row-actions",
+        ".lite-security-delta-stats",
+        ".lite-security-execution-timeline::before",
+        ".lite-security-execution-step-active > span:first-child",
+        ".lite-security-coverage-table",
+        ".lite-security-boundary-node",
+        ".lite-security-evidence-dropdown",
+        ".lite-security-evidence-files code",
+    ]:
+        assert selector in css
+
+    assert "--lite-security-focus" in css
+    assert "scroll-snap-type: x proximity" in css
+    assert "min-height: 2.8rem" in css
+    assert "lite-security-premium-v2-pulse" in css
+
+
+def test_lite_security_premium_polish_v2_keeps_accessible_focus_and_reduced_motion():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    combined = security + css
+
+    assert ":focus-visible" in css
+    assert "outline: none !important" in css
+    assert "--lite-security-focus" in css
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert ".lite-security-premium-v2-manage-tabs-motion" in css
+    assert ".lite-security-premium-v2-live-progress-motion" in css
+    assert "animation: none !important" in css
+    assert "transition: none !important" in css
+    assert "immediate: securityMotionReduced" in security
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "fetch(" not in security
+    assert "child_process" not in combined
+    assert "nats.connect" not in combined
+    assert "onClickCapture" not in combined
+    assert "onPointerDownCapture" not in combined
