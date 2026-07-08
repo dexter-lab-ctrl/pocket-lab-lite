@@ -163,6 +163,14 @@ const SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS = [
   'lite-security-premium-v2-reduced-motion',
 ];
 void SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS;
+const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
+  'lite-security-score-ring-green-fill',
+  'data-security-score-fill="spring"',
+  'Lynis pending',
+  'Trivy pending',
+  'lite-security-execution-ready',
+];
+void SECURITY_SCORE_RING_GREEN_SPRING_GUARDS;
 
 const SECURITY_DETAIL_SHELL_META = {
   changes: {
@@ -254,6 +262,22 @@ function securityStepState(steps, key) {
 function securityToolCompleted(toolResult = {}) {
   const status = String(toolResult?.status || '').toLowerCase();
   return ['completed', 'succeeded', 'success', 'done'].includes(status);
+}
+
+function securityToolChip(toolKey, toolLabel, toolResult = {}) {
+  if (securityToolCompleted(toolResult)) {
+    return { key: toolKey, label: `${toolLabel} checked`, tone: 'ready' };
+  }
+  const rawLabel = securityToolStatusLabel(toolResult);
+  const normalized = String(rawLabel || '').trim().toLowerCase();
+  const readableStatus = rawLabel && normalized !== 'pending'
+    ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+    : 'pending';
+  return {
+    key: toolKey,
+    label: `${toolLabel} ${readableStatus}`,
+    tone: securityToolPartial(toolResult) || securityToolMissing(toolResult) ? 'review' : 'checking',
+  };
 }
 
 function securityToolPartial(toolResult = {}) {
@@ -1831,8 +1855,8 @@ export default function SecurityScreen() {
             ? 'Needs attention'
             : safetyLabel;
   const safetyCenterChips = [
-    { key: 'lynis', label: securityToolCompleted(toolResults?.lynis) ? 'Lynis checked' : securityToolStatusLabel(toolResults?.lynis || {}), tone: securityToolCompleted(toolResults?.lynis) ? 'ready' : 'checking' },
-    { key: 'trivy', label: securityToolCompleted(toolResults?.trivy) ? 'Trivy checked' : securityToolStatusLabel(toolResults?.trivy || {}), tone: securityToolCompleted(toolResults?.trivy) ? 'ready' : 'checking' },
+    securityToolChip('lynis', 'Lynis', toolResults?.lynis),
+    securityToolChip('trivy', 'Trivy', toolResults?.trivy),
     { key: 'secrets', label: 'Secrets hidden', tone: 'ready' },
     { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
   ];
@@ -1896,6 +1920,9 @@ export default function SecurityScreen() {
     immediate: securityMotionReduced,
     config: SECURITY_SPRING_CONFIG.section,
   });
+  const scoreRingStyle = {
+    '--score': scoreSpring.number.to((value) => `${Math.max(0, Math.min(100, Math.round(value)))}%`),
+  };
 
 
   return (
@@ -1943,9 +1970,9 @@ export default function SecurityScreen() {
           </div>
 
           <div className="lite-security-safety-center-score" aria-label="Safety score">
-            <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}>
+            <animated.div className="lite-security-score-ring lite-security-score-ring-green-fill" style={scoreRingStyle} data-security-score-fill="spring">
               <animated.span>{scoreSpring.number.to((value) => Math.round(value))}</animated.span>
-            </div>
+            </animated.div>
             <strong>Safety score</strong>
             <span>{scanInProgress ? `${scanProgressPercent}% complete` : safetyCenterSummary}</span>
             <StatusBadge status={backendBadgeStatus(safetyStatus)}>{safetyLabel}</StatusBadge>
@@ -2020,7 +2047,7 @@ export default function SecurityScreen() {
           {activeManageSection === 'overview' ? (
             <div className="lite-security-manage-overview">
               <div className="lite-security-manage-score-row">
-                <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}><span>{safetyScore}</span></div>
+                <animated.div className="lite-security-score-ring lite-security-score-ring-green-fill" style={scoreRingStyle} data-security-score-fill="spring"><animated.span>{scoreSpring.number.to((value) => Math.round(value))}</animated.span></animated.div>
                 <div>
                   <strong>{safetyCenterSummary}</strong>
                   <p>{savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : lastCheckedLabel}</p>

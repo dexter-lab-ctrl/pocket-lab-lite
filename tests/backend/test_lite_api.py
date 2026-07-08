@@ -6571,3 +6571,41 @@ def test_lite_security_premium_polish_v4_keeps_focus_accessibility_and_safe_boun
     assert "nats.connect" not in combined
     assert "onClickCapture" not in combined
     assert "onPointerDownCapture" not in combined
+
+
+def test_lite_security_score_ring_uses_green_react_spring_fill_and_unique_pending_chips():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "SECURITY_SCORE_RING_GREEN_SPRING_GUARDS" in security
+    assert "function securityToolChip" in security
+    assert "Lynis pending" in security
+    assert "Trivy pending" in security
+    assert "const scoreRingStyle" in security
+    assert "scoreSpring.number.to" in security
+    assert "data-security-score-fill=\"spring\"" in security
+    assert "lite-security-score-ring-green-fill" in security
+    assert "conic-gradient(from -90deg, var(--security-score-green) var(--score" in css
+    assert "--security-score-green: #10b981" in css
+    assert "#2563eb var(--score" not in css.split("/* Security score ring green spring fill polish */")[-1]
+
+
+def test_lite_security_execution_flow_glyphs_are_status_colored():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "lite-security-execution-${securityExecutionStateTone(step.state)}" in security
+    for selector in [
+        ".lite-security-execution-ready > span:first-child",
+        ".lite-security-execution-checking > span:first-child",
+        ".lite-security-execution-review > span:first-child",
+        ".lite-security-execution-danger > span:first-child",
+        ".lite-security-execution-waiting > span:first-child",
+    ]:
+        assert selector in css
+
+    assert "#047857" in css
+    assert "#0369a1" in css
+    assert "#92400e" in css
+    assert "#be123c" in css
+    assert "prefers-reduced-motion: reduce" in css
