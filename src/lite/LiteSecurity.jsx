@@ -1888,6 +1888,14 @@ export default function SecurityScreen() {
     immediate: securityMotionReduced,
     config: SECURITY_SPRING_CONFIG.micro,
   });
+  const manageScrollSpring = useSpring({
+    to: {
+      opacity: securityManageOpen ? 1 : 0,
+      y: securityManageOpen ? 0 : 6,
+    },
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.section,
+  });
 
 
   return (
@@ -1920,11 +1928,16 @@ export default function SecurityScreen() {
             </div>
             <div className="lite-security-safety-center-actions">
               <span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button">
-                <LiteButton onClick={scan} disabled={scanInProgress || securityFlow.writeBlocked} haptic>
-                  {scanInProgress ? 'Checking...' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}
+                <LiteButton
+                  onClick={scan}
+                  disabled={scanInProgress || securityFlow.writeBlocked}
+                  haptic
+                  ariaLabel={scanInProgress ? 'Safety check is running' : securityFlow.writeBlocked ? 'Reconnect to run Security safety check' : 'Run Security safety check'}
+                >
+                  {scanInProgress ? 'Checking safety…' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}
                 </LiteButton>
               </span>
-              <LiteButton tone="secondary" onClick={openSecurityManage}>Manage</LiteButton>
+              <LiteButton tone="secondary" onClick={openSecurityManage} ariaLabel="Manage Security details">Manage</LiteButton>
             </div>
             {securityFlow.writeBlocked ? <p className="lite-security-phase1-note">{securityFlow.blockedReason || 'Reconnect to continue.'}</p> : null}
           </div>
@@ -1980,6 +1993,7 @@ export default function SecurityScreen() {
         motion="safe-grip"
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'manage-shell' }}
       >
+        <animated.div style={manageScrollSpring} className="lite-security-manage-scroll-frame" data-security-react-spring="manage-scroll-frame">
         <animated.div style={manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
           {SECURITY_MANAGE_SECTIONS.map((section) => (
             <button
@@ -1987,6 +2001,7 @@ export default function SecurityScreen() {
               type="button"
               role="tab"
               aria-selected={activeManageSection === section.id}
+              aria-label={`Open ${section.label} in Security Manage`}
               className={`lite-security-manage-tab-button ${activeManageSection === section.id ? 'is-active' : ''}`.trim()}
               onClick={() => chooseSecurityManageSection(section.id)}
             >
@@ -2040,7 +2055,7 @@ export default function SecurityScreen() {
                   <strong>{deltaSummary || 'No recent changes need attention'}</strong>
                   <p>{deltaPreview.length ? `${deltaPreview.length} safe change summaries available.` : 'New, resolved, and still-present changes appear after completed checks.'}</p>
                 </div>
-                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('changes', event)}>Open changes</button>
+                <button type="button" className="lite-security-coverage-toggle" aria-label="Open Security changes details" onClick={(event) => openSecurityDetailFromManage('changes', event)}>Open changes</button>
               </div>
             </div>
           ) : null}
@@ -2052,7 +2067,7 @@ export default function SecurityScreen() {
                   <strong>{findings ? 'Needs attention' : 'No urgent issues'}</strong>
                   <p>{findings ? `${findings} item${findings === 1 ? '' : 's'} to review from the latest safety check.` : 'Pocket Lab will keep evidence ready after each check.'}</p>
                 </div>
-                {allReviewFindings.length > 3 ? <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('attention', event)}>Open all review items</button> : null}
+                {allReviewFindings.length > 3 ? <button type="button" className="lite-security-coverage-toggle" aria-label="Open all Security review items" onClick={(event) => openSecurityDetailFromManage('attention', event)}>Open all review items</button> : null}
               </div>
               {allReviewFindings.length ? allReviewFindings.slice(0, 5).map((item) => {
                 const action = classifyFindingAction(item, remediationContext);
@@ -2065,8 +2080,8 @@ export default function SecurityScreen() {
                       <SecurityActionIndicator action={action} />
                     </div>
                     <div className="lite-security-manage-row-actions">
-                      <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
-                      <button type="button" className="lite-security-remediation-button" onClick={(event) => openRemediation(item, event)}>What should I do?</button>
+                      <button type="button" className="lite-finding-detail-trigger" aria-label={`View details for ${securityFindingLabel(item)}`} onClick={(event) => openFindingDetails(item, event)}>View details</button>
+                      <button type="button" className="lite-security-remediation-button" aria-label={`Show recommended next step for ${securityFindingLabel(item)}`} onClick={(event) => openRemediation(item, event)}>What should I do?</button>
                     </div>
                   </div>
                 );
@@ -2083,7 +2098,7 @@ export default function SecurityScreen() {
                   <strong>{executionTimelineLive ? 'Checking safety' : 'Last check path'}</strong>
                   <p>{executionLiveLabelAligned}</p>
                 </div>
-                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('checkPath', event)}>Show check path</button>
+                <button type="button" className="lite-security-coverage-toggle" aria-label="Show Security check path details" onClick={(event) => openSecurityDetailFromManage('checkPath', event)}>Show check path</button>
               </div>
               <div className="lite-security-execution-timeline lite-security-phase5-compact-path" role="list" aria-label="Compact Security check path">
                 {executionSteps.map((step, index) => (
@@ -2109,7 +2124,7 @@ export default function SecurityScreen() {
                   <strong>{latestEvidenceReceipt?.title || 'Evidence summary'}</strong>
                   <p>{latestEvidenceReceipt?.summary || 'Evidence appears after a completed safety check.'}</p>
                 </div>
-                <LiteButton tone="secondary" onClick={showEvidence}>{evidenceLoading ? 'Opening...' : 'View safe summary'}</LiteButton>
+                <LiteButton tone="secondary" onClick={showEvidence} ariaLabel="View safe Security evidence summary">{evidenceLoading ? 'Opening evidence…' : 'View safe summary'}</LiteButton>
               </div>
               <div className="lite-security-phase1-meta-grid">
                 <span>{evidenceStatusLabel}</span>
@@ -2127,7 +2142,7 @@ export default function SecurityScreen() {
                   <strong>Safety history</strong>
                   <p>{securityHistory.length ? `${securityHistory.length} recent check${securityHistory.length === 1 ? '' : 's'} available. ${historyTrendLabel}` : 'History will appear after more safety checks.'}</p>
                 </div>
-                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('history', event)}>Open history</button>
+                <button type="button" className="lite-security-coverage-toggle" aria-label="Open Security history details" onClick={(event) => openSecurityDetailFromManage('history', event)}>Open history</button>
               </div>
               <div className="lite-security-manage-stat-grid">
                 <div className="lite-security-manage-stat"><span>Last 7 checks</span><strong>{Math.min(securityHistory.length, 7)}</strong></div>
@@ -2144,7 +2159,7 @@ export default function SecurityScreen() {
                   <strong>Technical details</strong>
                   <p>Collapsed by default. Shows only safe metadata such as backend-owned check path, tool names, snapshot state, and polling policy.</p>
                 </div>
-                <button type="button" className="lite-security-coverage-toggle" onClick={(event) => openSecurityDetailFromManage('technical_details', event)}>Open technical details</button>
+                <button type="button" className="lite-security-coverage-toggle" aria-label="Open safe Security technical details" onClick={(event) => openSecurityDetailFromManage('technical_details', event)}>Open technical details</button>
               </div>
               <div className="lite-security-phase1-meta-grid">
                 <span>Backend-owned check path</span>
@@ -2155,6 +2170,7 @@ export default function SecurityScreen() {
             </div>
           ) : null}
         </animated.section>
+        </animated.div>
       </LiteSheet>
 
       <LiteSheet
@@ -2245,7 +2261,7 @@ export default function SecurityScreen() {
                       <div><span>Tools</span><strong>{evidenceReceipt.tools.length}</strong></div>
                       <div><span>SBOM</span><strong>{evidenceReceipt.sbom_saved ? 'Saved' : 'Not saved'}</strong></div>
                     </div>
-                    <LiteButton tone="secondary" onClick={copyEvidenceReceipt}>{receiptCopied ? 'Copied' : 'Copy Receipt'}</LiteButton>
+                    <LiteButton tone="secondary" onClick={copyEvidenceReceipt} ariaLabel="Copy Security evidence receipt summary">{receiptCopied ? 'Copied' : 'Copy Receipt'}</LiteButton>
                   </div>
                 ) : null}
                 <div className="lite-security-evidence-files">

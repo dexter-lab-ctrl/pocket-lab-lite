@@ -772,7 +772,7 @@ export function PageHeader({ eyebrow = 'Pocket Lab Lite', title, description, ac
   );
 }
 
-export function LiteButton({ children, onClick, disabled = false, tone = 'primary', type = 'button', haptic = false }) {
+export function LiteButton({ children, onClick, disabled = false, tone = 'primary', type = 'button', haptic = false, ariaLabel, title, className = '' }) {
   const toneClass = {
     primary: 'pocket-button-primary',
     secondary: 'pocket-button-secondary',
@@ -787,7 +787,14 @@ export function LiteButton({ children, onClick, disabled = false, tone = 'primar
   }
 
   return (
-    <button type={type} onClick={handleClick} disabled={disabled} className={`pocket-button ${toneClass}`}>
+    <button
+      type={type}
+      onClick={handleClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      title={title || ariaLabel}
+      className={`pocket-button ${toneClass} ${className}`.trim()}
+    >
       {children}
     </button>
   );

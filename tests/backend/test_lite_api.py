@@ -6450,3 +6450,75 @@ def test_lite_security_premium_polish_v2_keeps_accessible_focus_and_reduced_moti
     assert "nats.connect" not in combined
     assert "onClickCapture" not in combined
     assert "onPointerDownCapture" not in combined
+
+
+def test_lite_security_premium_polish_v3_skins_scroll_surfaces_and_alignment():
+    css = Path("src/index.css").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "Security premium polish v3" in css
+    for selector in [
+        ".lite-overlay-scroll.lite-security-overlay-scroll",
+        ".lite-security-overlay-scroll",
+        ".lite-security-phase3-scroll",
+        ".lite-security-manage-scroll",
+        ".lite-security-manage-scroll-frame",
+        ".lite-security-manage-tabs",
+        ".lite-security-manage-row-actions",
+        ".lite-security-safety-center-actions",
+    ]:
+        assert selector in css
+
+    assert "scrollbar-gutter: stable both-edges" in css
+    assert "scrollbar-color: rgba(59, 130, 246, 0.48)" in css
+    assert "overflow-wrap: anywhere" in css
+    assert "align-items: stretch" in css
+    assert "data-security-react-spring=\"manage-scroll-frame\"" in security
+    assert "const manageScrollSpring = useSpring" in security
+
+
+def test_lite_security_premium_polish_v3_accessible_secondary_buttons_and_text():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    lite_ui = Path("src/lite/LiteUi.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "ariaLabel" in lite_ui
+    assert "aria-label={ariaLabel}" in lite_ui
+    assert "className={`pocket-button ${toneClass} ${className}`.trim()}" in lite_ui
+    for expected in [
+        "ariaLabel=\"Manage Security details\"",
+        "Manage Security",
+        "ariaLabel=\"View safe Security evidence summary\"",
+        "View safe summary",
+        "ariaLabel=\"Copy Security evidence receipt summary\"",
+        "aria-label=\"Open Security changes details\"",
+        "aria-label=\"Show Security check path details\"",
+        "aria-label=\"Open safe Security technical details\"",
+    ]:
+        assert expected in security
+
+    assert ".theme-pocket-lite-daylight .pocket-button-secondary" in css
+    assert "outline: 3px solid rgba(37, 99, 235, 0.36)" in css
+    assert "min-height: 2.75rem" in css
+    assert "touch-action: manipulation" in css
+
+
+def test_lite_security_premium_polish_v3_preserves_safe_motion_and_backend_boundary():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    combined = security + css
+
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "scroll-behavior: auto !important" in css
+    assert "immediate: securityMotionReduced" in security
+    assert "useSpring" in security
+    assert "useDrag" not in security
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "fetch(" not in security
+    assert "child_process" not in combined
+    assert "exec(" not in combined
+    assert "spawn(" not in combined
+    assert "nats.connect" not in combined
+    assert "onClickCapture" not in combined
+    assert "onPointerDownCapture" not in combined

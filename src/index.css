@@ -18434,3 +18434,278 @@ textarea {
     transform: none !important;
   }
 }
+
+/* Security premium polish v3: scroll-surface skin, alignment, and accessible controls.
+   React Spring continues to own safe Security shell/section motion; CSS only skins the surfaces. */
+.theme-pocket-lite-daylight .lite-overlay-scroll.lite-security-overlay-scroll,
+.theme-pocket-lite-daylight .lite-security-overlay-scroll,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll,
+.theme-pocket-lite-daylight .lite-security-manage-scroll {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-gutter: stable both-edges !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.09), transparent 34%),
+    radial-gradient(circle at 92% 12%, rgba(14, 165, 233, 0.08), transparent 36%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96)) !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.78) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    inset 0 18px 34px rgba(255, 255, 255, 0.42) !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-overlay-scroll,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll {
+  display: block !important;
+  padding: clamp(1rem, 2.25vw, 1.35rem) !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-scroll {
+  display: block !important;
+  padding: clamp(0.95rem, 2vw, 1.18rem) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-padding-block: 4.35rem 1.2rem !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-scroll-frame {
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.95rem !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-overlay-scroll::-webkit-scrollbar,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll::-webkit-scrollbar,
+.theme-pocket-lite-daylight .lite-security-manage-scroll::-webkit-scrollbar {
+  width: 0.72rem;
+  height: 0.72rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-overlay-scroll::-webkit-scrollbar-track,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll::-webkit-scrollbar-track,
+.theme-pocket-lite-daylight .lite-security-manage-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.44);
+}
+
+.theme-pocket-lite-daylight .lite-security-overlay-scroll::-webkit-scrollbar-thumb,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll::-webkit-scrollbar-thumb,
+.theme-pocket-lite-daylight .lite-security-manage-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(248, 250, 252, 0.86);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.55), rgba(14, 165, 233, 0.42));
+}
+
+.theme-pocket-lite-daylight .lite-security-overlay-scroll,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll,
+.theme-pocket-lite-daylight .lite-security-manage-scroll {
+  scrollbar-color: rgba(59, 130, 246, 0.48) rgba(226, 232, 240, 0.48) !important;
+  scrollbar-width: thin !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-overlay-scroll > *,
+.theme-pocket-lite-daylight .lite-security-phase3-scroll > *,
+.theme-pocket-lite-daylight .lite-security-manage-scroll > *,
+.theme-pocket-lite-daylight .lite-security-manage-scroll-frame > * {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-tabs {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  contain: paint !important;
+  scroll-snap-type: x proximity !important;
+  scroll-padding-inline: 0.5rem !important;
+  padding: 0.48rem 0.42rem 0.6rem !important;
+  margin: -0.12rem -0.42rem 0 !important;
+  border: 1px solid rgba(226, 232, 240, 0.88) !important;
+  border-radius: 1.25rem !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.84)) !important;
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-tab-button {
+  scroll-snap-align: start !important;
+  min-height: 2.65rem !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.005em !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-section,
+.theme-pocket-lite-daylight .lite-security-manage-card-list,
+.theme-pocket-lite-daylight .lite-security-manage-overview,
+.theme-pocket-lite-daylight .lite-security-phase2-details-panel,
+.theme-pocket-lite-daylight .lite-finding-detail-modal {
+  min-width: 0 !important;
+  width: 100% !important;
+  align-self: stretch !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-row,
+.theme-pocket-lite-daylight .lite-security-manage-score-row,
+.theme-pocket-lite-daylight .lite-security-safe-panel,
+.theme-pocket-lite-daylight .lite-finding-detail-section,
+.theme-pocket-lite-daylight .lite-security-remediation-summary,
+.theme-pocket-lite-daylight .lite-security-remediation-note {
+  min-width: 0 !important;
+  width: 100% !important;
+  align-items: center !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-row > div,
+.theme-pocket-lite-daylight .lite-security-manage-score-row > div,
+.theme-pocket-lite-daylight .lite-finding-detail-section > div,
+.theme-pocket-lite-daylight .lite-security-remediation-summary > div {
+  min-width: 0 !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-row p,
+.theme-pocket-lite-daylight .lite-security-manage-row strong,
+.theme-pocket-lite-daylight .lite-security-manage-section-head p,
+.theme-pocket-lite-daylight .lite-security-phase2-details-panel p,
+.theme-pocket-lite-daylight .lite-finding-detail-modal p {
+  overflow-wrap: anywhere !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-manage-row-actions,
+.theme-pocket-lite-daylight .lite-finding-detail-actions,
+.theme-pocket-lite-daylight .lite-security-remediation-actions,
+.theme-pocket-lite-daylight .lite-security-safety-center-actions {
+  align-items: center !important;
+  justify-content: flex-end !important;
+  min-width: 0 !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-coverage-toggle,
+.theme-pocket-lite-daylight .lite-security-remediation-button,
+.theme-pocket-lite-daylight .lite-finding-detail-trigger,
+.theme-pocket-lite-daylight .lite-security-evidence-close,
+.theme-pocket-lite-daylight .lite-security-manage-tab-button,
+.theme-pocket-lite-daylight .lite-security-safety-center-actions .pocket-button,
+.theme-pocket-lite-daylight .lite-security-manage-row .pocket-button,
+.theme-pocket-lite-daylight .lite-security-evidence-section .pocket-button {
+  min-height: 2.75rem !important;
+  min-width: 2.75rem !important;
+  text-align: center !important;
+  text-wrap: balance !important;
+  touch-action: manipulation !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button,
+.theme-pocket-lite-daylight .pocket-button-secondary,
+.theme-pocket-lite-daylight .lite-security-coverage-toggle,
+.theme-pocket-lite-daylight .lite-security-remediation-button,
+.theme-pocket-lite-daylight .lite-finding-detail-trigger {
+  position: relative;
+  isolation: isolate;
+}
+
+.theme-pocket-lite-daylight .pocket-button-secondary {
+  border-color: rgba(37, 99, 235, 0.24) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(239, 246, 255, 0.9)) !important;
+  color: #1d4ed8 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.62) !important;
+  box-shadow:
+    0 10px 24px rgba(37, 99, 235, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button-secondary:hover,
+.theme-pocket-lite-daylight .pocket-button-secondary:focus-visible {
+  border-color: rgba(37, 99, 235, 0.48) !important;
+  background:
+    linear-gradient(180deg, rgba(239, 246, 255, 0.98), rgba(219, 234, 254, 0.92)) !important;
+  color: #1e40af !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button:focus-visible,
+.theme-pocket-lite-daylight .pocket-button-secondary:focus-visible,
+.theme-pocket-lite-daylight .lite-security-coverage-toggle:focus-visible,
+.theme-pocket-lite-daylight .lite-security-remediation-button:focus-visible,
+.theme-pocket-lite-daylight .lite-finding-detail-trigger:focus-visible,
+.theme-pocket-lite-daylight .lite-security-manage-tab-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.36) !important;
+  outline-offset: 3px !important;
+  box-shadow:
+    0 0 0 6px rgba(59, 130, 246, 0.14),
+    0 12px 28px rgba(37, 99, 235, 0.16) !important;
+}
+
+.theme-pocket-lite-daylight .pocket-button:disabled,
+.theme-pocket-lite-daylight .pocket-button-secondary:disabled,
+.theme-pocket-lite-daylight .lite-security-coverage-toggle:disabled,
+.theme-pocket-lite-daylight .lite-security-remediation-button:disabled,
+.theme-pocket-lite-daylight .lite-finding-detail-trigger:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.62 !important;
+  filter: saturate(0.75) !important;
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-overlay-scroll,
+  .theme-pocket-lite-daylight .lite-security-phase3-scroll,
+  .theme-pocket-lite-daylight .lite-security-manage-scroll {
+    padding: 0.9rem max(0.82rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(0.82rem, env(safe-area-inset-left)) !important;
+    scrollbar-gutter: auto !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-manage-scroll-frame {
+    gap: 0.8rem !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-manage-tabs {
+    margin-inline: -0.22rem !important;
+    border-radius: 1.1rem !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-manage-row,
+  .theme-pocket-lite-daylight .lite-security-manage-score-row {
+    grid-template-columns: 1fr !important;
+    justify-items: stretch !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-manage-row-actions,
+  .theme-pocket-lite-daylight .lite-finding-detail-actions,
+  .theme-pocket-lite-daylight .lite-security-remediation-actions,
+  .theme-pocket-lite-daylight .lite-security-safety-center-actions {
+    justify-content: stretch !important;
+    width: 100% !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-manage-row-actions > *,
+  .theme-pocket-lite-daylight .lite-finding-detail-actions > *,
+  .theme-pocket-lite-daylight .lite-security-remediation-actions > *,
+  .theme-pocket-lite-daylight .lite-security-safety-center-actions > * {
+    flex: 1 1 11rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-manage-scroll-frame,
+  .theme-pocket-lite-daylight .lite-security-overlay-scroll,
+  .theme-pocket-lite-daylight .lite-security-phase3-scroll,
+  .theme-pocket-lite-daylight .lite-security-manage-scroll,
+  .theme-pocket-lite-daylight .pocket-button-secondary,
+  .theme-pocket-lite-daylight .lite-security-manage-tab-button {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    scroll-behavior: auto !important;
+  }
+}
