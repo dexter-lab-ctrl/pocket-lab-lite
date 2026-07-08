@@ -17950,3 +17950,487 @@ textarea {
     transform: none !important;
   }
 }
+
+/* Security premium polish v2.
+   Final visual pass for production-ready Security surfaces: stronger hierarchy,
+   consistent touch targets, accessible focus rings, calmer depth, and App
+   Catalog-aligned micro-interactions. React Spring owns safe tab/live motion. */
+.theme-pocket-lite-daylight .lite-security-phase5-shell {
+  --lite-security-radius-xl: 1.55rem;
+  --lite-security-radius-lg: 1.18rem;
+  --lite-security-radius-md: 0.88rem;
+  --lite-security-shadow-soft: 0 16px 44px rgba(15, 23, 42, 0.075);
+  --lite-security-shadow-strong: 0 26px 78px rgba(15, 23, 42, 0.18);
+  --lite-security-focus: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 0 0 1px rgba(37, 99, 235, 0.35);
+}
+
+.theme-pocket-lite-daylight .lite-security-phase5-shell::before {
+  content: '';
+  position: absolute;
+  inset: -1.5rem -0.75rem auto;
+  height: 13rem;
+  pointer-events: none;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(37, 99, 235, 0.1), transparent 34%),
+    radial-gradient(circle at 76% 8%, rgba(14, 165, 233, 0.1), transparent 30%);
+  filter: blur(8px);
+  opacity: 0.72;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card {
+  min-height: clamp(19rem, 38vh, 25rem);
+  gap: clamp(1rem, 2.5vw, 1.55rem);
+  padding: clamp(1.15rem, 2.9vw, 1.8rem) !important;
+  border-radius: var(--lite-security-radius-xl) !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-copy h2 {
+  margin: 0;
+  letter-spacing: -0.045em;
+  font-size: clamp(2.05rem, 5vw, 3.65rem);
+  line-height: 0.94;
+  color: #0f172a;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-copy p {
+  max-width: 46rem;
+  color: #475569;
+  font-size: clamp(0.94rem, 2vw, 1.05rem);
+  line-height: 1.62;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-meta {
+  gap: 0.45rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-meta span,
+.theme-pocket-lite-daylight .lite-security-phase1-meta-grid span {
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #475569 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045) !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-actions {
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-actions .lite-button,
+.theme-pocket-lite-daylight .lite-security-manage-row-actions button,
+.theme-pocket-lite-daylight .lite-security-manage-row .lite-button,
+.theme-pocket-lite-daylight .lite-security-evidence-panel .lite-button {
+  min-height: 2.8rem;
+  border-radius: 999px !important;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-actions .lite-button:focus-visible,
+.theme-pocket-lite-daylight .lite-security-manage-tabs button:focus-visible,
+.theme-pocket-lite-daylight .lite-security-coverage-toggle:focus-visible,
+.theme-pocket-lite-daylight .lite-security-remediation-button:focus-visible,
+.theme-pocket-lite-daylight .lite-finding-detail-trigger:focus-visible,
+.theme-pocket-lite-daylight .lite-security-overlay-close:focus-visible,
+.theme-pocket-lite-daylight .lite-security-phase3-close:focus-visible,
+.theme-pocket-lite-daylight .lite-security-manage-close:focus-visible {
+  outline: none !important;
+  box-shadow: var(--lite-security-focus), 0 12px 30px rgba(37, 99, 235, 0.14) !important;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-score {
+  min-width: min(100%, 16.75rem);
+  border-radius: var(--lite-security-radius-lg) !important;
+  align-self: stretch;
+  display: grid;
+  align-content: center;
+  gap: 0.65rem;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring {
+  position: relative;
+  width: clamp(7.2rem, 20vw, 9rem);
+  height: clamp(7.2rem, 20vw, 9rem);
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring::after {
+  content: '';
+  position: absolute;
+  inset: 0.55rem;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 255, 0.9));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  z-index: 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring span {
+  position: relative;
+  z-index: 1;
+}
+
+.lite-security-manage-shell,
+.lite-security-phase3-details-shell,
+.lite-security-phase3-finding-shell,
+.lite-security-remediation-panel {
+  overflow: hidden !important;
+}
+
+.lite-security-manage-scroll,
+.lite-security-phase3-scroll,
+.lite-security-remediation-scroll {
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.72), rgba(255, 255, 255, 0.88)) !important;
+}
+
+.lite-security-manage-head,
+.lite-security-phase3-head {
+  position: relative !important;
+  padding-bottom: 0.95rem !important;
+}
+
+.lite-security-manage-head::after,
+.lite-security-phase3-head::after {
+  content: '';
+  position: absolute;
+  left: clamp(1rem, 3vw, 1.35rem);
+  right: clamp(1rem, 3vw, 1.35rem);
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.26), transparent);
+}
+
+.lite-security-manage-tabs {
+  scroll-snap-type: x proximity;
+  padding: 0.44rem !important;
+  gap: 0.42rem !important;
+  min-height: 3.65rem !important;
+}
+
+.lite-security-manage-tabs button,
+.lite-security-manage-tab-button {
+  scroll-snap-align: start;
+  min-height: 2.55rem !important;
+  padding: 0.62rem 0.86rem !important;
+  border-radius: 999px !important;
+}
+
+.lite-security-manage-tabs button.is-active,
+.lite-security-manage-tab-button.is-active {
+  transform: translateY(-1px);
+}
+
+.lite-security-manage-tabs button.is-active::before,
+.lite-security-manage-tab-button.is-active::before {
+  content: '';
+  position: absolute;
+  inset: 0.11rem;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  pointer-events: none;
+}
+
+.lite-security-manage-section {
+  padding: clamp(0.86rem, 2vw, 1.1rem) !important;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.lite-security-manage-section-head {
+  padding: 0.15rem 0.05rem 0.3rem;
+}
+
+.lite-security-manage-section-head h3 {
+  margin: 0.12rem 0 0;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  letter-spacing: -0.025em;
+}
+
+.lite-security-manage-card-list,
+.lite-security-manage-overview,
+.lite-security-remediation-content,
+.lite-security-phase2-details-panel,
+.lite-finding-detail-modal {
+  display: grid;
+  gap: 0.78rem;
+}
+
+.lite-security-manage-row {
+  border-radius: var(--lite-security-radius-lg) !important;
+  padding: 0.95rem !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem !important;
+}
+
+.lite-security-manage-row strong,
+.lite-security-manage-stat strong,
+.lite-security-delta-stat strong,
+.lite-security-safe-panel strong,
+.lite-finding-detail-modal strong,
+.lite-security-phase2-details-panel strong {
+  letter-spacing: -0.015em;
+}
+
+.lite-security-manage-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.lite-security-delta-stats,
+.lite-security-manage-stat-grid,
+.lite-security-evidence-summary,
+.lite-security-receipt-grid {
+  gap: 0.7rem !important;
+}
+
+.lite-security-manage-stat,
+.lite-security-delta-stat,
+.lite-security-evidence-summary > div,
+.lite-security-receipt-grid > div,
+.lite-security-evidence-tools > div {
+  border-radius: var(--lite-security-radius-md) !important;
+  padding: 0.82rem !important;
+}
+
+.lite-security-delta-stat strong,
+.lite-security-evidence-summary strong,
+.lite-security-receipt-grid strong {
+  font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+}
+
+.lite-security-execution-timeline {
+  position: relative;
+  display: grid;
+  gap: 0.62rem !important;
+}
+
+.lite-security-execution-timeline::before {
+  content: '';
+  position: absolute;
+  left: 1.11rem;
+  top: 1rem;
+  bottom: 1rem;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.28), rgba(14, 165, 233, 0.1));
+  pointer-events: none;
+}
+
+.lite-security-execution-step {
+  position: relative;
+  border-radius: 1rem !important;
+  min-height: 4rem;
+  padding: 0.82rem 0.9rem !important;
+}
+
+.lite-security-execution-step > span:first-child {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08), 0 0 0 4px rgba(59, 130, 246, 0.08);
+}
+
+.lite-security-execution-step-active > span:first-child {
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  color: #ffffff;
+  animation: lite-security-premium-v2-pulse 1350ms ease-in-out infinite;
+}
+
+.lite-security-safety-chip,
+.lite-security-soft-badge,
+.lite-security-severity,
+.lite-security-action-indicator,
+.lite-security-execution-pill,
+.lite-security-coverage-mark {
+  min-height: 1.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  border-radius: 999px !important;
+  padding: 0.28rem 0.62rem !important;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.lite-security-coverage-card,
+.lite-security-confidence-card,
+.lite-security-protection-card,
+.lite-security-boundary-card,
+.lite-security-receipt-summary-card,
+.lite-security-scan-quality-card,
+.lite-security-known-good-card,
+.lite-security-comparison-card,
+.lite-security-evidence-panel,
+.lite-security-receipt-card {
+  border-radius: var(--lite-security-radius-lg) !important;
+  box-shadow: var(--lite-security-shadow-soft) !important;
+}
+
+.lite-security-coverage-table {
+  border-collapse: separate !important;
+  border-spacing: 0 0.46rem !important;
+}
+
+.lite-security-coverage-table th {
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lite-security-coverage-table td,
+.lite-security-coverage-table th {
+  padding: 0.58rem 0.62rem !important;
+}
+
+.lite-security-coverage-table tbody tr {
+  background: rgba(255, 255, 255, 0.74) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045) !important;
+}
+
+.lite-security-boundary-flow {
+  gap: 0.55rem !important;
+}
+
+.lite-security-boundary-node {
+  border: 1px solid rgba(59, 130, 246, 0.16) !important;
+  background: rgba(239, 246, 255, 0.62) !important;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.075) !important;
+}
+
+.lite-security-boundary-arrow {
+  color: #0284c7 !important;
+  opacity: 0.75;
+}
+
+.lite-security-details-loading,
+.lite-security-safe-panel,
+.lite-security-evidence-note,
+.lite-security-remediation-note {
+  border-radius: 1rem !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  background: rgba(248, 250, 252, 0.86) !important;
+}
+
+.lite-security-details-loading {
+  padding: 1rem;
+  color: #64748b;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.lite-security-evidence-dropdown {
+  position: fixed;
+  inset: auto 1rem 1rem auto;
+  z-index: 10080;
+  width: min(100% - 2rem, 35rem);
+}
+
+.lite-security-evidence-panel {
+  border: 1px solid rgba(59, 130, 246, 0.22) !important;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(59, 130, 246, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
+}
+
+.lite-security-evidence-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.lite-security-evidence-files code {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(241, 245, 249, 0.9);
+  color: #334155;
+  padding: 0.32rem 0.55rem;
+}
+
+.lite-security-coverage-toggle,
+.lite-security-remediation-button,
+.lite-finding-detail-trigger,
+.lite-security-evidence-close {
+  min-height: 2.45rem;
+  font-weight: 850;
+}
+
+.lite-security-coverage-toggle:disabled,
+.lite-security-remediation-button:disabled,
+.lite-finding-detail-trigger:disabled {
+  opacity: 0.56;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes lite-security-premium-v2-pulse {
+  0%, 100% { box-shadow: 0 8px 18px rgba(37, 99, 235, 0.16), 0 0 0 4px rgba(59, 130, 246, 0.08); }
+  50% { box-shadow: 0 12px 26px rgba(14, 165, 233, 0.22), 0 0 0 7px rgba(14, 165, 233, 0.1); }
+}
+
+@media (min-width: 900px) {
+  .lite-security-manage-layer .lite-security-manage-shell,
+  .lite-security-detail-layer .lite-security-phase3-panel,
+  .lite-security-remediation-layer .lite-security-phase3-panel {
+    margin: 0.25rem 0.25rem 0.25rem auto !important;
+  }
+
+  .lite-security-detail-layer .lite-security-phase3-panel,
+  .lite-security-remediation-layer .lite-security-phase3-panel {
+    width: min(42rem, calc(100vw - 3rem)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-security-safety-center-card {
+    min-height: auto;
+    padding: 1rem !important;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-safety-center-copy h2 {
+    font-size: clamp(2rem, 10vw, 2.75rem);
+  }
+
+  .theme-pocket-lite-daylight .lite-security-safety-center-actions,
+  .lite-security-manage-row-actions {
+    width: 100%;
+  }
+
+  .theme-pocket-lite-daylight .lite-security-safety-center-actions .lite-button,
+  .lite-security-manage-row-actions button,
+  .lite-security-manage-row .lite-button {
+    flex: 1 1 10rem;
+  }
+
+  .lite-security-manage-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lite-security-execution-timeline::before {
+    left: 1.02rem;
+  }
+
+  .lite-security-evidence-dropdown {
+    inset: auto 0.6rem max(0.6rem, env(safe-area-inset-bottom)) 0.6rem;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-premium-v2-manage-tabs-motion,
+  .lite-security-premium-v2-live-progress-motion,
+  .lite-security-execution-step-active > span:first-child,
+  .theme-pocket-lite-daylight .lite-security-phase5-shell::before,
+  .lite-security-manage-tabs button.is-active,
+  .lite-security-manage-tab-button.is-active {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}

@@ -154,7 +154,15 @@ void SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS;
 void SECURITY_REMEDIATION_DRAWER_CLASS_LEGACY_GUARD;
 void SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX;
 void SECURITY_PHASE5_MANAGE_SOURCE_GUARDS;
-
+const SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS = [
+  'lite-security-premium-v2-shell-depth',
+  'lite-security-premium-v2-focus-ring',
+  'lite-security-premium-v2-touch-targets',
+  'lite-security-premium-v2-manage-tabs-motion',
+  'lite-security-premium-v2-live-progress-motion',
+  'lite-security-premium-v2-reduced-motion',
+];
+void SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS;
 
 const SECURITY_DETAIL_SHELL_META = {
   changes: {
@@ -1863,6 +1871,23 @@ export default function SecurityScreen() {
     immediate: securityMotionReduced,
     config: SECURITY_SPRING_CONFIG.calm,
   });
+  const manageTabsSpring = useSpring({
+    to: {
+      opacity: securityManageOpen ? 1 : 0,
+      y: securityManageOpen ? 0 : -4,
+    },
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.micro,
+  });
+  const liveProgressSpring = useSpring({
+    to: {
+      opacity: scanInProgress ? 1 : 0,
+      y: scanInProgress ? 0 : 5,
+      scale: scanInProgress ? 1 : 0.994,
+    },
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.micro,
+  });
 
 
   return (
@@ -1914,7 +1939,7 @@ export default function SecurityScreen() {
           </div>
 
           {scanInProgress ? (
-            <div className="lite-security-safety-center-live lite-security-phase4-live-motion" aria-live="polite" data-security-phase4-motion="live-check">
+            <animated.div style={liveProgressSpring} className="lite-security-safety-center-live lite-security-phase4-live-motion lite-security-premium-v2-live-progress-motion" aria-live="polite" data-security-phase4-motion="live-check" data-security-react-spring="live-progress">
               <div>
                 <strong>{scanProgressLabel}</strong>
                 <span>{executionActiveStep?.title || securityFlow.label}</span>
@@ -1923,7 +1948,7 @@ export default function SecurityScreen() {
                 <span style={{ width: `${scanProgressPercent}%` }} />
               </div>
               <p>{scanProgressPercent}% · {scanProgressEta} remaining · full check path is in Manage.</p>
-            </div>
+            </animated.div>
           ) : null}
         </GlassCard>
       </animated.section>
@@ -1955,7 +1980,7 @@ export default function SecurityScreen() {
         motion="safe-grip"
         surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'manage-shell' }}
       >
-        <div className="lite-security-manage-tabs" role="tablist" aria-label="Security Manage sections">
+        <animated.div style={manageTabsSpring} className="lite-security-manage-tabs lite-security-premium-v2-manage-tabs-motion" role="tablist" aria-label="Security Manage sections" data-security-react-spring="manage-tabs">
           {SECURITY_MANAGE_SECTIONS.map((section) => (
             <button
               key={section.id}
@@ -1968,7 +1993,7 @@ export default function SecurityScreen() {
               {section.label}
             </button>
           ))}
-        </div>
+        </animated.div>
 
         <animated.section style={manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
           <div className="lite-security-manage-section-head">
