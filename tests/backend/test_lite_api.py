@@ -6588,14 +6588,16 @@ def test_lite_security_premium_polish_v4_keeps_focus_accessibility_and_safe_boun
     assert "onPointerDownCapture" not in combined
 
 
-def test_lite_security_score_ring_uses_green_react_spring_fill_and_unique_pending_chips():
+def test_lite_security_score_ring_uses_green_react_spring_fill_and_truthful_tool_chips():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
     css = Path("src/index.css").read_text()
 
     assert "SECURITY_SCORE_RING_GREEN_SPRING_GUARDS" in security
     assert "function securityToolChip" in security
-    assert "Lynis pending" in security
-    assert "Trivy pending" in security
+    assert "Lynis checked" in security
+    assert "Trivy checked" in security
+    assert "Lynis pending" not in security
+    assert "Trivy pending" not in security
     assert "const scoreRingStyle" in security
     assert "scoreSpring.number.to" in security
     assert "data-security-score-fill=\"spring\"" in security
@@ -6959,3 +6961,41 @@ def test_lite_security_quick_safety_ui_and_view_model_contract_source():
     assert "exec(" not in security + details
     assert "spawn(" not in security + details
     assert "window.setInterval" not in security + details
+
+def test_lite_security_profile_polish_controls_and_chips_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "SECURITY_PROFILE_VIEW_POLISH_GUARDS" in security
+    assert "SECURITY_SCAN_PROFILES" in security
+    assert "Quick Scan" in security
+    assert "Full Scan" in security
+    assert "App Scan" in security
+    assert "runSecurityProfile(profile.id" in security
+    assert "data-security-profile-run-actions=\"quick-full-app\"" in security
+    assert "lite-security-profile-action-grid" in security
+    assert "lite-security-profile-switcher" in security
+    assert "lite-security-profile-rollup-trigger" in security
+    assert "cycleSecurityProfile" in security
+    assert "profileRunsById" in security
+    assert "activeProfileRun" in security
+    assert "activeProfileMeta" in security
+    assert "`${toolLabel} checked`" in security
+    assert "terminal && toolWasExpected" in security
+    assert "Lynis pending" not in security
+    assert "Trivy pending" not in security
+    assert "lite-security-profile-action-grid" in css
+    assert "lite-security-profile-switcher" in css
+    assert "lite-security-profile-run-card" in css
+    assert "prefers-reduced-motion: reduce" in css
+
+
+def test_lite_security_history_entries_keep_profile_safe_summary_contract():
+    service = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+
+    assert '"scan_profile"' in service
+    assert '"coverage_summary"' in service
+    assert '"tool_results"' in service
+    assert '"evidence_refs"' in service
+    assert 'policy.redact_value' in service
+    assert '"summary"' in service

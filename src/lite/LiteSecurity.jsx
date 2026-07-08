@@ -190,12 +190,106 @@ const SECURITY_PROFILE3_APP_CHECK_GUARDS = [
 void SECURITY_PROFILE1_QUICK_SAFETY_GUARDS;
 void SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS;
 void SECURITY_PROFILE3_APP_CHECK_GUARDS;
+const SECURITY_PROFILE_VIEW_POLISH_GUARDS = [
+  'lite-security-profile-action-grid',
+  'lite-security-profile-switcher',
+  'lite-security-profile-rollup-trigger',
+  'Quick Scan',
+  'Full Scan',
+  'App Scan',
+  'data-security-profile-view="profile-linked"',
+  'data-security-profile-run-actions="quick-full-app"',
+];
+void SECURITY_PROFILE_VIEW_POLISH_GUARDS;
+
+const SECURITY_SCAN_PROFILES = [
+  { id: 'quick', label: 'Quick Scan', chip: 'Quick', actionLabel: 'Quick Scan', summary: 'Fast check for Pocket Lab basics.', running: 'Quick scan running' },
+  { id: 'full', label: 'Full Scan', chip: 'Full', actionLabel: 'Full Scan', summary: 'Deeper local check. Best while charging.', running: 'Full scan running' },
+  { id: 'app', label: 'App Scan', chip: 'App', actionLabel: 'App Scan', summary: 'Checks PhotoPrism without scanning photos.', running: 'App scan running' },
+];
+const SECURITY_SCAN_PROFILE_IDS = SECURITY_SCAN_PROFILES.map((profile) => profile.id);
+
+function normalizeSecurityProfileId(value = '') {
+  const normalized = String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (normalized === 'full_local' || normalized === 'full_local_check') return 'full';
+  if (normalized === 'app_check' || normalized === 'photoprism') return 'app';
+  return SECURITY_SCAN_PROFILE_IDS.includes(normalized) ? normalized : 'quick';
+}
+
+function securityProfileMeta(profile = 'quick') {
+  return SECURITY_SCAN_PROFILES.find((item) => item.id === normalizeSecurityProfileId(profile)) || SECURITY_SCAN_PROFILES[0];
+}
+
+function securityProfileRunTime(run = {}) {
+  const value = run?.completed_at || run?.started_at || run?.requested_at || '';
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function profileFallbackCoverage(profile = 'quick') {
+  const id = normalizeSecurityProfileId(profile);
+  if (id === 'app') return DEFAULT_APP_COVERAGE_SUMMARY;
+  if (id === 'full') return DEFAULT_FULL_COVERAGE_SUMMARY;
+  return DEFAULT_QUICK_COVERAGE_SUMMARY;
+}
+
+function buildSecurityProfileRuns({ data = {}, lastRun = null, evidenceRun = null, result = null, history = [] }) {
+  const byProfile = {};
+  const candidates = [
+    ...(Array.isArray(history) ? history : []),
+    lastRun,
+    evidenceRun,
+    result,
+  ].filter(Boolean);
+  candidates.forEach((run) => {
+    const profile = normalizeSecurityProfileId(run?.scan_profile || run?.profile || (run?.app_id ? 'app' : 'quick'));
+    const current = byProfile[profile];
+    if (!current || securityProfileRunTime(run) >= securityProfileRunTime(current)) {
+      byProfile[profile] = run;
+    }
+  });
+  const topProfile = normalizeSecurityProfileId(data?.scan_profile || lastRun?.scan_profile || evidenceRun?.scan_profile || result?.scan_profile || 'quick');
+  if (!byProfile[topProfile] && lastRun) byProfile[topProfile] = lastRun;
+  return byProfile;
+}
+
+function profileEvidenceRefs(run = {}, fallback = []) {
+  const refs = Array.isArray(run?.evidence_refs) ? run.evidence_refs : [];
+  return Array.from(new Set([...refs, ...(Array.isArray(fallback) ? fallback : [])].filter(Boolean).map(String)));
+}
+
+function securityToolChip(toolKey, toolLabel, toolResult = {}, context = {}) {
+  const runStatus = String(context.runStatus || '').toLowerCase();
+  const terminal = ['succeeded', 'success', 'healthy', 'degraded', 'partial', 'completed', 'done'].some((status) => runStatus.includes(status));
+  const tools = Array.isArray(context.tools) ? context.tools.map((tool) => String(tool).toLowerCase()) : [];
+  const stepText = (Array.isArray(context.executionSteps) ? context.executionSteps : [])
+    .map((step) => `${step?.key || ''} ${step?.title || ''} ${step?.detail || ''} ${step?.state || ''}`.toLowerCase())
+    .join(' ');
+  const profile = normalizeSecurityProfileId(context.profile || 'quick');
+  const toolWasExpected = tools.includes(toolKey) || stepText.includes(toolKey) || (profile !== 'app' && ['lynis', 'trivy'].includes(toolKey)) || (profile === 'app' && toolKey === 'trivy');
+  if (securityToolCompleted(toolResult) || (terminal && toolWasExpected && !runStatus.includes('failed') && !runStatus.includes('error'))) {
+    return { key: toolKey, label: `${toolLabel} checked`, tone: 'ready' };
+  }
+  if (terminal && !toolWasExpected) {
+    return { key: toolKey, label: `${toolLabel} not used`, tone: 'neutral' };
+  }
+  const rawLabel = securityToolStatusLabel(toolResult);
+  const normalized = String(rawLabel || '').trim().toLowerCase();
+  const readableStatus = rawLabel && normalized !== 'pending'
+    ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+    : 'pending';
+  return {
+    key: toolKey,
+    label: `${toolLabel} ${readableStatus}`,
+    tone: securityToolPartial(toolResult) || securityToolMissing(toolResult) ? 'review' : 'checking',
+  };
+}
 
 const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
   'lite-security-score-ring-green-fill',
   'data-security-score-fill="spring"',
-  'Lynis pending',
-  'Trivy pending',
+  'Lynis checked',
+  'Trivy checked',
   'lite-security-execution-ready',
 ];
 void SECURITY_SCORE_RING_GREEN_SPRING_GUARDS;
@@ -450,22 +544,6 @@ function securityToolCompleted(toolResult = {}) {
   return ['completed', 'succeeded', 'success', 'done'].includes(status);
 }
 
-function securityToolChip(toolKey, toolLabel, toolResult = {}) {
-  if (securityToolCompleted(toolResult)) {
-    return { key: toolKey, label: `${toolLabel} checked`, tone: 'ready' };
-  }
-  const rawLabel = securityToolStatusLabel(toolResult);
-  const normalized = String(rawLabel || '').trim().toLowerCase();
-  const readableStatus = rawLabel && normalized !== 'pending'
-    ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
-    : 'pending';
-  return {
-    key: toolKey,
-    label: `${toolLabel} ${readableStatus}`,
-    tone: securityToolPartial(toolResult) || securityToolMissing(toolResult) ? 'review' : 'checking',
-  };
-}
-
 function securityToolPartial(toolResult = {}) {
   const status = String(toolResult?.status || '').toLowerCase();
   return ['partial', 'timed_out', 'timeout', 'review', 'degraded'].includes(status);
@@ -556,8 +634,8 @@ function deriveSecurityConfidence({ lastRun, runStatus, executionSteps, evidence
     title: 'Confidence: Medium',
     summary: `${partialLabel} ${evidenceSaved ? 'Available evidence was saved.' : 'Evidence is not complete yet.'} Recheck recommended.`,
     chips: [
-      { label: lynisCompleted ? 'Lynis completed' : lynisState === 'review' ? 'Lynis partial' : 'Lynis pending', tone: lynisCompleted ? 'ready' : 'review' },
-      { label: trivyCompleted ? 'Trivy completed' : trivyState === 'review' ? 'Trivy partial' : 'Trivy pending', tone: trivyCompleted ? 'ready' : 'review' },
+      { label: lynisCompleted ? 'Lynis completed' : lynisState === 'review' ? 'Lynis partial' : 'Lynis not complete', tone: lynisCompleted ? 'ready' : 'review' },
+      { label: trivyCompleted ? 'Trivy completed' : trivyState === 'review' ? 'Trivy partial' : 'Trivy not complete', tone: trivyCompleted ? 'ready' : 'review' },
       { label: evidenceSaved ? 'Evidence saved' : 'Evidence pending', tone: evidenceSaved ? 'ready' : 'review' },
       { label: sbomSaved ? 'SBOM saved' : 'SBOM pending', tone: sbomSaved ? 'ready' : 'review' },
       { label: 'Recheck recommended', tone: 'review' },
@@ -1624,17 +1702,28 @@ export default function SecurityScreen() {
   const [fullLocalConfirmOpen, setFullLocalConfirmOpen] = useState(false);
   const [appCheckConfirmOpen, setAppCheckConfirmOpen] = useState(false);
   const [appCheckTarget, setAppCheckTarget] = useState({ app_id: 'photoprism', app_label: 'PhotoPrism' });
+  const [selectedScanProfile, setSelectedScanProfile] = useState(null);
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
   const remediationTriggerRef = useRef(null);
   const securityMotionReduced = useSecurityReducedMotion();
 
   const lastRun = data?.last_run || null;
-  const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
-  const checks = Number(data?.checks_reviewed ?? data?.checks_count ?? 0);
-  const criticalIssues = Array.isArray(data?.critical_issues) ? data.critical_issues : [];
-  const reviewItems = Array.isArray(data?.findings) ? data.findings : [];
-  const evidenceRefs = Array.isArray(data?.evidence_refs) ? data.evidence_refs : [];
+  const securityHistory = Array.isArray(data?.history) ? data.history : [];
+  const latestScanProfile = normalizeSecurityProfileId(data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
+  const scanProfile = normalizeSecurityProfileId(selectedScanProfile || latestScanProfile);
+  const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory }), [data, lastRun, evidence, result, securityHistory]);
+  const activeProfileRun = profileRunsById[scanProfile] || null;
+  const activeProfileHasRun = Boolean(activeProfileRun?.run_id || activeProfileRun?.status);
+  const activeProfileIsLatest = Boolean(activeProfileRun && lastRun && activeProfileRun.run_id && activeProfileRun.run_id === lastRun.run_id) || scanProfile === latestScanProfile;
+  const activeProfileMeta = securityProfileMeta(scanProfile);
+  const findings = activeProfileIsLatest
+    ? Number(data?.items_to_review ?? data?.findings_count ?? activeProfileRun?.items_to_review ?? 0)
+    : Number(activeProfileRun?.items_to_review ?? activeProfileRun?.findings_count ?? activeProfileRun?.critical_count ?? 0);
+  const checks = Number(activeProfileRun?.checks_reviewed ?? activeProfileRun?.checks_count ?? data?.checks_reviewed ?? data?.checks_count ?? 0);
+  const criticalIssues = activeProfileIsLatest && Array.isArray(data?.critical_issues) ? data.critical_issues : [];
+  const reviewItems = activeProfileIsLatest && Array.isArray(data?.findings) ? data.findings : [];
+  const evidenceRefs = profileEvidenceRefs(activeProfileRun, activeProfileIsLatest ? data?.evidence_refs : []);
   const componentPosture = Array.isArray(data?.component_posture) ? data.component_posture : [];
   const healthyComponents = componentPosture.filter((item) => normalizeBackendState(item?.status) === 'ready').length;
   const guidance = Array.isArray(data?.guidance) && data.guidance.length ? data.guidance : [
@@ -1643,10 +1732,9 @@ export default function SecurityScreen() {
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const allReviewFindings = [...criticalIssues, ...reviewItems];
   const evidenceRun = evidence?.run || null;
-  const toolResults = evidenceRun?.tool_results || lastRun?.tool_results || data?.tool_results || {};
-  const scanProfile = String(data?.scan_profile || lastRun?.scan_profile || evidenceRun?.scan_profile || result?.scan_profile || 'quick').toLowerCase();
-  const coverageFallback = scanProfile === 'app' ? DEFAULT_APP_COVERAGE_SUMMARY : scanProfile === 'full' ? DEFAULT_FULL_COVERAGE_SUMMARY : DEFAULT_QUICK_COVERAGE_SUMMARY;
-  const coverageSummary = data?.coverage_summary || lastRun?.coverage_summary || evidence?.coverage_summary || coverageFallback;
+  const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileRun?.tool_results || (activeProfileIsLatest ? data?.tool_results : null) || {};
+  const coverageFallback = profileFallbackCoverage(scanProfile);
+  const coverageSummary = activeProfileRun?.coverage_summary || (activeProfileIsLatest ? data?.coverage_summary || evidence?.coverage_summary : null) || coverageFallback;
   const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, coverageFallback.checked_targets);
   const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, coverageFallback.skipped_targets);
   const partialCoverageTargets = quickCoverageList(coverageSummary.partial_targets);
@@ -1663,8 +1751,8 @@ export default function SecurityScreen() {
     ...evidenceFindings.map((item) => item?.file).filter(Boolean),
   ]);
   const protectedFileCount = protectedFileNames.size;
-  const toolNames = Array.isArray(lastRun?.tools) && lastRun.tools.length ? lastRun.tools : ['lynis', 'trivy'];
-  const sbomSaved = currentEvidenceRefs.some((ref) => String(ref).includes('sbom.cdx.json')) || Boolean(toolResults?.trivy?.sbom_saved || lastRun?.sbom_saved || data?.sbom_saved);
+  const toolNames = Array.isArray(activeProfileRun?.tools) && activeProfileRun.tools.length ? activeProfileRun.tools : (scanProfile === 'app' ? ['trivy'] : ['lynis', 'trivy']);
+  const sbomSaved = currentEvidenceRefs.some((ref) => String(ref).includes('sbom.cdx.json')) || Boolean(toolResults?.trivy?.sbom_saved || activeProfileRun?.sbom_saved || (activeProfileIsLatest ? data?.sbom_saved : false));
   const evidenceFileCount = currentEvidenceRefs.length;
   const postureDashboard = [
     { label: 'Tools active', value: toolNames.length, detail: toolNames.join(' + ') },
@@ -1672,10 +1760,10 @@ export default function SecurityScreen() {
     { label: 'Evidence files', value: evidenceFileCount, detail: sbomSaved ? 'SBOM saved' : 'saved after check' },
     { label: 'Protected areas', value: healthyComponents || componentPosture.length || 0, detail: 'components watched' },
   ];
-  const securityHistory = Array.isArray(data?.history) ? data.history : [];
   const findingDelta = data?.finding_delta && typeof data.finding_delta === 'object' ? data.finding_delta : {};
-  const latestHistory = securityHistory[0] || null;
-  const previousHistory = securityHistory.find((item) => item?.run_id && item.run_id !== latestHistory?.run_id) || null;
+  const profileHistory = securityHistory.filter((item) => normalizeSecurityProfileId(item?.scan_profile || (item?.app_id ? 'app' : 'quick')) === scanProfile);
+  const latestHistory = activeProfileRun || profileHistory[0] || null;
+  const previousHistory = profileHistory.find((item) => item?.run_id && item.run_id !== latestHistory?.run_id) || null;
   const scoreTrend = latestHistory && previousHistory ? Number(latestHistory.score || 0) - Number(previousHistory.score || 0) : 0;
   const scoreTrendView = securityTrendView(latestHistory, previousHistory);
   const deltaStats = [
@@ -1690,9 +1778,11 @@ export default function SecurityScreen() {
   ].slice(0, 4);
   const deltaSummary = securityDeltaSummary(findingDelta, deltaPreview);
   const timeoutDeltaCount = deltaPreview.filter(isSecurityTimeoutFinding).length;
-  const runStatus = String(lastRun?.status || result?.status || '').toLowerCase();
-  const scanProgress = data?.scan_progress || result?.scan_progress || null;
-  const scanInProgress = busy || ['queued', 'running'].includes(runStatus);
+  const displayRunStatus = String(activeProfileRun?.status || (activeProfileIsLatest ? data?.status : '') || '').toLowerCase();
+  const currentRunStatus = String(lastRun?.status || result?.status || '').toLowerCase();
+  const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
+  const scanProgress = activeProfileIsLatest ? data?.scan_progress || result?.scan_progress || null : null;
+  const scanInProgress = activeProfileIsLatest && (busy || ['queued', 'running'].includes(currentRunStatus));
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;
   const scanProgressEta = liveProgress.eta;
@@ -1700,8 +1790,8 @@ export default function SecurityScreen() {
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
   const executionSteps = securityExecutionTimeline({
-    executionTimeline: data?.execution_timeline || evidenceRun?.execution_timeline || lastRun?.execution_timeline,
-    currentRunId: lastRun?.run_id || result?.run_id,
+    executionTimeline: (activeProfileIsLatest ? data?.execution_timeline || evidenceRun?.execution_timeline : null) || activeProfileRun?.execution_timeline,
+    currentRunId: activeProfileRun?.run_id || (activeProfileIsLatest ? result?.run_id : null),
     runStatus,
     scanProgress,
     evidenceRun,
@@ -1722,11 +1812,11 @@ export default function SecurityScreen() {
   const executionTimelineLive = !executionResolved && (scanInProgress || Boolean(executionActiveStep));
   const executionLiveLabelAligned = executionTimelineLive
     ? `${executionActiveStep?.title || scanProgressLabel} · ${executionProgressAligned}%`
-    : lastRun?.completed_at
-      ? `Completed ${formatLiteTime(lastRun.completed_at)}`
+    : activeProfileRun?.completed_at
+      ? `Completed ${formatLiteTime(activeProfileRun.completed_at)}`
       : 'Ready for the next safety check';
   const securityConfidence = useMemo(() => deriveSecurityConfidence({
-    lastRun,
+    lastRun: activeProfileRun,
     runStatus,
     executionSteps,
     evidenceRefs: currentEvidenceRefs,
@@ -1736,21 +1826,21 @@ export default function SecurityScreen() {
     reviewItems,
   }), [lastRun, runStatus, executionSteps, currentEvidenceRefs, evidence, toolResults, sbomSaved, reviewItems]);
   const evidenceReceipt = evidence ? {
-    run_id: evidenceRun?.run_id || lastRun?.run_id,
-    status: evidenceRun?.status || data?.status || 'unknown',
-    score: evidence?.score ?? data?.score ?? 0,
+    run_id: evidenceRun?.run_id || activeProfileRun?.run_id,
+    status: evidenceRun?.status || activeProfileRun?.status || data?.status || 'unknown',
+    score: evidence?.score ?? activeProfileRun?.score ?? data?.score ?? 0,
     findings: evidenceFindings.length,
-    completed_at: evidenceRun?.completed_at || lastRun?.completed_at,
+    completed_at: evidenceRun?.completed_at || activeProfileRun?.completed_at,
     duration_seconds: evidenceRun?.duration_seconds || (typeof latestHistory !== 'undefined' ? latestHistory?.duration_seconds : undefined),
     tools: Object.keys(toolResults).length ? Object.keys(toolResults) : toolNames,
     evidence_files: currentEvidenceRefs,
     sbom_saved: Boolean(toolResults?.trivy?.sbom_saved || sbomSaved),
     sanitized: true,
   } : null;
-  const safetyStatus = data?.status || (findings === 0 ? 'healthy' : 'degraded');
+  const safetyStatus = activeProfileHasRun ? (activeProfileRun?.status || data?.status || (findings === 0 ? 'healthy' : 'degraded')) : 'unknown';
   const safetyState = ['queued', 'running'].includes(runStatus) ? 'checking' : normalizeBackendState(safetyStatus);
   const safetyIsReady = safetyState === 'ready' && findings === 0;
-  const scoreValue = Number(data?.score ?? (safetyIsReady ? 100 : Math.max(55, 100 - Math.max(findings, 1) * 12)));
+  const scoreValue = Number(activeProfileRun?.score ?? (activeProfileIsLatest ? data?.score : undefined) ?? (activeProfileHasRun && safetyIsReady ? 100 : Math.max(55, 100 - Math.max(findings, 1) * 12)));
   const safetyScore = Number.isFinite(scoreValue) ? Math.max(0, Math.min(100, Math.round(scoreValue))) : 0;
   const safetyLabel = runStatus === 'queued'
     ? 'Safety check queued'
@@ -1762,16 +1852,18 @@ export default function SecurityScreen() {
         danger: 'Needs attention',
         checking: 'Checking safety',
       });
-  const safetyScoreSummary = lastRun?.partial_results
-    ? 'Partial check completed. Available evidence was saved.'
-    : data?.summary || 'Pocket Lab is checking the current safety state.';
+  const safetyScoreSummary = !activeProfileHasRun
+    ? `${activeProfileMeta.label} has not run yet.`
+    : activeProfileRun?.partial_results
+      ? 'Partial check completed. Available evidence was saved.'
+      : (activeProfileIsLatest ? data?.summary : activeProfileRun?.summary) || 'Pocket Lab is checking the current safety state.';
   const healthBanner = deriveSecurityHealthBanner(data, null, allReviewFindings);
-  const latestEvidenceReceipt = deriveLatestEvidenceReceipt(data, { evidence, evidenceRefs, latestHistory, toolNames, sbomSaved });
-  const scanQuality = deriveScanQuality(data, latestEvidenceReceipt, executionSteps);
+  const latestEvidenceReceipt = deriveLatestEvidenceReceipt(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun, evidence_refs: currentEvidenceRefs }, { evidence, evidenceRefs: currentEvidenceRefs, latestHistory, toolNames, sbomSaved });
+  const scanQuality = deriveScanQuality(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun, evidence_refs: currentEvidenceRefs }, latestEvidenceReceipt, executionSteps);
   const securityFlow = useLiteSecurityCheckFlow({ security: data, backendReachable, savedStateOnly });
-  const lastKnownGood = deriveLastKnownGood(data, allReviewFindings);
-  const postureComparison = deriveSecurityPostureComparison(data);
-  const remediationContext = { data, lastRun, evidence, evidenceRefs, toolResults };
+  const lastKnownGood = deriveLastKnownGood(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun }, allReviewFindings);
+  const postureComparison = deriveSecurityPostureComparison(activeProfileIsLatest ? data : { ...data, history: profileHistory });
+  const remediationContext = { data, lastRun: activeProfileRun, evidence, evidenceRefs: currentEvidenceRefs, toolResults };
   const trustSignals = [
     {
       icon: Server,
@@ -1934,8 +2026,8 @@ export default function SecurityScreen() {
     openAppCheckConfirm(app, event);
   }
 
-  async function startAppCheck() {
-    const app = appCheckTarget || { app_id: 'photoprism', app_label: 'PhotoPrism' };
+  async function startAppCheck(targetApp = null) {
+    const app = targetApp || appCheckTarget || { app_id: 'photoprism', app_label: 'PhotoPrism' };
     if (!app?.app_id) return;
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
@@ -1987,7 +2079,7 @@ export default function SecurityScreen() {
     if (evidence) {
       return;
     }
-    const runId = lastRun?.run_id || result?.run_id;
+    const runId = activeProfileRun?.run_id || result?.run_id;
     if (!runId) {
       setEvidenceError('Run a safety check before opening evidence.');
       return;
@@ -2058,6 +2150,35 @@ export default function SecurityScreen() {
     setSecurityManageSection(sectionId);
   }
 
+  function chooseSecurityProfile(profileId) {
+    const nextProfile = normalizeSecurityProfileId(profileId);
+    setSelectedScanProfile(nextProfile);
+    triggerHapticFeedback(4);
+  }
+
+  function cycleSecurityProfile(event) {
+    event?.stopPropagation?.();
+    const currentIndex = SECURITY_SCAN_PROFILE_IDS.indexOf(scanProfile);
+    const nextProfile = SECURITY_SCAN_PROFILE_IDS[(currentIndex + 1) % SECURITY_SCAN_PROFILE_IDS.length] || 'quick';
+    chooseSecurityProfile(nextProfile);
+  }
+
+  async function runSecurityProfile(profileId, event) {
+    event?.stopPropagation?.();
+    const profile = normalizeSecurityProfileId(profileId);
+    chooseSecurityProfile(profile);
+    if (profile === 'full') {
+      await startFullLocalCheck();
+      return;
+    }
+    if (profile === 'app') {
+      setAppCheckTarget({ app_id: 'photoprism', app_label: 'PhotoPrism' });
+      await startAppCheck({ app_id: 'photoprism', app_label: 'PhotoPrism' });
+      return;
+    }
+    await scan();
+  }
+
   function openSecurityDetailFromManage(type, event) {
     openSecurityDetails(type, event);
   }
@@ -2078,7 +2199,8 @@ export default function SecurityScreen() {
     evidenceFileCount,
     safetyScore,
     safetyLabel,
-    lastRun,
+    lastRun: activeProfileRun,
+    selectedScanProfile: scanProfile,
     savedStateOnly,
     backendReachable,
     securityHistory,
@@ -2101,15 +2223,17 @@ export default function SecurityScreen() {
     ? securityManageSection
     : 'overview';
   const activeManageSectionMeta = SECURITY_MANAGE_SECTIONS.find((section) => section.id === activeManageSection) || SECURITY_MANAGE_SECTIONS[0];
-  const lastCheckedLabel = lastRun?.completed_at
-    ? `Last checked ${formatLiteTime(lastRun.completed_at)}`
+  const lastCheckedLabel = activeProfileRun?.completed_at
+    ? `Last checked ${formatLiteTime(activeProfileRun.completed_at)}`
     : savedStateOnly
       ? 'Showing saved state'
       : 'Run Safety Check to begin';
-  const evidenceSaved = Boolean(latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount);
+  const evidenceSaved = Boolean(activeProfileHasRun && (latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount));
   const evidenceStatusLabel = evidenceSaved ? 'Evidence saved' : 'Evidence pending';
-  const safetyCenterSummary = scanInProgress
-    ? scanProgressLabel
+  const safetyCenterSummary = !activeProfileHasRun && !scanInProgress
+    ? `${activeProfileMeta.label} not run yet`
+    : scanInProgress
+      ? scanProgressLabel
     : savedStateOnly
       ? 'Saved state only'
       : backendReachable === false
@@ -2119,17 +2243,25 @@ export default function SecurityScreen() {
           : findings
             ? 'Needs attention'
             : safetyLabel;
-  const safetyCenterChips = [
-    securityToolChip('lynis', 'Lynis', toolResults?.lynis),
-    securityToolChip('trivy', 'Trivy', toolResults?.trivy),
-    { key: 'secrets', label: 'Secrets hidden', tone: 'ready' },
-    { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
-  ];
+  const toolChipContext = { runStatus, tools: toolNames, executionSteps, profile: scanProfile };
+  const safetyCenterChips = scanProfile === 'app'
+    ? [
+      { key: 'route', label: activeProfileHasRun ? 'Route checked' : 'Route pending', tone: activeProfileHasRun ? 'ready' : 'checking' },
+      securityToolChip('trivy', 'Trivy', toolResults?.trivy, toolChipContext),
+      { key: 'media', label: 'Photos skipped', tone: 'ready' },
+      { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
+    ]
+    : [
+      securityToolChip('lynis', 'Lynis', toolResults?.lynis, toolChipContext),
+      securityToolChip('trivy', 'Trivy', toolResults?.trivy, toolChipContext),
+      { key: 'secrets', label: 'Secrets hidden', tone: 'ready' },
+      { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
+    ];
   const manageOverviewStats = [
-    { label: 'Profile', value: scanProfile },
+    { label: 'Profile', value: activeProfileMeta.label },
     { label: 'Safety score', value: safetyScore },
     { label: 'Status', value: safetyCenterSummary },
-    { label: 'Last checked', value: lastRun?.completed_at ? formatLiteTime(lastRun.completed_at) : 'Not checked yet' },
+    { label: 'Last checked', value: activeProfileRun?.completed_at ? formatLiteTime(activeProfileRun.completed_at) : 'Not checked yet' },
     { label: 'Evidence', value: evidenceStatusLabel },
   ];
   const historyTrendLabel = scoreTrendView?.detail || scoreTrendView?.label || (scoreTrend > 0 ? 'Improving' : scoreTrend < 0 ? 'Needs review' : 'Stable');
@@ -2196,7 +2328,7 @@ export default function SecurityScreen() {
       <PageHeader
         eyebrow="Safety Center"
         title="Security"
-        description="A calm quick safety overview. Run a check or open Manage for details."
+        description="A calm safety overview. Pick Quick, Full, or App Scan, then open Manage for profile details."
       />
 
       <animated.section className="lite-security-phase5-shell lite-security-phase4-motion" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
@@ -2207,12 +2339,12 @@ export default function SecurityScreen() {
               {safetyCenterSummary}
             </div>
             <h2>Safety Center</h2>
-            <span className="lite-security-quick-profile-chip">Quick safety check</span>
-            <p>{scanInProgress ? 'Pocket Lab is checking safety through FastAPI and the backend worker.' : `Checks Pocket Lab basics. Skips photos, backups, and large caches. ${safetyScoreSummary}`}</p>
+            <button type="button" className="lite-security-quick-profile-chip lite-security-profile-rollup-trigger" onClick={cycleSecurityProfile} aria-label="Switch Security profile summary" data-security-profile-view="profile-linked">{activeProfileMeta.label}</button>
+            <p>{scanInProgress ? 'Pocket Lab is checking safety through FastAPI and the backend worker.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
             <div className="lite-security-safety-center-meta" aria-label="Safety state">
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
-              <span>Profile: {scanProfile}</span>
+              <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">Profile: {activeProfileMeta.chip}</button>
               {savedStateOnly ? <span>Showing saved state</span> : null}
               {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
             </div>
@@ -2222,16 +2354,20 @@ export default function SecurityScreen() {
               ))}
             </div>
             <div className="lite-security-safety-center-actions">
-              <span className="lite-security-phase4-safety-action" data-security-phase4-motion="check-button">
-                <LiteButton
-                  onClick={scan}
-                  disabled={scanInProgress || securityFlow.writeBlocked}
-                  haptic
-                  ariaLabel={scanInProgress ? 'Safety check is running' : securityFlow.writeBlocked ? 'Reconnect to run Security safety check' : 'Run Security safety check'}
-                >
-                  {scanInProgress ? 'Checking safety…' : securityFlow.writeBlocked ? 'Reconnect to continue' : 'Run Safety Check'}
-                </LiteButton>
-              </span>
+              <div className="lite-security-profile-action-grid lite-security-phase4-safety-action" data-security-phase4-motion="check-button" data-security-profile-run-actions="quick-full-app" aria-label="Run Safety Check profiles">
+                {SECURITY_SCAN_PROFILES.map((profile) => (
+                  <LiteButton
+                    key={profile.id}
+                    tone={profile.id === scanProfile ? 'primary' : 'secondary'}
+                    onClick={(event) => runSecurityProfile(profile.id, event)}
+                    disabled={scanInProgress || securityFlow.writeBlocked}
+                    haptic
+                    ariaLabel={scanInProgress ? `${profile.label} cannot start while a safety check is running` : securityFlow.writeBlocked ? `Reconnect to run ${profile.label}` : `Run ${profile.label}`}
+                  >
+                    {scanInProgress && profile.id === latestScanProfile ? profile.running : securityFlow.writeBlocked ? 'Reconnect' : profile.actionLabel}
+                  </LiteButton>
+                ))}
+              </div>
               <LiteButton tone="secondary" onClick={openSecurityManage} ariaLabel="Manage Security details">Manage</LiteButton>
             </div>
             {securityFlow.writeBlocked ? <p className="lite-security-phase1-note">{securityFlow.blockedReason || 'Reconnect to continue.'}</p> : null}
@@ -2255,7 +2391,7 @@ export default function SecurityScreen() {
               <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
                 <span style={{ width: `${scanProgressPercent}%` }} />
               </div>
-              <p>{scanProgressPercent}% · {scanProgressEta} remaining · quick check path is in Manage.</p>
+              <p>{scanProgressPercent}% · {scanProgressEta} remaining · {activeProfileMeta.chip.toLowerCase()} check path is in Manage.</p>
             </animated.div>
           ) : null}
         </GlassCard>
@@ -2321,6 +2457,21 @@ export default function SecurityScreen() {
                   <p>{savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : lastCheckedLabel}</p>
                 </div>
               </div>
+              <div className="lite-security-profile-switcher" role="tablist" aria-label="Security scan profiles" data-security-profile-view="profile-linked">
+                {SECURITY_SCAN_PROFILES.map((profile) => (
+                  <button
+                    key={profile.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={scanProfile === profile.id}
+                    className={`lite-security-profile-switcher-button ${scanProfile === profile.id ? 'is-active' : ''}`.trim()}
+                    onClick={() => chooseSecurityProfile(profile.id)}
+                  >
+                    <strong>{profile.label}</strong>
+                    <span>{profileRunsById[profile.id]?.completed_at ? `Last ${formatLiteTime(profileRunsById[profile.id].completed_at)}` : 'Not run yet'}</span>
+                  </button>
+                ))}
+              </div>
               <div className="lite-security-manage-stat-grid">
                 {manageOverviewStats.map((item) => (
                   <div key={item.label} className="lite-security-manage-stat">
@@ -2332,21 +2483,17 @@ export default function SecurityScreen() {
               <div className="lite-security-safety-center-chips">
                 {safetyCenterChips.map((chip) => <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>)}
               </div>
-              <div className="lite-security-full-local-card">
-                <div>
-                  <strong>Full Local Check</strong>
-                  <p>Checks this device more deeply. Best while phone is charging. Can take 10–30 minutes. Still skips photos, backups, and large caches.</p>
-                  <small>This does not scan your photo library, restore backups, change app settings, expose secrets, or run anything in the browser.</small>
-                </div>
-                <LiteButton tone="secondary" onClick={openFullLocalConfirm} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel="Start Full Local Check confirmation">Full Local Check</LiteButton>
-              </div>
-              <div className="lite-security-app-check-card">
-                <div>
-                  <strong>App Check</strong>
-                  <p>Check PhotoPrism route, app files, settings, backup metadata, and action state. Best after installing, repairing, updating, or changing PhotoPrism settings.</p>
-                  <small>Skips photos and media.</small>
-                </div>
-                <LiteButton tone="secondary" onClick={(event) => checkProtectedApp(photoPrismAppCheckTarget, event)} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel="Start PhotoPrism App Check confirmation">Check PhotoPrism</LiteButton>
+              <div className="lite-security-profile-run-cards" aria-label="Run Security scan profile">
+                {SECURITY_SCAN_PROFILES.map((profile) => (
+                  <div key={profile.id} className={`lite-security-profile-run-card ${scanProfile === profile.id ? 'is-active' : ''}`.trim()}>
+                    <div>
+                      <strong>{profile.label}</strong>
+                      <p>{profile.summary}</p>
+                      <small>{profile.id === 'quick' ? 'Skips photos, backups, and large caches.' : profile.id === 'full' ? 'Best while charging. Still skips photos, backups, and large caches.' : 'Checks PhotoPrism route, files, settings, backup metadata, and action state. Skips photos and media.'}</small>
+                    </div>
+                    <LiteButton tone={scanProfile === profile.id ? 'primary' : 'secondary'} onClick={(event) => runSecurityProfile(profile.id, event)} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel={`Run ${profile.label}`}>{profile.actionLabel}</LiteButton>
+                  </div>
+                ))}
               </div>
             </div>
           ) : null}
@@ -2409,7 +2556,7 @@ export default function SecurityScreen() {
                   <strong>{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
                   <p>{scanProfile === 'app' ? 'Checks PhotoPrism route, app files, settings, backup metadata, and action state while skipping photos, media, databases, backup payloads, logs, and large caches.' : scanProfile === 'full' ? 'Checks Termux, Pocket Lab, selected PROot Ubuntu areas, PhotoPrism app/config, route metadata, service status, and backup metadata while skipping heavy/private data.' : 'Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.'}</p>
                 </div>
-                <span className="lite-security-quick-profile-chip">Profile: {scanProfile}</span>
+                <span className="lite-security-quick-profile-chip">Profile: {activeProfileMeta.chip}</span>
               </div>
               <QuickCoverageRows
                 title="Checked"

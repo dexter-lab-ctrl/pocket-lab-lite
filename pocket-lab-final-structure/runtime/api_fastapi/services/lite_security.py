@@ -677,9 +677,13 @@ def _history_entry(run: dict[str, Any], findings: list[dict[str, Any]], evidence
             "info_count": counts.get("info", 0),
             "items_to_review": len([item for item in findings if policy.normalize_severity(item.get("severity")) != "info"]),
             "evidence_count": len(evidence_refs),
+            "evidence_refs": evidence_refs,
             "sbom_saved": any("sbom.cdx.json" in str(ref) for ref in evidence_refs),
             "tools": run.get("tools") or ["lynis", "trivy"],
+            "tool_results": run.get("tool_results") if isinstance(run.get("tool_results"), dict) else {},
+            "coverage_summary": run.get("coverage_summary") if isinstance(run.get("coverage_summary"), dict) else {},
             "scan_profile": run.get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+            "summary": run.get("summary"),
             **({"app_id": run.get("app_id"), "app_label": run.get("app_label")} if run.get("app_id") else {}),
         }
     )

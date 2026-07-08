@@ -19919,3 +19919,167 @@ textarea {
     flex: 1 1 160px;
   }
 }
+
+/* Security profile polish: profile-linked summary and run actions */
+.lite-security-profile-action-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.lite-security-profile-action-grid .lite-button,
+.lite-security-profile-action-grid button {
+  min-height: 2.65rem;
+}
+
+.lite-security-profile-rollup-trigger,
+.lite-security-profile-rollup-link {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.lite-security-profile-rollup-trigger {
+  align-self: flex-start;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.lite-security-profile-rollup-trigger:hover,
+.lite-security-profile-rollup-trigger:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.16);
+  outline: none;
+}
+
+.lite-security-profile-rollup-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  background: rgba(14, 165, 233, 0.09);
+  color: #075985;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.lite-security-profile-rollup-link:hover,
+.lite-security-profile-rollup-link:focus-visible {
+  background: rgba(14, 165, 233, 0.16);
+  outline: 2px solid rgba(14, 165, 233, 0.24);
+  outline-offset: 2px;
+}
+
+.lite-security-profile-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0.9rem 0;
+}
+
+.lite-security-profile-switcher-button {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  color: #334155;
+  padding: 0.72rem 0.78rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.lite-security-profile-switcher-button strong {
+  color: #0f172a;
+  font-size: 0.88rem;
+}
+
+.lite-security-profile-switcher-button span {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.lite-security-profile-switcher-button:hover,
+.lite-security-profile-switcher-button:focus-visible,
+.lite-security-profile-switcher-button.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(14, 165, 233, 0.52);
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.98), rgba(255, 255, 255, 0.92));
+  box-shadow: 0 16px 36px rgba(14, 165, 233, 0.13);
+  outline: none;
+}
+
+.lite-security-profile-switcher-button.is-active strong,
+.lite-security-profile-switcher-button.is-active span {
+  color: #0369a1;
+}
+
+.lite-security-profile-run-cards {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.lite-security-profile-run-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 1.1rem;
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.lite-security-profile-run-card.is-active {
+  border-color: rgba(14, 165, 233, 0.46);
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.95), rgba(255, 255, 255, 0.88));
+}
+
+.lite-security-profile-run-card strong {
+  color: #0f172a;
+}
+
+.lite-security-profile-run-card p,
+.lite-security-profile-run-card small {
+  margin: 0.18rem 0 0;
+  color: #64748b;
+}
+
+@media (max-width: 680px) {
+  .lite-security-profile-action-grid,
+  .lite-security-profile-run-card {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .lite-security-profile-action-grid .lite-button,
+  .lite-security-profile-action-grid button {
+    width: 100%;
+  }
+
+  .lite-security-profile-switcher {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-profile-rollup-trigger,
+  .lite-security-profile-switcher-button,
+  .lite-security-profile-run-card {
+    transition: none;
+  }
+
+  .lite-security-profile-rollup-trigger:hover,
+  .lite-security-profile-switcher-button:hover,
+  .lite-security-profile-switcher-button:focus-visible,
+  .lite-security-profile-switcher-button.is-active {
+    transform: none;
+  }
+}
