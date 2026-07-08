@@ -6240,3 +6240,67 @@ def test_lite_security_phase5_reduced_motion_and_safe_gestures():
     assert "motion === 'safe-grip'" in overlay
     assert "filterTaps: true" in overlay
     assert "lite-security-manage-grip" in security
+
+
+def test_lite_overlay_scroll_lock_is_reference_counted_for_nested_security_sheets():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+
+    assert "liteBodyScrollLockCount" in overlay
+    assert "liteBodyScrollLockSnapshot" in overlay
+    assert "Math.max(0, liteBodyScrollLockCount - 1)" in overlay
+    assert "body.style.overflow = liteBodyScrollLockSnapshot.overflow" in overlay
+    assert "body.style.overscrollBehavior = liteBodyScrollLockSnapshot.overscrollBehavior" in overlay
+
+
+def test_lite_overlay_escape_only_closes_topmost_sheet():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+
+    assert "liteOverlayEscapeStack" in overlay
+    assert "Symbol('lite-overlay')" in overlay
+    assert "topOverlayId !== overlayId" in overlay
+    assert "event.stopImmediatePropagation?.()" in overlay
+    assert "document.addEventListener('keydown', onKeyDown, true)" in overlay
+
+
+def test_lite_security_nested_details_stack_above_manage_and_remediation_uses_litesheet():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "lite-security-detail-layer" in security
+    assert "lite-security-remediation-layer" in security
+    assert "data-security-remediation-shell" in security
+    assert "lite-security-remediation-backdrop" not in security
+    assert ".lite-security-manage-layer {\n  z-index: 10030" in css
+    assert ".lite-security-detail-layer,\n.lite-security-remediation-layer {\n  z-index: 10060" in css
+
+
+def test_lite_security_manage_tabs_have_clipping_safe_scroll_contract():
+    css = Path("src/index.css").read_text()
+
+    assert "Security Manage overlay production hotfix" in css
+    assert ".lite-security-manage-scroll" in css
+    assert "overflow-x: hidden !important" in css
+    assert "scroll-padding-top: 4rem !important" in css
+    assert ".lite-security-manage-tabs" in css
+    assert "position: sticky !important" in css
+    assert "overflow-x: auto !important" in css
+    assert "min-height: 3.05rem !important" in css
+    assert "white-space: nowrap !important" in css
+    assert "touch-action: manipulation !important" in css
+
+
+def test_lite_security_overlay_hotfix_preserves_no_frontend_execution_boundary():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    combined = overlay + security + css
+
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "fetch(" not in security
+    assert "child_process" not in combined
+    assert "exec(" not in combined
+    assert "spawn(" not in combined
+    assert "nats.connect" not in combined
+    assert "onClickCapture" not in combined
+    assert "onPointerDownCapture" not in combined

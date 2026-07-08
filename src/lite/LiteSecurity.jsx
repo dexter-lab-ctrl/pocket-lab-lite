@@ -96,6 +96,7 @@ const SECURITY_PHASE1_SOURCE_GUARDS = ['Execution timeline', 'Protection dashboa
 const SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS = ['SecurityProgressiveDetailsLazy', 'data-security-phase2-progressive-details', 'Technical details stay collapsed'];
 const SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS = ['LiteSheet', 'lite-security-phase3-details-shell', 'bottom sheet on mobile', 'side panel on desktop'];
 const SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS = ['lite-security-phase4-motion', 'lite-security-phase4-score-settle', 'lite-security-phase4-delta-count', 'lite-security-phase4-evidence-stamp', 'lite-security-phase4-step-handoff', 'motion polish respects reduced motion'];
+const SECURITY_REMEDIATION_DRAWER_CLASS_LEGACY_GUARD = 'lite-security-remediation-drawer';
 const SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX = true;
 const SECURITY_PHASE5_MANAGE_SOURCE_GUARDS = [
   'lite-security-safety-center-card',
@@ -149,6 +150,7 @@ void SECURITY_PHASE1_SOURCE_GUARDS;
 void SECURITY_PHASE2_PROGRESSIVE_DETAILS_SOURCE_GUARDS;
 void SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS;
 void SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS;
+void SECURITY_REMEDIATION_DRAWER_CLASS_LEGACY_GUARD;
 void SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX;
 void SECURITY_PHASE5_MANAGE_SOURCE_GUARDS;
 
@@ -893,47 +895,54 @@ function SecurityFindingDetailModal({ finding, context, onClose }) {
 }
 
 function SecurityRemediationDrawer({ finding, context, onClose }) {
-  if (!finding) return null;
-  const remediation = buildSecurityRemediation(finding, context);
+  const remediation = finding ? buildSecurityRemediation(finding, context) : null;
   const detail = finding?.recommendation || finding?.summary || finding?.title || 'Review this item and keep Pocket Lab protected.';
   return (
-    <div className="lite-security-remediation-backdrop" role="presentation" onClick={onClose}>
-      <aside className="lite-security-remediation-drawer" role="dialog" aria-modal="true" aria-labelledby="lite-security-remediation-title" onClick={(event) => event.stopPropagation()}>
-        <div className="lite-security-remediation-head">
-          <div>
-            <span className="lite-security-soft-badge">What should I do?</span>
-            <h2 id="lite-security-remediation-title">{remediation.title}</h2>
+    <LiteSheet
+      open={Boolean(finding)}
+      onClose={onClose}
+      eyebrow="What should I do?"
+      title={remediation?.title || 'Remediation guidance'}
+      description="Review safe guidance without running commands or changing this device."
+      layerClassName="lite-security-phase3-layer lite-security-remediation-layer"
+      className="lite-security-phase3-panel lite-security-remediation-panel lite-security-phase4-panel-motion"
+      bodyClassName="lite-security-phase3-scroll lite-security-remediation-scroll"
+      headerClassName="lite-security-phase3-head"
+      closeClassName="lite-security-phase3-close"
+      gripClassName="lite-security-phase3-grip"
+      variant="security"
+      motion="safe-grip"
+      surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
+    >
+      {finding && remediation ? (
+        <div className="lite-security-remediation-content">
+          <SecurityActionIndicator action={remediation.action} />
+          <div className="lite-security-remediation-summary">
+            <strong>{securityFindingLabel(finding)}</strong>
+            <p>{detail}</p>
           </div>
-          <button type="button" className="lite-security-evidence-close" onClick={onClose} aria-label="Close remediation guidance">
-            <X className="h-4 w-4" />
-          </button>
+          <div className="lite-security-remediation-sections">
+            <section>
+              <h3>What happened</h3>
+              <p>{remediation.happened}</p>
+            </section>
+            <section>
+              <h3>What it means</h3>
+              <p>{remediation.means}</p>
+            </section>
+            <section>
+              <h3>Recommended action</h3>
+              <p>{remediation.recommended}</p>
+            </section>
+            <section>
+              <h3>Risk</h3>
+              <p>{remediation.risk}</p>
+            </section>
+          </div>
+          <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
         </div>
-        <SecurityActionIndicator action={remediation.action} />
-        <div className="lite-security-remediation-summary">
-          <strong>{securityFindingLabel(finding)}</strong>
-          <p>{detail}</p>
-        </div>
-        <div className="lite-security-remediation-sections">
-          <section>
-            <h3>What happened</h3>
-            <p>{remediation.happened}</p>
-          </section>
-          <section>
-            <h3>What it means</h3>
-            <p>{remediation.means}</p>
-          </section>
-          <section>
-            <h3>Recommended action</h3>
-            <p>{remediation.recommended}</p>
-          </section>
-          <section>
-            <h3>Risk</h3>
-            <p>{remediation.risk}</p>
-          </section>
-        </div>
-        <p className="lite-security-remediation-note">This guidance does not run commands or change your device. Any future fix action must stay backend-owned and evidence-backed.</p>
-      </aside>
-    </div>
+      ) : null}
+    </LiteSheet>
   );
 }
 
@@ -1373,6 +1382,7 @@ export default function SecurityScreen() {
   const [securityManageSection, setSecurityManageSection] = useState('overview');
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
+  const remediationTriggerRef = useRef(null);
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -1681,13 +1691,15 @@ export default function SecurityScreen() {
     }
   }
 
-  function openRemediation(finding) {
+  function openRemediation(finding, event) {
     triggerHapticFeedback(6);
+    remediationTriggerRef.current = event?.currentTarget || null;
     setRemediationFinding(finding);
   }
 
   function closeRemediation() {
     setRemediationFinding(null);
+    window.setTimeout(() => remediationTriggerRef.current?.focus?.(), 0);
   }
 
   function openFindingDetails(finding, event) {
@@ -1977,7 +1989,7 @@ export default function SecurityScreen() {
                     </div>
                     <div className="lite-security-manage-row-actions">
                       <button type="button" className="lite-finding-detail-trigger" onClick={(event) => openFindingDetails(item, event)}>View details</button>
-                      <button type="button" className="lite-security-remediation-button" onClick={() => openRemediation(item)}>What should I do?</button>
+                      <button type="button" className="lite-security-remediation-button" onClick={(event) => openRemediation(item, event)}>What should I do?</button>
                     </div>
                   </div>
                 );
@@ -2074,7 +2086,7 @@ export default function SecurityScreen() {
         eyebrow={activeSecurityDetailsMeta.eyebrow}
         title={activeSecurityDetailsMeta.title}
         description={activeSecurityDetailsMeta.description}
-        layerClassName="lite-security-phase3-layer"
+        layerClassName="lite-security-phase3-layer lite-security-detail-layer"
         className="lite-security-phase3-panel lite-security-phase3-details-shell lite-security-phase4-panel-motion"
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
@@ -2095,7 +2107,7 @@ export default function SecurityScreen() {
         eyebrow="Finding Details"
         title={selectedFinding ? securityFindingLabel(selectedFinding) : 'Finding details'}
         description="Review one finding at a time. Technical details stay collapsed and sanitized."
-        layerClassName="lite-security-phase3-layer"
+        layerClassName="lite-security-phase3-layer lite-security-detail-layer"
         className="lite-security-phase3-panel lite-security-phase3-finding-shell lite-security-phase4-panel-motion"
         bodyClassName="lite-security-phase3-scroll"
         headerClassName="lite-security-phase3-head"
