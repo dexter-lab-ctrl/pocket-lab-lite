@@ -7079,3 +7079,63 @@ def test_lite_security_backup_and_nats_discovery_helpers_are_safe():
     assert any("pocket-lab-lite-backups" in item for item in candidates)
     assert any("manifests" in item for item in candidates)
     assert any("receipts" in item for item in candidates)
+
+
+def test_lite_security_profile_aware_snapshots_contract():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+
+    for endpoint in [
+        "/api/lite/security/profiles/quick",
+        "/api/lite/security/profiles/full",
+        "/api/lite/security/profiles/app",
+        "/api/lite/security/history/index",
+    ]:
+        assert endpoint in snapshots
+
+    for selector in [
+        "selectSecurityProfileSnapshotView",
+        "selectSecurityProfileSnapshotViews",
+        "selectSecurityHistorySnapshotView",
+        "selectSecurityScreenSnapshotView",
+        "LITE_SECURITY_PROFILE_SNAPSHOT_VERSION",
+        "LITE_SECURITY_HISTORY_SNAPSHOT_VERSION",
+    ]:
+        assert selector in view_models
+
+    assert "writeSecurityProfileSnapshots" in snapshots
+    assert "readSecurityCompositeSnapshot" in snapshots
+    assert "lite-security-profile-summary" in snapshots
+    assert "lite-security-history-index" in snapshots
+    assert "lite-security-composite-profile-summary" in snapshots
+    assert "commitLiteSnapshotRecord" in snapshots
+
+    lowered = snapshots.lower() + view_models.lower()
+    for forbidden in [
+        "raw scanner output",
+        "lynis raw report",
+        "trivy raw json",
+        "secret value",
+        "nats password",
+        "vault root token",
+    ]:
+        assert forbidden not in lowered
+
+
+def test_lite_security_profile_snapshots_remain_read_only_fallback():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "writeSecurityProfileSnapshots" in snapshots
+    assert "selectSecurityProfileSnapshotViews" in snapshots
+    assert "readSecurityCompositeSnapshot" in snapshots
+    assert "markLiteSnapshotRejected" in snapshots
+    assert "findUnsafeLiteSnapshotContent(profilePayload)" in snapshots
+    assert "findUnsafeLiteSnapshotContent(historyPayload)" in snapshots
+    assert "method === 'GET'" in api
+    assert "postJson('/api/lite/security/check'" in api
+    assert "liteApi.runSecurityScan" in security
+    assert "fetch(" not in security
+    assert "nats.connect" not in security
+    assert "child_process" not in security

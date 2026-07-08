@@ -1,4 +1,10 @@
 import {
+  LITE_SECURITY_PROFILE_IDS,
+  selectSecurityHistorySnapshotView,
+  selectSecurityProfileSnapshotViews,
+  selectSecurityScreenSnapshotView,
+} from './liteViewModels.js';
+import {
   checkLiteOfflineDbAvailability,
   estimateLiteCacheHealth,
   getLiteOfflineCacheHealth,
@@ -19,6 +25,10 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/apps/photoprism/actions',
   '/api/lite/fleet',
   '/api/lite/security',
+  '/api/lite/security/profiles/quick',
+  '/api/lite/security/profiles/full',
+  '/api/lite/security/profiles/app',
+  '/api/lite/security/history/index',
   '/api/lite/recovery',
 ]);
 
@@ -28,6 +38,10 @@ export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/catalog': 8 * 60 * 1000,
   '/api/lite/apps/photoprism/actions': 8 * 60 * 1000,
   '/api/lite/security': 20 * 60 * 1000,
+  '/api/lite/security/profiles/quick': 60 * 60 * 1000,
+  '/api/lite/security/profiles/full': 60 * 60 * 1000,
+  '/api/lite/security/profiles/app': 60 * 60 * 1000,
+  '/api/lite/security/history/index': 60 * 60 * 1000,
   '/api/lite/recovery': 20 * 60 * 1000,
 };
 
@@ -40,6 +54,12 @@ const MAX_ARRAY_ITEMS = 80;
 const MAX_STRING_LENGTH = 1200;
 const MAX_SCAN_DEPTH = 8;
 const inMemorySnapshots = new Map();
+const SECURITY_SNAPSHOT_ENDPOINT = '/api/lite/security';
+const SECURITY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/security/history/index';
+const SECURITY_PROFILE_SNAPSHOT_ENDPOINTS = LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
+  items[profile] = `/api/lite/security/profiles/${profile}`;
+  return items;
+}, {});
 let hydrationStarted = false;
 let pruneStarted = false;
 
@@ -252,6 +272,139 @@ function writeLocalStorageSnapshot(path = '', record) {
   }
 }
 
+
+function commitLiteSnapshotRecord(path = '', record) {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  inMemorySnapshots.set(normalizedPath, record);
+  writeLocalStorageSnapshot(normalizedPath, record);
+  writeOfflineSafeSnapshot({
+    endpoint: normalizedPath,
+    payload: record.payload,
+    checkedAt: record.checked_at,
+    savedAt: record.saved_at,
+    expiresAt: record.expires_at,
+    status: record.status,
+    source: record.source,
+    payloadKind: record.payload_kind,
+  });
+}
+
+function readSnapshotPayloadWithoutMeta(path = '') {
+  const normalizedPath = normalizeLiteSnapshotPath(path);
+  const memory = inMemorySnapshots.get(normalizedPath);
+  if (memory?.payload) return memory.payload;
+  return stripSnapshotMeta(readLocalStorageSnapshot(normalizedPath));
+}
+
+function writeSecurityProfileSnapshots(sourcePath = '', payload = null, sourceRecord = null) {
+  if (normalizeLiteSnapshotPath(sourcePath) !== SECURITY_SNAPSHOT_ENDPOINT || !payload || typeof payload !== 'object') return;
+  try {
+    const screenSnapshot = selectSecurityScreenSnapshotView(payload);
+    const profiles = selectSecurityProfileSnapshotViews(screenSnapshot);
+    LITE_SECURITY_PROFILE_IDS.forEach((profile) => {
+      const profilePayload = profiles[profile];
+      if (!profilePayload || typeof profilePayload !== 'object') return;
+      const endpoint = SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[profile];
+      const unsafeReason = findUnsafeLiteSnapshotContent(profilePayload);
+      if (unsafeReason) {
+        markLiteSnapshotRejected(endpoint, unsafeReason);
+        return;
+      }
+      const record = toSnapshotRecord(endpoint, profilePayload, {
+        checkedAt: sourceRecord?.checked_at,
+        savedAt: sourceRecord?.saved_at,
+        source: 'network',
+        payloadKind: 'lite-security-profile-summary',
+      });
+      commitLiteSnapshotRecord(endpoint, record);
+    });
+
+    const historyPayload = selectSecurityHistorySnapshotView(screenSnapshot);
+    const unsafeHistoryReason = findUnsafeLiteSnapshotContent(historyPayload);
+    if (unsafeHistoryReason) {
+      markLiteSnapshotRejected(SECURITY_HISTORY_SNAPSHOT_ENDPOINT, unsafeHistoryReason);
+      return;
+    }
+    const historyRecord = toSnapshotRecord(SECURITY_HISTORY_SNAPSHOT_ENDPOINT, historyPayload, {
+      checkedAt: sourceRecord?.checked_at,
+      savedAt: sourceRecord?.saved_at,
+      source: 'network',
+      payloadKind: 'lite-security-history-index',
+    });
+    commitLiteSnapshotRecord(SECURITY_HISTORY_SNAPSHOT_ENDPOINT, historyRecord);
+  } catch (error) {
+    markLiteSnapshotRejected(SECURITY_SNAPSHOT_ENDPOINT, error?.message || 'security_profile_snapshot_failed');
+  }
+}
+
+function readSecurityCompositeSnapshot() {
+  const securityProfiles = {};
+  const profileLatest = {};
+  let newestTimestamp = 0;
+  let newestProfile = '';
+
+  LITE_SECURITY_PROFILE_IDS.forEach((profile) => {
+    const payload = readSnapshotPayloadWithoutMeta(SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[profile]);
+    if (!payload || typeof payload !== 'object') return;
+    securityProfiles[profile] = payload;
+    if (payload.latest_run || payload.run_id || payload.completed_at) profileLatest[profile] = payload.latest_run || payload;
+    const timestamp = Date.parse(payload.completed_at || payload.updated_at || payload.started_at || '') || 0;
+    if (timestamp >= newestTimestamp) {
+      newestTimestamp = timestamp;
+      newestProfile = profile;
+    }
+  });
+
+  const historyPayload = readSnapshotPayloadWithoutMeta(SECURITY_HISTORY_SNAPSHOT_ENDPOINT) || {};
+  if (!Object.keys(securityProfiles).length && !Array.isArray(historyPayload.history)) return null;
+
+  const latest = newestProfile ? securityProfiles[newestProfile] : null;
+  const savedAt = latest?.updated_at || latest?.completed_at || historyPayload.updated_at || nowIso();
+  const composite = {
+    view_model: 'security-screen-snapshot-v1',
+    version: 'profile-aware-snapshot',
+    status: latest?.status || 'saved',
+    summary: latest?.summary || 'Saved Security state is available.',
+    score: latest?.score || 0,
+    scan_profile: newestProfile || 'quick',
+    app_id: latest?.app_id || '',
+    app_label: latest?.app_label || '',
+    checked_at: savedAt,
+    updated_at: savedAt,
+    last_run: latest?.latest_run || null,
+    security_summary: latest ? {
+      status: latest.status,
+      summary: latest.summary,
+      score: latest.score,
+      app_id: latest.app_id,
+      app_label: latest.app_label,
+      items_to_review: latest.items_to_review,
+      evidence_count: latest.evidence_summary?.evidence_count || latest.evidence_refs?.length || 0,
+      checked_at: latest.completed_at || latest.updated_at,
+      updated_at: latest.updated_at || latest.completed_at,
+    } : {},
+    profile_latest: profileLatest,
+    security_profiles: securityProfiles,
+    history_summary: Array.isArray(historyPayload.history) ? historyPayload.history : [],
+    history: Array.isArray(historyPayload.history) ? historyPayload.history : [],
+    evidence_summary: latest?.evidence_summary || {},
+    security_history_snapshot: historyPayload,
+    live: false,
+    saved_snapshot: true,
+    sanitized: true,
+  };
+  return withMeta(composite, {
+    source: 'cache',
+    path: SECURITY_SNAPSHOT_ENDPOINT,
+    stale: true,
+    savedAt,
+    checkedAt: savedAt,
+    expiresAt: addMsIso(savedAt, ttlForLiteSnapshotPath(SECURITY_SNAPSHOT_ENDPOINT)),
+    payloadKind: 'lite-security-composite-profile-summary',
+    status: 'saved',
+  });
+}
+
 function rememberSnapshot(path = '', record) {
   const normalizedPath = normalizeLiteSnapshotPath(path);
   inMemorySnapshots.set(normalizedPath, record);
@@ -299,6 +452,10 @@ export function readLiteSnapshot(path = '') {
   if (memory) return withMeta(memory.payload, { ...memory, path: normalizedPath, source: 'cache' });
   const local = readLocalStorageSnapshot(normalizedPath);
   if (local) return local;
+  if (normalizedPath === SECURITY_SNAPSHOT_ENDPOINT) {
+    const securityComposite = readSecurityCompositeSnapshot();
+    if (securityComposite) return securityComposite;
+  }
   hydrateLiteSnapshotsFromDexie();
   return null;
 }
@@ -313,6 +470,15 @@ export async function readLiteSnapshotAsync(path = '') {
   return rememberDexieRecord(record);
 }
 
+export function liteSecurityProfileSnapshotPath(profile = 'quick') {
+  const normalizedProfile = LITE_SECURITY_PROFILE_IDS.includes(String(profile || '').toLowerCase()) ? String(profile || '').toLowerCase() : 'quick';
+  return SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[normalizedProfile];
+}
+
+export function liteSecurityHistorySnapshotPath() {
+  return SECURITY_HISTORY_SNAPSHOT_ENDPOINT;
+}
+
 export function writeLiteSnapshot(path = '', data) {
   const normalizedPath = normalizeLiteSnapshotPath(path);
   if (!isSafeLiteSnapshotPath(normalizedPath) || !data || typeof data !== 'object') return { stored: false, reason: 'unsafe_path_or_payload' };
@@ -323,18 +489,8 @@ export function writeLiteSnapshot(path = '', data) {
     return { stored: false, rejected: true, reason: unsafeReason };
   }
   const record = toSnapshotRecord(normalizedPath, payload);
-  inMemorySnapshots.set(normalizedPath, record);
-  writeLocalStorageSnapshot(normalizedPath, record);
-  writeOfflineSafeSnapshot({
-    endpoint: normalizedPath,
-    payload: record.payload,
-    checkedAt: record.checked_at,
-    savedAt: record.saved_at,
-    expiresAt: record.expires_at,
-    status: record.status,
-    source: record.source,
-    payloadKind: record.payload_kind,
-  });
+  commitLiteSnapshotRecord(normalizedPath, record);
+  writeSecurityProfileSnapshots(normalizedPath, record.payload, record);
   setOfflineCacheMeta('lastCacheWriteAt', record.saved_at);
   pruneLiteSnapshots();
   return { stored: true, savedAt: record.saved_at, expiresAt: record.expires_at };
