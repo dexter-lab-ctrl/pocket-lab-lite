@@ -128,6 +128,8 @@ function buildDetails({ type, model = {} }) {
     skippedCoverageTargets = [],
     partialCoverageTargets = [],
     timedOutCoverageTargets = [],
+    missingCoverageTargets = [],
+    targetCoverageStatuses = [],
   } = model;
 
   if (type === 'changes') {
@@ -194,22 +196,36 @@ function buildDetails({ type, model = {} }) {
 
 
   if (type === 'coverage') {
-    const checked = safeList(checkedCoverageTargets, ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state']);
-    const skipped = safeList(skippedCoverageTargets, ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
+    const profile = safeText(scanProfile, 'quick').toLowerCase();
+    const fullProfile = profile === 'full';
+    const checked = safeList(checkedCoverageTargets, fullProfile ? ['Termux host', 'Pocket Lab Lite', 'Runtime config', 'PROot Ubuntu', 'PhotoPrism', 'Backup metadata'] : ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state']);
+    const skipped = safeList(skippedCoverageTargets, fullProfile ? ['Photo library/media', 'Android shared storage', 'Backup payloads', 'Restic repository contents', 'PM2 logs', 'Go/npm/tool caches'] : ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
     const partial = safeList(partialCoverageTargets);
     const timedOut = safeList(timedOutCoverageTargets);
+    const missing = safeList(missingCoverageTargets);
+    const targetRows = Array.isArray(targetCoverageStatuses)
+      ? targetCoverageStatuses.slice(0, 8).map((item) => `${safeText(item?.target_label || item?.target_id, 'Security target')} · ${safeText(item?.status || 'unknown', 'unknown')}`)
+      : [];
     return {
-      title: 'Quick safety coverage',
+      title: fullProfile ? 'Full Local Check coverage' : 'Quick safety coverage',
       status: partial.length || timedOut.length ? 'review' : 'ready',
       statusLabel: `Profile: ${safeText(scanProfile, 'quick')}`,
-      summary: 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
+      summary: fullProfile
+        ? 'Full Local Check checks this device more deeply while still skipping photos, backup payloads, logs, Android shared storage, and large caches.'
+        : 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
       what_happened: [
-        'Pocket Lab used the quick scan profile.',
+        fullProfile ? 'Pocket Lab used the full local scan profile.' : 'Pocket Lab used the quick scan profile.',
         ...checked.map((item) => `Checked: ${item}`),
+        ...targetRows,
       ],
       what_changed: ['Opening this coverage view did not start a scan or change the device.'],
-      what_needs_attention: [...partial.map((item) => `Partial: ${item}`), ...timedOut.map((item) => `Timed out: ${item}`)],
-      what_did_not_happen: [
+      what_needs_attention: [...partial.map((item) => `Partial: ${item}`), ...timedOut.map((item) => `Timed out: ${item}`), ...missing.map((item) => `Missing optional target: ${item}`)],
+      what_did_not_happen: fullProfile ? [
+        'Photo libraries and user media were not scanned.',
+        'Backup payloads and restic repository contents were not scanned.',
+        'Android shared storage was not scanned.',
+        'Logs, caches, thumbnails, sidecars, and old PWA builds were skipped.',
+      ] : [
         'Photo libraries and user media were not scanned by the quick profile.',
         'Backup payloads and restore checkpoints were not scanned by the quick profile.',
         'The full PROot Ubuntu filesystem was not scanned by the quick profile.',
@@ -220,7 +236,7 @@ function buildDetails({ type, model = {} }) {
         backend_only: true,
         summary: 'Coverage metadata is saved with sanitized evidence. Raw scanner output stays backend-owned.',
       },
-      next_step: partial.length || timedOut.length ? 'Run the check again while charging, or wait for a future Full Local Check profile.' : 'Use Quick Safety Check daily for a fast safety signal.',
+      next_step: partial.length || timedOut.length ? 'Run the check again while charging, then review any timed-out or partial targets.' : fullProfile ? 'Use Full Local Check after major updates or route/security changes.' : 'Use Quick Safety Check daily for a fast safety signal.',
       technicalDetails: [
         { label: 'Profile', value: safeText(scanProfile, 'quick') },
         { label: 'Checked targets', value: checked.length },
@@ -228,9 +244,9 @@ function buildDetails({ type, model = {} }) {
         { label: 'Excluded groups', value: Array.isArray(coverageSummary.excluded_groups) ? coverageSummary.excluded_groups.length : 0 },
       ],
       history: {
-        title: 'Skipped by Quick Safety Check',
-        summary: 'These areas are intentionally skipped to keep daily checks bounded on mobile devices.',
-        items: skipped.map((title, index) => ({ id: `quick-skip-${index}`, title, meta: 'skipped by quick profile' })),
+        title: fullProfile ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check',
+        summary: fullProfile ? 'These areas are intentionally skipped to protect private data and keep the deeper check bounded.' : 'These areas are intentionally skipped to keep daily checks bounded on mobile devices.',
+        items: skipped.map((title, index) => ({ id: `coverage-skip-${index}`, title, meta: fullProfile ? 'skipped by full profile' : 'skipped by quick profile' })),
         enabled: true,
         emptyMessage: 'No skipped targets were reported.',
       },

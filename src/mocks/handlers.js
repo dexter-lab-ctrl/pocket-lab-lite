@@ -319,7 +319,6 @@ const mockLiteSecurityPayload = () => {
     completed_at: new Date(now - 2 * 60 * 1000).toISOString(),
     tools: ['lynis', 'trivy'],
     scan_profile: 'quick',
-    coverage_summary: quickCoverage,
     critical_count: 0,
     high_count: 0,
     medium_count: 0,
@@ -350,7 +349,6 @@ const mockLiteSecurityPayload = () => {
   const base = {
     status: 'healthy',
     scan_profile: 'quick',
-    coverage_summary: quickCoverage,
     summary: 'No urgent safety issues found.',
     score: 100,
     last_run: baseRun,
@@ -774,8 +772,27 @@ export const handlers = [
   http.get('/api/lite/security/apps', () => HttpResponse.json({ status: 'healthy', apps: mockProtectedApps(), items: mockProtectedApps(), count: mockProtectedApps().length })),
   http.get('/api/lite/security/apps/photoprism', () => HttpResponse.json(mockProtectedApps()[0])),
   http.post('/api/lite/security/apps/photoprism/check', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', summary: 'App-specific safety checks are prepared, but execution is not enabled yet. Use Run Safety Check for the current device-wide scan.' }, { status: 501 })),
-  http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', scan_profile: 'quick', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.' }, { status: 202 })),
-  http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', scan_profile: 'quick', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 })),
+  http.post('/api/lite/security/check', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    const profile = body?.profile === 'full' ? 'full' : 'quick';
+    return HttpResponse.json({
+      accepted: true,
+      status: 'queued',
+      scan_profile: profile,
+      run_id: profile === 'full' ? 'security-full-mock-002' : 'security-mock-002',
+      command_id: profile === 'full' ? 'security-full-mock-002' : 'security-mock-002',
+      command_subject: 'pocketlab.commands.lite.security.scan',
+      execution_mode: 'worker',
+      summary: profile === 'full'
+        ? 'Full Local Check queued. Pocket Lab will check this device more deeply while still skipping photos, backups, logs, and large caches.'
+        : 'Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.',
+    }, { status: 202 });
+  }),
+  http.post('/api/lite/security/scan', async ({ request }) => {
+    const body = await request.json().catch(() => ({}));
+    const profile = body?.profile === 'full' ? 'full' : 'quick';
+    return HttpResponse.json({ accepted: true, status: 'queued', scan_profile: profile, run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 });
+  }),
   http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded', scan_profile: 'quick' }, scan_profile: 'quick', coverage_summary: { profile: 'quick', checked_targets: ['Termux host posture', 'Pocket Lab Lite files'], skipped_targets: ['Photo library/media', 'Backup payloads'] }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json', 'security/evidence/security-mock-001/coverage-summary.json'] })),
   http.post('/api/lite/fleet/devices/:nodeId/restart-agent', ({ params }) => HttpResponse.json({
     accepted: true,

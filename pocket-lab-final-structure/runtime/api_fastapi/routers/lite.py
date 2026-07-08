@@ -734,7 +734,7 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail="Unknown safety check profile. Quick safety check is the only enabled profile right now.",
+            detail="Unknown safety check profile. Choose Quick Safety Check or Full Local Check.",
         )
     run_id = lite_security.new_run_id()
     command = {
@@ -742,7 +742,7 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
         "command_id": run_id,
         "scope": payload.scope or "local",
         "profile": profile,
-        "reason": payload.reason or "manual quick safety check",
+        "reason": payload.reason or ("manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
         "requested_at": deps.now_utc_iso(),
     }
     # Record the queued state before publishing so a fast worker cannot complete
@@ -764,7 +764,7 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             "run_id": run_id,
             "command_subject": lite_security.policy.COMMAND_SUBJECT,
             "execution_mode": "worker",
-            "summary": "Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.",
+            "summary": lite_security._profile_copy(profile)["queued"],
             "scan_profile": profile,
         }
     )

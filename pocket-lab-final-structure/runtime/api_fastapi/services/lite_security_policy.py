@@ -11,7 +11,8 @@ from typing import Any
 COMMAND_SUBJECT = "pocketlab.commands.lite.security.scan"
 
 SCAN_PROFILE_QUICK = "quick"
-VALID_SCAN_PROFILES = {SCAN_PROFILE_QUICK}
+SCAN_PROFILE_FULL = "full"
+VALID_SCAN_PROFILES = {SCAN_PROFILE_QUICK, SCAN_PROFILE_FULL}
 
 def normalize_scan_profile(value: Any = None) -> str:
     profile = str(value or SCAN_PROFILE_QUICK).strip().lower().replace("-", "_")
@@ -30,6 +31,11 @@ TIMEOUTS = {
     "trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_SECRET_TIMEOUT", "240")),
     "trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_SBOM_TIMEOUT", "240")),
     "overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_OVERALL_TIMEOUT", "900")),
+    "full_lynis": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_LYNIS_TIMEOUT", "900")),
+    "full_trivy_vuln_misconfig": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_TRIVY_TIMEOUT", "1200")),
+    "full_trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_SECRET_TIMEOUT", "900")),
+    "full_trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_SBOM_TIMEOUT", "900")),
+    "full_overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_OVERALL_TIMEOUT", "3600")),
 }
 
 EXCLUDED_DIRS = [
@@ -107,6 +113,57 @@ QUICK_SKIPPED_TARGETS = [
     "Large runtime histories",
 ]
 
+FULL_EXCLUDED_GROUPS = [
+    "Photo library/media",
+    "Android shared storage",
+    "Backup payloads and restic repository contents",
+    "Restore checkpoints and large restore runs",
+    "Logs and generated runtime histories",
+    "Go/npm/tool caches",
+    "Scanner caches and temp files",
+    "Old PWA builds",
+    "PhotoPrism thumbnails, sidecars, import, originals, and media index",
+]
+
+FULL_SKIPPED_TARGETS = [
+    "Photo library/media",
+    "Android shared storage",
+    "PhotoPrism originals/import/media/cache/sidecars",
+    "PhotoPrism index database",
+    "Backup payloads",
+    "Restic repository contents",
+    "Restore checkpoints",
+    "PM2 logs",
+    "Go module cache",
+    "npm cache",
+    "Trivy cache",
+    "Lynis temp files",
+    "Old PWA build folders",
+    "Large runtime histories",
+]
+
+FULL_EXTRA_EXCLUDED_DIRS = [
+    "rootfs/mnt/sdcard",
+    "rootfs/sdcard",
+    "rootfs/storage",
+    "rootfs/storage/emulated",
+    "rootfs/tmp/photoprism*.tar.gz",
+    "rootfs/tmp/photoprism_*",
+    "rootfs/var/cache",
+    "rootfs/var/log",
+    "rootfs/var/tmp",
+    "rootfs/home/*/.cache",
+    "var/cache",
+    "var/log",
+    "var/tmp",
+    "home/*/.cache",
+    ".pocket_lab/lite/apps/photoprism/storage/index.db",
+    ".pocket_lab/lite/apps/photoprism/storage/sidecar",
+    ".pocket_lab/lite/apps/photoprism/storage/cache",
+    ".pocket_lab/lite/apps/photoprism/storage/cache/media",
+    ".pocket_lab/lite/apps/photoprism/storage/cache/thumbnails",
+]
+
 SENSITIVE_KEY_RE = re.compile(
     r"(token|password|passwd|pwd|secret|api[_-]?key|authorization|bearer|vault|unseal|nats|invite|tailscale[_-]?auth|private[_-]?key)",
     re.IGNORECASE,
@@ -136,6 +193,8 @@ LYNIS_DEDUPE_PATTERNS = (
 
 PROTECTED_RUNTIME_SECRET_TARGETS = (
     "gitea/conf/app.runtime.ini",
+    ".pocket_lab/lite/apps/photoprism/config/photoprism.env",
+    "photoprism.env",
 )
 
 SECRET_VALUE_REPLACEMENTS = [
@@ -231,6 +290,22 @@ def quick_scan_excludes() -> dict[str, Any]:
     }
 
 
+def full_scan_excludes() -> dict[str, Any]:
+    return {
+        "skip_dirs": sorted(set([*EXCLUDED_DIRS, *FULL_EXTRA_EXCLUDED_DIRS])),
+        "skip_files": sorted(set([*EXCLUDED_FILES, "*.log", "*.sqlite", "*.sqlite3", "*.db", "*.tar.gz", "*.tgz"])),
+        "excluded_groups": list(FULL_EXCLUDED_GROUPS),
+        "skipped_targets": list(FULL_SKIPPED_TARGETS),
+    }
+
+
+def scan_excludes_for_profile(profile: Any = None) -> dict[str, Any]:
+    normalized = normalize_scan_profile(profile)
+    if normalized == SCAN_PROFILE_FULL:
+        return full_scan_excludes()
+    return quick_scan_excludes()
+
+
 def trivy_skip_args(root: Path, excludes: dict[str, Any] | None = None) -> list[str]:
     _ = root  # kept for future profile-specific absolute allowlist support
     plan = excludes or quick_scan_excludes()
@@ -240,6 +315,10 @@ def trivy_skip_args(root: Path, excludes: dict[str, Any] | None = None) -> list[
     for item in plan.get("skip_files") or []:
         args.extend(["--skip-files", str(item)])
     return args
+
+
+def trivy_skip_args_for_profile(root: Path, profile: Any = None) -> list[str]:
+    return trivy_skip_args(root, scan_excludes_for_profile(profile))
 
 
 def build_quick_scan_plan(root: Path | None = None) -> dict[str, Any]:
@@ -283,6 +362,137 @@ def build_quick_scan_plan(root: Path | None = None) -> dict[str, Any]:
         "skip_dirs": excludes["skip_dirs"],
         "skip_files": excludes["skip_files"],
     }
+
+
+def _termux_home() -> Path:
+    return Path(os.environ.get("HOME") or str(Path.home())).expanduser()
+
+
+def _termux_prefix() -> Path:
+    return Path(os.environ.get("PREFIX") or "/data/data/com.termux/files/usr").expanduser()
+
+
+def proot_ubuntu_rootfs_candidates(root: Path | None = None) -> list[Path]:
+    base = (root or repo_root()).resolve()
+    home = _termux_home()
+    prefix = _termux_prefix()
+    candidates = [
+        prefix / "var/lib/proot-distro/containers/ubuntu/rootfs",
+        home / ".local/var/lib/proot-distro/containers/ubuntu/rootfs",
+        base / "var/lib/proot-distro/containers/ubuntu/rootfs",
+        base / "rootfs",
+    ]
+    seen: set[str] = set()
+    unique: list[Path] = []
+    for candidate in candidates:
+        text = str(candidate)
+        if text in seen:
+            continue
+        seen.add(text)
+        unique.append(candidate)
+    return unique
+
+
+def discover_proot_ubuntu_rootfs(root: Path | None = None) -> Path | None:
+    for candidate in proot_ubuntu_rootfs_candidates(root):
+        try:
+            if candidate.exists() and candidate.is_dir():
+                return candidate.resolve()
+        except OSError:
+            continue
+    return None
+
+
+def photoprism_config_dir() -> Path:
+    return _termux_home() / ".pocket_lab/lite/apps/photoprism/config"
+
+
+def backup_metadata_candidates(root: Path | None = None) -> list[Path]:
+    base = (root or repo_root()).resolve()
+    home = _termux_home()
+    candidates = [
+        base / "state/recovery",
+        base / "state/backups",
+        base / "state/lite/recovery",
+        base / "state/lite/apps/photoprism/backups",
+        home / ".pocket_lab/lite/recovery",
+        home / ".pocket_lab/lite/backups/manifests",
+        home / ".pocket_lab/lite/apps/photoprism/backups",
+    ]
+    return candidates
+
+
+def _full_target(root: Path, target_id: str, label: str, relative: str, *, optional: bool = False) -> dict[str, Any]:
+    payload = _quick_target(root, label, relative)
+    payload["target_id"] = target_id
+    payload["optional"] = optional
+    return payload
+
+
+def build_full_scan_plan(root: Path | None = None) -> dict[str, Any]:
+    base = (root or repo_root()).resolve()
+    source_targets = [
+        _full_target(base, "package_json", "package.json", "package.json"),
+        _full_target(base, "package_lock", "package-lock.json", "package-lock.json"),
+        _full_target(base, "python_dev_requirements", "Python dev requirements", "requirements-dev.txt"),
+        _full_target(base, "runtime_requirements", "Lite API runtime requirements", "pocket-lab-final-structure/runtime/requirements.txt"),
+        _full_target(base, "runtime_dev_requirements", "Lite API dev requirements", "pocket-lab-final-structure/runtime/requirements-dev.txt"),
+        _full_target(base, "src", "React/Vite source", "src"),
+        _full_target(base, "scripts", "Scripts", "scripts"),
+        _full_target(base, "runtime", "Lite API runtime", "pocket-lab-final-structure/runtime"),
+        _full_target(base, "bootstrap_scripts", "Bootstrap scripts", "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts"),
+        _full_target(base, "caddyfile", "Caddy route config", "caddy/Caddyfile", optional=True),
+        _full_target(base, "security_policies", "Security policies", "security/policies", optional=True),
+        _full_target(base, "operations", "Operations metadata", "operations", optional=True),
+        _full_target(base, "runbooks", "Runbooks", "runbooks", optional=True),
+        _full_target(base, "contracts", "Contracts", "contracts", optional=True),
+    ]
+    rootfs = discover_proot_ubuntu_rootfs(base)
+    photoprism_config = photoprism_config_dir()
+    backup_candidates = backup_metadata_candidates(base)
+    backup_present = any(candidate.exists() for candidate in backup_candidates)
+    excludes = full_scan_excludes()
+    selected_targets = [
+        {"target_id": "termux_host", "label": "Termux host", "present": True, "kind": "runtime_metadata"},
+        {"target_id": "pocketlab_source", "label": "Pocket Lab Lite", "present": base.exists(), "kind": "repo"},
+        {"target_id": "runtime_config", "label": "Runtime config", "present": True, "kind": "metadata"},
+        {"target_id": "proot_ubuntu", "label": "PROot Ubuntu", "present": bool(rootfs), "kind": "selected_rootfs", "optional": True},
+        {"target_id": "photoprism", "label": "PhotoPrism", "present": bool(rootfs or photoprism_config.exists()), "kind": "app_metadata", "optional": True},
+        {"target_id": "backup_metadata", "label": "Backup metadata", "present": backup_present, "kind": "metadata", "optional": True},
+    ]
+    return {
+        "profile": SCAN_PROFILE_FULL,
+        "scan_root_label": "Pocket Lab Lite local device",
+        "target_groups": [
+            "Termux host posture",
+            "Pocket Lab Lite source/runtime config",
+            "Runtime config posture",
+            "Selected PROot Ubuntu metadata/runtime areas",
+            "PhotoPrism app/config/runtime",
+            "Backup/recovery metadata",
+        ],
+        "source_targets": source_targets,
+        "selected_targets": selected_targets,
+        "checked_targets": [
+            "Termux host",
+            "Pocket Lab Lite",
+            "Runtime config",
+            "PROot Ubuntu",
+            "PhotoPrism",
+            "Backup metadata",
+        ],
+        "skipped_targets": excludes["skipped_targets"],
+        "excluded_groups": excludes["excluded_groups"],
+        "skip_dirs": excludes["skip_dirs"],
+        "skip_files": excludes["skip_files"],
+    }
+
+
+def build_scan_plan(profile: Any = None, root: Path | None = None) -> dict[str, Any]:
+    normalized = normalize_scan_profile(profile)
+    if normalized == SCAN_PROFILE_FULL:
+        return build_full_scan_plan(root)
+    return build_quick_scan_plan(root)
 
 
 def redact_text(value: str) -> str:
@@ -380,6 +590,8 @@ def _safe_mode(path: Path) -> int | None:
 
 def is_protected_runtime_secret(target: str, root: Path | None = None) -> bool:
     raw_target = str(target or "").replace("\\", "/").lstrip("/")
+    if raw_target.endswith("photoprism.env") or "photoprism/config/photoprism.env" in raw_target:
+        return True
     if raw_target not in PROTECTED_RUNTIME_SECRET_TARGETS:
         return False
     base = (root or repo_root()).resolve()
