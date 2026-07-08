@@ -19744,3 +19744,95 @@ textarea {
     transform: none !important;
   }
 }
+
+/* Profile 1 Quick Safety Check coverage summary */
+.lite-security-quick-profile-chip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(14, 165, 233, 0.24);
+  background: rgba(14, 165, 233, 0.08);
+  color: rgb(3, 105, 161);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.lite-security-quick-coverage-card {
+  gap: 1rem;
+}
+
+.lite-security-quick-coverage-group {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.lite-security-quick-coverage-group h4 {
+  margin: 0;
+  color: var(--lite-text-strong, #0f172a);
+  font-size: 0.92rem;
+}
+
+.lite-security-quick-coverage-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lite-security-quick-coverage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.lite-security-quick-coverage-row > span:first-child {
+  color: var(--lite-text-strong, #0f172a);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.lite-security-quick-coverage-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.75rem;
+  min-height: 1.65rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.lite-security-quick-coverage-ready {
+  background: rgba(16, 185, 129, 0.12);
+  color: rgb(4, 120, 87);
+}
+
+.lite-security-quick-coverage-review {
+  background: rgba(245, 158, 11, 0.14);
+  color: rgb(146, 64, 14);
+}
+
+.lite-security-quick-coverage-neutral {
+  background: rgba(100, 116, 139, 0.12);
+  color: rgb(71, 85, 105);
+}
+
+@media (max-width: 640px) {
+  .lite-security-quick-coverage-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lite-security-quick-coverage-pill {
+    min-width: 0;
+  }
+}

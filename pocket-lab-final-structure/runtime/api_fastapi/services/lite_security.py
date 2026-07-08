@@ -5,6 +5,8 @@ import os
 import shutil
 import subprocess
 import time
+import urllib.error
+import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +22,35 @@ def new_run_id() -> str:
     return f"security-{stamp}-{uuid.uuid4().hex[:8]}"
 
 
+def default_coverage_summary(root: Path | None = None) -> dict[str, Any]:
+    plan = policy.build_quick_scan_plan(root or policy.repo_root())
+    return policy.redact_value({
+        "profile": policy.SCAN_PROFILE_QUICK,
+        "checked_targets": plan.get("checked_targets", []),
+        "skipped_targets": plan.get("skipped_targets", []),
+        "excluded_groups": plan.get("excluded_groups", []),
+        "partial_targets": [],
+        "timed_out_targets": [],
+        "tool_status": {},
+        "source_targets": [
+            {key: item.get(key) for key in ("label", "relative", "present", "kind")}
+            for item in plan.get("source_targets", [])
+        ],
+    })
+
+
+def _scan_profile(command: dict[str, Any] | None = None) -> str:
+    try:
+        return policy.normalize_scan_profile((command or {}).get("profile"))
+    except ValueError:
+        return policy.SCAN_PROFILE_QUICK
+
+
+def _coverage_from_run(run: dict[str, Any] | None = None) -> dict[str, Any]:
+    coverage = (run or {}).get("coverage_summary")
+    return coverage if isinstance(coverage, dict) else default_coverage_summary()
+
+
 def default_state() -> dict[str, Any]:
     now = deps.now_utc_iso()
     return {
@@ -32,6 +63,8 @@ def default_state() -> dict[str, Any]:
         "critical_issues": [],
         "guidance": policy.GUIDANCE,
         "component_posture": component_posture([]),
+        "scan_profile": policy.SCAN_PROFILE_QUICK,
+        "coverage_summary": default_coverage_summary(),
         "scan_progress": None,
         "updated_at": now,
     }
@@ -44,6 +77,8 @@ def current_state() -> dict[str, Any]:
     state.setdefault("guidance", policy.GUIDANCE)
     state.setdefault("critical_issues", [])
     state.setdefault("component_posture", component_posture(state.get("findings") or []))
+    state.setdefault("scan_profile", policy.SCAN_PROFILE_QUICK)
+    state.setdefault("coverage_summary", default_coverage_summary())
     last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
     findings = state.get("findings") if isinstance(state.get("findings"), list) else []
     if last_run and not state.get("scan_progress"):
@@ -83,10 +118,14 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
     if last_run.get("run_id") == run_id and str(last_run.get("status") or "") not in {"", "queued"}:
         return last_run
     now = deps.now_utc_iso()
+    profile = _scan_profile(command)
+    coverage_summary = default_coverage_summary(policy.allowed_scan_root(command.get("scope") or command.get("scan_root")))
     run = {
         "run_id": run_id,
         "status": "queued",
-        "summary": "Safety check queued. Pocket Lab will scan local security posture and dependency risks.",
+        "summary": "Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.",
+        "scan_profile": profile,
+        "coverage_summary": coverage_summary,
         "tools": ["lynis", "trivy"],
         "requested_at": now,
         "started_at": None,
@@ -111,10 +150,14 @@ def mark_running(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(command.get("run_id") or command.get("command_id") or new_run_id())
     now = deps.now_utc_iso()
     existing = evidence.read_run(run_id) or {}
+    profile = _scan_profile(command)
+    coverage_summary = default_coverage_summary(policy.allowed_scan_root(command.get("scope") or command.get("scan_root")))
     run = {
         "run_id": run_id,
         "status": "running",
-        "summary": "Safety check running.",
+        "summary": "Quick safety check running.",
+        "scan_profile": profile,
+        "coverage_summary": coverage_summary,
         "tools": ["lynis", "trivy"],
         "requested_at": command.get("requested_at") or existing.get("requested_at") or now,
         "started_at": now,
@@ -426,7 +469,7 @@ def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
     elif status == "running":
         percent = max(8, min(95, int(round((elapsed / estimated_total) * 100))))
         remaining = max(0, estimated_total - elapsed)
-        stage = "Running Lynis and Trivy"
+        stage = "Running Quick Safety Check"
         step = 2
     elif status in {"succeeded", "degraded", "failed"}:
         percent = 100
@@ -460,7 +503,7 @@ def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
             "estimated_remaining_seconds": remaining,
             "estimated_remaining_label": _duration_label(remaining),
             "percent": percent,
-            "message": "Pocket Lab is checking host readiness and dependency risks in the backend worker.",
+            "message": "Pocket Lab is checking basics and skipping photos, backups, and large caches in the backend worker.",
         }
     )
 
@@ -550,6 +593,7 @@ def _history_entry(run: dict[str, Any], findings: list[dict[str, Any]], evidence
             "evidence_count": len(evidence_refs),
             "sbom_saved": any("sbom.cdx.json" in str(ref) for ref in evidence_refs),
             "tools": run.get("tools") or ["lynis", "trivy"],
+            "scan_profile": run.get("scan_profile") or policy.SCAN_PROFILE_QUICK,
         }
     )
 
@@ -633,41 +677,51 @@ def _timeline_step(key: str, title: str, detail: str, status: str) -> dict[str, 
 
 def execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[dict[str, Any]]:
     tool_results = run.get("tool_results") or {}
+    profile = str(run.get("scan_profile") or policy.SCAN_PROFILE_QUICK)
+    quick_prefix = "Quick " if profile == policy.SCAN_PROFILE_QUICK else ""
     lynis_status = str((tool_results.get("lynis") or {}).get("status") or "").lower()
     trivy_status = str((tool_results.get("trivy") or {}).get("status") or "").lower()
+    posture_status = str((tool_results.get("config_posture") or {}).get("status") or "").lower()
 
     def tool_state(status: str) -> str:
         if status == "completed":
             return "completed"
-        if status in {"timed_out", "missing_tool", "partial"}:
+        if status in {"timed_out", "missing_tool", "partial", "skipped", "skipped_overall_budget"}:
             return "review"
         if status in {"failed", "error"}:
             return "failed"
         return "pending"
 
     request_status = "completed" if phase in {
-        "queued", "lynis_running", "trivy_running", "evidence_saving",
+        "queued", "lynis_running", "trivy_running", "posture_running", "evidence_saving",
         "completed", "degraded", "failed"
     } else "pending"
 
     worker_status = "completed" if phase in {
-        "lynis_running", "trivy_running", "evidence_saving",
+        "lynis_running", "trivy_running", "posture_running", "evidence_saving",
         "completed", "degraded", "failed"
     } else "pending"
 
     if phase == "lynis_running":
         lynis_step_status = "running"
-    elif phase in {"trivy_running", "evidence_saving", "completed", "degraded", "failed"}:
+    elif phase in {"trivy_running", "posture_running", "evidence_saving", "completed", "degraded", "failed"}:
         lynis_step_status = tool_state(lynis_status or "completed")
     else:
         lynis_step_status = "pending"
 
     if phase == "trivy_running":
         trivy_step_status = "running"
-    elif phase in {"evidence_saving", "completed", "degraded", "failed"}:
+    elif phase in {"posture_running", "evidence_saving", "completed", "degraded", "failed"}:
         trivy_step_status = tool_state(trivy_status or "completed")
     else:
         trivy_step_status = "pending"
+
+    if phase == "posture_running":
+        posture_step_status = "running"
+    elif phase in {"evidence_saving", "completed", "degraded", "failed"}:
+        posture_step_status = tool_state(posture_status or "completed")
+    else:
+        posture_step_status = "pending"
 
     if phase == "evidence_saving":
         evidence_status = "running"
@@ -686,15 +740,23 @@ def execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[dict[s
     elif phase == "lynis_running":
         lynis_detail = "Host readiness is being checked."
 
-    trivy_detail = "Checks dependencies, config, secret-like values, and SBOM evidence."
+    trivy_detail = "Checks Pocket Lab files while skipping photos, backups, caches, and large runtime folders."
     if trivy_status == "completed":
-        trivy_detail = "Dependency, config, secret-like, and SBOM checks completed."
+        trivy_detail = "Pocket Lab files, config, secret-like values, and SBOM checks completed."
     elif trivy_status == "partial":
         trivy_detail = "Trivy completed with partial results."
     elif trivy_status == "missing_tool":
         trivy_detail = "Trivy is not available on this device."
     elif phase == "trivy_running":
-        trivy_detail = "Dependency, config, secret-like values, and SBOM are being checked."
+        trivy_detail = "Pocket Lab files are being checked with Quick Safety exclusions."
+
+    posture_detail = "Checks service/config readiness metadata only."
+    if posture_status == "completed":
+        posture_detail = "Config posture metadata was checked without dumping raw config."
+    elif posture_status in {"partial", "timed_out"}:
+        posture_detail = "Config posture metadata was partially checked."
+    elif phase == "posture_running":
+        posture_detail = "Config posture metadata is being checked."
 
     evidence_count = len(run.get("evidence_refs") or [])
     evidence_detail = "Sanitized evidence appears after completion."
@@ -704,10 +766,11 @@ def execution_timeline_for_phase(run: dict[str, Any], phase: str) -> list[dict[s
         evidence_detail = f"{evidence_count} sanitized file(s) ready." if evidence_count else "Sanitized evidence was finalized."
 
     return [
-        _timeline_step("request_accepted", "Request accepted", "FastAPI accepted the safety request.", request_status),
-        _timeline_step("worker_picked_up", "Worker picked it up", "The backend worker started the check.", worker_status),
-        _timeline_step("lynis_host_check", "Lynis host check", lynis_detail, lynis_step_status),
-        _timeline_step("trivy_dependency_secret_check", "Trivy dependency & secret check", trivy_detail, trivy_step_status),
+        _timeline_step("request_accepted", "Request accepted", "FastAPI accepted the quick safety request.", request_status),
+        _timeline_step("worker_picked_up", "Worker picked it up", "The backend worker started the bounded check.", worker_status),
+        _timeline_step("lynis_host_check", f"{quick_prefix}host check", lynis_detail, lynis_step_status),
+        _timeline_step("trivy_dependency_secret_check", "Pocket Lab files checked", trivy_detail, trivy_step_status),
+        _timeline_step("config_posture_check", "Config posture checked", posture_detail, posture_step_status),
         _timeline_step("evidence_saved", "Evidence saved", evidence_detail, evidence_status),
     ]
 
@@ -774,7 +837,7 @@ def _write_intermediate_running_state(
             findings,
             evidence_refs,
             status_override="running",
-            summary_override="Safety check running.",
+            summary_override="Quick safety check running.",
         )
     )
 
@@ -839,6 +902,8 @@ def build_state(
         "low_count": counts.get("low", 0),
         "info_count": counts.get("info", 0),
         "partial_results": bool(run.get("partial_results")),
+        "scan_profile": run.get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+        "coverage_summary": _coverage_from_run(run),
     }
     critical = [item for item in findings if policy.normalize_severity(item.get("severity")) == "critical"][:10]
     return policy.redact_value(
@@ -852,6 +917,8 @@ def build_state(
             "critical_issues": critical,
             "guidance": policy.GUIDANCE,
             "component_posture": component_posture(findings),
+            "scan_profile": run.get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+            "coverage_summary": _coverage_from_run(run),
             "findings": findings[:100],
             "evidence_refs": evidence_refs,
             "history": security_history(current_run=run, current_findings=findings, current_evidence_refs=evidence_refs),
@@ -872,8 +939,7 @@ def build_state(
 
 def _trivy_base_args(root: Path) -> list[str]:
     args = ["trivy", "fs"]
-    for item in policy.EXCLUDED_DIRS:
-        args.extend(["--skip-dirs", item])
+    args.extend(policy.trivy_skip_args(root))
     args.append(str(root))
     return args
 
@@ -881,8 +947,7 @@ def _trivy_base_args(root: Path) -> list[str]:
 def _write_sbom(run_id: str, trivy: str, root: Path) -> str | None:
     out = evidence.evidence_dir(run_id) / "sbom.cdx.json"
     args = [trivy, "fs", "--format", "cyclonedx", "--output", str(out)]
-    for item in policy.EXCLUDED_DIRS:
-        args.extend(["--skip-dirs", item])
+    args.extend(policy.trivy_skip_args(root))
     args.append(str(root))
     result = _run_command(args, cwd=root, timeout=_command_timeout("trivy_sbom"))
     if result.get("ok") and out.exists():
@@ -892,15 +957,147 @@ def _write_sbom(run_id: str, trivy: str, root: Path) -> str | None:
     return None
 
 
+def _safe_presence(root: Path, label: str, candidates: list[str]) -> dict[str, Any]:
+    for relative in candidates:
+        candidate = (root / relative).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError:
+            continue
+        if candidate.exists():
+            return {"label": label, "status": "checked", "present": True, "kind": "directory" if candidate.is_dir() else "file"}
+    return {"label": label, "status": "partial", "present": False, "kind": "missing"}
+
+
+def _pm2_summary(root: Path) -> dict[str, Any]:
+    pm2 = shutil.which("pm2")
+    if not pm2:
+        return {"label": "Services summary", "status": "partial", "available": False, "summary": "Service manager metadata is not available."}
+    result = _run_command([pm2, "jlist"], cwd=root, timeout=5)
+    if result.get("timed_out"):
+        return {"label": "Services summary", "status": "timed_out", "available": True, "summary": "Service summary timed out."}
+    payload = _load_json_text(result.get("stdout") or "")
+    if not isinstance(payload, list):
+        return {"label": "Services summary", "status": "partial", "available": True, "summary": "Service summary was not readable."}
+    allowed_names = {
+        "pocketlab-app-photoprism",
+        "pocket-telemetry",
+        "pocket-nats",
+        "pocket-worker",
+        "pocket-node-agent",
+        "pocket-api",
+        "caddy-proxy",
+        "pocketlab-core-supervisor",
+    }
+    processes = []
+    for item in payload[:25]:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "")
+        if name not in allowed_names and not name.startswith("pocketlab-agent"):
+            continue
+        env = item.get("pm2_env") if isinstance(item.get("pm2_env"), dict) else {}
+        processes.append({
+            "name": name,
+            "status": str(env.get("status") or item.get("status") or "unknown"),
+        })
+    online = len([item for item in processes if item.get("status") == "online"])
+    return {
+        "label": "Services summary",
+        "status": "checked" if processes else "partial",
+        "available": True,
+        "online_count": online,
+        "process_count": len(processes),
+        "processes": processes[:12],
+    }
+
+
+def _photoprism_route_health() -> dict[str, Any]:
+    if str(os.environ.get("POCKETLAB_LITE_SECURITY_CHECK_PHOTOPRISM_ROUTE", "1")).lower() in {"0", "false", "no"}:
+        return {"label": "PhotoPrism route health", "status": "skipped", "summary": "Route health probe disabled."}
+    request = urllib.request.Request("http://127.0.0.1:8443/apps/photoprism/api/v1/status", headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=3) as response:  # nosec B310 - local same-origin health metadata only
+            status_code = int(getattr(response, "status", 0) or 0)
+            body = response.read(2048).decode("utf-8", errors="replace")
+            payload = _load_json_text(body)
+            operational = isinstance(payload, dict) and str(payload.get("status") or "").lower() == "operational"
+            return {
+                "label": "PhotoPrism route health",
+                "status": "checked" if 200 <= status_code < 300 else "partial",
+                "route_ready": operational,
+                "summary": "PhotoPrism route metadata is operational." if operational else "PhotoPrism route metadata needs review.",
+            }
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return {"label": "PhotoPrism route health", "status": "partial", "route_ready": False, "summary": "PhotoPrism route metadata was not reachable quickly."}
+
+
+def runtime_config_posture(root: Path) -> dict[str, Any]:
+    checks = [
+        _pm2_summary(root),
+        _safe_presence(root, "Caddy config posture", ["caddy/Caddyfile", "Caddyfile"]),
+        _safe_presence(root, "NATS config posture", ["nats/nats-server.conf", ".pocket_lab/nats/nats-server.conf", "pocket-lab-final-structure/nats/nats-server.conf"]),
+        {"label": "Security evidence state", "status": "checked", "present": evidence.security_root().exists(), "summary": "Security evidence directory metadata is available."},
+        _photoprism_route_health(),
+    ]
+    status_values = {str(item.get("status") or "") for item in checks}
+    if "timed_out" in status_values:
+        status = "timed_out"
+    elif "partial" in status_values:
+        status = "partial"
+    else:
+        status = "completed"
+    return policy.redact_value({"status": status, "checks": checks})
+
+
+def build_coverage_summary(plan: dict[str, Any], tool_results: dict[str, Any], posture: dict[str, Any] | None = None) -> dict[str, Any]:
+    partial_targets: list[str] = []
+    timed_out_targets: list[str] = []
+    tool_status: dict[str, str] = {}
+    for tool, result in (tool_results or {}).items():
+        if not isinstance(result, dict):
+            continue
+        status = str(result.get("status") or "unknown")
+        tool_status[str(tool)] = status
+        if status in {"partial", "missing_tool", "skipped_overall_budget"}:
+            partial_targets.append(str(tool))
+        if status in {"timed_out"}:
+            timed_out_targets.append(str(tool))
+    if isinstance(posture, dict):
+        posture_status = str(posture.get("status") or "")
+        if posture_status in {"partial"}:
+            partial_targets.append("runtime config posture")
+        if posture_status in {"timed_out"}:
+            timed_out_targets.append("runtime config posture")
+    return policy.redact_value({
+        "profile": policy.SCAN_PROFILE_QUICK,
+        "checked_targets": plan.get("checked_targets", []),
+        "skipped_targets": plan.get("skipped_targets", []),
+        "excluded_groups": plan.get("excluded_groups", []),
+        "partial_targets": sorted(set(partial_targets)),
+        "timed_out_targets": sorted(set(timed_out_targets)),
+        "tool_status": tool_status,
+        "posture_checks": (posture or {}).get("checks", []) if isinstance(posture, dict) else [],
+        "source_targets": [
+            {key: item.get(key) for key in ("label", "relative", "present", "kind")}
+            for item in plan.get("source_targets", [])
+        ],
+    })
+
+
 def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run = mark_running(command)
     run_id = str(run["run_id"])
     started = time.monotonic()
     root = policy.allowed_scan_root(command.get("scope") or command.get("scan_root"))
+    plan = policy.build_quick_scan_plan(root)
     findings: list[dict[str, Any]] = []
     tool_results: dict[str, Any] = {}
     evidence_refs: list[str] = []
     partial = False
+    posture: dict[str, Any] | None = None
+    run["scan_profile"] = policy.SCAN_PROFILE_QUICK
+    run["coverage_summary"] = build_coverage_summary(plan, tool_results)
 
     lynis = shutil.which("lynis")
     if not lynis:
@@ -926,6 +1123,7 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
 
     if time.monotonic() - started > policy.TIMEOUTS["overall"]:
         partial = True
+        tool_results["trivy"] = {"status": "skipped_overall_budget", "available": bool(shutil.which("trivy")), "finding_count": 0, "sbom_saved": False}
     else:
         trivy = shutil.which("trivy")
         if not trivy:
@@ -935,26 +1133,25 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             tool_results["trivy"] = {"status": "missing_tool", "available": False}
         else:
             vuln_args = [trivy, "fs", "--format", "json", "--scanners", "vuln,misconfig"]
-            for item in policy.EXCLUDED_DIRS:
-                vuln_args.extend(["--skip-dirs", item])
+            vuln_args.extend(policy.trivy_skip_args(root))
             vuln_args.append(str(root))
             vuln_result = _run_command(vuln_args, cwd=root, timeout=_command_timeout("trivy_vuln_misconfig"))
             vuln_findings = normalize_trivy_json(_load_json_text(vuln_result.get("stdout") or ""), run_id, root=root)
             findings.extend(vuln_findings)
 
             secret_args = [trivy, "fs", "--format", "json", "--scanners", "secret"]
-            for item in policy.EXCLUDED_DIRS:
-                secret_args.extend(["--skip-dirs", item])
+            secret_args.extend(policy.trivy_skip_args(root))
             secret_args.append(str(root))
             secret_result = _run_command(secret_args, cwd=root, timeout=_command_timeout("trivy_secret"))
             secret_findings = normalize_trivy_json(_load_json_text(secret_result.get("stdout") or ""), run_id, secret_mode=True, root=root)
             findings.extend(secret_findings)
-            partial = partial or bool(vuln_result.get("timed_out") or secret_result.get("timed_out"))
+            trivy_partial = bool(vuln_result.get("timed_out") or secret_result.get("timed_out"))
+            partial = partial or trivy_partial
             sbom_ref = _write_sbom(run_id, trivy, root)
             if sbom_ref:
                 evidence_refs.append(sbom_ref)
             tool_results["trivy"] = {
-                "status": "completed" if not partial else "partial",
+                "status": "completed" if not trivy_partial else "partial",
                 "available": True,
                 "vuln_returncode": vuln_result.get("returncode"),
                 "secret_returncode": secret_result.get("returncode"),
@@ -962,8 +1159,22 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
                 "sbom_saved": bool(sbom_ref),
             }
 
-    evidence_refs.append(evidence.write_evidence(run_id, "trivy-normalized.json", {"tool": "trivy", "findings": [f for f in findings if f.get("source") == "trivy"]}))
+    evidence_refs.append(evidence.write_evidence(run_id, "trivy-normalized.json", {"tool": "trivy", "profile": policy.SCAN_PROFILE_QUICK, "findings": [f for f in findings if f.get("source") == "trivy"]}))
     run["tool_results"] = tool_results
+    run["execution_timeline"] = execution_timeline_for_phase(run, "posture_running")
+    _write_intermediate_running_state(run, findings, evidence_refs)
+
+    posture = runtime_config_posture(root)
+    tool_results["config_posture"] = {
+        "status": posture.get("status") or "completed",
+        "available": True,
+        "finding_count": 0,
+    }
+    run["tool_results"] = tool_results
+    run["coverage_summary"] = build_coverage_summary(plan, tool_results, posture)
+    coverage_ref = evidence.write_evidence(run_id, "coverage-summary.json", run["coverage_summary"])
+    if coverage_ref not in evidence_refs:
+        evidence_refs.append(coverage_ref)
     run["execution_timeline"] = execution_timeline_for_phase(run, "evidence_saving")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
@@ -976,6 +1187,7 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "completed_at": deps.now_utc_iso(),
             "partial_results": partial,
             "tool_results": tool_results,
+            "coverage_summary": build_coverage_summary(plan, tool_results, posture),
             "critical_count": counts.get("critical", 0),
             "high_count": counts.get("high", 0),
             "medium_count": counts.get("medium", 0),
@@ -1003,6 +1215,8 @@ def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
             "counts": counts,
             "findings": findings,
             "component_posture": state.get("component_posture"),
+            "coverage_summary": state.get("coverage_summary"),
+            "scan_profile": state.get("scan_profile"),
             "evidence_refs": evidence_refs,
         },
     )

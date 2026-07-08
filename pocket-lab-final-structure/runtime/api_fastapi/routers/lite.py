@@ -6,7 +6,7 @@ import uuid
 
 from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, Body, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .. import deps
@@ -63,6 +63,7 @@ class LiteIdentityRotateRequest(BaseModel):
 class LiteSecurityScanRequest(BaseModel):
     scope: str = "local"
     reason: str | None = None
+    profile: str = "quick"
 
 
 class LiteAppSecurityCheckRequest(BaseModel):
@@ -725,14 +726,23 @@ def get_lite_security(request: Request) -> dict[str, Any]:
 
 
 @router.post("/security/check", status_code=202)
-async def check_lite_security(payload: LiteSecurityScanRequest, request: Request) -> dict[str, Any]:
+async def check_lite_security(request: Request, payload: LiteSecurityScanRequest | None = Body(default=None)) -> dict[str, Any]:
     deps.require_auth(request, write=True)
+    payload = payload or LiteSecurityScanRequest()
+    try:
+        profile = lite_security.policy.normalize_scan_profile(payload.profile)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Unknown safety check profile. Quick safety check is the only enabled profile right now.",
+        )
     run_id = lite_security.new_run_id()
     command = {
         "run_id": run_id,
         "command_id": run_id,
         "scope": payload.scope or "local",
-        "reason": payload.reason or "manual safety check",
+        "profile": profile,
+        "reason": payload.reason or "manual quick safety check",
         "requested_at": deps.now_utc_iso(),
     }
     # Record the queued state before publishing so a fast worker cannot complete
@@ -754,16 +764,17 @@ async def check_lite_security(payload: LiteSecurityScanRequest, request: Request
             "run_id": run_id,
             "command_subject": lite_security.policy.COMMAND_SUBJECT,
             "execution_mode": "worker",
-            "summary": "Safety check queued. Pocket Lab will scan local security posture and dependency risks.",
+            "summary": "Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.",
+            "scan_profile": profile,
         }
     )
     return queued
 
 
 @router.post("/security/scan", status_code=202)
-async def scan_lite_security(payload: LiteSecurityScanRequest, request: Request) -> dict[str, Any]:
+async def scan_lite_security(request: Request, payload: LiteSecurityScanRequest | None = Body(default=None)) -> dict[str, Any]:
     # Backward-compatible alias for older Lite UI builds. New UI calls /security/check.
-    return await check_lite_security(payload, request)
+    return await check_lite_security(request, payload)
 
 
 @router.get("/security/runs/{run_id}")

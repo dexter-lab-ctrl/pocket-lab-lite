@@ -163,6 +163,16 @@ const SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS = [
   'lite-security-premium-v2-reduced-motion',
 ];
 void SECURITY_PREMIUM_POLISH_V2_SOURCE_GUARDS;
+const SECURITY_PROFILE1_QUICK_SAFETY_GUARDS = [
+  'Quick safety check',
+  'Checks Pocket Lab basics',
+  'Skips photos, backups, and large caches',
+  'Skipped by Quick Safety Check',
+  'coverage_summary',
+  'scan_profile',
+];
+void SECURITY_PROFILE1_QUICK_SAFETY_GUARDS;
+
 const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
   'lite-security-score-ring-green-fill',
   'data-security-score-fill="spring"',
@@ -182,6 +192,11 @@ const SECURITY_DETAIL_SHELL_META = {
     eyebrow: 'Safety Details',
     title: 'Needs attention',
     description: 'Review current items one at a time with safe, plain-language guidance.',
+  },
+  coverage: {
+    eyebrow: 'Coverage',
+    title: 'Quick safety coverage',
+    description: 'See what Quick Safety Check covered and what it skipped to stay fast.',
   },
   checkPath: {
     eyebrow: 'Check Path',
@@ -213,6 +228,7 @@ const SECURITY_MANAGE_SECTIONS = [
   { id: 'overview', label: 'Overview' },
   { id: 'changes', label: 'Changes' },
   { id: 'issues', label: 'Issues' },
+  { id: 'coverage', label: 'Coverage' },
   { id: 'check_path', label: 'Check path' },
   { id: 'evidence', label: 'Evidence' },
   { id: 'history', label: 'History' },
@@ -223,6 +239,7 @@ const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
   overview: 'Score, last checked state, saved evidence, and tool chips.',
   changes: 'New, resolved, and still-present safety changes.',
   issues: 'Compact review rows with focused finding details.',
+  coverage: 'What Quick Safety Check checks, skips, or marks partial.',
   check_path: 'Backend-truthful FastAPI, worker, Lynis, Trivy, and evidence steps.',
   evidence: 'Sanitized evidence summary. Raw scanner output stays backend-owned.',
   history: 'Recent safety trend summary with lazy details.',
@@ -254,6 +271,67 @@ const SECURITY_TRUST_BOUNDARY_STEPS = [
   { label: 'Lynis/Trivy', note: 'local checks' },
   { label: 'Evidence', note: 'sanitized before display' },
 ];
+
+
+const DEFAULT_QUICK_COVERAGE_SUMMARY = {
+  profile: 'quick',
+  checked_targets: [
+    'Termux host posture',
+    'Pocket Lab Lite files',
+    'Caddy route config',
+    'NATS config posture',
+    'Services summary',
+    'Security evidence state',
+  ],
+  skipped_targets: [
+    'Photo library/media',
+    'Backup payloads',
+    'PROot Ubuntu full filesystem',
+    'Go/npm/cache folders',
+    'Old PWA builds',
+    'Large runtime histories',
+  ],
+  excluded_groups: [
+    'Photo library/media',
+    'Backup payloads and restore checkpoints',
+    'PROot Ubuntu full filesystem',
+    'Go/npm/cache folders',
+    'Old PWA builds',
+    'Large runtime histories',
+  ],
+  partial_targets: [],
+  timed_out_targets: [],
+};
+
+function quickCoverageList(values, fallback = []) {
+  const items = Array.isArray(values) && values.length ? values : fallback;
+  return items.map((value) => String(value || '').trim()).filter(Boolean).slice(0, 12);
+}
+
+function quickCoverageStatus(value, coverageSummary = {}) {
+  const text = String(value || '').toLowerCase();
+  const partial = quickCoverageList(coverageSummary.partial_targets).some((item) => text.includes(String(item).toLowerCase()) || String(item).toLowerCase().includes(text));
+  const timedOut = quickCoverageList(coverageSummary.timed_out_targets).some((item) => text.includes(String(item).toLowerCase()) || String(item).toLowerCase().includes(text));
+  if (timedOut) return { label: 'Timed out', tone: 'review' };
+  if (partial) return { label: 'Partial', tone: 'review' };
+  return { label: 'Checked', tone: 'ready' };
+}
+
+function QuickCoverageRows({ title, items, statusLabel, statusTone = 'ready' }) {
+  return (
+    <div className="lite-security-quick-coverage-group">
+      <h4>{title}</h4>
+      <div className="lite-security-quick-coverage-list" role="list">
+        {items.map((item) => (
+          <div key={`${title}-${item}`} className="lite-security-quick-coverage-row" role="listitem">
+            <span>{item}</span>
+            <span className={`lite-security-quick-coverage-pill lite-security-quick-coverage-${statusTone}`}>{statusLabel}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function securityStepState(steps, key) {
   return steps.find((step) => step.key === key)?.state || 'waiting';
@@ -1455,6 +1533,12 @@ export default function SecurityScreen() {
   const allReviewFindings = [...criticalIssues, ...reviewItems];
   const evidenceRun = evidence?.run || null;
   const toolResults = evidenceRun?.tool_results || lastRun?.tool_results || data?.tool_results || {};
+  const scanProfile = String(data?.scan_profile || lastRun?.scan_profile || evidenceRun?.scan_profile || result?.scan_profile || 'quick').toLowerCase();
+  const coverageSummary = data?.coverage_summary || lastRun?.coverage_summary || evidence?.coverage_summary || DEFAULT_QUICK_COVERAGE_SUMMARY;
+  const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, DEFAULT_QUICK_COVERAGE_SUMMARY.checked_targets);
+  const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, DEFAULT_QUICK_COVERAGE_SUMMARY.skipped_targets);
+  const partialCoverageTargets = quickCoverageList(coverageSummary.partial_targets);
+  const timedOutCoverageTargets = quickCoverageList(coverageSummary.timed_out_targets);
   const currentEvidenceRefs = Array.from(new Set([
     ...evidenceRefs,
     ...(Array.isArray(evidence?.evidence_refs) ? evidence.evidence_refs : []),
@@ -1663,14 +1747,14 @@ export default function SecurityScreen() {
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setBusy(true);
-    setResult({ status: 'queued', summary: 'Safety check queued.' });
+    setResult({ status: 'queued', scan_profile: 'quick', summary: 'Quick safety check queued.' });
     setActionError(null);
     setEvidence(null);
     setEvidenceError(null);
     setEvidenceLoading(false);
     setReceiptCopied(false);
     try {
-      const payload = await liteApi.runSecurityScan('local', { reason: 'manual safety check' });
+      const payload = await liteApi.runSecurityScan('local', { profile: 'quick', reason: 'manual quick safety check' });
       securityFlow.accepted(payload);
       setResult(payload);
       invalidateSecurityQuery();
@@ -1829,6 +1913,12 @@ export default function SecurityScreen() {
     previousHistory,
     scoreTrendView,
     scanProgressLabel,
+    scanProfile,
+    coverageSummary,
+    checkedCoverageTargets,
+    skippedCoverageTargets,
+    partialCoverageTargets,
+    timedOutCoverageTargets,
   };
 
   const activeSecurityDetailsMeta = securityDetailShellMeta(activeSecurityDetails);
@@ -1861,6 +1951,7 @@ export default function SecurityScreen() {
     { key: 'critical', label: criticalIssues.length ? `${criticalIssues.length} critical` : 'No critical issues', tone: criticalIssues.length ? 'danger' : 'ready' },
   ];
   const manageOverviewStats = [
+    { label: 'Profile', value: scanProfile },
     { label: 'Safety score', value: safetyScore },
     { label: 'Status', value: safetyCenterSummary },
     { label: 'Last checked', value: lastRun?.completed_at ? formatLiteTime(lastRun.completed_at) : 'Not checked yet' },
@@ -1930,7 +2021,7 @@ export default function SecurityScreen() {
       <PageHeader
         eyebrow="Safety Center"
         title="Security"
-        description="A calm safety overview. Run a check or open Manage for details."
+        description="A calm quick safety overview. Run a check or open Manage for details."
       />
 
       <animated.section className="lite-security-phase5-shell lite-security-phase4-motion" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
@@ -1941,10 +2032,12 @@ export default function SecurityScreen() {
               {safetyCenterSummary}
             </div>
             <h2>Safety Center</h2>
-            <p>{scanInProgress ? 'Pocket Lab is checking safety through FastAPI and the backend worker.' : safetyScoreSummary}</p>
+            <span className="lite-security-quick-profile-chip">Quick safety check</span>
+            <p>{scanInProgress ? 'Pocket Lab is checking safety through FastAPI and the backend worker.' : `Checks Pocket Lab basics. Skips photos, backups, and large caches. ${safetyScoreSummary}`}</p>
             <div className="lite-security-safety-center-meta" aria-label="Safety state">
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
+              <span>Profile: {scanProfile}</span>
               {savedStateOnly ? <span>Showing saved state</span> : null}
               {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
             </div>
@@ -1987,7 +2080,7 @@ export default function SecurityScreen() {
               <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
                 <span style={{ width: `${scanProgressPercent}%` }} />
               </div>
-              <p>{scanProgressPercent}% · {scanProgressEta} remaining · full check path is in Manage.</p>
+              <p>{scanProgressPercent}% · {scanProgressEta} remaining · quick check path is in Manage.</p>
             </animated.div>
           ) : null}
         </GlassCard>
@@ -2115,6 +2208,46 @@ export default function SecurityScreen() {
               }) : (
                 <div className="lite-security-safe-panel"><Lock className="h-4 w-4" /><span>No urgent issues were found in the latest summary.</span></div>
               )}
+            </div>
+          ) : null}
+
+          {activeManageSection === 'coverage' ? (
+            <div className="lite-security-manage-card-list lite-security-quick-coverage-card">
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>Quick safety check coverage</strong>
+                  <p>Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.</p>
+                </div>
+                <span className="lite-security-quick-profile-chip">Profile: {scanProfile}</span>
+              </div>
+              <QuickCoverageRows
+                title="Checked"
+                items={checkedCoverageTargets}
+                statusLabel="Checked"
+                statusTone="ready"
+              />
+              {partialCoverageTargets.length ? (
+                <QuickCoverageRows
+                  title="Partial"
+                  items={partialCoverageTargets}
+                  statusLabel="Partial"
+                  statusTone="review"
+                />
+              ) : null}
+              {timedOutCoverageTargets.length ? (
+                <QuickCoverageRows
+                  title="Timed out"
+                  items={timedOutCoverageTargets}
+                  statusLabel="Timed out"
+                  statusTone="review"
+                />
+              ) : null}
+              <QuickCoverageRows
+                title="Skipped by Quick Safety Check"
+                items={skippedCoverageTargets}
+                statusLabel="Skipped"
+                statusTone="neutral"
+              />
             </div>
           ) : null}
 

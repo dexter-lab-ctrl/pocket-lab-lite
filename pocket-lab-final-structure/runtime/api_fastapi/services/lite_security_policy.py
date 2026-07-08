@@ -10,29 +10,101 @@ from typing import Any
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.security.scan"
 
+SCAN_PROFILE_QUICK = "quick"
+VALID_SCAN_PROFILES = {SCAN_PROFILE_QUICK}
+
+def normalize_scan_profile(value: Any = None) -> str:
+    profile = str(value or SCAN_PROFILE_QUICK).strip().lower().replace("-", "_")
+    if not profile:
+        return SCAN_PROFILE_QUICK
+    if profile in VALID_SCAN_PROFILES:
+        return profile
+    raise ValueError(f"Unsupported Security scan profile: {profile}")
+
 SEVERITIES = ("critical", "high", "medium", "low", "info")
 SCORE_WEIGHTS = {"critical": 30, "high": 15, "medium": 5, "low": 1, "info": 0}
 
 TIMEOUTS = {
-    "lynis": int(os.environ.get("POCKETLAB_LITE_SECURITY_LYNIS_TIMEOUT", "180")),
-    "trivy_vuln_misconfig": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_TIMEOUT", "300")),
-    "trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_SECRET_TIMEOUT", "180")),
-    "trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_SBOM_TIMEOUT", "180")),
-    "overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_OVERALL_TIMEOUT", "600")),
+    "lynis": int(os.environ.get("POCKETLAB_LITE_SECURITY_LYNIS_TIMEOUT", "300")),
+    "trivy_vuln_misconfig": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_TIMEOUT", "420")),
+    "trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_TRIVY_SECRET_TIMEOUT", "240")),
+    "trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_SBOM_TIMEOUT", "240")),
+    "overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_OVERALL_TIMEOUT", "900")),
 }
 
 EXCLUDED_DIRS = [
     "node_modules",
-    ".venv",
-    "dist",
-    ".pocketlab-dev",
     ".git",
-    "pocket-lab-lite-backups",
-    "backups",
+    "dist",
+    "pwa_dist",
+    "pwa_dist.previous.*",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
     ".cache",
+    ".npm",
+    ".pocketlab-dev",
+    ".pocket_lab/trivy-cache",
+    ".pocket_lab/lynis-tmp",
+    ".pm2/logs",
+    "go/pkg",
+    "pocket-lab-lite-backups",
+    "restore-checkpoints",
+    "restore-runs",
+    "backups",
+    "logs",
     "tmp",
     "temp",
-    "logs"
+    "state/workflows",
+    "state/runs",
+    "state/operations",
+    "state/runner_events",
+    "state/security/evidence",
+    "vault/data",
+    "gitea/data",
+    "gitea/log",
+    "observability_configs/*_data",
+    "proot-distro/containers/ubuntu/rootfs",
+    "var/lib/proot-distro/containers/ubuntu/rootfs",
+    "mnt/sdcard",
+    "sdcard",
+    "storage",
+    ".pocket_lab/lite/apps/photoprism/import",
+    ".pocket_lab/lite/apps/photoprism/originals",
+    ".pocket_lab/lite/apps/photoprism/storage/cache",
+    ".pocket_lab/lite/apps/photoprism/storage/cache/media",
+    ".pocket_lab/lite/apps/photoprism/storage/cache/thumbnails",
+    ".pocket_lab/lite/apps/photoprism/storage/sidecar",
+    ".pocket_lab/lite/apps/photoprism/logs",
+]
+
+EXCLUDED_FILES = [
+    "*.pyc",
+    "index.db",
+    "photoprism/index.db",
+]
+
+QUICK_EXCLUDED_GROUPS = [
+    "Photo library/media",
+    "Backup payloads and restore checkpoints",
+    "PROot Ubuntu full filesystem",
+    "Go/npm/cache folders",
+    "Old PWA builds",
+    "Large runtime histories",
+    "Scanner caches and generated logs",
+]
+
+QUICK_SKIPPED_TARGETS = [
+    "PhotoPrism media and originals",
+    "Android shared storage",
+    "Pocket Lab backup payloads",
+    "PROot Ubuntu full rootfs",
+    "Go module cache",
+    "npm cache",
+    "Trivy cache",
+    "Lynis temp files",
+    "Old PWA build folders",
+    "Large runtime histories",
 ]
 
 SENSITIVE_KEY_RE = re.compile(
@@ -138,6 +210,79 @@ def allowed_scan_root(value: str | Path | None = None) -> Path:
     if any(candidate == root or root in candidate.parents for root in allowed):
         return candidate
     return base
+
+
+def _quick_target(root: Path, label: str, relative: str) -> dict[str, Any]:
+    path = (root / relative).resolve()
+    return {
+        "label": label,
+        "relative": relative,
+        "present": path.exists(),
+        "kind": "directory" if path.is_dir() else "file",
+    }
+
+
+def quick_scan_excludes() -> dict[str, Any]:
+    return {
+        "skip_dirs": list(EXCLUDED_DIRS),
+        "skip_files": list(EXCLUDED_FILES),
+        "excluded_groups": list(QUICK_EXCLUDED_GROUPS),
+        "skipped_targets": list(QUICK_SKIPPED_TARGETS),
+    }
+
+
+def trivy_skip_args(root: Path, excludes: dict[str, Any] | None = None) -> list[str]:
+    _ = root  # kept for future profile-specific absolute allowlist support
+    plan = excludes or quick_scan_excludes()
+    args: list[str] = []
+    for item in plan.get("skip_dirs") or []:
+        args.extend(["--skip-dirs", str(item)])
+    for item in plan.get("skip_files") or []:
+        args.extend(["--skip-files", str(item)])
+    return args
+
+
+def build_quick_scan_plan(root: Path | None = None) -> dict[str, Any]:
+    base = (root or repo_root()).resolve()
+    source_targets = [
+        _quick_target(base, "package.json", "package.json"),
+        _quick_target(base, "package-lock.json", "package-lock.json"),
+        _quick_target(base, "Python dev requirements", "requirements-dev.txt"),
+        _quick_target(base, "Lite API runtime requirements", "pocket-lab-final-structure/runtime/requirements.txt"),
+        _quick_target(base, "Lite API dev requirements", "pocket-lab-final-structure/runtime/requirements-dev.txt"),
+        _quick_target(base, "React/Vite source", "src"),
+        _quick_target(base, "Scripts", "scripts"),
+        _quick_target(base, "Lite API runtime", "pocket-lab-final-structure/runtime"),
+        _quick_target(base, "Bootstrap scripts", "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts"),
+        _quick_target(base, "Caddy route config", "caddy/Caddyfile"),
+        _quick_target(base, "Security policies", "security/policies"),
+        _quick_target(base, "Operations metadata", "operations"),
+        _quick_target(base, "Runbooks", "runbooks"),
+        _quick_target(base, "Contracts", "contracts"),
+    ]
+    excludes = quick_scan_excludes()
+    return {
+        "profile": SCAN_PROFILE_QUICK,
+        "scan_root_label": "Pocket Lab Lite repo",
+        "target_groups": [
+            "Termux host posture",
+            "Pocket Lab Lite source/runtime config",
+            "Runtime config posture",
+        ],
+        "source_targets": source_targets,
+        "checked_targets": [
+            "Termux host posture",
+            "Pocket Lab Lite files",
+            "Caddy route config",
+            "NATS config posture",
+            "Services summary",
+            "Security evidence state",
+        ],
+        "skipped_targets": excludes["skipped_targets"],
+        "excluded_groups": excludes["excluded_groups"],
+        "skip_dirs": excludes["skip_dirs"],
+        "skip_files": excludes["skip_files"],
+    }
 
 
 def redact_text(value: str) -> str:

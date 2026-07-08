@@ -318,6 +318,8 @@ const mockLiteSecurityPayload = () => {
     started_at: new Date(now - 3 * 60 * 1000).toISOString(),
     completed_at: new Date(now - 2 * 60 * 1000).toISOString(),
     tools: ['lynis', 'trivy'],
+    scan_profile: 'quick',
+    coverage_summary: quickCoverage,
     critical_count: 0,
     high_count: 0,
     medium_count: 0,
@@ -330,28 +332,46 @@ const mockLiteSecurityPayload = () => {
       trivy: { status: 'completed', sbom_saved: true },
     },
   };
+  const quickCoverage = {
+    profile: 'quick',
+    checked_targets: ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state'],
+    skipped_targets: ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories'],
+    excluded_groups: ['Photo library/media', 'Backup payloads and restore checkpoints', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories'],
+    partial_targets: [],
+    timed_out_targets: [],
+    posture_checks: [
+      { label: 'Services summary', status: 'checked', online_count: 6, process_count: 6 },
+      { label: 'Caddy config posture', status: 'checked', present: true },
+      { label: 'NATS config posture', status: 'checked', present: true },
+      { label: 'Security evidence state', status: 'checked', present: true },
+    ],
+  };
+
   const base = {
     status: 'healthy',
+    scan_profile: 'quick',
+    coverage_summary: quickCoverage,
     summary: 'No urgent safety issues found.',
     score: 100,
     last_run: baseRun,
     scan_progress: {
       status: 'succeeded',
-      stage: 'Safety check complete',
+      stage: 'Quick safety check complete',
       step: 5,
-      steps_total: 5,
+      steps_total: 6,
       elapsed_seconds: 60,
-      estimated_total_seconds: 180,
+      estimated_total_seconds: 300,
       estimated_remaining_seconds: 0,
       estimated_remaining_label: 'done',
       percent: 100,
-      message: 'Pocket Lab checked host readiness and dependency risks in the backend worker.',
+      message: 'Pocket Lab checked basics and skipped photos, backups, and large caches in the backend worker.',
     },
     execution_timeline: [
       { key: 'request_accepted', title: 'Request accepted', detail: 'FastAPI accepted the safety request.', status: 'completed' },
       { key: 'worker_picked_up', title: 'Worker picked it up', detail: 'The backend worker started the check.', status: 'completed' },
-      { key: 'lynis_host_check', title: 'Lynis host check', detail: 'Host readiness checks completed.', status: 'completed' },
-      { key: 'trivy_dependency_secret_check', title: 'Trivy dependency & secret check', detail: 'Dependency, config, secret-like, and SBOM checks completed.', status: 'completed' },
+      { key: 'lynis_host_check', title: 'Quick host check', detail: 'Host readiness checks completed.', status: 'completed' },
+      { key: 'trivy_dependency_secret_check', title: 'Pocket Lab files checked', detail: 'Pocket Lab files, config, secret-like values, and SBOM checks completed.', status: 'completed' },
+      { key: 'config_posture_check', title: 'Config posture checked', detail: 'Config posture metadata was checked without dumping raw config.', status: 'completed' },
       { key: 'troubleshooting_saved', title: 'Saved for troubleshooting', detail: 'Sanitized backend records are ready.', status: 'completed' }
     ],
     checks_reviewed: 2,
@@ -362,6 +382,7 @@ const mockLiteSecurityPayload = () => {
       'security/evidence/security-mock-001/summary.json',
       'security/evidence/security-mock-001/lynis-normalized.json',
       'security/evidence/security-mock-001/trivy-normalized.json',
+      'security/evidence/security-mock-001/coverage-summary.json',
       'security/evidence/security-mock-001/sbom.cdx.json'
     ],
     history: [
@@ -753,9 +774,9 @@ export const handlers = [
   http.get('/api/lite/security/apps', () => HttpResponse.json({ status: 'healthy', apps: mockProtectedApps(), items: mockProtectedApps(), count: mockProtectedApps().length })),
   http.get('/api/lite/security/apps/photoprism', () => HttpResponse.json(mockProtectedApps()[0])),
   http.post('/api/lite/security/apps/photoprism/check', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', summary: 'App-specific safety checks are prepared, but execution is not enabled yet. Use Run Safety Check for the current device-wide scan.' }, { status: 501 })),
-  http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Safety check queued. Pocket Lab will scan local security posture and dependency risks.' }, { status: 202 })),
-  http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 })),
-  http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded' }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json'] })),
+  http.post('/api/lite/security/check', () => HttpResponse.json({ accepted: true, status: 'queued', scan_profile: 'quick', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan', execution_mode: 'worker', summary: 'Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.' }, { status: 202 })),
+  http.post('/api/lite/security/scan', () => HttpResponse.json({ accepted: true, status: 'queued', scan_profile: 'quick', run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 })),
+  http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded', scan_profile: 'quick' }, scan_profile: 'quick', coverage_summary: { profile: 'quick', checked_targets: ['Termux host posture', 'Pocket Lab Lite files'], skipped_targets: ['Photo library/media', 'Backup payloads'] }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json', 'security/evidence/security-mock-001/coverage-summary.json'] })),
   http.post('/api/lite/fleet/devices/:nodeId/restart-agent', ({ params }) => HttpResponse.json({
     accepted: true,
     status: 'queued',
