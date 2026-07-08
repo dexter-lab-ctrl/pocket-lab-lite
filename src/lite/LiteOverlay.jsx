@@ -4,6 +4,10 @@ import { X } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
+let liteBodyScrollLockCount = 0;
+let liteBodyScrollLockSnapshot = null;
+const liteOverlayEscapeStack = [];
+
 export function useVisualViewportHeight(open = true) {
   useEffect(() => {
     if (!open || typeof window === 'undefined') return undefined;
@@ -26,27 +30,49 @@ export function useBodyScrollLock(open = true) {
   useEffect(() => {
     if (!open || typeof document === 'undefined') return undefined;
     const body = document.body;
-    const previousOverflow = body.style.overflow;
-    const previousOverscroll = body.style.overscrollBehavior;
-    body.style.overflow = 'hidden';
-    body.style.overscrollBehavior = 'contain';
+    if (liteBodyScrollLockCount === 0) {
+      liteBodyScrollLockSnapshot = {
+        overflow: body.style.overflow,
+        overscrollBehavior: body.style.overscrollBehavior,
+      };
+      body.style.overflow = 'hidden';
+      body.style.overscrollBehavior = 'contain';
+    }
+    liteBodyScrollLockCount += 1;
     return () => {
-      body.style.overflow = previousOverflow;
-      body.style.overscrollBehavior = previousOverscroll;
+      liteBodyScrollLockCount = Math.max(0, liteBodyScrollLockCount - 1);
+      if (liteBodyScrollLockCount === 0 && liteBodyScrollLockSnapshot) {
+        body.style.overflow = liteBodyScrollLockSnapshot.overflow;
+        body.style.overscrollBehavior = liteBodyScrollLockSnapshot.overscrollBehavior;
+        liteBodyScrollLockSnapshot = null;
+      }
     };
   }, [open]);
 }
 
 export function useEscapeToClose(open, onClose) {
+  const overlayIdRef = useRef(null);
+  if (!overlayIdRef.current) overlayIdRef.current = Symbol('lite-overlay');
+
   useEffect(() => {
-    if (!open) return undefined;
+    if (!open || typeof document === 'undefined') return undefined;
+    const overlayId = overlayIdRef.current;
+    liteOverlayEscapeStack.push(overlayId);
     const onKeyDown = (event) => {
       if (event.key !== 'Escape') return;
+      const topOverlayId = liteOverlayEscapeStack[liteOverlayEscapeStack.length - 1];
+      if (topOverlayId !== overlayId) return;
+      event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation?.();
       onClose?.();
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true);
+      const index = liteOverlayEscapeStack.lastIndexOf(overlayId);
+      if (index >= 0) liteOverlayEscapeStack.splice(index, 1);
+    };
   }, [open, onClose]);
 }
 
