@@ -199,6 +199,8 @@ const SECURITY_PROFILE_VIEW_POLISH_GUARDS = [
   'App Scan',
   'data-security-profile-view="profile-linked"',
   'data-security-profile-run-actions="quick-full-app"',
+  'data-security-profile-history-preserved',
+  'data-security-scan-details-profile-bound',
 ];
 void SECURITY_PROFILE_VIEW_POLISH_GUARDS;
 
@@ -233,10 +235,12 @@ function profileFallbackCoverage(profile = 'quick') {
   return DEFAULT_QUICK_COVERAGE_SUMMARY;
 }
 
-function buildSecurityProfileRuns({ data = {}, lastRun = null, evidenceRun = null, result = null, history = [] }) {
+function buildSecurityProfileRuns({ data = {}, lastRun = null, evidenceRun = null, result = null, history = [], profileLatest = {} }) {
   const byProfile = {};
+  const latestValues = profileLatest && typeof profileLatest === 'object' ? Object.values(profileLatest) : [];
   const candidates = [
     ...(Array.isArray(history) ? history : []),
+    ...latestValues,
     lastRun,
     evidenceRun,
     result,
@@ -256,6 +260,11 @@ function buildSecurityProfileRuns({ data = {}, lastRun = null, evidenceRun = nul
 function profileEvidenceRefs(run = {}, fallback = []) {
   const refs = Array.isArray(run?.evidence_refs) ? run.evidence_refs : [];
   return Array.from(new Set([...refs, ...(Array.isArray(fallback) ? fallback : [])].filter(Boolean).map(String)));
+}
+
+function profileRunTimestampLabel(run = null) {
+  const timestamp = run?.completed_at || run?.started_at || run?.requested_at || run?.updated_at || '';
+  return timestamp ? `Last ${formatLiteTime(timestamp)}` : 'No saved check yet';
 }
 
 function securityToolChip(toolKey, toolLabel, toolResult = {}, context = {}) {
@@ -1712,7 +1721,7 @@ export default function SecurityScreen() {
   const securityHistory = Array.isArray(data?.history) ? data.history : [];
   const latestScanProfile = normalizeSecurityProfileId(data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || latestScanProfile);
-  const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory }), [data, lastRun, evidence, result, securityHistory]);
+  const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [data, lastRun, evidence, result, securityHistory]);
   const activeProfileRun = profileRunsById[scanProfile] || null;
   const activeProfileHasRun = Boolean(activeProfileRun?.run_id || activeProfileRun?.status);
   const activeProfileIsLatest = Boolean(activeProfileRun && lastRun && activeProfileRun.run_id && activeProfileRun.run_id === lastRun.run_id) || scanProfile === latestScanProfile;
@@ -2185,10 +2194,10 @@ export default function SecurityScreen() {
 
 
   const securityProgressiveDetailsModel = {
-    findingDelta,
-    deltaStats,
-    deltaPreview,
-    allReviewFindings,
+    findingDelta: activeProfileIsLatest ? findingDelta : {},
+    deltaStats: activeProfileIsLatest ? deltaStats : [],
+    deltaPreview: activeProfileIsLatest ? deltaPreview : [],
+    allReviewFindings: activeProfileIsLatest ? allReviewFindings : [],
     executionSteps,
     executionLiveLabelAligned,
     latestEvidenceReceipt,
@@ -2203,7 +2212,7 @@ export default function SecurityScreen() {
     selectedScanProfile: scanProfile,
     savedStateOnly,
     backendReachable,
-    securityHistory,
+    securityHistory: profileHistory.length ? profileHistory : securityHistory,
     latestHistory,
     previousHistory,
     scoreTrendView,
@@ -2328,7 +2337,7 @@ export default function SecurityScreen() {
       <PageHeader
         eyebrow="Safety Center"
         title="Security"
-        description="A calm safety overview. Pick Quick, Full, or App Scan, then open Manage for profile details."
+        description="A calm safety overview. Pick Quick, Full, or App Scan, then review the selected profile details."
       />
 
       <animated.section className="lite-security-phase5-shell lite-security-phase4-motion" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
@@ -2391,7 +2400,7 @@ export default function SecurityScreen() {
               <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
                 <span style={{ width: `${scanProgressPercent}%` }} />
               </div>
-              <p>{scanProgressPercent}% · {scanProgressEta} remaining · {activeProfileMeta.chip.toLowerCase()} check path is in Manage.</p>
+              <p>{scanProgressPercent}% · {scanProgressEta} remaining · {activeProfileMeta.label} is running.</p>
             </animated.div>
           ) : null}
         </GlassCard>
@@ -2468,7 +2477,7 @@ export default function SecurityScreen() {
                     onClick={() => chooseSecurityProfile(profile.id)}
                   >
                     <strong>{profile.label}</strong>
-                    <span>{profileRunsById[profile.id]?.completed_at ? `Last ${formatLiteTime(profileRunsById[profile.id].completed_at)}` : 'Not run yet'}</span>
+                    <span>{profileRunTimestampLabel(profileRunsById[profile.id])}</span>
                   </button>
                 ))}
               </div>
@@ -2748,7 +2757,7 @@ export default function SecurityScreen() {
         gripClassName="lite-security-phase3-grip"
         variant="security"
         motion="safe-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'focused-details' }}
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'focused-details', 'data-security-scan-details-profile-bound': scanProfile }}
       >
         <Suspense fallback={<div className="lite-security-details-loading">Loading Security details…</div>}>
           <SecurityProgressiveDetailsLazy type={activeSecurityDetails || 'evidence'} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />

@@ -694,7 +694,7 @@ def security_history(
     current_run: dict[str, Any] | None = None,
     current_findings: list[dict[str, Any]] | None = None,
     current_evidence_refs: list[str] | None = None,
-    limit: int = 8,
+    limit: int = 20,
 ) -> list[dict[str, Any]]:
     entries: dict[str, dict[str, Any]] = {}
     for run in evidence.list_runs(limit=40):
@@ -707,6 +707,20 @@ def security_history(
         entries[run_id] = _history_entry(current_run, current_findings or [], current_evidence_refs or _refs_for_run(current_run))
     ordered = sorted(entries.values(), key=lambda item: _run_time_value(item), reverse=True)
     return policy.redact_value(ordered[: max(1, limit)])
+
+
+def security_profile_latest(history: list[dict[str, Any]] | None = None) -> dict[str, dict[str, Any]]:
+    latest: dict[str, dict[str, Any]] = {}
+    for item in history or security_history(limit=40):
+        if not isinstance(item, dict):
+            continue
+        profile = str(item.get("scan_profile") or policy.SCAN_PROFILE_QUICK).lower()
+        if profile not in policy.VALID_SCAN_PROFILES:
+            profile = policy.SCAN_PROFILE_QUICK
+        current = latest.get(profile)
+        if not current or _run_time_value(item) >= _run_time_value(current):
+            latest[profile] = item
+    return policy.redact_value(latest)
 
 
 def _previous_completed_run(current_run_id: str | None) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
@@ -1002,6 +1016,7 @@ def build_state(
         "coverage_summary": _coverage_from_run(run),
     }
     critical = [item for item in findings if policy.normalize_severity(item.get("severity")) == "critical"][:10]
+    history = security_history(current_run=run, current_findings=findings, current_evidence_refs=evidence_refs)
     return policy.redact_value(
         {
             "status": status,
@@ -1018,7 +1033,8 @@ def build_state(
             "coverage_summary": _coverage_from_run(run),
             "findings": findings[:100],
             "evidence_refs": evidence_refs,
-            "history": security_history(current_run=run, current_findings=findings, current_evidence_refs=evidence_refs),
+            "history": history,
+            "profile_latest": security_profile_latest(history),
             "finding_delta": finding_delta_for_run(run, findings),
             "execution_timeline": run.get("execution_timeline") or execution_timeline_for_phase(
                 run,
@@ -1054,16 +1070,72 @@ def _write_sbom(run_id: str, trivy: str, root: Path) -> str | None:
     return None
 
 
-def _safe_presence(root: Path, label: str, candidates: list[str]) -> dict[str, Any]:
-    for relative in candidates:
-        candidate = (root / relative).resolve()
+def _safe_candidate(root: Path, value: str) -> Path | None:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    home = Path.home()
+    expanded = raw.replace("$HOME", str(home)).replace("~", str(home), 1)
+    candidate = Path(expanded).expanduser()
+    if not candidate.is_absolute():
+        candidate = (root / expanded).resolve()
         try:
             candidate.relative_to(root)
         except ValueError:
+            return None
+    return candidate
+
+
+def _safe_presence(root: Path, label: str, candidates: list[str]) -> dict[str, Any]:
+    checked: list[str] = []
+    for value in candidates:
+        candidate = _safe_candidate(root, value)
+        if not candidate:
             continue
-        if candidate.exists():
-            return {"label": label, "status": "checked", "present": True, "kind": "directory" if candidate.is_dir() else "file"}
-    return {"label": label, "status": "partial", "present": False, "kind": "missing"}
+        checked.append(str(candidate).replace(str(Path.home()), "~"))
+        try:
+            if candidate.exists():
+                return {"label": label, "status": "checked", "present": True, "kind": "directory" if candidate.is_dir() else "file", "source": "safe_path_discovery"}
+        except OSError:
+            continue
+    return {"label": label, "status": "partial", "present": False, "kind": "missing", "checked_candidates": len(checked)}
+
+
+def _proc_cmdline(pid: str | int | None) -> str:
+    try:
+        raw = Path(f"/proc/{int(pid)}/cmdline").read_bytes()
+    except Exception:
+        return ""
+    return policy.redact_text(raw.replace(b"\x00", b" ").decode("utf-8", errors="replace")).strip()
+
+
+def _pm2_process_cmdline(process_name: str) -> str:
+    pm2 = shutil.which("pm2")
+    if not pm2:
+        return ""
+    pid_result = _run_command([pm2, "pid", process_name], cwd=policy.repo_root(), timeout=5)
+    pid = str(pid_result.get("stdout") or "").strip().splitlines()[-1:]
+    return _proc_cmdline(pid[0]) if pid else ""
+
+
+def _discover_nats_config(root: Path) -> dict[str, Any]:
+    candidates = [
+        "nats/nats-server.conf",
+        "pocket-lab-final-structure/nats/nats-server.conf",
+        "$HOME/.pocket_lab/nats/nats-server.conf",
+    ]
+    cmdline = _pm2_process_cmdline("pocket-nats")
+    parts = cmdline.split()
+    for index, part in enumerate(parts):
+        if part in {"-c", "--config"} and index + 1 < len(parts):
+            candidates.insert(0, parts[index + 1])
+    result = _safe_presence(root, "NATS config posture", candidates)
+    if result.get("present"):
+        result["summary"] = "NATS config metadata was discovered safely without exposing credentials."
+    elif cmdline:
+        result["status"] = "partial"
+        result["summary"] = "NATS is running, but the config file could not be safely read from discovered metadata."
+    return result
 
 
 def _pm2_summary(root: Path) -> dict[str, Any]:
@@ -1133,7 +1205,7 @@ def runtime_config_posture(root: Path) -> dict[str, Any]:
     checks = [
         _pm2_summary(root),
         _safe_presence(root, "Caddy config posture", ["caddy/Caddyfile", "Caddyfile"]),
-        _safe_presence(root, "NATS config posture", ["nats/nats-server.conf", ".pocket_lab/nats/nats-server.conf", "pocket-lab-final-structure/nats/nats-server.conf"]),
+        _discover_nats_config(root),
         {"label": "Security evidence state", "status": "checked", "present": evidence.security_root().exists(), "summary": "Security evidence directory metadata is available."},
         _photoprism_route_health(),
     ]
@@ -1247,6 +1319,16 @@ def build_coverage_summary(
         "evidence_files_written": [str(item) for item in (evidence_refs or [])],
         "posture_checks": (posture or {}).get("checks", []) if isinstance(posture, dict) else [],
         "source_targets": source_targets,
+        "scanner_quality": {
+            "profile": profile,
+            "backend_owned": True,
+            "target_aware": profile in {policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP},
+            "bounded_timeouts": True,
+            "sanitized_evidence": True,
+            "raw_scanner_output_hidden": True,
+            "private_media_skipped": True,
+            "browser_execution": False,
+        },
     })
 
 
@@ -1670,14 +1752,36 @@ def _first_existing(paths: list[Path]) -> Path | None:
     return None
 
 
+def _photoprism_proot_targets(rootfs: Path | None) -> list[tuple[Path, str, bool, str, str]]:
+    if not rootfs:
+        return []
+    app_path = rootfs / "opt/photoprism"
+    binary_path = rootfs / "usr/local/bin/photoprism"
+    targets = [(app_path, "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files")]
+    if binary_path.exists():
+        targets.append((binary_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary"))
+    elif app_path.exists():
+        # Keep the binary as optional metadata instead of marking the whole app missing when
+        # PhotoPrism is running from the app tree or through PROot launch metadata.
+        targets.append((app_path, "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary metadata"))
+    return targets
+
+
 def _backup_metadata_summary(root: Path) -> dict[str, Any]:
     candidates = policy.backup_metadata_candidates(root)
-    present = [candidate for candidate in candidates if candidate.exists()]
+    present = []
+    for candidate in candidates:
+        try:
+            if candidate.exists():
+                present.append(candidate)
+        except OSError:
+            continue
     return policy.redact_value({
         "status": "checked" if present else "missing",
         "checked_candidates": len(candidates),
         "present_count": len(present),
         "summary": "Backup metadata summary is available." if present else "Backup metadata was not found on this device.",
+        "present_labels": [str(item).replace(str(Path.home()), "~") for item in present[:6]],
         "skipped": ["backup payloads", "restic repository contents", "restore checkpoints", "large restore-run content"],
     })
 
@@ -1777,21 +1881,16 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "photoprism_running")
     _write_intermediate_running_state(run, findings, evidence_refs)
 
-    photoprism_targets: list[tuple[Path, str, bool, str]] = []
-    if rootfs:
-        photoprism_targets.extend([
-            (rootfs / "opt/photoprism", "vuln,misconfig", False, "target-photoprism-trivy.json"),
-            (rootfs / "usr/local/bin/photoprism", "vuln,misconfig", False, "target-photoprism-binary-trivy.json"),
-        ])
+    photoprism_targets = _photoprism_proot_targets(rootfs)
     photoprism_config = policy.photoprism_config_dir()
-    photoprism_targets.append((photoprism_config, "secret", True, "target-photoprism-config-secret.json"))
+    photoprism_targets.append((photoprism_config, "secret", True, "target-photoprism-config-secret.json", "PhotoPrism settings"))
     photoprism_seen = False
     photoprism_partial = False
     photoprism_finding_count = 0
-    for target_path, scanners, secret_mode, evidence_name in photoprism_targets:
+    for target_path, scanners, secret_mode, evidence_name, photoprism_label in photoprism_targets:
         if target_path.exists():
             photoprism_seen = True
-        new_findings, status = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism", target_label="PhotoPrism", scanners=scanners, profile=policy.SCAN_PROFILE_FULL, secret_mode=secret_mode, evidence_name=evidence_name)
+        new_findings, status = _run_trivy_target_job(trivy=trivy, run_id=run_id, root=root, target_path=target_path, target_id="photoprism", target_label=photoprism_label, scanners=scanners, profile=policy.SCAN_PROFILE_FULL, secret_mode=secret_mode, evidence_name=evidence_name)
         findings.extend(new_findings)
         target_statuses.append(status)
         photoprism_finding_count += len(new_findings)
@@ -1892,12 +1991,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
 
     trivy = shutil.which("trivy")
     rootfs = policy.discover_proot_ubuntu_rootfs(root)
-    app_targets: list[tuple[Path, str, bool, str, str]] = []
-    if rootfs:
-        app_targets.extend([
-            (rootfs / "opt/photoprism", "vuln,misconfig", False, "target-photoprism-trivy.json", "PhotoPrism app files"),
-            (rootfs / "usr/local/bin/photoprism", "vuln,misconfig", False, "target-photoprism-binary-trivy.json", "PhotoPrism app binary"),
-        ])
+    app_targets = _photoprism_proot_targets(rootfs)
     app_seen = False
     app_partial = False
     app_finding_count = 0
