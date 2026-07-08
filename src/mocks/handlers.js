@@ -771,29 +771,65 @@ export const handlers = [
   http.post('/api/lite/identity/rotate', () => HttpResponse.json({ accepted: true, status: 'queued', command_id: 'mock-rotate-secret' }, { status: 202 })),
   http.get('/api/lite/security/apps', () => HttpResponse.json({ status: 'healthy', apps: mockProtectedApps(), items: mockProtectedApps(), count: mockProtectedApps().length })),
   http.get('/api/lite/security/apps/photoprism', () => HttpResponse.json(mockProtectedApps()[0])),
-  http.post('/api/lite/security/apps/photoprism/check', () => HttpResponse.json({ status: 'not_implemented', accepted: false, app_id: 'photoprism', summary: 'App-specific safety checks are prepared, but execution is not enabled yet. Use Run Safety Check for the current device-wide scan.' }, { status: 501 })),
+  http.post('/api/lite/security/apps/photoprism/check', () => HttpResponse.json({
+    accepted: true,
+    status: 'queued',
+    scan_profile: 'app',
+    app_id: 'photoprism',
+    app_label: 'PhotoPrism',
+    run_id: 'security-app-photoprism-mock-002',
+    command_id: 'security-app-photoprism-mock-002',
+    command_subject: 'pocketlab.commands.lite.security.scan',
+    execution_mode: 'worker',
+    summary: 'PhotoPrism App Check queued. Pocket Lab will check the app route, files, settings, backup metadata, and action state while skipping photos and media.',
+    coverage_summary: {
+      profile: 'app',
+      app_id: 'photoprism',
+      app_label: 'PhotoPrism',
+      checked_targets: ['PhotoPrism route', 'PhotoPrism app files', 'PhotoPrism settings', 'PhotoPrism backup metadata', 'PhotoPrism action state'],
+      skipped_targets: ['Photo library/media', 'PhotoPrism originals/import folder', 'PhotoPrism thumbnails/cache/sidecars', 'PhotoPrism database', 'Backup payloads', 'Android shared storage', 'Logs and large caches'],
+    },
+  }, { status: 202 })),
   http.post('/api/lite/security/check', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
-    const profile = body?.profile === 'full' ? 'full' : 'quick';
+    const requestedProfile = body?.profile === 'full' || body?.profile === 'app' ? body.profile : 'quick';
+    if (requestedProfile === 'app' && body?.app_id !== 'photoprism') {
+      return HttpResponse.json({ detail: body?.app_id ? 'Choose a supported app to check.' : 'Choose an app before starting App Check.' }, { status: body?.app_id ? 404 : 400 });
+    }
+    const profile = requestedProfile;
+    const appFields = profile === 'app' ? { app_id: 'photoprism', app_label: 'PhotoPrism' } : {};
+    const coverageSummary = profile === 'app'
+      ? { profile: 'app', app_id: 'photoprism', app_label: 'PhotoPrism', checked_targets: ['PhotoPrism route', 'PhotoPrism app files', 'PhotoPrism settings', 'PhotoPrism backup metadata', 'PhotoPrism action state'], skipped_targets: ['Photo library/media', 'PhotoPrism originals/import folder', 'PhotoPrism thumbnails/cache/sidecars', 'PhotoPrism database', 'Backup payloads', 'Android shared storage', 'Logs and large caches'] }
+      : profile === 'full'
+        ? { profile: 'full', checked_targets: ['Termux host', 'Pocket Lab Lite', 'Runtime config', 'PROot Ubuntu', 'PhotoPrism', 'Backup metadata'], skipped_targets: ['PhotoPrism originals/import/media/cache/sidecars', 'Android shared storage'] }
+        : { profile: 'quick', checked_targets: ['Termux host posture', 'Pocket Lab Lite files'], skipped_targets: ['Photo library/media', 'Backup payloads'] };
     return HttpResponse.json({
       accepted: true,
       status: 'queued',
       scan_profile: profile,
-      run_id: profile === 'full' ? 'security-full-mock-002' : 'security-mock-002',
-      command_id: profile === 'full' ? 'security-full-mock-002' : 'security-mock-002',
+      ...appFields,
+      run_id: profile === 'full' ? 'security-full-mock-002' : profile === 'app' ? 'security-app-photoprism-mock-002' : 'security-mock-002',
+      command_id: profile === 'full' ? 'security-full-mock-002' : profile === 'app' ? 'security-app-photoprism-mock-002' : 'security-mock-002',
       command_subject: 'pocketlab.commands.lite.security.scan',
       execution_mode: 'worker',
+      coverage_summary: coverageSummary,
       summary: profile === 'full'
         ? 'Full Local Check queued. Pocket Lab will check this device more deeply while still skipping photos, backups, logs, and large caches.'
-        : 'Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.',
+        : profile === 'app'
+          ? 'PhotoPrism App Check queued. Pocket Lab will check route, files, settings, backup metadata, and action state while skipping photos and media.'
+          : 'Quick safety check queued. Pocket Lab will check basics and skip photos, backups, and large caches.',
     }, { status: 202 });
   }),
   http.post('/api/lite/security/scan', async ({ request }) => {
     const body = await request.json().catch(() => ({}));
-    const profile = body?.profile === 'full' ? 'full' : 'quick';
-    return HttpResponse.json({ accepted: true, status: 'queued', scan_profile: profile, run_id: 'security-mock-002', command_id: 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 });
+    const profile = body?.profile === 'full' || body?.profile === 'app' ? body.profile : 'quick';
+    return HttpResponse.json({ accepted: true, status: 'queued', scan_profile: profile, app_id: profile === 'app' ? 'photoprism' : undefined, app_label: profile === 'app' ? 'PhotoPrism' : undefined, run_id: profile === 'app' ? 'security-app-photoprism-mock-002' : 'security-mock-002', command_id: profile === 'app' ? 'security-app-photoprism-mock-002' : 'security-mock-002', command_subject: 'pocketlab.commands.lite.security.scan' }, { status: 202 });
   }),
-  http.get('/api/lite/security/evidence/:runId', ({ params }) => HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded', scan_profile: 'quick' }, scan_profile: 'quick', coverage_summary: { profile: 'quick', checked_targets: ['Termux host posture', 'Pocket Lab Lite files'], skipped_targets: ['Photo library/media', 'Backup payloads'] }, score: 100, status: 'healthy', summary: 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json', 'security/evidence/security-mock-001/coverage-summary.json'] })),
+  http.get('/api/lite/security/evidence/:runId', ({ params }) => {
+    const isAppRun = String(params.runId || '').includes('app');
+    const profile = isAppRun ? 'app' : 'quick';
+    return HttpResponse.json({ run: { run_id: params.runId, status: 'succeeded', scan_profile: profile, app_id: isAppRun ? 'photoprism' : undefined, app_label: isAppRun ? 'PhotoPrism' : undefined }, scan_profile: profile, app_id: isAppRun ? 'photoprism' : undefined, app_label: isAppRun ? 'PhotoPrism' : undefined, coverage_summary: isAppRun ? { profile: 'app', app_id: 'photoprism', app_label: 'PhotoPrism', checked_targets: ['PhotoPrism route', 'PhotoPrism app files', 'PhotoPrism settings', 'PhotoPrism backup metadata', 'PhotoPrism action state'], skipped_targets: ['Photo library/media', 'PhotoPrism originals/import folder', 'PhotoPrism thumbnails/cache/sidecars', 'PhotoPrism database'] } : { profile: 'quick', checked_targets: ['Termux host posture', 'Pocket Lab Lite files'], skipped_targets: ['Photo library/media', 'Backup payloads'] }, score: 100, status: 'healthy', summary: isAppRun ? 'PhotoPrism App Check completed. Photos and media were skipped.' : 'No urgent safety issues found.', findings: [], evidence_refs: ['security/evidence/security-mock-001/summary.json', 'security/evidence/security-mock-001/coverage-summary.json'] });
+  }),
   http.post('/api/lite/fleet/devices/:nodeId/restart-agent', ({ params }) => HttpResponse.json({
     accepted: true,
     status: 'queued',

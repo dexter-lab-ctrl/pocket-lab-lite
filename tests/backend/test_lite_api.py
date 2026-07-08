@@ -1830,16 +1830,30 @@ def test_lite_app_security_profiles_are_sanitized_and_photoprism_aware():
     assert unsupported.status_code == 404
 
 
-def test_lite_app_security_check_is_safely_not_implemented():
+def test_lite_app_security_check_queues_backend_owned_app_check(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services.nats_bus import BUS
+
+    published: list[tuple[str, str, dict]] = []
+    BUS.connected = True
+    BUS.js = object()
+
+    async def fake_publish(subject, event_type, data=None, *, trace_id=None):
+        published.append((subject, event_type, data or {}))
+
+    monkeypatch.setattr(BUS, "publish_json", fake_publish)
+
     response = client().post(
         "/api/lite/security/apps/photoprism/check",
         json={"reason": "manual app safety check"},
     )
-    assert response.status_code == 501
+    assert response.status_code == 202
     payload = response.json()
-    assert payload["status"] == "not_implemented"
-    assert payload["accepted"] is False
+    assert payload["status"] == "queued"
+    assert payload["accepted"] is True
+    assert payload["scan_profile"] == "app"
     assert payload["app_id"] == "photoprism"
+    assert any(item[2].get("profile") == "app" and item[2].get("app_id") == "photoprism" for item in published)
 
 
 def test_lite_app_backup_profiles_are_sanitized_and_photoprism_aware():
@@ -3348,7 +3362,7 @@ def test_lite_app_safety_and_repair_worker_subjects_registered():
 def test_lite_app_check_app_builds_worker_command_and_queued_state(monkeypatch):
     _force_photoprism_installed_for_action_tests(monkeypatch)
     ensure_runtime_path()
-    from api_fastapi.services import lite_app_actions, lite_app_operations
+    from api_fastapi.services import lite_app_actions, lite_security
 
     action = lite_app_actions.prepare_action(
         "photoprism",
@@ -3356,20 +3370,21 @@ def test_lite_app_check_app_builds_worker_command_and_queued_state(monkeypatch):
         payload={"reason": "manual app safety check"},
     )
 
-    assert action["kind"] == "app_operation"
-    assert action["subject"] == lite_app_operations.SAFETY_SUBJECT
-    assert action["command"]["action_id"] == "check_app"
+    assert action["kind"] == "security_app_check"
+    assert action["subject"] == lite_security.policy.COMMAND_SUBJECT
+    assert action["command"]["profile"] == "app"
+    assert action["command"]["app_id"] == "photoprism"
 
-    queued = lite_app_operations.record_queued_operation(action["command"])
+    queued = lite_security.record_queued_run(action["command"])
     assert queued["status"] == "queued"
-    assert queued["progress"]["phase"] == "queued"
-    assert queued["progress"]["bounded"] is True
-    assert queued["evidence_ref"].startswith("apps/photoprism/safety/")
+    assert queued["scan_profile"] == "app"
+    assert queued["app_id"] == "photoprism"
+    assert queued["coverage_summary"]["profile"] == "app"
     assert "password" not in json.dumps(queued).lower()
     assert "nats://" not in json.dumps(queued).lower()
 
     router_source = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
-    assert 'kind == "app_operation"' in router_source
+    assert 'kind == "security_app_check"' in router_source
     assert "submit_domain_command" in router_source
 
 
@@ -6691,8 +6706,9 @@ def test_lite_security_quick_safety_profile_defaults_and_exclusions_source():
     assert policy.normalize_scan_profile(None) == "quick"
     assert policy.normalize_scan_profile("quick") == "quick"
     assert policy.normalize_scan_profile("full") == "full"
+    assert policy.normalize_scan_profile("app") == "app"
     with pytest.raises(ValueError):
-        policy.normalize_scan_profile("app_check")
+        policy.normalize_scan_profile("diagnostic")
 
     assert policy.TIMEOUTS["lynis"] == 300
     assert policy.TIMEOUTS["trivy_vuln_misconfig"] == 420
@@ -6775,11 +6791,34 @@ def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeyp
     assert "PhotoPrism originals/import/media/cache/sidecars" in full_run["coverage_summary"]["skipped_targets"]
     assert any(item[2].get("profile") == "full" for item in published)
 
-    unknown_response = client().post("/api/lite/security/check", json={"profile": "app_check"})
+    missing_app_response = client().post("/api/lite/security/check", json={"profile": "app"})
+    assert missing_app_response.status_code == 400
+
+    unknown_app_response = client().post("/api/lite/security/check", json={"profile": "app", "app_id": "unknown-app"})
+    assert unknown_app_response.status_code == 404
+
+    app_response = client().post("/api/lite/security/check", json={"profile": "app", "app_id": "photoprism"})
+    assert app_response.status_code == 202
+    assert app_response.json()["scan_profile"] == "app"
+    assert app_response.json()["app_id"] == "photoprism"
+    app_run = lite_security.read_run(app_response.json()["run_id"])
+    assert app_run["scan_profile"] == "app"
+    assert app_run["app_id"] == "photoprism"
+    assert app_run["coverage_summary"]["profile"] == "app"
+    assert app_run["coverage_summary"]["app_id"] == "photoprism"
+    assert "PhotoPrism originals/import folder" in app_run["coverage_summary"]["skipped_targets"]
+    assert any(item[2].get("profile") == "app" and item[2].get("app_id") == "photoprism" for item in published)
+
+    app_endpoint_response = client().post("/api/lite/security/apps/photoprism/check")
+    assert app_endpoint_response.status_code == 202
+    assert app_endpoint_response.json()["scan_profile"] == "app"
+    assert app_endpoint_response.json()["app_id"] == "photoprism"
+
+    unknown_response = client().post("/api/lite/security/check", json={"profile": "diagnostic"})
     assert unknown_response.status_code == 400
     error_payload = unknown_response.json()
     error_text = str(error_payload.get("detail") or error_payload.get("message") or error_payload)
-    assert "quick safety check" in error_text.lower() or "full local check" in error_text.lower()
+    assert "quick safety check" in error_text.lower() or "full local check" in error_text.lower() or "app check" in error_text.lower()
 
 
 def test_lite_security_quick_safety_coverage_evidence_is_sanitized_source():
@@ -6818,10 +6857,69 @@ def test_lite_security_full_local_check_profile_source_contract():
     assert "Full Local Check" in ui
     assert "Start Full Local Check" in ui
     assert "profile: 'full'" in ui
-    assert "Unknown safety check profile. Choose Quick Safety Check or Full Local Check." in router
+    assert "Unknown safety check profile. Choose Quick Safety Check, Full Local Check, or App Check." in router
     assert "window.setInterval" not in ui
     assert "child_process" not in ui
     assert "nats.connect" not in ui
+
+def test_lite_security_app_check_profile_source_contract():
+    ensure_runtime_path()
+    from api_fastapi.services import lite_security_policy as policy
+
+    security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    policy_source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py").read_text()
+    router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
+    app_actions = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_actions.py").read_text()
+    ui = Path("src/lite/LiteSecurity.jsx").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    mocks = Path("src/mocks/handlers.js").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert policy.normalize_scan_profile("app") == "app"
+    app_plan = policy.build_scan_plan("app", Path.cwd(), app_id="photoprism")
+    assert app_plan["profile"] == "app"
+    assert app_plan["app_id"] == "photoprism"
+    assert "PhotoPrism route" in app_plan["checked_targets"]
+    assert "PhotoPrism app files" in app_plan["checked_targets"]
+    assert "PhotoPrism originals/import folder" in app_plan["skipped_targets"]
+    assert "PhotoPrism thumbnails/cache/sidecars" in app_plan["skipped_targets"]
+    assert "PhotoPrism database" in app_plan["skipped_targets"]
+    assert "PhotoPrism thumbnails, cache, sidecars, and database" in app_plan["excluded_groups"]
+    assert "photoprism.env" in policy_source
+    assert "target-photoprism-route-posture.json" in security
+    assert "target-photoprism-trivy.json" in security
+    assert "target-{target_id}-sbom.cdx.json" in security
+    assert '"photoprism", "PhotoPrism", policy.SCAN_PROFILE_APP' in security
+    assert "target-photoprism-config-secret.json" in security
+    assert "target-photoprism-backup-metadata.json" in security
+    assert "target-photoprism-action-state.json" in security
+    assert "App route checked" in security
+    assert "App files checked" in security
+    assert "App settings checked" in security
+    assert "App backup metadata checked" in security
+    assert "App action state checked" in security
+    assert "profile == lite_security.policy.SCAN_PROFILE_APP" in router
+    assert '"profile": profile' in router
+    assert "App Check requires an app_id." in router
+    assert "security_app_check" in app_actions
+    assert "profile" in app_actions and "app" in app_actions
+    assert "SECURITY_PROFILE3_APP_CHECK_GUARDS" in ui
+    assert "Check PhotoPrism" in ui
+    assert "Start App Check" in ui
+    assert "profile: 'app'" in ui
+    assert "liteApi.checkSecurityApp(app.app_id" in ui
+    assert "DEFAULT_APP_COVERAGE_SUMMARY" in ui
+    assert "app_id" in view_models
+    assert "app_label" in view_models
+    assert "security-app-photoprism-mock" in mocks
+    assert "lite-security-app-check-card" in css
+
+    assert "pm2" not in ui.lower()
+    assert "fetch(" not in ui
+    assert "child_process" not in ui
+    assert "exec(" not in ui
+    assert "spawn(" not in ui
+
 
 def test_lite_security_quick_safety_ui_and_view_model_contract_source():
     security = Path("src/lite/LiteSecurity.jsx").read_text()

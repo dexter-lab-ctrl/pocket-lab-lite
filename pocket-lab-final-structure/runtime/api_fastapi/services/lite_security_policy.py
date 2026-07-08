@@ -12,7 +12,8 @@ COMMAND_SUBJECT = "pocketlab.commands.lite.security.scan"
 
 SCAN_PROFILE_QUICK = "quick"
 SCAN_PROFILE_FULL = "full"
-VALID_SCAN_PROFILES = {SCAN_PROFILE_QUICK, SCAN_PROFILE_FULL}
+SCAN_PROFILE_APP = "app"
+VALID_SCAN_PROFILES = {SCAN_PROFILE_QUICK, SCAN_PROFILE_FULL, SCAN_PROFILE_APP}
 
 def normalize_scan_profile(value: Any = None) -> str:
     profile = str(value or SCAN_PROFILE_QUICK).strip().lower().replace("-", "_")
@@ -36,6 +37,10 @@ TIMEOUTS = {
     "full_trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_SECRET_TIMEOUT", "900")),
     "full_trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_SBOM_TIMEOUT", "900")),
     "full_overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_FULL_OVERALL_TIMEOUT", "3600")),
+    "app_trivy_vuln_misconfig": int(os.environ.get("POCKETLAB_LITE_SECURITY_APP_TRIVY_TIMEOUT", "600")),
+    "app_trivy_secret": int(os.environ.get("POCKETLAB_LITE_SECURITY_APP_SECRET_TIMEOUT", "300")),
+    "app_trivy_sbom": int(os.environ.get("POCKETLAB_LITE_SECURITY_APP_SBOM_TIMEOUT", "300")),
+    "app_overall": int(os.environ.get("POCKETLAB_LITE_SECURITY_APP_OVERALL_TIMEOUT", "900")),
 }
 
 EXCLUDED_DIRS = [
@@ -163,6 +168,65 @@ FULL_EXTRA_EXCLUDED_DIRS = [
     ".pocket_lab/lite/apps/photoprism/storage/cache/media",
     ".pocket_lab/lite/apps/photoprism/storage/cache/thumbnails",
 ]
+
+APP_EXCLUDED_GROUPS = [
+    "Photo library/media",
+    "PhotoPrism originals/import folder",
+    "PhotoPrism thumbnails, cache, sidecars, and database",
+    "Backup payloads and restic repository contents",
+    "Android shared storage",
+    "Logs and large caches",
+    "Full PROot Ubuntu filesystem outside selected app paths",
+    "Go/npm/tool caches",
+    "Scanner caches and temp files",
+]
+
+APP_SKIPPED_TARGETS = [
+    "Photo library/media",
+    "PhotoPrism originals/import folder",
+    "PhotoPrism thumbnails/cache/sidecars",
+    "PhotoPrism database",
+    "Backup payloads",
+    "Android shared storage",
+    "Logs and large caches",
+    "Full PROot Ubuntu rootfs",
+    "Go/npm/tool caches",
+    "Trivy cache",
+    "Lynis temp files",
+]
+
+APP_EXTRA_EXCLUDED_DIRS = [
+    ".pocket_lab/lite/apps/photoprism/originals",
+    ".pocket_lab/lite/apps/photoprism/import",
+    ".pocket_lab/lite/apps/photoprism/storage/cache",
+    ".pocket_lab/lite/apps/photoprism/storage/cache/media",
+    ".pocket_lab/lite/apps/photoprism/storage/cache/thumbnails",
+    ".pocket_lab/lite/apps/photoprism/storage/sidecar",
+    ".pocket_lab/lite/apps/photoprism/logs",
+    ".pocket_lab/lite/apps/photoprism/storage/index.db",
+    "mnt/sdcard",
+    "sdcard",
+    "storage",
+    "rootfs/mnt/sdcard",
+    "rootfs/sdcard",
+    "rootfs/storage",
+    "rootfs/var/cache",
+    "rootfs/var/log",
+    "rootfs/var/tmp",
+]
+
+SUPPORTED_APP_CHECK_TARGETS = {
+    "photoprism": {
+        "app_id": "photoprism",
+        "app_label": "PhotoPrism",
+        "route": "/apps/photoprism/",
+        "health_path": "/apps/photoprism/api/v1/status",
+        "expected_health": {"status": "operational"},
+        "process_name": "pocketlab-app-photoprism",
+        "proot_app_path": "opt/photoprism",
+        "proot_binary_path": "usr/local/bin/photoprism",
+    }
+}
 
 SENSITIVE_KEY_RE = re.compile(
     r"(token|password|passwd|pwd|secret|api[_-]?key|authorization|bearer|vault|unseal|nats|invite|tailscale[_-]?auth|private[_-]?key)",
@@ -299,10 +363,21 @@ def full_scan_excludes() -> dict[str, Any]:
     }
 
 
+def app_scan_excludes() -> dict[str, Any]:
+    return {
+        "skip_dirs": sorted(set([*EXCLUDED_DIRS, *APP_EXTRA_EXCLUDED_DIRS])),
+        "skip_files": sorted(set([*EXCLUDED_FILES, "*.log", "*.sqlite", "*.sqlite3", "*.db", "*.tar.gz", "*.tgz"])),
+        "excluded_groups": list(APP_EXCLUDED_GROUPS),
+        "skipped_targets": list(APP_SKIPPED_TARGETS),
+    }
+
+
 def scan_excludes_for_profile(profile: Any = None) -> dict[str, Any]:
     normalized = normalize_scan_profile(profile)
     if normalized == SCAN_PROFILE_FULL:
         return full_scan_excludes()
+    if normalized == SCAN_PROFILE_APP:
+        return app_scan_excludes()
     return quick_scan_excludes()
 
 
@@ -488,10 +563,103 @@ def build_full_scan_plan(root: Path | None = None) -> dict[str, Any]:
     }
 
 
-def build_scan_plan(profile: Any = None, root: Path | None = None) -> dict[str, Any]:
+
+def normalize_app_id(value: Any = None) -> str:
+    app_id = str(value or "").strip().lower().replace("_", "-")
+    if app_id in SUPPORTED_APP_CHECK_TARGETS:
+        return app_id
+    raise ValueError("Unsupported app for App Check")
+
+
+def app_check_target(app_id: Any = None) -> dict[str, Any]:
+    normalized = normalize_app_id(app_id)
+    return dict(SUPPORTED_APP_CHECK_TARGETS[normalized])
+
+
+def build_app_scan_plan(app_id: Any = None, root: Path | None = None) -> dict[str, Any]:
+    target = app_check_target(app_id)
+    base = (root or repo_root()).resolve()
+    rootfs = discover_proot_ubuntu_rootfs(base)
+    photoprism_config = photoprism_config_dir()
+    backup_candidates = backup_metadata_candidates(base)
+    backup_present = any(candidate.exists() for candidate in backup_candidates)
+    app_path = rootfs / str(target["proot_app_path"]) if rootfs else None
+    app_binary = rootfs / str(target["proot_binary_path"]) if rootfs else None
+    excludes = app_scan_excludes()
+    source_targets = [
+        {
+            "target_id": "photoprism_route",
+            "label": "PhotoPrism route",
+            "relative": str(target.get("route") or "/apps/photoprism/"),
+            "present": True,
+            "kind": "same_origin_route",
+        },
+        {
+            "target_id": "photoprism_app_files",
+            "label": "PhotoPrism app files",
+            "relative": "/opt/photoprism",
+            "present": bool(app_path and app_path.exists()),
+            "kind": "proot_app_path",
+            "optional": True,
+        },
+        {
+            "target_id": "photoprism_app_binary",
+            "label": "PhotoPrism app binary",
+            "relative": "/usr/local/bin/photoprism",
+            "present": bool(app_binary and app_binary.exists()),
+            "kind": "proot_app_binary",
+            "optional": True,
+        },
+        {
+            "target_id": "photoprism_settings",
+            "label": "PhotoPrism settings",
+            "relative": "~/.pocket_lab/lite/apps/photoprism/config",
+            "present": photoprism_config.exists(),
+            "kind": "app_config",
+            "optional": True,
+        },
+    ]
+    selected_targets = [
+        {"target_id": "photoprism_route", "label": "PhotoPrism route", "present": True, "kind": "route_posture"},
+        {"target_id": "photoprism_app_files", "label": "PhotoPrism app files", "present": bool(app_path and app_path.exists()), "kind": "selected_app_files", "optional": True},
+        {"target_id": "photoprism_settings", "label": "PhotoPrism settings", "present": photoprism_config.exists(), "kind": "app_config", "optional": True},
+        {"target_id": "photoprism_backup_metadata", "label": "PhotoPrism backup metadata", "present": backup_present, "kind": "metadata", "optional": True},
+        {"target_id": "photoprism_action_state", "label": "PhotoPrism action state", "present": True, "kind": "app_action_state"},
+    ]
+    return {
+        "profile": SCAN_PROFILE_APP,
+        "app_id": target["app_id"],
+        "app_label": target["app_label"],
+        "scan_root_label": f"{target['app_label']} app target",
+        "target_groups": [
+            "PhotoPrism route posture",
+            "PhotoPrism selected app files",
+            "PhotoPrism settings",
+            "PhotoPrism backup metadata",
+            "PhotoPrism action state",
+        ],
+        "source_targets": source_targets,
+        "selected_targets": selected_targets,
+        "checked_targets": [
+            "PhotoPrism route",
+            "PhotoPrism app files",
+            "PhotoPrism settings",
+            "PhotoPrism backup metadata",
+            "PhotoPrism action state",
+        ],
+        "skipped_targets": excludes["skipped_targets"],
+        "excluded_groups": excludes["excluded_groups"],
+        "skip_dirs": excludes["skip_dirs"],
+        "skip_files": excludes["skip_files"],
+    }
+
+
+def build_scan_plan(profile: Any = None, root: Path | None = None, app_id: Any = None) -> dict[str, Any]:
     normalized = normalize_scan_profile(profile)
     if normalized == SCAN_PROFILE_FULL:
         return build_full_scan_plan(root)
+    if normalized == SCAN_PROFILE_APP:
+        return build_app_scan_plan(app_id or "photoprism", root)
     return build_quick_scan_plan(root)
 
 
