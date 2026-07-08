@@ -5,6 +5,8 @@ const MAX_TECHNICAL_ITEMS = 8;
 
 export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-s3-v1';
 export const LITE_SECURITY_PROFILE_IDS = ['quick', 'full', 'app'];
+export const LITE_SECURITY_PROFILE_SNAPSHOT_VERSION = 'lite-security-profile-snapshot-v1';
+export const LITE_SECURITY_HISTORY_SNAPSHOT_VERSION = 'lite-security-history-snapshot-v1';
 
 function normalizeSecurityProfileId(value = 'quick') {
   const normalized = String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -1253,6 +1255,154 @@ export function selectSecurityTimelineProfileView(payload = {}, profile = 'quick
 
 export function selectSecurityEvidenceProfileView(payload = {}, profile = 'quick') {
   return selectSecurityProfileView(payload, profile).evidence_summary;
+}
+
+
+export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick') {
+  const view = selectSecurityProfileView(payload, profile);
+  return {
+    view_model: LITE_SECURITY_PROFILE_SNAPSHOT_VERSION,
+    profile: view.profile,
+    scan_profile: view.scan_profile,
+    has_run: Boolean(view.has_run),
+    run_id: safeString(view.run_id),
+    status: normalizeSecurityStatus(view.status),
+    score: Math.max(0, Math.min(100, safeNumber(view.score, 0))),
+    summary: safeString(view.summary),
+    requested_at: safeIso(view.requested_at),
+    started_at: safeIso(view.started_at),
+    completed_at: safeIso(view.completed_at),
+    updated_at: safeIso(view.updated_at || view.completed_at || view.started_at),
+    app_id: safeString(view.app_id),
+    app_label: safeString(view.app_label),
+    tools: safeList(view.tools).slice(0, 6),
+    counts: {
+      critical: safeNumber(view.critical_count, 0),
+      high: safeNumber(view.high_count, 0),
+      medium: safeNumber(view.medium_count, 0),
+      low: safeNumber(view.low_count, 0),
+      info: safeNumber(view.info_count, 0),
+    },
+    items_to_review: safeNumber(view.items_to_review, 0),
+    findings_count: safeNumber(view.findings_count, 0),
+    coverage_summary: view.coverage_summary,
+    tool_results: view.tool_results,
+    execution_timeline: Array.isArray(view.execution_timeline) ? view.execution_timeline.slice(0, 12) : [],
+    evidence_summary: view.evidence_summary,
+    evidence_refs: safeList(view.evidence_refs).slice(0, 24),
+    finding_delta: view.finding_delta,
+    latest_run: view.latest_run ? {
+      run_id: safeString(view.latest_run.run_id),
+      scan_profile: view.scan_profile,
+      status: normalizeSecurityStatus(view.latest_run.status),
+      summary: safeString(view.latest_run.summary),
+      requested_at: safeIso(view.latest_run.requested_at),
+      started_at: safeIso(view.latest_run.started_at),
+      completed_at: safeIso(view.latest_run.completed_at),
+      updated_at: safeIso(view.latest_run.updated_at || view.latest_run.completed_at),
+      score: Math.max(0, Math.min(100, safeNumber(view.latest_run.score, view.score))),
+      critical_count: safeNumber(view.latest_run.critical_count, view.critical_count),
+      high_count: safeNumber(view.latest_run.high_count, view.high_count),
+      medium_count: safeNumber(view.latest_run.medium_count, view.medium_count),
+      low_count: safeNumber(view.latest_run.low_count, view.low_count),
+      info_count: safeNumber(view.latest_run.info_count, view.info_count),
+      tools: safeList(view.latest_run.tools || view.tools).slice(0, 6),
+      coverage_summary: view.latest_run.coverage_summary || view.coverage_summary,
+      tool_results: view.latest_run.tool_results || view.tool_results,
+      execution_timeline: Array.isArray(view.latest_run.execution_timeline) ? view.latest_run.execution_timeline.slice(0, 12) : view.execution_timeline,
+      evidence_refs: safeList(view.latest_run.evidence_refs || view.evidence_refs).slice(0, 24),
+      app_id: safeString(view.latest_run.app_id || view.app_id),
+      app_label: safeString(view.latest_run.app_label || view.app_label),
+    } : null,
+    history: Array.isArray(view.history) ? view.history.slice(0, 8).map((run) => ({
+      run_id: safeString(run.run_id),
+      scan_profile: normalizeSecurityProfileId(run.scan_profile || view.profile),
+      status: normalizeSecurityStatus(run.status),
+      summary: safeString(run.summary),
+      started_at: safeIso(run.started_at),
+      completed_at: safeIso(run.completed_at),
+      updated_at: safeIso(run.updated_at || run.completed_at),
+      score: Math.max(0, Math.min(100, safeNumber(run.score, 0))),
+      critical_count: safeNumber(run.critical_count, 0),
+      high_count: safeNumber(run.high_count, 0),
+      medium_count: safeNumber(run.medium_count, 0),
+      low_count: safeNumber(run.low_count, 0),
+      info_count: safeNumber(run.info_count, 0),
+    })) : [],
+    saved_snapshot: true,
+    sanitized: true,
+  };
+}
+
+export function selectSecurityProfileSnapshotViews(payload = {}) {
+  return LITE_SECURITY_PROFILE_IDS.reduce((profiles, profile) => {
+    profiles[profile] = selectSecurityProfileSnapshotView(payload, profile);
+    return profiles;
+  }, {});
+}
+
+export function selectSecurityHistorySnapshotView(payload = {}) {
+  const history = selectSecurityHistorySummaryView(payload).slice(0, 20).map((run) => ({
+    run_id: safeString(run.run_id),
+    scan_profile: normalizeSecurityProfileId(run.scan_profile || (run.app_id ? 'app' : 'quick')),
+    status: normalizeSecurityStatus(run.status),
+    summary: safeString(run.summary),
+    started_at: safeIso(run.started_at),
+    completed_at: safeIso(run.completed_at),
+    updated_at: safeIso(run.updated_at || run.completed_at),
+    score: Math.max(0, Math.min(100, safeNumber(run.score, 0))),
+    critical_count: safeNumber(run.critical_count, 0),
+    high_count: safeNumber(run.high_count, 0),
+    medium_count: safeNumber(run.medium_count, 0),
+    low_count: safeNumber(run.low_count, 0),
+    info_count: safeNumber(run.info_count, 0),
+    app_id: safeString(run.app_id),
+    app_label: safeString(run.app_label),
+  }));
+  return {
+    view_model: LITE_SECURITY_HISTORY_SNAPSHOT_VERSION,
+    history,
+    history_by_profile: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
+      items[profile] = history.filter((run) => normalizeSecurityProfileId(run.scan_profile) === profile).slice(0, 8);
+      return items;
+    }, {}),
+    latest_by_profile: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
+      const run = history.find((entry) => normalizeSecurityProfileId(entry.scan_profile) === profile);
+      if (run) items[profile] = run;
+      return items;
+    }, {}),
+    updated_at: safeIso(payload?.updated_at || payload?.checked_at || history[0]?.updated_at || history[0]?.completed_at),
+    saved_snapshot: true,
+    sanitized: true,
+  };
+}
+
+export function selectSecurityScreenSnapshotView(payload = {}) {
+  const summary = selectSecurityScreenView(payload);
+  return {
+    view_model: 'security-screen-snapshot-v1',
+    version: LITE_SECURITY_VIEW_MODEL_VERSION,
+    status: summary.status,
+    summary: summary.summary,
+    score: summary.score,
+    scan_profile: summary.scan_profile,
+    app_id: summary.app_id,
+    app_label: summary.app_label,
+    checked_at: summary.checked_at,
+    updated_at: summary.updated_at,
+    last_run: summary.last_run,
+    security_summary: summary.security_summary,
+    progress_summary: summary.progress_summary,
+    finding_delta_summary: summary.finding_delta_summary,
+    history_summary: Array.isArray(summary.history_summary) ? summary.history_summary.slice(0, 20) : [],
+    evidence_summary: summary.evidence_summary,
+    profile_latest: summary.profile_latest,
+    security_profiles: selectSecurityProfileSnapshotViews(summary),
+    security_history_snapshot: selectSecurityHistorySnapshotView(summary),
+    live: Boolean(summary.live),
+    saved_snapshot: true,
+    sanitized: true,
+  };
 }
 
 export function selectSecuritySummaryView(payload = {}) {
