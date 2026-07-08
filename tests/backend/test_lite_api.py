@@ -6999,3 +6999,50 @@ def test_lite_security_history_entries_keep_profile_safe_summary_contract():
     assert '"evidence_refs"' in service
     assert 'policy.redact_value' in service
     assert '"summary"' in service
+
+
+def test_lite_security_enterprise_scanner_profile_history_contract():
+    security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    policy_source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    ui = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "def security_profile_latest" in security
+    assert '"profile_latest"' in security
+    assert "limit: int = 20" in security
+    assert "_discover_nats_config" in security
+    assert "_pm2_process_cmdline(\"pocket-nats\")" in security
+    assert "target-aware" not in security.lower()
+    assert "_photoprism_proot_targets" in security
+    assert "PhotoPrism app binary metadata" in security
+    assert "POCKETLAB_LITE_BACKUP_ROOT" in policy_source
+    assert "pocket-lab-lite-backups" in policy_source
+    assert "scanner_quality" in security
+    assert '"backend_owned": True' in security
+    assert '"browser_execution": False' in security
+    assert "scan_profile" in view_models
+    assert "coverage_summary" in view_models
+    assert "tool_results" in view_models
+    assert "execution_timeline" in view_models
+    assert "profile_latest" in view_models
+    assert "profileRunTimestampLabel" in ui
+    assert "No saved check yet" in ui
+    assert "data-security-scan-details-profile-bound" in ui
+    assert "check path is in Manage" not in ui
+    assert "quick check path is in Manage" not in ui.lower()
+    assert "full check path is in Manage" not in ui.lower()
+    assert "app check path is in Manage" not in ui.lower()
+    assert "SecurityProgressiveDetailsLazy" in ui
+    assert "type === 'checkPath'" in details
+    assert "raw scanner output" in details.lower()
+
+
+def test_lite_security_backup_and_nats_discovery_helpers_are_safe():
+    ensure_runtime_path()
+    from api_fastapi.services import lite_security_policy as policy
+
+    candidates = [str(item) for item in policy.backup_metadata_candidates(Path.cwd())]
+    assert any("pocket-lab-lite-backups" in item for item in candidates)
+    assert any("manifests" in item for item in candidates)
+    assert any("receipts" in item for item in candidates)

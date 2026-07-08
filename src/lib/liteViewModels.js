@@ -904,9 +904,11 @@ function normalizeSecurityRun(run = {}) {
     status: normalizeSecurityStatus(run.status || run.state || ''),
     state: normalizeSecurityStatus(run.state || run.status || ''),
     phase: normalizeSecurityStatus(run.phase || ''),
-    started_at: safeIso(run.started_at),
-    completed_at: safeIso(run.completed_at),
-    updated_at: safeIso(run.updated_at || run.checked_at),
+    requested_at: safeIso(run.requested_at || run.queued_at),
+    started_at: safeIso(run.started_at || run.requested_at),
+    completed_at: safeIso(run.completed_at || run.updated_at || run.checked_at),
+    updated_at: safeIso(run.updated_at || run.checked_at || run.completed_at),
+    summary: safeString(run.summary || ''),
     duration_seconds: safeNumber(run.duration_seconds, 0),
     tools: safeList(run.tools || ['lynis', 'trivy']),
     scan_profile: safeString(run.scan_profile || 'quick', 'quick'),
@@ -917,14 +919,17 @@ function normalizeSecurityRun(run = {}) {
     high_count: safeNumber(run.high_count, 0),
     medium_count: safeNumber(run.medium_count, 0),
     low_count: safeNumber(run.low_count, 0),
+    info_count: safeNumber(run.info_count, 0),
+    items_to_review: safeNumber(run.items_to_review ?? run.findings_count, 0),
+    evidence_count: safeNumber(run.evidence_count, 0),
     partial_results: safeBool(run.partial_results),
     sbom_saved: safeBool(run.sbom_saved),
     evidence_refs: safeList(run.evidence_refs),
     tool_results: selectSecurityToolResultsView(run.tool_results),
     execution_timeline: selectSecurityTimelineView({ execution_timeline: run.execution_timeline }),
   }, [
-    'run_id', 'status', 'state', 'phase', 'started_at', 'completed_at', 'updated_at', 'duration_seconds',
-    'tools', 'scan_profile', 'app_id', 'app_label', 'coverage_summary', 'critical_count', 'high_count', 'medium_count', 'low_count', 'partial_results', 'sbom_saved',
+    'run_id', 'status', 'state', 'phase', 'requested_at', 'started_at', 'completed_at', 'updated_at', 'summary', 'duration_seconds',
+    'tools', 'scan_profile', 'app_id', 'app_label', 'coverage_summary', 'critical_count', 'high_count', 'medium_count', 'low_count', 'info_count', 'items_to_review', 'evidence_count', 'partial_results', 'sbom_saved',
     'evidence_refs', 'tool_results', 'execution_timeline',
   ]);
 }
@@ -988,23 +993,39 @@ export function selectSecurityFindingDeltaView(payload = {}) {
 
 export function selectSecurityHistorySummaryView(payload = {}) {
   const history = Array.isArray(payload?.history) ? payload.history : [];
-  return history.slice(0, 8).map((item) => copySafeKeys({
-    run_id: safeString(item?.run_id || item?.id || ''),
-    status: normalizeSecurityStatus(item?.status || ''),
-    score: safeNumber(item?.score, 0),
-    summary: safeString(item?.summary || ''),
-    completed_at: safeIso(item?.completed_at || item?.updated_at || item?.checked_at),
-    started_at: safeIso(item?.started_at),
-    duration_seconds: safeNumber(item?.duration_seconds, 0),
-    critical_count: safeNumber(item?.critical_count, 0),
-    high_count: safeNumber(item?.high_count, 0),
-    medium_count: safeNumber(item?.medium_count, 0),
-    low_count: safeNumber(item?.low_count, 0),
-    evidence_count: safeNumber(item?.evidence_count, 0),
-  }, [
-    'run_id', 'status', 'score', 'summary', 'completed_at', 'started_at', 'duration_seconds',
-    'critical_count', 'high_count', 'medium_count', 'low_count', 'evidence_count',
-  ]));
+  return history.slice(0, 20).map((item) => {
+    const run = normalizeSecurityRun(item) || {};
+    return copySafeKeys({
+      ...run,
+      run_id: safeString(item?.run_id || item?.id || run.run_id || ''),
+      status: normalizeSecurityStatus(item?.status || run.status || ''),
+      score: safeNumber(item?.score, 0),
+      summary: safeString(item?.summary || run.summary || ''),
+      requested_at: safeIso(item?.requested_at || item?.queued_at || run.requested_at),
+      completed_at: safeIso(item?.completed_at || item?.updated_at || item?.checked_at || run.completed_at),
+      started_at: safeIso(item?.started_at || item?.requested_at || run.started_at),
+      duration_seconds: safeNumber(item?.duration_seconds, 0),
+      critical_count: safeNumber(item?.critical_count, 0),
+      high_count: safeNumber(item?.high_count, 0),
+      medium_count: safeNumber(item?.medium_count, 0),
+      low_count: safeNumber(item?.low_count, 0),
+      info_count: safeNumber(item?.info_count, 0),
+      items_to_review: safeNumber(item?.items_to_review ?? item?.findings_count, 0),
+      evidence_count: safeNumber(item?.evidence_count || run.evidence_count, 0),
+      evidence_refs: safeList(item?.evidence_refs || run.evidence_refs).slice(0, 24),
+      tools: safeList(item?.tools || run.tools),
+      scan_profile: safeString(item?.scan_profile || run.scan_profile || 'quick', 'quick'),
+      app_id: safeString(item?.app_id || run.app_id || ''),
+      app_label: safeString(item?.app_label || run.app_label || ''),
+      coverage_summary: selectSecurityCoverageSummaryView(item),
+      tool_results: selectSecurityToolResultsView(item?.tool_results || run.tool_results),
+      execution_timeline: selectSecurityTimelineView(item),
+    }, [
+      'run_id', 'status', 'score', 'summary', 'requested_at', 'completed_at', 'started_at', 'duration_seconds',
+      'critical_count', 'high_count', 'medium_count', 'low_count', 'info_count', 'items_to_review', 'evidence_count',
+      'evidence_refs', 'tools', 'scan_profile', 'app_id', 'app_label', 'coverage_summary', 'tool_results', 'execution_timeline',
+    ]);
+  });
 }
 
 export function selectSecurityToolResultsView(toolResults = {}) {
@@ -1067,6 +1088,9 @@ export function selectSecurityCoverageSummaryView(payload = {}) {
     source_targets: Array.isArray(coverage.source_targets)
       ? coverage.source_targets.slice(0, 12).map((item) => copySafeKeys(item, ['label', 'relative', 'present', 'kind']))
       : [],
+    scanner_quality: isObject(coverage.scanner_quality)
+      ? copySafeKeys(coverage.scanner_quality, ['profile', 'backend_owned', 'target_aware', 'bounded_timeouts', 'sanitized_evidence', 'raw_scanner_output_hidden', 'private_media_skipped', 'browser_execution'])
+      : {},
   };
 }
 
@@ -1125,6 +1149,10 @@ export function selectSecuritySummaryView(payload = {}) {
     tool_results: selectSecurityToolResultsView(payload?.tool_results || lastRun?.tool_results),
     finding_delta: selectSecurityFindingDeltaView(payload),
     history: selectSecurityHistorySummaryView(payload),
+    profile_latest: isObject(payload?.profile_latest) ? Object.entries(payload.profile_latest).reduce((safe, [profile, run]) => {
+      safe[safeString(profile)] = normalizeSecurityRun(run) || run;
+      return safe;
+    }, {}) : {},
     findings: findings.findings,
     critical_issues: findings.critical_issues,
     component_posture: Array.isArray(payload?.component_posture)

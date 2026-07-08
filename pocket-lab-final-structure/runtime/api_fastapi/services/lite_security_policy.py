@@ -485,11 +485,16 @@ def photoprism_config_dir() -> Path:
 def backup_metadata_candidates(root: Path | None = None) -> list[Path]:
     base = (root or repo_root()).resolve()
     home = _termux_home()
+    backup_root = Path(os.environ.get("POCKETLAB_LITE_BACKUP_ROOT") or str(home / "pocket-lab-lite-backups")).expanduser()
     candidates = [
         base / "state/recovery",
         base / "state/backups",
         base / "state/lite/recovery",
         base / "state/lite/apps/photoprism/backups",
+        backup_root / "manifests",
+        backup_root / "receipts",
+        backup_root / "app_backups",
+        backup_root / "apps/photoprism",
         home / ".pocket_lab/lite/recovery",
         home / ".pocket_lab/lite/backups/manifests",
         home / ".pocket_lab/lite/apps/photoprism/backups",
