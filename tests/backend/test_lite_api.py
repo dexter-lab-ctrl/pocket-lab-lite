@@ -6522,3 +6522,52 @@ def test_lite_security_premium_polish_v3_preserves_safe_motion_and_backend_bound
     assert "nats.connect" not in combined
     assert "onClickCapture" not in combined
     assert "onPointerDownCapture" not in combined
+
+
+def test_lite_security_premium_polish_v4_portal_theme_and_details_skin():
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert 'data-lite-overlay-portal="true"' in overlay
+    assert "theme-pocket-lite-daylight lite-overlay-root" in overlay
+    assert "Security premium polish v4: portaled focused-details skin fallback" in css
+    for selector in [
+        '[data-lite-overlay-portal="true"] .lite-overlay-surface.lite-security-overlay-surface',
+        '.lite-overlay-surface.lite-security-overlay-surface.lite-security-phase3-details-shell',
+        '[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll',
+        '[data-lite-overlay-portal="true"] .lite-security-phase2-details-panel',
+        '[data-lite-overlay-portal="true"] .lite-progressive-details-summary',
+        '[data-lite-overlay-portal="true"] .lite-progressive-detail-section',
+        '[data-lite-overlay-portal="true"] .lite-technical-details',
+        '[data-lite-overlay-portal="true"] .lite-history-section',
+    ]:
+        assert selector in css
+
+    assert "radial-gradient(circle at 50% 0%" in css
+    assert "scrollbar-gutter: stable both-edges" in css
+    assert "grid-template-columns: repeat(2, minmax(0, 1fr))" in css
+
+
+def test_lite_security_premium_polish_v4_keeps_focus_accessibility_and_safe_boundaries():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    overlay = Path("src/lite/LiteOverlay.jsx").read_text()
+    css = Path("src/index.css").read_text()
+    combined = security + overlay + css
+
+    assert 'role="dialog"' in overlay
+    assert 'aria-modal="true"' in overlay
+    assert "aria-labelledby={titleId}" in overlay
+    assert "aria-label={variantClasses.closeLabel}" in overlay
+    assert "Close Security details" in security or "Close security details" in overlay
+    assert "@media (prefers-reduced-motion: reduce)" in css
+    assert "animation: none !important" in css
+    assert "liteApi.runSecurityScan" in security
+    assert "liteApi.securityEvidence" in security
+    assert "useDrag" not in security
+    assert "fetch(" not in security
+    assert "child_process" not in combined
+    assert "exec(" not in combined
+    assert "spawn(" not in combined
+    assert "nats.connect" not in combined
+    assert "onClickCapture" not in combined
+    assert "onPointerDownCapture" not in combined

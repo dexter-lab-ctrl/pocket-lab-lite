@@ -18709,3 +18709,430 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* Security premium polish v4: portaled focused-details skin fallback.
+   Fixes Security detail sheets that are rendered into document.body where the
+   normal Lite theme ancestor may be missing. These selectors intentionally
+   target the Security overlay classes directly so Safety History, Check path,
+   finding details, and remediation sheets remain skinned inside the portal. */
+[data-lite-overlay-portal="true"].lite-security-overlay-layer,
+.lite-security-overlay-layer[data-lite-overlay-portal="true"] {
+  color: #0f172a;
+  --lite-security-v4-ink: #0f172a;
+  --lite-security-v4-muted: #64748b;
+  --lite-security-v4-soft: #f8fafc;
+  --lite-security-v4-line: rgba(148, 163, 184, 0.24);
+  --lite-security-v4-blue: #2563eb;
+  --lite-security-v4-cyan: #0891b2;
+  --lite-security-v4-shadow: 0 24px 72px rgba(15, 23, 42, 0.16);
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-surface.lite-security-overlay-surface,
+.lite-overlay-surface.lite-security-overlay-surface.lite-security-phase3-panel,
+.lite-overlay-surface.lite-security-overlay-surface.lite-security-phase3-details-shell,
+.lite-overlay-surface.lite-security-overlay-surface.lite-security-phase3-finding-shell,
+.lite-overlay-surface.lite-security-overlay-surface.lite-security-remediation-panel {
+  overflow: hidden !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 1.65rem !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(147, 197, 253, 0.34), transparent 13rem),
+    radial-gradient(circle at 100% 12%, rgba(14, 165, 233, 0.12), transparent 16rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 250, 252, 0.98)) !important;
+  box-shadow:
+    var(--lite-security-v4-shadow, 0 24px 72px rgba(15, 23, 42, 0.16)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  color: var(--lite-security-v4-ink, #0f172a) !important;
+  isolation: isolate;
+}
+
+[data-lite-overlay-portal="true"] .lite-security-phase3-panel::before,
+.lite-security-phase3-panel.lite-security-phase3-details-shell::before,
+.lite-security-phase3-panel.lite-security-phase3-finding-shell::before,
+.lite-security-remediation-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.42rem;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.32), rgba(14, 165, 233, 0.26), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-lite-overlay-portal="true"] .lite-security-overlay-grip,
+[data-lite-overlay-portal="true"] .lite-security-phase3-grip,
+[data-lite-overlay-portal="true"] .lite-security-manage-grip {
+  height: 1.55rem !important;
+  display: grid !important;
+  place-items: center !important;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.56)) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-security-overlay-grip span,
+[data-lite-overlay-portal="true"] .lite-security-phase3-grip span,
+[data-lite-overlay-portal="true"] .lite-security-manage-grip span {
+  width: 2.75rem !important;
+  height: 0.32rem !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, rgba(147, 197, 253, 0.78), rgba(59, 130, 246, 0.48)) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.95), 0 8px 20px rgba(59, 130, 246, 0.18) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-overlay-head,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-phase3-head,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head {
+  flex: 0 0 auto !important;
+  align-items: flex-start !important;
+  gap: 1rem !important;
+  padding: 0.35rem clamp(1rem, 3vw, 1.35rem) 1rem !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.78) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.82)) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-overlay-head span,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-phase3-head span,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head span,
+.lite-security-phase2-details-head span {
+  color: #2563eb !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.105em !important;
+  text-transform: uppercase !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-overlay-head strong,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-phase3-head strong,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head strong {
+  display: block !important;
+  margin-top: 0.15rem !important;
+  color: #0f172a !important;
+  font-size: clamp(1.15rem, 3.5vw, 1.45rem) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.035em !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-overlay-head p,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-phase3-head p,
+[data-lite-overlay-portal="true"] .lite-overlay-head.lite-security-manage-head p {
+  max-width: 38rem !important;
+  margin: 0.35rem 0 0 !important;
+  color: #64748b !important;
+  line-height: 1.5 !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-close.lite-security-overlay-close,
+[data-lite-overlay-portal="true"] .lite-overlay-close.lite-security-phase3-close,
+[data-lite-overlay-portal="true"] .lite-overlay-close.lite-security-manage-close,
+.lite-finding-detail-close {
+  flex: 0 0 auto !important;
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  min-width: 2.75rem !important;
+  min-height: 2.75rem !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(203, 213, 225, 0.78) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #334155 !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-overlay-scroll,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-manage-scroll,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-remediation-scroll,
+.lite-overlay-scroll.lite-security-overlay-scroll,
+.lite-overlay-scroll.lite-security-phase3-scroll,
+.lite-overlay-scroll.lite-security-manage-scroll,
+.lite-overlay-scroll.lite-security-remediation-scroll {
+  display: block !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-gutter: stable both-edges !important;
+  padding: clamp(1rem, 2.8vw, 1.35rem) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.09), transparent 15rem),
+    radial-gradient(circle at 100% 10%, rgba(14, 165, 233, 0.08), transparent 15rem),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96)) !important;
+  color: #0f172a !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    inset 0 22px 42px rgba(255, 255, 255, 0.36) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll > *,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-overlay-scroll > *,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-manage-scroll > *,
+.lite-overlay-scroll.lite-security-phase3-scroll > *,
+.lite-overlay-scroll.lite-security-overlay-scroll > *,
+.lite-overlay-scroll.lite-security-manage-scroll > * {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll::-webkit-scrollbar,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-overlay-scroll::-webkit-scrollbar,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-manage-scroll::-webkit-scrollbar,
+.lite-overlay-scroll.lite-security-phase3-scroll::-webkit-scrollbar,
+.lite-overlay-scroll.lite-security-overlay-scroll::-webkit-scrollbar,
+.lite-overlay-scroll.lite-security-manage-scroll::-webkit-scrollbar {
+  width: 0.72rem;
+  height: 0.72rem;
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll::-webkit-scrollbar-track,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-overlay-scroll::-webkit-scrollbar-track,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-manage-scroll::-webkit-scrollbar-track,
+.lite-overlay-scroll.lite-security-phase3-scroll::-webkit-scrollbar-track,
+.lite-overlay-scroll.lite-security-overlay-scroll::-webkit-scrollbar-track,
+.lite-overlay-scroll.lite-security-manage-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.55);
+}
+
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll::-webkit-scrollbar-thumb,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-overlay-scroll::-webkit-scrollbar-thumb,
+[data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-manage-scroll::-webkit-scrollbar-thumb,
+.lite-overlay-scroll.lite-security-phase3-scroll::-webkit-scrollbar-thumb,
+.lite-overlay-scroll.lite-security-overlay-scroll::-webkit-scrollbar-thumb,
+.lite-overlay-scroll.lite-security-manage-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(248, 250, 252, 0.9);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.62), rgba(14, 165, 233, 0.45));
+}
+
+[data-lite-overlay-portal="true"] .lite-security-phase2-details-panel,
+[data-lite-overlay-portal="true"] .lite-security-phase3-panel .lite-security-phase2-details-panel,
+.lite-security-phase3-details-shell .lite-security-phase2-details-panel,
+.lite-security-phase3-finding-shell .lite-security-phase2-details-panel,
+.lite-security-remediation-panel .lite-security-phase2-details-panel {
+  display: grid !important;
+  gap: 1rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #0f172a !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-security-phase2-details-head,
+.lite-security-phase3-details-shell .lite-security-phase2-details-head {
+  position: static !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  padding: 0.95rem !important;
+  border: 1px solid rgba(191, 219, 254, 0.82) !important;
+  border-radius: 1.25rem !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.12), transparent 12rem),
+    rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-security-phase2-details-head h2,
+.lite-security-phase3-details-shell .lite-security-phase2-details-head h2 {
+  margin: 0.12rem 0 0.35rem !important;
+  color: #0f172a !important;
+  font-size: clamp(1.25rem, 4vw, 1.7rem) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.035em !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-security-phase2-details-head p,
+.lite-security-phase3-details-shell .lite-security-phase2-details-head p {
+  margin: 0 !important;
+  color: #64748b !important;
+  line-height: 1.5 !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details,
+.lite-security-phase3-details-shell .lite-progressive-details,
+.lite-security-phase3-finding-shell .lite-progressive-details {
+  display: grid !important;
+  gap: 1rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #0f172a !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details-summary,
+.lite-security-phase3-details-shell .lite-progressive-details-summary {
+  display: grid !important;
+  gap: 0.4rem !important;
+  padding: 1rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 1.2rem !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.93), rgba(248, 250, 252, 0.86)) !important;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.055) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details-summary > span,
+.lite-security-phase3-details-shell .lite-progressive-details-summary > span {
+  color: #2563eb !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.105em !important;
+  text-transform: uppercase !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details-summary h3,
+.lite-security-phase3-details-shell .lite-progressive-details-summary h3 {
+  margin: 0 !important;
+  color: #0f172a !important;
+  font-size: clamp(1.05rem, 3vw, 1.3rem) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.025em !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details-summary p,
+.lite-security-phase3-details-shell .lite-progressive-details-summary p {
+  margin: 0 !important;
+  color: #64748b !important;
+  line-height: 1.55 !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details-status,
+.lite-security-phase3-details-shell .lite-progressive-details-status {
+  justify-self: start !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 1.8rem !important;
+  padding: 0.28rem 0.62rem !important;
+  border: 1px solid rgba(59, 130, 246, 0.2) !important;
+  border-radius: 999px !important;
+  background: rgba(219, 234, 254, 0.68) !important;
+  color: #1d4ed8 !important;
+  font-size: 0.78rem !important;
+  font-weight: 850 !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-details-grid,
+.lite-security-phase3-details-shell .lite-progressive-details-grid {
+  display: grid !important;
+  gap: 0.78rem !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-detail-section,
+.lite-security-phase3-details-shell .lite-progressive-detail-section,
+.lite-security-phase3-finding-shell .lite-progressive-detail-section {
+  display: grid !important;
+  gap: 0.32rem !important;
+  min-width: 0 !important;
+  padding: 0.9rem 0.95rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.88) !important;
+  border-radius: 1.05rem !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.88)) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.045) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-detail-section strong,
+.lite-security-phase3-details-shell .lite-progressive-detail-section strong {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.012em !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-detail-section p,
+.lite-security-phase3-details-shell .lite-progressive-detail-section p {
+  margin: 0 !important;
+  color: #475569 !important;
+  line-height: 1.55 !important;
+  overflow-wrap: anywhere !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-detail-section.is-saved,
+.lite-security-phase3-details-shell .lite-progressive-detail-section.is-saved {
+  border-color: rgba(16, 185, 129, 0.24) !important;
+  background: linear-gradient(180deg, rgba(236, 253, 245, 0.9), rgba(255, 255, 255, 0.88)) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-detail-section.is-attention,
+.lite-security-phase3-details-shell .lite-progressive-detail-section.is-attention {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.94), rgba(255, 255, 255, 0.88)) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-progressive-detail-section.is-next-step,
+.lite-security-phase3-details-shell .lite-progressive-detail-section.is-next-step {
+  border-color: rgba(59, 130, 246, 0.24) !important;
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(255, 255, 255, 0.88)) !important;
+}
+
+[data-lite-overlay-portal="true"] .lite-technical-details,
+[data-lite-overlay-portal="true"] .lite-history-section,
+.lite-security-phase3-details-shell .lite-technical-details,
+.lite-security-phase3-details-shell .lite-history-section {
+  margin-top: 0 !important;
+  padding: 0.9rem 0.95rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.86) !important;
+  border-radius: 1.05rem !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04) !important;
+  color: #0f172a !important;
+}
+
+@media (min-width: 760px) {
+  [data-lite-overlay-portal="true"] .lite-progressive-details-grid,
+  .lite-security-phase3-details-shell .lite-progressive-details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 900px) {
+  [data-lite-overlay-portal="true"] .lite-security-phase3-panel,
+  [data-lite-overlay-portal="true"] .lite-security-phase3-details-shell,
+  [data-lite-overlay-portal="true"] .lite-security-phase3-finding-shell,
+  [data-lite-overlay-portal="true"] .lite-security-remediation-panel {
+    width: min(42rem, calc(100vw - 2rem)) !important;
+    max-height: calc(var(--lite-visual-viewport-height, 100vh) - 2.2rem) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  [data-lite-overlay-portal="true"] .lite-overlay-surface.lite-security-overlay-surface,
+  .lite-overlay-surface.lite-security-overlay-surface.lite-security-phase3-panel {
+    border-radius: 1.45rem 1.45rem 1rem 1rem !important;
+  }
+
+  [data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-phase3-scroll,
+  [data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-overlay-scroll,
+  [data-lite-overlay-portal="true"] .lite-overlay-scroll.lite-security-manage-scroll,
+  .lite-overlay-scroll.lite-security-phase3-scroll,
+  .lite-overlay-scroll.lite-security-overlay-scroll,
+  .lite-overlay-scroll.lite-security-manage-scroll {
+    padding: 0.9rem !important;
+    scrollbar-gutter: auto !important;
+  }
+
+  [data-lite-overlay-portal="true"] .lite-security-phase2-details-head,
+  .lite-security-phase3-details-shell .lite-security-phase2-details-head {
+    padding: 0.85rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lite-overlay-portal="true"] .lite-security-phase3-panel::before,
+  .lite-security-phase3-panel.lite-security-phase3-details-shell::before,
+  .lite-security-phase3-panel.lite-security-phase3-finding-shell::before,
+  .lite-security-remediation-panel::before,
+  [data-lite-overlay-portal="true"] .lite-progressive-detail-section,
+  .lite-security-phase3-details-shell .lite-progressive-detail-section {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
