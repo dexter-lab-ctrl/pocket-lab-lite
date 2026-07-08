@@ -171,7 +171,16 @@ const SECURITY_PROFILE1_QUICK_SAFETY_GUARDS = [
   'coverage_summary',
   'scan_profile',
 ];
+const SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS = [
+  'Full Local Check',
+  'Checks this device more deeply',
+  'Best while phone is charging',
+  'Can take 10–30 minutes',
+  'Still skips photos, backups, and large caches',
+  'profile: full',
+];
 void SECURITY_PROFILE1_QUICK_SAFETY_GUARDS;
+void SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS;
 
 const SECURITY_SCORE_RING_GREEN_SPRING_GUARDS = [
   'lite-security-score-ring-green-fill',
@@ -239,7 +248,7 @@ const SECURITY_MANAGE_SECTION_DESCRIPTIONS = {
   overview: 'Score, last checked state, saved evidence, and tool chips.',
   changes: 'New, resolved, and still-present safety changes.',
   issues: 'Compact review rows with focused finding details.',
-  coverage: 'What Quick Safety Check checks, skips, or marks partial.',
+  coverage: 'What the latest Security check covered, skipped, or marked partial.',
   check_path: 'Backend-truthful FastAPI, worker, Lynis, Trivy, and evidence steps.',
   evidence: 'Sanitized evidence summary. Raw scanner output stays backend-owned.',
   history: 'Recent safety trend summary with lazy details.',
@@ -303,6 +312,39 @@ const DEFAULT_QUICK_COVERAGE_SUMMARY = {
   timed_out_targets: [],
 };
 
+
+const DEFAULT_FULL_COVERAGE_SUMMARY = {
+  profile: 'full',
+  checked_targets: [
+    'Termux host',
+    'Pocket Lab Lite',
+    'Runtime config',
+    'PROot Ubuntu',
+    'PhotoPrism',
+    'Backup metadata',
+  ],
+  skipped_targets: [
+    'Photo library/media',
+    'Android shared storage',
+    'PhotoPrism originals/import/media/cache/sidecars',
+    'Backup payloads',
+    'Restic repository contents',
+    'Service logs',
+    'Go/npm/tool caches',
+  ],
+  excluded_groups: [
+    'Photo library/media',
+    'Android shared storage',
+    'Backup payloads and restic repository contents',
+    'Logs and generated runtime histories',
+    'Go/npm/tool caches',
+  ],
+  partial_targets: [],
+  timed_out_targets: [],
+  missing_targets: [],
+  target_statuses: [],
+};
+
 function quickCoverageList(values, fallback = []) {
   const items = Array.isArray(values) && values.length ? values : fallback;
   return items.map((value) => String(value || '').trim()).filter(Boolean).slice(0, 12);
@@ -328,6 +370,30 @@ function QuickCoverageRows({ title, items, statusLabel, statusTone = 'ready' }) 
             <span className={`lite-security-quick-coverage-pill lite-security-quick-coverage-${statusTone}`}>{statusLabel}</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+
+function SecurityTargetStatusRows({ targetStatuses = [] }) {
+  const rows = Array.isArray(targetStatuses) ? targetStatuses.slice(0, 12) : [];
+  if (!rows.length) return null;
+  return (
+    <div className="lite-security-quick-coverage-group lite-security-full-target-statuses">
+      <h4>Target status</h4>
+      <div className="lite-security-quick-coverage-list" role="list">
+        {rows.map((item) => {
+          const status = String(item?.status || 'unknown').toLowerCase();
+          const tone = ['checked', 'completed'].includes(status) ? 'ready' : ['partial', 'timed_out', 'missing', 'review'].includes(status) ? 'review' : status === 'failed' ? 'danger' : 'neutral';
+          const label = status === 'timed_out' ? 'Timed out' : status === 'missing' ? 'Missing' : status === 'partial' ? 'Partial' : status === 'checked' || status === 'completed' ? 'Checked' : status || 'Unknown';
+          return (
+            <div key={`${item?.target_id || item?.target_label}-${item?.tool || 'target'}`} className="lite-security-quick-coverage-row" role="listitem">
+              <span>{item?.target_label || item?.target_id || 'Security target'}</span>
+              <span className={`lite-security-quick-coverage-pill lite-security-quick-coverage-${tone}`}>{label}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1513,6 +1579,7 @@ export default function SecurityScreen() {
   const [activeSecurityDetails, setActiveSecurityDetails] = useState(null);
   const [securityManageOpen, setSecurityManageOpen] = useState(false);
   const [securityManageSection, setSecurityManageSection] = useState('overview');
+  const [fullLocalConfirmOpen, setFullLocalConfirmOpen] = useState(false);
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
   const remediationTriggerRef = useRef(null);
@@ -1534,11 +1601,14 @@ export default function SecurityScreen() {
   const evidenceRun = evidence?.run || null;
   const toolResults = evidenceRun?.tool_results || lastRun?.tool_results || data?.tool_results || {};
   const scanProfile = String(data?.scan_profile || lastRun?.scan_profile || evidenceRun?.scan_profile || result?.scan_profile || 'quick').toLowerCase();
-  const coverageSummary = data?.coverage_summary || lastRun?.coverage_summary || evidence?.coverage_summary || DEFAULT_QUICK_COVERAGE_SUMMARY;
-  const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, DEFAULT_QUICK_COVERAGE_SUMMARY.checked_targets);
-  const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, DEFAULT_QUICK_COVERAGE_SUMMARY.skipped_targets);
+  const coverageFallback = scanProfile === 'full' ? DEFAULT_FULL_COVERAGE_SUMMARY : DEFAULT_QUICK_COVERAGE_SUMMARY;
+  const coverageSummary = data?.coverage_summary || lastRun?.coverage_summary || evidence?.coverage_summary || coverageFallback;
+  const checkedCoverageTargets = quickCoverageList(coverageSummary.checked_targets, coverageFallback.checked_targets);
+  const skippedCoverageTargets = quickCoverageList(coverageSummary.skipped_targets, coverageFallback.skipped_targets);
   const partialCoverageTargets = quickCoverageList(coverageSummary.partial_targets);
   const timedOutCoverageTargets = quickCoverageList(coverageSummary.timed_out_targets);
+  const missingCoverageTargets = quickCoverageList(coverageSummary.missing_targets);
+  const targetCoverageStatuses = Array.isArray(coverageSummary.target_statuses) ? coverageSummary.target_statuses : [];
   const currentEvidenceRefs = Array.from(new Set([
     ...evidenceRefs,
     ...(Array.isArray(evidence?.evidence_refs) ? evidence.evidence_refs : []),
@@ -1767,6 +1837,40 @@ export default function SecurityScreen() {
     }
   }
 
+  function openFullLocalConfirm(event) {
+    event?.stopPropagation?.();
+    setFullLocalConfirmOpen(true);
+  }
+
+  function closeFullLocalConfirm() {
+    setFullLocalConfirmOpen(false);
+  }
+
+  async function startFullLocalCheck() {
+    const flowCheck = securityFlow.requestRun();
+    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    setFullLocalConfirmOpen(false);
+    setBusy(true);
+    setResult({ status: 'queued', scan_profile: 'full', summary: 'Full Local Check queued.' });
+    setActionError(null);
+    setEvidence(null);
+    setEvidenceError(null);
+    setEvidenceLoading(false);
+    setReceiptCopied(false);
+    try {
+      const payload = await liteApi.runSecurityScan('local', { profile: 'full', reason: 'manual full local check' });
+      securityFlow.accepted(payload);
+      setResult(payload);
+      invalidateSecurityQuery();
+    } catch (err) {
+      securityFlow.fail(err);
+      setResult(null);
+      setActionError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function checkProtectedApp(app) {
     if (!app?.app_id) return;
     setBusy(true);
@@ -1919,6 +2023,8 @@ export default function SecurityScreen() {
     skippedCoverageTargets,
     partialCoverageTargets,
     timedOutCoverageTargets,
+    missingCoverageTargets,
+    targetCoverageStatuses,
   };
 
   const activeSecurityDetailsMeta = securityDetailShellMeta(activeSecurityDetails);
@@ -2157,6 +2263,14 @@ export default function SecurityScreen() {
               <div className="lite-security-safety-center-chips">
                 {safetyCenterChips.map((chip) => <span key={chip.key} className={`lite-security-safety-chip lite-security-safety-chip-${chip.tone}`}>{chip.label}</span>)}
               </div>
+              <div className="lite-security-full-local-card">
+                <div>
+                  <strong>Full Local Check</strong>
+                  <p>Checks this device more deeply. Best while phone is charging. Can take 10–30 minutes. Still skips photos, backups, and large caches.</p>
+                  <small>This does not scan your photo library, restore backups, change app settings, expose secrets, or run anything in the browser.</small>
+                </div>
+                <LiteButton tone="secondary" onClick={openFullLocalConfirm} disabled={scanInProgress || securityFlow.writeBlocked} ariaLabel="Start Full Local Check confirmation">Full Local Check</LiteButton>
+              </div>
             </div>
           ) : null}
 
@@ -2215,8 +2329,8 @@ export default function SecurityScreen() {
             <div className="lite-security-manage-card-list lite-security-quick-coverage-card">
               <div className="lite-security-manage-row">
                 <div>
-                  <strong>Quick safety check coverage</strong>
-                  <p>Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.</p>
+                  <strong>{scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
+                  <p>{scanProfile === 'full' ? 'Checks Termux, Pocket Lab, selected PROot Ubuntu areas, PhotoPrism app/config, route metadata, service status, and backup metadata while skipping heavy/private data.' : 'Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.'}</p>
                 </div>
                 <span className="lite-security-quick-profile-chip">Profile: {scanProfile}</span>
               </div>
@@ -2242,8 +2356,17 @@ export default function SecurityScreen() {
                   statusTone="review"
                 />
               ) : null}
+              {missingCoverageTargets.length ? (
+                <QuickCoverageRows
+                  title="Missing optional targets"
+                  items={missingCoverageTargets}
+                  statusLabel="Missing"
+                  statusTone="review"
+                />
+              ) : null}
+              <SecurityTargetStatusRows targetStatuses={targetCoverageStatuses} />
               <QuickCoverageRows
-                title="Skipped by Quick Safety Check"
+                title={scanProfile === 'full' ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check'}
                 items={skippedCoverageTargets}
                 statusLabel="Skipped"
                 statusTone="neutral"
@@ -2331,6 +2454,33 @@ export default function SecurityScreen() {
           ) : null}
         </animated.section>
         </animated.div>
+      </LiteSheet>
+
+      <LiteSheet
+        open={fullLocalConfirmOpen}
+        onClose={closeFullLocalConfirm}
+        eyebrow="Security"
+        title="Full Local Check"
+        description="Checks this device more deeply while keeping heavy/private data skipped."
+        layerClassName="lite-security-phase3-layer lite-security-detail-layer"
+        className="lite-security-phase3-panel lite-security-full-local-confirm"
+        bodyClassName="lite-security-phase3-scroll"
+        headerClassName="lite-security-phase3-head"
+      >
+        <div className="lite-security-full-local-confirm-body">
+          <p>This checks Pocket Lab, Termux, selected PROot Ubuntu areas, PhotoPrism app files, route config, service status, and backup metadata. It can take 10–30 minutes and is best while the phone is charging.</p>
+          <div className="lite-security-phase1-meta-grid">
+            <span>Does not scan your photo library</span>
+            <span>Does not restore backups</span>
+            <span>Does not change app settings</span>
+            <span>Does not expose secrets</span>
+            <span>Does not run anything in the browser</span>
+          </div>
+          <div className="lite-security-full-local-actions">
+            <LiteButton tone="secondary" onClick={closeFullLocalConfirm}>Cancel</LiteButton>
+            <LiteButton onClick={startFullLocalCheck} disabled={scanInProgress || securityFlow.writeBlocked}>Start Full Local Check</LiteButton>
+          </div>
+        </div>
       </LiteSheet>
 
       <LiteSheet

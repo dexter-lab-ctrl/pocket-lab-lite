@@ -6690,14 +6690,20 @@ def test_lite_security_quick_safety_profile_defaults_and_exclusions_source():
 
     assert policy.normalize_scan_profile(None) == "quick"
     assert policy.normalize_scan_profile("quick") == "quick"
+    assert policy.normalize_scan_profile("full") == "full"
     with pytest.raises(ValueError):
-        policy.normalize_scan_profile("full")
+        policy.normalize_scan_profile("app_check")
 
     assert policy.TIMEOUTS["lynis"] == 300
     assert policy.TIMEOUTS["trivy_vuln_misconfig"] == 420
     assert policy.TIMEOUTS["trivy_secret"] == 240
     assert policy.TIMEOUTS["trivy_sbom"] == 240
     assert policy.TIMEOUTS["overall"] == 900
+    assert policy.TIMEOUTS["full_lynis"] == 900
+    assert policy.TIMEOUTS["full_trivy_vuln_misconfig"] == 1200
+    assert policy.TIMEOUTS["full_trivy_secret"] == 900
+    assert policy.TIMEOUTS["full_trivy_sbom"] == 900
+    assert policy.TIMEOUTS["full_overall"] == 3600
 
     plan = policy.build_quick_scan_plan(Path.cwd())
     assert plan["profile"] == "quick"
@@ -6717,6 +6723,19 @@ def test_lite_security_quick_safety_profile_defaults_and_exclusions_source():
     assert "node_modules" in skip_args
     assert "--skip-files" in skip_args
     assert "*.pyc" in skip_args
+
+    full_plan = policy.build_full_scan_plan(Path.cwd())
+    assert full_plan["profile"] == "full"
+    assert "Termux host" in full_plan["checked_targets"]
+    assert "Pocket Lab Lite" in full_plan["checked_targets"]
+    assert "Runtime config" in full_plan["checked_targets"]
+    assert "PROot Ubuntu" in full_plan["checked_targets"]
+    assert "PhotoPrism" in full_plan["checked_targets"]
+    assert "Backup metadata" in full_plan["checked_targets"]
+    assert "Android shared storage" in full_plan["excluded_groups"]
+    assert "PhotoPrism originals/import/media/cache/sidecars" in full_plan["skipped_targets"]
+    assert "rootfs/var/log" in full_plan["skip_dirs"]
+    assert "*.log" in full_plan["skip_files"]
 
 
 def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeypatch):
@@ -6747,11 +6766,20 @@ def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeyp
     assert explicit_response.json()["scan_profile"] == "quick"
     assert any(item[2].get("profile") == "quick" for item in published)
 
-    unknown_response = client().post("/api/lite/security/check", json={"profile": "full"})
+    full_response = client().post("/api/lite/security/check", json={"profile": "full"})
+    assert full_response.status_code == 202
+    assert full_response.json()["scan_profile"] == "full"
+    full_run = lite_security.read_run(full_response.json()["run_id"])
+    assert full_run["scan_profile"] == "full"
+    assert full_run["coverage_summary"]["profile"] == "full"
+    assert "PhotoPrism originals/import/media/cache/sidecars" in full_run["coverage_summary"]["skipped_targets"]
+    assert any(item[2].get("profile") == "full" for item in published)
+
+    unknown_response = client().post("/api/lite/security/check", json={"profile": "app_check"})
     assert unknown_response.status_code == 400
     error_payload = unknown_response.json()
     error_text = str(error_payload.get("detail") or error_payload.get("message") or error_payload)
-    assert "quick safety check" in error_text.lower()
+    assert "quick safety check" in error_text.lower() or "full local check" in error_text.lower()
 
 
 def test_lite_security_quick_safety_coverage_evidence_is_sanitized_source():
@@ -6770,6 +6798,31 @@ def test_lite_security_quick_safety_coverage_evidence_is_sanitized_source():
     assert "private key" not in security.lower()
 
 
+
+def test_lite_security_full_local_check_profile_source_contract():
+    ensure_runtime_path()
+    from api_fastapi.services import lite_security_policy as policy
+
+    security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
+    ui = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert policy.normalize_scan_profile("full") == "full"
+    assert policy.build_scan_plan("full", Path.cwd())["profile"] == "full"
+    assert "def _run_full_security_scan" in security
+    assert "target-pocketlab-source-trivy-vuln.json" in security
+    assert "target-proot-ubuntu-trivy" in security
+    assert "target-photoprism-config-secret.json" in security
+    assert "target-backup-metadata.json" in security
+    assert "policy.trivy_skip_args_for_profile" in security
+    assert "Full Local Check" in ui
+    assert "Start Full Local Check" in ui
+    assert "profile: 'full'" in ui
+    assert "Unknown safety check profile. Choose Quick Safety Check or Full Local Check." in router
+    assert "window.setInterval" not in ui
+    assert "child_process" not in ui
+    assert "nats.connect" not in ui
+
 def test_lite_security_quick_safety_ui_and_view_model_contract_source():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
     details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
@@ -6782,6 +6835,11 @@ def test_lite_security_quick_safety_ui_and_view_model_contract_source():
     assert "Checks Pocket Lab basics" in security
     assert "Skips photos, backups, and large caches" in security
     assert "Skipped by Quick Safety Check" in security
+    assert "Full Local Check" in security
+    assert "Checks this device more deeply" in security
+    assert "Best while phone is charging" in security
+    assert "Can take 10–30 minutes" in security
+    assert "Start Full Local Check" in security
     assert "DEFAULT_QUICK_COVERAGE_SUMMARY" in security
     assert "QuickCoverageRows" in security
     assert "profile: 'quick'" in security
@@ -6789,13 +6847,15 @@ def test_lite_security_quick_safety_ui_and_view_model_contract_source():
     assert "type === 'coverage'" in details
     assert "Photo libraries and user media were not scanned by the quick profile." in details
     assert "runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, profile: 'quick', ...options })" in api
+    assert "profile: 'full'" in security
     assert "selectSecurityCoverageSummaryView" in view_models
     assert "coverage_summary" in view_models
     assert "scan_profile" in view_models
     assert "coverage-summary.json" in mocks
     assert "lite-security-quick-coverage" in css
 
-    assert "pm2" not in security.lower()
+    assert "pm2 env" not in security.lower()
+    assert "pm2_env" not in security.lower()
     assert "fetch(" not in security + details
     assert "child_process" not in security + details
     assert "exec(" not in security + details

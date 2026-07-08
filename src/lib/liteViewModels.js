@@ -1051,6 +1051,12 @@ export function selectSecurityCoverageSummaryView(payload = {}) {
     excluded_groups: safeList(coverage.excluded_groups),
     partial_targets: safeList(coverage.partial_targets),
     timed_out_targets: safeList(coverage.timed_out_targets),
+    missing_targets: safeList(coverage.missing_targets),
+    failed_targets: safeList(coverage.failed_targets),
+    target_statuses: Array.isArray(coverage.target_statuses)
+      ? coverage.target_statuses.slice(0, 16).map((item) => copySafeKeys(item, ['target_id', 'target_label', 'tool', 'status', 'elapsed_seconds', 'finding_count', 'evidence_ref', 'summary']))
+      : [],
+    evidence_files_written: safeList(coverage.evidence_files_written).slice(0, 24),
     posture_checks: Array.isArray(coverage.posture_checks)
       ? coverage.posture_checks.slice(0, 8).map((item) => copySafeKeys(item, ['label', 'status', 'present', 'kind', 'summary', 'route_ready', 'online_count', 'process_count']))
       : [],

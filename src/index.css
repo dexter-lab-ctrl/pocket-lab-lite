@@ -19836,3 +19836,66 @@ textarea {
     min-width: 0;
   }
 }
+
+/* Security Profile 2 — Full Local Check */
+.lite-security-full-local-card,
+.lite-security-full-local-confirm-body {
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+.lite-security-full-local-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.lite-security-full-local-card p,
+.lite-security-full-local-card small,
+.lite-security-full-local-confirm-body p {
+  margin: 4px 0 0;
+  color: rgba(51, 65, 85, 0.82);
+  line-height: 1.55;
+}
+
+.lite-security-full-local-card small {
+  display: block;
+  font-size: 0.78rem;
+}
+
+.lite-security-full-local-confirm-body {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.lite-security-full-local-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lite-security-full-target-statuses {
+  border-color: rgba(14, 165, 233, 0.18);
+}
+
+@media (max-width: 720px) {
+  .lite-security-full-local-card {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .lite-security-full-local-actions {
+    justify-content: stretch;
+  }
+
+  .lite-security-full-local-actions .lite-button {
+    flex: 1 1 160px;
+  }
+}
