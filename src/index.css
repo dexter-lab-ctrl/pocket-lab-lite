@@ -17460,3 +17460,493 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Security premium visual polish.
+   App Catalog-inspired styling for the Safety Center, Manage tabs, focused
+   details, and remediation sheets. React Spring owns safe panel/card motion;
+   CSS only adds subtle hover/focus micro-interactions and reduced-motion guards. */
+.theme-pocket-lite-daylight .lite-security-phase5-shell {
+  --lite-security-ink: #0f172a;
+  --lite-security-muted: #64748b;
+  --lite-security-border: rgba(148, 163, 184, 0.22);
+  --lite-security-border-strong: rgba(59, 130, 246, 0.24);
+  --lite-security-surface: rgba(255, 255, 255, 0.92);
+  --lite-security-surface-soft: rgba(248, 250, 252, 0.94);
+  --lite-security-blue: #2563eb;
+  --lite-security-sky: #0284c7;
+  --lite-security-emerald: #059669;
+  --lite-security-amber: #d97706;
+  --lite-security-rose: #e11d48;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  background:
+    radial-gradient(circle at 5% 0%, rgba(59, 130, 246, 0.16), transparent 32%),
+    radial-gradient(circle at 96% 8%, rgba(14, 165, 233, 0.14), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.95));
+  box-shadow:
+    0 18px 54px rgba(15, 23, 42, 0.09),
+    0 1px 0 rgba(255, 255, 255, 0.82) inset;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card:hover {
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(110deg, transparent 12%, rgba(255, 255, 255, 0.5) 42%, transparent 68%);
+  transform: translateX(-115%);
+  opacity: 0;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-card:hover::before,
+.theme-pocket-lite-daylight .lite-security-safety-center-card:focus-within::before {
+  animation: lite-security-premium-sheen 980ms ease-out both;
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-score {
+  border: 1px solid rgba(59, 130, 246, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(239, 246, 255, 0.66));
+  box-shadow:
+    0 16px 36px rgba(37, 99, 235, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.86) inset;
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring {
+  background:
+    conic-gradient(from -90deg, #2563eb var(--score, 0%), rgba(219, 234, 254, 0.94) 0),
+    linear-gradient(180deg, #fff, #eff6ff);
+  box-shadow:
+    0 10px 26px rgba(37, 99, 235, 0.16),
+    0 0 0 8px rgba(59, 130, 246, 0.07);
+}
+
+.theme-pocket-lite-daylight .lite-security-score-ring span {
+  color: #0f172a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.theme-pocket-lite-daylight .lite-security-safety-center-live {
+  border: 1px solid rgba(14, 165, 233, 0.24);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(14, 165, 233, 0.14), transparent 32%),
+    rgba(240, 249, 255, 0.86);
+  box-shadow: 0 14px 34px rgba(14, 165, 233, 0.1);
+}
+
+.theme-pocket-lite-daylight .lite-security-progress-track {
+  background: rgba(186, 230, 253, 0.7);
+  box-shadow: inset 0 1px 3px rgba(14, 116, 144, 0.12);
+}
+
+.theme-pocket-lite-daylight .lite-security-progress-track span {
+  background: linear-gradient(90deg, #2563eb, #0284c7, #06b6d4);
+  box-shadow: 0 0 18px rgba(14, 165, 233, 0.36);
+}
+
+.lite-security-overlay-surface,
+.lite-security-phase3-panel,
+.lite-security-manage-shell,
+.lite-security-manage-panel,
+.lite-security-phase3-details-shell,
+.lite-security-phase3-finding-shell,
+.lite-security-remediation-panel {
+  color: #0f172a !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.985), rgba(248, 250, 252, 0.98)) !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  box-shadow:
+    0 30px 82px rgba(15, 23, 42, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.88) inset !important;
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.lite-security-overlay-head,
+.lite-security-phase3-head,
+.lite-security-manage-head {
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.9)) !important;
+}
+
+.lite-security-overlay-head span,
+.lite-security-phase3-head span,
+.lite-security-manage-head span,
+.lite-security-manage-section-head span {
+  color: #2563eb !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lite-security-overlay-head strong,
+.lite-security-phase3-head strong,
+.lite-security-manage-head strong,
+.lite-security-manage-section-head h3 {
+  color: #0f172a !important;
+}
+
+.lite-security-overlay-head p,
+.lite-security-phase3-head p,
+.lite-security-manage-head p,
+.lite-security-manage-section-head p {
+  color: #64748b !important;
+}
+
+.lite-security-overlay-grip span,
+.lite-security-phase3-grip span,
+.lite-security-manage-grip span {
+  width: 2.8rem !important;
+  height: 0.32rem !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.26), rgba(14, 165, 233, 0.38), rgba(37, 99, 235, 0.26)) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18) !important;
+}
+
+.lite-security-overlay-close,
+.lite-security-phase3-close,
+.lite-security-manage-close {
+  border: 1px solid rgba(148, 163, 184, 0.26) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: #334155 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07) !important;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease !important;
+}
+
+.lite-security-overlay-close:hover,
+.lite-security-phase3-close:hover,
+.lite-security-manage-close:hover,
+.lite-security-overlay-close:focus-visible,
+.lite-security-phase3-close:focus-visible,
+.lite-security-manage-close:focus-visible {
+  transform: translateY(-1px) scale(1.03);
+  border-color: rgba(37, 99, 235, 0.38) !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+.lite-security-manage-tabs {
+  border: 1px solid rgba(226, 232, 240, 0.92) !important;
+  border-radius: 1rem !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94)) !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+.lite-security-manage-tabs::after {
+  content: '';
+  position: sticky;
+  right: -0.2rem;
+  flex: 0 0 1.15rem;
+  align-self: stretch;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(248, 250, 252, 0.98));
+}
+
+.lite-security-manage-tabs button,
+.lite-security-manage-tab-button {
+  position: relative !important;
+  border: 1px solid transparent !important;
+  background: rgba(255, 255, 255, 0.66) !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease !important;
+}
+
+.lite-security-manage-tabs button:hover,
+.lite-security-manage-tab-button:hover,
+.lite-security-manage-tabs button:focus-visible,
+.lite-security-manage-tab-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.22) !important;
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.1) !important;
+}
+
+.lite-security-manage-tabs button.is-active,
+.lite-security-manage-tab-button.is-active {
+  border-color: rgba(37, 99, 235, 0.34) !important;
+  background: linear-gradient(135deg, #2563eb, #0284c7) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22) !important;
+}
+
+.lite-security-manage-tabs button.is-active::after,
+.lite-security-manage-tab-button.is-active::after {
+  content: '';
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0.22rem;
+  height: 0.16rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.lite-security-manage-section {
+  border: 1px solid rgba(226, 232, 240, 0.74) !important;
+  border-radius: 1.25rem !important;
+  background:
+    radial-gradient(circle at 6% 0%, rgba(59, 130, 246, 0.08), transparent 30%),
+    rgba(255, 255, 255, 0.72) !important;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06) !important;
+}
+
+.lite-security-manage-row,
+.lite-security-manage-score-row,
+.lite-security-manage-stat,
+.lite-security-delta-stat,
+.lite-security-safe-panel,
+.lite-security-remediation-summary,
+.lite-security-remediation-sections section,
+.lite-security-remediation-note,
+.lite-security-phase2-details-panel,
+.lite-finding-detail-modal,
+.lite-security-coverage-card,
+.lite-security-confidence-card,
+.lite-security-protection-card,
+.lite-security-boundary-card {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.86)) !important;
+  box-shadow:
+    0 14px 34px rgba(15, 23, 42, 0.065),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset !important;
+}
+
+.lite-security-manage-row,
+.lite-security-manage-stat,
+.lite-security-delta-stat,
+.lite-security-remediation-summary,
+.lite-security-remediation-sections section {
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, background 150ms ease !important;
+}
+
+.lite-security-manage-row:hover,
+.lite-security-manage-stat:hover,
+.lite-security-delta-stat:hover,
+.lite-security-remediation-sections section:hover {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.28) !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.085) !important;
+}
+
+.lite-security-manage-row strong,
+.lite-security-manage-score-row strong,
+.lite-security-manage-stat strong,
+.lite-security-remediation-summary strong,
+.lite-security-remediation-sections h3 {
+  color: #0f172a !important;
+}
+
+.lite-security-manage-row p,
+.lite-security-manage-score-row p,
+.lite-security-remediation-summary p,
+.lite-security-remediation-sections p,
+.lite-security-remediation-note {
+  color: #64748b !important;
+}
+
+.lite-security-safety-chip,
+.lite-security-soft-badge,
+.lite-security-action-indicator,
+.lite-security-severity,
+.lite-security-execution-pill,
+.lite-security-coverage-mark {
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.04) !important;
+}
+
+.lite-security-safety-chip-ready,
+.lite-security-action-safe,
+.lite-security-confidence-chip-safe,
+.lite-security-delta-safe {
+  color: #047857 !important;
+  border-color: rgba(16, 185, 129, 0.26) !important;
+  background: rgba(236, 253, 245, 0.86) !important;
+}
+
+.lite-security-safety-chip-checking,
+.lite-security-action-review,
+.lite-security-confidence-chip-review,
+.lite-security-delta-warning {
+  color: #0f766e !important;
+  border-color: rgba(14, 165, 233, 0.26) !important;
+  background: rgba(240, 249, 255, 0.9) !important;
+}
+
+.lite-security-safety-chip-danger,
+.lite-security-action-danger,
+.lite-security-confidence-chip-danger,
+.lite-security-delta-danger {
+  color: #be123c !important;
+  border-color: rgba(244, 63, 94, 0.24) !important;
+  background: rgba(255, 241, 242, 0.9) !important;
+}
+
+.lite-security-coverage-toggle,
+.lite-security-remediation-button,
+.lite-finding-detail-trigger,
+.lite-security-evidence-close {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(37, 99, 235, 0.22) !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(239, 246, 255, 0.92)) !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 9px 22px rgba(37, 99, 235, 0.1) !important;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 140ms ease !important;
+  touch-action: manipulation;
+}
+
+.lite-security-coverage-toggle::after,
+.lite-security-remediation-button::after,
+.lite-finding-detail-trigger::after {
+  content: '';
+  position: absolute;
+  inset: 0.12rem;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 22%, rgba(255, 255, 255, 0.7) 48%, transparent 72%);
+  transform: translateX(-120%);
+  opacity: 0;
+}
+
+.lite-security-coverage-toggle:hover,
+.lite-security-remediation-button:hover,
+.lite-finding-detail-trigger:hover,
+.lite-security-coverage-toggle:focus-visible,
+.lite-security-remediation-button:focus-visible,
+.lite-finding-detail-trigger:focus-visible {
+  transform: translateY(-1px) scale(1.01);
+  border-color: rgba(37, 99, 235, 0.38) !important;
+  box-shadow: 0 13px 28px rgba(37, 99, 235, 0.16) !important;
+}
+
+.lite-security-coverage-toggle:hover::after,
+.lite-security-remediation-button:hover::after,
+.lite-finding-detail-trigger:hover::after,
+.lite-security-coverage-toggle:focus-visible::after,
+.lite-security-remediation-button:focus-visible::after,
+.lite-finding-detail-trigger:focus-visible::after {
+  animation: lite-security-premium-button-sheen 700ms ease-out both;
+}
+
+.lite-security-coverage-toggle:active,
+.lite-security-remediation-button:active,
+.lite-finding-detail-trigger:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.lite-security-execution-step {
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  background: rgba(255, 255, 255, 0.68) !important;
+}
+
+.lite-security-execution-step-active {
+  border-color: rgba(14, 165, 233, 0.28) !important;
+  background: rgba(240, 249, 255, 0.86) !important;
+  box-shadow: 0 14px 34px rgba(14, 165, 233, 0.11) !important;
+}
+
+.lite-security-phase3-panel .lite-security-phase2-details-panel,
+.lite-security-phase3-panel .lite-finding-detail-modal,
+.lite-security-phase3-panel .lite-progressive-details,
+.lite-security-phase3-panel .lite-finding-detail-section {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  box-shadow: none !important;
+}
+
+.lite-security-remediation-sections h3::before,
+.lite-security-manage-section-head h3::before {
+  content: '';
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.09);
+  vertical-align: 0.08rem;
+}
+
+@keyframes lite-security-premium-sheen {
+  0% { opacity: 0; transform: translateX(-115%); }
+  22% { opacity: 0.75; }
+  100% { opacity: 0; transform: translateX(115%); }
+}
+
+@keyframes lite-security-premium-button-sheen {
+  0% { opacity: 0; transform: translateX(-120%); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateX(120%); }
+}
+
+@media (max-width: 720px) {
+  .lite-security-overlay-surface,
+  .lite-security-phase3-panel,
+  .lite-security-manage-shell,
+  .lite-security-manage-panel,
+  .lite-security-phase3-details-shell,
+  .lite-security-phase3-finding-shell,
+  .lite-security-remediation-panel {
+    border-radius: 1.35rem 1.35rem 1rem 1rem !important;
+  }
+
+  .lite-security-manage-section {
+    border-radius: 1rem !important;
+    padding: 0.05rem !important;
+  }
+
+  .lite-security-manage-tabs {
+    min-height: 3.35rem !important;
+    padding-bottom: 0.6rem !important;
+  }
+
+  .lite-security-manage-tabs button,
+  .lite-security-manage-tab-button {
+    min-height: 2.5rem !important;
+    padding-inline: 0.75rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-safety-center-card::before,
+  .lite-security-coverage-toggle::after,
+  .lite-security-remediation-button::after,
+  .lite-finding-detail-trigger::after,
+  .lite-security-manage-row,
+  .lite-security-manage-stat,
+  .lite-security-delta-stat,
+  .lite-security-remediation-sections section,
+  .lite-security-overlay-close,
+  .lite-security-phase3-close,
+  .lite-security-manage-close,
+  .lite-security-coverage-toggle,
+  .lite-security-remediation-button,
+  .lite-finding-detail-trigger,
+  .lite-security-manage-tabs button,
+  .lite-security-manage-tab-button {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}

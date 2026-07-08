@@ -1,4 +1,5 @@
-import React, { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { animated, useSpring } from '@react-spring/web';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
@@ -735,6 +736,28 @@ export function deriveSecurityHealthBanner(securityData, confidence, findings = 
   };
 }
 
+
+function useSecurityReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(Boolean(query.matches));
+    update();
+    query.addEventListener?.('change', update);
+    return () => query.removeEventListener?.('change', update);
+  }, []);
+
+  return reducedMotion;
+}
+
+const SECURITY_SPRING_CONFIG = {
+  calm: { tension: 260, friction: 30, mass: 0.9 },
+  section: { tension: 320, friction: 34, mass: 0.85 },
+  micro: { tension: 380, friction: 28, mass: 0.75 },
+};
+
 function SecurityActionIndicator({ action }) {
   const tone = SECURITY_ACTION_TONES.has(action?.tone) ? action.tone : 'neutral';
   return (
@@ -912,7 +935,7 @@ function SecurityRemediationDrawer({ finding, context, onClose }) {
       gripClassName="lite-security-phase3-grip"
       variant="security"
       motion="safe-grip"
-      surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
+      surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-remediation-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'remediation' }}
     >
       {finding && remediation ? (
         <div className="lite-security-remediation-content">
@@ -1383,6 +1406,7 @@ export default function SecurityScreen() {
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
   const remediationTriggerRef = useRef(null);
+  const securityMotionReduced = useSecurityReducedMotion();
 
   const lastRun = data?.last_run || null;
   const findings = Number(data?.items_to_review ?? data?.findings_count ?? 0);
@@ -1811,6 +1835,34 @@ export default function SecurityScreen() {
     { label: 'Evidence', value: evidenceStatusLabel },
   ];
   const historyTrendLabel = scoreTrendView?.detail || scoreTrendView?.label || (scoreTrend > 0 ? 'Improving' : scoreTrend < 0 ? 'Needs review' : 'Stable');
+  const safetyShellSpring = useSpring({
+    from: { opacity: 0, y: 10 },
+    to: { opacity: 1, y: 0 },
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.calm,
+  });
+  const safetyCardSpring = useSpring({
+    to: {
+      scale: scanInProgress ? 1.006 : 1,
+      boxShadow: scanInProgress
+        ? '0 24px 70px rgba(14, 165, 233, 0.17), 0 12px 32px rgba(15, 23, 42, 0.08)'
+        : '0 18px 54px rgba(15, 23, 42, 0.09), 0 1px 0 rgba(255, 255, 255, 0.82) inset',
+    },
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.micro,
+  });
+  const manageSectionSpring = useSpring({
+    from: { opacity: 0, y: 8, scale: 0.992 },
+    to: { opacity: 1, y: 0, scale: 1 },
+    reset: true,
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.section,
+  });
+  const scoreSpring = useSpring({
+    number: safetyScore,
+    immediate: securityMotionReduced,
+    config: SECURITY_SPRING_CONFIG.calm,
+  });
 
 
   return (
@@ -1821,8 +1873,8 @@ export default function SecurityScreen() {
         description="A calm safety overview. Run a check or open Manage for details."
       />
 
-      <section className="lite-security-phase5-shell lite-security-phase4-motion" aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell">
-        <GlassCard className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle">
+      <animated.section className="lite-security-phase5-shell lite-security-phase4-motion" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
+        <GlassCard as={animated.section} style={safetyCardSpring} className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle" data-security-react-spring="safety-card">
           <div className="lite-security-safety-center-copy">
             <div className="lite-home-pill">
               <span className="lite-ready-dot" />
@@ -1854,7 +1906,7 @@ export default function SecurityScreen() {
 
           <div className="lite-security-safety-center-score" aria-label="Safety score">
             <div className="lite-security-score-ring" style={{ '--score': `${safetyScore}%` }}>
-              <span>{safetyScore}</span>
+              <animated.span>{scoreSpring.number.to((value) => Math.round(value))}</animated.span>
             </div>
             <strong>Safety score</strong>
             <span>{scanInProgress ? `${scanProgressPercent}% complete` : safetyCenterSummary}</span>
@@ -1874,7 +1926,7 @@ export default function SecurityScreen() {
             </div>
           ) : null}
         </GlassCard>
-      </section>
+      </animated.section>
 
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}
 
@@ -1901,7 +1953,7 @@ export default function SecurityScreen() {
         gripClassName="lite-security-manage-grip"
         variant="security"
         motion="safe-grip"
-        surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
+        surfaceProps={{ 'data-security-phase5-manage-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'manage-shell' }}
       >
         <div className="lite-security-manage-tabs" role="tablist" aria-label="Security Manage sections">
           {SECURITY_MANAGE_SECTIONS.map((section) => (
@@ -1910,7 +1962,7 @@ export default function SecurityScreen() {
               type="button"
               role="tab"
               aria-selected={activeManageSection === section.id}
-              className={activeManageSection === section.id ? 'is-active' : ''}
+              className={`lite-security-manage-tab-button ${activeManageSection === section.id ? 'is-active' : ''}`.trim()}
               onClick={() => chooseSecurityManageSection(section.id)}
             >
               {section.label}
@@ -1918,7 +1970,7 @@ export default function SecurityScreen() {
           ))}
         </div>
 
-        <section className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection}>
+        <animated.section style={manageSectionSpring} className={`lite-security-manage-section lite-security-manage-section-${activeManageSection}`} aria-label={activeManageSectionMeta.label} data-security-manage-section={activeManageSection} data-security-react-spring="manage-section">
           <div className="lite-security-manage-section-head">
             <span>{activeManageSectionMeta.label}</span>
             <h3>{activeManageSectionMeta.label}</h3>
@@ -2077,7 +2129,7 @@ export default function SecurityScreen() {
               </div>
             </div>
           ) : null}
-        </section>
+        </animated.section>
       </LiteSheet>
 
       <LiteSheet
@@ -2094,7 +2146,7 @@ export default function SecurityScreen() {
         gripClassName="lite-security-phase3-grip"
         variant="security"
         motion="safe-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'focused-details' }}
       >
         <Suspense fallback={<div className="lite-security-details-loading">Loading Security details…</div>}>
           <SecurityProgressiveDetailsLazy type={activeSecurityDetails || 'evidence'} model={securityProgressiveDetailsModel} onClose={closeSecurityDetails} />
@@ -2115,7 +2167,7 @@ export default function SecurityScreen() {
         gripClassName="lite-security-phase3-grip"
         variant="security"
         motion="safe-grip"
-        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring' }}
+        surfaceProps={{ 'data-security-phase3-responsive-shell': 'true', 'data-security-safe-motion': 'gesture-spring', 'data-security-react-spring': 'finding-details' }}
       >
         {selectedFinding ? (
           <Suspense fallback={<div className="lite-security-details-loading">Loading finding details…</div>}>
