@@ -235,7 +235,7 @@ export function LiteSheet({
   if (!open) return null;
   return (
     <LiteOverlayRoot>
-      <div className={`lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation">
+      <div className={`theme-pocket-lite-daylight lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true">
         <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
           ref={surfaceRef}
