@@ -122,7 +122,7 @@ export const liteApi = {
   connectPhotoPrismStorage: (payload = {}) => postJson('/api/lite/apps/photoprism/storage-mappings', payload),
   disconnectPhotoPrismStorage: (mappingId) => readJson(`/api/lite/apps/photoprism/storage-mappings/${encodeURIComponent(mappingId || '')}`, { method: 'DELETE' }),
   rotateIdentity: (target, options = {}) => postJson('/api/lite/identity/rotate', { target, ...options }),
-  runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, ...options }),
+  runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, profile: 'quick', ...options }),
   securityRun: (runId) => readJson(`/api/lite/security/runs/${encodeURIComponent(runId || '')}`),
   securityEvidence: (runId) => readJson(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}`),
   addDevice: (payload = {}) => postJson('/api/lite/fleet/add-device', payload),

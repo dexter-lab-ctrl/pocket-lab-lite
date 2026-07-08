@@ -6682,3 +6682,122 @@ def test_lite_security_premium_polish_v5_preserves_backend_boundaries_and_reduce
     assert "nats.connect" not in combined
     assert "onClickCapture" not in combined
     assert "onPointerDownCapture" not in combined
+
+
+def test_lite_security_quick_safety_profile_defaults_and_exclusions_source():
+    ensure_runtime_path()
+    from api_fastapi.services import lite_security_policy as policy
+
+    assert policy.normalize_scan_profile(None) == "quick"
+    assert policy.normalize_scan_profile("quick") == "quick"
+    with pytest.raises(ValueError):
+        policy.normalize_scan_profile("full")
+
+    assert policy.TIMEOUTS["lynis"] == 300
+    assert policy.TIMEOUTS["trivy_vuln_misconfig"] == 420
+    assert policy.TIMEOUTS["trivy_secret"] == 240
+    assert policy.TIMEOUTS["trivy_sbom"] == 240
+    assert policy.TIMEOUTS["overall"] == 900
+
+    plan = policy.build_quick_scan_plan(Path.cwd())
+    assert plan["profile"] == "quick"
+    assert "Termux host posture" in plan["checked_targets"]
+    assert "Pocket Lab Lite files" in plan["checked_targets"]
+    assert "PhotoPrism media and originals" in plan["skipped_targets"]
+    assert "PROot Ubuntu full rootfs" in plan["skipped_targets"]
+    assert "Backup payloads and restore checkpoints" in plan["excluded_groups"]
+    assert "node_modules" in plan["skip_dirs"]
+    assert "pwa_dist.previous.*" in plan["skip_dirs"]
+    assert ".pocket_lab/trivy-cache" in plan["skip_dirs"]
+    assert ".pocket_lab/lynis-tmp" in plan["skip_dirs"]
+    assert "*.pyc" in plan["skip_files"]
+
+    skip_args = policy.trivy_skip_args(Path.cwd())
+    assert "--skip-dirs" in skip_args
+    assert "node_modules" in skip_args
+    assert "--skip-files" in skip_args
+    assert "*.pyc" in skip_args
+
+
+def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_security
+    from api_fastapi.services.nats_bus import BUS
+
+    published: list[tuple[str, str, dict]] = []
+    BUS.connected = True
+    BUS.js = object()
+
+    async def fake_publish(subject, event_type, data=None, *, trace_id=None):
+        published.append((subject, event_type, data or {}))
+
+    monkeypatch.setattr(BUS, "publish_json", fake_publish)
+
+    default_response = client().post("/api/lite/security/check")
+    assert default_response.status_code == 202
+    default_payload = default_response.json()
+    assert default_payload["scan_profile"] == "quick"
+    default_run = lite_security.read_run(default_payload["run_id"])
+    assert default_run["scan_profile"] == "quick"
+    assert default_run["coverage_summary"]["profile"] == "quick"
+    assert "PhotoPrism media and originals" in default_run["coverage_summary"]["skipped_targets"]
+
+    explicit_response = client().post("/api/lite/security/check", json={"profile": "quick"})
+    assert explicit_response.status_code == 202
+    assert explicit_response.json()["scan_profile"] == "quick"
+    assert any(item[2].get("profile") == "quick" for item in published)
+
+    unknown_response = client().post("/api/lite/security/check", json={"profile": "full"})
+    assert unknown_response.status_code == 400
+    error_payload = unknown_response.json()
+    error_text = str(error_payload.get("detail") or error_payload.get("message") or error_payload)
+    assert "quick safety check" in error_text.lower()
+
+
+def test_lite_security_quick_safety_coverage_evidence_is_sanitized_source():
+    security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    evidence_source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_evidence.py").read_text()
+
+    assert "coverage-summary.json" in security
+    assert "build_coverage_summary" in security
+    assert "runtime_config_posture" in security
+    assert "PhotoPrism route health" in security
+    assert "policy.trivy_skip_args(root)" in security
+    assert "pm2_env" in security
+    assert "processes[:12]" in security
+    assert "policy.redact_value(data)" in evidence_source
+    assert "raw scanner" not in security.lower()
+    assert "private key" not in security.lower()
+
+
+def test_lite_security_quick_safety_ui_and_view_model_contract_source():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+    api = Path("src/lib/liteApi.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    mocks = Path("src/mocks/handlers.js").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "Quick safety check" in security
+    assert "Checks Pocket Lab basics" in security
+    assert "Skips photos, backups, and large caches" in security
+    assert "Skipped by Quick Safety Check" in security
+    assert "DEFAULT_QUICK_COVERAGE_SUMMARY" in security
+    assert "QuickCoverageRows" in security
+    assert "profile: 'quick'" in security
+    assert "liteApi.runSecurityScan('local', { profile: 'quick'" in security
+    assert "type === 'coverage'" in details
+    assert "Photo libraries and user media were not scanned by the quick profile." in details
+    assert "runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, profile: 'quick', ...options })" in api
+    assert "selectSecurityCoverageSummaryView" in view_models
+    assert "coverage_summary" in view_models
+    assert "scan_profile" in view_models
+    assert "coverage-summary.json" in mocks
+    assert "lite-security-quick-coverage" in css
+
+    assert "pm2" not in security.lower()
+    assert "fetch(" not in security + details
+    assert "child_process" not in security + details
+    assert "exec(" not in security + details
+    assert "spawn(" not in security + details
+    assert "window.setInterval" not in security + details

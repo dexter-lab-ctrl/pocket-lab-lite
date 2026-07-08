@@ -122,6 +122,12 @@ function buildDetails({ type, model = {} }) {
     previousHistory = null,
     scoreTrendView = null,
     scanProgressLabel = '',
+    scanProfile = 'quick',
+    coverageSummary = {},
+    checkedCoverageTargets = [],
+    skippedCoverageTargets = [],
+    partialCoverageTargets = [],
+    timedOutCoverageTargets = [],
   } = model;
 
   if (type === 'changes') {
@@ -186,6 +192,50 @@ function buildDetails({ type, model = {} }) {
   }
 
 
+
+  if (type === 'coverage') {
+    const checked = safeList(checkedCoverageTargets, ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state']);
+    const skipped = safeList(skippedCoverageTargets, ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
+    const partial = safeList(partialCoverageTargets);
+    const timedOut = safeList(timedOutCoverageTargets);
+    return {
+      title: 'Quick safety coverage',
+      status: partial.length || timedOut.length ? 'review' : 'ready',
+      statusLabel: `Profile: ${safeText(scanProfile, 'quick')}`,
+      summary: 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
+      what_happened: [
+        'Pocket Lab used the quick scan profile.',
+        ...checked.map((item) => `Checked: ${item}`),
+      ],
+      what_changed: ['Opening this coverage view did not start a scan or change the device.'],
+      what_needs_attention: [...partial.map((item) => `Partial: ${item}`), ...timedOut.map((item) => `Timed out: ${item}`)],
+      what_did_not_happen: [
+        'Photo libraries and user media were not scanned by the quick profile.',
+        'Backup payloads and restore checkpoints were not scanned by the quick profile.',
+        'The full PROot Ubuntu filesystem was not scanned by the quick profile.',
+        'Large cache folders and old PWA builds were skipped.',
+      ],
+      saved_for_troubleshooting: {
+        saved: Boolean(lastRun?.run_id),
+        backend_only: true,
+        summary: 'Coverage metadata is saved with sanitized evidence. Raw scanner output stays backend-owned.',
+      },
+      next_step: partial.length || timedOut.length ? 'Run the check again while charging, or wait for a future Full Local Check profile.' : 'Use Quick Safety Check daily for a fast safety signal.',
+      technicalDetails: [
+        { label: 'Profile', value: safeText(scanProfile, 'quick') },
+        { label: 'Checked targets', value: checked.length },
+        { label: 'Skipped targets', value: skipped.length },
+        { label: 'Excluded groups', value: Array.isArray(coverageSummary.excluded_groups) ? coverageSummary.excluded_groups.length : 0 },
+      ],
+      history: {
+        title: 'Skipped by Quick Safety Check',
+        summary: 'These areas are intentionally skipped to keep daily checks bounded on mobile devices.',
+        items: skipped.map((title, index) => ({ id: `quick-skip-${index}`, title, meta: 'skipped by quick profile' })),
+        enabled: true,
+        emptyMessage: 'No skipped targets were reported.',
+      },
+    };
+  }
 
   if (type === 'history') {
     const safeHistory = Array.isArray(securityHistory) ? securityHistory.slice(0, 7) : [];

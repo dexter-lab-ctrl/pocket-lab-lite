@@ -909,6 +909,8 @@ function normalizeSecurityRun(run = {}) {
     updated_at: safeIso(run.updated_at || run.checked_at),
     duration_seconds: safeNumber(run.duration_seconds, 0),
     tools: safeList(run.tools || ['lynis', 'trivy']),
+    scan_profile: safeString(run.scan_profile || 'quick', 'quick'),
+    coverage_summary: selectSecurityCoverageSummaryView(run),
     critical_count: safeNumber(run.critical_count, 0),
     high_count: safeNumber(run.high_count, 0),
     medium_count: safeNumber(run.medium_count, 0),
@@ -920,7 +922,7 @@ function normalizeSecurityRun(run = {}) {
     execution_timeline: selectSecurityTimelineView({ execution_timeline: run.execution_timeline }),
   }, [
     'run_id', 'status', 'state', 'phase', 'started_at', 'completed_at', 'updated_at', 'duration_seconds',
-    'tools', 'critical_count', 'high_count', 'medium_count', 'low_count', 'partial_results', 'sbom_saved',
+    'tools', 'scan_profile', 'coverage_summary', 'critical_count', 'high_count', 'medium_count', 'low_count', 'partial_results', 'sbom_saved',
     'evidence_refs', 'tool_results', 'execution_timeline',
   ]);
 }
@@ -1022,6 +1024,42 @@ export function selectSecurityToolResultsView(toolResults = {}) {
   }, {});
 }
 
+export function selectSecurityCoverageSummaryView(payload = {}) {
+  const coverage = isObject(payload?.coverage_summary)
+    ? payload.coverage_summary
+    : isObject(payload?.last_run?.coverage_summary)
+      ? payload.last_run.coverage_summary
+      : {};
+  return {
+    profile: safeString(coverage.profile || payload?.scan_profile || payload?.last_run?.scan_profile || 'quick', 'quick'),
+    checked_targets: safeList(coverage.checked_targets, [
+      'Termux host posture',
+      'Pocket Lab Lite files',
+      'Caddy route config',
+      'NATS config posture',
+      'Services summary',
+      'Security evidence state',
+    ]),
+    skipped_targets: safeList(coverage.skipped_targets, [
+      'Photo library/media',
+      'Backup payloads',
+      'PROot Ubuntu full filesystem',
+      'Go/npm/cache folders',
+      'Old PWA builds',
+      'Large runtime histories',
+    ]),
+    excluded_groups: safeList(coverage.excluded_groups),
+    partial_targets: safeList(coverage.partial_targets),
+    timed_out_targets: safeList(coverage.timed_out_targets),
+    posture_checks: Array.isArray(coverage.posture_checks)
+      ? coverage.posture_checks.slice(0, 8).map((item) => copySafeKeys(item, ['label', 'status', 'present', 'kind', 'summary', 'route_ready', 'online_count', 'process_count']))
+      : [],
+    source_targets: Array.isArray(coverage.source_targets)
+      ? coverage.source_targets.slice(0, 12).map((item) => copySafeKeys(item, ['label', 'relative', 'present', 'kind']))
+      : [],
+  };
+}
+
 export function selectSecurityEvidenceSummaryView(payload = {}) {
   const evidenceRefs = safeList(payload?.evidence_refs).slice(0, 8);
   const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
@@ -1064,6 +1102,8 @@ export function selectSecuritySummaryView(payload = {}) {
     items_to_review: findings.items_to_review,
     findings_count: findings.findings_count,
     evidence_count: evidence.evidence_count,
+    scan_profile: safeString(payload?.scan_profile || lastRun?.scan_profile || 'quick', 'quick'),
+    coverage_summary: selectSecurityCoverageSummaryView(payload),
     evidence_saved: evidence.evidence_saved,
     evidence_refs: evidence.evidence_refs,
     sbom_saved: evidence.sbom_saved,

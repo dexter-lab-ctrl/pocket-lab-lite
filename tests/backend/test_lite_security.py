@@ -258,7 +258,7 @@ def test_security_scan_progress_estimates_remaining_time(monkeypatch):
     state = lite_security.build_state(run, [], [], status_override="running")
     progress = state["scan_progress"]
     assert progress["status"] == "running"
-    assert progress["stage"] == "Running Lynis and Trivy"
+    assert progress["stage"] == "Running Quick Safety Check"
     assert progress["elapsed_seconds"] == 60
     assert progress["estimated_total_seconds"] == 240
     assert progress["estimated_remaining_seconds"] == 180
