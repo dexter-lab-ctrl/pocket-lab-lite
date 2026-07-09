@@ -1,5 +1,6 @@
 import {
   LITE_SECURITY_PROFILE_IDS,
+  LITE_SECURITY_PROFILE_RETENTION_POLICY,
   selectSecurityHistorySnapshotView,
   selectSecurityProfileSnapshotViews,
   selectSecurityScreenSnapshotView,
@@ -60,11 +61,61 @@ const SECURITY_PROFILE_SNAPSHOT_ENDPOINTS = LITE_SECURITY_PROFILE_IDS.reduce((it
   items[profile] = `/api/lite/security/profiles/${profile}`;
   return items;
 }, {});
+export const LITE_SECURITY_SCAN_BROADCAST_CHANNEL = 'pocketlab-lite-security-scan-sync';
+export const LITE_SECURITY_SCAN_COMPLETED_EVENT = 'security:scan-completed';
 let hydrationStarted = false;
 let pruneStarted = false;
+let securityBroadcastChannel = null;
 
 function canUseStorage() {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
+function canUseBroadcastChannel() {
+  return typeof window !== 'undefined' && typeof window.BroadcastChannel !== 'undefined';
+}
+
+function getSecurityBroadcastChannel() {
+  if (!canUseBroadcastChannel()) return null;
+  if (securityBroadcastChannel) return securityBroadcastChannel;
+  try {
+    securityBroadcastChannel = new window.BroadcastChannel(LITE_SECURITY_SCAN_BROADCAST_CHANNEL);
+    return securityBroadcastChannel;
+  } catch {
+    return null;
+  }
+}
+
+function isTerminalSecuritySnapshot(payload = {}) {
+  const status = String(payload?.status || payload?.latest_run?.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  return ['succeeded', 'success', 'completed', 'complete', 'done', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention'].includes(status);
+}
+
+function postSecurityScanCompleted(profile = 'quick', payload = {}) {
+  if (!isTerminalSecuritySnapshot(payload)) return;
+  const detail = {
+    type: LITE_SECURITY_SCAN_COMPLETED_EVENT,
+    profile,
+    run_id: payload?.run_id || payload?.latest_run?.run_id || '',
+    completed_at: payload?.completed_at || payload?.latest_run?.completed_at || payload?.updated_at || payload?.freshness?.checked_at || nowIso(),
+    saved_at: payload?.freshness?.saved_at || nowIso(),
+    source: 'liteSafeSnapshots',
+  };
+  try { getSecurityBroadcastChannel()?.postMessage(detail); } catch { /* best effort cross-tab sync */ }
+  try { window.dispatchEvent(new CustomEvent(LITE_SECURITY_SCAN_COMPLETED_EVENT, { detail })); } catch { /* best effort same-tab sync */ }
+}
+
+export function subscribeLiteSecurityScanCompleted(callback) {
+  if (typeof callback !== 'function' || typeof window === 'undefined') return () => {};
+  const channel = getSecurityBroadcastChannel();
+  const onWindowEvent = (event) => callback(event.detail || {});
+  const onChannelMessage = (event) => callback(event.data || {});
+  window.addEventListener(LITE_SECURITY_SCAN_COMPLETED_EVENT, onWindowEvent);
+  if (channel) channel.addEventListener('message', onChannelMessage);
+  return () => {
+    window.removeEventListener(LITE_SECURITY_SCAN_COMPLETED_EVENT, onWindowEvent);
+    if (channel) channel.removeEventListener('message', onChannelMessage);
+  };
 }
 
 export function normalizeLiteSnapshotPath(path = '') {
@@ -252,6 +303,31 @@ function readLocalStorageSnapshot(path = '') {
   }
 }
 
+function pruneLocalStorageSecuritySnapshots() {
+  if (!canUseStorage()) return;
+  try {
+    const keys = Object.keys(window.localStorage).filter((key) => key.startsWith(`${SNAPSHOT_PREFIX}/api/lite/security`));
+    const profileKeys = keys.filter((key) => key.includes('/profiles/'));
+    const historyKeys = keys.filter((key) => key.endsWith('/history/index'));
+    const grouped = profileKeys.reduce((groups, key) => {
+      const profile = key.split('/').pop() || 'quick';
+      groups[profile] = groups[profile] || [];
+      groups[profile].push(key);
+      return groups;
+    }, {});
+    Object.values(grouped).forEach((items) => {
+      items
+        .map((key) => ({ key, parsed: parseStoredSnapshot(key.replace(SNAPSHOT_PREFIX, ''), window.localStorage.getItem(key)) }))
+        .sort((left, right) => String(right.parsed?.__liteSnapshot?.savedAt || '').localeCompare(String(left.parsed?.__liteSnapshot?.savedAt || '')))
+        .slice(LITE_SECURITY_PROFILE_RETENTION_POLICY.profileSnapshotLimit || 3)
+        .forEach((item) => window.localStorage.removeItem(item.key));
+    });
+    historyKeys.slice(1).forEach((key) => window.localStorage.removeItem(key));
+  } catch {
+    // Best effort localStorage mirror cleanup only.
+  }
+}
+
 function writeLocalStorageSnapshot(path = '', record) {
   if (!canUseStorage()) return;
   try {
@@ -267,6 +343,7 @@ function writeLocalStorageSnapshot(path = '', record) {
       approximateSizeBytes: record.approximate_size_bytes,
       data: record.payload,
     }));
+    if (normalizeLiteSnapshotPath(path).startsWith('/api/lite/security')) pruneLocalStorageSecuritySnapshots();
   } catch {
     // localStorage is a best-effort mirror so startup can remain instant.
   }
@@ -317,6 +394,7 @@ function writeSecurityProfileSnapshots(sourcePath = '', payload = null, sourceRe
         payloadKind: 'lite-security-profile-summary',
       });
       commitLiteSnapshotRecord(endpoint, record);
+      postSecurityScanCompleted(profile, record.payload);
     });
 
     const historyPayload = selectSecurityHistorySnapshotView(screenSnapshot);
@@ -384,6 +462,7 @@ function readSecurityCompositeSnapshot() {
       updated_at: latest.updated_at || latest.completed_at,
     } : {},
     profile_latest: profileLatest,
+    profile_freshness: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => { items[profile] = securityProfiles[profile]?.freshness || { profile, label: 'No saved check yet', empty_label: 'No saved check yet', has_run: false, is_saved: true }; return items; }, {}),
     security_profiles: securityProfiles,
     history_summary: Array.isArray(historyPayload.history) ? historyPayload.history : [],
     history: Array.isArray(historyPayload.history) ? historyPayload.history : [],
@@ -391,6 +470,13 @@ function readSecurityCompositeSnapshot() {
     security_history_snapshot: historyPayload,
     live: false,
     saved_snapshot: true,
+    offline_details: {
+      visible: true,
+      title: 'Showing saved Security details',
+      summary: 'Reconnect to run a new check or refresh live evidence. Saved details remain read-only.',
+      write_actions_disabled: true,
+      run_buttons_label: 'Reconnect to run checks',
+    },
     sanitized: true,
   };
   return withMeta(composite, {

@@ -7,6 +7,14 @@ export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-s3-v1';
 export const LITE_SECURITY_PROFILE_IDS = ['quick', 'full', 'app'];
 export const LITE_SECURITY_PROFILE_SNAPSHOT_VERSION = 'lite-security-profile-snapshot-v1';
 export const LITE_SECURITY_HISTORY_SNAPSHOT_VERSION = 'lite-security-history-snapshot-v1';
+export const LITE_SECURITY_PROFILE_FRESHNESS_VERSION = 'lite-security-profile-freshness-v1';
+export const LITE_SECURITY_PROFILE_RETENTION_POLICY = {
+  profileHistoryLimit: 20,
+  snapshotHistoryLimit: 20,
+  profileEvidenceLimit: 5,
+  maxProfileSnapshotBytes: 48 * 1024,
+  maxHistorySnapshotBytes: 96 * 1024,
+};
 
 function normalizeSecurityProfileId(value = 'quick') {
   const normalized = String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -25,6 +33,44 @@ function newerSecurityRun(current = null, candidate = null) {
   if (!candidate) return current || null;
   if (!current) return candidate;
   return securityRunTimestamp(candidate) >= securityRunTimestamp(current) ? candidate : current;
+}
+
+function securityFreshnessLabel(value = '', { empty = 'No saved check yet', prefix = 'Saved' } = {}) {
+  const timestamp = value ? Date.parse(value) : 0;
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return empty;
+  const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60000);
+  if (minutes < 1) return `${prefix} just now`;
+  if (minutes === 1) return `${prefix} 1 min ago`;
+  if (minutes < 60) return `${prefix} ${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return `${prefix} 1 hour ago`;
+  if (hours < 24) return `${prefix} ${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return `${prefix} yesterday`;
+  if (days < 7) return `${prefix} ${days} days ago`;
+  return `${prefix} over a week ago`;
+}
+
+function selectSecurityProfileFreshnessView(run = null, profile = 'quick', meta = null) {
+  const profileId = normalizeSecurityProfileId(profile);
+  const checkedAt = safeIso(run?.completed_at || run?.updated_at || run?.started_at || run?.checked_at || meta?.checkedAt || meta?.savedAt);
+  const savedAt = safeIso(meta?.savedAt || meta?.checkedAt || checkedAt);
+  const expiresAt = safeIso(meta?.expiresAt);
+  const timestamp = checkedAt || savedAt;
+  return {
+    version: LITE_SECURITY_PROFILE_FRESHNESS_VERSION,
+    profile: profileId,
+    checked_at: checkedAt,
+    saved_at: savedAt,
+    expires_at: expiresAt,
+    label: securityFreshnessLabel(timestamp, { prefix: meta?.cached || meta?.stale ? 'Saved' : 'Checked' }),
+    short_label: securityFreshnessLabel(timestamp, { prefix: meta?.cached || meta?.stale ? 'Saved' : 'Checked' }),
+    is_saved: Boolean(meta?.cached || meta?.stale || meta?.source === 'cache'),
+    is_stale: Boolean(meta?.stale || meta?.cached || meta?.expired || meta?.isExpired),
+    is_expired: Boolean(meta?.expired || meta?.isExpired),
+    has_run: Boolean(run?.run_id || run?.status || checkedAt),
+    empty_label: 'No saved check yet',
+  };
 }
 
 
@@ -1170,11 +1216,12 @@ export function selectSecurityProfileHistoryView(payload = {}, profile = 'quick'
   return selectSecurityHistorySummaryView(payload)
     .filter((run) => normalizeSecurityProfileId(run?.scan_profile || (run?.app_id ? 'app' : 'quick')) === profileId)
     .sort((left, right) => securityRunTimestamp(right) - securityRunTimestamp(left))
-    .slice(0, 20);
+    .slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileHistoryLimit);
 }
 
 export function selectSecurityProfileView(payload = {}, profile = 'quick') {
   const profileId = normalizeSecurityProfileId(profile);
+  const meta = snapshotMeta(payload);
   const latestByProfile = selectSecurityProfileLatestView(payload);
   const profileHistory = selectSecurityProfileHistoryView(payload, profileId);
   const latestRun = latestByProfile[profileId] || profileHistory[0] || null;
@@ -1215,6 +1262,7 @@ export function selectSecurityProfileView(payload = {}, profile = 'quick') {
     started_at: safeIso(latestRun?.started_at),
     completed_at: safeIso(latestRun?.completed_at),
     updated_at: safeIso(latestRun?.updated_at || latestRun?.completed_at),
+    freshness: selectSecurityProfileFreshnessView(latestRun, profileId, meta),
     app_id: safeString(latestRun?.app_id || payload?.app_id || ''),
     app_label: safeString(latestRun?.app_label || payload?.app_label || ''),
     tools: safeList(latestRun?.tools || (profileId === 'app' ? ['trivy'] : ['lynis', 'trivy'])),
@@ -1260,6 +1308,7 @@ export function selectSecurityEvidenceProfileView(payload = {}, profile = 'quick
 
 export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick') {
   const view = selectSecurityProfileView(payload, profile);
+  const freshness = view.freshness || selectSecurityProfileFreshnessView(view.latest_run, profile);
   return {
     view_model: LITE_SECURITY_PROFILE_SNAPSHOT_VERSION,
     profile: view.profile,
@@ -1273,6 +1322,12 @@ export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick
     started_at: safeIso(view.started_at),
     completed_at: safeIso(view.completed_at),
     updated_at: safeIso(view.updated_at || view.completed_at || view.started_at),
+    freshness,
+    snapshot_budget: {
+      max_bytes: LITE_SECURITY_PROFILE_RETENTION_POLICY.maxProfileSnapshotBytes,
+      evidence_limit: LITE_SECURITY_PROFILE_RETENTION_POLICY.profileEvidenceLimit,
+      history_limit: LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit,
+    },
     app_id: safeString(view.app_id),
     app_label: safeString(view.app_label),
     tools: safeList(view.tools).slice(0, 6),
@@ -1289,7 +1344,7 @@ export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick
     tool_results: view.tool_results,
     execution_timeline: Array.isArray(view.execution_timeline) ? view.execution_timeline.slice(0, 12) : [],
     evidence_summary: view.evidence_summary,
-    evidence_refs: safeList(view.evidence_refs).slice(0, 24),
+    evidence_refs: safeList(view.evidence_refs).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileEvidenceLimit),
     finding_delta: view.finding_delta,
     latest_run: view.latest_run ? {
       run_id: safeString(view.latest_run.run_id),
@@ -1310,11 +1365,11 @@ export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick
       coverage_summary: view.latest_run.coverage_summary || view.coverage_summary,
       tool_results: view.latest_run.tool_results || view.tool_results,
       execution_timeline: Array.isArray(view.latest_run.execution_timeline) ? view.latest_run.execution_timeline.slice(0, 12) : view.execution_timeline,
-      evidence_refs: safeList(view.latest_run.evidence_refs || view.evidence_refs).slice(0, 24),
+      evidence_refs: safeList(view.latest_run.evidence_refs || view.evidence_refs).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileEvidenceLimit),
       app_id: safeString(view.latest_run.app_id || view.app_id),
       app_label: safeString(view.latest_run.app_label || view.app_label),
     } : null,
-    history: Array.isArray(view.history) ? view.history.slice(0, 8).map((run) => ({
+    history: Array.isArray(view.history) ? view.history.slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit).map((run) => ({
       run_id: safeString(run.run_id),
       scan_profile: normalizeSecurityProfileId(run.scan_profile || view.profile),
       status: normalizeSecurityStatus(run.status),
@@ -1342,7 +1397,7 @@ export function selectSecurityProfileSnapshotViews(payload = {}) {
 }
 
 export function selectSecurityHistorySnapshotView(payload = {}) {
-  const history = selectSecurityHistorySummaryView(payload).slice(0, 20).map((run) => ({
+  const history = selectSecurityHistorySummaryView(payload).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit).map((run) => ({
     run_id: safeString(run.run_id),
     scan_profile: normalizeSecurityProfileId(run.scan_profile || (run.app_id ? 'app' : 'quick')),
     status: normalizeSecurityStatus(run.status),
@@ -1363,7 +1418,7 @@ export function selectSecurityHistorySnapshotView(payload = {}) {
     view_model: LITE_SECURITY_HISTORY_SNAPSHOT_VERSION,
     history,
     history_by_profile: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
-      items[profile] = history.filter((run) => normalizeSecurityProfileId(run.scan_profile) === profile).slice(0, 8);
+      items[profile] = history.filter((run) => normalizeSecurityProfileId(run.scan_profile) === profile).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit);
       return items;
     }, {}),
     latest_by_profile: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
@@ -1398,6 +1453,7 @@ export function selectSecurityScreenSnapshotView(payload = {}) {
     evidence_summary: summary.evidence_summary,
     profile_latest: summary.profile_latest,
     security_profiles: selectSecurityProfileSnapshotViews(summary),
+    profile_freshness: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => { items[profile] = (selectSecurityProfileSnapshotView(summary, profile).freshness || selectSecurityProfileFreshnessView(null, profile)); return items; }, {}),
     security_history_snapshot: selectSecurityHistorySnapshotView(summary),
     live: Boolean(summary.live),
     saved_snapshot: true,
@@ -1436,6 +1492,7 @@ export function selectSecuritySummaryView(payload = {}) {
     history: selectSecurityHistorySummaryView(payload),
     profile_latest: selectSecurityProfileLatestView(payload),
     security_profiles: selectSecurityProfilesView(payload),
+    profile_freshness: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => { items[profile] = selectSecurityProfileView(payload, profile).freshness; return items; }, {}),
     findings: findings.findings,
     critical_issues: findings.critical_issues,
     component_posture: Array.isArray(payload?.component_posture)
@@ -1488,6 +1545,7 @@ export function selectSecurityScreenView(payload = {}) {
     history_summary: summary.history,
     evidence_summary: selectSecurityEvidenceSummaryView(summary),
     security_profiles: summary.security_profiles || selectSecurityProfilesView(summary),
+    profile_freshness: summary.profile_freshness || LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => { items[profile] = selectSecurityProfileView(summary, profile).freshness; return items; }, {}),
     profile_latest: summary.profile_latest || selectSecurityProfileLatestView(summary),
     live: isLiteSecurityViewLive(summary),
   });

@@ -19,6 +19,13 @@ const SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS = [
 ];
 void SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS;
 
+const SECURITY_PROGRESSIVE_DETAILS_PATCH_E_GUARDS = [
+  'SECURITY_PROGRESSIVE_DETAILS_PATCH_E',
+  'offlineDetails',
+  'profile freshness appears in saved Security details',
+];
+void SECURITY_PROGRESSIVE_DETAILS_PATCH_E_GUARDS;
+
 const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
   'SECURITY_PROGRESSIVE_DETAILS_PATCH_D',
   'detailsHydration',
@@ -124,6 +131,9 @@ function buildDetails({ type, model = {} }) {
     safetyLabel = '',
     lastRun = null,
     savedStateOnly = false,
+    savedSecurityDetails = false,
+    offlineDetails = null,
+    activeProfileFreshness = null,
     backendReachable = true,
     securityHistory = [],
     latestHistory = null,
@@ -141,6 +151,9 @@ function buildDetails({ type, model = {} }) {
     detailsHydrated = false,
     detailsHydration = {},
   } = model;
+  const savedDetailsNote = savedSecurityDetails || savedStateOnly
+    ? safeText(offlineDetails?.summary || activeProfileFreshness?.label || 'Showing saved Security details. Reconnect to run a new check.', 'Showing saved Security details.')
+    : '';
 
   if (type === 'changes') {
     const statRows = (Array.isArray(deltaStats) ? deltaStats : []).map((item) => `${item.label}: ${item.value}`);
@@ -161,7 +174,7 @@ function buildDetails({ type, model = {} }) {
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : 'Backend keeps the full safety record protected.',
+        summary: savedDetailsNote || (savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : 'Backend keeps the full safety record protected.'),
       },
       next_step: Number(findingDelta?.new_count || 0) ? 'Review the new items, then rerun Safety Check after taking action.' : 'No action is needed right now.',
       technicalDetails: [
@@ -192,7 +205,7 @@ function buildDetails({ type, model = {} }) {
       saved_for_troubleshooting: {
         saved: Boolean(lastRun?.run_id),
         backend_only: true,
-        summary: 'Full troubleshooting records stay backend-only. This view shows safe summaries.',
+        summary: savedDetailsNote || 'Full troubleshooting records stay backend-only. This view shows safe summaries.',
       },
       next_step: rows.length ? 'Open one finding at a time for the safest next step.' : 'Run Safety Check again later to keep evidence fresh.',
       technicalDetails: [

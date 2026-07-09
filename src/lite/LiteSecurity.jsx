@@ -24,6 +24,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
+import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import {
   isLiteSecurityViewLive,
   selectSecurityPollingPolicyView,
@@ -104,6 +105,8 @@ const SECURITY_PHASE3_RESPONSIVE_SHELL_SOURCE_GUARDS = ['LiteSheet', 'lite-secur
 const SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS = ['lite-security-phase4-motion', 'lite-security-phase4-score-settle', 'lite-security-phase4-delta-count', 'lite-security-phase4-evidence-stamp', 'lite-security-phase4-step-handoff', 'motion polish respects reduced motion'];
 const SECURITY_REMEDIATION_DRAWER_CLASS_LEGACY_GUARD = 'lite-security-remediation-drawer';
 const SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX = true;
+const SECURITY_PATCH_E_FRESHNESS_RETENTION_SYNC = true;
+void SECURITY_PATCH_E_FRESHNESS_RETENTION_SYNC;
 const SECURITY_PHASE5_MANAGE_SOURCE_GUARDS = [
   'lite-security-safety-center-card',
   'lite-security-manage-shell',
@@ -1706,13 +1709,21 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
-  const { data, loading, error, refresh, backendReachable, savedStateOnly } = useLiteResource(liteApi.security, [], {
+  const { data, loading, error, refresh, backendReachable, savedStateOnly, cacheStatus } = useLiteResource(liteApi.security, [], {
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
     staleTime: 60_000,
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
+
+  useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
+    if (event?.type && event.type !== 'security:scan-completed') return;
+    const profile = normalizeSecurityProfileId(event.profile || 'quick');
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory() });
+  }), [queryClient]);
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
@@ -1756,6 +1767,8 @@ export default function SecurityScreen() {
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || latestScanProfile);
   const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [data, lastRun, evidence, result, securityHistory]);
   const activeProfileView = useMemo(() => (data?.security_profiles?.[scanProfile] || selectSecurityProfileView(data || {}, scanProfile)), [data, scanProfile]);
+  const profileFreshness = data?.profile_freshness || {};
+  const activeProfileFreshness = activeProfileView?.freshness || profileFreshness?.[scanProfile] || null;
   const activeProfileRun = activeProfileView?.latest_run || profileRunsById[scanProfile] || null;
   const activeProfileHasRun = Boolean(activeProfileRun?.run_id || activeProfileRun?.status);
   const activeProfileIsLatest = Boolean(activeProfileRun && lastRun && activeProfileRun.run_id && activeProfileRun.run_id === lastRun.run_id) || scanProfile === latestScanProfile;
@@ -2232,6 +2245,10 @@ export default function SecurityScreen() {
   }
 
 
+  const savedSecurityDetails = savedStateOnly || data?.saved_snapshot || data?.offline_details?.visible;
+  const offlineDetailsTitle = data?.offline_details?.title || cacheStatus?.title || 'Showing saved Security details';
+  const offlineDetailsSummary = data?.offline_details?.summary || cacheStatus?.summary || 'Reconnect to run a new check or refresh live evidence. Saved details remain read-only.';
+
   const progressiveDetailsType = activeSecurityDetails || null;
   const progressiveDetailsHydrated = Boolean(progressiveDetailsType);
   const hydrateCoverageDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'coverage');
@@ -2268,6 +2285,10 @@ export default function SecurityScreen() {
     lastRun: activeProfileRun,
     selectedScanProfile: scanProfile,
     savedStateOnly,
+    savedSecurityDetails,
+    offlineDetails: savedSecurityDetails ? { title: offlineDetailsTitle, summary: offlineDetailsSummary, profile: scanProfile, freshness: activeProfileFreshness } : null,
+    profileFreshness,
+    activeProfileFreshness,
     backendReachable,
     securityHistory: hydrateHistoryDetails ? (profileHistory.length ? profileHistory : securityHistory) : [],
     latestHistory: hydrateHistoryDetails ? latestHistory : null,
@@ -2291,6 +2312,10 @@ export default function SecurityScreen() {
     safetyScore,
     safetyLabel,
     savedStateOnly,
+    savedSecurityDetails,
+    offlineDetails: savedSecurityDetails ? { title: offlineDetailsTitle, summary: offlineDetailsSummary, profile: scanProfile, freshness: activeProfileFreshness } : null,
+    profileFreshness,
+    activeProfileFreshness,
     backendReachable,
     latestEvidenceReceipt,
     toolNames,
@@ -2304,9 +2329,11 @@ export default function SecurityScreen() {
   const activeManageSectionMeta = SECURITY_MANAGE_SECTIONS.find((section) => section.id === activeManageSection) || SECURITY_MANAGE_SECTIONS[0];
   const lastCheckedLabel = activeProfileRun?.completed_at
     ? `Last checked ${formatLiteTime(activeProfileRun.completed_at)}`
-    : savedStateOnly
-      ? 'Showing saved state'
-      : 'Run Safety Check to begin';
+    : activeProfileFreshness?.has_run
+      ? activeProfileFreshness.label
+      : savedStateOnly
+        ? 'Showing saved state'
+        : 'Run Safety Check to begin';
   const evidenceSaved = Boolean(activeProfileHasRun && (latestEvidenceReceipt || evidenceReceipt || currentEvidenceRefs.length || evidenceFileCount));
   const evidenceStatusLabel = evidenceSaved ? 'Evidence saved' : 'Evidence pending';
   const safetyCenterSummary = !activeProfileHasRun && !scanInProgress
@@ -2340,7 +2367,7 @@ export default function SecurityScreen() {
     { label: 'Profile', value: activeProfileMeta.label },
     { label: 'Safety score', value: safetyScore },
     { label: 'Status', value: safetyCenterSummary },
-    { label: 'Last checked', value: activeProfileRun?.completed_at ? formatLiteTime(activeProfileRun.completed_at) : 'Not checked yet' },
+    { label: 'Last checked', value: activeProfileRun?.completed_at ? formatLiteTime(activeProfileRun.completed_at) : activeProfileFreshness?.label || 'No saved check yet' },
     { label: 'Evidence', value: evidenceStatusLabel },
   ];
   const historyTrendLabel = scoreTrendView?.detail || scoreTrendView?.label || (scoreTrend > 0 ? 'Improving' : scoreTrend < 0 ? 'Needs review' : 'Stable');
@@ -2424,7 +2451,7 @@ export default function SecurityScreen() {
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
               <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">Profile: {activeProfileMeta.chip}</button>
-              {savedStateOnly ? <span>Showing saved state</span> : null}
+              {savedSecurityDetails ? <span>{activeProfileFreshness?.label || 'Showing saved state'}</span> : null}
               {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
             </div>
             <div className="lite-security-safety-center-chips" aria-label="Safety chips">
@@ -2487,6 +2514,16 @@ export default function SecurityScreen() {
         />
       ) : null}
 
+      {savedSecurityDetails ? (
+        <StateSurface
+          tone="degraded"
+          title={offlineDetailsTitle}
+          description={offlineDetailsSummary}
+          className="mb-5 lite-security-patch-e-offline-details"
+          data-security-patch-e-offline-details="true"
+        />
+      ) : null}
+
       <LiteSheet
         open={securityManageOpen}
         onClose={closeSecurityManage}
@@ -2536,7 +2573,7 @@ export default function SecurityScreen() {
                   <p>{savedStateOnly ? 'Showing saved state. Fresh details will refresh when Pocket Lab is reachable.' : lastCheckedLabel}</p>
                 </div>
               </div>
-              <div className="lite-security-profile-switcher" role="tablist" aria-label="Security scan profiles" data-security-profile-view="profile-linked">
+              <div className="lite-security-profile-switcher" role="tablist" aria-label="Security scan profiles" data-security-profile-view="profile-linked" data-security-patch-e-profile-freshness="true">
                 {SECURITY_SCAN_PROFILES.map((profile) => (
                   <button
                     key={profile.id}
@@ -2547,7 +2584,7 @@ export default function SecurityScreen() {
                     onClick={() => chooseSecurityProfile(profile.id)}
                   >
                     <strong>{profile.label}</strong>
-                    <span>{profileRunTimestampLabel(data?.security_profiles?.[profile.id]?.latest_run || profileRunsById[profile.id])}</span>
+                    <span>{data?.security_profiles?.[profile.id]?.freshness?.label || profileFreshness?.[profile.id]?.label || profileRunTimestampLabel(data?.security_profiles?.[profile.id]?.latest_run || profileRunsById[profile.id])}</span>
                   </button>
                 ))}
               </div>
@@ -2721,6 +2758,7 @@ export default function SecurityScreen() {
                 <span>Tools: {toolNames.join(' + ')}</span>
                 <span>{savedStateOnly ? 'Saved state' : 'Fresh state'}</span>
                 <span>Polling: slow</span>
+                <span>Snapshots: profile freshness + retention</span>
               </div>
             </div>
           ) : null}
