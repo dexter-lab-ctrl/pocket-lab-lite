@@ -135,8 +135,16 @@ def current_state() -> dict[str, Any]:
     if last_run and not state.get("scan_progress"):
         state["scan_progress"] = scan_progress_for_run(last_run)
     state.setdefault("scan_progress", None)
-    state.setdefault("history", security_history(current_run=last_run, current_findings=findings, current_evidence_refs=state.get("evidence_refs") or []))
-    state.setdefault("finding_delta", finding_delta_for_run(last_run, findings))
+    if "history" not in state or not isinstance(state.get("history"), list):
+        state["history"] = security_history(
+            current_run=last_run,
+            current_findings=findings,
+            current_evidence_refs=state.get("evidence_refs") or [],
+        )
+    if "profile_latest" not in state or not isinstance(state.get("profile_latest"), dict):
+        state["profile_latest"] = security_profile_latest(state.get("history") if isinstance(state.get("history"), list) else [])
+    if "finding_delta" not in state or not isinstance(state.get("finding_delta"), dict):
+        state["finding_delta"] = finding_delta_for_run(last_run, findings)
     state.setdefault("updated_at", deps.now_utc_iso())
     return policy.redact_value(state)
 

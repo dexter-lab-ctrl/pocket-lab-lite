@@ -106,6 +106,7 @@ export function useLiteQuery({
   isLive,
   enabledWhenHidden = false,
   refetchOnWindowFocus = true,
+  refetchOnMount = true,
   refetchOnReconnect = true,
   placeholderData,
   select,
@@ -145,6 +146,7 @@ export function useLiteQuery({
     refetchInterval: resolvedRefetchInterval,
     refetchIntervalInBackground: Boolean(enabledWhenHidden),
     refetchOnWindowFocus,
+    refetchOnMount,
     refetchOnReconnect,
   });
 

@@ -7336,3 +7336,36 @@ def test_lite_pwa_static_asset_cache_version_bumped_after_asset_fallback_fix():
     assert "pocketlab-lite-static-assets-v1" not in config
     assert "cleanupOutdatedCaches: true" in config
 
+
+def test_lite_security_current_state_uses_cached_history_without_eager_setdefault_rebuild():
+    service = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    current_state = service.partition("def current_state() -> dict[str, Any]:")[2].partition("def read_run")[0]
+
+    assert 'if "history" not in state or not isinstance(state.get("history"), list):' in current_state
+    assert 'state["history"] = security_history(' in current_state
+    assert 'state.setdefault("history", security_history(' not in current_state
+    assert 'if "profile_latest" not in state or not isinstance(state.get("profile_latest"), dict):' in current_state
+    assert 'security_profile_latest(state.get("history")' in current_state
+    assert 'if "finding_delta" not in state or not isinstance(state.get("finding_delta"), dict):' in current_state
+    assert 'state.setdefault("finding_delta", finding_delta_for_run(' not in current_state
+
+
+def test_lite_security_quiet_revalidation_contract():
+    query = Path("src/hooks/useLiteQuery.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "refetchOnMount = true" in query
+    assert "refetchOnMount," in query
+    assert "staleTime: 120_000" in security
+    assert "refetchOnWindowFocus: (query) => securityPollingIsLive(query?.state?.data)" in security
+    assert "refetchOnMount: (query) =>" in security
+    assert "if (!current) return true;" in security
+    assert "if (current?.__liteSnapshot) return true;" in security
+    assert "return securityPollingIsLive(current);" in security
+    assert "placeholderData: (previousData) => previousData" in security
+    assert "Refreshing quietly" in security
+
+    assert "fetch(" not in security
+    assert "nats.connect" not in security
+    assert "child_process" not in security
+

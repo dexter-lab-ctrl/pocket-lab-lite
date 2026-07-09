@@ -1709,10 +1709,27 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
-  const { data, loading, error, refresh, backendReachable, savedStateOnly, cacheStatus } = useLiteResource(liteApi.security, [], {
+  const {
+    data,
+    loading,
+    error,
+    refresh,
+    refreshing,
+    backendReachable,
+    savedStateOnly,
+    cacheStatus,
+  } = useLiteResource(liteApi.security, [], {
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
-    staleTime: 60_000,
+    staleTime: 120_000,
+    refetchOnWindowFocus: (query) => securityPollingIsLive(query?.state?.data),
+    refetchOnMount: (query) => {
+      const current = query?.state?.data;
+      if (!current) return true;
+      if (current?.__liteSnapshot) return true;
+      return securityPollingIsLive(current);
+    },
+    placeholderData: (previousData) => previousData,
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
@@ -2452,6 +2469,7 @@ export default function SecurityScreen() {
               <span>{evidenceStatusLabel}</span>
               <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">Profile: {activeProfileMeta.chip}</button>
               {savedSecurityDetails ? <span>{activeProfileFreshness?.label || 'Showing saved state'}</span> : null}
+              {refreshing && !scanInProgress ? <span>Refreshing quietly</span> : null}
               {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
             </div>
             <div className="lite-security-safety-center-chips" aria-label="Safety chips">
