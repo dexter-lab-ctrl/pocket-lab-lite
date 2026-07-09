@@ -6,6 +6,7 @@ export const liteQueryKeys = {
   appActions: (appId = 'photoprism') => ['lite', 'app', String(appId || 'photoprism').toLowerCase(), 'actions'],
   fleet: () => ['lite', 'fleet'],
   security: () => ['lite', 'security'],
+  securityDetails: () => ['lite', 'security', 'details'],
   securityProfile: (profile = 'quick') => ['lite', 'security', 'profile', String(profile || 'quick').toLowerCase()],
   securityHistory: () => ['lite', 'security', 'history'],
   recovery: () => ['lite', 'recovery'],
@@ -17,7 +18,8 @@ export const liteQueryPaths = {
   catalog: '/api/lite/catalog',
   appActions: (appId = 'photoprism') => `/api/lite/apps/${encodeURIComponent(appId || 'photoprism')}/actions`,
   fleet: '/api/lite/fleet',
-  security: '/api/lite/security',
+  security: '/api/lite/security/summary',
+  securityDetails: '/api/lite/security',
   recovery: '/api/lite/recovery',
 };
 

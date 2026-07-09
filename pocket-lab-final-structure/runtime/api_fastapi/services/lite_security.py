@@ -107,6 +107,9 @@ _SECURITY_READ_CACHE_SECONDS = max(1.0, float(os.environ.get("POCKETLAB_LITE_SEC
 _SECURITY_READ_CACHE_LIVE_SECONDS = max(0.5, float(os.environ.get("POCKETLAB_LITE_SECURITY_READ_CACHE_LIVE_SECONDS", "2")))
 _SECURITY_BACKFILL_PERSIST_SECONDS = max(0.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_BACKFILL_PERSIST_SECONDS", "0.25")))
 _CURRENT_STATE_CACHE: dict[str, Any] = {"key": None, "cached_at": 0.0, "data": None, "live": False}
+_SECURITY_SUMMARY_CACHE: dict[str, Any] = {"key": None, "cached_at": 0.0, "data": None, "live": False}
+_SECURITY_SUMMARY_HISTORY_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_SUMMARY_HISTORY_LIMIT", "6")))
+_SECURITY_SUMMARY_FINDING_LIMIT = max(0, int(os.environ.get("POCKETLAB_LITE_SECURITY_SUMMARY_FINDING_LIMIT", "3")))
 
 
 def _state_file_key() -> tuple[int, int] | None:
@@ -154,6 +157,161 @@ def _set_current_state_cache(key: tuple[int, int] | None, state: dict[str, Any])
             "live": _is_live_security_state(clean),
         })
     return copy.deepcopy(clean)
+
+
+def _trim_security_run_for_summary(run: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    if not isinstance(run, dict):
+        return None
+    trimmed = {
+        key: run.get(key)
+        for key in (
+            "run_id", "status", "summary", "score", "scan_profile", "app_id", "app_label",
+            "requested_at", "started_at", "completed_at", "updated_at", "checks_reviewed",
+            "checks_count", "items_to_review", "critical_count", "high_count", "medium_count",
+            "low_count", "info_count", "sbom_saved", "partial_results",
+        )
+        if key in run
+    }
+    if isinstance(run.get("tools"), list):
+        trimmed["tools"] = run["tools"][:6]
+    if isinstance(run.get("coverage_summary"), dict):
+        coverage = run["coverage_summary"]
+        trimmed["coverage_summary"] = {
+            key: coverage.get(key)
+            for key in (
+                "profile", "app_id", "app_label", "tool_status", "checked_count", "skipped_count",
+                "partial_count", "timed_out_count", "missing_count",
+            )
+            if key in coverage
+        }
+        for list_key in ("checked_targets", "skipped_targets", "partial_targets", "timed_out_targets", "missing_targets"):
+            if isinstance(coverage.get(list_key), list):
+                trimmed["coverage_summary"][list_key] = coverage[list_key][:4]
+    if isinstance(run.get("execution_timeline"), list):
+        trimmed["execution_timeline"] = run["execution_timeline"][:6]
+    if isinstance(run.get("evidence_refs"), list):
+        trimmed["evidence_refs"] = [str(ref) for ref in run["evidence_refs"][:5]]
+    if isinstance(run.get("tool_results"), dict):
+        trimmed["tool_results"] = {
+            key: {
+                subkey: value.get(subkey)
+                for subkey in ("status", "available", "label", "finding_count", "timed_out", "sbom_saved")
+                if subkey in value
+            }
+            for key, value in run["tool_results"].items()
+            if isinstance(value, dict)
+        }
+    return policy.redact_value(trimmed)
+
+
+def _trim_security_delta_for_summary(delta: dict[str, Any] | None = None) -> dict[str, Any]:
+    if not isinstance(delta, dict):
+        return {"new_count": 0, "resolved_count": 0, "unchanged_count": 0, "new": [], "resolved": [], "unchanged": []}
+    trimmed = {
+        "new_count": int(delta.get("new_count") or 0),
+        "resolved_count": int(delta.get("resolved_count") or 0),
+        "unchanged_count": int(delta.get("unchanged_count") or 0),
+    }
+    for key in ("new", "resolved", "unchanged"):
+        values = delta.get(key) if isinstance(delta.get(key), list) else []
+        trimmed[key] = values[:_SECURITY_SUMMARY_FINDING_LIMIT]
+    return policy.redact_value(trimmed)
+
+
+def _profile_latest_summary(state: dict[str, Any], history: list[dict[str, Any]]) -> dict[str, Any]:
+    profile_latest = state.get("profile_latest") if isinstance(state.get("profile_latest"), dict) else {}
+    latest: dict[str, Any] = {}
+    for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP):
+        candidate = profile_latest.get(profile) if isinstance(profile_latest.get(profile), dict) else None
+        if candidate is None:
+            candidate = next((run for run in history if policy.normalize_scan_profile(run.get("scan_profile") or ("app" if run.get("app_id") else "quick")) == profile), None)
+        if candidate is not None:
+            latest[profile] = _trim_security_run_for_summary(candidate)
+    return {key: value for key, value in latest.items() if value}
+
+
+def _security_summary_from_state(state: dict[str, Any]) -> dict[str, Any]:
+    payload = state if isinstance(state, dict) else {}
+    last_run = _trim_security_run_for_summary(payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None)
+    raw_history = payload.get("history") if isinstance(payload.get("history"), list) else []
+    history = [item for item in (_trim_security_run_for_summary(run) for run in raw_history[:_SECURITY_SUMMARY_HISTORY_LIMIT]) if item]
+    if not history and last_run:
+        history = [last_run]
+    profile_latest = _profile_latest_summary(payload, history)
+    findings = payload.get("findings") if isinstance(payload.get("findings"), list) else []
+    critical = payload.get("critical_issues") if isinstance(payload.get("critical_issues"), list) else []
+    evidence_refs = payload.get("evidence_refs") if isinstance(payload.get("evidence_refs"), list) else []
+    summary = {
+        "view_model": "security-summary-f3-v1",
+        "status": payload.get("status") or (last_run or {}).get("status") or "unknown",
+        "summary": payload.get("summary") or (last_run or {}).get("summary") or "Security summary is available.",
+        "score": int(payload.get("score") or (last_run or {}).get("score") or 0),
+        "checks_reviewed": int(payload.get("checks_reviewed") or payload.get("checks_count") or (last_run or {}).get("checks_reviewed") or 0),
+        "checks_count": int(payload.get("checks_count") or payload.get("checks_reviewed") or (last_run or {}).get("checks_count") or 0),
+        "items_to_review": int(payload.get("items_to_review") or len(findings) or 0),
+        "findings_count": int(payload.get("findings_count") or len(findings) or 0),
+        "evidence_count": len(evidence_refs),
+        "scan_profile": payload.get("scan_profile") or (last_run or {}).get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": payload.get("app_id") or (last_run or {}).get("app_id") or "",
+        "app_label": payload.get("app_label") or (last_run or {}).get("app_label") or "",
+        "last_run": last_run,
+        "history": history,
+        "profile_latest": profile_latest,
+        "finding_delta": _trim_security_delta_for_summary(payload.get("finding_delta")),
+        "scan_progress": payload.get("scan_progress") if isinstance(payload.get("scan_progress"), dict) else None,
+        "coverage_summary": (last_run or {}).get("coverage_summary") or {},
+        "execution_timeline": (last_run or {}).get("execution_timeline") or [],
+        "tool_results": (last_run or {}).get("tool_results") or {},
+        "evidence_refs": [str(ref) for ref in evidence_refs[:5]],
+        "critical_issues": critical[:_SECURITY_SUMMARY_FINDING_LIMIT],
+        "findings": findings[:_SECURITY_SUMMARY_FINDING_LIMIT],
+        "component_posture": payload.get("component_posture")[:6] if isinstance(payload.get("component_posture"), list) else [],
+        "guidance": payload.get("guidance")[:4] if isinstance(payload.get("guidance"), list) else policy.GUIDANCE[:4],
+        "updated_at": payload.get("updated_at") or (last_run or {}).get("updated_at") or (last_run or {}).get("completed_at"),
+        "checked_at": payload.get("checked_at") or payload.get("updated_at") or (last_run or {}).get("completed_at"),
+        "summary_payload": True,
+        "details_endpoint": "/api/lite/security",
+        "sanitized": True,
+    }
+    return policy.redact_value(summary)
+
+
+def _get_security_summary_cache(key: tuple[int, int] | None) -> dict[str, Any] | None:
+    if not key or _SECURITY_SUMMARY_CACHE.get("key") != key:
+        return None
+    cached = _SECURITY_SUMMARY_CACHE.get("data")
+    if not isinstance(cached, dict):
+        return None
+    cached_at = float(_SECURITY_SUMMARY_CACHE.get("cached_at") or 0.0)
+    if (time.monotonic() - cached_at) > _cache_ttl_for_state(cached):
+        return None
+    return copy.deepcopy(cached)
+
+
+def _set_security_summary_cache(key: tuple[int, int] | None, state: dict[str, Any]) -> dict[str, Any]:
+    clean = policy.redact_value(state)
+    if key:
+        _SECURITY_SUMMARY_CACHE.update({
+            "key": key,
+            "cached_at": time.monotonic(),
+            "data": copy.deepcopy(clean),
+            "live": _is_live_security_state(clean),
+        })
+    return copy.deepcopy(clean)
+
+
+def summary_state() -> dict[str, Any]:
+    key = _state_file_key()
+    cached = _get_security_summary_cache(key)
+    if cached is not None:
+        cached["read_cache"] = {"status": "hit", "source": "fastapi_summary_memory", "ttl_seconds": int(_cache_ttl_for_state(cached))}
+        return cached
+    state = evidence.read_state()
+    if not state:
+        state = default_state()
+    summary = _security_summary_from_state(state)
+    summary["read_cache"] = {"status": "miss", "source": "security_summary", "ttl_seconds": int(_cache_ttl_for_state(summary))}
+    return _set_security_summary_cache(key, summary)
 
 
 def _maybe_persist_current_state_backfill(state: dict[str, Any], *, started_at: float, changed: bool) -> tuple[dict[str, Any], tuple[int, int] | None]:
