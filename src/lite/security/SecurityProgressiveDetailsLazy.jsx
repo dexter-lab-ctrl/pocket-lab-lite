@@ -436,6 +436,10 @@ function buildDetails({ type, model = {} }) {
 
 export default function SecurityProgressiveDetailsLazy({ type = 'evidence', model = {}, onClose }) {
   const details = buildDetails({ type, model });
+  const detailsHydrated = Boolean(model?.detailsHydrated);
+  const detailsHydration = model?.detailsHydration && typeof model.detailsHydration === 'object'
+    ? model.detailsHydration
+    : {};
   const securityDetailsMotionReduced = useReducedMotionPreference();
   const detailsPanelSpring = useSpring({
     from: { opacity: 0, y: securityDetailsMotionReduced ? 0 : 12, scale: securityDetailsMotionReduced ? 1 : 0.985 },
