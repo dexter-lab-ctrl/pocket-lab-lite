@@ -264,6 +264,98 @@ function normalizeSecurityProfileId(value = '') {
   return SECURITY_SCAN_PROFILE_IDS.includes(normalized) ? normalized : 'quick';
 }
 
+
+function createOptimisticSecurityResult(profile = 'quick', app = null) {
+  const profileId = normalizeSecurityProfileId(profile);
+  const meta = securityProfileMeta(profileId);
+  const appId = app?.app_id || (profileId === 'app' ? 'photoprism' : '');
+  const appLabel = app?.app_label || app?.label || app?.name || (profileId === 'app' ? 'PhotoPrism' : '');
+  return {
+    status: 'queued',
+    state: 'queued',
+    accepted: true,
+    optimistic: true,
+    scan_profile: profileId,
+    app_id: appId,
+    app_label: appLabel,
+    summary: `${meta.label} is getting ready.`,
+    scan_progress: {
+      active_scan: true,
+      running: true,
+      operation_running: true,
+      in_progress: true,
+      status: 'queued',
+      stage: 'Getting ready',
+      step: 1,
+      steps_total: 3,
+      percent: 4,
+      message: 'Pocket Lab is starting the safety check.',
+      profile: profileId,
+      app_id: appId,
+      updated_at: new Date().toISOString(),
+    },
+  };
+}
+
+function mergeSecurityAcceptedResult(optimistic = {}, payload = {}, profile = 'quick') {
+  const profileId = normalizeSecurityProfileId(payload?.scan_profile || payload?.profile || profile);
+  const progress = optimistic?.scan_progress || {};
+  const runId = payload?.run_id || payload?.job_id || payload?.command_id || progress.run_id || '';
+  return {
+    ...optimistic,
+    ...payload,
+    status: payload?.status || payload?.state || 'accepted',
+    state: payload?.state || payload?.status || 'accepted',
+    accepted: payload?.accepted ?? true,
+    scan_profile: profileId,
+    optimistic: false,
+    scan_progress: {
+      ...progress,
+      ...(payload?.scan_progress || {}),
+      active_scan: true,
+      running: true,
+      operation_running: true,
+      in_progress: true,
+      status: payload?.status || payload?.state || 'accepted',
+      stage: payload?.scan_progress?.stage || 'Working',
+      percent: Math.max(Number(progress.percent || 0), Number(payload?.scan_progress?.percent || 8)),
+      message: payload?.summary || payload?.message || 'Pocket Lab is working on the safety check.',
+      profile: profileId,
+      run_id: runId,
+      updated_at: payload?.updated_at || new Date().toISOString(),
+    },
+  };
+}
+
+function isTerminalSecurityResult(value = {}) {
+  const status = String(value?.status || value?.state || '').toLowerCase().replace(/[\s-]+/g, '_');
+  return ['succeeded', 'success', 'completed', 'complete', 'done', 'failed', 'failure', 'cancelled', 'canceled', 'blocked', 'review', 'needs_attention'].includes(status);
+}
+
+function hasOptimisticSecurityProgress(result = null) {
+  return Boolean(result?.optimistic || (hasLiteLiveOperation(result) && !isTerminalSecurityResult(result)));
+}
+
+function settleSecurityResultFromProgress(previous = {}, progress = {}) {
+  return {
+    ...previous,
+    status: progress?.status || previous?.status || 'completed',
+    state: progress?.status || previous?.state || 'completed',
+    optimistic: false,
+    scan_profile: normalizeSecurityProfileId(progress?.profile || previous?.scan_profile || previous?.profile || 'quick'),
+    run_id: progress?.run_id || previous?.run_id || previous?.job_id || previous?.command_id || '',
+    summary: progress?.message || previous?.summary || 'Safety check finished.',
+    scan_progress: {
+      ...(previous?.scan_progress || {}),
+      ...progress,
+      active_scan: false,
+      running: false,
+      operation_running: false,
+      in_progress: false,
+    },
+  };
+}
+
 function securityProfileMeta(profile = 'quick') {
   return SECURITY_SCAN_PROFILES.find((item) => item.id === normalizeSecurityProfileId(profile)) || SECURITY_SCAN_PROFILES[0];
 }
@@ -1863,6 +1955,15 @@ export default function SecurityScreen() {
   });
   void securityProgressUsingFallback;
   void securityProgressFallbackLabel;
+  useEffect(() => {
+    if (!result || !hasOptimisticSecurityProgress(result) || !securityProgressData || !isTerminalSecurityResult(securityProgressData)) return;
+    const resultRunId = result.run_id || result.job_id || result.command_id || result.scan_progress?.run_id || '';
+    const progressRunId = securityProgressData.run_id || '';
+    if (resultRunId && progressRunId && resultRunId !== progressRunId) return;
+    setResult((current) => current ? settleSecurityResultFromProgress(current, securityProgressData) : current);
+    setBusy(false);
+  }, [result, securityProgressData]);
+
   const splitSecurityData = useMemo(() => {
     const base = securitySummaryData || {};
     if (!securityProfileData && !securityHistoryData && !securityProgressData) return securitySummaryData;
@@ -1957,14 +2058,15 @@ export default function SecurityScreen() {
 
   const lastRun = data?.last_run || null;
   const securityHistory = Array.isArray(data?.history) ? data.history : [];
-  const latestScanProfile = normalizeSecurityProfileId(data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
+  const localScanProfile = hasOptimisticSecurityProgress(result) ? normalizeSecurityProfileId(result?.scan_profile || result?.profile || 'quick') : null;
+  const latestScanProfile = normalizeSecurityProfileId(localScanProfile || data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
   const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [data, lastRun, evidence, result, securityHistory]);
   const activeProfileView = useMemo(() => (data?.security_profiles?.[scanProfile] || selectSecurityProfileView(data || {}, scanProfile)), [data, scanProfile]);
   const profileFreshness = data?.profile_freshness || {};
   const activeProfileFreshness = activeProfileView?.freshness || profileFreshness?.[scanProfile] || null;
   const activeProfileRun = activeProfileView?.latest_run || profileRunsById[scanProfile] || null;
   const activeProfileHasRun = Boolean(activeProfileRun?.run_id || activeProfileRun?.status);
-  const activeProfileIsLatest = Boolean(activeProfileRun && lastRun && activeProfileRun.run_id && activeProfileRun.run_id === lastRun.run_id) || scanProfile === latestScanProfile;
+  const activeProfileIsLatest = Boolean(localScanProfile && scanProfile === localScanProfile) || Boolean(activeProfileRun && lastRun && activeProfileRun.run_id && activeProfileRun.run_id === lastRun.run_id) || scanProfile === latestScanProfile;
   const activeProfileMeta = securityProfileMeta(scanProfile);
   const findings = Number(activeProfileView?.items_to_review ?? activeProfileView?.findings_count ?? activeProfileRun?.items_to_review ?? 0);
   const checks = Number(activeProfileRun?.checks_reviewed ?? activeProfileRun?.checks_count ?? data?.checks_reviewed ?? data?.checks_count ?? 0);
@@ -2032,10 +2134,10 @@ export default function SecurityScreen() {
   const deltaSummary = securityDeltaSummary(findingDelta, deltaPreview);
   const timeoutDeltaCount = deltaPreview.filter(isSecurityTimeoutFinding).length;
   const displayRunStatus = String(activeProfileRun?.status || (activeProfileIsLatest ? data?.status : '') || '').toLowerCase();
-  const currentRunStatus = String(lastRun?.status || result?.status || '').toLowerCase();
+  const currentRunStatus = String(result?.status || lastRun?.status || '').toLowerCase();
   const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
-  const scanProgress = activeProfileIsLatest ? data?.scan_progress || result?.scan_progress || null : null;
-  const scanInProgress = activeProfileIsLatest && (busy || ['queued', 'running'].includes(currentRunStatus));
+  const scanProgress = activeProfileIsLatest ? result?.scan_progress || data?.scan_progress || null : null;
+  const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;
   const scanProgressEta = liveProgress.eta;
@@ -2218,7 +2320,8 @@ export default function SecurityScreen() {
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setSelectedScanProfile('quick');
     setBusy(true);
-    setResult({ status: 'queued', scan_profile: 'quick', summary: 'Quick safety check queued.' });
+    const optimistic = createOptimisticSecurityResult('quick');
+    setResult(optimistic);
     setActionError(null);
     setEvidence(null);
     setEvidenceError(null);
@@ -2227,7 +2330,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.runSecurityScan('local', { profile: 'quick', reason: 'manual quick safety check' });
       securityFlow.accepted(payload);
-      setResult(payload);
+      setResult(mergeSecurityAcceptedResult(optimistic, payload, 'quick'));
       invalidateSecurityQuery('quick');
     } catch (err) {
       securityFlow.fail(err);
@@ -2264,8 +2367,10 @@ export default function SecurityScreen() {
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setFullLocalConfirmOpen(false);
+    setSelectedScanProfile('full');
     setBusy(true);
-    setResult({ status: 'queued', scan_profile: 'full', summary: 'Full Local Check queued.' });
+    const optimistic = createOptimisticSecurityResult('full');
+    setResult(optimistic);
     setActionError(null);
     setEvidence(null);
     setEvidenceError(null);
@@ -2274,7 +2379,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.runSecurityScan('local', { profile: 'full', reason: 'manual full local check' });
       securityFlow.accepted(payload);
-      setResult(payload);
+      setResult(mergeSecurityAcceptedResult(optimistic, payload, 'full'));
       invalidateSecurityQuery('full');
     } catch (err) {
       securityFlow.fail(err);
@@ -2296,8 +2401,10 @@ export default function SecurityScreen() {
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setAppCheckConfirmOpen(false);
+    setSelectedScanProfile('app');
     setBusy(true);
-    setResult({ status: 'queued', scan_profile: 'app', app_id: app.app_id, app_label: app.app_label || 'PhotoPrism', summary: `${app.app_label || 'PhotoPrism'} App Check queued.` });
+    const optimistic = createOptimisticSecurityResult('app', app);
+    setResult(optimistic);
     setActionError(null);
     setEvidence(null);
     setEvidenceError(null);
@@ -2306,7 +2413,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
       securityFlow.accepted(payload);
-      setResult(payload);
+      setResult(mergeSecurityAcceptedResult(optimistic, payload, 'app'));
       invalidateSecurityQuery('app');
     } catch (err) {
       securityFlow.fail(err);
@@ -2693,7 +2800,7 @@ export default function SecurityScreen() {
             </div>
             <h2>Safety Center</h2>
             <button type="button" className="lite-security-quick-profile-chip lite-security-profile-rollup-trigger" onClick={cycleSecurityProfile} aria-label="Switch Security profile summary" data-security-profile-view="profile-linked">{activeProfileMeta.label}</button>
-            <p>{scanInProgress ? 'Pocket Lab is checking safety through FastAPI and the backend worker.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
+            <p>{scanInProgress ? 'Pocket Lab is checking safety and saving evidence.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
             <div className="lite-security-safety-center-meta" aria-label="Safety state">
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
@@ -2745,7 +2852,7 @@ export default function SecurityScreen() {
               <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
                 <span style={{ width: `${scanProgressPercent}%` }} />
               </div>
-              <p>{scanProgressPercent}% · {scanProgressEta} remaining · {activeProfileMeta.label} is running.</p>
+              <p>{scanProgressPercent}% · {scanProgressEta} remaining · {activeProfileMeta.label} is working.</p>
             </animated.div>
           ) : null}
         </GlassCard>
@@ -3171,7 +3278,7 @@ export default function SecurityScreen() {
 
       <SecurityRemediationDrawer finding={remediationFinding} context={remediationContext} onClose={closeRemediation} />
 
-      <ResultNotice result={result} error={actionError} />
+      <ResultNotice result={null} error={actionError} />
     </>
   );
 }
