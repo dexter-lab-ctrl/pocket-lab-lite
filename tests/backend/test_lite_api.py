@@ -7353,17 +7353,24 @@ def test_lite_security_current_state_uses_cached_history_without_eager_setdefaul
 def test_lite_security_quiet_revalidation_contract():
     query = Path("src/hooks/useLiteQuery.js").read_text()
     security = Path("src/lite/LiteSecurity.jsx").read_text()
+    preload = Path("src/lite/security/securityPreload.js").read_text()
 
     assert "refetchOnMount = true" in query
     assert "refetchOnMount," in query
-    assert "staleTime: 120_000" in security
-    assert "refetchOnWindowFocus: (query) => securityPollingIsLive(query?.state?.data)" in security
+    assert "gcTime," in query
+    assert "staleTime: (query) => securitySummaryStaleTime(query?.state?.data)" in security
+    assert "gcTime: SECURITY_SUMMARY_GC_TIME_MS" in security
+    assert "refetchOnWindowFocus: false" in security
+    assert "refetchOnReconnect: true" in security
+    assert "SECURITY_SUMMARY_IDLE_STALE_TIME_MS = 180_000" in preload
+    assert "SECURITY_SUMMARY_ACTIVE_STALE_TIME_MS = 2_000" in preload
     assert "refetchOnMount: (query) =>" in security
     assert "if (!current) return true;" in security
     assert "if (current?.__liteSnapshot) return true;" in security
     assert "return securityPollingIsLive(current);" in security
     assert "placeholderData: (previousData) => previousData" in security
-    assert "Refreshing quietly" in security
+    assert "Refreshing quietly…" in security
+    assert "Fresh just now" in security
 
     assert "fetch(" not in security
     assert "nats.connect" not in security

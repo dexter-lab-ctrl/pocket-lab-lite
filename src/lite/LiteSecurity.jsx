@@ -24,6 +24,17 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
+import {
+  SECURITY_DETAILS_GC_TIME_MS,
+  SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE,
+  SECURITY_SUMMARY_GC_TIME_MS,
+  prefetchSecurityManageOnIntent,
+  preloadSecurityDetails,
+  preloadSecurityHistory,
+  preloadSecurityManageChunks,
+  securityDetailsStaleTime,
+  securitySummaryStaleTime,
+} from './security/securityPreload.js';
 import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import {
   isLiteSecurityViewLive,
@@ -198,6 +209,21 @@ const SECURITY_PROFILE3_APP_CHECK_GUARDS = [
 void SECURITY_PROFILE1_QUICK_SAFETY_GUARDS;
 void SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS;
 void SECURITY_PROFILE3_APP_CHECK_GUARDS;
+const SECURITY_INSTANT_FEEL_GROUP1_GUARDS = [
+  'SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE',
+  'Showing saved state',
+  'Refreshing quietly…',
+  'Fresh just now',
+  'placeholderData: (previousData) => previousData',
+  'refetchOnWindowFocus: false',
+  'refetchOnReconnect: true',
+  'preloadSecurityDetails',
+  'preloadSecurityHistory',
+  'prefetchSecurityManageOnIntent',
+];
+void SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE;
+void SECURITY_INSTANT_FEEL_GROUP1_GUARDS;
+
 const SECURITY_PROFILE_VIEW_POLISH_GUARDS = [
   'lite-security-profile-action-grid',
   'lite-security-profile-switcher',
@@ -1725,8 +1751,9 @@ export default function SecurityScreen() {
   } = useLiteResource(liteApi.securitySummary || liteApi.security, [], {
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
-    staleTime: 120_000,
-    refetchOnWindowFocus: (query) => securityPollingIsLive(query?.state?.data),
+    staleTime: (query) => securitySummaryStaleTime(query?.state?.data),
+    gcTime: SECURITY_SUMMARY_GC_TIME_MS,
+    refetchOnWindowFocus: false,
     refetchOnMount: (query) => {
       const current = query?.state?.data;
       if (!current) return true;
@@ -1734,6 +1761,7 @@ export default function SecurityScreen() {
       return securityPollingIsLive(current);
     },
     placeholderData: (previousData) => previousData,
+    refetchOnReconnect: true,
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
@@ -1745,7 +1773,8 @@ export default function SecurityScreen() {
     enabled: shouldLoadSecurityDetails,
     pollingMode: 'relaxed',
     isLive: securityPollingIsLive,
-    staleTime: 60_000,
+    staleTime: (query) => securityDetailsStaleTime(query?.state?.data),
+    gcTime: SECURITY_DETAILS_GC_TIME_MS,
     refetchOnWindowFocus: false,
     refetchOnMount: (query) => {
       if (!shouldLoadSecurityDetails) return false;
@@ -1754,6 +1783,7 @@ export default function SecurityScreen() {
       return securityPollingIsLive(current);
     },
     placeholderData: (previousData) => previousData,
+    refetchOnReconnect: true,
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
@@ -2221,6 +2251,8 @@ export default function SecurityScreen() {
   }
 
   function openSecurityDetails(type, event) {
+    preloadSecurityManageChunks();
+    if (type === 'history') preloadSecurityHistory();
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     setActiveSecurityDetails(type);
   }
@@ -2253,6 +2285,10 @@ export default function SecurityScreen() {
 
   function chooseSecurityManageSection(sectionId) {
     setSecurityManageSection(sectionId);
+    if (['changes', 'issues', 'coverage', 'check_path', 'evidence', 'history', 'technical_details'].includes(sectionId)) {
+      preloadSecurityManageChunks();
+      if (sectionId === 'history') preloadSecurityHistory();
+    }
   }
 
   function chooseSecurityProfile(profileId) {
@@ -2284,7 +2320,17 @@ export default function SecurityScreen() {
     await scan();
   }
 
+  const warmSecurityManageIntent = useCallback(() => {
+    preloadSecurityManageChunks();
+    prefetchSecurityManageOnIntent(queryClient, {
+      backendHealthy: backendReachable !== false,
+      activeScan: scanInProgress,
+    });
+  }, [backendReachable, queryClient, scanInProgress]);
+
   function openSecurityDetailFromManage(type, event) {
+    if (type === 'history') preloadSecurityHistory();
+    preloadSecurityDetails();
     openSecurityDetails(type, event);
   }
 
@@ -2292,6 +2338,19 @@ export default function SecurityScreen() {
   const savedSecurityDetails = savedStateOnly || data?.saved_snapshot || data?.offline_details?.visible;
   const offlineDetailsTitle = data?.offline_details?.title || cacheStatus?.title || 'Showing saved Security details';
   const offlineDetailsSummary = data?.offline_details?.summary || cacheStatus?.summary || 'Reconnect to run a new check or refresh live evidence. Saved details remain read-only.';
+  const [freshJustNow, setFreshJustNow] = useState(false);
+  const wasSecurityRefreshing = useRef(false);
+
+  useEffect(() => {
+    if (wasSecurityRefreshing.current && !refreshing && data && !savedSecurityDetails && backendReachable !== false) {
+      setFreshJustNow(true);
+      const timer = window.setTimeout(() => setFreshJustNow(false), 2400);
+      wasSecurityRefreshing.current = refreshing;
+      return () => window.clearTimeout(timer);
+    }
+    wasSecurityRefreshing.current = refreshing;
+    return undefined;
+  }, [backendReachable, data, refreshing, savedSecurityDetails]);
 
   const progressiveDetailsType = activeSecurityDetails || null;
   const progressiveDetailsHydrated = Boolean(progressiveDetailsType);
@@ -2393,6 +2452,13 @@ export default function SecurityScreen() {
           : findings
             ? 'Needs attention'
             : safetyLabel;
+  const securityRefreshStatusLabel = refreshing && !scanInProgress
+    ? 'Refreshing quietly…'
+    : savedSecurityDetails
+      ? 'Showing saved state'
+      : freshJustNow
+        ? 'Fresh just now'
+        : '';
   const toolChipContext = { runStatus, tools: toolNames, executionSteps, profile: scanProfile };
   const safetyCenterChips = scanProfile === 'app'
     ? [
@@ -2495,8 +2561,8 @@ export default function SecurityScreen() {
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
               <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">Profile: {activeProfileMeta.chip}</button>
-              {savedSecurityDetails ? <span>{activeProfileFreshness?.label || 'Showing saved state'}</span> : null}
-              {refreshing && !scanInProgress ? <span>Refreshing quietly</span> : null}
+              {activeProfileFreshness?.label && savedSecurityDetails ? <span>{activeProfileFreshness.label}</span> : null}
+              {securityRefreshStatusLabel ? <span className="lite-security-refresh-status-chip" data-security-refresh-status="true">{securityRefreshStatusLabel}</span> : null}
               {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
             </div>
             <div className="lite-security-safety-center-chips" aria-label="Safety chips">
@@ -2519,7 +2585,7 @@ export default function SecurityScreen() {
                   </LiteButton>
                 ))}
               </div>
-              <LiteButton tone="secondary" onClick={openSecurityManage} ariaLabel="Manage Security details">Manage</LiteButton>
+              <LiteButton tone="secondary" onPointerEnter={warmSecurityManageIntent} onFocus={warmSecurityManageIntent} onTouchStart={warmSecurityManageIntent} onClick={openSecurityManage} ariaLabel="Manage Security details">Manage</LiteButton>
             </div>
             {securityFlow.writeBlocked ? <p className="lite-security-phase1-note">{securityFlow.blockedReason || 'Reconnect to continue.'}</p> : null}
           </div>
