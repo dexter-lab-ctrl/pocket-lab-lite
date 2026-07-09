@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import shutil
@@ -102,6 +103,71 @@ def _coverage_from_run(run: dict[str, Any] | None = None) -> dict[str, Any]:
     return coverage if isinstance(coverage, dict) else default_coverage_summary(profile=profile)
 
 
+_SECURITY_READ_CACHE_SECONDS = max(1.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_READ_CACHE_SECONDS", "30")))
+_SECURITY_READ_CACHE_LIVE_SECONDS = max(0.5, float(os.environ.get("POCKETLAB_LITE_SECURITY_READ_CACHE_LIVE_SECONDS", "2")))
+_SECURITY_BACKFILL_PERSIST_SECONDS = max(0.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_BACKFILL_PERSIST_SECONDS", "0.25")))
+_CURRENT_STATE_CACHE: dict[str, Any] = {"key": None, "cached_at": 0.0, "data": None, "live": False}
+
+
+def _state_file_key() -> tuple[int, int] | None:
+    try:
+        stat_result = evidence.state_path().stat()
+    except OSError:
+        return None
+    return (int(stat_result.st_mtime_ns), int(stat_result.st_size))
+
+
+def _is_live_security_state(state: dict[str, Any] | None = None) -> bool:
+    payload = state if isinstance(state, dict) else {}
+    status = str(payload.get("status") or "").lower()
+    progress = payload.get("scan_progress") if isinstance(payload.get("scan_progress"), dict) else {}
+    progress_status = str(progress.get("status") or progress.get("phase") or "").lower()
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else {}
+    run_status = str(last_run.get("status") or "").lower()
+    live_values = {"queued", "running", "working", "in_progress", "accepted", "lynis_running", "trivy_running", "posture_running", "evidence_saving"}
+    return status in live_values or progress_status in live_values or run_status in live_values
+
+
+def _cache_ttl_for_state(state: dict[str, Any] | None = None) -> float:
+    return _SECURITY_READ_CACHE_LIVE_SECONDS if _is_live_security_state(state) else _SECURITY_READ_CACHE_SECONDS
+
+
+def _get_current_state_cache(key: tuple[int, int] | None) -> dict[str, Any] | None:
+    if not key or _CURRENT_STATE_CACHE.get("key") != key:
+        return None
+    cached = _CURRENT_STATE_CACHE.get("data")
+    if not isinstance(cached, dict):
+        return None
+    cached_at = float(_CURRENT_STATE_CACHE.get("cached_at") or 0.0)
+    if (time.monotonic() - cached_at) > _cache_ttl_for_state(cached):
+        return None
+    return copy.deepcopy(cached)
+
+
+def _set_current_state_cache(key: tuple[int, int] | None, state: dict[str, Any]) -> dict[str, Any]:
+    clean = policy.redact_value(state)
+    if key:
+        _CURRENT_STATE_CACHE.update({
+            "key": key,
+            "cached_at": time.monotonic(),
+            "data": copy.deepcopy(clean),
+            "live": _is_live_security_state(clean),
+        })
+    return copy.deepcopy(clean)
+
+
+def _maybe_persist_current_state_backfill(state: dict[str, Any], *, started_at: float, changed: bool) -> tuple[dict[str, Any], tuple[int, int] | None]:
+    if not changed:
+        return state, _state_file_key()
+    # Persist only after an expensive compatibility backfill. This converts old
+    # Security state files into the compact, profile-aware read contract once,
+    # instead of rebuilding history/deltas on every GET /api/lite/security.
+    elapsed = time.monotonic() - started_at
+    if elapsed >= _SECURITY_BACKFILL_PERSIST_SECONDS:
+        state = evidence.write_state(state)
+    return state, _state_file_key()
+
+
 def default_state() -> dict[str, Any]:
     now = deps.now_utc_iso()
     return {
@@ -122,31 +188,79 @@ def default_state() -> dict[str, Any]:
 
 
 def current_state() -> dict[str, Any]:
+    started_at = time.monotonic()
+    key = _state_file_key()
+    cached = _get_current_state_cache(key)
+    if cached is not None:
+        cached["read_cache"] = {
+            "status": "hit",
+            "source": "fastapi_memory",
+            "ttl_seconds": int(_cache_ttl_for_state(cached)),
+        }
+        return cached
+
     state = evidence.read_state()
     if not state:
-        return default_state()
-    state.setdefault("guidance", policy.GUIDANCE)
-    state.setdefault("critical_issues", [])
-    state.setdefault("component_posture", component_posture(state.get("findings") or []))
-    state.setdefault("scan_profile", policy.SCAN_PROFILE_QUICK)
-    state.setdefault("coverage_summary", default_coverage_summary())
-    last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+        fresh = default_state()
+        fresh["read_cache"] = {"status": "miss", "source": "default_state", "ttl_seconds": int(_SECURITY_READ_CACHE_SECONDS)}
+        return _set_current_state_cache(key, fresh)
+
+    changed = False
+    if "guidance" not in state:
+        state["guidance"] = policy.GUIDANCE
+        changed = True
+    if "critical_issues" not in state or not isinstance(state.get("critical_issues"), list):
+        state["critical_issues"] = []
+        changed = True
     findings = state.get("findings") if isinstance(state.get("findings"), list) else []
-    if last_run and not state.get("scan_progress"):
+    if "component_posture" not in state or not isinstance(state.get("component_posture"), dict):
+        state["component_posture"] = component_posture(findings)
+        changed = True
+    if "scan_profile" not in state:
+        state["scan_profile"] = policy.SCAN_PROFILE_QUICK
+        changed = True
+    if "coverage_summary" not in state or not isinstance(state.get("coverage_summary"), dict):
+        last_run_for_coverage = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+        state["coverage_summary"] = _coverage_from_run(last_run_for_coverage)
+        changed = True
+
+    last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+    if last_run and not isinstance(state.get("scan_progress"), dict):
         state["scan_progress"] = scan_progress_for_run(last_run)
-    state.setdefault("scan_progress", None)
+        changed = True
+    elif "scan_progress" not in state:
+        state["scan_progress"] = None
+        changed = True
+
     if "history" not in state or not isinstance(state.get("history"), list):
         state["history"] = security_history(
             current_run=last_run,
             current_findings=findings,
             current_evidence_refs=state.get("evidence_refs") or [],
         )
+        changed = True
+    else:
+        # Keep the summary payload bounded without scanning runs/evidence again.
+        state["history"] = state["history"][:20]
+
     if "profile_latest" not in state or not isinstance(state.get("profile_latest"), dict):
         state["profile_latest"] = security_profile_latest(state.get("history") if isinstance(state.get("history"), list) else [])
+        changed = True
     if "finding_delta" not in state or not isinstance(state.get("finding_delta"), dict):
         state["finding_delta"] = finding_delta_for_run(last_run, findings)
-    state.setdefault("updated_at", deps.now_utc_iso())
-    return policy.redact_value(state)
+        changed = True
+    if "updated_at" not in state:
+        state["updated_at"] = deps.now_utc_iso()
+        changed = True
+
+    state, key = _maybe_persist_current_state_backfill(state, started_at=started_at, changed=changed)
+    state["read_cache"] = {
+        "status": "miss",
+        "source": "security_state",
+        "ttl_seconds": int(_cache_ttl_for_state(state)),
+        "backfill_persisted": bool(changed),
+    }
+    return _set_current_state_cache(key, state)
 
 
 def read_run(run_id: str) -> dict[str, Any] | None:

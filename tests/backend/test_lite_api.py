@@ -7369,3 +7369,56 @@ def test_lite_security_quiet_revalidation_contract():
     assert "nats.connect" not in security
     assert "child_process" not in security
 
+
+def test_lite_security_f2_fast_read_cache_contract():
+    service = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    current_state = service.partition("def current_state() -> dict[str, Any]:")[2].partition("def read_run")[0]
+
+    assert "_state_file_key" in service
+    assert "_get_current_state_cache" in service
+    assert "_set_current_state_cache" in service
+    assert "read_cache" in service
+    assert "fastapi_memory" in service
+
+    assert "_get_current_state_cache" in current_state
+    assert "_set_current_state_cache" in current_state
+    assert "time.monotonic()" in current_state
+
+
+def test_lite_security_f2_backfill_does_not_rebuild_every_read():
+    service = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    current_state = service.partition("def current_state() -> dict[str, Any]:")[2].partition("def read_run")[0]
+
+    assert "changed = False" in current_state
+    assert "changed = True" in current_state
+    assert "backfill_persisted" in current_state
+
+    assert 'state.setdefault("history", security_history(' not in current_state
+    assert 'state.setdefault("profile_latest", security_profile_latest(' not in current_state
+    assert 'state.setdefault("finding_delta", finding_delta_for_run(' not in current_state
+
+    assert "security_history(" in current_state
+    assert "security_profile_latest(" in current_state
+    assert "finding_delta_for_run(" in current_state
+
+
+def test_lite_security_f2_avoids_eager_default_arguments():
+    service = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    current_state = service.partition("def current_state() -> dict[str, Any]:")[2].partition("def read_run")[0]
+
+    assert 'state.setdefault("coverage_summary", default_coverage_summary())' not in current_state
+    assert 'state.setdefault("component_posture", default_component_posture())' not in current_state
+    assert 'state.setdefault("history", security_history(' not in current_state
+    assert 'state.setdefault("profile_latest", security_profile_latest(' not in current_state
+    assert 'state.setdefault("finding_delta", finding_delta_for_run(' not in current_state
+
+
+def test_lite_security_f2_summary_history_is_bounded():
+    service = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    current_state = service.partition("def current_state() -> dict[str, Any]:")[2].partition("def read_run")[0]
+
+    assert "security_history(" in current_state
+    assert "20" in current_state
+    assert "history" in current_state
+    assert "[:20]" in current_state or "limit=20" in current_state
+
