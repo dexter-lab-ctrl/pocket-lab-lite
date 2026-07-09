@@ -1,6 +1,27 @@
 import { attachFreshSnapshotMeta, isSafeLiteSnapshotPath, markLiteSnapshotBackendUnreachable, readLiteSnapshotAsync, writeLiteSnapshot } from './liteSafeSnapshots.js';
 
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
+const LITE_NOT_MODIFIED = '__liteNotModified';
+const liteEtagByPath = new Map();
+
+function normalizeEtag(value) {
+  const etag = String(value || '').trim();
+  return etag || '';
+}
+
+function rememberLiteEtag(path, value) {
+  const etag = normalizeEtag(value);
+  if (etag) liteEtagByPath.set(path, etag);
+  return etag;
+}
+
+export function getLiteEtag(path) {
+  return liteEtagByPath.get(path) || '';
+}
+
+export function isLiteNotModified(payload) {
+  return Boolean(payload && payload[LITE_NOT_MODIFIED]);
+}
 
 function endpoint(path) {
   return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
@@ -17,16 +38,23 @@ async function readJson(path, options = {}) {
     throw error;
   }
 
+  const conditionalEtagKey = options.conditionalEtagKey || path;
+  const requestHeaders = {
+    Accept: 'application/json',
+    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(options.headers || {}),
+  };
+  const knownEtag = normalizeEtag(options.ifNoneMatch || (options.conditional ? getLiteEtag(conditionalEtagKey) : ''));
+  if (method === 'GET' && knownEtag && !requestHeaders['If-None-Match']) {
+    requestHeaders['If-None-Match'] = knownEtag;
+  }
+
   let response;
   try {
     response = await fetch(endpoint(path), {
     cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers || {}),
-    },
     ...options,
+    headers: requestHeaders,
   });
   } catch (networkError) {
     if (safeSnapshot) {
@@ -38,6 +66,16 @@ async function readJson(path, options = {}) {
     error.status = 0;
     error.payload = { status: 'unreachable', summary: 'Pocket Lab is not reachable. Saved state only.', cause: networkError?.message || 'network_error' };
     throw error;
+  }
+
+  const responseEtag = rememberLiteEtag(conditionalEtagKey, response.headers?.get?.('ETag') || '');
+  if (response.status === 304) {
+    return {
+      [LITE_NOT_MODIFIED]: true,
+      status: 'not_modified',
+      __liteEtag: responseEtag || knownEtag,
+      __litePath: path,
+    };
   }
 
   const text = await response.text();
@@ -79,6 +117,16 @@ function safeGet(path) {
   return loader;
 }
 
+function conditionalGet(path) {
+  const loader = () => readJson(path, { conditional: true, conditionalEtagKey: path });
+  loader.safeSnapshotPath = path;
+  return loader;
+}
+
+function conditionalRead(path) {
+  return readJson(path, { conditional: true, conditionalEtagKey: path });
+}
+
 export const liteApi = {
   status: safeGet('/api/lite/status'),
   catalog: safeGet('/api/lite/catalog'),
@@ -97,15 +145,15 @@ export const liteApi = {
   applyAppUpdate: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/update/apply`, payload),
   runAppAction: (appId = 'photoprism', actionId, payload = {}) => postJson(`/api/lite/apps/${encodeURIComponent(appId)}/actions/${encodeURIComponent(actionId || '')}`, payload),
   identity: () => readJson('/api/lite/identity'),
-  security: safeGet('/api/lite/security/summary'),
-  securitySummary: safeGet('/api/lite/security/summary'),
+  security: conditionalGet('/api/lite/security/summary'),
+  securitySummary: conditionalGet('/api/lite/security/summary'),
   securityDetails: safeGet('/api/lite/security'),
-  securityFreshness: () => readJson('/api/lite/security/freshness'),
-  securityProfile: (profile = 'quick') => readJson(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`),
-  securityHistory: (limit = 20) => readJson(`/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`),
-  securityProgress: () => readJson('/api/lite/security/progress'),
-  securityRunDetails: (runId) => readJson(`/api/lite/security/details/${encodeURIComponent(runId || '')}`),
-  securityEvidenceSummary: (runId) => readJson(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`),
+  securityFreshness: conditionalGet('/api/lite/security/freshness'),
+  securityProfile: (profile = 'quick') => conditionalRead(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`),
+  securityHistory: (limit = 20) => conditionalRead(`/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`),
+  securityProgress: () => conditionalRead('/api/lite/security/progress'),
+  securityRunDetails: (runId) => conditionalRead(`/api/lite/security/details/${encodeURIComponent(runId || '')}`),
+  securityEvidenceSummary: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`),
   securityApps: () => readJson('/api/lite/security/apps'),
   securityApp: (appId = 'photoprism') => readJson(`/api/lite/security/apps/${encodeURIComponent(appId)}`),
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
@@ -132,7 +180,7 @@ export const liteApi = {
   rotateIdentity: (target, options = {}) => postJson('/api/lite/identity/rotate', { target, ...options }),
   runSecurityScan: (scope = 'local', options = {}) => postJson('/api/lite/security/check', { scope, profile: 'quick', ...options }),
   securityRun: (runId) => readJson(`/api/lite/security/runs/${encodeURIComponent(runId || '')}`),
-  securityEvidence: (runId) => readJson(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`),
+  securityEvidence: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`),
   addDevice: (payload = {}) => postJson('/api/lite/fleet/add-device', payload),
   removeDevice: (deviceId, payload = {}) => postJson('/api/lite/fleet/remove-device', {
     device_id: deviceId,
