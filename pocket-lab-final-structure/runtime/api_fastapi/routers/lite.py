@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import uuid
@@ -7,7 +8,7 @@ import uuid
 from typing import Any, Literal
 
 from fastapi import APIRouter, Body, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .. import deps
@@ -44,6 +45,29 @@ def _security_compact_response(request: Request, payload: dict[str, Any]) -> Res
     if lite_security.if_none_match_matches(request.headers.get("if-none-match"), headers["ETag"]):
         return Response(status_code=304, headers=headers)
     return JSONResponse(content=payload, headers=headers)
+
+
+
+def _security_sse_payload(event: dict[str, Any]) -> str:
+    event_type = str(event.get("type") or "security.scan.heartbeat")
+    event_id = str(event.get("revision") or event.get("progress_revision") or uuid.uuid4().hex)
+    data = json.dumps(event, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return f"id: {event_id}\nevent: {event_type}\ndata: {data}\n\n"
+
+
+async def _security_events_generator(request: Request):
+    previous_fingerprint: str | None = None
+    while True:
+        if await request.is_disconnected():
+            break
+        event = lite_security.security_progress_event()
+        fingerprint = lite_security.security_progress_event_fingerprint(event)
+        if fingerprint != previous_fingerprint:
+            previous_fingerprint = fingerprint
+            yield _security_sse_payload(event)
+        if not event.get("active_scan"):
+            break
+        await asyncio.sleep(1.5)
 
 
 class LiteCatalogInstallRequest(BaseModel):
@@ -802,6 +826,20 @@ def get_lite_security_evidence_summary(run_id: str, request: Request) -> Respons
         raise HTTPException(status_code=404, detail="Security evidence summary not found.")
     return _security_compact_response(request, payload)
 
+
+
+@router.get("/security/events")
+def get_lite_security_events(request: Request) -> Response:
+    deps.require_auth(request)
+    return StreamingResponse(
+        _security_events_generator(request),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 @router.get("/security/progress")
 def get_lite_security_progress(request: Request) -> Response:

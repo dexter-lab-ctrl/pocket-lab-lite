@@ -728,6 +728,109 @@ def _ensure_compact_state() -> dict[str, Any]:
     return state
 
 
+
+_SECURITY_STREAM_ALLOWED_FIELDS = {
+    "type",
+    "run_id",
+    "profile",
+    "app_id",
+    "stage",
+    "percent",
+    "message",
+    "status",
+    "revision",
+    "updated_at",
+    "active_scan",
+    "summary_revision",
+    "profile_revision",
+    "history_revision",
+    "progress_revision",
+}
+_SECURITY_STREAM_TERMINAL_STATUSES = {"succeeded", "completed", "degraded", "failed", "cancelled", "canceled"}
+_SECURITY_STREAM_LIVE_STATUSES = {"queued", "accepted", "waiting", "running", "working", "in_progress", "lynis_running", "trivy_running", "posture_running", "evidence_saving"}
+
+
+def _security_stream_event_type(progress: dict[str, Any] | None = None) -> str:
+    payload = progress if isinstance(progress, dict) else {}
+    status = str(payload.get("status") or "").strip().lower()
+    stage = str(payload.get("stage") or "").strip().lower()
+    if not payload.get("run_id") and not payload.get("active_scan"):
+        return "security.scan.heartbeat"
+    if status in {"cancelled", "canceled"}:
+        return "security.scan.cancelled"
+    if status == "failed":
+        return "security.scan.failed"
+    if status in {"succeeded", "completed", "degraded"}:
+        return "security.scan.completed"
+    if status in {"queued", "accepted", "waiting"}:
+        return "security.scan.queued"
+    if "evidence" in stage or status == "evidence_saving":
+        return "security.scan.evidence_saved"
+    if status in _SECURITY_STREAM_LIVE_STATUSES or payload.get("active_scan"):
+        return "security.scan.progress"
+    return "security.scan.heartbeat"
+
+
+def _security_stream_message(progress: dict[str, Any] | None = None) -> str:
+    payload = progress if isinstance(progress, dict) else {}
+    event_type = _security_stream_event_type(payload)
+    if event_type == "security.scan.completed":
+        return "Evidence saved"
+    if event_type == "security.scan.failed":
+        return "Needs attention"
+    if event_type == "security.scan.cancelled":
+        return "Connection paused"
+    if event_type == "security.scan.queued":
+        return "Working"
+    message = str(payload.get("message") or "").strip()
+    stage = str(payload.get("stage") or "").strip().lower()
+    profile = str(payload.get("profile") or "quick").strip().lower()
+    if "trivy" in stage or "files" in message.lower():
+        return "Checking Pocket Lab files"
+    if profile == policy.SCAN_PROFILE_APP:
+        return "Checking app safety"
+    return message or "Working"
+
+
+def security_progress_event() -> dict[str, Any]:
+    progress = split_progress_state()
+    freshness = split_freshness_state()
+    profile = str(progress.get("profile") or policy.SCAN_PROFILE_QUICK).strip().lower() or policy.SCAN_PROFILE_QUICK
+    profile_revisions = freshness.get("profile_revisions") if isinstance(freshness.get("profile_revisions"), dict) else {}
+    event = {
+        "type": _security_stream_event_type(progress),
+        "run_id": progress.get("run_id") or None,
+        "profile": profile,
+        "app_id": progress.get("app_id") or None,
+        "stage": progress.get("stage") or progress.get("status") or "idle",
+        "percent": int(progress.get("percent") or 0),
+        "message": _security_stream_message(progress),
+        "status": progress.get("status") or "idle",
+        "revision": progress.get("revision") or _progress_revision(_ensure_compact_state()),
+        "updated_at": progress.get("updated_at") or freshness.get("updated_at"),
+        "active_scan": bool(progress.get("active_scan")),
+        "summary_revision": freshness.get("summary_revision"),
+        "profile_revision": profile_revisions.get(profile),
+        "history_revision": freshness.get("history_revision"),
+        "progress_revision": freshness.get("progress_revision") or progress.get("revision"),
+    }
+    clean = policy.redact_value({key: value for key, value in event.items() if key in _SECURITY_STREAM_ALLOWED_FIELDS})
+    return clean
+
+
+def security_progress_event_fingerprint(event: dict[str, Any] | None = None) -> str:
+    payload = event if isinstance(event, dict) else {}
+    return _revision_token(
+        "stream",
+        payload.get("type"),
+        payload.get("run_id"),
+        payload.get("status"),
+        payload.get("stage"),
+        payload.get("percent"),
+        payload.get("revision") or payload.get("progress_revision"),
+        payload.get("updated_at"),
+    )
+
 def split_freshness_state() -> dict[str, Any]:
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_freshness.json"
