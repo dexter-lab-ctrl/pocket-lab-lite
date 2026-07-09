@@ -110,6 +110,20 @@ _CURRENT_STATE_CACHE: dict[str, Any] = {"key": None, "cached_at": 0.0, "data": N
 _SECURITY_SUMMARY_CACHE: dict[str, Any] = {"key": None, "cached_at": 0.0, "data": None, "live": False}
 _SECURITY_SUMMARY_HISTORY_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_SUMMARY_HISTORY_LIMIT", "6")))
 _SECURITY_SUMMARY_FINDING_LIMIT = max(0, int(os.environ.get("POCKETLAB_LITE_SECURITY_SUMMARY_FINDING_LIMIT", "3")))
+_SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_HISTORY_DEFAULT_LIMIT", "20")))
+_SECURITY_SPLIT_HISTORY_MAX_LIMIT = max(_SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, int(os.environ.get("POCKETLAB_LITE_SECURITY_HISTORY_MAX_LIMIT", "50")))
+_SECURITY_SPLIT_FINDING_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_DETAILS_FINDING_LIMIT", "50")))
+_SECURITY_SPLIT_PREVIEW_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_PROFILE_PREVIEW_LIMIT", "6")))
+_SECURITY_SPLIT_READ_CACHE: dict[str, dict[str, Any]] = {}
+_SECURITY_SPLIT_TTLS = {
+    "freshness": (2.0, 1.0),
+    "summary": (_SECURITY_READ_CACHE_SECONDS, _SECURITY_READ_CACHE_LIVE_SECONDS),
+    "profile": (30.0, 2.0),
+    "history": (60.0, 2.0),
+    "progress": (3.0, 1.0),
+    "details": (60.0, 2.0),
+    "evidence_summary": (60.0, 2.0),
+}
 
 
 def _state_file_key() -> tuple[int, int] | None:
@@ -300,18 +314,383 @@ def _set_security_summary_cache(key: tuple[int, int] | None, state: dict[str, An
     return copy.deepcopy(clean)
 
 
+
+def invalidate_security_read_caches() -> None:
+    _CURRENT_STATE_CACHE.update({"key": None, "cached_at": 0.0, "data": None, "live": False})
+    _SECURITY_SUMMARY_CACHE.update({"key": None, "cached_at": 0.0, "data": None, "live": False})
+    _SECURITY_SPLIT_READ_CACHE.clear()
+
+
+def _bounded_list(value: Any, limit: int) -> list[Any]:
+    return policy.redact_value(value[: max(0, limit)] if isinstance(value, list) else [])
+
+
+def _profile_for_run(run: dict[str, Any] | None = None) -> str:
+    payload = run if isinstance(run, dict) else {}
+    try:
+        return policy.normalize_scan_profile(payload.get("scan_profile") or (policy.SCAN_PROFILE_APP if payload.get("app_id") else policy.SCAN_PROFILE_QUICK))
+    except ValueError:
+        return policy.SCAN_PROFILE_QUICK
+
+
+def _compact_revision(state: dict[str, Any] | None = None, *, run_id: str | None = None) -> str:
+    payload = state if isinstance(state, dict) else {}
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else {}
+    stamp = payload.get("updated_at") or payload.get("checked_at") or last_run.get("updated_at") or last_run.get("completed_at") or "not-checked"
+    active = "live" if _is_live_security_state(payload) else "idle"
+    source_run = run_id or last_run.get("run_id") or "none"
+    return f"security-{stamp}-{source_run}-{active}"
+
+
+def _compact_file_key(path: Path, *parts: Any) -> tuple[Any, ...]:
+    try:
+        stat_result = path.stat()
+        file_key: tuple[Any, ...] = (str(path), int(stat_result.st_mtime_ns), int(stat_result.st_size))
+    except OSError:
+        file_key = (str(path), "missing", 0)
+    return (*file_key, *parts)
+
+
+def _split_cache_ttl(kind: str, payload: dict[str, Any] | None = None) -> float:
+    idle, active = _SECURITY_SPLIT_TTLS.get(kind, (_SECURITY_READ_CACHE_SECONDS, _SECURITY_READ_CACHE_LIVE_SECONDS))
+    return active if _is_live_security_state(payload) else idle
+
+
+def _cached_compact_read(kind: str, key: tuple[Any, ...], builder) -> dict[str, Any]:
+    cache_key = f"{kind}:{repr(key)}"
+    cached = _SECURITY_SPLIT_READ_CACHE.get(cache_key)
+    now = time.monotonic()
+    if isinstance(cached, dict) and isinstance(cached.get("data"), dict):
+        ttl = float(cached.get("ttl") or _split_cache_ttl(kind, cached.get("data")))
+        if (now - float(cached.get("cached_at") or 0.0)) <= ttl:
+            data = copy.deepcopy(cached["data"])
+            data["read_cache"] = {"status": "hit", "source": f"fastapi_{kind}_memory", "ttl_seconds": int(ttl), "cache_key_signals": list(key[-4:])}
+            return data
+    data = policy.redact_value(builder())
+    ttl = _split_cache_ttl(kind, data)
+    _SECURITY_SPLIT_READ_CACHE[cache_key] = {"cached_at": now, "ttl": ttl, "data": copy.deepcopy(data)}
+    data["read_cache"] = {"status": "miss", "source": f"compact_{kind}", "ttl_seconds": int(ttl), "cache_key_signals": list(key[-4:])}
+    return data
+
+
+def _compact_coverage(coverage: dict[str, Any] | None = None, *, limit: int = _SECURITY_SPLIT_PREVIEW_LIMIT) -> dict[str, Any]:
+    payload = coverage if isinstance(coverage, dict) else {}
+    compact = {
+        key: payload.get(key)
+        for key in (
+            "profile", "app_id", "app_label", "checked_count", "skipped_count", "partial_count",
+            "timed_out_count", "missing_count", "failed_count", "tool_status",
+        )
+        if key in payload
+    }
+    for key in ("checked_targets", "skipped_targets", "missing_targets", "partial_targets", "timed_out_targets", "failed_targets", "target_statuses"):
+        if isinstance(payload.get(key), list):
+            compact[key] = payload[key][:limit]
+    return policy.redact_value(compact)
+
+
+def _compact_tool_results(tool_results: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = tool_results if isinstance(tool_results, dict) else {}
+    return policy.redact_value({
+        key: {
+            subkey: value.get(subkey)
+            for subkey in ("status", "available", "label", "finding_count", "timed_out", "sbom_saved", "target_id")
+            if isinstance(value, dict) and subkey in value
+        }
+        for key, value in payload.items()
+        if isinstance(value, dict)
+    })
+
+
+def _compact_evidence_summary_from_refs(run_id: str | None, refs: list[Any] | None = None) -> dict[str, Any]:
+    evidence_refs = [str(ref) for ref in (refs if isinstance(refs, list) else [])[:10]]
+    return policy.redact_value({
+        "run_id": run_id or "",
+        "evidence_saved": bool(evidence_refs),
+        "evidence_count": len(evidence_refs),
+        "evidence_refs": evidence_refs,
+        "sanitized": True,
+        "raw_output_hidden": True,
+        "secrets_hidden": True,
+        "private_paths_hidden": True,
+    })
+
+
+def _compact_history_index(state: dict[str, Any] | None = None, *, limit: int | None = None, profile: str | None = None) -> list[dict[str, Any]]:
+    payload = state if isinstance(state, dict) else {}
+    bounded_limit = max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT))
+    history = payload.get("history") if isinstance(payload.get("history"), list) else []
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None
+    if not history and last_run:
+        history = [last_run]
+    normalized_profile = None
+    if profile:
+        normalized_profile = _profile_for_run({"scan_profile": profile})
+    compact: list[dict[str, Any]] = []
+    for run in history:
+        if not isinstance(run, dict):
+            continue
+        if normalized_profile and _profile_for_run(run) != normalized_profile:
+            continue
+        item = _trim_security_run_for_summary(run)
+        if item:
+            compact.append(item)
+        if len(compact) >= bounded_limit:
+            break
+    return policy.redact_value(compact)
+
+
+def _profile_state_from_state(profile: str, state: dict[str, Any] | None = None) -> dict[str, Any]:
+    normalized_profile = _profile_for_run({"scan_profile": profile})
+    payload = state if isinstance(state, dict) else default_state()
+    history = _compact_history_index(payload, limit=_SECURITY_SPLIT_PREVIEW_LIMIT, profile=normalized_profile)
+    profile_latest = payload.get("profile_latest") if isinstance(payload.get("profile_latest"), dict) else {}
+    latest = profile_latest.get(normalized_profile) if isinstance(profile_latest.get(normalized_profile), dict) else None
+    if latest is None:
+        last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None
+        if _profile_for_run(last_run) == normalized_profile:
+            latest = last_run
+    if latest is None and history:
+        latest = history[0]
+    latest_run = _trim_security_run_for_summary(latest) if isinstance(latest, dict) else None
+    coverage = (latest_run or {}).get("coverage_summary") or payload.get("coverage_summary") if isinstance(payload, dict) else {}
+    evidence_refs = (latest_run or {}).get("evidence_refs") or payload.get("evidence_refs") if isinstance(payload, dict) else []
+    findings = payload.get("findings") if isinstance(payload.get("findings"), list) and _profile_for_run(payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None) == normalized_profile else []
+    critical = payload.get("critical_issues") if isinstance(payload.get("critical_issues"), list) and _profile_for_run(payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None) == normalized_profile else []
+    response = {
+        "profile": normalized_profile,
+        "view_model": "security-profile-f7-v1",
+        "status": (latest_run or {}).get("status") or ("unknown" if latest_run is None else payload.get("status")) or "unknown",
+        "summary": (latest_run or {}).get("summary") or _profile_copy(normalized_profile)["name"],
+        "score": int((latest_run or {}).get("score") or (payload.get("score") if latest_run else 0) or 0),
+        "updated_at": (latest_run or {}).get("updated_at") or (latest_run or {}).get("completed_at") or payload.get("updated_at"),
+        "latest_run": latest_run,
+        "coverage_summary": _compact_coverage(coverage if isinstance(coverage, dict) else {}),
+        "tool_results": _compact_tool_results((latest_run or {}).get("tool_results") if isinstance((latest_run or {}).get("tool_results"), dict) else {}),
+        "execution_timeline": _bounded_list((latest_run or {}).get("execution_timeline"), _SECURITY_SPLIT_PREVIEW_LIMIT),
+        "finding_delta": _trim_security_delta_for_summary(payload.get("finding_delta") if latest_run else {}),
+        "findings": _bounded_list(findings, _SECURITY_SUMMARY_FINDING_LIMIT),
+        "critical_issues": _bounded_list(critical, _SECURITY_SUMMARY_FINDING_LIMIT),
+        "evidence_summary": _compact_evidence_summary_from_refs((latest_run or {}).get("run_id"), evidence_refs if isinstance(evidence_refs, list) else []),
+        "history": history,
+        "revision": _compact_revision(payload, run_id=(latest_run or {}).get("run_id") if latest_run else None),
+        "sanitized": True,
+    }
+    return policy.redact_value(response)
+
+
+def _freshness_from_state(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = state if isinstance(state, dict) else default_state()
+    history = payload.get("history") if isinstance(payload.get("history"), list) else []
+    profile_updated_at: dict[str, Any] = {}
+    profile_latest = payload.get("profile_latest") if isinstance(payload.get("profile_latest"), dict) else security_profile_latest(history)
+    for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP):
+        latest = profile_latest.get(profile) if isinstance(profile_latest.get(profile), dict) else None
+        profile_updated_at[profile] = (latest or {}).get("updated_at") or (latest or {}).get("completed_at") or None
+    return policy.redact_value({
+        "view_model": "security-freshness-f7-v1",
+        "status": payload.get("status") or "unknown",
+        "revision": _compact_revision(payload),
+        "updated_at": payload.get("updated_at"),
+        "active_scan": _is_live_security_state(payload),
+        "profile_updated_at": profile_updated_at,
+        "summary_endpoint": "/api/lite/security/summary",
+        "details_endpoint": "/api/lite/security",
+        "profiles_endpoint": "/api/lite/security/profiles/{profile}",
+        "history_endpoint": "/api/lite/security/history?limit=20",
+        "progress_endpoint": "/api/lite/security/progress",
+        "sanitized": True,
+    })
+
+
+def _progress_from_state(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = state if isinstance(state, dict) else {}
+    progress = payload.get("scan_progress") if isinstance(payload.get("scan_progress"), dict) else {}
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else {}
+    active = _is_live_security_state(payload)
+    return policy.redact_value({
+        "view_model": "security-progress-f7-v1",
+        "active_scan": active,
+        "run_id": progress.get("run_id") or last_run.get("run_id") or None,
+        "profile": progress.get("profile") or last_run.get("scan_profile") or payload.get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": progress.get("app_id") or last_run.get("app_id") or payload.get("app_id") or "",
+        "stage": progress.get("stage") or progress.get("phase") or last_run.get("status") or payload.get("status") or "idle",
+        "status": progress.get("status") or last_run.get("status") or payload.get("status") or "idle",
+        "percent": int(progress.get("percent") or 0),
+        "message": progress.get("message") or progress.get("summary") or last_run.get("summary") or payload.get("summary") or "Security is idle.",
+        "revision": _compact_revision(payload),
+        "updated_at": payload.get("updated_at") or last_run.get("updated_at") or last_run.get("completed_at"),
+        "sanitized": True,
+    })
+
+
+def _details_from_run(run_id: str, state: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    safe_run_id = evidence.safe_run_id(run_id)
+    run = evidence.read_run(safe_run_id)
+    payload = state if isinstance(state, dict) else evidence.read_state() or {}
+    if run is None:
+        last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None
+        if isinstance(last_run, dict) and evidence.safe_run_id(str(last_run.get("run_id") or "")) == safe_run_id:
+            run = last_run
+    if run is None:
+        for item in payload.get("history") if isinstance(payload.get("history"), list) else []:
+            if isinstance(item, dict) and evidence.safe_run_id(str(item.get("run_id") or "")) == safe_run_id:
+                run = item
+                break
+    if run is None:
+        return None
+    evidence_payload = evidence.read_evidence_summary(safe_run_id) or {}
+    evidence_refs = run.get("evidence_refs") if isinstance(run.get("evidence_refs"), list) else evidence_payload.get("evidence_refs") if isinstance(evidence_payload.get("evidence_refs"), list) else []
+    findings = evidence_payload.get("findings") if isinstance(evidence_payload.get("findings"), list) else payload.get("findings") if isinstance(payload.get("findings"), list) and str((payload.get("last_run") or {}).get("run_id") if isinstance(payload.get("last_run"), dict) else "") == str(run.get("run_id")) else []
+    critical = [item for item in findings if isinstance(item, dict) and policy.normalize_severity(item.get("severity")) in {"critical", "high"}]
+    response = {
+        "view_model": "security-details-f7-v1",
+        "run_id": run.get("run_id") or safe_run_id,
+        "profile": _profile_for_run(run),
+        "app_id": run.get("app_id") or "",
+        "app_label": run.get("app_label") or "",
+        "status": run.get("status") or "unknown",
+        "score": int(run.get("score") or evidence_payload.get("score") or 0),
+        "summary": run.get("summary") or evidence_payload.get("summary") or "Security check details are available.",
+        "updated_at": run.get("updated_at") or run.get("completed_at") or payload.get("updated_at"),
+        "execution_timeline": _bounded_list(run.get("execution_timeline"), 20),
+        "coverage_summary": _compact_coverage(run.get("coverage_summary") if isinstance(run.get("coverage_summary"), dict) else {}, limit=20),
+        "target_statuses": _bounded_list((run.get("coverage_summary") or {}).get("target_statuses") if isinstance(run.get("coverage_summary"), dict) else [], 20),
+        "tool_results": _compact_tool_results(run.get("tool_results") if isinstance(run.get("tool_results"), dict) else {}),
+        "findings": _bounded_list(findings, _SECURITY_SPLIT_FINDING_LIMIT),
+        "critical_issues": _bounded_list(critical, _SECURITY_SUMMARY_FINDING_LIMIT),
+        "evidence_summary": _compact_evidence_summary_from_refs(str(run.get("run_id") or safe_run_id), evidence_refs if isinstance(evidence_refs, list) else []),
+        "finding_delta": _trim_security_delta_for_summary(payload.get("finding_delta")),
+        "revision": _compact_revision(payload, run_id=str(run.get("run_id") or safe_run_id)),
+        "sanitized": True,
+    }
+    return policy.redact_value(response)
+
+
+def write_compact_security_state(state: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = policy.redact_value(state if isinstance(state, dict) else evidence.read_state() or default_state())
+    root = evidence.compact_dir()
+    summary = _security_summary_from_state(payload)
+    summary["revision"] = _compact_revision(payload)
+    freshness = _freshness_from_state(payload)
+    progress = _progress_from_state(payload)
+    history = {"view_model": "security-history-f7-v1", "limit": _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": _compact_history_index(payload), "revision": _compact_revision(payload), "sanitized": True}
+    profiles = {profile: _profile_state_from_state(profile, payload) for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)}
+    evidence.write_compact_json(root / "security_summary.json", summary)
+    evidence.write_compact_json(root / "security_freshness.json", freshness)
+    evidence.write_compact_json(root / "security_progress.json", progress)
+    evidence.write_compact_json(root / "security_history_index.json", history)
+    evidence.write_compact_json(root / "profile_latest.json", {"profiles": {key: value.get("latest_run") for key, value in profiles.items()}, "revision": _compact_revision(payload), "sanitized": True})
+    evidence.write_compact_json(root / "coverage_summary_compact.json", _compact_coverage(payload.get("coverage_summary") if isinstance(payload.get("coverage_summary"), dict) else {}))
+    for profile, profile_payload in profiles.items():
+        evidence.write_compact_json(evidence.compact_profile_path(profile), profile_payload)
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None
+    if last_run and last_run.get("run_id"):
+        details = _details_from_run(str(last_run.get("run_id")), payload)
+        if details:
+            evidence.write_compact_json(evidence.compact_details_path(str(last_run.get("run_id"))), details)
+    invalidate_security_read_caches()
+    return payload
+
+
+def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
+    clean = evidence.write_state(state)
+    write_compact_security_state(clean)
+    return clean
+
+
+def _ensure_compact_state() -> dict[str, Any]:
+    state = evidence.read_state() or default_state()
+    root = evidence.compact_dir()
+    required = [
+        root / "security_summary.json",
+        root / "security_freshness.json",
+        root / "security_progress.json",
+        root / "security_history_index.json",
+        evidence.compact_profile_path(policy.SCAN_PROFILE_QUICK),
+        evidence.compact_profile_path(policy.SCAN_PROFILE_FULL),
+        evidence.compact_profile_path(policy.SCAN_PROFILE_APP),
+    ]
+    if not all(path.exists() for path in required):
+        write_compact_security_state(state)
+    return state
+
+
+def split_freshness_state() -> dict[str, Any]:
+    state = _ensure_compact_state()
+    path = evidence.compact_dir() / "security_freshness.json"
+    key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
+    return _cached_compact_read("freshness", key, lambda: evidence.read_compact_json(path, _freshness_from_state(state)))
+
+
+def split_profile_state(profile: str) -> dict[str, Any]:
+    normalized_profile = policy.normalize_scan_profile(profile)
+    state = _ensure_compact_state()
+    path = evidence.compact_profile_path(normalized_profile)
+    key = _compact_file_key(path, normalized_profile, _compact_revision(state), _is_live_security_state(state))
+    return _cached_compact_read("profile", key, lambda: evidence.read_compact_json(path, _profile_state_from_state(normalized_profile, state)))
+
+
+def split_history_state(limit: int | None = None) -> dict[str, Any]:
+    bounded_limit = max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT))
+    state = _ensure_compact_state()
+    path = evidence.compact_dir() / "security_history_index.json"
+    key = _compact_file_key(path, bounded_limit, _compact_revision(state), _is_live_security_state(state))
+
+    def build() -> dict[str, Any]:
+        base = evidence.read_compact_json(path, {})
+        history = base.get("history") if isinstance(base, dict) and isinstance(base.get("history"), list) else _compact_history_index(state, limit=bounded_limit)
+        return {"view_model": "security-history-f7-v1", "limit": bounded_limit, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": history[:bounded_limit], "revision": _compact_revision(state), "sanitized": True}
+
+    return _cached_compact_read("history", key, build)
+
+
+def split_progress_state() -> dict[str, Any]:
+    state = _ensure_compact_state()
+    path = evidence.compact_dir() / "security_progress.json"
+    key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
+    return _cached_compact_read("progress", key, lambda: evidence.read_compact_json(path, _progress_from_state(state)))
+
+
+def split_run_details_state(run_id: str) -> dict[str, Any] | None:
+    state = _ensure_compact_state()
+    safe_run_id = evidence.safe_run_id(run_id)
+    path = evidence.compact_details_path(safe_run_id)
+    if not path.exists():
+        details = _details_from_run(safe_run_id, state)
+        if details:
+            evidence.write_compact_json(path, details)
+    key = _compact_file_key(path, safe_run_id, _compact_revision(state), _is_live_security_state(state))
+    return _cached_compact_read("details", key, lambda: evidence.read_compact_json(path, _details_from_run(safe_run_id, state) or {}))
+
+
+def split_evidence_summary_state(run_id: str) -> dict[str, Any] | None:
+    state = _ensure_compact_state()
+    safe_run_id = evidence.safe_run_id(run_id)
+    details_path = evidence.compact_details_path(safe_run_id)
+    key = _compact_file_key(details_path, "evidence", safe_run_id, _compact_revision(state), _is_live_security_state(state))
+
+    def build() -> dict[str, Any]:
+        details = split_run_details_state(safe_run_id) or {}
+        summary = details.get("evidence_summary") if isinstance(details.get("evidence_summary"), dict) else None
+        if summary:
+            return summary
+        run = evidence.read_run(safe_run_id) or {}
+        refs = run.get("evidence_refs") if isinstance(run.get("evidence_refs"), list) else []
+        return _compact_evidence_summary_from_refs(safe_run_id, refs)
+
+    payload = _cached_compact_read("evidence_summary", key, build)
+    return payload if isinstance(payload, dict) and payload.get("run_id") else None
+
 def summary_state() -> dict[str, Any]:
-    key = _state_file_key()
-    cached = _get_security_summary_cache(key)
-    if cached is not None:
-        cached["read_cache"] = {"status": "hit", "source": "fastapi_summary_memory", "ttl_seconds": int(_cache_ttl_for_state(cached))}
-        return cached
-    state = evidence.read_state()
-    if not state:
-        state = default_state()
-    summary = _security_summary_from_state(state)
-    summary["read_cache"] = {"status": "miss", "source": "security_summary", "ttl_seconds": int(_cache_ttl_for_state(summary))}
-    return _set_security_summary_cache(key, summary)
+    state = _ensure_compact_state()
+    path = evidence.compact_dir() / "security_summary.json"
+    key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
+    return _cached_compact_read(
+        "summary",
+        key,
+        lambda: evidence.read_compact_json(path, _security_summary_from_state(state)),
+    )
 
 
 def _maybe_persist_current_state_backfill(state: dict[str, Any], *, started_at: float, changed: bool) -> tuple[dict[str, Any], tuple[int, int] | None]:
@@ -322,7 +701,7 @@ def _maybe_persist_current_state_backfill(state: dict[str, Any], *, started_at: 
     # instead of rebuilding history/deltas on every GET /api/lite/security.
     elapsed = time.monotonic() - started_at
     if elapsed >= _SECURITY_BACKFILL_PERSIST_SECONDS:
-        state = evidence.write_state(state)
+        state = _write_security_state(state)
     return state, _state_file_key()
 
 
@@ -436,7 +815,7 @@ def discard_queued_run(run_id: str) -> None:
     state = evidence.read_state() or {}
     last_run = state.get("last_run") or {}
     if last_run.get("run_id") == run_id and str(last_run.get("status") or "") == "queued":
-        evidence.write_state(default_state())
+        _write_security_state(default_state())
 
 
 def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
@@ -476,7 +855,7 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
     run["execution_timeline"] = execution_timeline_for_phase(run, "queued")
     evidence.write_run(run_id, run)
     state = build_state(run, [], [], status_override="queued")
-    evidence.write_state(state)
+    _write_security_state(state)
     return run
 
 
@@ -510,7 +889,7 @@ def mark_running(command: dict[str, Any]) -> dict[str, Any]:
     }
     run["execution_timeline"] = execution_timeline_for_phase(run, "lynis_running")
     evidence.write_run(run_id, run)
-    evidence.write_state(build_state(run, [], [], status_override="running"))
+    _write_security_state(build_state(run, [], [], status_override="running"))
     return run
 
 
@@ -1220,7 +1599,7 @@ def _write_intermediate_running_state(
     evidence_refs: list[str],
 ) -> None:
     evidence.write_run(str(run["run_id"]), run)
-    evidence.write_state(
+    _write_security_state(
         build_state(
             run,
             findings,
@@ -1752,7 +2131,7 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["evidence_refs"] = evidence_refs
     evidence.write_run(run_id, run)
     state["evidence_refs"] = evidence_refs
-    evidence.write_state(state)
+    _write_security_state(state)
     return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
 
 
@@ -2236,7 +2615,7 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["evidence_refs"] = evidence_refs
     evidence.write_run(run_id, run)
     state["evidence_refs"] = evidence_refs
-    evidence.write_state(state)
+    _write_security_state(state)
     return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
 
 
@@ -2371,7 +2750,7 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     run["evidence_refs"] = evidence_refs
     evidence.write_run(run_id, run)
     state["evidence_refs"] = evidence_refs
-    evidence.write_state(state)
+    _write_security_state(state)
     return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
 
 

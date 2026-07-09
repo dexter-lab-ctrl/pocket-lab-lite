@@ -7,8 +7,12 @@ export const liteQueryKeys = {
   fleet: () => ['lite', 'fleet'],
   security: () => ['lite', 'security'],
   securityDetails: () => ['lite', 'security', 'details'],
+  securityRunDetails: (runId = 'latest') => ['lite', 'security', 'details', String(runId || 'latest')],
+  securityFreshness: () => ['lite', 'security', 'freshness'],
+  securityProgress: () => ['lite', 'security', 'progress'],
+  securityEvidenceSummary: (runId = 'latest') => ['lite', 'security', 'evidence-summary', String(runId || 'latest')],
   securityProfile: (profile = 'quick') => ['lite', 'security', 'profile', String(profile || 'quick').toLowerCase()],
-  securityHistory: () => ['lite', 'security', 'history'],
+  securityHistory: (limit = 20) => ['lite', 'security', 'history', Number(limit || 20)],
   recovery: () => ['lite', 'recovery'],
   resource: (path = 'unknown', ...parts) => ['lite', 'resource', String(path || 'unknown'), ...parts],
 };
@@ -20,6 +24,10 @@ export const liteQueryPaths = {
   fleet: '/api/lite/fleet',
   security: '/api/lite/security/summary',
   securityDetails: '/api/lite/security',
+  securityFreshness: '/api/lite/security/freshness',
+  securityProfile: (profile = 'quick') => `/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`,
+  securityHistory: (limit = 20) => `/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`,
+  securityProgress: '/api/lite/security/progress',
   recovery: '/api/lite/recovery',
 };
 

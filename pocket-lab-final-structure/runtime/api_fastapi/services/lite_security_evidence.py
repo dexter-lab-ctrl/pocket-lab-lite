@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -36,7 +39,58 @@ def safe_run_id(run_id: str) -> str:
 
 
 def write_json(path: Path, data: Any) -> None:
-    deps.core.write_json_file(path, policy.redact_value(data))
+    clean = policy.redact_value(data)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_name: str | None = None
+    try:
+        fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(clean, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+            handle.flush()
+            try:
+                os.fsync(handle.fileno())
+            except OSError:
+                pass
+        os.replace(tmp_name, path)
+    finally:
+        if tmp_name:
+            try:
+                os.unlink(tmp_name)
+            except FileNotFoundError:
+                pass
+
+
+def compact_dir() -> Path:
+    root = security_root() / "compact"
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "profiles").mkdir(parents=True, exist_ok=True)
+    (root / "details").mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def compact_path(name: str) -> Path:
+    safe = safe_run_id(name).replace("-json", ".json") if name.endswith(".json") else safe_run_id(name)
+    return compact_dir() / safe
+
+
+def compact_profile_path(profile: str) -> Path:
+    safe = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "-" for ch in str(profile or "quick").lower())
+    return compact_dir() / "profiles" / f"{safe[:32] or 'quick'}.json"
+
+
+def compact_details_path(run_id: str) -> Path:
+    return compact_dir() / "details" / f"{safe_run_id(run_id)}.json"
+
+
+def write_compact_json(path: Path, data: Any) -> Any:
+    clean = policy.redact_value(data)
+    write_json(path, clean)
+    return clean
+
+
+def read_compact_json(path: Path, default: Any) -> Any:
+    return read_json(path, default)
 
 
 def read_json(path: Path, default: Any) -> Any:

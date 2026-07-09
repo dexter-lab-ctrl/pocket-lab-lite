@@ -747,6 +747,51 @@ def get_lite_security_summary(request: Request) -> dict[str, Any]:
     return lite_security.summary_state()
 
 
+@router.get("/security/freshness")
+def get_lite_security_freshness(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_security.split_freshness_state()
+
+
+@router.get("/security/profiles/{profile}")
+def get_lite_security_profile(profile: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    try:
+        return lite_security.split_profile_state(profile)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Security profile not found.")
+
+
+@router.get("/security/history")
+def get_lite_security_history(request: Request, limit: int = 20) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_security.split_history_state(limit=limit)
+
+
+@router.get("/security/details/{run_id}")
+def get_lite_security_details(run_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    payload = lite_security.split_run_details_state(run_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail="Security check details not found.")
+    return payload
+
+
+@router.get("/security/evidence/{run_id}/summary")
+def get_lite_security_evidence_summary(run_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    payload = lite_security.split_evidence_summary_state(run_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail="Security evidence summary not found.")
+    return payload
+
+
+@router.get("/security/progress")
+def get_lite_security_progress(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_security.split_progress_state()
+
+
 @router.get("/security")
 def get_lite_security(request: Request) -> dict[str, Any]:
     deps.require_auth(request)

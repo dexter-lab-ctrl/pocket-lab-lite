@@ -1739,6 +1739,8 @@ export default function SecurityScreen() {
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
   const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
+  const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
+  const shouldLoadSecurityProgress = scanInProgress || busy || hasLiveSecurityOperation(result);
   const {
     data: securitySummaryData,
     loading,
@@ -1765,11 +1767,14 @@ export default function SecurityScreen() {
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
+  const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile), [scanProfile]);
+  const securityHistoryLoader = useCallback(() => liteApi.securityHistory(20), []);
+  const securityProgressLoader = useCallback(() => liteApi.securityProgress(), []);
   const {
-    data: securityDetailsData,
-    refreshing: detailsRefreshing,
+    data: securityProfileData,
+    refreshing: profileRefreshing,
     refresh: refreshSecurityDetails,
-  } = useLiteResource(liteApi.securityDetails || liteApi.security, [], {
+  } = useLiteResource(securityProfileLoader, [scanProfile], {
     enabled: shouldLoadSecurityDetails,
     pollingMode: 'relaxed',
     isLive: securityPollingIsLive,
@@ -1784,18 +1789,56 @@ export default function SecurityScreen() {
     },
     placeholderData: (previousData) => previousData,
     refetchOnReconnect: true,
-    select: selectSecurityScreenView,
-    snapshotSelect: selectSecurityScreenView,
   });
-  const data = securityDetailsData || securitySummaryData;
-  const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && detailsRefreshing);
+  const { data: securityHistoryData, refreshing: historyRefreshing } = useLiteResource(securityHistoryLoader, [20], {
+    enabled: shouldLoadSecurityHistory,
+    pollingMode: 'relaxed',
+    staleTime: 60_000,
+    gcTime: SECURITY_DETAILS_GC_TIME_MS,
+    refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
+    refetchOnReconnect: true,
+  });
+  const { data: securityProgressData } = useLiteResource(securityProgressLoader, [], {
+    enabled: shouldLoadSecurityProgress,
+    pollingMode: 'fast',
+    isLive: (payload) => Boolean(payload?.active_scan),
+    staleTime: 1_500,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+  });
+  const splitSecurityData = useMemo(() => {
+    const base = securitySummaryData || {};
+    if (!securityProfileData && !securityHistoryData && !securityProgressData) return securitySummaryData;
+    const profileId = normalizeSecurityProfileId(securityProfileData?.profile || scanProfile);
+    return {
+      ...base,
+      ...(securityProgressData?.active_scan ? { scan_progress: securityProgressData } : {}),
+      history: Array.isArray(securityHistoryData?.history) ? securityHistoryData.history : base.history,
+      security_profiles: {
+        ...(base.security_profiles || {}),
+        ...(securityProfileData ? { [profileId]: securityProfileData } : {}),
+      },
+      profile_latest: {
+        ...(base.profile_latest || {}),
+        ...(securityProfileData?.latest_run ? { [profileId]: securityProfileData.latest_run } : {}),
+      },
+      profile_freshness: {
+        ...(base.profile_freshness || {}),
+        ...(securityProfileData?.updated_at ? { [profileId]: { checked_at: securityProfileData.updated_at, label: 'Fresh just now' } } : {}),
+      },
+    };
+  }, [scanProfile, securityHistoryData, securityProfileData, securityProgressData, securitySummaryData]);
+  const data = splitSecurityData || securitySummaryData;
+  const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && profileRefreshing) || (shouldLoadSecurityHistory && historyRefreshing);
 
   useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
     if (event?.type && event.type !== 'security:scan-completed') return;
     const profile = normalizeSecurityProfileId(event.profile || 'quick');
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory() });
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory(20) });
   }), [queryClient]);
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
@@ -2076,9 +2119,8 @@ export default function SecurityScreen() {
     const normalizedProfile = normalizeSecurityProfileId(profile || 'quick');
     [
       liteQueryKeys.security(),
-      liteQueryKeys.securityDetails(),
       liteQueryKeys.securityProfile(normalizedProfile),
-      liteQueryKeys.securityHistory(),
+      liteQueryKeys.securityHistory(20),
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
   }
 
@@ -2219,7 +2261,7 @@ export default function SecurityScreen() {
     setEvidenceError(null);
     setEvidenceLoading(true);
     try {
-      setEvidence(await liteApi.securityEvidence(runId));
+      setEvidence(await liteApi.securityEvidenceSummary(runId));
     } catch (err) {
       setEvidence(null);
       setEvidenceError(err.message);
