@@ -226,7 +226,7 @@ def test_security_group7_frontend_instant_feedback_and_quiet_result_notice_contr
     assert "Pocket Lab is starting the safety check." in security
     assert "mergeSecurityAcceptedResult" in security
     assert "hasOptimisticSecurityProgress(result)" in security
-    assert "result?.scan_progress || data?.scan_progress" in security
+    assert "selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress)" in security
     assert "<ResultNotice result={null} error={actionError} />" in security
     assert "<ResultNotice result={result} error={actionError} />" not in security
     assert "Request sent safely" in lite_ui  # generic notice remains available outside Security
@@ -280,6 +280,17 @@ def test_security_group7_hotfix_uses_calm_progress_language_without_fake_short_e
     assert "const scanProgressStatusText" in security
     assert "{scanProgressPercent}% · {scanProgressStatusText} · {activeProfileMeta.label} is working." in security
     assert "progress?.estimated_total_seconds || 900" in lite_ui
-    assert "eta: 'starting'" in lite_ui
-    assert "progress?.estimated_remaining_label" in lite_ui
+    assert "eta: 'working'" in lite_ui
+    assert "const scanProgressStatusText = ['complete', 'completed'].includes" in security
+    assert "${scanProgressEta} remaining" not in security
     assert "status === 'accepted'" in lite_ui
+
+
+def test_security_group7_hotfix_prefers_live_progress_over_stale_optimistic_result():
+    security = LITE_SECURITY.read_text()
+
+    assert "function selectLiveSecurityProgress" in security
+    assert "securityProgressData" in security
+    assert "const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress) : null;" in security
+    assert "candidatePercent > bestPercent" in security
+    assert "securityProgressTimestamp(candidate) >= securityProgressTimestamp(best)" in security

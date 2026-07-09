@@ -329,6 +329,37 @@ function mergeSecurityAcceptedResult(optimistic = {}, payload = {}, profile = 'q
   };
 }
 
+
+function securityProgressRunKey(progress = {}) {
+  return String(progress?.run_id || progress?.job_id || progress?.command_id || progress?.revision || progress?.progress_revision || '');
+}
+
+function securityProgressTimestamp(progress = {}) {
+  const value = progress?.updated_at || progress?.completed_at || progress?.started_at || progress?.requested_at || '';
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function selectLiveSecurityProgress(resultProgress = null, liveProgress = null, fallbackProgress = null) {
+  const candidates = [liveProgress, fallbackProgress, resultProgress].filter(Boolean);
+  if (!candidates.length) return null;
+  return candidates.reduce((best, candidate) => {
+    if (!best) return candidate;
+    const candidateRun = securityProgressRunKey(candidate);
+    const bestRun = securityProgressRunKey(best);
+    const candidateActive = candidate?.active_scan === true || candidate?.running === true || candidate?.operation_running === true || candidate?.in_progress === true;
+    const bestActive = best?.active_scan === true || best?.running === true || best?.operation_running === true || best?.in_progress === true;
+    if (candidateActive !== bestActive) return candidateActive ? candidate : best;
+    if (candidateRun && bestRun && candidateRun !== bestRun) {
+      return securityProgressTimestamp(candidate) >= securityProgressTimestamp(best) ? candidate : best;
+    }
+    const candidatePercent = Number(candidate?.percent || 0);
+    const bestPercent = Number(best?.percent || 0);
+    if (candidatePercent !== bestPercent) return candidatePercent > bestPercent ? candidate : best;
+    return securityProgressTimestamp(candidate) >= securityProgressTimestamp(best) ? candidate : best;
+  }, null);
+}
+
 function isTerminalSecurityResult(value = {}) {
   const status = String(value?.status || value?.state || '').toLowerCase().replace(/[\s-]+/g, '_');
   return ['succeeded', 'success', 'completed', 'complete', 'done', 'failed', 'failure', 'cancelled', 'canceled', 'blocked', 'review', 'needs_attention'].includes(status);
@@ -2140,13 +2171,13 @@ export default function SecurityScreen() {
   const displayRunStatus = String(activeProfileRun?.status || (activeProfileIsLatest ? data?.status : '') || '').toLowerCase();
   const currentRunStatus = String(result?.status || lastRun?.status || '').toLowerCase();
   const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
-  const scanProgress = activeProfileIsLatest ? result?.scan_progress || data?.scan_progress || null : null;
+  const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress) : null;
   const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
   const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(securityProgressData?.active_scan) || localSecurityProgressActive;
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;
   const scanProgressEta = liveProgress.eta;
-  const scanProgressStatusText = ['calculating', 'starting', 'working'].includes(String(scanProgressEta || '').toLowerCase()) ? String(scanProgressEta || 'working') : `${scanProgressEta} remaining`;
+  const scanProgressStatusText = ['complete', 'completed'].includes(String(scanProgressEta || '').toLowerCase()) ? 'complete' : 'working';
   const scanProgressLabel = securityProgressStage(scanProgress, runStatus);
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
