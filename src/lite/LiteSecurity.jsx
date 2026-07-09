@@ -292,7 +292,9 @@ function createOptimisticSecurityResult(profile = 'quick', app = null) {
       message: 'Pocket Lab is starting the safety check.',
       profile: profileId,
       app_id: appId,
+      started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      estimated_total_seconds: profileId === 'app' ? 120 : 900,
     },
   };
 }
@@ -1867,7 +1869,8 @@ export default function SecurityScreen() {
   }, [busy, result, securityPollingPolicy]);
   const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
-  const shouldLoadSecurityProgress = busy || hasLiveSecurityOperation(result);
+  const localSecurityProgressActive = hasOptimisticSecurityProgress(result) || hasLiveSecurityOperation(result);
+  const shouldLoadSecurityProgress = busy || localSecurityProgressActive;
   const shouldUseSecurityProgressStream = Boolean(shouldLoadSecurityProgress || securityManageOpen || activeSecurityDetails === 'checkPath');
   const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
   const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
@@ -1952,6 +1955,7 @@ export default function SecurityScreen() {
     enabled: shouldUseSecurityProgressStream,
     profile: scanProfile,
     historyLimit: activeSecurityHistoryLimit || 20,
+    forceFallback: shouldLoadSecurityProgress,
   });
   void securityProgressUsingFallback;
   void securityProgressFallbackLabel;
@@ -2138,9 +2142,11 @@ export default function SecurityScreen() {
   const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
   const scanProgress = activeProfileIsLatest ? result?.scan_progress || data?.scan_progress || null : null;
   const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
+  const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(securityProgressData?.active_scan) || localSecurityProgressActive;
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;
   const scanProgressEta = liveProgress.eta;
+  const scanProgressStatusText = ['calculating', 'starting', 'working'].includes(String(scanProgressEta || '').toLowerCase()) ? String(scanProgressEta || 'working') : `${scanProgressEta} remaining`;
   const scanProgressLabel = securityProgressStage(scanProgress, runStatus);
   const scanProgressStep = Number(scanProgress?.step || (runStatus === 'queued' ? 1 : 2));
   const scanProgressStepsTotal = Number(scanProgress?.steps_total || 3);
@@ -2215,7 +2221,7 @@ export default function SecurityScreen() {
   const healthBanner = deriveSecurityHealthBanner(data, null, allReviewFindings);
   const latestEvidenceReceipt = deriveLatestEvidenceReceipt(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun, evidence_refs: currentEvidenceRefs }, { evidence, evidenceRefs: currentEvidenceRefs, latestHistory, toolNames, sbomSaved });
   const scanQuality = deriveScanQuality(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun, evidence_refs: currentEvidenceRefs }, latestEvidenceReceipt, executionSteps);
-  const securityFlow = useLiteSecurityCheckFlow({ security: data, backendReachable, savedStateOnly });
+  const securityFlow = useLiteSecurityCheckFlow({ security: data, backendReachable: effectiveBackendReachable, savedStateOnly: savedStateOnly && !scanInProgress });
   const lastKnownGood = deriveLastKnownGood(activeProfileIsLatest ? data : { ...data, last_run: activeProfileRun }, allReviewFindings);
   const postureComparison = deriveSecurityPostureComparison(activeProfileIsLatest ? data : { ...data, history: profileHistory });
   const remediationContext = { data, lastRun: activeProfileRun, evidence, evidenceRefs: currentEvidenceRefs, toolResults };
@@ -2567,10 +2573,10 @@ export default function SecurityScreen() {
   const warmSecurityManageIntent = useCallback(() => {
     preloadSecurityManageChunks();
     prefetchSecurityManageOnIntent(queryClient, {
-      backendHealthy: backendReachable !== false,
+      backendHealthy: effectiveBackendReachable !== false,
       activeScan: scanInProgress,
     });
-  }, [backendReachable, queryClient, scanInProgress]);
+  }, [effectiveBackendReachable, queryClient, scanInProgress]);
 
   function openSecurityDetailFromManage(type, event) {
     if (type === 'history') preloadSecurityHistory();
@@ -2579,14 +2585,14 @@ export default function SecurityScreen() {
   }
 
 
-  const savedSecurityDetails = savedStateOnly || data?.saved_snapshot || data?.offline_details?.visible;
+  const savedSecurityDetails = !scanInProgress && (savedStateOnly || data?.saved_snapshot || data?.offline_details?.visible);
   const offlineDetailsTitle = data?.offline_details?.title || cacheStatus?.title || 'Showing saved Security details';
   const offlineDetailsSummary = data?.offline_details?.summary || cacheStatus?.summary || 'Reconnect to run a new check or refresh live evidence. Saved details remain read-only.';
   const [freshJustNow, setFreshJustNow] = useState(false);
   const wasSecurityRefreshing = useRef(false);
 
   useEffect(() => {
-    if (wasSecurityRefreshing.current && !refreshing && data && !savedSecurityDetails && backendReachable !== false) {
+    if (wasSecurityRefreshing.current && !refreshing && data && !savedSecurityDetails && effectiveBackendReachable !== false) {
       setFreshJustNow(true);
       const timer = window.setTimeout(() => setFreshJustNow(false), 2400);
       wasSecurityRefreshing.current = refreshing;
@@ -2594,7 +2600,7 @@ export default function SecurityScreen() {
     }
     wasSecurityRefreshing.current = refreshing;
     return undefined;
-  }, [backendReachable, data, refreshing, savedSecurityDetails]);
+  }, [effectiveBackendReachable, data, refreshing, savedSecurityDetails]);
 
   const progressiveDetailsType = activeSecurityDetails || null;
   const progressiveDetailsHydrated = Boolean(progressiveDetailsType);
@@ -2631,12 +2637,12 @@ export default function SecurityScreen() {
     safetyLabel,
     lastRun: activeProfileRun,
     selectedScanProfile: scanProfile,
-    savedStateOnly,
+    savedStateOnly: savedStateOnly && !scanInProgress,
     savedSecurityDetails,
     offlineDetails: savedSecurityDetails ? { title: offlineDetailsTitle, summary: offlineDetailsSummary, profile: scanProfile, freshness: activeProfileFreshness } : null,
     profileFreshness,
     activeProfileFreshness,
-    backendReachable,
+    backendReachable: effectiveBackendReachable,
     securityHistory: hydrateHistoryDetails ? (profileHistory.length ? profileHistory : securityHistory) : [],
     latestHistory: hydrateHistoryDetails ? latestHistory : null,
     previousHistory: hydrateHistoryDetails ? previousHistory : null,
@@ -2658,12 +2664,12 @@ export default function SecurityScreen() {
     scanProfile,
     safetyScore,
     safetyLabel,
-    savedStateOnly,
+    savedStateOnly: savedStateOnly && !scanInProgress,
     savedSecurityDetails,
     offlineDetails: savedSecurityDetails ? { title: offlineDetailsTitle, summary: offlineDetailsSummary, profile: scanProfile, freshness: activeProfileFreshness } : null,
     profileFreshness,
     activeProfileFreshness,
-    backendReachable,
+    backendReachable: effectiveBackendReachable,
     latestEvidenceReceipt,
     toolNames,
     scanProgressLabel,
@@ -2689,7 +2695,7 @@ export default function SecurityScreen() {
       ? scanProgressLabel
     : savedStateOnly
       ? 'Saved state only'
-      : backendReachable === false
+      : effectiveBackendReachable === false
         ? 'Pocket Lab is not reachable'
         : safetyIsReady
           ? 'No urgent safety issues'
@@ -2807,7 +2813,7 @@ export default function SecurityScreen() {
               <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">Profile: {activeProfileMeta.chip}</button>
               {activeProfileFreshness?.label && savedSecurityDetails ? <span>{activeProfileFreshness.label}</span> : null}
               {securityRefreshStatusLabel ? <span className="lite-security-refresh-status-chip" data-security-refresh-status="true">{securityRefreshStatusLabel}</span> : null}
-              {backendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
+              {effectiveBackendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
             </div>
             <div className="lite-security-safety-center-chips" aria-label="Safety chips">
               {safetyCenterChips.map((chip) => (
@@ -2823,9 +2829,9 @@ export default function SecurityScreen() {
                     onClick={(event) => runSecurityProfile(profile.id, event)}
                     disabled={scanInProgress || securityFlow.writeBlocked}
                     haptic
-                    ariaLabel={scanInProgress ? `${profile.label} cannot start while a safety check is running` : securityFlow.writeBlocked ? `Reconnect to run ${profile.label}` : `Run ${profile.label}`}
+                    ariaLabel={scanInProgress ? `${profile.label} waits while a safety check is running` : securityFlow.writeBlocked ? `Reconnect to run ${profile.label}` : `Run ${profile.label}`}
                   >
-                    {scanInProgress && profile.id === latestScanProfile ? profile.running : securityFlow.writeBlocked ? 'Reconnect' : profile.actionLabel}
+                    {scanInProgress ? (profile.id === latestScanProfile ? profile.running : 'Wait') : securityFlow.writeBlocked ? 'Reconnect' : profile.actionLabel}
                   </LiteButton>
                 ))}
               </div>
@@ -2852,7 +2858,7 @@ export default function SecurityScreen() {
               <div className="lite-security-progress-track lite-security-phase4-progress-shine" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={scanProgressPercent} aria-label="Safety check progress">
                 <span style={{ width: `${scanProgressPercent}%` }} />
               </div>
-              <p>{scanProgressPercent}% · {scanProgressEta} remaining · {activeProfileMeta.label} is working.</p>
+              <p>{scanProgressPercent}% · {scanProgressStatusText} · {activeProfileMeta.label} is working.</p>
             </animated.div>
           ) : null}
         </GlassCard>

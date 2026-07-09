@@ -406,7 +406,7 @@ export function formatSecurityRemainingSeconds(seconds, runStatus = 'running') {
 
 export function liveSecurityProgress(progress, runStatus, busy, nowMs) {
   const status = String(progress?.status || runStatus || '').toLowerCase();
-  const estimatedTotal = Math.max(60, Number(progress?.estimated_total_seconds || 180));
+  const estimatedTotal = Math.max(60, Number(progress?.estimated_total_seconds || 900));
   const startedAt = parseSecurityTimestamp(progress?.started_at);
   const serverElapsed = Number(progress?.elapsed_seconds || 0);
   const liveElapsed = startedAt ? Math.max(0, Math.round((nowMs - startedAt) / 1000)) : serverElapsed;
@@ -415,20 +415,21 @@ export function liveSecurityProgress(progress, runStatus, busy, nowMs) {
   if (status === 'queued') {
     return {
       percent: 5,
-      eta: formatSecurityRemainingSeconds(estimatedTotal, status),
+      eta: 'starting',
       elapsed,
       remaining: estimatedTotal,
     };
   }
 
-  if (status === 'running' || busy) {
+  if (status === 'accepted' || status === 'working' || status === 'in_progress' || status === 'running' || busy) {
     const percentFromElapsed = Math.round((elapsed / estimatedTotal) * 100);
     const serverPercent = Number(progress?.percent || 0);
     const percent = Math.max(8, Math.min(95, Math.max(serverPercent, percentFromElapsed)));
     const remaining = Math.max(0, estimatedTotal - elapsed);
+    const explicitEta = progress?.estimated_remaining_label || (Number.isFinite(Number(progress?.estimated_remaining_seconds)) ? formatSecurityRemainingSeconds(Number(progress.estimated_remaining_seconds), 'running') : 'working');
     return {
       percent,
-      eta: formatSecurityRemainingSeconds(remaining, 'running'),
+      eta: explicitEta,
       elapsed,
       remaining,
     };
