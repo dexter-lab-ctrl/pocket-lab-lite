@@ -7179,3 +7179,46 @@ def test_lite_security_profile_focused_invalidation_and_polling_contract():
     assert "invalidateSecurityQuery('app')" in security
     assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
     assert "window.setInterval" not in security
+
+
+def test_lite_security_progressive_details_patch_d_contract():
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS" in security
+    assert "SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS" in details
+    assert "securityDetailNeedsHeavyModel" in security
+    assert "progressiveDetailsHydrated" in security
+    assert "hydrateCoverageDetails" in security
+    assert "hydrateTimelineDetails" in security
+    assert "hydrateEvidenceDetails" in security
+    assert "hydrateHistoryDetails" in security
+    assert "hydrateFindingDetails" in security
+    assert "data-security-progressive-details-summary-first=\"coverage\"" in security
+    assert "data-security-progressive-details-summary-first=\"check-path\"" in security
+    assert "Target rows, skipped groups, and optional missing targets mount only inside the focused details panel." in security
+    assert "Timeline rows load inside details so the main Security view stays snappy." in security
+    assert "Open Security coverage details" in security
+    assert "Open coverage" in security
+    assert "detailsHydration" in details
+    assert "data-security-progressive-details-hydrated" in details
+    assert "data-security-progressive-details-type" in details
+    assert "App Check coverage" in details
+    assert "Pocket Lab used the app scan profile." in details
+    assert "Skipped by App Check" in details
+    assert "Details hydrated" in details
+    assert "Detail type" in details
+
+    manage_coverage = security.partition("activeManageSection === 'coverage'")[2].partition("activeManageSection === 'check_path'")[0]
+    assert "<QuickCoverageRows" not in manage_coverage
+    assert "<SecurityTargetStatusRows" not in manage_coverage
+
+    manage_check_path = security.partition("activeManageSection === 'check_path'")[2].partition("activeManageSection === 'evidence'")[0]
+    assert "executionSteps.map" not in manage_check_path
+    assert "lite-security-execution-timeline" not in manage_check_path
+
+    assert "fetch(" not in security + details
+    assert "child_process" not in security + details
+    assert "exec(" not in security + details
+    assert "spawn(" not in security + details
+    assert "nats://" not in (security + details).lower()
