@@ -7309,3 +7309,30 @@ def test_lite_security_patch_e_cross_tab_scan_completion_sync_contract():
     assert "nats.connect" not in snapshots + security
     assert "child_process" not in snapshots + security
     assert "exec(" not in snapshots + security
+
+
+def test_lite_caddy_generator_serves_versioned_assets_before_spa_fallback():
+    script = Path("pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text()
+
+    assert "handle /assets/*" in script
+    assert "header @pocketlab_versioned_assets Cache-Control \"public, max-age=31536000, immutable\"" in script
+    assert "handle /sw.js" in script
+    assert "header @pocketlab_runtime_assets Cache-Control \"no-cache\"" in script
+
+    assets_handle = script.index("handle /assets/*")
+    fallback_handle = script.index("  handle {", assets_handle)
+    assert assets_handle < fallback_handle
+
+    assets_block = script[assets_handle:fallback_handle]
+    assert "root * ${PWA_DIR}" in assets_block
+    assert "file_server" in assets_block
+    assert "try_files {path} /index.html" not in assets_block
+
+
+def test_lite_pwa_static_asset_cache_version_bumped_after_asset_fallback_fix():
+    config = Path("vite.config.js").read_text()
+
+    assert "pocketlab-lite-static-assets-v2" in config
+    assert "pocketlab-lite-static-assets-v1" not in config
+    assert "cleanupOutdatedCaches: true" in config
+
