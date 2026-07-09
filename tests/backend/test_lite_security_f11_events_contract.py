@@ -173,7 +173,7 @@ def test_security_f11_frontend_uses_eventsource_with_bounded_progress_fallback()
     assert "new window.EventSource(endpoint(SECURITY_EVENTS_PATH))" in hook
     assert "SECURITY_EVENTS_PATH = '/api/lite/security/events'" in hook
     assert "liteApi.securityProgress()" in hook
-    assert "SECURITY_PROGRESS_FALLBACK_MS = 4000" in hook
+    assert "SECURITY_PROGRESS_FALLBACK_MS = 3000" in hook
     assert "setFallbackActive(false)" in hook
     assert "terminalSecurityEvent(event)" in hook
     assert "liteQueryKeys.securityProgress()" in hook
@@ -255,3 +255,31 @@ def test_security_group7_cross_tab_completion_broadcast_is_sanitized_and_focused
     assert "liteQueryKeys.catalog" not in hook
     assert "liteQueryKeys.fleet" not in hook
     assert "liteQueryKeys.recovery" not in hook
+
+
+def test_security_group7_hotfix_keeps_live_scan_out_of_saved_state_reconnect_ui():
+    security = LITE_SECURITY.read_text()
+    hook = SECURITY_EVENTS_HOOK.read_text()
+
+    assert "forceFallback: shouldLoadSecurityProgress" in security
+    assert "savedStateOnly: savedStateOnly && !scanInProgress" in security
+    assert "const savedSecurityDetails = !scanInProgress" in security
+    assert "const effectiveBackendReachable = backendReachable !== false || scanInProgress" in security
+    assert "securityFlow.writeBlocked ? 'Reconnect'" in security
+    assert "scanInProgress ? (profile.id === latestScanProfile ? profile.running : 'Wait')" in security
+    assert "forceFallback = false" in hook
+    assert "(!fallbackActive && !forceFallback)" in hook
+    assert "SECURITY_PROGRESS_FALLBACK_MS = 3000" in hook
+
+
+def test_security_group7_hotfix_uses_calm_progress_language_without_fake_short_eta():
+    security = LITE_SECURITY.read_text()
+    lite_ui = (ROOT / "src/lite/LiteUi.jsx").read_text()
+
+    assert "estimated_total_seconds: profileId === 'app' ? 120 : 900" in security
+    assert "const scanProgressStatusText" in security
+    assert "{scanProgressPercent}% · {scanProgressStatusText} · {activeProfileMeta.label} is working." in security
+    assert "progress?.estimated_total_seconds || 900" in lite_ui
+    assert "eta: 'starting'" in lite_ui
+    assert "progress?.estimated_remaining_label" in lite_ui
+    assert "status === 'accepted'" in lite_ui

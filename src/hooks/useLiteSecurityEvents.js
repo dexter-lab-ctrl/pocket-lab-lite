@@ -19,7 +19,7 @@ const SECURITY_STREAM_LIVE_TYPES = new Set([
   'security.scan.evidence_saved',
 ]);
 const SECURITY_TERMINAL_STATUSES = new Set(['succeeded', 'completed', 'degraded', 'failed', 'cancelled', 'canceled']);
-const SECURITY_PROGRESS_FALLBACK_MS = 4000;
+const SECURITY_PROGRESS_FALLBACK_MS = 3000;
 const SECURITY_STREAM_FALLBACK_LABEL = 'Using backup progress check';
 
 function endpoint(path) {
@@ -136,7 +136,7 @@ async function loadProgressFallback(queryClient, historyLimit) {
   }, historyLimit);
 }
 
-export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20 } = {}) {
+export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20, forceFallback = false } = {}) {
   const queryClient = useQueryClient();
   const [eventState, setEventState] = useState({ status: 'idle', usingFallback: false, event: null });
   const [fallbackActive, setFallbackActive] = useState(false);
@@ -209,7 +209,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
   }, [enabled, historyLimitValue, profileValue, queryClient]);
 
   useEffect(() => {
-    if (!enabled || !fallbackActive) return undefined;
+    if (!enabled || (!fallbackActive && !forceFallback)) return undefined;
     let stopped = false;
     let timer;
 
@@ -234,7 +234,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
       stopped = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [enabled, fallbackActive, historyLimitValue, queryClient]);
+  }, [enabled, fallbackActive, forceFallback, historyLimitValue, queryClient]);
 
   return useMemo(() => ({
     data: eventState.event ? progressPayloadFromEvent(eventState.event) : null,
