@@ -8,14 +8,23 @@ REPO="${POCKET_LAB_RELEASE_REPO:-dexter-lab-ctrl/pocket-lab-lite}"
 PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"
 TMP_DIR="$TMP_ROOT/pwa_extract"
 TMP_ZIP="$TMP_ROOT/dist.zip"
+LOCAL_DIST_ZIP="${POCKETLAB_LOCAL_DIST_ZIP:-${POCKET_LAB_LOCAL_DIST_ZIP:-}}"
 
 main() {
-  SCRIPT_NAME="install-pwa-ui.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_cmd curl unzip
+  SCRIPT_NAME="install-pwa-ui.sh"; acquire_lock "$SCRIPT_NAME"; ensure_root_dirs; require_cmd unzip
   ensure_dir_perm "$PWA_DIR" 755; rm -rf "$TMP_DIR"; mkdir -p "$TMP_DIR"
-  log INFO "Querying GitHub latest release for $REPO"
-  local url; url="$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep 'browser_download_url.*dist.zip' | head -1 | cut -d '"' -f 4 || true)"
-  [[ -n "$url" ]] || die "Could not find dist.zip in latest release for $REPO"
-  download_file "$url" "$TMP_ZIP"
+  if [[ -n "$LOCAL_DIST_ZIP" ]]; then
+    [[ -f "$LOCAL_DIST_ZIP" ]] || die "Local dist.zip not found: $LOCAL_DIST_ZIP"
+    [[ -r "$LOCAL_DIST_ZIP" ]] || die "Local dist.zip is not readable: $LOCAL_DIST_ZIP"
+    log INFO "Using local PWA dist.zip: $LOCAL_DIST_ZIP"
+    cp "$LOCAL_DIST_ZIP" "$TMP_ZIP"
+  else
+    require_cmd curl
+    log INFO "Querying GitHub latest release for $REPO"
+    local url; url="$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | grep 'browser_download_url.*dist.zip' | head -1 | cut -d '"' -f 4 || true)"
+    [[ -n "$url" ]] || die "Could not find dist.zip in latest release for $REPO"
+    download_file "$url" "$TMP_ZIP"
+  fi
   unzip -q -o "$TMP_ZIP" -d "$TMP_DIR"
   local src="$TMP_DIR"; [[ -d "$TMP_DIR/dist" ]] && src="$TMP_DIR/dist"
   [[ -f "$src/index.html" ]] || die "Downloaded UI artifact does not contain index.html"
