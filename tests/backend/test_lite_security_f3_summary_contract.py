@@ -50,8 +50,8 @@ def test_lite_security_f3_frontend_uses_summary_for_initial_render_and_full_for_
     status = LITE_STATUS.read_text()
     screen = LITE_SECURITY.read_text()
 
-    assert "security: safeGet('/api/lite/security/summary')" in api
-    assert "securitySummary: safeGet('/api/lite/security/summary')" in api
+    assert "security: conditionalGet('/api/lite/security/summary')" in api
+    assert "securitySummary: conditionalGet('/api/lite/security/summary')" in api
     assert "securityDetails: safeGet('/api/lite/security')" in api
     assert "securityProfile: (profile = 'quick')" in api
     assert "securityHistory: (limit = 20)" in api

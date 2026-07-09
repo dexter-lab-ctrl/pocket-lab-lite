@@ -23,7 +23,7 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
-import { liteQueryKeys } from '../lib/liteQueryClient.js';
+import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import {
   SECURITY_DETAILS_GC_TIME_MS,
   SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE,
@@ -1729,6 +1729,7 @@ export default function SecurityScreen() {
   const [securityManageOpen, setSecurityManageOpen] = useState(false);
   const [securityManageSection, setSecurityManageSection] = useState('overview');
   const queryClient = useQueryClient();
+  const lastSecurityFreshnessRef = useRef(null);
   const [selectedScanProfile, setSelectedScanProfile] = useState(null);
   const securityPollingProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const securityPollingPolicy = useCallback((payload) => (
@@ -1741,6 +1742,18 @@ export default function SecurityScreen() {
   const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
   const shouldLoadSecurityProgress = scanInProgress || busy || hasLiveSecurityOperation(result);
+  const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
+  const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
+    queryKey: liteQueryKeys.securityFreshness(),
+    path: liteQueryPaths.securityFreshness,
+    pollingMode: 'slow',
+    isLive: (payload) => Boolean(payload?.active_scan),
+    staleTime: (query) => query?.state?.data?.active_scan ? 2_000 : 30_000,
+    gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
+    refetchOnReconnect: true,
+  });
   const {
     data: securitySummaryData,
     loading,
@@ -1751,6 +1764,8 @@ export default function SecurityScreen() {
     savedStateOnly,
     cacheStatus,
   } = useLiteResource(liteApi.securitySummary || liteApi.security, [], {
+    queryKey: liteQueryKeys.security(),
+    path: liteQueryPaths.security,
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
     staleTime: (query) => securitySummaryStaleTime(query?.state?.data),
@@ -1775,6 +1790,8 @@ export default function SecurityScreen() {
     refreshing: profileRefreshing,
     refresh: refreshSecurityDetails,
   } = useLiteResource(securityProfileLoader, [scanProfile], {
+    queryKey: liteQueryKeys.securityProfile(scanProfile),
+    path: liteQueryPaths.securityProfile(scanProfile),
     enabled: shouldLoadSecurityDetails,
     pollingMode: 'relaxed',
     isLive: securityPollingIsLive,
@@ -1791,6 +1808,8 @@ export default function SecurityScreen() {
     refetchOnReconnect: true,
   });
   const { data: securityHistoryData, refreshing: historyRefreshing } = useLiteResource(securityHistoryLoader, [20], {
+    queryKey: liteQueryKeys.securityHistory(20),
+    path: liteQueryPaths.securityHistory(20),
     enabled: shouldLoadSecurityHistory,
     pollingMode: 'relaxed',
     staleTime: 60_000,
@@ -1800,6 +1819,8 @@ export default function SecurityScreen() {
     refetchOnReconnect: true,
   });
   const { data: securityProgressData } = useLiteResource(securityProgressLoader, [], {
+    queryKey: liteQueryKeys.securityProgress(),
+    path: liteQueryPaths.securityProgress,
     enabled: shouldLoadSecurityProgress,
     pollingMode: 'fast',
     isLive: (payload) => Boolean(payload?.active_scan),
@@ -1840,6 +1861,33 @@ export default function SecurityScreen() {
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory(20) });
   }), [queryClient]);
+
+  useEffect(() => {
+    if (!securityFreshnessData?.revision) return;
+    const previous = lastSecurityFreshnessRef.current;
+    lastSecurityFreshnessRef.current = securityFreshnessData;
+    if (!previous?.revision || previous.revision === securityFreshnessData.revision) return;
+
+    const invalidate = (queryKey) => queryClient.invalidateQueries({ queryKey });
+    if (previous.summary_revision !== securityFreshnessData.summary_revision) {
+      invalidate(liteQueryKeys.security());
+    }
+
+    const previousProfiles = previous.profile_revisions || {};
+    const currentProfiles = securityFreshnessData.profile_revisions || {};
+    ['quick', 'full', 'app'].forEach((profile) => {
+      if (previousProfiles[profile] !== currentProfiles[profile]) {
+        invalidate(liteQueryKeys.securityProfile(profile));
+      }
+    });
+
+    if (previous.history_revision !== securityFreshnessData.history_revision) {
+      invalidate(liteQueryKeys.securityHistory(20));
+    }
+    if (securityFreshnessData.active_scan && previous.progress_revision !== securityFreshnessData.progress_revision) {
+      invalidate(liteQueryKeys.securityProgress());
+    }
+  }, [queryClient, securityFreshnessData]);
   const [evidence, setEvidence] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);

@@ -180,13 +180,13 @@ def test_security_f7_frontend_uses_split_read_endpoints_for_manage_details():
     status = LITE_STATUS.read_text()
     screen = LITE_SECURITY.read_text()
 
-    assert "security: safeGet('/api/lite/security/summary')" in api
-    assert "securityProfile: (profile = 'quick') => readJson(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`)" in api
-    assert "securityHistory: (limit = 20) => readJson(`/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`)" in api
-    assert "securityProgress: () => readJson('/api/lite/security/progress')" in api
-    assert "securityRunDetails: (runId) => readJson(`/api/lite/security/details/${encodeURIComponent(runId || '')}`)" in api
-    assert "securityEvidenceSummary: (runId) => readJson(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`)" in api
-    assert "securityEvidence: (runId) => readJson(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`)" in api
+    assert "security: conditionalGet('/api/lite/security/summary')" in api
+    assert "securityProfile: (profile = 'quick') => conditionalRead(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`)" in api
+    assert "securityHistory: (limit = 20) => conditionalRead(`/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`)" in api
+    assert "securityProgress: () => conditionalRead('/api/lite/security/progress')" in api
+    assert "securityRunDetails: (runId) => conditionalRead(`/api/lite/security/details/${encodeURIComponent(runId || '')}`)" in api
+    assert "securityEvidenceSummary: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`)" in api
+    assert "securityEvidence: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`)" in api
 
     assert "securityProfile: (profile = 'quick')" in query
     assert "securityHistory: (limit = 20)" in query

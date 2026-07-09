@@ -28,6 +28,8 @@ export const liteQueryPaths = {
   securityProfile: (profile = 'quick') => `/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`,
   securityHistory: (limit = 20) => `/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`,
   securityProgress: '/api/lite/security/progress',
+  securityRunDetails: (runId = 'latest') => `/api/lite/security/details/${encodeURIComponent(runId || 'latest')}`,
+  securityEvidenceSummary: (runId = 'latest') => `/api/lite/security/evidence/${encodeURIComponent(runId || 'latest')}/summary`,
   recovery: '/api/lite/recovery',
 };
 

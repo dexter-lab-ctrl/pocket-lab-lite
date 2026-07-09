@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   attachFreshSnapshotMeta,
   describeLiteSnapshot,
@@ -12,6 +12,7 @@ import {
 } from '../lib/liteSafeSnapshots.js';
 import { hasLiteLiveOperation, isLiteDocumentVisible, liteQueryPollingInterval } from '../lib/litePollingPolicy.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
+import { isLiteNotModified } from '../lib/liteApi.js';
 
 const UNSAFE_METHOD_PATTERN = /^(POST|PUT|PATCH|DELETE)$/i;
 const UNSAFE_PATH_PATTERN = /bootstrap|invite|token|secret|password|evidence|receipt|debug|raw/i;
@@ -65,6 +66,7 @@ async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET', sn
   const safePath = isSafeLiteSnapshotPath(path) && !isUnsafeSnapshotRequest(path, method);
   try {
     const data = await queryFn();
+    if (isLiteNotModified(data)) return data;
     if (safePath && data && typeof data === 'object' && !isSavedSnapshot(data)) {
       const snapshotPayload = typeof snapshotSelect === 'function' ? applyLiteQuerySelector(snapshotSelect, data) : data;
       writeLiteSnapshot(path, snapshotPayload);
@@ -114,6 +116,8 @@ export function useLiteQuery({
   snapshotSelect,
 } = {}) {
   const normalizedPath = normalizeQueryPath(path || queryFn?.safeSnapshotPath || '');
+  const resolvedQueryKey = defaultQueryKey(normalizedPath || queryFn?.name || 'lite-query', queryKey);
+  const queryClient = useQueryClient();
   const safeSnapshotPath = isSafeLiteSnapshotPath(normalizedPath) && !isUnsafeSnapshotRequest(normalizedPath, method)
     ? normalizedPath
     : null;
@@ -136,9 +140,19 @@ export function useLiteQuery({
   }, [documentVisible, enabledWhenHidden, isLive, pollingMode, refetchInterval]);
 
   const query = useQuery({
-    queryKey: defaultQueryKey(normalizedPath || queryFn?.name || 'lite-query', queryKey),
+    queryKey: resolvedQueryKey,
     enabled: Boolean(enabled && queryFn),
-    queryFn: () => queryWithSafeSnapshotFallback({ path: normalizedPath, queryFn, method, snapshotSelect: snapshotSelect || select }),
+    queryFn: async () => {
+      const data = await queryWithSafeSnapshotFallback({ path: normalizedPath, queryFn, method, snapshotSelect: snapshotSelect || select });
+      if (!isLiteNotModified(data)) return data;
+      const previous = queryClient.getQueryData(resolvedQueryKey);
+      if (previous) return previous;
+      if (safeSnapshotPath) {
+        const saved = await readLiteSnapshotAsync(safeSnapshotPath);
+        if (saved) return saved;
+      }
+      return data;
+    },
     initialData: cached || undefined,
     initialDataUpdatedAt: initialDataUpdatedAt(cached),
     placeholderData,

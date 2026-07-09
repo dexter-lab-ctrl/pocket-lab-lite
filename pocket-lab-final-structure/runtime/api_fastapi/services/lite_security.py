@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import shutil
@@ -283,6 +284,8 @@ def _security_summary_from_state(state: dict[str, Any]) -> dict[str, Any]:
         "guidance": payload.get("guidance")[:4] if isinstance(payload.get("guidance"), list) else policy.GUIDANCE[:4],
         "updated_at": payload.get("updated_at") or (last_run or {}).get("updated_at") or (last_run or {}).get("completed_at"),
         "checked_at": payload.get("checked_at") or payload.get("updated_at") or (last_run or {}).get("completed_at"),
+        "revision": _summary_revision(payload),
+        "source": "security_summary_json",
         "summary_payload": True,
         "details_endpoint": "/api/lite/security",
         "sanitized": True,
@@ -333,13 +336,105 @@ def _profile_for_run(run: dict[str, Any] | None = None) -> str:
         return policy.SCAN_PROFILE_QUICK
 
 
+def _revision_token(kind: str, *signals: Any) -> str:
+    safe_kind = "".join(ch if ch.isalnum() or ch in "-." else "-" for ch in str(kind or "state").lower()).strip("-") or "state"
+    clean_signals = policy.redact_value(signals)
+    encoded = json.dumps(clean_signals, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8", "replace")
+    return f"security-{safe_kind}-{hashlib.sha256(encoded).hexdigest()[:18]}"
+
+
+def _run_revision_signals(run: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = run if isinstance(run, dict) else {}
+    return {
+        key: payload.get(key)
+        for key in (
+            "run_id", "status", "scan_profile", "app_id", "score", "updated_at", "completed_at",
+            "checks_reviewed", "checks_count", "items_to_review", "critical_count", "high_count",
+            "medium_count", "low_count", "partial_results", "sbom_saved",
+        )
+        if key in payload
+    }
+
+
+def _progress_revision(state: dict[str, Any] | None = None) -> str:
+    payload = state if isinstance(state, dict) else {}
+    progress = payload.get("scan_progress") if isinstance(payload.get("scan_progress"), dict) else {}
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else {}
+    return _revision_token(
+        "progress",
+        progress.get("run_id") or last_run.get("run_id"),
+        progress.get("profile") or last_run.get("scan_profile") or payload.get("scan_profile"),
+        progress.get("status") or progress.get("phase") or progress.get("stage"),
+        progress.get("percent"),
+        progress.get("updated_at") or payload.get("updated_at") or last_run.get("updated_at") or last_run.get("completed_at"),
+        _is_live_security_state(payload),
+    )
+
+
+def _history_revision(state: dict[str, Any] | None = None) -> str:
+    history = _compact_history_index(state if isinstance(state, dict) else {}, limit=_SECURITY_SPLIT_HISTORY_MAX_LIMIT)
+    return _revision_token("history", [_run_revision_signals(item) for item in history])
+
+
+def _profile_revision(profile: str, state: dict[str, Any] | None = None, latest: dict[str, Any] | None = None) -> str:
+    payload = state if isinstance(state, dict) else {}
+    normalized_profile = _profile_for_run({"scan_profile": profile})
+    candidate = latest if isinstance(latest, dict) else None
+    if candidate is None:
+        profile_latest = payload.get("profile_latest") if isinstance(payload.get("profile_latest"), dict) else {}
+        candidate = profile_latest.get(normalized_profile) if isinstance(profile_latest.get(normalized_profile), dict) else None
+    if candidate is None:
+        candidate = next((item for item in (payload.get("history") if isinstance(payload.get("history"), list) else []) if isinstance(item, dict) and _profile_for_run(item) == normalized_profile), None)
+    return _revision_token("profile-" + normalized_profile, _run_revision_signals(candidate), _is_live_security_state(payload) and _profile_for_run(payload.get("last_run") if isinstance(payload.get("last_run"), dict) else None) == normalized_profile)
+
+
+def _summary_revision(state: dict[str, Any] | None = None) -> str:
+    payload = state if isinstance(state, dict) else {}
+    last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else {}
+    return _revision_token(
+        "summary",
+        payload.get("status"), payload.get("score"), payload.get("updated_at"), payload.get("checked_at"),
+        payload.get("checks_reviewed"), payload.get("items_to_review"),
+        _run_revision_signals(last_run),
+        _progress_revision(payload) if _is_live_security_state(payload) else "idle",
+    )
+
+
 def _compact_revision(state: dict[str, Any] | None = None, *, run_id: str | None = None) -> str:
     payload = state if isinstance(state, dict) else {}
     last_run = payload.get("last_run") if isinstance(payload.get("last_run"), dict) else {}
-    stamp = payload.get("updated_at") or payload.get("checked_at") or last_run.get("updated_at") or last_run.get("completed_at") or "not-checked"
-    active = "live" if _is_live_security_state(payload) else "idle"
-    source_run = run_id or last_run.get("run_id") or "none"
-    return f"security-{stamp}-{source_run}-{active}"
+    return _revision_token("overall", payload.get("updated_at") or payload.get("checked_at"), _run_revision_signals(last_run), run_id or last_run.get("run_id"), _progress_revision(payload) if _is_live_security_state(payload) else "idle")
+
+
+def compact_response_revision(payload: dict[str, Any] | None = None) -> str:
+    data = payload if isinstance(payload, dict) else {}
+    revision = str(data.get("revision") or "")
+    if revision.startswith("security-"):
+        return revision
+    return _revision_token("response", data)
+
+
+def compact_response_etag(payload: dict[str, Any] | None = None) -> str:
+    revision = compact_response_revision(payload)
+    safe = "".join(ch for ch in revision if ch.isalnum() or ch in "-._:") or _revision_token("etag", revision)
+    return f'"{safe}"'
+
+
+def if_none_match_matches(header_value: str | None, etag: str) -> bool:
+    if not header_value:
+        return False
+    expected = str(etag or "").strip()
+    if not expected:
+        return False
+    for candidate in str(header_value).split(","):
+        value = candidate.strip()
+        if value == "*":
+            return True
+        if value.startswith("W/"):
+            value = value[2:].strip()
+        if value == expected:
+            return True
+    return False
 
 
 def _compact_file_key(path: Path, *parts: Any) -> tuple[Any, ...]:
@@ -413,6 +508,8 @@ def _compact_evidence_summary_from_refs(run_id: str | None, refs: list[Any] | No
         "raw_output_hidden": True,
         "secrets_hidden": True,
         "private_paths_hidden": True,
+        "revision": _revision_token("evidence-summary", run_id or "", evidence_refs),
+        "source": "security_evidence_summary_json",
     })
 
 
@@ -473,7 +570,8 @@ def _profile_state_from_state(profile: str, state: dict[str, Any] | None = None)
         "critical_issues": _bounded_list(critical, _SECURITY_SUMMARY_FINDING_LIMIT),
         "evidence_summary": _compact_evidence_summary_from_refs((latest_run or {}).get("run_id"), evidence_refs if isinstance(evidence_refs, list) else []),
         "history": history,
-        "revision": _compact_revision(payload, run_id=(latest_run or {}).get("run_id") if latest_run else None),
+        "revision": _profile_revision(normalized_profile, payload, latest_run),
+        "source": "security_profile_json",
         "sanitized": True,
     }
     return policy.redact_value(response)
@@ -487,13 +585,22 @@ def _freshness_from_state(state: dict[str, Any] | None = None) -> dict[str, Any]
     for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP):
         latest = profile_latest.get(profile) if isinstance(profile_latest.get(profile), dict) else None
         profile_updated_at[profile] = (latest or {}).get("updated_at") or (latest or {}).get("completed_at") or None
+    profile_revisions = {
+        profile: _profile_revision(profile, payload, profile_latest.get(profile) if isinstance(profile_latest.get(profile), dict) else None)
+        for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)
+    }
     return policy.redact_value({
-        "view_model": "security-freshness-f7-v1",
+        "view_model": "security-freshness-f9-v1",
         "status": payload.get("status") or "unknown",
         "revision": _compact_revision(payload),
         "updated_at": payload.get("updated_at"),
         "active_scan": _is_live_security_state(payload),
         "profile_updated_at": profile_updated_at,
+        "profile_revisions": profile_revisions,
+        "summary_revision": _summary_revision(payload),
+        "history_revision": _history_revision(payload),
+        "progress_revision": _progress_revision(payload),
+        "source": "security_freshness_json",
         "summary_endpoint": "/api/lite/security/summary",
         "details_endpoint": "/api/lite/security",
         "profiles_endpoint": "/api/lite/security/profiles/{profile}",
@@ -518,8 +625,9 @@ def _progress_from_state(state: dict[str, Any] | None = None) -> dict[str, Any]:
         "status": progress.get("status") or last_run.get("status") or payload.get("status") or "idle",
         "percent": int(progress.get("percent") or 0),
         "message": progress.get("message") or progress.get("summary") or last_run.get("summary") or payload.get("summary") or "Security is idle.",
-        "revision": _compact_revision(payload),
+        "revision": _progress_revision(payload),
         "updated_at": payload.get("updated_at") or last_run.get("updated_at") or last_run.get("completed_at"),
+        "source": "security_progress_json",
         "sanitized": True,
     })
 
@@ -561,7 +669,8 @@ def _details_from_run(run_id: str, state: dict[str, Any] | None = None) -> dict[
         "critical_issues": _bounded_list(critical, _SECURITY_SUMMARY_FINDING_LIMIT),
         "evidence_summary": _compact_evidence_summary_from_refs(str(run.get("run_id") or safe_run_id), evidence_refs if isinstance(evidence_refs, list) else []),
         "finding_delta": _trim_security_delta_for_summary(payload.get("finding_delta")),
-        "revision": _compact_revision(payload, run_id=str(run.get("run_id") or safe_run_id)),
+        "revision": _revision_token("details", _run_revision_signals(run), safe_run_id),
+        "source": "security_details_json",
         "sanitized": True,
     }
     return policy.redact_value(response)
@@ -571,10 +680,10 @@ def write_compact_security_state(state: dict[str, Any] | None = None) -> dict[st
     payload = policy.redact_value(state if isinstance(state, dict) else evidence.read_state() or default_state())
     root = evidence.compact_dir()
     summary = _security_summary_from_state(payload)
-    summary["revision"] = _compact_revision(payload)
+    summary["revision"] = _summary_revision(payload)
     freshness = _freshness_from_state(payload)
     progress = _progress_from_state(payload)
-    history = {"view_model": "security-history-f7-v1", "limit": _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": _compact_history_index(payload), "revision": _compact_revision(payload), "sanitized": True}
+    history = {"view_model": "security-history-f7-v1", "limit": _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": _compact_history_index(payload), "revision": _history_revision(payload), "source": "security_history_json", "sanitized": True}
     profiles = {profile: _profile_state_from_state(profile, payload) for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)}
     evidence.write_compact_json(root / "security_summary.json", summary)
     evidence.write_compact_json(root / "security_freshness.json", freshness)
@@ -600,7 +709,6 @@ def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def _ensure_compact_state() -> dict[str, Any]:
-    state = evidence.read_state() or default_state()
     root = evidence.compact_dir()
     required = [
         root / "security_summary.json",
@@ -611,6 +719,10 @@ def _ensure_compact_state() -> dict[str, Any]:
         evidence.compact_profile_path(policy.SCAN_PROFILE_FULL),
         evidence.compact_profile_path(policy.SCAN_PROFILE_APP),
     ]
+    state = evidence.read_state()
+    if not state:
+        compact_summary = evidence.read_compact_json(root / "security_summary.json", {})
+        state = {**default_state(), **(compact_summary if isinstance(compact_summary, dict) else {})}
     if not all(path.exists() for path in required):
         write_compact_security_state(state)
     return state
@@ -640,7 +752,7 @@ def split_history_state(limit: int | None = None) -> dict[str, Any]:
     def build() -> dict[str, Any]:
         base = evidence.read_compact_json(path, {})
         history = base.get("history") if isinstance(base, dict) and isinstance(base.get("history"), list) else _compact_history_index(state, limit=bounded_limit)
-        return {"view_model": "security-history-f7-v1", "limit": bounded_limit, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": history[:bounded_limit], "revision": _compact_revision(state), "sanitized": True}
+        return {"view_model": "security-history-f7-v1", "limit": bounded_limit, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": history[:bounded_limit], "revision": _history_revision(state), "source": "security_history_json", "sanitized": True}
 
     return _cached_compact_read("history", key, build)
 
