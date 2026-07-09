@@ -4871,7 +4871,7 @@ def test_lite_security_recovery_phase5_polling_policy_source():
     assert "securityPollingIsLive" in security
     assert "pollingMode: 'slow'" in security
     assert "isLive: securityPollingIsLive" in security
-    assert "staleTime: 15_000" in security or "staleTime: 30_000" in security
+    assert "staleTime: 15_000" in security or "staleTime: 30_000" in security or "staleTime: 60_000" in security
     assert "window.setInterval(() => refresh()" not in security
     assert "window.setInterval(refresh" not in security
 
@@ -5282,7 +5282,7 @@ def test_lite_security_render_reduction_preserves_polling_and_actions():
     assert "securityPollingIsLive" in security
     assert "pollingMode: 'slow'" in security
     assert "isLive: securityPollingIsLive" in security
-    assert "staleTime: 15_000" in security or "staleTime: 30_000" in security
+    assert "staleTime: 15_000" in security or "staleTime: 30_000" in security or "staleTime: 60_000" in security
     assert "setInterval" not in security
     assert "runSecurityScan" in security
     assert "checkProtectedApp" in security
@@ -5362,7 +5362,7 @@ def test_lite_app_catalog_s3_uses_focused_invalidations():
     assert "liteQueryKeys.catalog()" in mutation
     assert "liteQueryKeys.recovery()" in mutation
     assert "restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()]" in mutation
-    assert "security_check: [liteQueryKeys.security()]" in mutation
+    assert "security_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()]" in mutation
     assert "invalidateForAction: ({ appId = 'photoprism', actionId }, response) => getLiteAppActionInvalidations(appId, actionId, response)" in catalog
     assert "liteMutationInvalidations[actionId] || [liteQueryKeys.appActions('photoprism')]" not in catalog
     assert "window.setTimeout(() => { refresh(); refreshAppActions(appId);" not in catalog
@@ -5594,6 +5594,9 @@ def test_lite_security_s3_uses_slow_polling_and_live_detector():
 
     assert "pollingMode: 'slow'" in security
     assert "staleTime: 30_000" in security or "staleTime: 45_000" in security or "staleTime: 60_000" in security
+    assert "selectSecurityPollingPolicyView" in security
+    assert "LITE_SECURITY_PROFILE_POLLING_POLICY" in view_models
+    assert "isLiteSecurityProfileLive" in view_models
     assert "securityPollingIsLive" in security
     assert "isLive: securityPollingIsLive" in security
     assert "isLiteSecurityViewLive(payload)" in security
@@ -5610,15 +5613,17 @@ def test_lite_security_s3_uses_focused_invalidations():
 
     assert "getLiteSecurityActionInvalidations" in mutation
     assert "getLiteSecurityMutationInvalidations" in mutation
-    assert "security_check: [liteQueryKeys.security()]" in mutation
-    assert "run_safety_check: [liteQueryKeys.security()]" in mutation
-    assert "safety_check: [liteQueryKeys.security()]" in mutation
-    assert "check_security_app: [liteQueryKeys.security()]" in mutation
+    assert "security_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()]" in mutation
+    assert "run_safety_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()]" in mutation
+    assert "safety_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()]" in mutation
+    assert "check_security_app: [liteQueryKeys.security(), liteQueryKeys.securityProfile('app'), liteQueryKeys.securityHistory()]" in mutation
     security_slice = mutation.partition("security_check:")[2].partition("recovery_backup:")[0]
     assert "catalog" not in security_slice
     assert "fleet" not in security_slice
     assert "recovery" not in security_slice
-    assert "queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() })" in security
+    assert "liteQueryKeys.security()" in security
+    assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
+    assert "liteQueryKeys.securityHistory()" in security
     assert "window.setTimeout(() => refresh()" not in security
     assert "[700, 1800, 4000]" not in security
 
@@ -5881,7 +5886,9 @@ def test_lite_security_phase1_preserves_security_boundaries():
     assert "selectSecurityScreenView" in security
     assert "snapshotSelect: selectSecurityScreenView" in security
     assert "pollingMode: 'slow'" in security
-    assert "queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() })" in security
+    assert "liteQueryKeys.security()" in security
+    assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
+    assert "liteQueryKeys.securityHistory()" in security
     assert "fetch(" not in security
     assert "child_process" not in security
     assert "exec(" not in security
@@ -7139,3 +7146,36 @@ def test_lite_security_profile_snapshots_remain_read_only_fallback():
     assert "fetch(" not in security
     assert "nats.connect" not in security
     assert "child_process" not in security
+
+
+def test_lite_security_profile_focused_invalidation_and_polling_contract():
+    query_client = Path("src/lib/liteQueryClient.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    mutation = Path("src/hooks/useLiteMutation.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "securityProfile: (profile = 'quick')" in query_client
+    assert "securityHistory: () => ['lite', 'security', 'history']" in query_client
+    assert "LITE_SECURITY_PROFILE_POLLING_POLICY" in view_models
+    assert "selectSecurityPollingPolicyView" in view_models
+    assert "isLiteSecurityProfileLive" in view_models
+    assert "stale_time_ms: anyLive ? 2_000 : 60_000" in view_models
+    assert "securityProfileQueryKey(profile)" in view_models
+    assert "securityMutationProfile" in view_models
+
+    assert "securityProfile('quick')" in mutation
+    assert "securityProfile('app')" in mutation
+    assert "securityHistory()" in mutation
+    security_slice = mutation.partition("security_check:")[2].partition("recovery_backup:")[0]
+    assert "catalog" not in security_slice
+    assert "fleet" not in security_slice
+    assert "recovery" not in security_slice
+
+    assert "securityPollingProfile" in security
+    assert "securityPollingPolicy" in security
+    assert "selectSecurityPollingPolicyView(payload || {}, securityPollingProfile, result)" in security
+    assert "invalidateSecurityQuery('quick')" in security
+    assert "invalidateSecurityQuery('full')" in security
+    assert "invalidateSecurityQuery('app')" in security
+    assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
+    assert "window.setInterval" not in security
