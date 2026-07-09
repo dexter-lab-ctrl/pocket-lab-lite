@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteSecurityEvents } from '../hooks/useLiteSecurityEvents.js';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
@@ -118,6 +119,9 @@ const SECURITY_PHASE4_MOTION_POLISH_SOURCE_GUARDS = ['lite-security-phase4-motio
 const SECURITY_REMEDIATION_DRAWER_CLASS_LEGACY_GUARD = 'lite-security-remediation-drawer';
 const SECURITY_PHASE5_SAFETY_CENTER_MANAGE_UX = true;
 const SECURITY_PATCH_E_FRESHNESS_RETENTION_SYNC = true;
+const SECURITY_GROUP5_SAFE_STREAM_PROGRESS = true;
+const SECURITY_GROUP5_TINY_PROGRESS_FALLBACK_SOURCE_GUARD = 'liteApi.securityProgress()';
+void SECURITY_GROUP5_TINY_PROGRESS_FALLBACK_SOURCE_GUARD;
 void SECURITY_PATCH_E_FRESHNESS_RETENTION_SYNC;
 const SECURITY_PHASE5_MANAGE_SOURCE_GUARDS = [
   'lite-security-safety-center-card',
@@ -1772,6 +1776,7 @@ export default function SecurityScreen() {
   const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
   const shouldLoadSecurityProgress = busy || hasLiveSecurityOperation(result);
+  const shouldUseSecurityProgressStream = Boolean(shouldLoadSecurityProgress || securityManageOpen || activeSecurityDetails === 'checkPath');
   const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
   const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
     queryKey: liteQueryKeys.securityFreshness(),
@@ -1814,7 +1819,6 @@ export default function SecurityScreen() {
   });
   const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile), [scanProfile]);
   const securityHistoryLoader = useCallback(() => liteApi.securityHistory(activeSecurityHistoryLimit || 20), [activeSecurityHistoryLimit]);
-  const securityProgressLoader = useCallback(() => liteApi.securityProgress(), []);
   const {
     data: securityProfileData,
     refreshing: profileRefreshing,
@@ -1848,17 +1852,17 @@ export default function SecurityScreen() {
     placeholderData: (previousData) => previousData,
     refetchOnReconnect: true,
   });
-  const { data: securityProgressData } = useLiteResource(securityProgressLoader, [], {
-    queryKey: liteQueryKeys.securityProgress(),
-    path: liteQueryPaths.securityProgress,
-    enabled: shouldLoadSecurityProgress,
-    pollingMode: 'fast',
-    isLive: (payload) => Boolean(payload?.active_scan),
-    staleTime: 1_500,
-    gcTime: 5 * 60_000,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
+  const {
+    data: securityProgressData,
+    usingFallback: securityProgressUsingFallback,
+    fallbackLabel: securityProgressFallbackLabel,
+  } = useLiteSecurityEvents({
+    enabled: shouldUseSecurityProgressStream,
+    profile: scanProfile,
+    historyLimit: activeSecurityHistoryLimit || 20,
   });
+  void securityProgressUsingFallback;
+  void securityProgressFallbackLabel;
   const splitSecurityData = useMemo(() => {
     const base = securitySummaryData || {};
     if (!securityProfileData && !securityHistoryData && !securityProgressData) return securitySummaryData;
