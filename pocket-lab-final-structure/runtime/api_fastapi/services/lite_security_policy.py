@@ -684,6 +684,7 @@ SAFE_SCANNER_METADATA_KEYS = {
     "misconfig_returncode",
     "secret_returncode",
     "lynis_returncode",
+    "secrets_hidden",
 }
 
 
