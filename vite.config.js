@@ -40,7 +40,7 @@ export default defineConfig({
             urlPattern: ({ request }) => ['style', 'script', 'worker'].includes(request.destination),
             handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'pocketlab-lite-static-assets-v1',
+              cacheName: 'pocketlab-lite-static-assets-v2',
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
               cacheableResponse: { statuses: [200] },
             },
