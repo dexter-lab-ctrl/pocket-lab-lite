@@ -7224,6 +7224,26 @@ def test_lite_security_progressive_details_patch_d_contract():
     assert "nats://" not in (security + details).lower()
 
 
+
+
+def test_lite_security_progressive_details_hydration_flags_are_component_scoped():
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    component_slice = details.partition("export default function SecurityProgressiveDetailsLazy")[2]
+    assert "const detailsHydrated = Boolean(model?.detailsHydrated);" in component_slice
+    assert "const detailsHydration = model?.detailsHydration" in component_slice
+    assert "data-security-progressive-details-hydrated={detailsHydrated ? 'true' : 'false'}" in component_slice
+    assert "data-security-progressive-details-type={safeText(detailsHydration?.type || type, 'evidence')}" in component_slice
+
+    # Regression guard for the production crash: detailsHydrated/detailsHydration were
+    # originally destructured only inside buildDetails(), then referenced from the
+    # component JSX where they were out of scope.
+    build_details_slice = details.partition("function buildDetails")[2].partition("export default function SecurityProgressiveDetailsLazy")[0]
+    assert "detailsHydrated = false" in build_details_slice
+    assert "detailsHydration = {}" in build_details_slice
+    assert component_slice.count("const detailsHydrated") == 1
+    assert component_slice.count("const detailsHydration") == 1
+
 def test_lite_security_patch_e_profile_freshness_and_offline_details_contract():
     view_models = Path("src/lib/liteViewModels.js").read_text()
     security = Path("src/lite/LiteSecurity.jsx").read_text()
