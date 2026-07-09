@@ -226,7 +226,7 @@ def test_security_group7_frontend_instant_feedback_and_quiet_result_notice_contr
     assert "Pocket Lab is starting the safety check." in security
     assert "mergeSecurityAcceptedResult" in security
     assert "hasOptimisticSecurityProgress(result)" in security
-    assert "selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress)" in security
+    assert "selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId)" in security
     assert "<ResultNotice result={null} error={actionError} />" in security
     assert "<ResultNotice result={result} error={actionError} />" not in security
     assert "Request sent safely" in lite_ui  # generic notice remains available outside Security
@@ -266,7 +266,8 @@ def test_security_group7_hotfix_keeps_live_scan_out_of_saved_state_reconnect_ui(
     assert "const savedSecurityDetails = !scanInProgress" in security
     assert "const effectiveBackendReachable = backendReachable !== false || scanInProgress" in security
     assert "securityFlow.writeBlocked ? 'Reconnect'" in security
-    assert "scanInProgress ? (profile.id === latestScanProfile ? profile.running : 'Wait')" in security
+    assert "scanInProgress && profile.id === latestScanProfile ? profile.running" in security
+    assert "profile.running : 'Wait'" not in security
     assert "forceFallback = false" in hook
     assert "(!fallbackActive && !forceFallback)" in hook
     assert "SECURITY_PROGRESS_FALLBACK_MS = 3000" in hook
@@ -291,6 +292,70 @@ def test_security_group7_hotfix_prefers_live_progress_over_stale_optimistic_resu
 
     assert "function selectLiveSecurityProgress" in security
     assert "securityProgressData" in security
-    assert "const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress) : null;" in security
+    assert "const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId) : null;" in security
     assert "candidatePercent > bestPercent" in security
     assert "securityProgressTimestamp(candidate) >= securityProgressTimestamp(best)" in security
+
+
+
+def test_security_group7c_progress_fallback_stays_alive_for_active_local_run():
+    hook = SECURITY_EVENTS_HOOK.read_text()
+    security = LITE_SECURITY.read_text()
+
+    assert "activeRunId = ''" in hook
+    assert "localActive = false" in hook
+    assert "shouldKeepSecurityFallbackAlive" in hook
+    assert "securityEventMatchesActiveRun" in hook
+    assert "keepFallbackAlive" in hook
+    assert "setFallbackActive(true)" in hook
+    assert "activeRunId: result?.run_id" in security
+    assert "localActive: localSecurityProgressActive" in security
+
+
+def test_security_group7c_live_progress_render_binding_is_run_scoped():
+    security = LITE_SECURITY.read_text()
+
+    assert "function selectLiveSecurityProgress(resultProgress = null, liveProgress = null, fallbackProgress = null, expectedRunId = '')" in security
+    assert "const expectedRun = securityProgressRunKey(expectedRunId)" in security
+    assert "matchingCandidates" in security
+    assert "candidateIsLiveRead" in security
+    assert "security_progress_json" in security
+    assert "security_events_stream" in security
+    assert "const activeSecurityRunId" in security
+    assert "selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId)" in security
+
+
+def test_security_group7c_frontend_blocks_duplicate_scan_submits():
+    security = LITE_SECURITY.read_text()
+
+    assert "securityScanSubmitGuardRef" in security
+    assert "function securityScanAlreadyRunning" in security
+    assert "function blockDuplicateSecurityScan" in security
+    assert "A safety check is already running. Wait for it to finish before starting another one." in security
+    assert "if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }" in security
+    assert "securityScanSubmitGuardRef.current = true" in security
+    assert "securityScanSubmitGuardRef.current = false" in security
+
+
+def test_security_group7c_backend_dedupes_active_security_scan(tmp_path):
+    _prepare_state(tmp_path)
+    _queue_security_run(run_id="security-active-7c", profile="quick")
+
+    response = client().post("/api/lite/security/check", json={"profile": "quick"})
+    assert response.status_code == 202
+    payload = response.json()
+    assert payload["accepted"] is True
+    assert payload["duplicate"] is True
+    assert payload["already_running"] is True
+    assert payload["run_id"] == "security-active-7c"
+    assert payload["scan_profile"] == "quick"
+    assert payload["scan_progress"]["active_scan"] is True
+
+
+def test_security_group7c_no_caddy_restart_patch_needed_for_sse_client_cancel():
+    # Caddy log evidence showed EventSource client cancellation and SIGINT restarts,
+    # not a Caddyfile defect. Group 7C keeps the UI resilient with fallback polling
+    # instead of changing proxy topology.
+    hook = SECURITY_EVENTS_HOOK.read_text()
+    assert "shouldKeepSecurityFallbackAlive" in hook
+    assert "SECURITY_PROGRESS_FALLBACK_MS = 3000" in hook
