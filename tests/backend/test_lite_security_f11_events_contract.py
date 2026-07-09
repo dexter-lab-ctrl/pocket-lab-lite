@@ -214,3 +214,44 @@ def test_security_f11_frontend_execution_boundaries_are_preserved():
     assert "spawn(" not in combined
     assert "lynis" not in SECURITY_EVENTS_HOOK.read_text().lower()
     assert "trivy" not in SECURITY_EVENTS_HOOK.read_text().lower()
+
+
+
+def test_security_group7_frontend_instant_feedback_and_quiet_result_notice_contract():
+    security = LITE_SECURITY.read_text()
+    lite_ui = (ROOT / "src/lite/LiteUi.jsx").read_text()
+
+    assert "createOptimisticSecurityResult" in security
+    assert "Getting ready" in security
+    assert "Pocket Lab is starting the safety check." in security
+    assert "mergeSecurityAcceptedResult" in security
+    assert "hasOptimisticSecurityProgress(result)" in security
+    assert "result?.scan_progress || data?.scan_progress" in security
+    assert "<ResultNotice result={null} error={actionError} />" in security
+    assert "<ResultNotice result={result} error={actionError} />" not in security
+    assert "Request sent safely" in lite_ui  # generic notice remains available outside Security
+
+
+def test_security_group7_cross_tab_completion_broadcast_is_sanitized_and_focused():
+    hook = SECURITY_EVENTS_HOOK.read_text()
+    snapshots = (ROOT / "src/lib/liteSafeSnapshots.js").read_text()
+
+    assert "export function broadcastLiteSecurityScanCompleted" in snapshots
+    assert "LITE_SECURITY_SCAN_BROADCAST_CHANNEL" in snapshots
+    assert "LITE_SECURITY_SCAN_COMPLETED_EVENT" in snapshots
+    assert "type: LITE_SECURITY_SCAN_COMPLETED_EVENT" in snapshots
+    assert "profile," in snapshots
+    assert "run_id:" in snapshots
+    assert "completed_at:" in snapshots
+    assert "status:" in snapshots
+    assert "findings" not in snapshots.partition("function sanitizeSecurityScanCompletedPayload")[2].partition("export function subscribeLiteSecurityScanCompleted")[0]
+    assert "evidence_refs" not in snapshots.partition("function sanitizeSecurityScanCompletedPayload")[2].partition("export function subscribeLiteSecurityScanCompleted")[0]
+    assert "raw_output" not in snapshots.partition("function sanitizeSecurityScanCompletedPayload")[2].partition("export function subscribeLiteSecurityScanCompleted")[0]
+
+    assert "broadcastLiteSecurityScanCompleted" in hook
+    assert "source: 'security-events-stream'" in hook
+    assert "liteQueryKeys.securityProfile(profile)" in hook
+    assert "liteQueryKeys.securityHistory(historyLimit" in hook
+    assert "liteQueryKeys.catalog" not in hook
+    assert "liteQueryKeys.fleet" not in hook
+    assert "liteQueryKeys.recovery" not in hook

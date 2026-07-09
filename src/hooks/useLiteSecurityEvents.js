@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { liteApi } from '../lib/liteApi.js';
+import { broadcastLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
@@ -91,6 +92,16 @@ function progressPayloadFromEvent(event = {}) {
   };
 }
 
+function broadcastTerminalSecurityEvent(payload = {}) {
+  if (!terminalSecurityEvent(payload)) return null;
+  return broadcastLiteSecurityScanCompleted(payload.profile || 'quick', {
+    run_id: payload.run_id || '',
+    status: payload.status || 'completed',
+    completed_at: payload.updated_at || null,
+    updated_at: payload.updated_at || null,
+  }, { source: 'security-events-stream', requireTerminal: false });
+}
+
 function applySecurityEvent(queryClient, event, historyLimit = 20) {
   const payload = normalizeSecurityEvent(event);
   const profile = normalizeProfile(payload.profile);
@@ -107,6 +118,7 @@ function applySecurityEvent(queryClient, event, historyLimit = 20) {
   }
 
   if (terminalSecurityEvent(payload)) {
+    broadcastTerminalSecurityEvent(payload);
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityFreshness() });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
@@ -134,6 +146,8 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
   const profileValue = normalizeProfile(profile);
 
   useEffect(() => {
+    seenEventRef.current = false;
+    lastEventActiveRef.current = false;
     if (!enabled) {
       setFallbackActive(false);
       setEventState((state) => ({ ...state, status: 'idle', usingFallback: false }));

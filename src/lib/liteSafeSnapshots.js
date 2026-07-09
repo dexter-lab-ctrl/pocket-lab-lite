@@ -95,18 +95,29 @@ function isTerminalSecuritySnapshot(payload = {}) {
   return ['succeeded', 'success', 'completed', 'complete', 'done', 'failed', 'failure', 'error', 'blocked', 'review', 'needs_attention'].includes(status);
 }
 
-function postSecurityScanCompleted(profile = 'quick', payload = {}) {
-  if (!isTerminalSecuritySnapshot(payload)) return;
-  const detail = {
+function sanitizeSecurityScanCompletedPayload(profile = 'quick', payload = {}, source = 'liteSafeSnapshots') {
+  const latest = payload?.latest_run || {};
+  const completedAt = payload?.completed_at || latest.completed_at || payload?.updated_at || payload?.freshness?.checked_at || nowIso();
+  return {
     type: LITE_SECURITY_SCAN_COMPLETED_EVENT,
     profile,
-    run_id: payload?.run_id || payload?.latest_run?.run_id || '',
-    completed_at: payload?.completed_at || payload?.latest_run?.completed_at || payload?.updated_at || payload?.freshness?.checked_at || nowIso(),
-    saved_at: payload?.freshness?.saved_at || nowIso(),
-    source: 'liteSafeSnapshots',
+    run_id: payload?.run_id || latest.run_id || '',
+    completed_at: completedAt,
+    status: payload?.status || latest.status || 'completed',
+    source,
   };
+}
+
+export function broadcastLiteSecurityScanCompleted(profile = 'quick', payload = {}, { source = 'liteSafeSnapshots', requireTerminal = true } = {}) {
+  if (requireTerminal && !isTerminalSecuritySnapshot(payload)) return null;
+  const detail = sanitizeSecurityScanCompletedPayload(profile, payload, source);
   try { getSecurityBroadcastChannel()?.postMessage(detail); } catch { /* best effort cross-tab sync */ }
   try { window.dispatchEvent(new CustomEvent(LITE_SECURITY_SCAN_COMPLETED_EVENT, { detail })); } catch { /* best effort same-tab sync */ }
+  return detail;
+}
+
+function postSecurityScanCompleted(profile = 'quick', payload = {}) {
+  return broadcastLiteSecurityScanCompleted(profile, payload, { source: 'liteSafeSnapshots', requireTerminal: true });
 }
 
 export function subscribeLiteSecurityScanCompleted(callback) {
