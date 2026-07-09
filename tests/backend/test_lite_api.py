@@ -7222,3 +7222,70 @@ def test_lite_security_progressive_details_patch_d_contract():
     assert "exec(" not in security + details
     assert "spawn(" not in security + details
     assert "nats://" not in (security + details).lower()
+
+
+def test_lite_security_patch_e_profile_freshness_and_offline_details_contract():
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    details = Path("src/lite/security/SecurityProgressiveDetailsLazy.jsx").read_text()
+
+    assert "LITE_SECURITY_PROFILE_FRESHNESS_VERSION" in view_models
+    assert "selectSecurityProfileFreshnessView" in view_models
+    assert "profile_freshness" in view_models
+    assert "No saved check yet" in view_models
+    assert "freshness" in view_models
+
+    assert "SECURITY_PATCH_E_FRESHNESS_RETENTION_SYNC" in security
+    assert "activeProfileFreshness" in security
+    assert "data-security-patch-e-profile-freshness" in security
+    assert "data-security-patch-e-offline-details" in security
+    assert "Showing saved Security details" in security
+    assert "Reconnect to run a new check" in security
+    assert "savedSecurityDetails" in details
+    assert "offlineDetails" in details
+    assert "profile freshness appears in saved Security details" in details
+
+
+def test_lite_security_patch_e_snapshot_retention_and_size_budget_contract():
+    offline_db = Path("src/lib/liteOfflineDb.js").read_text()
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+
+    assert "LITE_SECURITY_SNAPSHOT_RETENTION_POLICY" in offline_db
+    assert "profileSnapshotLimit" in offline_db
+    assert "maxProfileSnapshotBytes" in offline_db
+    assert "maxHistorySnapshotBytes" in offline_db
+    assert "pruneSecurityProfileSnapshots" in offline_db
+    assert "security_profile_snapshot_too_large" in offline_db
+    assert "security_history_snapshot_too_large" in offline_db
+
+    assert "LITE_SECURITY_PROFILE_RETENTION_POLICY" in view_models
+    assert "profileEvidenceLimit" in view_models
+    assert "snapshot_budget" in view_models
+    assert "profileHistoryLimit" in view_models
+
+    assert "pruneLocalStorageSecuritySnapshots" in snapshots
+    assert "profileSnapshotLimit" in snapshots
+    assert "profileEvidenceLimit" in snapshots or "profileEvidenceLimit" in view_models
+    assert "readSecurityCompositeSnapshot" in snapshots
+
+
+def test_lite_security_patch_e_cross_tab_scan_completion_sync_contract():
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+
+    assert "LITE_SECURITY_SCAN_BROADCAST_CHANNEL" in snapshots
+    assert "LITE_SECURITY_SCAN_COMPLETED_EVENT" in snapshots
+    assert "BroadcastChannel" in snapshots
+    assert "security:scan-completed" in snapshots
+    assert "postSecurityScanCompleted" in snapshots
+    assert "subscribeLiteSecurityScanCompleted" in snapshots
+    assert "window.dispatchEvent" in snapshots
+    assert "subscribeLiteSecurityScanCompleted" in security
+    assert "liteQueryKeys.securityProfile(profile)" in security
+    assert "liteQueryKeys.securityHistory()" in security
+    assert "queryClient.invalidateQueries" in security
+
+    assert "nats.connect" not in snapshots + security
+    assert "child_process" not in snapshots + security
+    assert "exec(" not in snapshots + security

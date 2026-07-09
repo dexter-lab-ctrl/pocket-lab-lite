@@ -7,6 +7,14 @@ export const LITE_OFFLINE_REDACTION_VERSION = 1;
 export const LITE_OFFLINE_EVENT_LIMIT = 80;
 export const LITE_OFFLINE_SNAPSHOT_LIMIT = 24;
 export const LITE_OFFLINE_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+export const LITE_SECURITY_SNAPSHOT_RETENTION_POLICY = {
+  profileSnapshotLimit: 3,
+  profileHistoryLimit: 20,
+  profileEvidenceLimit: 5,
+  maxProfileSnapshotBytes: 48 * 1024,
+  maxHistorySnapshotBytes: 96 * 1024,
+  retentionMs: 14 * 24 * 60 * 60 * 1000,
+};
 
 let liteOfflineDb = null;
 let liteOfflineDbAvailability = null;
@@ -144,6 +152,17 @@ export async function writeOfflineSafeSnapshot({
   try {
     const db = getLiteOfflineDb();
     const normalizedEndpoint = normalizeOfflineEndpoint(endpoint);
+    const approximateSizeBytes = estimateSnapshotSizeBytes(payload);
+    if (normalizedEndpoint.includes('/api/lite/security/profiles/') && approximateSizeBytes > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxProfileSnapshotBytes) {
+      updateHealth({ cacheError: 'security_profile_snapshot_too_large' });
+      await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_rejected', detail: 'security profile snapshot too large' });
+      return false;
+    }
+    if (normalizedEndpoint === '/api/lite/security/history/index' && approximateSizeBytes > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes) {
+      updateHealth({ cacheError: 'security_history_snapshot_too_large' });
+      await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_rejected', detail: 'security history snapshot too large' });
+      return false;
+    }
     const snapshot = {
       key: liteSnapshotKeyForEndpoint(normalizedEndpoint),
       endpoint: normalizedEndpoint,
@@ -156,7 +175,7 @@ export async function writeOfflineSafeSnapshot({
       source,
       payload_kind: payloadKind,
       status,
-      approximate_size_bytes: estimateSnapshotSizeBytes(payload),
+      approximate_size_bytes: approximateSizeBytes,
     };
     await db.safe_snapshots.put(snapshot);
     updateHealth({ cacheAvailable: true, cacheError: '', lastCacheWriteAt: nowIso() });
@@ -235,6 +254,40 @@ export async function pruneOfflineSnapshotEvents(limit = LITE_OFFLINE_EVENT_LIMI
   }
 }
 
+
+async function pruneSecurityProfileSnapshots(db) {
+  const securitySnapshots = await db.safe_snapshots
+    .filter((snapshot) => String(snapshot.endpoint || '').startsWith('/api/lite/security/'))
+    .toArray();
+  const profileSnapshots = securitySnapshots.filter((snapshot) => String(snapshot.endpoint || '').includes('/profiles/'));
+  const historySnapshots = securitySnapshots.filter((snapshot) => snapshot.endpoint === '/api/lite/security/history/index');
+  const oversized = securitySnapshots.filter((snapshot) => {
+    const size = Number(snapshot.approximate_size_bytes || 0);
+    if (String(snapshot.endpoint || '').includes('/profiles/')) return size > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxProfileSnapshotBytes;
+    if (snapshot.endpoint === '/api/lite/security/history/index') return size > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes;
+    return false;
+  });
+  const profileGroups = profileSnapshots.reduce((groups, snapshot) => {
+    const profile = String(snapshot.endpoint || '').split('/').pop() || 'quick';
+    groups[profile] = groups[profile] || [];
+    groups[profile].push(snapshot);
+    return groups;
+  }, {});
+  const deletions = new Set(oversized.map((snapshot) => snapshot.key));
+  Object.values(profileGroups).forEach((items) => {
+    items
+      .sort((left, right) => String(right.saved_at || '').localeCompare(String(left.saved_at || '')))
+      .slice(LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.profileSnapshotLimit)
+      .forEach((snapshot) => deletions.add(snapshot.key));
+  });
+  historySnapshots
+    .sort((left, right) => String(right.saved_at || '').localeCompare(String(left.saved_at || '')))
+    .slice(1)
+    .forEach((snapshot) => deletions.add(snapshot.key));
+  if (deletions.size) await db.safe_snapshots.bulkDelete(Array.from(deletions));
+  if (deletions.size) await recordOfflineSnapshotEvent({ endpoint: '/api/lite/security', eventType: 'security_snapshot_pruned', detail: `${deletions.size} Security snapshot(s) pruned` });
+}
+
 export async function pruneExpiredOfflineSnapshots({
   retentionMs = LITE_OFFLINE_RETENTION_MS,
   maxSnapshots = LITE_OFFLINE_SNAPSHOT_LIMIT,
@@ -242,12 +295,22 @@ export async function pruneExpiredOfflineSnapshots({
   if (!(await checkLiteOfflineDbAvailability())) return false;
   try {
     const db = getLiteOfflineDb();
+    await pruneSecurityProfileSnapshots(db);
+    const securityRetentionMs = Math.max(retentionMs, LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.retentionMs);
     const retentionCutoff = new Date(Date.now() - retentionMs).toISOString();
+    const securityCutoff = new Date(Date.now() - securityRetentionMs).toISOString();
     const oldExpired = await db.safe_snapshots
       .where('expires_at')
       .below(retentionCutoff)
+      .filter((snapshot) => !String(snapshot.endpoint || '').startsWith('/api/lite/security/'))
+      .toArray();
+    const oldSecurityExpired = await db.safe_snapshots
+      .where('expires_at')
+      .below(securityCutoff)
+      .filter((snapshot) => String(snapshot.endpoint || '').startsWith('/api/lite/security/'))
       .toArray();
     if (oldExpired.length) await db.safe_snapshots.bulkDelete(oldExpired.map((snapshot) => snapshot.key));
+    if (oldSecurityExpired.length) await db.safe_snapshots.bulkDelete(oldSecurityExpired.map((snapshot) => snapshot.key));
 
     const count = await db.safe_snapshots.count();
     if (count > maxSnapshots) {
