@@ -741,6 +741,12 @@ async def rotate_lite_identity(payload: LiteIdentityRotateRequest, request: Requ
     )
 
 
+@router.get("/security/summary")
+def get_lite_security_summary(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_security.summary_state()
+
+
 @router.get("/security")
 def get_lite_security(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
@@ -750,6 +756,7 @@ def get_lite_security(request: Request) -> dict[str, Any]:
     state["protected_apps"] = profiles.get("apps", [])
     state["app_security_profiles"] = profiles
     state["app_lifecycle_profiles"] = lifecycle
+    state["details_payload"] = True
     return state
 
 

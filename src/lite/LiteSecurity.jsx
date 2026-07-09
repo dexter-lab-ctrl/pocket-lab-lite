@@ -1699,6 +1699,9 @@ export default function SecurityScreen() {
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [activeSecurityDetails, setActiveSecurityDetails] = useState(null);
+  const [securityManageOpen, setSecurityManageOpen] = useState(false);
+  const [securityManageSection, setSecurityManageSection] = useState('overview');
   const queryClient = useQueryClient();
   const [selectedScanProfile, setSelectedScanProfile] = useState(null);
   const securityPollingProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
@@ -1709,16 +1712,17 @@ export default function SecurityScreen() {
     const policy = securityPollingPolicy(payload);
     return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
   }, [busy, result, securityPollingPolicy]);
+  const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
   const {
-    data,
+    data: securitySummaryData,
     loading,
     error,
     refresh,
-    refreshing,
+    refreshing: summaryRefreshing,
     backendReachable,
     savedStateOnly,
     cacheStatus,
-  } = useLiteResource(liteApi.security, [], {
+  } = useLiteResource(liteApi.securitySummary || liteApi.security, [], {
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
     staleTime: 120_000,
@@ -1733,6 +1737,28 @@ export default function SecurityScreen() {
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
+  const {
+    data: securityDetailsData,
+    refreshing: detailsRefreshing,
+    refresh: refreshSecurityDetails,
+  } = useLiteResource(liteApi.securityDetails || liteApi.security, [], {
+    enabled: shouldLoadSecurityDetails,
+    pollingMode: 'relaxed',
+    isLive: securityPollingIsLive,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: (query) => {
+      if (!shouldLoadSecurityDetails) return false;
+      const current = query?.state?.data;
+      if (!current) return true;
+      return securityPollingIsLive(current);
+    },
+    placeholderData: (previousData) => previousData,
+    select: selectSecurityScreenView,
+    snapshotSelect: selectSecurityScreenView,
+  });
+  const data = securityDetailsData || securitySummaryData;
+  const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && detailsRefreshing);
 
   useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
     if (event?.type && event.type !== 'security:scan-completed') return;
@@ -1767,9 +1793,6 @@ export default function SecurityScreen() {
   const [progressNow, setProgressNow] = useState(() => Date.now());
   const [remediationFinding, setRemediationFinding] = useState(null);
   const [selectedFinding, setSelectedFinding] = useState(null);
-  const [activeSecurityDetails, setActiveSecurityDetails] = useState(null);
-  const [securityManageOpen, setSecurityManageOpen] = useState(false);
-  const [securityManageSection, setSecurityManageSection] = useState('overview');
   const [fullLocalConfirmOpen, setFullLocalConfirmOpen] = useState(false);
   const [appCheckConfirmOpen, setAppCheckConfirmOpen] = useState(false);
   const [appCheckTarget, setAppCheckTarget] = useState({ app_id: 'photoprism', app_label: 'PhotoPrism' });
@@ -2023,6 +2046,7 @@ export default function SecurityScreen() {
     const normalizedProfile = normalizeSecurityProfileId(profile || 'quick');
     [
       liteQueryKeys.security(),
+      liteQueryKeys.securityDetails(),
       liteQueryKeys.securityProfile(normalizedProfile),
       liteQueryKeys.securityHistory(),
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
@@ -2217,6 +2241,9 @@ export default function SecurityScreen() {
     triggerHapticFeedback(6);
     securityDetailsTriggerRef.current = event?.currentTarget || null;
     setSecurityManageOpen(true);
+    if (typeof refreshSecurityDetails === 'function') {
+      refreshSecurityDetails().catch(() => {});
+    }
   }
 
   function closeSecurityManage() {
