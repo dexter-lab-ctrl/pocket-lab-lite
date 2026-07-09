@@ -20083,3 +20083,30 @@ textarea {
     transform: none;
   }
 }
+
+/* Security Group 1 F4/F5/F6/F13 instant-feel frontend bundle */
+.lite-security-refresh-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(14, 165, 233, 0.22);
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.09);
+  color: #075985;
+  font-weight: 800;
+}
+
+.lite-security-refresh-status-chip::before {
+  content: '';
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-refresh-status-chip {
+    transition: none;
+  }
+}

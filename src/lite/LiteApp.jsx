@@ -13,6 +13,10 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus.js';
 import { useLiteResource, useLiteStatus } from '../hooks/useLiteStatus.js';
 import { liteApi } from '../lib/liteApi.js';
 import { liteQueryClient } from '../lib/liteQueryClient.js';
+import {
+  SECURITY_PREFETCH_SETTLE_MS,
+  prefetchSecuritySummary,
+} from './security/securityPreload.js';
 import HomeScreen from './LiteHome.jsx';
 import CatalogScreen from './LiteCatalog.jsx';
 import IdentityScreen from './LiteIdentity.jsx';
@@ -412,6 +416,8 @@ function LiteAppShell() {
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
   const online = useOnlineStatus();
   const { status, loading, error, refresh, cacheStatus, refreshing } = useLiteStatus();
+  const backendHealthyForPrefetch = online && !error && !loading && !workspaceApp && String(status?.overall || '').toLowerCase() !== 'unavailable';
+
 
   useEffect(() => {
     const syncWorkspaceFromHistory = () => {
@@ -420,6 +426,25 @@ function LiteAppShell() {
     window.addEventListener('popstate', syncWorkspaceFromHistory);
     return () => window.removeEventListener('popstate', syncWorkspaceFromHistory);
   }, []);
+
+  useEffect(() => {
+    if (active === 'security' || !backendHealthyForPrefetch) return undefined;
+    const timer = window.setTimeout(() => {
+      prefetchSecuritySummary(liteQueryClient, {
+        backendHealthy: backendHealthyForPrefetch,
+        activeScan: false,
+      });
+    }, SECURITY_PREFETCH_SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [active, backendHealthyForPrefetch]);
+
+  const warmSecurityOnNavIntent = (tabId) => {
+    if (tabId !== 'security') return;
+    prefetchSecuritySummary(liteQueryClient, {
+      backendHealthy: backendHealthyForPrefetch,
+      activeScan: false,
+    });
+  };
 
   const openWorkspace = (app, openUrl) => {
     const appId = app?.id || app?.app_id;
@@ -509,7 +534,7 @@ function LiteAppShell() {
           const Icon = item.icon;
           const isActive = active === item.id;
           return (
-            <button key={item.id} type="button" onClick={() => setActiveTab(item.id)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
+            <button key={item.id} type="button" onPointerEnter={() => warmSecurityOnNavIntent(item.id)} onFocus={() => warmSecurityOnNavIntent(item.id)} onTouchStart={() => warmSecurityOnNavIntent(item.id)} onClick={() => setActiveTab(item.id)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon relative z-10 h-5 w-5" />
               <span className="relative z-10 mt-1 text-[0.68rem] font-bold tracking-wide">{item.label.split(' ')[0]}</span>
             </button>
@@ -522,7 +547,7 @@ function LiteAppShell() {
           const Icon = item.icon;
           const isActive = active === item.id;
           return (
-            <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : setActiveTab(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
+            <button key={item.id} type="button" onPointerEnter={() => warmSecurityOnNavIntent(item.id)} onFocus={() => warmSecurityOnNavIntent(item.id)} onTouchStart={() => warmSecurityOnNavIntent(item.id)} onClick={() => workspaceApp ? navigateToTab(item.id) : setActiveTab(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon h-5 w-5" />
             </button>
           );
@@ -542,7 +567,7 @@ function LiteAppShell() {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
-              <button key={item.id} type="button" onClick={() => workspaceApp ? navigateToTab(item.id) : (setActiveTab(item.id), setMenuOpen(false))} className="mobile-more-item nav-active-rail-item">
+              <button key={item.id} type="button" onPointerEnter={() => warmSecurityOnNavIntent(item.id)} onFocus={() => warmSecurityOnNavIntent(item.id)} onTouchStart={() => warmSecurityOnNavIntent(item.id)} onClick={() => workspaceApp ? navigateToTab(item.id) : (setActiveTab(item.id), setMenuOpen(false))} className="mobile-more-item nav-active-rail-item">
                 <Icon className="nav-active-rail-icon h-5 w-5" />
                 <span>{item.label}</span>
               </button>

@@ -26,6 +26,7 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/apps/photoprism/actions',
   '/api/lite/fleet',
   '/api/lite/security',
+  '/api/lite/security/summary',
   '/api/lite/security/profiles/quick',
   '/api/lite/security/profiles/full',
   '/api/lite/security/profiles/app',
@@ -39,6 +40,7 @@ export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/catalog': 8 * 60 * 1000,
   '/api/lite/apps/photoprism/actions': 8 * 60 * 1000,
   '/api/lite/security': 20 * 60 * 1000,
+  '/api/lite/security/summary': 20 * 60 * 1000,
   '/api/lite/security/profiles/quick': 60 * 60 * 1000,
   '/api/lite/security/profiles/full': 60 * 60 * 1000,
   '/api/lite/security/profiles/app': 60 * 60 * 1000,
@@ -56,6 +58,8 @@ const MAX_STRING_LENGTH = 1200;
 const MAX_SCAN_DEPTH = 8;
 const inMemorySnapshots = new Map();
 const SECURITY_SNAPSHOT_ENDPOINT = '/api/lite/security';
+const SECURITY_SUMMARY_SNAPSHOT_ENDPOINT = '/api/lite/security/summary';
+const SECURITY_SNAPSHOT_ENDPOINTS = new Set([SECURITY_SNAPSHOT_ENDPOINT, SECURITY_SUMMARY_SNAPSHOT_ENDPOINT]);
 const SECURITY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/security/history/index';
 const SECURITY_PROFILE_SNAPSHOT_ENDPOINTS = LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
   items[profile] = `/api/lite/security/profiles/${profile}`;
@@ -374,7 +378,7 @@ function readSnapshotPayloadWithoutMeta(path = '') {
 }
 
 function writeSecurityProfileSnapshots(sourcePath = '', payload = null, sourceRecord = null) {
-  if (normalizeLiteSnapshotPath(sourcePath) !== SECURITY_SNAPSHOT_ENDPOINT || !payload || typeof payload !== 'object') return;
+  if (!SECURITY_SNAPSHOT_ENDPOINTS.has(normalizeLiteSnapshotPath(sourcePath)) || !payload || typeof payload !== 'object') return;
   try {
     const screenSnapshot = selectSecurityScreenSnapshotView(payload);
     const profiles = selectSecurityProfileSnapshotViews(screenSnapshot);
@@ -415,7 +419,7 @@ function writeSecurityProfileSnapshots(sourcePath = '', payload = null, sourceRe
   }
 }
 
-function readSecurityCompositeSnapshot() {
+function readSecurityCompositeSnapshot(requestPath = SECURITY_SUMMARY_SNAPSHOT_ENDPOINT) {
   const securityProfiles = {};
   const profileLatest = {};
   let newestTimestamp = 0;
@@ -481,11 +485,11 @@ function readSecurityCompositeSnapshot() {
   };
   return withMeta(composite, {
     source: 'cache',
-    path: SECURITY_SNAPSHOT_ENDPOINT,
+    path: requestPath,
     stale: true,
     savedAt,
     checkedAt: savedAt,
-    expiresAt: addMsIso(savedAt, ttlForLiteSnapshotPath(SECURITY_SNAPSHOT_ENDPOINT)),
+    expiresAt: addMsIso(savedAt, ttlForLiteSnapshotPath(requestPath)),
     payloadKind: 'lite-security-composite-profile-summary',
     status: 'saved',
   });
@@ -538,8 +542,8 @@ export function readLiteSnapshot(path = '') {
   if (memory) return withMeta(memory.payload, { ...memory, path: normalizedPath, source: 'cache' });
   const local = readLocalStorageSnapshot(normalizedPath);
   if (local) return local;
-  if (normalizedPath === SECURITY_SNAPSHOT_ENDPOINT) {
-    const securityComposite = readSecurityCompositeSnapshot();
+  if (SECURITY_SNAPSHOT_ENDPOINTS.has(normalizedPath)) {
+    const securityComposite = readSecurityCompositeSnapshot(normalizedPath);
     if (securityComposite) return securityComposite;
   }
   hydrateLiteSnapshotsFromDexie();
