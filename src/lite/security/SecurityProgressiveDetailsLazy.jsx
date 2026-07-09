@@ -19,6 +19,14 @@ const SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS = [
 ];
 void SECURITY_DETAILS_PREMIUM_POLISH_V5_SOURCE_GUARDS;
 
+const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
+  'SECURITY_PROGRESSIVE_DETAILS_PATCH_D',
+  'detailsHydration',
+  'coverage rows mount only inside focused details',
+  'history rows mount only inside focused details',
+];
+void SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS;
+
 function useReducedMotionPreference() {
   const [reduced, setReduced] = useState(false);
 
@@ -130,6 +138,8 @@ function buildDetails({ type, model = {} }) {
     timedOutCoverageTargets = [],
     missingCoverageTargets = [],
     targetCoverageStatuses = [],
+    detailsHydrated = false,
+    detailsHydration = {},
   } = model;
 
   if (type === 'changes') {
@@ -198,8 +208,9 @@ function buildDetails({ type, model = {} }) {
   if (type === 'coverage') {
     const profile = safeText(scanProfile, 'quick').toLowerCase();
     const fullProfile = profile === 'full';
-    const checked = safeList(checkedCoverageTargets, fullProfile ? ['Termux host', 'Pocket Lab Lite', 'Runtime config', 'PROot Ubuntu', 'PhotoPrism', 'Backup metadata'] : ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state']);
-    const skipped = safeList(skippedCoverageTargets, fullProfile ? ['Photo library/media', 'Android shared storage', 'Backup payloads', 'Restic repository contents', 'PM2 logs', 'Go/npm/tool caches'] : ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
+    const appProfile = profile === 'app';
+    const checked = safeList(checkedCoverageTargets, appProfile ? ['PhotoPrism route', 'App files', 'App settings', 'Backup metadata', 'Action state'] : fullProfile ? ['Termux host', 'Pocket Lab Lite', 'Runtime config', 'PROot Ubuntu', 'PhotoPrism', 'Backup metadata'] : ['Termux host posture', 'Pocket Lab Lite files', 'Caddy route config', 'NATS config posture', 'Services summary', 'Security evidence state']);
+    const skipped = safeList(skippedCoverageTargets, appProfile ? ['Photos and originals', 'Import media', 'Thumbnails and sidecars', 'PhotoPrism database', 'Backup payloads', 'Logs and caches'] : fullProfile ? ['Photo library/media', 'Android shared storage', 'Backup payloads', 'Restic repository contents', 'PM2 logs', 'Go/npm/tool caches'] : ['Photo library/media', 'Backup payloads', 'PROot Ubuntu full filesystem', 'Go/npm/cache folders', 'Old PWA builds', 'Large runtime histories']);
     const partial = safeList(partialCoverageTargets);
     const timedOut = safeList(timedOutCoverageTargets);
     const missing = safeList(missingCoverageTargets);
@@ -207,20 +218,27 @@ function buildDetails({ type, model = {} }) {
       ? targetCoverageStatuses.slice(0, 8).map((item) => `${safeText(item?.target_label || item?.target_id, 'Security target')} · ${safeText(item?.status || 'unknown', 'unknown')}`)
       : [];
     return {
-      title: fullProfile ? 'Full Local Check coverage' : 'Quick safety coverage',
+      title: appProfile ? 'App Check coverage' : fullProfile ? 'Full Local Check coverage' : 'Quick safety coverage',
       status: partial.length || timedOut.length ? 'review' : 'ready',
       statusLabel: `Profile: ${safeText(scanProfile, 'quick')}`,
-      summary: fullProfile
-        ? 'Full Local Check checks this device more deeply while still skipping photos, backup payloads, logs, Android shared storage, and large caches.'
-        : 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
+      summary: appProfile
+        ? 'App Check focuses on PhotoPrism route, app metadata, settings, backup metadata, and action state while skipping photos and media.'
+        : fullProfile
+          ? 'Full Local Check checks this device more deeply while still skipping photos, backup payloads, logs, Android shared storage, and large caches.'
+          : 'Quick Safety Check checks Pocket Lab basics and skips huge or private areas by default.',
       what_happened: [
-        fullProfile ? 'Pocket Lab used the full local scan profile.' : 'Pocket Lab used the quick scan profile.',
+        appProfile ? 'Pocket Lab used the app scan profile.' : fullProfile ? 'Pocket Lab used the full local scan profile.' : 'Pocket Lab used the quick scan profile.',
         ...checked.map((item) => `Checked: ${item}`),
         ...targetRows,
       ],
       what_changed: ['Opening this coverage view did not start a scan or change the device.'],
       what_needs_attention: [...partial.map((item) => `Partial: ${item}`), ...timedOut.map((item) => `Timed out: ${item}`), ...missing.map((item) => `Missing optional target: ${item}`)],
-      what_did_not_happen: fullProfile ? [
+      what_did_not_happen: appProfile ? [
+        'Photos, originals, imports, thumbnails, sidecars, and media files were not scanned.',
+        'PhotoPrism media indexing was not started.',
+        'Backup payloads and raw logs were not scanned.',
+        'The browser did not access PhotoPrism internals.',
+      ] : fullProfile ? [
         'Photo libraries and user media were not scanned.',
         'Backup payloads and restic repository contents were not scanned.',
         'Android shared storage was not scanned.',
@@ -236,7 +254,7 @@ function buildDetails({ type, model = {} }) {
         backend_only: true,
         summary: 'Coverage metadata is saved with sanitized evidence. Raw scanner output stays backend-owned.',
       },
-      next_step: partial.length || timedOut.length ? 'Run the check again while charging, then review any timed-out or partial targets.' : fullProfile ? 'Use Full Local Check after major updates or route/security changes.' : 'Use Quick Safety Check daily for a fast safety signal.',
+      next_step: partial.length || timedOut.length ? 'Run the check again while charging, then review any timed-out or partial targets.' : appProfile ? 'Use App Check after PhotoPrism settings, route, or backup changes.' : fullProfile ? 'Use Full Local Check after major updates or route/security changes.' : 'Use Quick Safety Check daily for a fast safety signal.',
       technicalDetails: [
         { label: 'Profile', value: safeText(scanProfile, 'quick') },
         { label: 'Checked targets', value: checked.length },
@@ -244,9 +262,9 @@ function buildDetails({ type, model = {} }) {
         { label: 'Excluded groups', value: Array.isArray(coverageSummary.excluded_groups) ? coverageSummary.excluded_groups.length : 0 },
       ],
       history: {
-        title: fullProfile ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check',
-        summary: fullProfile ? 'These areas are intentionally skipped to protect private data and keep the deeper check bounded.' : 'These areas are intentionally skipped to keep daily checks bounded on mobile devices.',
-        items: skipped.map((title, index) => ({ id: `coverage-skip-${index}`, title, meta: fullProfile ? 'skipped by full profile' : 'skipped by quick profile' })),
+        title: appProfile ? 'Skipped by App Check' : fullProfile ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check',
+        summary: appProfile ? 'These areas are intentionally skipped so App Check stays private, fast, and app-focused.' : fullProfile ? 'These areas are intentionally skipped to protect private data and keep the deeper check bounded.' : 'These areas are intentionally skipped to keep daily checks bounded on mobile devices.',
+        items: skipped.map((title, index) => ({ id: `coverage-skip-${index}`, title, meta: appProfile ? 'skipped by app profile' : fullProfile ? 'skipped by full profile' : 'skipped by quick profile' })),
         enabled: true,
         emptyMessage: 'No skipped targets were reported.',
       },
@@ -330,6 +348,8 @@ function buildDetails({ type, model = {} }) {
         { label: 'Backend reachable', value: backendReachable === false ? 'No' : 'Yes' },
         { label: 'Latest run', value: shortId(lastRun?.run_id) || 'not available' },
         { label: 'Evidence refs', value: Number(evidenceFileCount || currentEvidenceRefs.length || 0) },
+        { label: 'Details hydrated', value: detailsHydrated ? 'Yes' : 'No' },
+        { label: 'Detail type', value: safeText(detailsHydration?.type || type, 'not open') },
       ],
     };
   }
@@ -425,6 +445,8 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
       aria-label={`${details.title} details`}
       data-security-phase2-progressive-details="true"
       data-security-react-spring="details-panel"
+      data-security-progressive-details-hydrated={detailsHydrated ? 'true' : 'false'}
+      data-security-progressive-details-type={safeText(detailsHydration?.type || type, 'evidence')}
       style={detailsPanelSpring}
     >
       <div className="lite-security-phase2-details-head lite-security-details-premium-head">

@@ -1643,6 +1643,29 @@ function SecurityScanQualityCard({ quality, collapsed = false, onToggle }) {
 
 export const SECURITY_POLLING_POLICY_PHASE5 = 'SECURITY_POLLING_POLICY_PHASE5';
 
+const SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS = [
+  'SECURITY_PROGRESSIVE_DETAILS_PATCH_D',
+  'securityDetailNeedsHeavyModel',
+  'details panels hydrate only after user opens them',
+  'data-security-progressive-details-hydrated',
+  'lite-security-execution-${securityExecutionStateTone(step.state)}',
+];
+void SECURITY_PROGRESSIVE_DETAILS_PATCH_D_GUARDS;
+
+const SECURITY_PROGRESSIVE_DETAIL_TYPES = new Set(['changes', 'attention', 'coverage', 'checkPath', 'evidence', 'history', 'technical_details']);
+
+function securityDetailNeedsHeavyModel(type, group) {
+  const detailType = String(type || '').trim();
+  if (!SECURITY_PROGRESSIVE_DETAIL_TYPES.has(detailType)) return false;
+  if (!group) return true;
+  if (group === 'coverage') return detailType === 'coverage';
+  if (group === 'timeline') return detailType === 'checkPath' || detailType === 'technical_details';
+  if (group === 'evidence') return detailType === 'evidence' || detailType === 'technical_details';
+  if (group === 'history') return detailType === 'history';
+  if (group === 'findings') return detailType === 'changes' || detailType === 'attention';
+  return true;
+}
+
 export function hasLiveSecurityOperation(payload) {
   if (!payload || typeof payload !== 'object') return false;
   const scanProgress = payload.scan_progress || payload.progress || {};
@@ -2209,38 +2232,69 @@ export default function SecurityScreen() {
   }
 
 
-  const securityProgressiveDetailsModel = {
-    findingDelta: activeProfileIsLatest ? findingDelta : {},
-    deltaStats: activeProfileIsLatest ? deltaStats : [],
-    deltaPreview: activeProfileIsLatest ? deltaPreview : [],
-    allReviewFindings: activeProfileIsLatest ? allReviewFindings : [],
-    executionSteps,
-    executionLiveLabelAligned,
+  const progressiveDetailsType = activeSecurityDetails || null;
+  const progressiveDetailsHydrated = Boolean(progressiveDetailsType);
+  const hydrateCoverageDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'coverage');
+  const hydrateTimelineDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'timeline');
+  const hydrateEvidenceDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'evidence');
+  const hydrateHistoryDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'history');
+  const hydrateFindingDetails = securityDetailNeedsHeavyModel(progressiveDetailsType, 'findings');
+
+  const securityProgressiveDetailsModel = progressiveDetailsHydrated ? {
+    detailsHydrated: true,
+    detailsHydration: {
+      type: progressiveDetailsType,
+      profile: scanProfile,
+      coverage: hydrateCoverageDetails,
+      timeline: hydrateTimelineDetails,
+      evidence: hydrateEvidenceDetails,
+      history: hydrateHistoryDetails,
+      findings: hydrateFindingDetails,
+    },
+    findingDelta: hydrateFindingDetails && activeProfileIsLatest ? findingDelta : {},
+    deltaStats: hydrateFindingDetails && activeProfileIsLatest ? deltaStats : [],
+    deltaPreview: hydrateFindingDetails && activeProfileIsLatest ? deltaPreview : [],
+    allReviewFindings: hydrateFindingDetails && activeProfileIsLatest ? allReviewFindings : [],
+    executionSteps: hydrateTimelineDetails ? executionSteps : [],
+    executionLiveLabelAligned: hydrateTimelineDetails ? executionLiveLabelAligned : '',
     latestEvidenceReceipt,
-    evidenceReceipt,
-    currentEvidenceRefs,
+    evidenceReceipt: hydrateEvidenceDetails ? evidenceReceipt : null,
+    currentEvidenceRefs: hydrateEvidenceDetails ? currentEvidenceRefs : [],
     toolNames,
-    sbomSaved,
-    evidenceFileCount,
+    sbomSaved: hydrateEvidenceDetails ? sbomSaved : false,
+    evidenceFileCount: hydrateEvidenceDetails ? evidenceFileCount : 0,
     safetyScore,
     safetyLabel,
     lastRun: activeProfileRun,
     selectedScanProfile: scanProfile,
     savedStateOnly,
     backendReachable,
-    securityHistory: profileHistory.length ? profileHistory : securityHistory,
-    latestHistory,
-    previousHistory,
-    scoreTrendView,
+    securityHistory: hydrateHistoryDetails ? (profileHistory.length ? profileHistory : securityHistory) : [],
+    latestHistory: hydrateHistoryDetails ? latestHistory : null,
+    previousHistory: hydrateHistoryDetails ? previousHistory : null,
+    scoreTrendView: hydrateHistoryDetails ? scoreTrendView : null,
     scanProgressLabel,
     scanProfile,
-    coverageSummary,
-    checkedCoverageTargets,
-    skippedCoverageTargets,
-    partialCoverageTargets,
-    timedOutCoverageTargets,
-    missingCoverageTargets,
-    targetCoverageStatuses,
+    coverageSummary: hydrateCoverageDetails ? coverageSummary : {},
+    checkedCoverageTargets: hydrateCoverageDetails ? checkedCoverageTargets : [],
+    skippedCoverageTargets: hydrateCoverageDetails ? skippedCoverageTargets : [],
+    partialCoverageTargets: hydrateCoverageDetails ? partialCoverageTargets : [],
+    timedOutCoverageTargets: hydrateCoverageDetails ? timedOutCoverageTargets : [],
+    missingCoverageTargets: hydrateCoverageDetails ? missingCoverageTargets : [],
+    targetCoverageStatuses: hydrateCoverageDetails ? targetCoverageStatuses : [],
+  } : {
+    detailsHydrated: false,
+    detailsHydration: { type: null, profile: scanProfile },
+    lastRun: activeProfileRun,
+    selectedScanProfile: scanProfile,
+    scanProfile,
+    safetyScore,
+    safetyLabel,
+    savedStateOnly,
+    backendReachable,
+    latestEvidenceReceipt,
+    toolNames,
+    scanProgressLabel,
   };
 
   const activeSecurityDetailsMeta = securityDetailShellMeta(activeSecurityDetails);
@@ -2575,56 +2629,32 @@ export default function SecurityScreen() {
           ) : null}
 
           {activeManageSection === 'coverage' ? (
-            <div className="lite-security-manage-card-list lite-security-quick-coverage-card">
+            <div className="lite-security-manage-card-list lite-security-quick-coverage-card" data-security-progressive-details-summary-first="coverage">
               <div className="lite-security-manage-row">
                 <div>
                   <strong>{scanProfile === 'app' ? `${coverageSummary.app_label || 'PhotoPrism'} App Check coverage` : scanProfile === 'full' ? 'Full Local Check coverage' : 'Quick safety check coverage'}</strong>
-                  <p>{scanProfile === 'app' ? 'Checks PhotoPrism route, app files, settings, backup metadata, and action state while skipping photos, media, databases, backup payloads, logs, and large caches.' : scanProfile === 'full' ? 'Checks Termux, Pocket Lab, selected PROot Ubuntu areas, PhotoPrism app/config, route metadata, service status, and backup metadata while skipping heavy/private data.' : 'Checks Pocket Lab basics and skips photos, backups, large caches, old builds, and full device filesystems.'}</p>
+                  <p>{scanProfile === 'app' ? 'Compact coverage summary is shown here. Full App Check coverage loads only after you open details.' : scanProfile === 'full' ? 'Compact coverage summary is shown here. Full Local Check rows load only after you open details.' : 'Compact coverage summary is shown here. Quick Safety Check rows load only after you open details.'}</p>
                 </div>
                 <span className="lite-security-quick-profile-chip">Profile: {activeProfileMeta.chip}</span>
               </div>
-              <QuickCoverageRows
-                title="Checked"
-                items={checkedCoverageTargets}
-                statusLabel="Checked"
-                statusTone="ready"
-              />
-              {partialCoverageTargets.length ? (
-                <QuickCoverageRows
-                  title="Partial"
-                  items={partialCoverageTargets}
-                  statusLabel="Partial"
-                  statusTone="review"
-                />
-              ) : null}
-              {timedOutCoverageTargets.length ? (
-                <QuickCoverageRows
-                  title="Timed out"
-                  items={timedOutCoverageTargets}
-                  statusLabel="Timed out"
-                  statusTone="review"
-                />
-              ) : null}
-              {missingCoverageTargets.length ? (
-                <QuickCoverageRows
-                  title="Missing optional targets"
-                  items={missingCoverageTargets}
-                  statusLabel="Missing"
-                  statusTone="review"
-                />
-              ) : null}
-              <SecurityTargetStatusRows targetStatuses={targetCoverageStatuses} />
-              <QuickCoverageRows
-                title={scanProfile === 'app' ? 'Skipped by App Check' : scanProfile === 'full' ? 'Skipped by Full Local Check' : 'Skipped by Quick Safety Check'}
-                items={skippedCoverageTargets}
-                statusLabel="Skipped"
-                statusTone="neutral"
-              />
+              <div className="lite-security-manage-stat-grid" aria-label="Security coverage summary counts">
+                <div className="lite-security-manage-stat"><span>Checked</span><strong>{checkedCoverageTargets.length}</strong></div>
+                <div className="lite-security-manage-stat"><span>Partial</span><strong>{partialCoverageTargets.length}</strong></div>
+                <div className="lite-security-manage-stat"><span>Missing</span><strong>{missingCoverageTargets.length}</strong></div>
+                <div className="lite-security-manage-stat"><span>Skipped</span><strong>{skippedCoverageTargets.length}</strong></div>
+              </div>
+              <div className="lite-security-manage-row">
+                <div>
+                  <strong>Progressive details</strong>
+                  <p>Target rows, skipped groups, and optional missing targets mount only inside the focused details panel.</p>
+                </div>
+                <button type="button" className="lite-security-coverage-toggle" aria-label="Open Security coverage details" onClick={(event) => openSecurityDetailFromManage('coverage', event)}>Open coverage</button>
+              </div>
             </div>
           ) : null}
 
           {activeManageSection === 'check_path' ? (
-            <div className="lite-security-manage-card-list">
+            <div className="lite-security-manage-card-list" data-security-progressive-details-summary-first="check-path">
               <div className="lite-security-manage-row">
                 <div>
                   <strong>{executionTimelineLive ? 'Checking safety' : 'Last check path'}</strong>
@@ -2632,20 +2662,13 @@ export default function SecurityScreen() {
                 </div>
                 <button type="button" className="lite-security-coverage-toggle" aria-label="Show Security check path details" onClick={(event) => openSecurityDetailFromManage('checkPath', event)}>Show check path</button>
               </div>
-              <div className="lite-security-execution-timeline lite-security-phase5-compact-path" role="list" aria-label="Compact Security check path">
-                {executionSteps.map((step, index) => (
-                  <div key={step.key} className={`lite-security-execution-step lite-security-execution-${securityExecutionStateTone(step.state)} ${step.state === 'active' ? 'lite-security-execution-step-active lite-security-phase4-step-handoff' : ''}`} role="listitem" aria-current={step.state === 'active' ? 'step' : undefined}>
-                    <span>{securityExecutionStepGlyph(step, index)}</span>
-                    <div>
-                      <div className="lite-security-execution-step-head">
-                        <strong>{step.title}</strong>
-                        {step.state !== 'waiting' ? <span className={`lite-security-execution-pill lite-security-execution-pill-${step.state}`}>{securityExecutionStepLabel(step.state)}</span> : null}
-                      </div>
-                      <p>{step.detail}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="lite-security-manage-stat-grid" aria-label="Security check path summary">
+                <div className="lite-security-manage-stat"><span>Steps</span><strong>{executionSteps.length}</strong></div>
+                <div className="lite-security-manage-stat"><span>Owner</span><strong>Backend</strong></div>
+                <div className="lite-security-manage-stat"><span>Tools</span><strong>{toolNames.join(' + ')}</strong></div>
+                <div className="lite-security-manage-stat"><span>Evidence</span><strong>{evidenceStatusLabel}</strong></div>
               </div>
+              <div className="lite-security-safe-panel"><FileCheck className="h-4 w-4" /><span>Timeline rows load inside details so the main Security view stays snappy.</span></div>
             </div>
           ) : null}
 
