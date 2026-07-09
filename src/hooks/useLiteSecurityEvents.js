@@ -31,6 +31,25 @@ function normalizeProfile(profile = 'quick') {
   return ['quick', 'full', 'app'].includes(value) ? value : 'quick';
 }
 
+function securityRunKey(value = '') {
+  return String(value || '').trim();
+}
+
+function securityEventMatchesActiveRun(event = {}, activeRunId = '') {
+  const expected = securityRunKey(activeRunId);
+  if (!expected) return false;
+  const actual = securityRunKey(event.run_id || event.command_id || event.job_id || '');
+  return Boolean(actual && actual === expected);
+}
+
+function shouldKeepSecurityFallbackAlive(event = {}, { forceFallback = false, localActive = false, activeRunId = '' } = {}) {
+  if (!forceFallback && !localActive) return false;
+  if (liveSecurityEvent(event)) return true;
+  if (!terminalSecurityEvent(event)) return Boolean(forceFallback || localActive);
+  if (!localActive) return false;
+  return !securityEventMatchesActiveRun(event, activeRunId);
+}
+
 function terminalSecurityEvent(event = {}) {
   const type = String(event.type || '').toLowerCase();
   const status = String(event.status || '').toLowerCase();
@@ -136,7 +155,7 @@ async function loadProgressFallback(queryClient, historyLimit) {
   }, historyLimit);
 }
 
-export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20, forceFallback = false } = {}) {
+export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20, forceFallback = false, activeRunId = '', localActive = false } = {}) {
   const queryClient = useQueryClient();
   const [eventState, setEventState] = useState({ status: 'idle', usingFallback: false, event: null });
   const [fallbackActive, setFallbackActive] = useState(false);
@@ -144,6 +163,8 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
   const seenEventRef = useRef(false);
   const historyLimitValue = Number(historyLimit || 20);
   const profileValue = normalizeProfile(profile);
+  const activeRunKey = securityRunKey(activeRunId);
+  const localProgressActive = Boolean(localActive);
 
   useEffect(() => {
     seenEventRef.current = false;
@@ -169,10 +190,13 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
         seenEventRef.current = true;
         lastEventActiveRef.current = liveSecurityEvent(event);
         applySecurityEvent(queryClient, event, historyLimitValue);
-        setEventState({ status: terminalSecurityEvent(event) ? 'done' : 'connected', usingFallback: false, event });
-        if (terminalSecurityEvent(event) || !event.active_scan) {
+        const terminal = terminalSecurityEvent(event);
+        const keepFallbackAlive = shouldKeepSecurityFallbackAlive(event, { forceFallback, localActive: localProgressActive, activeRunId: activeRunKey });
+        setEventState({ status: terminal ? 'done' : 'connected', usingFallback: false, event });
+        if (terminal || !event.active_scan) {
           source.close();
           closed = true;
+          if (keepFallbackAlive) setFallbackActive(true);
         }
       } catch (_error) {
         setFallbackActive(true);
@@ -206,7 +230,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
       closed = true;
       source.close();
     };
-  }, [enabled, historyLimitValue, profileValue, queryClient]);
+  }, [activeRunKey, enabled, forceFallback, historyLimitValue, localProgressActive, profileValue, queryClient]);
 
   useEffect(() => {
     if (!enabled || (!fallbackActive && !forceFallback)) return undefined;
@@ -218,8 +242,10 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
       try {
         const event = await loadProgressFallback(queryClient, historyLimitValue);
         lastEventActiveRef.current = liveSecurityEvent(event);
-        setEventState({ status: terminalSecurityEvent(event) ? 'done' : 'fallback', usingFallback: true, event });
-        if (terminalSecurityEvent(event) || !liveSecurityEvent(event)) {
+        const terminal = terminalSecurityEvent(event);
+        const keepFallbackAlive = shouldKeepSecurityFallbackAlive(event, { forceFallback, localActive: localProgressActive, activeRunId: activeRunKey });
+        setEventState({ status: terminal ? 'done' : 'fallback', usingFallback: true, event });
+        if (!keepFallbackAlive && (terminal || !liveSecurityEvent(event))) {
           setFallbackActive(false);
           return;
         }
@@ -234,7 +260,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
       stopped = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [enabled, fallbackActive, forceFallback, historyLimitValue, queryClient]);
+  }, [activeRunKey, enabled, fallbackActive, forceFallback, historyLimitValue, localProgressActive, queryClient]);
 
   return useMemo(() => ({
     data: eventState.event ? progressPayloadFromEvent(eventState.event) : null,

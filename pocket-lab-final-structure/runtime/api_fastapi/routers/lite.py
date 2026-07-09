@@ -879,6 +879,9 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             app_id = lite_security.policy.normalize_app_id(payload.app_id)
         except ValueError:
             raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
+    active_scan = lite_security.active_scan_state(profile, app_id)
+    if active_scan:
+        return active_scan
     run_id = lite_security.new_run_id()
     command = {
         "run_id": run_id,

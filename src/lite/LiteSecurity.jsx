@@ -340,19 +340,30 @@ function securityProgressTimestamp(progress = {}) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function selectLiveSecurityProgress(resultProgress = null, liveProgress = null, fallbackProgress = null) {
+function selectLiveSecurityProgress(resultProgress = null, liveProgress = null, fallbackProgress = null, expectedRunId = '') {
+  const expectedRun = securityProgressRunKey(expectedRunId);
   const candidates = [liveProgress, fallbackProgress, resultProgress].filter(Boolean);
   if (!candidates.length) return null;
-  return candidates.reduce((best, candidate) => {
+  const matchingCandidates = expectedRun
+    ? candidates.filter((candidate) => {
+      const candidateRun = securityProgressRunKey(candidate);
+      return !candidateRun || candidateRun === expectedRun;
+    })
+    : candidates;
+  const scopedCandidates = matchingCandidates.length ? matchingCandidates : candidates;
+  return scopedCandidates.reduce((best, candidate) => {
     if (!best) return candidate;
     const candidateRun = securityProgressRunKey(candidate);
     const bestRun = securityProgressRunKey(best);
     const candidateActive = candidate?.active_scan === true || candidate?.running === true || candidate?.operation_running === true || candidate?.in_progress === true;
     const bestActive = best?.active_scan === true || best?.running === true || best?.operation_running === true || best?.in_progress === true;
-    if (candidateActive !== bestActive) return candidateActive ? candidate : best;
+    const candidateIsLiveRead = candidate?.source === 'security_progress_json' || candidate?.source === 'security_events_stream' || candidate?.view_model === 'security-progress-f7-v1';
+    const bestIsLiveRead = best?.source === 'security_progress_json' || best?.source === 'security_events_stream' || best?.view_model === 'security-progress-f7-v1';
     if (candidateRun && bestRun && candidateRun !== bestRun) {
       return securityProgressTimestamp(candidate) >= securityProgressTimestamp(best) ? candidate : best;
     }
+    if (candidateIsLiveRead !== bestIsLiveRead && (candidateActive || bestActive)) return candidateIsLiveRead ? candidate : best;
+    if (candidateActive !== bestActive) return candidateActive ? candidate : best;
     const candidatePercent = Number(candidate?.percent || 0);
     const bestPercent = Number(best?.percent || 0);
     if (candidatePercent !== bestPercent) return candidatePercent > bestPercent ? candidate : best;
@@ -1889,6 +1900,7 @@ export default function SecurityScreen() {
   const setActiveSecurityEvidenceRunId = useLiteUiStore((state) => state.setActiveSecurityEvidenceRunId);
   const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
+  const securityScanSubmitGuardRef = useRef(false);
   const lastSecurityFreshnessRef = useRef(null);
   const securityPollingProfile = scanProfile;
   const securityPollingPolicy = useCallback((payload) => (
@@ -1987,6 +1999,8 @@ export default function SecurityScreen() {
     profile: scanProfile,
     historyLimit: activeSecurityHistoryLimit || 20,
     forceFallback: shouldLoadSecurityProgress,
+    activeRunId: result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || '',
+    localActive: localSecurityProgressActive,
   });
   void securityProgressUsingFallback;
   void securityProgressFallbackLabel;
@@ -2005,7 +2019,7 @@ export default function SecurityScreen() {
     const profileId = normalizeSecurityProfileId(securityProfileData?.profile || scanProfile);
     return {
       ...base,
-      ...(securityProgressData?.active_scan ? { scan_progress: securityProgressData } : {}),
+      ...(securityProgressData ? { scan_progress: securityProgressData } : {}),
       history: Array.isArray(securityHistoryData?.history) ? securityHistoryData.history : base.history,
       security_profiles: {
         ...(base.security_profiles || {}),
@@ -2171,7 +2185,8 @@ export default function SecurityScreen() {
   const displayRunStatus = String(activeProfileRun?.status || (activeProfileIsLatest ? data?.status : '') || '').toLowerCase();
   const currentRunStatus = String(result?.status || lastRun?.status || '').toLowerCase();
   const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
-  const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress) : null;
+  const activeSecurityRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || data?.scan_progress?.run_id || '';
+  const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId) : null;
   const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
   const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(securityProgressData?.active_scan) || localSecurityProgressActive;
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
@@ -2352,7 +2367,17 @@ export default function SecurityScreen() {
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
   }
 
+  function securityScanAlreadyRunning() {
+    return Boolean(securityScanSubmitGuardRef.current || busy || scanInProgress || securityProgressData?.active_scan || localSecurityProgressActive);
+  }
+
+  function blockDuplicateSecurityScan() {
+    setActionError('A safety check is already running. Wait for it to finish before starting another one.');
+  }
+
   async function scan() {
+    if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
+    securityScanSubmitGuardRef.current = true;
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setSelectedScanProfile('quick');
@@ -2374,6 +2399,7 @@ export default function SecurityScreen() {
       setResult(null);
       setActionError(err.message);
     } finally {
+      securityScanSubmitGuardRef.current = false;
       setBusy(false);
     }
   }
@@ -2401,6 +2427,8 @@ export default function SecurityScreen() {
   }
 
   async function startFullLocalCheck() {
+    if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
+    securityScanSubmitGuardRef.current = true;
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
     setFullLocalConfirmOpen(false);
@@ -2423,6 +2451,7 @@ export default function SecurityScreen() {
       setResult(null);
       setActionError(err.message);
     } finally {
+      securityScanSubmitGuardRef.current = false;
       setBusy(false);
     }
   }
@@ -2433,6 +2462,8 @@ export default function SecurityScreen() {
   }
 
   async function startAppCheck(targetApp = null) {
+    if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
+    securityScanSubmitGuardRef.current = true;
     const app = targetApp || appCheckTarget || { app_id: 'photoprism', app_label: 'PhotoPrism' };
     if (!app?.app_id) return;
     const flowCheck = securityFlow.requestRun();
@@ -2457,6 +2488,7 @@ export default function SecurityScreen() {
       setResult(null);
       setActionError(err.message);
     } finally {
+      securityScanSubmitGuardRef.current = false;
       setBusy(false);
     }
   }
@@ -2588,6 +2620,7 @@ export default function SecurityScreen() {
   async function runSecurityProfile(profileId, event) {
     event?.stopPropagation?.();
     const profile = normalizeSecurityProfileId(profileId);
+    if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
     chooseSecurityProfile(profile);
     if (profile === 'full') {
       await startFullLocalCheck();
@@ -2862,7 +2895,7 @@ export default function SecurityScreen() {
                     haptic
                     ariaLabel={scanInProgress ? `${profile.label} waits while a safety check is running` : securityFlow.writeBlocked ? `Reconnect to run ${profile.label}` : `Run ${profile.label}`}
                   >
-                    {scanInProgress ? (profile.id === latestScanProfile ? profile.running : 'Wait') : securityFlow.writeBlocked ? 'Reconnect' : profile.actionLabel}
+                    {scanInProgress && profile.id === latestScanProfile ? profile.running : securityFlow.writeBlocked ? 'Reconnect' : profile.actionLabel}
                   </LiteButton>
                 ))}
               </div>

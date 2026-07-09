@@ -867,6 +867,35 @@ def split_progress_state() -> dict[str, Any]:
     return _cached_compact_read("progress", key, lambda: evidence.read_compact_json(path, _progress_from_state(state)))
 
 
+def active_scan_state(profile: str | None = None, app_id: str | None = None) -> dict[str, Any] | None:
+    progress = split_progress_state()
+    if not isinstance(progress, dict) or not progress.get("active_scan"):
+        return None
+    progress_profile = policy.normalize_scan_profile(progress.get("profile") or progress.get("scan_profile") or policy.SCAN_PROFILE_QUICK)
+    request_profile = policy.normalize_scan_profile(profile or progress_profile)
+    if progress_profile != request_profile:
+        return None
+    if request_profile == policy.SCAN_PROFILE_APP:
+        progress_app_id = str(progress.get("app_id") or "").strip().lower()
+        request_app_id = str(app_id or "").strip().lower()
+        if request_app_id and progress_app_id and progress_app_id != request_app_id:
+            return None
+    return policy.redact_value({
+        "status": progress.get("status") or "running",
+        "state": progress.get("status") or "running",
+        "accepted": True,
+        "duplicate": True,
+        "already_running": True,
+        "run_id": progress.get("run_id") or "",
+        "command_id": progress.get("run_id") or "",
+        "scan_profile": progress_profile,
+        "profile": progress_profile,
+        **({"app_id": progress.get("app_id"), "app_label": _app_label(progress.get("app_id"))} if progress.get("app_id") else {}),
+        "summary": "A safety check is already running.",
+        "scan_progress": progress,
+    })
+
+
 def split_run_details_state(run_id: str) -> dict[str, Any] | None:
     state = _ensure_compact_state()
     safe_run_id = evidence.safe_run_id(run_id)
