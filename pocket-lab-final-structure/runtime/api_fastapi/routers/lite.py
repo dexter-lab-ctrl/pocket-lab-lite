@@ -882,6 +882,9 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
     active_scan = lite_security.active_scan_state(profile, app_id)
     if active_scan:
         return active_scan
+    recent_scan = lite_security.recent_completed_scan_state(profile, app_id)
+    if recent_scan:
+        return recent_scan
     run_id = lite_security.new_run_id()
     command = {
         "run_id": run_id,
