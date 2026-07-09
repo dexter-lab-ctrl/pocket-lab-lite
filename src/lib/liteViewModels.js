@@ -1515,12 +1515,54 @@ export function isLiteSecurityViewLive(payload = {}) {
   return timeline.some((step) => SECURITY_LIVE_STATUSES.has(normalizeSecurityStatus(step?.status || step?.state)));
 }
 
+export const LITE_SECURITY_PROFILE_POLLING_POLICY = 'lite-security-profile-focused-polling-v1';
+
+export function isLiteSecurityProfileLive(payload = {}, profile = 'quick') {
+  const profileId = normalizeSecurityProfileId(profile);
+  if (!payload || typeof payload !== 'object') return false;
+  const profiles = isObject(payload.security_profiles) ? payload.security_profiles : {};
+  const profileView = profiles[profileId] || selectSecurityProfileView(payload, profileId);
+  if (isLiteSecurityViewLive(profileView)) return true;
+  const resultProfile = normalizeSecurityProfileId(payload?.scan_profile || payload?.last_run?.scan_profile || payload?.profile || 'quick');
+  return resultProfile === profileId && isLiteSecurityViewLive(payload);
+}
+
+export function selectSecurityPollingPolicyView(payload = {}, selectedProfile = 'quick', optimisticRun = null) {
+  const profile = normalizeSecurityProfileId(selectedProfile || payload?.scan_profile || 'quick');
+  const profileLive = isLiteSecurityProfileLive(payload, profile) || isLiteSecurityProfileLive(optimisticRun || {}, profile);
+  const anyLive = profileLive || isLiteSecurityViewLive(payload) || isLiteSecurityViewLive(optimisticRun || {});
+  return {
+    policy: LITE_SECURITY_PROFILE_POLLING_POLICY,
+    profile,
+    live: Boolean(anyLive),
+    profile_live: Boolean(profileLive),
+    polling_mode: anyLive ? 'realtime' : 'slow',
+    stale_time_ms: anyLive ? 2_000 : 60_000,
+    invalidates: ['security', `security:${profile}`, 'security:history'],
+    summary: anyLive ? 'Security scan is updating.' : 'Security is using calm saved-state polling.',
+  };
+}
+
+function securityProfileQueryKey(profile = 'quick') {
+  return ['lite', 'security', 'profile', normalizeSecurityProfileId(profile)];
+}
+
+function securityMutationProfile(actionId = '', result = {}) {
+  const normalized = normalizeSecurityStatus(actionId || result?.action_id || result?.action || '');
+  const explicitProfile = result?.scan_profile || result?.profile || result?.requested_profile || result?.last_run?.scan_profile;
+  if (explicitProfile) return normalizeSecurityProfileId(explicitProfile);
+  if (['check_security_app', 'check_app_security', 'app_check', 'check_app'].includes(normalized) || result?.app_id) return 'app';
+  if (['full_local_check', 'full_check', 'full_scan'].includes(normalized)) return 'full';
+  return 'quick';
+}
+
 export function getLiteSecurityMutationInvalidations(actionId = '', result = {}) {
-  const normalized = normalizeSecurityStatus(actionId || result?.action_id || result?.action || result?.status || '');
-  if (['security_check', 'run_safety_check', 'safety_check', 'check_security_app', 'check_app_security'].includes(normalized)) {
-    return [['lite', 'security']];
-  }
-  return [['lite', 'security']];
+  const profile = securityMutationProfile(actionId, result);
+  return [
+    ['lite', 'security'],
+    securityProfileQueryKey(profile),
+    ['lite', 'security', 'history'],
+  ];
 }
 
 const RECOVERY_LIVE_STATUSES = new Set([

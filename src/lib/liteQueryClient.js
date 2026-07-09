@@ -6,6 +6,8 @@ export const liteQueryKeys = {
   appActions: (appId = 'photoprism') => ['lite', 'app', String(appId || 'photoprism').toLowerCase(), 'actions'],
   fleet: () => ['lite', 'fleet'],
   security: () => ['lite', 'security'],
+  securityProfile: (profile = 'quick') => ['lite', 'security', 'profile', String(profile || 'quick').toLowerCase()],
+  securityHistory: () => ['lite', 'security', 'history'],
   recovery: () => ['lite', 'recovery'],
   resource: (path = 'unknown', ...parts) => ['lite', 'resource', String(path || 'unknown'), ...parts],
 };

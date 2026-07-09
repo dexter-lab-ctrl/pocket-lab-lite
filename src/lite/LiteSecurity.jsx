@@ -24,7 +24,12 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys } from '../lib/liteQueryClient.js';
-import { isLiteSecurityViewLive, selectSecurityProfileView, selectSecurityScreenView } from '../lib/liteViewModels.js';
+import {
+  isLiteSecurityViewLive,
+  selectSecurityPollingPolicyView,
+  selectSecurityProfileView,
+  selectSecurityScreenView,
+} from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import {
@@ -1669,13 +1674,19 @@ export default function SecurityScreen() {
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
   const queryClient = useQueryClient();
-  const securityPollingIsLive = useCallback((payload) => (
-    Boolean(busy) || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result)
-  ), [busy, result]);
+  const [selectedScanProfile, setSelectedScanProfile] = useState(null);
+  const securityPollingProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
+  const securityPollingPolicy = useCallback((payload) => (
+    selectSecurityPollingPolicyView(payload || {}, securityPollingProfile, result)
+  ), [result, securityPollingProfile]);
+  const securityPollingIsLive = useCallback((payload) => {
+    const policy = securityPollingPolicy(payload);
+    return Boolean(busy) || policy.live || isLiteSecurityViewLive(payload) || hasLiveSecurityOperation(result);
+  }, [busy, result, securityPollingPolicy]);
   const { data, loading, error, refresh, backendReachable, savedStateOnly } = useLiteResource(liteApi.security, [], {
     pollingMode: 'slow',
     isLive: securityPollingIsLive,
-    staleTime: 30_000,
+    staleTime: 60_000,
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
@@ -1711,7 +1722,6 @@ export default function SecurityScreen() {
   const [fullLocalConfirmOpen, setFullLocalConfirmOpen] = useState(false);
   const [appCheckConfirmOpen, setAppCheckConfirmOpen] = useState(false);
   const [appCheckTarget, setAppCheckTarget] = useState({ app_id: 'photoprism', app_label: 'PhotoPrism' });
-  const [selectedScanProfile, setSelectedScanProfile] = useState(null);
   const findingDetailTriggerRef = useRef(null);
   const securityDetailsTriggerRef = useRef(null);
   const remediationTriggerRef = useRef(null);
@@ -1956,8 +1966,13 @@ export default function SecurityScreen() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedFinding]);
 
-  function invalidateSecurityQuery() {
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
+  function invalidateSecurityQuery(profile = scanProfile) {
+    const normalizedProfile = normalizeSecurityProfileId(profile || 'quick');
+    [
+      liteQueryKeys.security(),
+      liteQueryKeys.securityProfile(normalizedProfile),
+      liteQueryKeys.securityHistory(),
+    ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
   }
 
   async function scan() {
@@ -1974,7 +1989,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.runSecurityScan('local', { profile: 'quick', reason: 'manual quick safety check' });
       securityFlow.accepted(payload);
       setResult(payload);
-      invalidateSecurityQuery();
+      invalidateSecurityQuery('quick');
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
@@ -2021,7 +2036,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.runSecurityScan('local', { profile: 'full', reason: 'manual full local check' });
       securityFlow.accepted(payload);
       setResult(payload);
-      invalidateSecurityQuery();
+      invalidateSecurityQuery('full');
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
@@ -2053,7 +2068,7 @@ export default function SecurityScreen() {
       const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
       securityFlow.accepted(payload);
       setResult(payload);
-      invalidateSecurityQuery();
+      invalidateSecurityQuery('app');
     } catch (err) {
       securityFlow.fail(err);
       setResult(null);
