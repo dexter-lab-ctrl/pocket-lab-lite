@@ -371,8 +371,43 @@ write_caddy_site() {
   handle /ws/* {
     reverse_proxy 127.0.0.1:${API_PORT}
   }
+  @pocketlab_versioned_assets {
+    path /assets/*
+  }
+  header @pocketlab_versioned_assets Cache-Control "public, max-age=31536000, immutable"
+
+  @pocketlab_runtime_assets {
+    path /icon.svg /manifest.webmanifest /registerSW.js /sw.js /workbox-*.js
+  }
+  header @pocketlab_runtime_assets Cache-Control "no-cache"
+
   handle /gitea/* {
     reverse_proxy 127.0.0.1:3030
+  }
+
+  handle /assets/* {
+    root * ${PWA_DIR}
+    file_server
+  }
+  handle /icon.svg {
+    root * ${PWA_DIR}
+    file_server
+  }
+  handle /manifest.webmanifest {
+    root * ${PWA_DIR}
+    file_server
+  }
+  handle /registerSW.js {
+    root * ${PWA_DIR}
+    file_server
+  }
+  handle /sw.js {
+    root * ${PWA_DIR}
+    file_server
+  }
+  handle /workbox-*.js {
+    root * ${PWA_DIR}
+    file_server
   }
 
 EOF
