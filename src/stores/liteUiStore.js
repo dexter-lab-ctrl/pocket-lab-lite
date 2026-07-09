@@ -2,6 +2,9 @@ import { create } from 'zustand';
 
 const DEFAULT_TAB = 'home';
 const DEFAULT_MANAGE_SECTION = 'media';
+const DEFAULT_SECURITY_PROFILE = 'quick';
+const DEFAULT_SECURITY_MANAGE_SECTION = 'overview';
+const DEFAULT_SECURITY_HISTORY_LIMIT = 20;
 const TOAST_KINDS = new Set(['info', 'success', 'warning', 'error']);
 const REFRESH_RESULTS = new Set(['refreshing', 'fresh', 'saved', 'stale', 'expired', 'unreachable', 'failed']);
 
@@ -33,6 +36,26 @@ function normalizeOverlay(input = {}) {
     source: String(input.source || '').trim(),
     openedAt: Date.now(),
   };
+}
+
+
+function normalizeSecurityProfile(value = DEFAULT_SECURITY_PROFILE) {
+  const normalized = normalizeId(value, DEFAULT_SECURITY_PROFILE).replace(/[\s-]+/g, '_');
+  if (['full', 'full_local', 'full_local_check'].includes(normalized)) return 'full';
+  if (['app', 'app_check', 'application'].includes(normalized)) return 'app';
+  return 'quick';
+}
+
+function normalizeSecurityDetailsPanel(value = null) {
+  const panel = normalizeId(value);
+  if (panel === 'checkpath' || panel === 'check_path') return 'checkPath';
+  return ['changes', 'attention', 'coverage', 'evidence', 'history', 'technical_details'].includes(panel)
+    ? panel
+    : null;
+}
+
+function normalizeSecurityFindingId(value = null) {
+  return normalizeId(value).slice(0, 160) || null;
 }
 
 function normalizeRefreshResult(result) {
@@ -93,6 +116,52 @@ export const useLiteUiStore = create((set, get) => ({
 
   activeOverlay: null,
   openOverlay: (overlay) => set({ activeOverlay: normalizeOverlay(overlay) }),
+
+  securityManageOpen: false,
+  activeSecurityProfile: DEFAULT_SECURITY_PROFILE,
+  activeSecurityManageSection: DEFAULT_SECURITY_MANAGE_SECTION,
+  activeSecurityDetailsPanel: null,
+  expandedSecurityFindingId: null,
+  lastSecurityRunIdViewed: null,
+  activeSecurityHistoryLimit: DEFAULT_SECURITY_HISTORY_LIMIT,
+  activeSecurityEvidenceRunId: null,
+  activeSecurityDetailsRunId: null,
+  setSecurityManageOpen: (open) => set((state) => ({
+    securityManageOpen: Boolean(open),
+    activeSecurityDetailsPanel: open ? state.activeSecurityDetailsPanel : null,
+    expandedSecurityFindingId: open ? state.expandedSecurityFindingId : null,
+    activeOverlay: open
+      ? normalizeOverlay({ type: 'manage', id: 'security', source: 'security' })
+      : state.activeOverlay?.source === 'security' ? null : state.activeOverlay,
+  })),
+  setActiveSecurityProfile: (profile) => {
+    const nextProfile = normalizeSecurityProfile(profile);
+    set((state) => ({
+      activeSecurityProfile: nextProfile,
+      activeSecurityDetailsPanel: state.activeSecurityProfile === nextProfile ? state.activeSecurityDetailsPanel : null,
+      expandedSecurityFindingId: state.activeSecurityProfile === nextProfile ? state.expandedSecurityFindingId : null,
+      activeSecurityEvidenceRunId: state.activeSecurityProfile === nextProfile ? state.activeSecurityEvidenceRunId : null,
+      activeSecurityDetailsRunId: state.activeSecurityProfile === nextProfile ? state.activeSecurityDetailsRunId : null,
+    }));
+  },
+  setActiveSecurityManageSection: (sectionId) => set({ activeSecurityManageSection: normalizeId(sectionId, DEFAULT_SECURITY_MANAGE_SECTION) }),
+  setActiveSecurityDetailsPanel: (panelId, runId = null) => {
+    const nextPanel = normalizeSecurityDetailsPanel(panelId);
+    set({
+      activeSecurityDetailsPanel: nextPanel,
+      activeSecurityDetailsRunId: nextPanel ? normalizeSecurityFindingId(runId) : null,
+      lastSecurityRunIdViewed: runId ? normalizeSecurityFindingId(runId) : get().lastSecurityRunIdViewed,
+      activeOverlay: nextPanel ? normalizeOverlay({ type: 'details', id: nextPanel, source: 'security' }) : null,
+    });
+  },
+  setExpandedSecurityFindingId: (findingId) => set({ expandedSecurityFindingId: normalizeSecurityFindingId(findingId) }),
+  setLastSecurityRunIdViewed: (runId) => set({ lastSecurityRunIdViewed: normalizeSecurityFindingId(runId) }),
+  setActiveSecurityHistoryLimit: (limit = DEFAULT_SECURITY_HISTORY_LIMIT) => {
+    const nextLimit = Number.isFinite(Number(limit)) ? Math.max(1, Math.min(50, Number(limit))) : DEFAULT_SECURITY_HISTORY_LIMIT;
+    set({ activeSecurityHistoryLimit: nextLimit });
+  },
+  setActiveSecurityEvidenceRunId: (runId) => set({ activeSecurityEvidenceRunId: normalizeSecurityFindingId(runId) }),
+
   closeOverlay: (typeOrId) => set((state) => {
     if (!typeOrId) return { activeOverlay: null };
     const wanted = normalizeId(typeOrId);
@@ -100,7 +169,7 @@ export const useLiteUiStore = create((set, get) => ({
     if (!current || current.type === wanted || current.id === wanted) return { activeOverlay: null };
     return {};
   }),
-  closeAllOverlays: () => set({ activeOverlay: null, manageAppId: null, activeDetailsActionId: null }),
+  closeAllOverlays: () => set({ activeOverlay: null, manageAppId: null, activeDetailsActionId: null, securityManageOpen: false, activeSecurityDetailsPanel: null, expandedSecurityFindingId: null }),
 
   toasts: [],
   pushToast: (toast) => {
@@ -211,5 +280,21 @@ export function useLiteCatalogManageState(appId = 'photoprism') {
   }));
 }
 
+export function useLiteSecurityManageState() {
+  return useLiteUiStore((state) => ({
+    securityManageOpen: state.securityManageOpen,
+    activeSecurityProfile: state.activeSecurityProfile,
+    activeSecurityManageSection: state.activeSecurityManageSection,
+    activeSecurityDetailsPanel: state.activeSecurityDetailsPanel,
+    expandedSecurityFindingId: state.expandedSecurityFindingId,
+    lastSecurityRunIdViewed: state.lastSecurityRunIdViewed,
+    activeSecurityHistoryLimit: state.activeSecurityHistoryLimit,
+    activeSecurityEvidenceRunId: state.activeSecurityEvidenceRunId,
+    activeSecurityDetailsRunId: state.activeSecurityDetailsRunId,
+  }));
+}
+
+export const LITE_UI_STORE_SECURITY_UI_ONLY = true;
+export const LITE_UI_STORE_DOES_NOT_STORE_SECURITY_PAYLOADS = true;
 export const LITE_UI_STORE_IS_UI_ONLY = true;
 export const LITE_UI_STORE_UI_COORDINATION_ONLY = true;

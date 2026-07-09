@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteSecurityCheckFlow } from '../hooks/useLiteSecurityCheckFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
@@ -209,6 +210,13 @@ const SECURITY_PROFILE3_APP_CHECK_GUARDS = [
 void SECURITY_PROFILE1_QUICK_SAFETY_GUARDS;
 void SECURITY_PROFILE2_FULL_LOCAL_CHECK_GUARDS;
 void SECURITY_PROFILE3_APP_CHECK_GUARDS;
+const SECURITY_GROUP4_STABLE_UI_GUARDS = [
+  'liteApi.securityHistory(20)',
+  'Security Manage state is UI-only in Zustand',
+  'same revision keeps selected Security references stable',
+];
+void SECURITY_GROUP4_STABLE_UI_GUARDS;
+
 const SECURITY_INSTANT_FEEL_GROUP1_GUARDS = [
   'SECURITY_INSTANT_FEEL_FRONTEND_BUNDLE',
   'Showing saved state',
@@ -849,6 +857,17 @@ function findingReviewText(finding) {
     finding?.status,
     finding?.detail,
   ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function securityFindingUiId(finding = {}) {
+  return String(
+    finding?.id
+    || finding?.finding_id
+    || finding?.title
+    || finding?.summary
+    || finding?.component
+    || 'security-finding'
+  ).trim().toLowerCase().replace(/[^a-z0-9._:-]+/g, '-').slice(0, 160) || 'security-finding';
 }
 
 export function classifyFindingAction(finding, context = {}) {
@@ -1725,13 +1744,24 @@ export default function SecurityScreen() {
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [activeSecurityDetails, setActiveSecurityDetails] = useState(null);
-  const [securityManageOpen, setSecurityManageOpen] = useState(false);
-  const [securityManageSection, setSecurityManageSection] = useState('overview');
+  const securityManageOpen = useLiteUiStore((state) => state.securityManageOpen);
+  const setSecurityManageOpen = useLiteUiStore((state) => state.setSecurityManageOpen);
+  const activeSecurityDetails = useLiteUiStore((state) => state.activeSecurityDetailsPanel);
+  const setActiveSecurityDetails = useLiteUiStore((state) => state.setActiveSecurityDetailsPanel);
+  const securityManageSection = useLiteUiStore((state) => state.activeSecurityManageSection);
+  const setSecurityManageSection = useLiteUiStore((state) => state.setActiveSecurityManageSection);
+  const selectedScanProfile = useLiteUiStore((state) => state.activeSecurityProfile);
+  const setSelectedScanProfile = useLiteUiStore((state) => state.setActiveSecurityProfile);
+  const expandedSecurityFindingId = useLiteUiStore((state) => state.expandedSecurityFindingId);
+  const setExpandedSecurityFindingId = useLiteUiStore((state) => state.setExpandedSecurityFindingId);
+  const setLastSecurityRunIdViewed = useLiteUiStore((state) => state.setLastSecurityRunIdViewed);
+  const activeSecurityHistoryLimit = useLiteUiStore((state) => state.activeSecurityHistoryLimit);
+  const setActiveSecurityHistoryLimit = useLiteUiStore((state) => state.setActiveSecurityHistoryLimit);
+  const setActiveSecurityEvidenceRunId = useLiteUiStore((state) => state.setActiveSecurityEvidenceRunId);
+  const scanProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
   const queryClient = useQueryClient();
   const lastSecurityFreshnessRef = useRef(null);
-  const [selectedScanProfile, setSelectedScanProfile] = useState(null);
-  const securityPollingProfile = normalizeSecurityProfileId(selectedScanProfile || result?.scan_profile || 'quick');
+  const securityPollingProfile = scanProfile;
   const securityPollingPolicy = useCallback((payload) => (
     selectSecurityPollingPolicyView(payload || {}, securityPollingProfile, result)
   ), [result, securityPollingProfile]);
@@ -1741,7 +1771,7 @@ export default function SecurityScreen() {
   }, [busy, result, securityPollingPolicy]);
   const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);
   const shouldLoadSecurityHistory = securityManageOpen && securityManageSection === 'history' || activeSecurityDetails === 'history';
-  const shouldLoadSecurityProgress = scanInProgress || busy || hasLiveSecurityOperation(result);
+  const shouldLoadSecurityProgress = busy || hasLiveSecurityOperation(result);
   const securityFreshnessLoader = useCallback(() => liteApi.securityFreshness(), []);
   const { data: securityFreshnessData } = useLiteResource(securityFreshnessLoader, [], {
     queryKey: liteQueryKeys.securityFreshness(),
@@ -1783,7 +1813,7 @@ export default function SecurityScreen() {
     snapshotSelect: selectSecurityScreenView,
   });
   const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile), [scanProfile]);
-  const securityHistoryLoader = useCallback(() => liteApi.securityHistory(20), []);
+  const securityHistoryLoader = useCallback(() => liteApi.securityHistory(activeSecurityHistoryLimit || 20), [activeSecurityHistoryLimit]);
   const securityProgressLoader = useCallback(() => liteApi.securityProgress(), []);
   const {
     data: securityProfileData,
@@ -1807,9 +1837,9 @@ export default function SecurityScreen() {
     placeholderData: (previousData) => previousData,
     refetchOnReconnect: true,
   });
-  const { data: securityHistoryData, refreshing: historyRefreshing } = useLiteResource(securityHistoryLoader, [20], {
-    queryKey: liteQueryKeys.securityHistory(20),
-    path: liteQueryPaths.securityHistory(20),
+  const { data: securityHistoryData, refreshing: historyRefreshing } = useLiteResource(securityHistoryLoader, [activeSecurityHistoryLimit || 20], {
+    queryKey: liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
+    path: liteQueryPaths.securityHistory(activeSecurityHistoryLimit || 20),
     enabled: shouldLoadSecurityHistory,
     pollingMode: 'relaxed',
     staleTime: 60_000,
@@ -1859,8 +1889,8 @@ export default function SecurityScreen() {
     const profile = normalizeSecurityProfileId(event.profile || 'quick');
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory(20) });
-  }), [queryClient]);
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20) });
+  }), [activeSecurityHistoryLimit, queryClient]);
 
   useEffect(() => {
     if (!securityFreshnessData?.revision) return;
@@ -1882,7 +1912,7 @@ export default function SecurityScreen() {
     });
 
     if (previous.history_revision !== securityFreshnessData.history_revision) {
-      invalidate(liteQueryKeys.securityHistory(20));
+      invalidate(liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20));
     }
     if (securityFreshnessData.active_scan && previous.progress_revision !== securityFreshnessData.progress_revision) {
       invalidate(liteQueryKeys.securityProgress());
@@ -1913,7 +1943,6 @@ export default function SecurityScreen() {
   };
   const [progressNow, setProgressNow] = useState(() => Date.now());
   const [remediationFinding, setRemediationFinding] = useState(null);
-  const [selectedFinding, setSelectedFinding] = useState(null);
   const [fullLocalConfirmOpen, setFullLocalConfirmOpen] = useState(false);
   const [appCheckConfirmOpen, setAppCheckConfirmOpen] = useState(false);
   const [appCheckTarget, setAppCheckTarget] = useState({ app_id: 'photoprism', app_label: 'PhotoPrism' });
@@ -1925,7 +1954,6 @@ export default function SecurityScreen() {
   const lastRun = data?.last_run || null;
   const securityHistory = Array.isArray(data?.history) ? data.history : [];
   const latestScanProfile = normalizeSecurityProfileId(data?.scan_profile || lastRun?.scan_profile || result?.scan_profile || 'quick');
-  const scanProfile = normalizeSecurityProfileId(selectedScanProfile || latestScanProfile);
   const profileRunsById = useMemo(() => buildSecurityProfileRuns({ data, lastRun, evidenceRun: evidence?.run || null, result, history: securityHistory, profileLatest: data?.profile_latest || {} }), [data, lastRun, evidence, result, securityHistory]);
   const activeProfileView = useMemo(() => (data?.security_profiles?.[scanProfile] || selectSecurityProfileView(data || {}, scanProfile)), [data, scanProfile]);
   const profileFreshness = data?.profile_freshness || {};
@@ -1945,7 +1973,11 @@ export default function SecurityScreen() {
 
   ];
   const evidenceFindings = Array.isArray(evidence?.findings) ? evidence.findings : [];
-  const allReviewFindings = [...criticalIssues, ...reviewItems];
+  const allReviewFindings = useMemo(() => [...criticalIssues, ...reviewItems], [criticalIssues, reviewItems]);
+  const selectedFinding = useMemo(() => {
+    if (!expandedSecurityFindingId) return null;
+    return allReviewFindings.find((finding) => securityFindingUiId(finding) === expandedSecurityFindingId) || null;
+  }, [allReviewFindings, expandedSecurityFindingId]);
   const evidenceRun = evidence?.run || null;
   const toolResults = (activeProfileIsLatest ? evidenceRun?.tool_results : null) || activeProfileView?.tool_results || activeProfileRun?.tool_results || {};
   const coverageFallback = profileFallbackCoverage(scanProfile);
@@ -2163,18 +2195,24 @@ export default function SecurityScreen() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedFinding]);
 
+  React.useEffect(() => {
+    if (!expandedSecurityFindingId || !allReviewFindings.length || selectedFinding) return;
+    setExpandedSecurityFindingId(null);
+  }, [allReviewFindings.length, expandedSecurityFindingId, selectedFinding, setExpandedSecurityFindingId]);
+
   function invalidateSecurityQuery(profile = scanProfile) {
     const normalizedProfile = normalizeSecurityProfileId(profile || 'quick');
     [
       liteQueryKeys.security(),
       liteQueryKeys.securityProfile(normalizedProfile),
-      liteQueryKeys.securityHistory(20),
+      liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
   }
 
   async function scan() {
     const flowCheck = securityFlow.requestRun();
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    setSelectedScanProfile('quick');
     setBusy(true);
     setResult({ status: 'queued', scan_profile: 'quick', summary: 'Quick safety check queued.' });
     setActionError(null);
@@ -2282,6 +2320,7 @@ export default function SecurityScreen() {
     setReceiptCopied(false);
     if (activeSecurityDetails === 'evidence') {
       setActiveSecurityDetails(null);
+      setActiveSecurityEvidenceRunId(null);
     }
   }
 
@@ -2297,11 +2336,13 @@ export default function SecurityScreen() {
   async function showEvidence(event) {
     triggerHapticFeedback(8);
     securityDetailsTriggerRef.current = event?.currentTarget || null;
-    setActiveSecurityDetails('evidence');
+    const runId = activeProfileRun?.run_id || result?.run_id;
+    setActiveSecurityDetails('evidence', runId);
+    setActiveSecurityEvidenceRunId(runId || null);
+    if (runId) setLastSecurityRunIdViewed(runId);
     if (evidence) {
       return;
     }
-    const runId = activeProfileRun?.run_id || result?.run_id;
     if (!runId) {
       setEvidenceError('Run a safety check before opening evidence.');
       return;
@@ -2332,11 +2373,11 @@ export default function SecurityScreen() {
   function openFindingDetails(finding, event) {
     triggerHapticFeedback(6);
     findingDetailTriggerRef.current = event?.currentTarget || null;
-    setSelectedFinding(finding);
+    setExpandedSecurityFindingId(securityFindingUiId(finding));
   }
 
   function closeFindingDetails() {
-    setSelectedFinding(null);
+    setExpandedSecurityFindingId(null);
     window.setTimeout(() => findingDetailTriggerRef.current?.focus?.(), 0);
   }
 
@@ -2344,7 +2385,8 @@ export default function SecurityScreen() {
     preloadSecurityManageChunks();
     if (type === 'history') preloadSecurityHistory();
     securityDetailsTriggerRef.current = event?.currentTarget || null;
-    setActiveSecurityDetails(type);
+    setActiveSecurityDetails(type, activeProfileRun?.run_id || result?.run_id || null);
+    if (type === 'history') setActiveSecurityHistoryLimit(activeSecurityHistoryLimit || 20);
   }
 
   function closeSecurityDetails() {
@@ -2355,6 +2397,7 @@ export default function SecurityScreen() {
       setEvidenceError(null);
       setEvidenceLoading(false);
       setReceiptCopied(false);
+      setActiveSecurityEvidenceRunId(null);
     }
     window.setTimeout(() => securityDetailsTriggerRef.current?.focus?.(), 0);
   }

@@ -16,6 +16,84 @@ export const LITE_SECURITY_PROFILE_RETENTION_POLICY = {
   maxHistorySnapshotBytes: 96 * 1024,
 };
 
+export const EMPTY_ARRAY = Object.freeze([]);
+export const EMPTY_OBJECT = Object.freeze({});
+export const LITE_SECURITY_STRUCTURAL_SHARING_F12 = true;
+
+const SECURITY_SELECTOR_OBJECT_CACHE = new WeakMap();
+
+function securityCacheKey(parts = []) {
+  return parts
+    .map((part) => String(part ?? ''))
+    .filter(Boolean)
+    .join('|') || 'empty';
+}
+
+function securityPayloadRevision(payload = {}, fallback = '') {
+  if (!isObject(payload)) return String(fallback || 'empty');
+  return securityCacheKey([
+    payload.revision,
+    payload.summary_revision,
+    payload.history_revision,
+    payload.progress_revision,
+    payload.updated_at,
+    payload.checked_at,
+    payload.__liteSnapshot?.savedAt,
+    payload.__liteSnapshot?.checkedAt,
+    fallback,
+  ]);
+}
+
+function securityProfileRevision(payload = {}, profile = 'quick') {
+  const profileId = normalizeSecurityProfileId(profile);
+  const profiles = isObject(payload?.security_profiles) ? payload.security_profiles : {};
+  const profilePayload = isObject(profiles[profileId]) ? profiles[profileId] : null;
+  const profileRun = isObject(payload?.profile_latest?.[profileId]) ? payload.profile_latest[profileId] : null;
+  const directProfile = normalizeSecurityProfileId(payload?.profile || payload?.scan_profile || 'quick') === profileId ? payload : null;
+  return securityCacheKey([
+    profileId,
+    payload?.profile_revisions?.[profileId],
+    profilePayload?.revision,
+    directProfile?.revision,
+    profileRun?.revision,
+    profileRun?.run_id,
+    profileRun?.updated_at,
+    profileRun?.completed_at,
+    payload?.history_revision,
+    securityPayloadRevision(payload),
+  ]);
+}
+
+function securityHistoryRevision(payload = {}, limit = 20) {
+  const history = Array.isArray(payload?.history) ? payload.history : EMPTY_ARRAY;
+  return securityCacheKey([
+    'history',
+    limit,
+    payload?.history_revision,
+    payload?.security_history_snapshot?.updated_at,
+    securityPayloadRevision(payload),
+    history.length,
+    history[0]?.run_id,
+    history[0]?.updated_at || history[0]?.completed_at,
+    history[history.length - 1]?.run_id,
+  ]);
+}
+
+function memoizeSecuritySelector(input, cacheName, keyParts, builder) {
+  if (!input || (typeof input !== 'object' && typeof input !== 'function')) return builder();
+  let cache = SECURITY_SELECTOR_OBJECT_CACHE.get(input);
+  if (!cache) {
+    cache = new Map();
+    SECURITY_SELECTOR_OBJECT_CACHE.set(input, cache);
+  }
+  const key = securityCacheKey(Array.isArray(keyParts) ? keyParts : [keyParts]);
+  const previous = cache.get(cacheName);
+  if (previous?.key === key) return previous.value;
+  const value = builder();
+  cache.set(cacheName, { key, value });
+  return value;
+}
+
 function normalizeSecurityProfileId(value = 'quick') {
   const normalized = String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
   if (normalized === 'full' || normalized === 'full_local' || normalized === 'full_local_check') return 'full';
@@ -1031,8 +1109,14 @@ export function selectSecurityProgressView(payload = {}) {
 
 export function selectSecurityTimelineView(payload = {}) {
   const timeline = [payload?.execution_timeline, payload?.timeline, payload?.last_run?.execution_timeline]
-    .find((items) => Array.isArray(items)) || [];
-  return timeline.slice(0, 8).map((step, index) => copySafeKeys({
+    .find((items) => Array.isArray(items)) || EMPTY_ARRAY;
+  if (!timeline.length) return EMPTY_ARRAY;
+  return memoizeSecuritySelector(payload, 'timeline', securityCacheKey([
+    securityPayloadRevision(payload),
+    timeline.length,
+    timeline[0]?.key || timeline[0]?.id || timeline[0]?.title,
+    timeline[timeline.length - 1]?.updated_at || timeline[timeline.length - 1]?.status,
+  ]), () => timeline.slice(0, 8).map((step, index) => copySafeKeys({
     key: safeString(step?.key || step?.id || `step_${index + 1}`),
     title: safeString(step?.title || step?.label || 'Security step'),
     detail: safeString(step?.detail || step?.summary || ''),
@@ -1040,13 +1124,13 @@ export function selectSecurityTimelineView(payload = {}) {
     state: normalizeSecurityStatus(step?.state || step?.status || 'waiting'),
     tool: safeString(step?.tool || ''),
     updated_at: safeIso(step?.updated_at || step?.checked_at),
-  }, ['key', 'title', 'detail', 'status', 'state', 'tool', 'updated_at']));
+  }, ['key', 'title', 'detail', 'status', 'state', 'tool', 'updated_at'])));
 }
 
 export function selectSecurityFindingDeltaView(payload = {}) {
-  const delta = isObject(payload?.finding_delta) ? payload.finding_delta : {};
-  const normalizeDeltaList = (items) => (Array.isArray(items) ? items : []).slice(0, 8).map(normalizeSecurityFinding).filter(Boolean);
-  return {
+  const delta = isObject(payload?.finding_delta) ? payload.finding_delta : EMPTY_OBJECT;
+  const normalizeDeltaList = (items) => (Array.isArray(items) ? items : EMPTY_ARRAY).slice(0, 8).map(normalizeSecurityFinding).filter(Boolean);
+  return memoizeSecuritySelector(payload, 'finding-delta', securityCacheKey([securityPayloadRevision(payload), delta.updated_at, delta.new_count, delta.resolved_count, delta.unchanged_count, delta.still_present_count]), () => ({
     new_count: safeNumber(delta.new_count, 0),
     resolved_count: safeNumber(delta.resolved_count, 0),
     unchanged_count: safeNumber(delta.unchanged_count, 0),
@@ -1057,12 +1141,13 @@ export function selectSecurityFindingDeltaView(payload = {}) {
     still_present: normalizeDeltaList(delta.still_present || delta.unchanged),
     summary: safeString(delta.summary || ''),
     updated_at: safeIso(delta.updated_at || delta.checked_at),
-  };
+  }));
 }
 
 export function selectSecurityHistorySummaryView(payload = {}) {
-  const history = Array.isArray(payload?.history) ? payload.history : [];
-  return history.slice(0, 20).map((item) => {
+  const history = Array.isArray(payload?.history) ? payload.history : EMPTY_ARRAY;
+  if (!history.length) return EMPTY_ARRAY;
+  return memoizeSecuritySelector(payload, 'history-summary', securityHistoryRevision(payload, 20), () => history.slice(0, 20).map((item) => {
     const run = normalizeSecurityRun(item) || {};
     return copySafeKeys({
       ...run,
@@ -1094,12 +1179,12 @@ export function selectSecurityHistorySummaryView(payload = {}) {
       'critical_count', 'high_count', 'medium_count', 'low_count', 'info_count', 'items_to_review', 'evidence_count',
       'evidence_refs', 'tools', 'scan_profile', 'app_id', 'app_label', 'coverage_summary', 'tool_results', 'execution_timeline',
     ]);
-  });
+  }));
 }
 
 export function selectSecurityToolResultsView(toolResults = {}) {
-  if (!isObject(toolResults)) return {};
-  return Object.entries(toolResults).reduce((safe, [tool, result]) => {
+  if (!isObject(toolResults)) return EMPTY_OBJECT;
+  return memoizeSecuritySelector(toolResults, 'tool-results', securityCacheKey([Object.keys(toolResults).join(','), JSON.stringify(toolResults).slice(0, 4000)]), () => Object.entries(toolResults).reduce((safe, [tool, result]) => {
     if (!isObject(result)) return safe;
     const safeTool = safeString(tool || 'tool');
     if (!safeTool) return safe;
@@ -1113,7 +1198,7 @@ export function selectSecurityToolResultsView(toolResults = {}) {
       partial: safeBool(result.partial || result.partial_results),
     }, ['status', 'summary', 'completed_at', 'duration_seconds', 'finding_count', 'sbom_saved', 'partial']);
     return safe;
-  }, {});
+  }, {}));
 }
 
 export function selectSecurityCoverageSummaryView(payload = {}) {
@@ -1121,8 +1206,8 @@ export function selectSecurityCoverageSummaryView(payload = {}) {
     ? payload.coverage_summary
     : isObject(payload?.last_run?.coverage_summary)
       ? payload.last_run.coverage_summary
-      : {};
-  return {
+      : EMPTY_OBJECT;
+  return memoizeSecuritySelector(payload, 'coverage-summary', securityCacheKey([securityProfileRevision(payload, coverage.profile || payload?.scan_profile || payload?.last_run?.scan_profile || 'quick'), coverage.updated_at, coverage.checked_at, Array.isArray(coverage.target_statuses) ? coverage.target_statuses.length : 0]), () => ({
     profile: safeString(coverage.profile || payload?.scan_profile || payload?.last_run?.scan_profile || 'quick', 'quick'),
     app_id: safeString(coverage.app_id || payload?.app_id || payload?.last_run?.app_id || ''),
     app_label: safeString(coverage.app_label || payload?.app_label || payload?.last_run?.app_label || ''),
@@ -1159,14 +1244,15 @@ export function selectSecurityCoverageSummaryView(payload = {}) {
       : [],
     scanner_quality: isObject(coverage.scanner_quality)
       ? copySafeKeys(coverage.scanner_quality, ['profile', 'backend_owned', 'target_aware', 'bounded_timeouts', 'sanitized_evidence', 'raw_scanner_output_hidden', 'private_media_skipped', 'browser_execution'])
-      : {},
-  };
+      : EMPTY_OBJECT,
+  }));
 }
 
 export function selectSecurityEvidenceSummaryView(payload = {}) {
-  const evidenceRefs = safeList(payload?.evidence_refs).slice(0, 8);
-  const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
-  return {
+  return memoizeSecuritySelector(payload, 'evidence-summary', securityCacheKey([securityProfileRevision(payload, payload?.scan_profile || payload?.last_run?.scan_profile || 'quick'), payload?.evidence_updated_at, payload?.updated_at, payload?.checked_at, Array.isArray(payload?.evidence_refs) ? payload.evidence_refs.join(',') : '']), () => {
+    const evidenceRefs = safeList(payload?.evidence_refs).slice(0, 8);
+    const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
+    return {
     evidence_saved: safeBool(payload?.evidence_saved || evidenceRefs.length > 0 || lastRun?.evidence_refs?.length > 0),
     evidence_count: safeNumber(payload?.evidence_count || evidenceRefs.length || lastRun?.evidence_refs?.length, 0),
     evidence_refs: evidenceRefs,
@@ -1175,21 +1261,26 @@ export function selectSecurityEvidenceSummaryView(payload = {}) {
     sanitized: true,
     summary: safeString(payload?.evidence_summary || payload?.evidence?.summary || ''),
     updated_at: safeIso(payload?.evidence_updated_at || payload?.updated_at || payload?.checked_at),
-  };
+    };
+  });
 }
 
 export function selectSecurityFindingsView(payload = {}) {
-  const findings = Array.isArray(payload?.findings) ? payload.findings : [];
-  const critical = Array.isArray(payload?.critical_issues) ? payload.critical_issues : [];
-  return {
+  const findings = Array.isArray(payload?.findings) ? payload.findings : EMPTY_ARRAY;
+  const critical = Array.isArray(payload?.critical_issues) ? payload.critical_issues : EMPTY_ARRAY;
+  if (!findings.length && !critical.length && !payload?.items_to_review && !payload?.findings_count) {
+    return { findings: EMPTY_ARRAY, critical_issues: EMPTY_ARRAY, items_to_review: 0, findings_count: 0 };
+  }
+  return memoizeSecuritySelector(payload, 'findings', securityCacheKey([securityPayloadRevision(payload), findings.length, critical.length, payload?.items_to_review, payload?.findings_count]), () => ({
     findings: findings.slice(0, 20).map(normalizeSecurityFinding).filter(Boolean),
     critical_issues: critical.slice(0, 12).map(normalizeSecurityFinding).filter(Boolean),
     items_to_review: safeNumber(payload?.items_to_review ?? payload?.findings_count ?? findings.length, 0),
     findings_count: safeNumber(payload?.findings_count ?? findings.length, findings.length),
-  };
+  }));
 }
 
 export function selectSecurityProfileLatestView(payload = {}) {
+  return memoizeSecuritySelector(payload, 'profile-latest', securityCacheKey([securityPayloadRevision(payload), securityHistoryRevision(payload, 20), payload?.profile_latest ? Object.keys(payload.profile_latest).join(',') : '']), () => {
   const latest = {};
   const addRun = (input = null, fallbackProfile = '') => {
     const run = normalizeSecurityRun(input || {}) || null;
@@ -1209,18 +1300,25 @@ export function selectSecurityProfileLatestView(payload = {}) {
     if (latest[profile]) safe[profile] = latest[profile];
     return safe;
   }, {});
+  });
 }
 
 export function selectSecurityProfileHistoryView(payload = {}, profile = 'quick') {
   const profileId = normalizeSecurityProfileId(profile);
-  return selectSecurityHistorySummaryView(payload)
-    .filter((run) => normalizeSecurityProfileId(run?.scan_profile || (run?.app_id ? 'app' : 'quick')) === profileId)
-    .sort((left, right) => securityRunTimestamp(right) - securityRunTimestamp(left))
-    .slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileHistoryLimit);
+  return memoizeSecuritySelector(payload, `profile-history-${profileId}`, securityCacheKey([securityHistoryRevision(payload, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileHistoryLimit), profileId]), () => {
+    const history = selectSecurityHistorySummaryView(payload);
+    if (!history.length) return EMPTY_ARRAY;
+    return history
+      .filter((run) => normalizeSecurityProfileId(run?.scan_profile || (run?.app_id ? 'app' : 'quick')) === profileId)
+      .sort((left, right) => securityRunTimestamp(right) - securityRunTimestamp(left))
+      .slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileHistoryLimit);
+  });
 }
 
 export function selectSecurityProfileView(payload = {}, profile = 'quick') {
   const profileId = normalizeSecurityProfileId(profile);
+  if (payload?.view_model === 'security-profile-s3-v1' && normalizeSecurityProfileId(payload?.profile || payload?.scan_profile) === profileId) return payload;
+  return memoizeSecuritySelector(payload, `profile-view-${profileId}`, securityProfileRevision(payload, profileId), () => {
   const meta = snapshotMeta(payload);
   const latestByProfile = selectSecurityProfileLatestView(payload);
   const profileHistory = selectSecurityProfileHistoryView(payload, profileId);
@@ -1284,13 +1382,14 @@ export function selectSecurityProfileView(payload = {}, profile = 'quick') {
     history: profileHistory,
     is_latest_payload: isSelectedLatestPayload,
   };
+  });
 }
 
 export function selectSecurityProfilesView(payload = {}) {
-  return LITE_SECURITY_PROFILE_IDS.reduce((profiles, profile) => {
+  return memoizeSecuritySelector(payload, 'profiles-view', securityCacheKey(LITE_SECURITY_PROFILE_IDS.map((profile) => securityProfileRevision(payload, profile))), () => LITE_SECURITY_PROFILE_IDS.reduce((profiles, profile) => {
     profiles[profile] = selectSecurityProfileView(payload, profile);
     return profiles;
-  }, {});
+  }, {}));
 }
 
 export function selectSecurityCoverageView(payload = {}, profile = 'quick') {
@@ -1463,6 +1562,7 @@ export function selectSecurityScreenSnapshotView(payload = {}) {
 
 export function selectSecuritySummaryView(payload = {}) {
   if (payload?.view_model === 'security-screen-s3-v1' || payload?.view_model === 'security-summary-s3-v1') return payload;
+  return memoizeSecuritySelector(payload, 'summary-view', securityCacheKey([securityPayloadRevision(payload), securityHistoryRevision(payload, 20)]), () => {
   const lastRun = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || {}) || null;
   const findings = selectSecurityFindingsView(payload);
   const evidence = selectSecurityEvidenceSummaryView(payload);
@@ -1519,10 +1619,12 @@ export function selectSecuritySummaryView(payload = {}) {
     updated_at: safeIso(payload?.updated_at || payload?.checked_at),
     checked_at: safeIso(payload?.checked_at || payload?.updated_at),
   });
+  });
 }
 
 export function selectSecurityScreenView(payload = {}) {
   if (payload?.view_model === 'security-screen-s3-v1') return payload;
+  return memoizeSecuritySelector(payload, 'screen-view', securityCacheKey([securityPayloadRevision(payload), securityHistoryRevision(payload, 20)]), () => {
   const summary = selectSecuritySummaryView(payload || {});
   return withSnapshotMeta(payload, {
     ...summary,
@@ -1548,6 +1650,7 @@ export function selectSecurityScreenView(payload = {}) {
     profile_freshness: summary.profile_freshness || LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => { items[profile] = selectSecurityProfileView(summary, profile).freshness; return items; }, {}),
     profile_latest: summary.profile_latest || selectSecurityProfileLatestView(summary),
     live: isLiteSecurityViewLive(summary),
+  });
   });
 }
 
