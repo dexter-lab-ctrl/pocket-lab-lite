@@ -415,7 +415,7 @@ export function liveSecurityProgress(progress, runStatus, busy, nowMs) {
   if (status === 'queued') {
     return {
       percent: 5,
-      eta: 'starting',
+      eta: 'working',
       elapsed,
       remaining: estimatedTotal,
     };
@@ -426,10 +426,9 @@ export function liveSecurityProgress(progress, runStatus, busy, nowMs) {
     const serverPercent = Number(progress?.percent || 0);
     const percent = Math.max(8, Math.min(95, Math.max(serverPercent, percentFromElapsed)));
     const remaining = Math.max(0, estimatedTotal - elapsed);
-    const explicitEta = progress?.estimated_remaining_label || (Number.isFinite(Number(progress?.estimated_remaining_seconds)) ? formatSecurityRemainingSeconds(Number(progress.estimated_remaining_seconds), 'running') : 'working');
     return {
       percent,
-      eta: explicitEta,
+      eta: 'working',
       elapsed,
       remaining,
     };
