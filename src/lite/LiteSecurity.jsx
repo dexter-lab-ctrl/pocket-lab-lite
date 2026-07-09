@@ -1,3 +1,5 @@
+  const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || '';
+  const [directSecurityProgressData, setDirectSecurityProgressData] = React.useState(null);
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { useQueryClient } from '@tanstack/react-query';
@@ -1999,27 +2001,29 @@ export default function SecurityScreen() {
     profile: scanProfile,
     historyLimit: activeSecurityHistoryLimit || 20,
     forceFallback: shouldLoadSecurityProgress,
-    activeRunId: result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || '',
+    activeRunId: activeSecurityProgressRunId,
     localActive: localSecurityProgressActive,
+    onProgress: setDirectSecurityProgressData,
   });
   void securityProgressUsingFallback;
   void securityProgressFallbackLabel;
+  const liveSecurityProgressData = selectLiveSecurityProgress(null, directSecurityProgressData, securityProgressData, activeSecurityProgressRunId);
   useEffect(() => {
-    if (!result || !hasOptimisticSecurityProgress(result) || !securityProgressData || !isTerminalSecurityResult(securityProgressData)) return;
+    if (!result || !hasOptimisticSecurityProgress(result) || !liveSecurityProgressData || !isTerminalSecurityResult(liveSecurityProgressData)) return;
     const resultRunId = result.run_id || result.job_id || result.command_id || result.scan_progress?.run_id || '';
-    const progressRunId = securityProgressData.run_id || '';
+    const progressRunId = liveSecurityProgressData.run_id || '';
     if (resultRunId && progressRunId && resultRunId !== progressRunId) return;
-    setResult((current) => current ? settleSecurityResultFromProgress(current, securityProgressData) : current);
+    setResult((current) => current ? settleSecurityResultFromProgress(current, liveSecurityProgressData) : current);
     setBusy(false);
-  }, [result, securityProgressData]);
+  }, [result, liveSecurityProgressData]);
 
   const splitSecurityData = useMemo(() => {
     const base = securitySummaryData || {};
-    if (!securityProfileData && !securityHistoryData && !securityProgressData) return securitySummaryData;
+    if (!securityProfileData && !securityHistoryData && !liveSecurityProgressData) return securitySummaryData;
     const profileId = normalizeSecurityProfileId(securityProfileData?.profile || scanProfile);
     return {
       ...base,
-      ...(securityProgressData ? { scan_progress: securityProgressData } : {}),
+      ...(liveSecurityProgressData ? { scan_progress: liveSecurityProgressData } : {}),
       history: Array.isArray(securityHistoryData?.history) ? securityHistoryData.history : base.history,
       security_profiles: {
         ...(base.security_profiles || {}),
@@ -2034,7 +2038,7 @@ export default function SecurityScreen() {
         ...(securityProfileData?.updated_at ? { [profileId]: { checked_at: securityProfileData.updated_at, label: 'Fresh just now' } } : {}),
       },
     };
-  }, [scanProfile, securityHistoryData, securityProfileData, securityProgressData, securitySummaryData]);
+  }, [scanProfile, securityHistoryData, securityProfileData, liveSecurityProgressData, securitySummaryData]);
   const data = splitSecurityData || securitySummaryData;
   const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && profileRefreshing) || (shouldLoadSecurityHistory && historyRefreshing);
 
@@ -2185,10 +2189,10 @@ export default function SecurityScreen() {
   const displayRunStatus = String(activeProfileRun?.status || (activeProfileIsLatest ? data?.status : '') || '').toLowerCase();
   const currentRunStatus = String(result?.status || lastRun?.status || '').toLowerCase();
   const runStatus = activeProfileIsLatest ? currentRunStatus : displayRunStatus;
-  const activeSecurityRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || data?.scan_progress?.run_id || '';
-  const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId) : null;
+  const activeSecurityRunId = activeSecurityProgressRunId || data?.scan_progress?.run_id || '';
+  const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, liveSecurityProgressData, data?.scan_progress, activeSecurityRunId) : null;
   const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
-  const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(securityProgressData?.active_scan) || localSecurityProgressActive;
+  const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(liveSecurityProgressData?.active_scan) || localSecurityProgressActive;
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;
   const scanProgressEta = liveProgress.eta;
@@ -2367,6 +2371,15 @@ export default function SecurityScreen() {
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
   }
 
+  function releaseSecurityScanSubmitGuard(delayMs = 0) {
+    const release = () => { securityScanSubmitGuardRef.current = false; };
+    if (delayMs > 0 && typeof window !== 'undefined') {
+      window.setTimeout(release, delayMs);
+      return;
+    }
+    release();
+  }
+
   function securityScanAlreadyRunning() {
     return Boolean(securityScanSubmitGuardRef.current || busy || scanInProgress || securityProgressData?.active_scan || localSecurityProgressActive);
   }
@@ -2378,11 +2391,13 @@ export default function SecurityScreen() {
   async function scan() {
     if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
     securityScanSubmitGuardRef.current = true;
+    let acceptedScan = false;
     const flowCheck = securityFlow.requestRun();
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    if (!flowCheck.ok) { releaseSecurityScanSubmitGuard(); setActionError(flowCheck.reason); return; }
     setSelectedScanProfile('quick');
     setBusy(true);
     const optimistic = createOptimisticSecurityResult('quick');
+    setDirectSecurityProgressData(optimistic.scan_progress || null);
     setResult(optimistic);
     setActionError(null);
     setEvidence(null);
@@ -2392,6 +2407,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.runSecurityScan('local', { profile: 'quick', reason: 'manual quick safety check' });
       securityFlow.accepted(payload);
+      acceptedScan = true;
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'quick'));
       invalidateSecurityQuery('quick');
     } catch (err) {
@@ -2399,7 +2415,7 @@ export default function SecurityScreen() {
       setResult(null);
       setActionError(err.message);
     } finally {
-      securityScanSubmitGuardRef.current = false;
+      releaseSecurityScanSubmitGuard(acceptedScan ? 45_000 : 0);
       setBusy(false);
     }
   }
@@ -2429,12 +2445,14 @@ export default function SecurityScreen() {
   async function startFullLocalCheck() {
     if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
     securityScanSubmitGuardRef.current = true;
+    let acceptedScan = false;
     const flowCheck = securityFlow.requestRun();
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    if (!flowCheck.ok) { releaseSecurityScanSubmitGuard(); setActionError(flowCheck.reason); return; }
     setFullLocalConfirmOpen(false);
     setSelectedScanProfile('full');
     setBusy(true);
     const optimistic = createOptimisticSecurityResult('full');
+    setDirectSecurityProgressData(optimistic.scan_progress || null);
     setResult(optimistic);
     setActionError(null);
     setEvidence(null);
@@ -2444,6 +2462,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.runSecurityScan('local', { profile: 'full', reason: 'manual full local check' });
       securityFlow.accepted(payload);
+      acceptedScan = true;
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'full'));
       invalidateSecurityQuery('full');
     } catch (err) {
@@ -2451,7 +2470,7 @@ export default function SecurityScreen() {
       setResult(null);
       setActionError(err.message);
     } finally {
-      securityScanSubmitGuardRef.current = false;
+      releaseSecurityScanSubmitGuard(acceptedScan ? 45_000 : 0);
       setBusy(false);
     }
   }
@@ -2464,14 +2483,16 @@ export default function SecurityScreen() {
   async function startAppCheck(targetApp = null) {
     if (securityScanAlreadyRunning()) { blockDuplicateSecurityScan(); return; }
     securityScanSubmitGuardRef.current = true;
+    let acceptedScan = false;
     const app = targetApp || appCheckTarget || { app_id: 'photoprism', app_label: 'PhotoPrism' };
-    if (!app?.app_id) return;
+    if (!app?.app_id) { releaseSecurityScanSubmitGuard(); return; }
     const flowCheck = securityFlow.requestRun();
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    if (!flowCheck.ok) { releaseSecurityScanSubmitGuard(); setActionError(flowCheck.reason); return; }
     setAppCheckConfirmOpen(false);
     setSelectedScanProfile('app');
     setBusy(true);
     const optimistic = createOptimisticSecurityResult('app', app);
+    setDirectSecurityProgressData(optimistic.scan_progress || null);
     setResult(optimistic);
     setActionError(null);
     setEvidence(null);
@@ -2481,6 +2502,7 @@ export default function SecurityScreen() {
     try {
       const payload = await liteApi.checkSecurityApp(app.app_id, { reason: 'manual app safety check' });
       securityFlow.accepted(payload);
+      acceptedScan = true;
       setResult(mergeSecurityAcceptedResult(optimistic, payload, 'app'));
       invalidateSecurityQuery('app');
     } catch (err) {
@@ -2488,7 +2510,7 @@ export default function SecurityScreen() {
       setResult(null);
       setActionError(err.message);
     } finally {
-      securityScanSubmitGuardRef.current = false;
+      releaseSecurityScanSubmitGuard(acceptedScan ? 45_000 : 0);
       setBusy(false);
     }
   }

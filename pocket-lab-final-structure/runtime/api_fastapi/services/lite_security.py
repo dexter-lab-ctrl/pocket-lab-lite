@@ -115,6 +115,7 @@ _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT = max(1, int(os.environ.get("POCKETLAB_LIT
 _SECURITY_SPLIT_HISTORY_MAX_LIMIT = max(_SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, int(os.environ.get("POCKETLAB_LITE_SECURITY_HISTORY_MAX_LIMIT", "50")))
 _SECURITY_SPLIT_FINDING_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_DETAILS_FINDING_LIMIT", "50")))
 _SECURITY_SPLIT_PREVIEW_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_PROFILE_PREVIEW_LIMIT", "6")))
+_SECURITY_RECENT_COMPLETION_DEDUPE_SECONDS = max(5.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_RECENT_COMPLETION_DEDUPE_SECONDS", "45")))
 _SECURITY_SPLIT_READ_CACHE: dict[str, dict[str, Any]] = {}
 _SECURITY_SPLIT_TTLS = {
     "freshness": (2.0, 1.0),
@@ -894,6 +895,60 @@ def active_scan_state(profile: str | None = None, app_id: str | None = None) -> 
         "summary": "A safety check is already running.",
         "scan_progress": progress,
     })
+
+
+
+def _security_progress_age_seconds(progress: dict[str, Any]) -> float | None:
+    value = progress.get("updated_at") or progress.get("completed_at") or progress.get("started_at")
+    if not value:
+        return None
+    try:
+        timestamp = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=timezone.utc)
+    return max(0.0, (datetime.now(timezone.utc) - timestamp.astimezone(timezone.utc)).total_seconds())
+
+
+def recent_completed_scan_state(profile: str | None = None, app_id: str | None = None) -> dict[str, Any] | None:
+    progress = split_progress_state()
+    if not isinstance(progress, dict) or progress.get("active_scan"):
+        return None
+    status = str(progress.get("status") or "").strip().lower().replace("-", "_")
+    if status not in {"succeeded", "success", "completed", "complete", "done"}:
+        return None
+    age = _security_progress_age_seconds(progress)
+    if age is None or age > _SECURITY_RECENT_COMPLETION_DEDUPE_SECONDS:
+        return None
+    progress_profile = policy.normalize_scan_profile(progress.get("profile") or progress.get("scan_profile") or policy.SCAN_PROFILE_QUICK)
+    request_profile = policy.normalize_scan_profile(profile or progress_profile)
+    if progress_profile != request_profile:
+        return None
+    if request_profile == policy.SCAN_PROFILE_APP:
+        progress_app_id = str(progress.get("app_id") or "").strip().lower()
+        request_app_id = str(app_id or "").strip().lower()
+        if request_app_id and progress_app_id and progress_app_id != request_app_id:
+            return None
+    return policy.redact_value({
+        "status": progress.get("status") or "succeeded",
+        "state": progress.get("status") or "succeeded",
+        "accepted": True,
+        "duplicate": True,
+        "recent_duplicate": True,
+        "already_completed": True,
+        "run_id": progress.get("run_id") or "",
+        "command_id": progress.get("run_id") or "",
+        "scan_profile": progress_profile,
+        "profile": progress_profile,
+        **({"app_id": progress.get("app_id"), "app_label": _app_label(progress.get("app_id"))} if progress.get("app_id") else {}),
+        "summary": "A safety check just finished. Showing the latest saved result instead of starting another one.",
+        "scan_progress": {
+            **progress,
+            "active_scan": False,
+        },
+    })
+
 
 
 def split_run_details_state(run_id: str) -> dict[str, Any] | None:

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+        onProgress?.(event);
 import { liteApi } from '../lib/liteApi.js';
 import { broadcastLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
@@ -155,7 +156,7 @@ async function loadProgressFallback(queryClient, historyLimit) {
   }, historyLimit);
 }
 
-export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20, forceFallback = false, activeRunId = '', localActive = false } = {}) {
+export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20, forceFallback = false, activeRunId = '', localActive = false, onProgress = null } = {}) {
   const queryClient = useQueryClient();
   const [eventState, setEventState] = useState({ status: 'idle', usingFallback: false, event: null });
   const [fallbackActive, setFallbackActive] = useState(false);
@@ -189,7 +190,8 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
         const event = normalizeSecurityEvent(JSON.parse(message.data || '{}'));
         seenEventRef.current = true;
         lastEventActiveRef.current = liveSecurityEvent(event);
-        applySecurityEvent(queryClient, event, historyLimitValue);
+        const appliedEvent = applySecurityEvent(queryClient, event, historyLimitValue);
+        onProgress?.(appliedEvent);
         const terminal = terminalSecurityEvent(event);
         const keepFallbackAlive = shouldKeepSecurityFallbackAlive(event, { forceFallback, localActive: localProgressActive, activeRunId: activeRunKey });
         setEventState({ status: terminal ? 'done' : 'connected', usingFallback: false, event });
@@ -230,7 +232,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
       closed = true;
       source.close();
     };
-  }, [activeRunKey, enabled, forceFallback, historyLimitValue, localProgressActive, profileValue, queryClient]);
+  }, [activeRunKey, enabled, forceFallback, historyLimitValue, localProgressActive, onProgress, profileValue, queryClient]);
 
   useEffect(() => {
     if (!enabled || (!fallbackActive && !forceFallback)) return undefined;
@@ -260,7 +262,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
       stopped = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [activeRunKey, enabled, fallbackActive, forceFallback, historyLimitValue, localProgressActive, queryClient]);
+  }, [activeRunKey, enabled, fallbackActive, forceFallback, historyLimitValue, localProgressActive, onProgress, queryClient]);
 
   return useMemo(() => ({
     data: eventState.event ? progressPayloadFromEvent(eventState.event) : null,
