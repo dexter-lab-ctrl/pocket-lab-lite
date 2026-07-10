@@ -1,0 +1,1262 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import sqlite3
+import threading
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, Iterable, Mapping, Sequence
+
+from ..db.connection import begin_immediate, connection, database_path, read_connection
+from ..db.migrations import apply_migrations
+from . import lite_security_evidence as evidence
+from . import lite_security_policy as policy
+
+
+ACTIVE_STATUSES = frozenset({"queued", "accepted", "running", "working", "in_progress"})
+TERMINAL_STATUSES = frozenset({"succeeded", "degraded", "failed", "cancelled"})
+VALID_STATUSES = ACTIVE_STATUSES | TERMINAL_STATUSES
+STORE_MODES = frozenset({"json", "dual", "sqlite"})
+MAX_METADATA_BYTES = 32 * 1024
+DEFAULT_HISTORY_LIMIT = 20
+MAX_HISTORY_LIMIT = 100
+IMPORT_VERSION = 1
+_INITIALIZED_DATABASES: set[Path] = set()
+_INITIALIZE_LOCK = threading.Lock()
+
+
+@dataclass(frozen=True)
+class ReservationResult:
+    reserved: bool
+    reason: str
+    run: dict[str, Any]
+
+
+@dataclass
+class ImportReport:
+    preview: bool
+    source_root: str
+    source_checksum: str
+    runs_seen: int = 0
+    runs_imported: int = 0
+    runs_skipped: int = 0
+    findings_imported: int = 0
+    tools_imported: int = 0
+    evidence_refs_imported: int = 0
+    malformed_optional_files: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return policy.redact_value(asdict(self))
+
+
+class SecurityStoreError(RuntimeError):
+    """Base error for the inactive SQLite Security repository."""
+
+
+class InvalidSecurityStoreValue(SecurityStoreError):
+    """A status/profile/app/run value is outside the repository contract."""
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _parse_timestamp(value: Any, *, default: str | None = None) -> str:
+    text = str(value or default or utc_now()).strip()
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        parsed = datetime.now(timezone.utc)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _epoch_ms(value: Any) -> int:
+    parsed = datetime.fromisoformat(_parse_timestamp(value).replace("Z", "+00:00"))
+    return int(parsed.timestamp() * 1000)
+
+
+def security_store_mode() -> str:
+    mode = os.environ.get("POCKETLAB_LITE_SECURITY_STORE_MODE", "json").strip().lower()
+    if mode not in STORE_MODES:
+        raise InvalidSecurityStoreValue(
+            "POCKETLAB_LITE_SECURITY_STORE_MODE must be json, dual, or sqlite"
+        )
+    return mode
+
+
+def sqlite_shadow_read_enabled() -> bool:
+    value = os.environ.get("POCKETLAB_LITE_SECURITY_SQLITE_SHADOW_READ", "0").strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"", "0", "false", "no", "off"}:
+        return False
+    raise InvalidSecurityStoreValue(
+        "POCKETLAB_LITE_SECURITY_SQLITE_SHADOW_READ must be 0 or 1"
+    )
+
+
+def _normalize_profile(value: Any) -> str:
+    try:
+        return policy.normalize_scan_profile(value)
+    except ValueError as exc:
+        raise InvalidSecurityStoreValue(str(exc)) from exc
+
+
+def _normalize_app(profile: str, value: Any) -> str:
+    if profile != policy.SCAN_PROFILE_APP:
+        return ""
+    try:
+        return policy.normalize_app_id(value)
+    except ValueError as exc:
+        raise InvalidSecurityStoreValue(str(exc)) from exc
+
+
+def _normalize_run_id(value: Any) -> str:
+    normalized = evidence.safe_run_id(str(value or ""))
+    if normalized == "unknown" or len(normalized) > 120:
+        raise InvalidSecurityStoreValue("Security run_id is required")
+    return normalized
+
+
+def _normalize_status(value: Any) -> str:
+    raw = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "waiting": "queued",
+        "complete": "succeeded",
+        "completed": "succeeded",
+        "success": "succeeded",
+        "done": "succeeded",
+        "review": "degraded",
+        "partial": "degraded",
+        "canceled": "cancelled",
+        "error": "failed",
+    }
+    normalized = aliases.get(raw, raw)
+    if normalized not in VALID_STATUSES:
+        raise InvalidSecurityStoreValue(f"Unsupported Security status: {raw or '<empty>'}")
+    return normalized
+
+
+def _active_key(profile: str, app_id: str) -> str:
+    scope = os.environ.get("POCKETLAB_LITE_SECURITY_ACTIVE_SCOPE", "global").strip().lower()
+    if scope == "global":
+        return "security:global"
+    if scope != "profile":
+        raise InvalidSecurityStoreValue(
+            "POCKETLAB_LITE_SECURITY_ACTIVE_SCOPE must be global or profile"
+        )
+    return f"security:{profile}:{app_id}" if profile == policy.SCAN_PROFILE_APP else f"security:{profile}:"
+
+
+def _safe_json(value: Any, *, max_bytes: int = MAX_METADATA_BYTES) -> str | None:
+    if value in (None, {}, []):
+        return None
+    clean = policy.redact_value(value)
+    encoded = json.dumps(clean, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+    raw = encoded.encode("utf-8")
+    if len(raw) > max_bytes:
+        digest = hashlib.sha256(raw).hexdigest()
+        encoded = json.dumps(
+            {"truncated": True, "sha256": digest, "original_bytes": len(raw)},
+            separators=(",", ":"),
+        )
+    return encoded
+
+
+def _json_value(value: str | None, default: Any) -> Any:
+    if not value:
+        return default
+    try:
+        return json.loads(value)
+    except (TypeError, json.JSONDecodeError):
+        return default
+
+
+def _row(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    payload = dict(row)
+    payload["partial_results"] = bool(payload.get("partial_results"))
+    payload["evidence_saved"] = bool(payload.get("evidence_saved"))
+    payload["metadata"] = _json_value(payload.pop("metadata_json", None), {})
+    return policy.redact_value(payload)
+
+
+def _bump_revision(conn: sqlite3.Connection, at: str | None = None) -> int:
+    updated_at = _parse_timestamp(at)
+    conn.execute(
+        """
+        INSERT INTO domain_revisions(domain, revision, updated_at)
+        VALUES ('security', 1, ?)
+        ON CONFLICT(domain) DO UPDATE SET
+            revision = domain_revisions.revision + 1,
+            updated_at = excluded.updated_at
+        """,
+        (updated_at,),
+    )
+    row = conn.execute(
+        "SELECT revision FROM domain_revisions WHERE domain = ?", ("security",)
+    ).fetchone()
+    return int(row["revision"])
+
+
+def _set_metadata(conn: sqlite3.Connection, key: str, value: Any, *, at: str | None = None) -> None:
+    conn.execute(
+        """
+        INSERT INTO security_store_metadata(metadata_key, value_json, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(metadata_key) DO UPDATE SET
+            value_json = excluded.value_json,
+            updated_at = excluded.updated_at
+        """,
+        (str(key)[:160], _safe_json(value) or "{}", _parse_timestamp(at)),
+    )
+
+
+def _get_metadata(conn: sqlite3.Connection, key: str) -> dict[str, Any]:
+    row = conn.execute(
+        "SELECT value_json FROM security_store_metadata WHERE metadata_key = ?",
+        (str(key)[:160],),
+    ).fetchone()
+    return _json_value(row["value_json"], {}) if row else {}
+
+
+def _finding_key(finding: Mapping[str, Any]) -> tuple[str, str]:
+    source = str(finding.get("source") or "security").strip().lower()[:80]
+    rule_id = str(finding.get("id") or finding.get("rule_id") or finding.get("category") or "finding").strip().lower()
+    component = str(finding.get("component") or "").strip().lower()
+    safe_target = str(finding.get("file") or finding.get("target") or "").strip().lower()
+    material = policy.redact_value([source, rule_id, component, safe_target])
+    digest = hashlib.sha256(json.dumps(material, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+    return f"{source}:{digest[:24]}", digest
+
+
+def _progress_fingerprint(
+    run_id: str,
+    status: str,
+    stage: str | None,
+    percent: int | None,
+    message: str | None,
+    tool: str | None,
+) -> str:
+    material = policy.redact_value([run_id, status, stage or "", percent, message or "", tool or ""])
+    return hashlib.sha256(json.dumps(material, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
+
+
+class SecuritySQLiteRepository:
+    """Explicit SQLite repository used only by S2 tests/tools and opt-in shadow reads."""
+
+    def __init__(self, *, initialize: bool = True) -> None:
+        if initialize:
+            path = database_path()
+            with _INITIALIZE_LOCK:
+                if path not in _INITIALIZED_DATABASES:
+                    apply_migrations()
+                    _INITIALIZED_DATABASES.add(path)
+
+    @property
+    def path(self) -> Path:
+        return database_path()
+
+    def reserve_scan(
+        self,
+        *,
+        run_id: str,
+        profile: str,
+        app_id: str | None = None,
+        app_label: str | None = None,
+        summary: str = "",
+        requested_at: str | None = None,
+        command_id: str | None = None,
+        correlation_id: str | None = None,
+        recent_completion_seconds: int = 0,
+    ) -> ReservationResult:
+        normalized_profile = _normalize_profile(profile)
+        normalized_app = _normalize_app(normalized_profile, app_id)
+        normalized_run = _normalize_run_id(run_id)
+        now = _parse_timestamp(requested_at)
+        now_epoch = _epoch_ms(now)
+        active_key = _active_key(normalized_profile, normalized_app)
+        with connection() as conn, begin_immediate(conn) as tx:
+            active = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE active_key = ? ORDER BY updated_at_epoch_ms DESC LIMIT 1",
+                (active_key,),
+            ).fetchone()
+            if active:
+                return ReservationResult(False, "active", _row(active) or {})
+            if recent_completion_seconds > 0:
+                cutoff = now_epoch - max(0, int(recent_completion_seconds)) * 1000
+                recent = tx.execute(
+                    """
+                    SELECT * FROM security_scan_runs
+                    WHERE profile = ? AND app_id = ? AND status IN ('succeeded', 'degraded')
+                      AND completed_at_epoch_ms >= ?
+                    ORDER BY completed_at_epoch_ms DESC LIMIT 1
+                    """,
+                    (normalized_profile, normalized_app, cutoff),
+                ).fetchone()
+                if recent:
+                    return ReservationResult(False, "recent_completion", _row(recent) or {})
+            tx.execute(
+                """
+                INSERT INTO security_scan_runs(
+                    run_id, profile, app_id, app_label, status, active_key, summary,
+                    requested_at, updated_at, requested_at_epoch_ms, updated_at_epoch_ms,
+                    command_id, correlation_id, source, revision
+                ) VALUES (?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, 'security-api', 1)
+                """,
+                (
+                    normalized_run,
+                    normalized_profile,
+                    normalized_app,
+                    str(app_label or "")[:120],
+                    active_key,
+                    policy.redact_text(summary)[:500],
+                    now,
+                    now,
+                    now_epoch,
+                    now_epoch,
+                    str(command_id or "")[:160] or None,
+                    str(correlation_id or "")[:160] or None,
+                ),
+            )
+            _bump_revision(tx, now)
+            reserved = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+            ).fetchone()
+        return ReservationResult(True, "reserved", _row(reserved) or {})
+
+    def get_active_scan(self, profile: str | None = None, app_id: str | None = None) -> dict[str, Any] | None:
+        with read_connection() as conn:
+            if profile is None:
+                row = conn.execute(
+                    "SELECT * FROM security_scan_runs WHERE active_key IS NOT NULL ORDER BY updated_at_epoch_ms DESC LIMIT 1"
+                ).fetchone()
+            else:
+                normalized_profile = _normalize_profile(profile)
+                normalized_app = _normalize_app(normalized_profile, app_id)
+                row = conn.execute(
+                    "SELECT * FROM security_scan_runs WHERE active_key = ? ORDER BY updated_at_epoch_ms DESC LIMIT 1",
+                    (_active_key(normalized_profile, normalized_app),),
+                ).fetchone()
+        return _row(row)
+
+    def get_recent_completion(
+        self, profile: str, app_id: str | None = None, *, within_seconds: int = 30
+    ) -> dict[str, Any] | None:
+        normalized_profile = _normalize_profile(profile)
+        normalized_app = _normalize_app(normalized_profile, app_id)
+        cutoff = int((datetime.now(timezone.utc) - timedelta(seconds=max(0, within_seconds))).timestamp() * 1000)
+        with read_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM security_scan_runs
+                WHERE profile = ? AND app_id = ? AND status IN ('succeeded', 'degraded')
+                  AND completed_at_epoch_ms >= ?
+                ORDER BY completed_at_epoch_ms DESC LIMIT 1
+                """,
+                (normalized_profile, normalized_app, cutoff),
+            ).fetchone()
+        return _row(row)
+
+    def mark_running(self, run_id: str, *, started_at: str | None = None, summary: str = "") -> dict[str, Any]:
+        normalized_run = _normalize_run_id(run_id)
+        now = _parse_timestamp(started_at)
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT status FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+            ).fetchone()
+            if not current:
+                raise SecurityStoreError("Security run not found")
+            if str(current["status"]) in TERMINAL_STATUSES:
+                raise SecurityStoreError("Terminal Security run cannot be restarted")
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET status = 'running', accepted_at = COALESCE(accepted_at, ?),
+                    started_at = COALESCE(started_at, ?),
+                    started_at_epoch_ms = COALESCE(started_at_epoch_ms, ?),
+                    updated_at = ?, updated_at_epoch_ms = ?,
+                    summary = CASE WHEN ? = '' THEN summary ELSE ? END,
+                    revision = revision + 1
+                WHERE run_id = ?
+                """,
+                (now, now, _epoch_ms(now), now, _epoch_ms(now), summary, policy.redact_text(summary)[:500], normalized_run),
+            )
+            _bump_revision(tx, now)
+            row = tx.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)).fetchone()
+        return _row(row) or {}
+
+    def record_progress(
+        self,
+        run_id: str,
+        *,
+        status: str,
+        stage: str | None = None,
+        percent: int | None = None,
+        message: str | None = None,
+        tool: str | None = None,
+        payload: Any = None,
+        created_at: str | None = None,
+    ) -> dict[str, Any]:
+        normalized_run = _normalize_run_id(run_id)
+        normalized_status = _normalize_status(status)
+        if percent is not None and not 0 <= int(percent) <= 100:
+            raise InvalidSecurityStoreValue("Security progress percent must be 0..100")
+        now = _parse_timestamp(created_at)
+        clean_stage = policy.redact_text(str(stage or ""))[:160] or None
+        clean_message = policy.redact_text(str(message or ""))[:500] or None
+        clean_tool = policy.redact_text(str(tool or ""))[:80] or None
+        fingerprint = _progress_fingerprint(
+            normalized_run, normalized_status, clean_stage, int(percent) if percent is not None else None, clean_message, clean_tool
+        )
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT active_key FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+            ).fetchone()
+            if not current:
+                raise SecurityStoreError("Security run not found")
+            duplicate = tx.execute(
+                "SELECT event_id FROM security_scan_progress_events WHERE run_id = ? AND fingerprint = ?",
+                (normalized_run, fingerprint),
+            ).fetchone()
+            if duplicate:
+                row = tx.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)).fetchone()
+                return {"deduplicated": True, "run": _row(row) or {}}
+            sequence = int(tx.execute(
+                "SELECT COALESCE(MAX(sequence_no), 0) + 1 AS next_sequence FROM security_scan_progress_events WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()["next_sequence"])
+            active_key = current["active_key"] if normalized_status in ACTIVE_STATUSES else None
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET status = ?, active_key = ?, current_stage = ?, current_percent = ?,
+                    current_message = ?, current_tool = ?, updated_at = ?, updated_at_epoch_ms = ?,
+                    revision = revision + 1
+                WHERE run_id = ?
+                """,
+                (
+                    normalized_status,
+                    active_key,
+                    clean_stage,
+                    int(percent) if percent is not None else None,
+                    clean_message,
+                    clean_tool,
+                    now,
+                    _epoch_ms(now),
+                    normalized_run,
+                ),
+            )
+            tx.execute(
+                """
+                INSERT INTO security_scan_progress_events(
+                    run_id, sequence_no, status, stage, percent, message, tool,
+                    created_at, created_at_epoch_ms, payload_json, fingerprint
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    normalized_run,
+                    sequence,
+                    normalized_status,
+                    clean_stage,
+                    int(percent) if percent is not None else None,
+                    clean_message,
+                    clean_tool,
+                    now,
+                    _epoch_ms(now),
+                    _safe_json(payload),
+                    fingerprint,
+                ),
+            )
+            revision = _bump_revision(tx, now)
+            row = tx.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)).fetchone()
+        return {"deduplicated": False, "sequence_no": sequence, "domain_revision": revision, "run": _row(row) or {}}
+
+    def complete_run(
+        self,
+        run_id: str,
+        *,
+        status: str = "succeeded",
+        summary: str = "",
+        score: int | None = None,
+        partial_results: bool = False,
+        completed_at: str | None = None,
+        findings: Sequence[Mapping[str, Any]] | None = None,
+        evidence_refs: Sequence[Any] | None = None,
+        tool_results: Mapping[str, Any] | None = None,
+        counts: Mapping[str, int] | None = None,
+        checks_reviewed: int = 0,
+        items_to_review: int = 0,
+    ) -> dict[str, Any]:
+        normalized_status = _normalize_status(status)
+        if normalized_status not in {"succeeded", "degraded", "cancelled"}:
+            raise InvalidSecurityStoreValue("complete_run requires succeeded, degraded, or cancelled")
+        return self._finish_run(
+            run_id,
+            status=normalized_status,
+            summary=summary,
+            score=score,
+            partial_results=partial_results,
+            completed_at=completed_at,
+            findings=findings,
+            evidence_refs=evidence_refs,
+            tool_results=tool_results,
+            counts=counts,
+            checks_reviewed=checks_reviewed,
+            items_to_review=items_to_review,
+        )
+
+    def fail_run(
+        self,
+        run_id: str,
+        *,
+        failure_code: str,
+        failure_message: str,
+        completed_at: str | None = None,
+        partial_results: bool = False,
+    ) -> dict[str, Any]:
+        return self._finish_run(
+            run_id,
+            status="failed",
+            summary="Security check needs review.",
+            partial_results=partial_results,
+            completed_at=completed_at,
+            failure_code=policy.redact_text(failure_code)[:120],
+            failure_message=policy.redact_text(failure_message)[:500],
+        )
+
+    def _finish_run(
+        self,
+        run_id: str,
+        *,
+        status: str,
+        summary: str,
+        score: int | None = None,
+        partial_results: bool = False,
+        completed_at: str | None = None,
+        findings: Sequence[Mapping[str, Any]] | None = None,
+        evidence_refs: Sequence[Any] | None = None,
+        tool_results: Mapping[str, Any] | None = None,
+        counts: Mapping[str, int] | None = None,
+        checks_reviewed: int = 0,
+        items_to_review: int = 0,
+        failure_code: str | None = None,
+        failure_message: str | None = None,
+    ) -> dict[str, Any]:
+        normalized_run = _normalize_run_id(run_id)
+        now = _parse_timestamp(completed_at)
+        safe_counts = {severity: max(0, int((counts or {}).get(severity, 0))) for severity in policy.SEVERITIES}
+        if findings and not any(safe_counts.values()):
+            for finding in findings:
+                severity = policy.normalize_severity(finding.get("severity"))
+                safe_counts[severity] += 1
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT profile, app_id FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+            ).fetchone()
+            if not current:
+                raise SecurityStoreError("Security run not found")
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET status = ?, active_key = NULL, summary = ?, score = ?, partial_results = ?,
+                    completed_at = ?, completed_at_epoch_ms = ?, updated_at = ?, updated_at_epoch_ms = ?,
+                    current_percent = 100, current_stage = ?, current_message = ?,
+                    checks_reviewed = ?, items_to_review = ?, critical_count = ?, high_count = ?,
+                    medium_count = ?, low_count = ?, info_count = ?, failure_code = ?,
+                    failure_message = ?, evidence_saved = ?, revision = revision + 1
+                WHERE run_id = ?
+                """,
+                (
+                    status,
+                    policy.redact_text(summary)[:500],
+                    int(score) if score is not None else None,
+                    int(bool(partial_results)),
+                    now,
+                    _epoch_ms(now),
+                    now,
+                    _epoch_ms(now),
+                    "Safety check complete" if status != "failed" else "Safety check needs review",
+                    policy.redact_text(summary)[:500],
+                    max(0, int(checks_reviewed)),
+                    max(0, int(items_to_review)),
+                    safe_counts["critical"],
+                    safe_counts["high"],
+                    safe_counts["medium"],
+                    safe_counts["low"],
+                    safe_counts["info"],
+                    failure_code,
+                    failure_message,
+                    int(bool(evidence_refs)),
+                    normalized_run,
+                ),
+            )
+            self._replace_findings(tx, normalized_run, findings or [])
+            self._replace_evidence_refs(tx, normalized_run, evidence_refs or [], created_at=now)
+            self._replace_tool_runs(tx, normalized_run, tool_results or {})
+            self._upsert_profile_snapshot(tx, normalized_run, updated_at=now)
+            revision = _bump_revision(tx, now)
+            row = tx.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)).fetchone()
+        return {"domain_revision": revision, "run": _row(row) or {}}
+
+    def _replace_findings(self, conn: sqlite3.Connection, run_id: str, findings: Sequence[Mapping[str, Any]]) -> int:
+        conn.execute("DELETE FROM security_scan_findings WHERE run_id = ?", (run_id,))
+        count = 0
+        seen: set[str] = set()
+        for finding in list(findings)[:500]:
+            clean = policy.redact_value(dict(finding))
+            finding_key, fingerprint = _finding_key(clean)
+            if finding_key in seen:
+                continue
+            seen.add(finding_key)
+            severity = policy.normalize_severity(clean.get("severity"))
+            title = policy.redact_text(str(clean.get("title") or clean.get("summary") or "Security finding"))[:240]
+            conn.execute(
+                """
+                INSERT INTO security_scan_findings(
+                    run_id, finding_key, fingerprint, source, severity, title, summary,
+                    component, status, first_seen_at, last_seen_at, resolved_at,
+                    remediation_json, technical_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    finding_key,
+                    fingerprint,
+                    policy.redact_text(str(clean.get("source") or "security"))[:80],
+                    severity,
+                    title,
+                    policy.redact_text(str(clean.get("summary") or ""))[:500],
+                    policy.redact_text(str(clean.get("component") or ""))[:160],
+                    policy.redact_text(str(clean.get("status") or "present"))[:40],
+                    _parse_timestamp(clean.get("first_seen_at")) if clean.get("first_seen_at") else None,
+                    _parse_timestamp(clean.get("last_seen_at")) if clean.get("last_seen_at") else None,
+                    _parse_timestamp(clean.get("resolved_at")) if clean.get("resolved_at") else None,
+                    _safe_json(clean.get("remediation") or clean.get("recommendation")),
+                    _safe_json({key: clean.get(key) for key in ("category", "file", "target", "redacted") if key in clean}),
+                ),
+            )
+            count += 1
+        return count
+
+    def _replace_evidence_refs(
+        self, conn: sqlite3.Connection, run_id: str, refs: Sequence[Any], *, created_at: str
+    ) -> int:
+        conn.execute("DELETE FROM security_scan_evidence_refs WHERE run_id = ?", (run_id,))
+        count = 0
+        seen: set[str] = set()
+        for item in list(refs)[:500]:
+            if isinstance(item, Mapping):
+                relative = str(item.get("relative_path") or item.get("path") or item.get("evidence_ref") or "")
+                kind = str(item.get("kind") or Path(relative).stem or "evidence")
+                sha256 = str(item.get("sha256") or "") or None
+                size_bytes = item.get("size_bytes")
+                metadata = {key: value for key, value in item.items() if key not in {"relative_path", "path", "evidence_ref", "sha256", "size_bytes"}}
+            else:
+                relative = str(item or "")
+                kind = Path(relative).stem or "evidence"
+                sha256 = None
+                size_bytes = None
+                metadata = {}
+            safe_relative = _safe_evidence_relative_path(run_id, relative)
+            if not safe_relative or safe_relative in seen:
+                continue
+            seen.add(safe_relative)
+            conn.execute(
+                """
+                INSERT INTO security_scan_evidence_refs(
+                    run_id, kind, relative_path, sha256, size_bytes, created_at, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    policy.redact_text(kind)[:80],
+                    safe_relative,
+                    sha256[:64] if sha256 else None,
+                    max(0, int(size_bytes)) if size_bytes is not None else None,
+                    created_at,
+                    _safe_json(metadata),
+                ),
+            )
+            count += 1
+        return count
+
+    def _replace_tool_runs(self, conn: sqlite3.Connection, run_id: str, tool_results: Mapping[str, Any]) -> int:
+        conn.execute("DELETE FROM security_scan_tool_runs WHERE run_id = ?", (run_id,))
+        count = 0
+        for tool_name, raw in list(tool_results.items())[:100]:
+            payload = policy.redact_value(raw if isinstance(raw, Mapping) else {"status": str(raw)})
+            conn.execute(
+                """
+                INSERT INTO security_scan_tool_runs(
+                    run_id, tool_name, status, started_at, completed_at, duration_ms,
+                    finding_count, timed_out, timeout_reason, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    policy.redact_text(str(tool_name))[:80],
+                    policy.redact_text(str(payload.get("status") or "unknown"))[:40],
+                    _parse_timestamp(payload.get("started_at")) if payload.get("started_at") else None,
+                    _parse_timestamp(payload.get("completed_at")) if payload.get("completed_at") else None,
+                    max(0, int(payload.get("duration_ms") or 0)) or None,
+                    max(0, int(payload.get("finding_count") or 0)),
+                    int(str(payload.get("status") or "").lower() == "timed_out" or bool(payload.get("timed_out"))),
+                    policy.redact_text(str(payload.get("timeout_reason") or ""))[:240] or None,
+                    _safe_json({key: value for key, value in payload.items() if key not in {"status", "started_at", "completed_at", "duration_ms", "finding_count", "timed_out", "timeout_reason"}}),
+                ),
+            )
+            count += 1
+        return count
+
+    def _upsert_profile_snapshot(self, conn: sqlite3.Connection, run_id: str, *, updated_at: str) -> None:
+        run = conn.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (run_id,)).fetchone()
+        if not run:
+            return
+        conn.execute(
+            """
+            INSERT INTO security_profile_snapshots(
+                profile, app_id, latest_run_id, latest_status, latest_score,
+                latest_summary, latest_completed_at, latest_evidence_at, updated_at, revision
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            ON CONFLICT(profile, app_id) DO UPDATE SET
+                latest_run_id = excluded.latest_run_id,
+                latest_status = excluded.latest_status,
+                latest_score = excluded.latest_score,
+                latest_summary = excluded.latest_summary,
+                latest_completed_at = excluded.latest_completed_at,
+                latest_evidence_at = excluded.latest_evidence_at,
+                updated_at = excluded.updated_at,
+                revision = security_profile_snapshots.revision + 1
+            """,
+            (
+                run["profile"],
+                run["app_id"],
+                run_id,
+                run["status"],
+                run["score"],
+                run["summary"],
+                run["completed_at"],
+                run["completed_at"] if run["evidence_saved"] else None,
+                updated_at,
+            ),
+        )
+
+    def get_progress(self, run_id: str | None = None) -> dict[str, Any] | None:
+        with read_connection() as conn:
+            if run_id:
+                row = conn.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (_normalize_run_id(run_id),)).fetchone()
+            else:
+                row = conn.execute(
+                    "SELECT * FROM security_scan_runs ORDER BY updated_at_epoch_ms DESC LIMIT 1"
+                ).fetchone()
+        run = _row(row)
+        if not run:
+            return None
+        return policy.redact_value({
+            "run_id": run["run_id"],
+            "profile": run["profile"],
+            "app_id": run["app_id"],
+            "status": run["status"],
+            "stage": run.get("current_stage"),
+            "percent": run.get("current_percent"),
+            "message": run.get("current_message"),
+            "tool": run.get("current_tool"),
+            "updated_at": run.get("updated_at"),
+            "active_scan": run["status"] in ACTIVE_STATUSES,
+        })
+
+    def get_summary(self) -> dict[str, Any]:
+        with read_connection() as conn:
+            latest = conn.execute(
+                "SELECT * FROM security_scan_runs ORDER BY updated_at_epoch_ms DESC LIMIT 1"
+            ).fetchone()
+            revision = conn.execute(
+                "SELECT revision, updated_at FROM domain_revisions WHERE domain = ?", ("security",)
+            ).fetchone()
+            history_count = int(conn.execute("SELECT COUNT(*) AS count FROM security_scan_runs").fetchone()["count"])
+            finding_count = 0
+            if latest:
+                finding_count = int(conn.execute(
+                    "SELECT COUNT(*) AS count FROM security_scan_findings WHERE run_id = ?", (latest["run_id"],)
+                ).fetchone()["count"])
+        run = _row(latest)
+        return policy.redact_value({
+            "latest_run": run,
+            "history_count": history_count,
+            "finding_count": finding_count,
+            "revision": int(revision["revision"]) if revision else 0,
+            "updated_at": revision["updated_at"] if revision else None,
+            "storage_backend": "sqlite",
+        })
+
+    def get_profile_snapshot(self, profile: str, app_id: str | None = None) -> dict[str, Any] | None:
+        normalized_profile = _normalize_profile(profile)
+        normalized_app = _normalize_app(normalized_profile, app_id)
+        with read_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM security_profile_snapshots WHERE profile = ? AND app_id = ?",
+                (normalized_profile, normalized_app),
+            ).fetchone()
+        return policy.redact_value(dict(row)) if row else None
+
+    def list_runs(self, *, limit: int = DEFAULT_HISTORY_LIMIT, profile: str | None = None, app_id: str | None = None) -> list[dict[str, Any]]:
+        bounded = max(1, min(int(limit), MAX_HISTORY_LIMIT))
+        with read_connection() as conn:
+            if profile is None:
+                rows = conn.execute(
+                    "SELECT * FROM security_scan_runs ORDER BY updated_at_epoch_ms DESC LIMIT ?",
+                    (bounded,),
+                ).fetchall()
+            else:
+                normalized_profile = _normalize_profile(profile)
+                normalized_app = _normalize_app(normalized_profile, app_id)
+                rows = conn.execute(
+                    "SELECT * FROM security_scan_runs WHERE profile = ? AND app_id = ? ORDER BY updated_at_epoch_ms DESC LIMIT ?",
+                    (normalized_profile, normalized_app, bounded),
+                ).fetchall()
+        return [_row(item) or {} for item in rows]
+
+    def get_run(self, run_id: str) -> dict[str, Any] | None:
+        with read_connection() as conn:
+            row = conn.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (_normalize_run_id(run_id),)).fetchone()
+        return _row(row)
+
+    def list_findings(self, run_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
+        bounded = max(1, min(int(limit), 500))
+        with read_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM security_scan_findings WHERE run_id = ? ORDER BY finding_row_id LIMIT ?",
+                (_normalize_run_id(run_id), bounded),
+            ).fetchall()
+        return [policy.redact_value({**dict(row), "remediation": _json_value(row["remediation_json"], None), "technical": _json_value(row["technical_json"], None)}) for row in rows]
+
+    def list_evidence_refs(self, run_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
+        bounded = max(1, min(int(limit), 500))
+        with read_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM security_scan_evidence_refs WHERE run_id = ? ORDER BY evidence_ref_id LIMIT ?",
+                (_normalize_run_id(run_id), bounded),
+            ).fetchall()
+        return [policy.redact_value({**dict(row), "metadata": _json_value(row["metadata_json"], {})}) for row in rows]
+
+    def import_legacy_state(
+        self,
+        *,
+        source_root: Path | None = None,
+        preview: bool = False,
+        hash_evidence: bool = False,
+        force: bool = False,
+    ) -> dict[str, Any]:
+        root = (source_root or evidence.security_root()).resolve()
+        state_path = root / "security_state.json"
+        state = _load_core_json(state_path)
+        source_checksum = _source_checksum(root)
+        report = ImportReport(
+            preview=preview,
+            source_root=root.name or "security",
+            source_checksum=source_checksum,
+        )
+        candidates = _legacy_run_candidates(root, state, report)
+        report.runs_seen = len(candidates)
+        normalized: list[dict[str, Any]] = []
+        for candidate in candidates:
+            try:
+                normalized.append(_normalize_legacy_run(candidate, state))
+            except (InvalidSecurityStoreValue, TypeError, ValueError) as exc:
+                report.runs_skipped += 1
+                report.warnings.append(policy.redact_text(str(exc))[:240])
+        selected_active = None
+        active_candidates = [item for item in normalized if item["status"] in ACTIVE_STATUSES]
+        if active_candidates:
+            selected_active = max(active_candidates, key=lambda item: item["updated_at_epoch_ms"])["run_id"]
+        if preview:
+            report.runs_imported = len(normalized)
+            for item in normalized:
+                report.findings_imported += len(item["findings"])
+                report.tools_imported += len(item["tool_results"])
+                report.evidence_refs_imported += len(_legacy_evidence_refs(root, item, hash_evidence=False))
+            return report.to_dict()
+        with connection() as conn, begin_immediate(conn) as tx:
+            previous = _get_metadata(tx, "legacy_import:last")
+            if (
+                not force
+                and previous.get("source_checksum") == source_checksum
+                and int(previous.get("import_version") or 0) == IMPORT_VERSION
+            ):
+                report.runs_skipped = len(normalized)
+                report.warnings.append(
+                    "Legacy Security source is unchanged; import skipped."
+                )
+                return report.to_dict()
+            for item in normalized:
+                if item["status"] in ACTIVE_STATUSES and item["run_id"] != selected_active:
+                    item = {**item, "status": "failed", "active_key": None, "failure_code": "legacy_multiple_active_runs", "failure_message": "Older active legacy run retained as failed in the SQLite shadow index."}
+                else:
+                    item["active_key"] = _active_key(item["profile"], item["app_id"]) if item["status"] in ACTIVE_STATUSES else None
+                refs = _legacy_evidence_refs(root, item, hash_evidence=hash_evidence)
+                item = {**item, "evidence_saved": bool(refs)}
+                self._upsert_legacy_run(tx, item)
+                report.findings_imported += self._replace_findings(tx, item["run_id"], item["findings"])
+                report.tools_imported += self._replace_tool_runs(tx, item["run_id"], item["tool_results"])
+                report.evidence_refs_imported += self._replace_evidence_refs(tx, item["run_id"], refs, created_at=item["updated_at"])
+                if item.get("progress"):
+                    self._upsert_imported_progress(tx, item)
+                self._upsert_profile_snapshot(tx, item["run_id"], updated_at=item["updated_at"])
+                report.runs_imported += 1
+            revision = _bump_revision(tx)
+            metadata = {
+                **report.to_dict(),
+                "import_version": IMPORT_VERSION,
+                "domain_revision": revision,
+                "database_path_name": database_path().name,
+            }
+            _set_metadata(tx, "legacy_import:last", metadata)
+        return report.to_dict()
+
+    def _upsert_legacy_run(self, conn: sqlite3.Connection, item: Mapping[str, Any]) -> None:
+        conn.execute(
+            """
+            INSERT INTO security_scan_runs(
+                run_id, profile, app_id, app_label, status, active_key, summary, score,
+                partial_results, requested_at, accepted_at, started_at, completed_at, updated_at,
+                requested_at_epoch_ms, started_at_epoch_ms, completed_at_epoch_ms, updated_at_epoch_ms,
+                current_stage, current_percent, current_message, current_tool, checks_reviewed,
+                items_to_review, critical_count, high_count, medium_count, low_count, info_count,
+                failure_code, failure_message, command_id, correlation_id, source, revision,
+                evidence_saved, metadata_json
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, 'legacy-json-import', 1, ?, ?
+            )
+            ON CONFLICT(run_id) DO UPDATE SET
+                profile = excluded.profile, app_id = excluded.app_id, app_label = excluded.app_label,
+                status = excluded.status, active_key = excluded.active_key, summary = excluded.summary,
+                score = excluded.score, partial_results = excluded.partial_results,
+                requested_at = excluded.requested_at, accepted_at = excluded.accepted_at,
+                started_at = excluded.started_at, completed_at = excluded.completed_at,
+                updated_at = excluded.updated_at, requested_at_epoch_ms = excluded.requested_at_epoch_ms,
+                started_at_epoch_ms = excluded.started_at_epoch_ms,
+                completed_at_epoch_ms = excluded.completed_at_epoch_ms,
+                updated_at_epoch_ms = excluded.updated_at_epoch_ms,
+                current_stage = excluded.current_stage, current_percent = excluded.current_percent,
+                current_message = excluded.current_message, current_tool = excluded.current_tool,
+                checks_reviewed = excluded.checks_reviewed, items_to_review = excluded.items_to_review,
+                critical_count = excluded.critical_count, high_count = excluded.high_count,
+                medium_count = excluded.medium_count, low_count = excluded.low_count,
+                info_count = excluded.info_count, failure_code = excluded.failure_code,
+                failure_message = excluded.failure_message, command_id = excluded.command_id,
+                correlation_id = excluded.correlation_id, source = excluded.source,
+                revision = security_scan_runs.revision + 1,
+                evidence_saved = excluded.evidence_saved, metadata_json = excluded.metadata_json
+            """,
+            (
+                item["run_id"], item["profile"], item["app_id"], item["app_label"], item["status"], item.get("active_key"),
+                item["summary"], item.get("score"), int(item["partial_results"]), item["requested_at"], item.get("accepted_at"),
+                item.get("started_at"), item.get("completed_at"), item["updated_at"], item["requested_at_epoch_ms"],
+                item.get("started_at_epoch_ms"), item.get("completed_at_epoch_ms"), item["updated_at_epoch_ms"],
+                item.get("current_stage"), item.get("current_percent"), item.get("current_message"), item.get("current_tool"),
+                item["checks_reviewed"], item["items_to_review"], item["critical_count"], item["high_count"],
+                item["medium_count"], item["low_count"], item["info_count"], item.get("failure_code"), item.get("failure_message"),
+                item.get("command_id"), item.get("correlation_id"), int(item["evidence_saved"]), _safe_json(item.get("metadata")),
+            ),
+        )
+
+    def _upsert_imported_progress(self, conn: sqlite3.Connection, item: Mapping[str, Any]) -> None:
+        progress = item["progress"]
+        fingerprint = _progress_fingerprint(item["run_id"], item["status"], progress.get("stage"), progress.get("percent"), progress.get("message"), progress.get("tool"))
+        conn.execute(
+            """
+            INSERT INTO security_scan_progress_events(
+                run_id, sequence_no, status, stage, percent, message, tool,
+                created_at, created_at_epoch_ms, payload_json, fingerprint
+            ) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(run_id, fingerprint) DO NOTHING
+            """,
+            (
+                item["run_id"], item["status"], progress.get("stage"), progress.get("percent"),
+                progress.get("message"), progress.get("tool"), item["updated_at"], item["updated_at_epoch_ms"],
+                _safe_json(progress), fingerprint,
+            ),
+        )
+
+    def compare_json_state(self, state: Mapping[str, Any], *, record: bool = True) -> dict[str, Any]:
+        json_projection = _json_shadow_projection(state)
+        sqlite_projection = self._sqlite_shadow_projection()
+        fields = sorted(set(json_projection) | set(sqlite_projection))
+        mismatches = [field for field in fields if json_projection.get(field) != sqlite_projection.get(field)]
+        result = {
+            "matched": not mismatches,
+            "mismatch_fields": mismatches,
+            "json_checksum": _projection_checksum(json_projection),
+            "sqlite_checksum": _projection_checksum(sqlite_projection),
+            "compared_at": utc_now(),
+        }
+        if record:
+            with connection() as conn, begin_immediate(conn) as tx:
+                _set_metadata(tx, "shadow_compare:last", result)
+        return result
+
+    def _sqlite_shadow_projection(self) -> dict[str, Any]:
+        runs = self.list_runs(limit=DEFAULT_HISTORY_LIMIT)
+        latest = runs[0] if runs else {}
+        findings = self.list_findings(str(latest.get("run_id"))) if latest.get("run_id") else []
+        refs = self.list_evidence_refs(str(latest.get("run_id"))) if latest.get("run_id") else []
+        counts = {severity: int(latest.get(f"{severity}_count") or 0) for severity in policy.SEVERITIES}
+        if findings and not any(counts.values()):
+            for finding in findings:
+                counts[policy.normalize_severity(finding.get("severity"))] += 1
+        return {
+            "latest_run_id": latest.get("run_id") or "",
+            "profile": latest.get("profile") or "",
+            "app_id": latest.get("app_id") or "",
+            "status": latest.get("status") or "",
+            "score": latest.get("score"),
+            "current_percent": latest.get("current_percent"),
+            "current_stage": latest.get("current_stage") or "",
+            "finding_counts": counts,
+            "evidence_saved": bool(latest.get("evidence_saved") or refs),
+            "latest_completed_at": latest.get("completed_at") or "",
+            "history_count": len(runs),
+            "latest_run_ids": [item.get("run_id") for item in runs],
+        }
+
+
+def _safe_evidence_relative_path(run_id: str, value: Any) -> str | None:
+    text = str(value or "").replace("\\", "/").strip()
+    if not text:
+        return None
+    marker = "security/evidence/"
+    if marker in text:
+        text = text[text.index(marker):]
+    path = Path(text)
+    if path.is_absolute() or ".." in path.parts:
+        return None
+    expected_prefix = f"security/evidence/{evidence.safe_run_id(run_id)}/"
+    if not text.startswith(expected_prefix):
+        text = expected_prefix + Path(text).name
+    return policy.redact_text(text)[:500]
+
+
+def _load_core_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SecurityStoreError("Malformed core Security state JSON") from exc
+    if not isinstance(payload, dict):
+        raise SecurityStoreError("Core Security state must be a JSON object")
+    return policy.redact_value(payload)
+
+
+def _source_checksum(root: Path) -> str:
+    digest = hashlib.sha256()
+    maximum_runs = max(
+        1,
+        min(
+            int(os.environ.get("POCKETLAB_LITE_SECURITY_IMPORT_MAX_RUNS", "5000")),
+            20_000,
+        ),
+    )
+    paths = [
+        root / "security_state.json",
+        *sorted((root / "runs").glob("*.json"))[:maximum_runs],
+    ]
+    for path in paths:
+        if not path.exists() or not path.is_file():
+            continue
+        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    evidence_files = sorted((root / "evidence").glob("*/*.json"))[:20_000]
+    for path in evidence_files:
+        try:
+            stat_result = path.stat()
+        except OSError:
+            continue
+        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
+        digest.update(str(stat_result.st_size).encode("ascii"))
+        digest.update(str(stat_result.st_mtime_ns).encode("ascii"))
+    return digest.hexdigest()
+
+
+def _legacy_run_candidates(root: Path, state: Mapping[str, Any], report: ImportReport) -> list[dict[str, Any]]:
+    candidates: dict[str, dict[str, Any]] = {}
+    runs_root = root / "runs"
+    maximum = max(1, min(int(os.environ.get("POCKETLAB_LITE_SECURITY_IMPORT_MAX_RUNS", "5000")), 20_000))
+    for path in sorted(runs_root.glob("*.json"))[:maximum]:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            report.malformed_optional_files.append(path.name)
+            continue
+        if not isinstance(payload, dict):
+            report.malformed_optional_files.append(path.name)
+            continue
+        run_id = evidence.safe_run_id(str(payload.get("run_id") or path.stem))
+        candidates[run_id] = policy.redact_value(payload)
+    history = state.get("history") if isinstance(state.get("history"), list) else []
+    for payload in [*history, state.get("last_run")]:
+        if not isinstance(payload, dict):
+            continue
+        run_id = evidence.safe_run_id(str(payload.get("run_id") or ""))
+        if run_id != "unknown":
+            candidates.setdefault(run_id, policy.redact_value(payload))
+    return list(candidates.values())
+
+
+def _normalize_legacy_run(payload: Mapping[str, Any], state: Mapping[str, Any]) -> dict[str, Any]:
+    run_id = _normalize_run_id(payload.get("run_id"))
+    profile = _normalize_profile(payload.get("scan_profile") or payload.get("profile") or ("app" if payload.get("app_id") else "quick"))
+    app_id = _normalize_app(profile, payload.get("app_id"))
+    status = _normalize_status(payload.get("status") or "succeeded")
+    requested_at = _parse_timestamp(payload.get("requested_at") or payload.get("started_at") or payload.get("completed_at") or state.get("updated_at"))
+    started_at = _parse_timestamp(payload.get("started_at")) if payload.get("started_at") else None
+    completed_at = _parse_timestamp(payload.get("completed_at")) if payload.get("completed_at") else None
+    updated_at = _parse_timestamp(payload.get("updated_at") or completed_at or started_at or requested_at)
+    is_latest = str((state.get("last_run") or {}).get("run_id") or "") == run_id
+    findings = payload.get("findings") if isinstance(payload.get("findings"), list) else state.get("findings") if is_latest and isinstance(state.get("findings"), list) else []
+    refs = payload.get("evidence_refs") if isinstance(payload.get("evidence_refs"), list) else state.get("evidence_refs") if is_latest and isinstance(state.get("evidence_refs"), list) else []
+    tool_results = payload.get("tool_results") if isinstance(payload.get("tool_results"), dict) else {}
+    progress = state.get("scan_progress") if is_latest and isinstance(state.get("scan_progress"), dict) else {}
+    percent = progress.get("percent")
+    return {
+        "run_id": run_id,
+        "profile": profile,
+        "app_id": app_id,
+        "app_label": policy.redact_text(str(payload.get("app_label") or ""))[:120],
+        "status": status,
+        "summary": policy.redact_text(str(payload.get("summary") or state.get("summary") or ""))[:500],
+        "score": int(payload.get("score") if payload.get("score") is not None else state.get("score")) if (payload.get("score") is not None or state.get("score") is not None) else None,
+        "partial_results": bool(payload.get("partial_results")),
+        "requested_at": requested_at,
+        "accepted_at": _parse_timestamp(payload.get("accepted_at")) if payload.get("accepted_at") else None,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "updated_at": updated_at,
+        "requested_at_epoch_ms": _epoch_ms(requested_at),
+        "started_at_epoch_ms": _epoch_ms(started_at) if started_at else None,
+        "completed_at_epoch_ms": _epoch_ms(completed_at) if completed_at else None,
+        "updated_at_epoch_ms": _epoch_ms(updated_at),
+        "current_stage": policy.redact_text(str(progress.get("stage") or ""))[:160] or None,
+        "current_percent": int(percent) if percent is not None else None,
+        "current_message": policy.redact_text(str(progress.get("message") or ""))[:500] or None,
+        "current_tool": policy.redact_text(str(progress.get("tool") or ""))[:80] or None,
+        "checks_reviewed": max(0, int(payload.get("checks_reviewed") or payload.get("checks_count") or state.get("checks_reviewed") or 0)),
+        "items_to_review": max(0, int(payload.get("items_to_review") or state.get("items_to_review") or len(findings))),
+        "critical_count": max(0, int(payload.get("critical_count") or 0)),
+        "high_count": max(0, int(payload.get("high_count") or 0)),
+        "medium_count": max(0, int(payload.get("medium_count") or 0)),
+        "low_count": max(0, int(payload.get("low_count") or 0)),
+        "info_count": max(0, int(payload.get("info_count") or 0)),
+        "failure_code": policy.redact_text(str(payload.get("failure_code") or ""))[:120] or None,
+        "failure_message": policy.redact_text(str(payload.get("failure_message") or ""))[:500] or None,
+        "command_id": policy.redact_text(str(payload.get("command_id") or ""))[:160] or None,
+        "correlation_id": policy.redact_text(str(payload.get("correlation_id") or ""))[:160] or None,
+        "evidence_saved": bool(refs),
+        "findings": findings,
+        "evidence_refs": refs,
+        "tool_results": tool_results,
+        "progress": progress,
+        "metadata": {"import_version": IMPORT_VERSION, "legacy_original_status": payload.get("status"), "legacy_source": "security/runs"},
+    }
+
+
+def _legacy_evidence_refs(root: Path, item: Mapping[str, Any], *, hash_evidence: bool) -> list[dict[str, Any]]:
+    run_id = str(item["run_id"])
+    refs: dict[str, dict[str, Any]] = {}
+    maximum_hash_bytes = max(
+        0,
+        min(
+            int(
+                os.environ.get(
+                    "POCKETLAB_LITE_SECURITY_IMPORT_HASH_MAX_BYTES",
+                    str(1024 * 1024),
+                )
+            ),
+            16 * 1024 * 1024,
+        ),
+    )
+    for raw in item.get("evidence_refs") or []:
+        relative = _safe_evidence_relative_path(run_id, raw)
+        if relative:
+            metadata: dict[str, Any] = {
+                "relative_path": relative,
+                "kind": Path(relative).stem,
+            }
+            relative_under_security = relative.removeprefix("security/")
+            evidence_path = root / relative_under_security
+            try:
+                size = evidence_path.stat().st_size
+                metadata["size_bytes"] = size
+                if hash_evidence and size <= maximum_hash_bytes:
+                    metadata["sha256"] = hashlib.sha256(
+                        evidence_path.read_bytes()
+                    ).hexdigest()
+            except OSError:
+                metadata["missing"] = True
+            refs[relative] = metadata
+    directory = root / "evidence" / evidence.safe_run_id(run_id)
+    if directory.exists():
+        for path in sorted(directory.glob("*.json"))[:500]:
+            relative = f"security/evidence/{evidence.safe_run_id(run_id)}/{path.name}"
+            metadata: dict[str, Any] = {"relative_path": relative, "kind": path.stem}
+            try:
+                size = path.stat().st_size
+                metadata["size_bytes"] = size
+                if hash_evidence and size <= maximum_hash_bytes:
+                    metadata["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError:
+                metadata["missing"] = True
+            refs[relative] = metadata
+    return list(refs.values())
+
+
+def _json_shadow_projection(state: Mapping[str, Any]) -> dict[str, Any]:
+    last = state.get("last_run") if isinstance(state.get("last_run"), Mapping) else {}
+    progress = state.get("scan_progress") if isinstance(state.get("scan_progress"), Mapping) else {}
+    history = (
+        state.get("history")[:DEFAULT_HISTORY_LIMIT]
+        if isinstance(state.get("history"), list)
+        else []
+    )
+    counts = {severity: int(last.get(f"{severity}_count") or 0) for severity in policy.SEVERITIES}
+    if not any(counts.values()) and isinstance(state.get("findings"), list):
+        for finding in state.get("findings") or []:
+            if isinstance(finding, Mapping):
+                counts[policy.normalize_severity(finding.get("severity"))] += 1
+    refs = last.get("evidence_refs") if isinstance(last.get("evidence_refs"), list) else state.get("evidence_refs") if isinstance(state.get("evidence_refs"), list) else []
+    return {
+        "latest_run_id": last.get("run_id") or "",
+        "profile": last.get("scan_profile") or last.get("profile") or "",
+        "app_id": last.get("app_id") or "",
+        "status": _normalize_status(last.get("status") or "succeeded") if last else "",
+        "score": last.get("score") if last.get("score") is not None else state.get("score"),
+        "current_percent": progress.get("percent"),
+        "current_stage": progress.get("stage") or "",
+        "finding_counts": counts,
+        "evidence_saved": bool(refs),
+        "latest_completed_at": last.get("completed_at") or "",
+        "history_count": len(history),
+        "latest_run_ids": [item.get("run_id") for item in history[:DEFAULT_HISTORY_LIMIT] if isinstance(item, Mapping)],
+    }
+
+
+def _projection_checksum(value: Mapping[str, Any]) -> str:
+    clean = policy.redact_value(value)
+    return hashlib.sha256(json.dumps(clean, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
+
+
+def shadow_compare_if_enabled(state: Mapping[str, Any]) -> dict[str, Any] | None:
+    security_store_mode()  # validates the rollout switch even while JSON remains authoritative.
+    if not sqlite_shadow_read_enabled():
+        return None
+    repository = SecuritySQLiteRepository(initialize=True)
+    return repository.compare_json_state(policy.redact_value(dict(state)), record=True)

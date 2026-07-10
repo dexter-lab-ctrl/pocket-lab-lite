@@ -91,6 +91,15 @@ EXCLUDED_DIRS = [
 
 EXCLUDED_FILES = [
     "*.pyc",
+    "*.db",
+    "*.db-shm",
+    "*.db-wal",
+    "*.sqlite",
+    "*.sqlite-shm",
+    "*.sqlite-wal",
+    "*.sqlite3",
+    "*.sqlite3-shm",
+    "*.sqlite3-wal",
     "index.db",
     "photoprism/index.db",
 ]
@@ -357,7 +366,16 @@ def quick_scan_excludes() -> dict[str, Any]:
 def full_scan_excludes() -> dict[str, Any]:
     return {
         "skip_dirs": sorted(set([*EXCLUDED_DIRS, *FULL_EXTRA_EXCLUDED_DIRS])),
-        "skip_files": sorted(set([*EXCLUDED_FILES, "*.log", "*.sqlite", "*.sqlite3", "*.db", "*.tar.gz", "*.tgz"])),
+        "skip_files": sorted(
+            set(
+                [
+                    *EXCLUDED_FILES,
+                    "*.log",
+                    "*.tar.gz",
+                    "*.tgz",
+                ]
+            )
+        ),
         "excluded_groups": list(FULL_EXCLUDED_GROUPS),
         "skipped_targets": list(FULL_SKIPPED_TARGETS),
     }
@@ -366,7 +384,16 @@ def full_scan_excludes() -> dict[str, Any]:
 def app_scan_excludes() -> dict[str, Any]:
     return {
         "skip_dirs": sorted(set([*EXCLUDED_DIRS, *APP_EXTRA_EXCLUDED_DIRS])),
-        "skip_files": sorted(set([*EXCLUDED_FILES, "*.log", "*.sqlite", "*.sqlite3", "*.db", "*.tar.gz", "*.tgz"])),
+        "skip_files": sorted(
+            set(
+                [
+                    *EXCLUDED_FILES,
+                    "*.log",
+                    "*.tar.gz",
+                    "*.tgz",
+                ]
+            )
+        ),
         "excluded_groups": list(APP_EXCLUDED_GROUPS),
         "skipped_targets": list(APP_SKIPPED_TARGETS),
     }

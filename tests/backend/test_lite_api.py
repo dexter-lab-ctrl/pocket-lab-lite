@@ -4353,7 +4353,8 @@ def test_lite_safe_reads_use_query_backed_resource_source():
     assert "useLiteQuery" in catalog
     assert "liteQueryPaths.appActions('photoprism')" in catalog
     assert "useLiteMutation" in catalog
-    assert "liteMutationInvalidations" in catalog
+    assert "getLiteAppActionInvalidations" in catalog
+    assert "liteMutationInvalidations" not in catalog
 
 
 def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
@@ -5623,7 +5624,7 @@ def test_lite_security_s3_uses_focused_invalidations():
     assert "recovery" not in security_slice
     assert "liteQueryKeys.security()" in security
     assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
-    assert "liteQueryKeys.securityHistory()" in security
+    assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
     assert "window.setTimeout(() => refresh()" not in security
     assert "[700, 1800, 4000]" not in security
 
@@ -5888,7 +5889,7 @@ def test_lite_security_phase1_preserves_security_boundaries():
     assert "pollingMode: 'slow'" in security
     assert "liteQueryKeys.security()" in security
     assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
-    assert "liteQueryKeys.securityHistory()" in security
+    assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
     assert "fetch(" not in security
     assert "child_process" not in security
     assert "exec(" not in security
@@ -7155,7 +7156,7 @@ def test_lite_security_profile_focused_invalidation_and_polling_contract():
     security = Path("src/lite/LiteSecurity.jsx").read_text()
 
     assert "securityProfile: (profile = 'quick')" in query_client
-    assert "securityHistory: () => ['lite', 'security', 'history']" in query_client
+    assert "securityHistory: (limit = 20) => ['lite', 'security', 'history', Number(limit || 20)]" in query_client
     assert "LITE_SECURITY_PROFILE_POLLING_POLICY" in view_models
     assert "selectSecurityPollingPolicyView" in view_models
     assert "isLiteSecurityProfileLive" in view_models
@@ -7303,7 +7304,7 @@ def test_lite_security_patch_e_cross_tab_scan_completion_sync_contract():
     assert "window.dispatchEvent" in snapshots
     assert "subscribeLiteSecurityScanCompleted" in security
     assert "liteQueryKeys.securityProfile(profile)" in security
-    assert "liteQueryKeys.securityHistory()" in security
+    assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
     assert "queryClient.invalidateQueries" in security
 
     assert "nats.connect" not in snapshots + security
