@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import json
@@ -21,6 +22,329 @@ from . import lite_security_policy as policy
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _security_store_api():
+    from . import lite_security_store
+
+    return lite_security_store
+
+
+def _security_repository():
+    return _security_store_api().SecuritySQLiteRepository(initialize=True)
+
+
+def initialize_security_sqlite_runtime(*, reconcile: bool = True) -> dict[str, Any]:
+    """Validate rollout settings and initialize SQLite only when configured."""
+    store = _security_store_api()
+    mode = store.security_store_mode()
+    compact_reads = store.sqlite_compact_reads_enabled()
+    shadow_read = store.sqlite_shadow_read_enabled()
+    result: dict[str, Any] = {
+        "mode": mode,
+        "compact_reads": compact_reads,
+        "shadow_read": shadow_read,
+        "reconciled": [],
+    }
+    if mode in {"dual", "sqlite"} or shadow_read:
+        repository = store.SecuritySQLiteRepository(initialize=True)
+        if reconcile and mode in {"dual", "sqlite"}:
+            reconciled = repository.reconcile_stale_runs()
+            result["reconciled"] = reconciled
+            if reconciled:
+                _project_reconciled_sqlite_runs(repository, reconciled)
+    return policy.redact_value(result)
+
+
+def _project_reconciled_sqlite_runs(
+    repository: Any, reconciled: list[dict[str, Any]]
+) -> None:
+    """Project conservative startup recovery results after DB commits."""
+    for item in reconciled:
+        run_id = str(item.get("run_id") or "")
+        if not run_id:
+            continue
+        row = repository.get_run(run_id) or {}
+        refs = [
+            str(ref.get("relative_path") or "")
+            for ref in repository.list_evidence_refs(run_id, limit=100)
+            if ref.get("relative_path")
+        ]
+        try:
+            recovery_ref = evidence.write_evidence(
+                run_id,
+                "startup-recovery.json",
+                {
+                    "run_id": run_id,
+                    "status": "interrupted",
+                    "summary": "A stale safety check was released during startup recovery.",
+                    "profile": row.get("profile") or policy.SCAN_PROFILE_QUICK,
+                    "recovered_at": deps.now_utc_iso(),
+                    "sanitized": True,
+                },
+            )
+            if recovery_ref not in refs:
+                refs.append(recovery_ref)
+        except (OSError, ValueError, TypeError) as exc:
+            _LOGGER.warning(
+                "Security startup recovery evidence degraded: %s",
+                type(exc).__name__,
+            )
+        tool_results = {
+            str(tool.get("tool_name") or "tool"): {
+                "status": tool.get("status") or "unknown",
+                "finding_count": int(tool.get("finding_count") or 0),
+                **(tool.get("metadata") if isinstance(tool.get("metadata"), dict) else {}),
+            }
+            for tool in repository.list_tool_runs(run_id, limit=100)
+        }
+        repository.fail_run(
+            run_id,
+            failure_code="interrupted",
+            failure_message=str(
+                row.get("failure_message")
+                or "The previous safety check was interrupted and can be started again."
+            ),
+            summary=str(
+                row.get("summary")
+                or "The previous safety check was interrupted and can be started again."
+            ),
+            completed_at=row.get("completed_at") or deps.now_utc_iso(),
+            partial_results=bool(row.get("partial_results")),
+            findings=repository.list_findings(run_id, limit=500),
+            evidence_refs=refs,
+            tool_results=tool_results,
+            metadata=row.get("metadata") if isinstance(row.get("metadata"), dict) else {},
+        )
+        projected = _sqlite_run_payload(
+            repository, repository.get_run(run_id), include_details=True, include_related=True
+        )
+        if projected:
+            _write_run_projection(projected)
+    _, state, _ = _sqlite_state_projection()
+    _write_security_state(state)
+
+
+def _sqlite_lifecycle_enabled() -> bool:
+    return _security_store_api().sqlite_lifecycle_writes_enabled()
+
+
+def _sqlite_compact_reads_enabled() -> bool:
+    return _security_store_api().sqlite_compact_reads_enabled()
+
+
+def _record_projection_status(
+    run_id: str | None,
+    *,
+    component: str,
+    degraded: bool,
+    reason: str = "",
+) -> None:
+    if not run_id or not _sqlite_lifecycle_enabled():
+        return
+    try:
+        _security_repository().record_projection_status(
+            run_id, component=component, degraded=degraded, reason=reason
+        )
+    except Exception as exc:
+        _LOGGER.warning(
+            "Security JSON compatibility status could not be recorded: %s",
+            type(exc).__name__,
+        )
+
+
+def _write_run_projection(run: dict[str, Any]) -> dict[str, Any]:
+    run_id = str(run.get("run_id") or "")
+    try:
+        clean = evidence.write_run(run_id, run)
+        _record_projection_status(run_id, component="run", degraded=False)
+        return clean
+    except (OSError, ValueError, TypeError) as exc:
+        if not _sqlite_lifecycle_enabled():
+            raise
+        _record_projection_status(
+            run_id,
+            component="run",
+            degraded=True,
+            reason=f"run_projection_{type(exc).__name__}",
+        )
+        _LOGGER.warning(
+            "Security run JSON compatibility projection degraded: %s",
+            type(exc).__name__,
+        )
+        return policy.redact_value(run)
+
+
+def _dedupe_response_from_reservation(result: Any) -> dict[str, Any]:
+    run = result.run if isinstance(getattr(result, "run", None), dict) else {}
+    profile = str(run.get("profile") or policy.SCAN_PROFILE_QUICK)
+    app_id = str(run.get("app_id") or "")
+    if result.reason == "active":
+        return policy.redact_value({
+            "status": run.get("status") or "running",
+            "state": run.get("status") or "running",
+            "accepted": True,
+            "duplicate": True,
+            "deduplicated": True,
+            "existing": True,
+            "already_running": True,
+            "run_id": run.get("run_id") or "",
+            "command_id": run.get("command_id") or run.get("run_id") or "",
+            "scan_profile": profile,
+            "profile": profile,
+            **({"app_id": app_id, "app_label": run.get("app_label") or _app_label(app_id)} if app_id else {}),
+            "summary": "A safety check is already running.",
+        })
+    completed_at = _parse_iso_timestamp(run.get("completed_at"))
+    elapsed = max(
+        0,
+        int((datetime.now(timezone.utc) - completed_at).total_seconds()),
+    ) if completed_at else 0
+    window = _security_store_api().security_recent_completion_seconds()
+    return policy.redact_value({
+        "status": run.get("status") or "succeeded",
+        "state": run.get("status") or "succeeded",
+        "accepted": True,
+        "duplicate": True,
+        "deduplicated": True,
+        "recent_duplicate": True,
+        "already_completed": True,
+        "run_id": run.get("run_id") or "",
+        "command_id": run.get("command_id") or run.get("run_id") or "",
+        "scan_profile": profile,
+        "profile": profile,
+        **({"app_id": app_id, "app_label": run.get("app_label") or _app_label(app_id)} if app_id else {}),
+        "retry_after_seconds": max(0, window - elapsed),
+        "summary": "A safety check just finished. Showing the latest saved result instead of starting another one.",
+    })
+
+
+def reserve_scan_request(command: dict[str, Any]) -> dict[str, Any]:
+    """Reserve one backend-owned scan before NATS publication."""
+    profile = _scan_profile(command)
+    app_id = _scan_app_id(command)
+    if not _sqlite_lifecycle_enabled():
+        active = active_scan_state(profile, app_id)
+        if active:
+            return {"reserved": False, "response": active}
+        recent = recent_completed_scan_state(profile, app_id)
+        if recent:
+            return {"reserved": False, "response": recent}
+        run = record_queued_run(command)
+        return {"reserved": True, "run": run, "response": None}
+
+    repository = _security_repository()
+    result = repository.reserve_scan(
+        run_id=str(command.get("run_id") or command.get("command_id") or new_run_id()),
+        profile=profile,
+        app_id=app_id,
+        app_label=_app_label(app_id),
+        summary=_profile_copy(profile)["queued"],
+        requested_at=command.get("requested_at"),
+        command_id=str(command.get("command_id") or "") or None,
+        correlation_id=str(command.get("correlation_id") or "") or None,
+        recent_completion_seconds=_security_store_api().security_recent_completion_seconds(),
+    )
+    if not result.reserved:
+        return {"reserved": False, "response": _dedupe_response_from_reservation(result)}
+    return {"reserved": True, "run": result.run, "response": None}
+
+
+def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
+    run_id = str(command.get("run_id") or command.get("command_id") or "")
+    if not run_id:
+        return None
+    if not _sqlite_lifecycle_enabled():
+        return evidence.read_run(run_id)
+    run = evidence.read_run(run_id) or {}
+    if not run:
+        return None
+    run.update({
+        "status": "accepted",
+        "accepted_at": deps.now_utc_iso(),
+        "updated_at": deps.now_utc_iso(),
+    })
+    state = build_state(
+        run, [], [], status_override="queued", summary_override=run.get("summary")
+    )
+    _write_security_state(state)
+    _write_run_projection(run)
+    return run
+
+
+def fail_scan_submission(run_id: str) -> None:
+    if not _sqlite_lifecycle_enabled():
+        discard_queued_run(run_id)
+        return
+    stored = _security_repository().get_run(run_id) or {}
+    run = evidence.read_run(run_id) or {
+        "run_id": run_id,
+        "command_id": stored.get("command_id") or run_id,
+        "scan_profile": stored.get("profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": stored.get("app_id") or "",
+        "app_label": stored.get("app_label") or "",
+        "requested_at": stored.get("requested_at"),
+        "started_at": stored.get("started_at"),
+        "tool_results": {},
+        "execution_timeline": [],
+    }
+    run.update({
+        "status": "failed",
+        "summary": "The safety check could not be sent. Try again.",
+        "completed_at": deps.now_utc_iso(),
+        "failure_code": "submit_failed",
+        "failure_message": "The backend worker queue was unavailable.",
+    })
+    state = build_state(
+        run, [], [], status_override="degraded", summary_override=run["summary"]
+    )
+    _write_security_state(state)
+    _write_run_projection(run)
+
+
+def fail_security_run(run_id: str, exc: Exception | None = None) -> None:
+    stored: dict[str, Any] = {}
+    if _sqlite_lifecycle_enabled():
+        stored = _security_repository().get_run(run_id) or {}
+    existing_state = evidence.read_state() or {}
+    existing_last_run = (
+        existing_state.get("last_run")
+        if isinstance(existing_state.get("last_run"), dict)
+        else {}
+    )
+    run = evidence.read_run(run_id) or {
+        "run_id": run_id,
+        "command_id": stored.get("command_id") or run_id,
+        "scan_profile": stored.get("profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": stored.get("app_id") or "",
+        "app_label": stored.get("app_label") or "",
+        "requested_at": stored.get("requested_at"),
+        "started_at": stored.get("started_at"),
+        "tool_results": {},
+        "execution_timeline": [],
+    }
+    if existing_last_run.get("run_id") == run_id:
+        run.setdefault("tool_results", existing_last_run.get("tool_results") or {})
+        run.setdefault("evidence_refs", existing_last_run.get("evidence_refs") or [])
+    run.update({
+        "status": "failed",
+        "summary": "Security check needs review.",
+        "completed_at": deps.now_utc_iso(),
+        "failure_code": "worker_failed",
+        "failure_message": f"Worker failure: {type(exc).__name__}" if exc else "Worker failure.",
+    })
+    findings = (
+        existing_state.get("findings")
+        if existing_last_run.get("run_id") == run_id
+        and isinstance(existing_state.get("findings"), list)
+        else []
+    )
+    state = build_state(
+        run, findings, run.get("evidence_refs") or [],
+        status_override="degraded", summary_override=run["summary"],
+    )
+    _write_security_state(state)
+    _write_run_projection(run)
 
 
 def _shadow_compare_sqlite_state(state: dict[str, Any]) -> None:
@@ -140,7 +464,7 @@ _SECURITY_SUMMARY_CACHE: dict[str, Any] = {"key": None, "cached_at": 0.0, "data"
 _SECURITY_SUMMARY_HISTORY_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_SUMMARY_HISTORY_LIMIT", "6")))
 _SECURITY_SUMMARY_FINDING_LIMIT = max(0, int(os.environ.get("POCKETLAB_LITE_SECURITY_SUMMARY_FINDING_LIMIT", "3")))
 _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_HISTORY_DEFAULT_LIMIT", "20")))
-_SECURITY_SPLIT_HISTORY_MAX_LIMIT = max(_SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, int(os.environ.get("POCKETLAB_LITE_SECURITY_HISTORY_MAX_LIMIT", "50")))
+_SECURITY_SPLIT_HISTORY_MAX_LIMIT = max(_SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT, min(100, int(os.environ.get("POCKETLAB_LITE_SECURITY_HISTORY_MAX_LIMIT", "100"))))
 _SECURITY_SPLIT_FINDING_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_DETAILS_FINDING_LIMIT", "50")))
 _SECURITY_SPLIT_PREVIEW_LIMIT = max(1, int(os.environ.get("POCKETLAB_LITE_SECURITY_PROFILE_PREVIEW_LIMIT", "6")))
 _SECURITY_RECENT_COMPLETION_DEDUPE_SECONDS = max(5.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_RECENT_COMPLETION_DEDUPE_SECONDS", "45")))
@@ -706,6 +1030,343 @@ def _details_from_run(run_id: str, state: dict[str, Any] | None = None) -> dict[
     return policy.redact_value(response)
 
 
+def _sqlite_tool_results(repository: Any, run_id: str) -> dict[str, Any]:
+    tools: dict[str, Any] = {}
+    for item in repository.list_tool_runs(run_id):
+        name = str(item.get("tool_name") or "tool")
+        metadata = item.get("metadata") if isinstance(item.get("metadata"), dict) else {}
+        tools[name] = policy.redact_value({
+            "status": item.get("status") or "unknown",
+            "finding_count": int(item.get("finding_count") or 0),
+            "timed_out": bool(item.get("timed_out")),
+            "timeout_reason": item.get("timeout_reason"),
+            **metadata,
+        })
+    return tools
+
+
+def _sqlite_run_payload(
+    repository: Any,
+    run: dict[str, Any] | None,
+    *,
+    include_details: bool = False,
+    include_related: bool = False,
+) -> dict[str, Any] | None:
+    if not isinstance(run, dict) or not run.get("run_id"):
+        return None
+    metadata = run.get("metadata") if isinstance(run.get("metadata"), dict) else {}
+    run_id = str(run["run_id"])
+    load_related = include_details or include_related
+    evidence_rows = (
+        repository.list_evidence_refs(run_id, limit=100 if include_details else 10)
+        if load_related
+        else []
+    )
+    evidence_refs = [
+        str(item.get("relative_path") or "")
+        for item in evidence_rows
+        if item.get("relative_path")
+    ]
+    tool_results = _sqlite_tool_results(repository, run_id) if load_related else {}
+    payload = {
+        "run_id": run_id,
+        "status": run.get("status") or "unknown",
+        "summary": run.get("summary") or "",
+        "score": run.get("score"),
+        "scan_profile": run.get("profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": run.get("app_id") or "",
+        "app_label": run.get("app_label") or "",
+        "requested_at": run.get("requested_at"),
+        "accepted_at": run.get("accepted_at"),
+        "started_at": run.get("started_at"),
+        "completed_at": run.get("completed_at"),
+        "updated_at": run.get("updated_at"),
+        "revision": int(run.get("revision") or 0),
+        "partial_results": bool(run.get("partial_results")),
+        "checks_reviewed": int(run.get("checks_reviewed") or 0),
+        "items_to_review": int(run.get("items_to_review") or 0),
+        "critical_count": int(run.get("critical_count") or 0),
+        "high_count": int(run.get("high_count") or 0),
+        "medium_count": int(run.get("medium_count") or 0),
+        "low_count": int(run.get("low_count") or 0),
+        "info_count": int(run.get("info_count") or 0),
+        "failure_code": run.get("failure_code"),
+        "failure_message": run.get("failure_message"),
+        "coverage_summary": metadata.get("coverage_summary") if isinstance(metadata.get("coverage_summary"), dict) else {},
+        "execution_timeline": metadata.get("execution_timeline") if isinstance(metadata.get("execution_timeline"), list) else [],
+        "finding_delta": metadata.get("finding_delta") if isinstance(metadata.get("finding_delta"), dict) else {},
+        "tool_results": tool_results,
+        "tools": list(tool_results) or ["lynis", "trivy"],
+        "evidence_refs": evidence_refs,
+        "evidence_saved": bool(run.get("evidence_saved") or evidence_refs),
+    }
+    if include_details:
+        payload["target_statuses"] = metadata.get("target_statuses") if isinstance(metadata.get("target_statuses"), list) else []
+    return policy.redact_value(payload)
+
+
+def _sqlite_finding_delta(repository: Any, run: dict[str, Any] | None) -> dict[str, Any]:
+    if not isinstance(run, dict) or not run.get("run_id"):
+        return _trim_security_delta_for_summary(None)
+    current = repository.list_findings(str(run["run_id"]), limit=_SECURITY_SPLIT_FINDING_LIMIT)
+    page = repository.list_runs_page(
+        limit=10, profile=str(run.get("profile") or policy.SCAN_PROFILE_QUICK),
+        app_id=str(run.get("app_id") or "") or None,
+    )
+    previous = next(
+        (item for item in page.get("runs", []) if item.get("run_id") != run.get("run_id") and item.get("status") in {"succeeded", "degraded"}),
+        None,
+    )
+    previous_findings = repository.list_findings(str(previous["run_id"]), limit=_SECURITY_SPLIT_FINDING_LIMIT) if previous else []
+    current_by = {str(item.get("fingerprint") or item.get("finding_key")): item for item in current}
+    previous_by = {str(item.get("fingerprint") or item.get("finding_key")): item for item in previous_findings}
+    new_items = [item for key, item in current_by.items() if key not in previous_by]
+    resolved = [item for key, item in previous_by.items() if key not in current_by]
+    ongoing = [item for key, item in current_by.items() if key in previous_by]
+    return policy.redact_value({
+        "new_count": len(new_items), "resolved_count": len(resolved),
+        "unchanged_count": len(ongoing), "new": new_items[:3],
+        "resolved": resolved[:3], "unchanged": ongoing[:3],
+    })
+
+
+def _sqlite_state_projection() -> tuple[Any, dict[str, Any], int]:
+    repository = _security_repository()
+    revision_info = repository.get_domain_revision()
+    revision = int(revision_info.get("revision") or 0)
+    page = repository.list_runs_page(limit=_SECURITY_SPLIT_HISTORY_MAX_LIMIT)
+    runs = page.get("runs") if isinstance(page.get("runs"), list) else []
+    active = repository.get_active_scan()
+    latest_row = active or (runs[0] if runs else None)
+    latest = _sqlite_run_payload(
+        repository, latest_row, include_details=True, include_related=True
+    )
+    history = [
+        item
+        for item in (_sqlite_run_payload(repository, run) for run in runs)
+        if item
+    ]
+    profile_latest: dict[str, dict[str, Any]] = {}
+    for profile in (
+        policy.SCAN_PROFILE_QUICK,
+        policy.SCAN_PROFILE_FULL,
+        policy.SCAN_PROFILE_APP,
+    ):
+        profile_row = repository.get_latest_run(profile)
+        profile_payload = _sqlite_run_payload(
+            repository, profile_row, include_related=True
+        )
+        if profile_payload:
+            profile_latest[profile] = profile_payload
+    findings = repository.list_findings(str(latest["run_id"]), limit=_SECURITY_SPLIT_FINDING_LIMIT) if latest else []
+    refs = latest.get("evidence_refs") if latest else []
+    counts = {
+        severity: int((latest or {}).get(f"{severity}_count") or 0)
+        for severity in policy.SEVERITIES
+    }
+    score = int((latest or {}).get("score") or policy.score_for_counts(counts)) if latest else 100
+    if latest and str(latest.get("status")) in {"queued", "accepted", "running", "working", "in_progress"}:
+        state_status = str(latest.get("status"))
+        state_summary = str(latest.get("summary") or "Safety check running.")
+    elif latest and str(latest.get("status")) == "failed":
+        state_status, state_summary = "degraded", str(latest.get("summary") or "Security check needs review.")
+    elif latest:
+        state_status, mapped = policy.status_for_score(score, counts)
+        state_summary = str(latest.get("summary") or mapped)
+    else:
+        state_status, state_summary = "healthy", "No urgent safety issues found."
+    progress = repository.get_progress(str(latest["run_id"])) if latest else None
+    state = policy.redact_value({
+        "status": state_status, "summary": state_summary, "score": score,
+        "last_run": latest, "checks_reviewed": int((latest or {}).get("checks_reviewed") or 0),
+        "items_to_review": int((latest or {}).get("items_to_review") or len(findings)),
+        "critical_issues": [item for item in findings if policy.normalize_severity(item.get("severity")) in {"critical", "high"}][:_SECURITY_SUMMARY_FINDING_LIMIT],
+        "guidance": policy.GUIDANCE, "component_posture": component_posture(findings),
+        "scan_profile": (latest or {}).get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": (latest or {}).get("app_id") or "", "app_label": (latest or {}).get("app_label") or "",
+        "coverage_summary": (latest or {}).get("coverage_summary") or {},
+        "findings": findings, "evidence_refs": refs or [], "history": history,
+        "profile_latest": profile_latest, "finding_delta": _sqlite_finding_delta(repository, latest_row),
+        "execution_timeline": (latest or {}).get("execution_timeline") or [],
+        "scan_progress": ({
+            "run_id": progress.get("run_id"), "profile": progress.get("profile"),
+            "app_id": progress.get("app_id"), "status": progress.get("status"),
+            "stage": progress.get("stage"), "percent": progress.get("percent"),
+            "message": progress.get("message"), "tool": progress.get("tool"),
+            "updated_at": progress.get("updated_at"), "active_scan": progress.get("active_scan"),
+            "event_id": progress.get("event_id"),
+        } if progress else None),
+        "updated_at": revision_info.get("updated_at") or (latest or {}).get("updated_at"),
+        "storage_backend": "sqlite",
+    })
+    return repository, state, revision
+
+
+def _sqlite_cached_read(kind: str, *signals: Any, builder) -> dict[str, Any]:
+    repository = _security_repository()
+    revision = int(repository.get_domain_revision().get("revision") or 0)
+    started_at = time.perf_counter()
+    payload = _cached_compact_read(
+        kind, ("sqlite", str(repository.path), revision, *signals), builder
+    )
+    elapsed_ms = (time.perf_counter() - started_at) * 1000
+    log = _LOGGER.warning if elapsed_ms >= 250 else _LOGGER.debug
+    log("Security SQLite %s read completed in %.2f ms", kind, elapsed_ms)
+    return payload
+
+
+def _sqlite_summary_state() -> dict[str, Any]:
+    def build() -> dict[str, Any]:
+        _, state, revision = _sqlite_state_projection()
+        payload = _security_summary_from_state(state)
+        payload.update({
+            "revision": _revision_token("sqlite-summary", revision),
+            "source": "security_summary_sqlite", "storage_backend": "sqlite",
+        })
+        return payload
+    return _sqlite_cached_read("summary", builder=build)
+
+
+def _sqlite_progress_state() -> dict[str, Any]:
+    def build() -> dict[str, Any]:
+        _, state, revision = _sqlite_state_projection()
+        payload = _progress_from_state(state)
+        payload.update({
+            "revision": _revision_token("sqlite-progress", revision, payload.get("run_id"), payload.get("status"), payload.get("percent")),
+            "source": "security_progress_sqlite", "storage_backend": "sqlite",
+        })
+        return payload
+    return _sqlite_cached_read("progress", builder=build)
+
+
+def _sqlite_freshness_state() -> dict[str, Any]:
+    def build() -> dict[str, Any]:
+        _, state, revision = _sqlite_state_projection()
+        payload = _freshness_from_state(state)
+        profile_latest = state.get("profile_latest") if isinstance(state.get("profile_latest"), dict) else {}
+        profile_revisions = {
+            profile: _revision_token("sqlite-profile", revision, profile, (profile_latest.get(profile) or {}).get("run_id"))
+            for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)
+        }
+        payload.update({
+            "revision": _revision_token("sqlite-freshness", revision),
+            "summary_revision": _revision_token("sqlite-summary", revision),
+            "history_revision": _revision_token("sqlite-history", revision),
+            "progress_revision": _revision_token("sqlite-progress", revision),
+            "profile_revisions": profile_revisions,
+            "source": "security_freshness_sqlite", "storage_backend": "sqlite",
+        })
+        return payload
+    return _sqlite_cached_read("freshness", builder=build)
+
+
+def _sqlite_profile_state(profile: str) -> dict[str, Any]:
+    normalized = policy.normalize_scan_profile(profile)
+    def build() -> dict[str, Any]:
+        _, state, revision = _sqlite_state_projection()
+        payload = _profile_state_from_state(normalized, state)
+        payload.update({
+            "revision": _revision_token("sqlite-profile", revision, normalized, (payload.get("latest_run") or {}).get("run_id")),
+            "source": "security_profile_sqlite", "storage_backend": "sqlite",
+        })
+        return payload
+    return _sqlite_cached_read("profile", normalized, builder=build)
+
+
+def _encode_history_cursor(cursor: dict[str, Any] | None) -> str | None:
+    if not isinstance(cursor, dict) or not cursor.get("run_id"):
+        return None
+    material = f"{int(cursor.get('epoch_ms') or 0)}:{evidence.safe_run_id(str(cursor['run_id']))}"
+    return base64.urlsafe_b64encode(material.encode("utf-8")).decode("ascii").rstrip("=")
+
+
+def _decode_history_cursor(cursor: str | None) -> tuple[int | None, str | None]:
+    token = str(cursor or "").strip()
+    if not token:
+        return None, None
+    try:
+        padded = token + "=" * (-len(token) % 4)
+        material = base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8")
+        epoch_text, run_id = material.split(":", 1)
+        safe_run_id = evidence.safe_run_id(run_id)
+        if safe_run_id == "unknown":
+            raise ValueError("invalid run id")
+        return int(epoch_text), safe_run_id
+    except (ValueError, UnicodeError, base64.binascii.Error) as exc:
+        raise ValueError("Invalid Security history cursor") from exc
+
+
+def _sqlite_history_state(limit: int | None = None, cursor: str | None = None) -> dict[str, Any]:
+    bounded = max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT))
+    def build() -> dict[str, Any]:
+        repository, _, revision = _sqlite_state_projection()
+        cursor_epoch_ms, cursor_run_id = _decode_history_cursor(cursor)
+        page = repository.list_runs_page(
+            limit=bounded, cursor_epoch_ms=cursor_epoch_ms, cursor_run_id=cursor_run_id
+        )
+        history = [item for item in (_sqlite_run_payload(repository, run) for run in page.get("runs", [])) if item]
+        next_cursor = _encode_history_cursor(page.get("next_cursor"))
+        return policy.redact_value({
+            "view_model": "security-history-f7-v1", "limit": bounded,
+            "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": history,
+            "has_more": bool(page.get("has_more")), "next_cursor": next_cursor,
+            "revision": _revision_token("sqlite-history", revision, bounded, cursor, next_cursor),
+            "source": "security_history_sqlite", "storage_backend": "sqlite", "sanitized": True,
+        })
+    return _sqlite_cached_read("history", bounded, cursor or "", builder=build)
+
+
+def _sqlite_details_state(run_id: str) -> dict[str, Any] | None:
+    safe_run_id = evidence.safe_run_id(run_id)
+    def build() -> dict[str, Any]:
+        repository = _security_repository()
+        revision = int(repository.get_domain_revision().get("revision") or 0)
+        row = repository.get_run(safe_run_id)
+        run = _sqlite_run_payload(repository, row, include_details=True)
+        if not run:
+            return {}
+        findings = repository.list_findings(safe_run_id, limit=_SECURITY_SPLIT_FINDING_LIMIT)
+        critical = [item for item in findings if policy.normalize_severity(item.get("severity")) in {"critical", "high"}]
+        refs = run.get("evidence_refs") if isinstance(run.get("evidence_refs"), list) else []
+        return policy.redact_value({
+            "view_model": "security-details-f7-v1", "run_id": safe_run_id,
+            "profile": run.get("scan_profile"), "app_id": run.get("app_id") or "",
+            "app_label": run.get("app_label") or "", "status": run.get("status") or "unknown",
+            "score": int(run.get("score") or 0), "summary": run.get("summary") or "Security check details are available.",
+            "updated_at": run.get("updated_at") or run.get("completed_at"),
+            "execution_timeline": _bounded_list(run.get("execution_timeline"), 20),
+            "coverage_summary": _compact_coverage(run.get("coverage_summary"), limit=20),
+            "target_statuses": _bounded_list(run.get("target_statuses"), 20),
+            "tool_results": _compact_tool_results(run.get("tool_results")),
+            "findings": _bounded_list(findings, _SECURITY_SPLIT_FINDING_LIMIT),
+            "critical_issues": _bounded_list(critical, _SECURITY_SUMMARY_FINDING_LIMIT),
+            "evidence_summary": _compact_evidence_summary_from_refs(safe_run_id, refs),
+            "finding_delta": _sqlite_finding_delta(repository, row),
+            "revision": _revision_token("sqlite-details", revision, safe_run_id, run.get("revision")),
+            "source": "security_details_sqlite", "storage_backend": "sqlite", "sanitized": True,
+        })
+    payload = _sqlite_cached_read("details", safe_run_id, builder=build)
+    return payload if payload.get("run_id") else None
+
+
+def _sqlite_evidence_summary_state(run_id: str) -> dict[str, Any] | None:
+    safe_run_id = evidence.safe_run_id(run_id)
+    def build() -> dict[str, Any]:
+        repository = _security_repository()
+        revision = int(repository.get_domain_revision().get("revision") or 0)
+        refs = [str(item.get("relative_path") or "") for item in repository.list_evidence_refs(safe_run_id, limit=10) if item.get("relative_path")]
+        if not repository.get_run(safe_run_id):
+            return {}
+        payload = _compact_evidence_summary_from_refs(safe_run_id, refs)
+        payload.update({
+            "revision": _revision_token("sqlite-evidence", revision, safe_run_id, refs),
+            "source": "security_evidence_summary_sqlite", "storage_backend": "sqlite",
+        })
+        return payload
+    payload = _sqlite_cached_read("evidence_summary", safe_run_id, builder=build)
+    return payload if payload.get("run_id") else None
+
+
 def write_compact_security_state(state: dict[str, Any] | None = None) -> dict[str, Any]:
     payload = policy.redact_value(state if isinstance(state, dict) else evidence.read_state() or default_state())
     root = evidence.compact_dir()
@@ -732,10 +1393,109 @@ def write_compact_security_state(state: dict[str, Any] | None = None) -> dict[st
     return payload
 
 
+def _persist_sqlite_state(state: dict[str, Any]) -> None:
+    if not _sqlite_lifecycle_enabled():
+        return
+    last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
+    if not last_run or not last_run.get("run_id"):
+        return
+    repository = _security_repository()
+    run_id = str(last_run["run_id"])
+    profile = _profile_for_run(last_run)
+    app_id = str(last_run.get("app_id") or "") or None
+    existing = repository.get_run(run_id)
+    if not existing:
+        reservation = repository.reserve_scan(
+            run_id=run_id, profile=profile, app_id=app_id,
+            app_label=str(last_run.get("app_label") or "") or None,
+            summary=str(last_run.get("summary") or state.get("summary") or ""),
+            requested_at=last_run.get("requested_at") or last_run.get("started_at") or state.get("updated_at"),
+            command_id=str(last_run.get("command_id") or run_id), recent_completion_seconds=0,
+        )
+        if not reservation.reserved and reservation.run.get("run_id") != run_id:
+            raise RuntimeError("Security SQLite reservation belongs to another active scan")
+        existing = repository.get_run(run_id)
+    status = str(last_run.get("status") or "queued").lower().replace("-", "_")
+    metadata = {
+        "coverage_summary": last_run.get("coverage_summary") or state.get("coverage_summary") or {},
+        "execution_timeline": last_run.get("execution_timeline") or state.get("execution_timeline") or [],
+        "finding_delta": state.get("finding_delta") or {},
+        "target_statuses": last_run.get("target_statuses") or [],
+    }
+    if status in {"queued", "accepted", "running", "working", "in_progress"}:
+        existing_status = str((existing or {}).get("status") or "")
+        if status == "queued":
+            return
+        if status == "accepted":
+            if existing_status == "queued":
+                repository.mark_accepted(
+                    run_id, accepted_at=last_run.get("accepted_at") or state.get("updated_at"),
+                    summary=str(last_run.get("summary") or state.get("summary") or ""),
+                )
+            return
+        if existing_status in {"queued", "accepted"}:
+            repository.mark_running(
+                run_id, started_at=last_run.get("started_at") or state.get("updated_at"),
+                summary=str(last_run.get("summary") or state.get("summary") or ""),
+            )
+        progress = state.get("scan_progress") if isinstance(state.get("scan_progress"), dict) else scan_progress_for_run(last_run) or {}
+        repository.record_progress(
+            run_id, status=status, stage=str(progress.get("stage") or status),
+            percent=int(progress.get("percent")) if progress.get("percent") is not None else None,
+            message=str(progress.get("message") or state.get("summary") or ""),
+            tool=str(progress.get("tool") or "") or None, payload=metadata,
+            created_at=progress.get("updated_at") or state.get("updated_at"),
+        )
+        return
+    findings = state.get("findings") if isinstance(state.get("findings"), list) else []
+    refs = state.get("evidence_refs") if isinstance(state.get("evidence_refs"), list) else last_run.get("evidence_refs") if isinstance(last_run.get("evidence_refs"), list) else []
+    tools = last_run.get("tool_results") if isinstance(last_run.get("tool_results"), dict) else {}
+    counts = {severity: int(last_run.get(f"{severity}_count") or 0) for severity in policy.SEVERITIES}
+    if status == "failed":
+        repository.fail_run(
+            run_id, failure_code=str(last_run.get("failure_code") or "worker_failed"),
+            failure_message=str(last_run.get("failure_message") or state.get("summary") or "Security check needs review."),
+            summary=str(last_run.get("summary") or state.get("summary") or "Security check needs review."),
+            completed_at=last_run.get("completed_at") or state.get("updated_at"),
+            partial_results=bool(last_run.get("partial_results")), findings=findings,
+            evidence_refs=refs, tool_results=tools, metadata=metadata,
+        )
+    else:
+        repository.complete_run(
+            run_id, status="degraded" if status == "degraded" else "cancelled" if status in {"cancelled", "canceled"} else "succeeded",
+            summary=str(last_run.get("summary") or state.get("summary") or "Safety check completed."),
+            score=int(last_run.get("score") if last_run.get("score") is not None else state.get("score") or 0),
+            partial_results=bool(last_run.get("partial_results")),
+            completed_at=last_run.get("completed_at") or state.get("updated_at"),
+            findings=findings, evidence_refs=refs, tool_results=tools, counts=counts,
+            checks_reviewed=int(last_run.get("checks_reviewed") or state.get("checks_reviewed") or 0),
+            items_to_review=int(last_run.get("items_to_review") or state.get("items_to_review") or 0),
+            metadata=metadata,
+        )
+
+
 def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
-    clean = evidence.write_state(state)
-    write_compact_security_state(clean)
-    return clean
+    _persist_sqlite_state(state)
+    run_id = str(((state.get("last_run") or {}) if isinstance(state.get("last_run"), dict) else {}).get("run_id") or "")
+    try:
+        clean = evidence.write_state(state)
+        write_compact_security_state(clean)
+        _record_projection_status(run_id, component="state", degraded=False)
+        return clean
+    except (OSError, ValueError, TypeError) as exc:
+        if not _sqlite_lifecycle_enabled():
+            raise
+        _record_projection_status(
+            run_id,
+            component="state",
+            degraded=True,
+            reason=f"state_projection_{type(exc).__name__}",
+        )
+        _LOGGER.warning(
+            "Security JSON compatibility projection degraded: %s", type(exc).__name__
+        )
+        invalidate_security_read_caches()
+        return policy.redact_value(state)
 
 
 def _ensure_compact_state() -> dict[str, Any]:
@@ -862,6 +1622,8 @@ def security_progress_event_fingerprint(event: dict[str, Any] | None = None) -> 
     )
 
 def split_freshness_state() -> dict[str, Any]:
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_freshness_state()
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_freshness.json"
     key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
@@ -870,13 +1632,17 @@ def split_freshness_state() -> dict[str, Any]:
 
 def split_profile_state(profile: str) -> dict[str, Any]:
     normalized_profile = policy.normalize_scan_profile(profile)
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_profile_state(normalized_profile)
     state = _ensure_compact_state()
     path = evidence.compact_profile_path(normalized_profile)
     key = _compact_file_key(path, normalized_profile, _compact_revision(state), _is_live_security_state(state))
     return _cached_compact_read("profile", key, lambda: evidence.read_compact_json(path, _profile_state_from_state(normalized_profile, state)))
 
 
-def split_history_state(limit: int | None = None) -> dict[str, Any]:
+def split_history_state(limit: int | None = None, cursor: str | None = None) -> dict[str, Any]:
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_history_state(limit, cursor)
     bounded_limit = max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT))
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_history_index.json"
@@ -885,12 +1651,14 @@ def split_history_state(limit: int | None = None) -> dict[str, Any]:
     def build() -> dict[str, Any]:
         base = evidence.read_compact_json(path, {})
         history = base.get("history") if isinstance(base, dict) and isinstance(base.get("history"), list) else _compact_history_index(state, limit=bounded_limit)
-        return {"view_model": "security-history-f7-v1", "limit": bounded_limit, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": history[:bounded_limit], "revision": _history_revision(state), "source": "security_history_json", "sanitized": True}
+        return {"view_model": "security-history-f7-v1", "limit": bounded_limit, "max_limit": _SECURITY_SPLIT_HISTORY_MAX_LIMIT, "history": history[:bounded_limit], "has_more": False, "next_cursor": None, "revision": _history_revision(state), "source": "security_history_json", "sanitized": True}
 
     return _cached_compact_read("history", key, build)
 
 
 def split_progress_state() -> dict[str, Any]:
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_progress_state()
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_progress.json"
     key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
@@ -981,6 +1749,8 @@ def recent_completed_scan_state(profile: str | None = None, app_id: str | None =
 
 
 def split_run_details_state(run_id: str) -> dict[str, Any] | None:
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_details_state(run_id)
     state = _ensure_compact_state()
     safe_run_id = evidence.safe_run_id(run_id)
     path = evidence.compact_details_path(safe_run_id)
@@ -993,6 +1763,8 @@ def split_run_details_state(run_id: str) -> dict[str, Any] | None:
 
 
 def split_evidence_summary_state(run_id: str) -> dict[str, Any] | None:
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_evidence_summary_state(run_id)
     state = _ensure_compact_state()
     safe_run_id = evidence.safe_run_id(run_id)
     details_path = evidence.compact_details_path(safe_run_id)
@@ -1011,6 +1783,8 @@ def split_evidence_summary_state(run_id: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) and payload.get("run_id") else None
 
 def summary_state() -> dict[str, Any]:
+    if _sqlite_compact_reads_enabled():
+        return _sqlite_summary_state()
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_summary.json"
     key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
@@ -1137,6 +1911,9 @@ def read_evidence(run_id: str) -> dict[str, Any] | None:
 
 
 def discard_queued_run(run_id: str) -> None:
+    if _sqlite_lifecycle_enabled():
+        fail_scan_submission(run_id)
+        return
     existing = evidence.read_run(run_id)
     if existing and str(existing.get("status") or "") == "queued":
         evidence.delete_run(run_id)
@@ -1168,7 +1945,7 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
         **({"app_id": app_id, "app_label": app_label} if app_id else {}),
         "coverage_summary": coverage_summary,
         "tools": ["lynis", "trivy"],
-        "requested_at": now,
+        "requested_at": command.get("requested_at") or now,
         "started_at": None,
         "completed_at": None,
         "partial_results": False,
@@ -1181,9 +1958,9 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
         "execution_timeline": [],
     }
     run["execution_timeline"] = execution_timeline_for_phase(run, "queued")
-    evidence.write_run(run_id, run)
     state = build_state(run, [], [], status_override="queued")
     _write_security_state(state)
+    _write_run_projection(run)
     return run
 
 
@@ -1216,8 +1993,8 @@ def mark_running(command: dict[str, Any]) -> dict[str, Any]:
         "execution_timeline": [],
     }
     run["execution_timeline"] = execution_timeline_for_phase(run, "lynis_running")
-    evidence.write_run(run_id, run)
     _write_security_state(build_state(run, [], [], status_override="running"))
+    _write_run_projection(run)
     return run
 
 
@@ -1926,7 +2703,6 @@ def _write_intermediate_running_state(
     findings: list[dict[str, Any]],
     evidence_refs: list[str],
 ) -> None:
-    evidence.write_run(str(run["run_id"]), run)
     _write_security_state(
         build_state(
             run,
@@ -1936,6 +2712,7 @@ def _write_intermediate_running_state(
             summary_override=_profile_copy(str(run.get("scan_profile") or policy.SCAN_PROFILE_QUICK))["running"],
         )
     )
+    _write_run_projection(run)
 
 
 def count_findings(findings: list[dict[str, Any]]) -> dict[str, int]:
@@ -2001,6 +2778,19 @@ def build_state(
         "scan_profile": run.get("scan_profile") or policy.SCAN_PROFILE_QUICK,
         **({"app_id": run.get("app_id"), "app_label": run.get("app_label")} if run.get("app_id") else {}),
         "coverage_summary": _coverage_from_run(run),
+        "summary": run.get("summary") or summary,
+        "score": run.get("score") if run.get("score") is not None else score,
+        "updated_at": run.get("updated_at") or run.get("completed_at") or run.get("started_at"),
+        "accepted_at": run.get("accepted_at"),
+        "requested_at": run.get("requested_at"),
+        "checks_reviewed": run.get("checks_reviewed"),
+        "items_to_review": run.get("items_to_review"),
+        "tool_results": run.get("tool_results") if isinstance(run.get("tool_results"), dict) else {},
+        "execution_timeline": run.get("execution_timeline") if isinstance(run.get("execution_timeline"), list) else [],
+        "target_statuses": run.get("target_statuses") if isinstance(run.get("target_statuses"), list) else [],
+        "evidence_refs": evidence_refs,
+        "failure_code": run.get("failure_code"),
+        "failure_message": run.get("failure_message"),
     }
     critical = [item for item in findings if policy.normalize_severity(item.get("severity")) == "critical"][:10]
     history = security_history(current_run=run, current_findings=findings, current_evidence_refs=evidence_refs)
@@ -2457,9 +3247,9 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     if summary_ref not in evidence_refs:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
-    evidence.write_run(run_id, run)
     state["evidence_refs"] = evidence_refs
     _write_security_state(state)
+    _write_run_projection(run)
     return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
 
 
@@ -2941,9 +3731,9 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     if summary_ref not in evidence_refs:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
-    evidence.write_run(run_id, run)
     state["evidence_refs"] = evidence_refs
     _write_security_state(state)
+    _write_run_projection(run)
     return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
 
 
@@ -3076,16 +3866,23 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
     if summary_ref not in evidence_refs:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
-    evidence.write_run(run_id, run)
     state["evidence_refs"] = evidence_refs
     _write_security_state(state)
+    _write_run_projection(run)
     return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
 
 
 def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
+    initialize_security_sqlite_runtime(reconcile=False)
     profile = _scan_profile(command)
-    if profile == policy.SCAN_PROFILE_FULL:
-        return _run_full_security_scan({**command, "profile": policy.SCAN_PROFILE_FULL})
-    if profile == policy.SCAN_PROFILE_APP:
-        return _run_app_security_scan({**command, "profile": policy.SCAN_PROFILE_APP})
-    return _run_quick_security_scan({**command, "profile": policy.SCAN_PROFILE_QUICK})
+    run_id = str(command.get("run_id") or command.get("command_id") or "")
+    try:
+        if profile == policy.SCAN_PROFILE_FULL:
+            return _run_full_security_scan({**command, "profile": policy.SCAN_PROFILE_FULL})
+        if profile == policy.SCAN_PROFILE_APP:
+            return _run_app_security_scan({**command, "profile": policy.SCAN_PROFILE_APP})
+        return _run_quick_security_scan({**command, "profile": policy.SCAN_PROFILE_QUICK})
+    except Exception as exc:
+        if run_id:
+            fail_security_run(run_id, exc)
+        raise

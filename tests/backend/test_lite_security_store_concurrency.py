@@ -16,20 +16,25 @@ def _reserve_worker(database: str, run_id: str, queue) -> None:
     queue.put((result.reserved, result.reason, result.run.get("run_id")))
 
 
-def test_lite_security_store_two_process_reservation_is_atomic(tmp_path):
+def test_lite_security_store_twenty_process_reservation_is_atomic(tmp_path):
     ensure_runtime_path()
     database = str(tmp_path / "state" / "pocketlab-lite.sqlite3")
     context = multiprocessing.get_context("spawn")
     queue = context.Queue()
     processes = [
-        context.Process(target=_reserve_worker, args=(database, "security-a", queue)),
-        context.Process(target=_reserve_worker, args=(database, "security-b", queue)),
+        context.Process(
+            target=_reserve_worker,
+            args=(database, f"security-{index:02d}", queue),
+        )
+        for index in range(20)
     ]
     for process in processes:
         process.start()
     for process in processes:
-        process.join(30)
+        process.join(60)
         assert process.exitcode == 0
-    results = [queue.get(timeout=5), queue.get(timeout=5)]
+    results = [queue.get(timeout=10) for _ in processes]
     assert sum(1 for reserved, _, _ in results if reserved) == 1
-    assert sorted(reason for _, reason, _ in results) == ["active", "reserved"]
+    assert sum(1 for _, reason, _ in results if reason == "active") == 19
+    accepted_run_ids = {run_id for _, _, run_id in results}
+    assert len(accepted_run_ids) == 1

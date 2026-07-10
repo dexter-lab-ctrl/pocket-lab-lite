@@ -924,10 +924,17 @@ async def handle_lite_security_scan(command: Dict[str, Any]) -> Dict[str, Any]:
     try:
         result = await asyncio.to_thread(lite_security.run_security_scan, command)
     except Exception as exc:
+        await asyncio.to_thread(lite_security.fail_security_run, run_id, exc)
         await _publish(
             "pocketlab.audit.lite.security.scan.failed",
             "lite.security.scan.failed",
-            {"command_id": command_id, "run_id": run_id, "status": "failed", "error": str(exc)},
+            {
+                "command_id": command_id,
+                "run_id": run_id,
+                "status": "failed",
+                "error_type": type(exc).__name__,
+                "summary": "Security check needs review.",
+            },
             trace_id=command_id,
         )
         raise

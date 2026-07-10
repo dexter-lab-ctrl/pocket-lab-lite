@@ -36,7 +36,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services.nats_bus import BUS
     from .services.operation_events import install_operation_event_publisher
     from .services.live_status import LIVE_STATUS
+    from .services import lite_security
 
+    await asyncio.to_thread(lite_security.initialize_security_sqlite_runtime)
     await BUS.start()
     install_operation_event_publisher(
         deps.operation_service(), asyncio.get_running_loop(), source="fastapi"
