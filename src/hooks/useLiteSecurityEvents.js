@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-        onProgress?.(event);
 import { liteApi } from '../lib/liteApi.js';
 import { broadcastLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
