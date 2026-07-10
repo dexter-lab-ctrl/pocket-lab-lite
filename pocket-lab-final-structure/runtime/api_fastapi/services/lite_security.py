@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -17,6 +18,33 @@ from typing import Any
 from .. import deps
 from . import lite_security_evidence as evidence
 from . import lite_security_policy as policy
+
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def _shadow_compare_sqlite_state(state: dict[str, Any]) -> None:
+    """Run the opt-in S2 comparison without changing JSON-backed responses."""
+    shadow_flag = os.environ.get(
+        "POCKETLAB_LITE_SECURITY_SQLITE_SHADOW_READ", "0"
+    ).strip().lower()
+    if shadow_flag in {"", "0", "false", "no", "off"}:
+        return
+    try:
+        from .lite_security_store import shadow_compare_if_enabled
+
+        result = shadow_compare_if_enabled(state)
+        if result and not result.get("matched"):
+            _LOGGER.warning(
+                "Security SQLite shadow comparison mismatch: fields=%s",
+                ",".join(result.get("mismatch_fields") or []),
+            )
+    except Exception as exc:
+        # Shadow mode is diagnostic in S2. JSON remains authoritative and a
+        # SQLite failure must never blank the Safety Center.
+        _LOGGER.warning(
+            "Security SQLite shadow comparison skipped: %s", type(exc).__name__
+        )
 
 
 def new_run_id() -> str:
@@ -165,6 +193,7 @@ def _get_current_state_cache(key: tuple[int, int] | None) -> dict[str, Any] | No
 
 def _set_current_state_cache(key: tuple[int, int] | None, state: dict[str, Any]) -> dict[str, Any]:
     clean = policy.redact_value(state)
+    _shadow_compare_sqlite_state(clean)
     if key:
         _CURRENT_STATE_CACHE.update({
             "key": key,

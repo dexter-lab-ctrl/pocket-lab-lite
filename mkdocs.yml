@@ -38,6 +38,7 @@ nav:
       - Android / Termux: getting-started/android-termux.md
   - Architecture:
       - Lite Architecture: architecture/lite-architecture.md
+      - Security SQLite Design Lock: architecture/lite-security-sqlite-design-lock.md
   - Operations:
       - Bootstrap Lite: operations/bootstrap-lite.md
   - Security:
