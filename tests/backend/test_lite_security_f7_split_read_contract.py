@@ -82,14 +82,14 @@ def test_security_f7_freshness_profile_history_and_progress_endpoints_are_compac
     assert history.status_code == 200
     history_payload = history.json()
     assert history_payload["limit"] == 20
-    assert history_payload["max_limit"] == 50
+    assert history_payload["max_limit"] == 100
     assert len(history_payload["history"]) <= 20
 
     capped = http.get("/api/lite/security/history?limit=999")
     assert capped.status_code == 200
     capped_payload = capped.json()
-    assert capped_payload["limit"] == 50
-    assert len(capped_payload["history"]) <= 50
+    assert capped_payload["limit"] == 100
+    assert len(capped_payload["history"]) <= 100
 
     progress = http.get("/api/lite/security/progress")
     assert progress.status_code == 200

@@ -804,9 +804,15 @@ def get_lite_security_profile(profile: str, request: Request) -> Response:
 
 
 @router.get("/security/history")
-def get_lite_security_history(request: Request, limit: int = 20) -> Response:
+def get_lite_security_history(
+    request: Request, limit: int = 20, cursor: str | None = None
+) -> Response:
     deps.require_auth(request)
-    return _security_compact_response(request, lite_security.split_history_state(limit=limit))
+    try:
+        payload = lite_security.split_history_state(limit=limit, cursor=cursor)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid Security history cursor.")
+    return _security_compact_response(request, payload)
 
 
 @router.get("/security/details/{run_id}")
@@ -879,12 +885,6 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             app_id = lite_security.policy.normalize_app_id(payload.app_id)
         except ValueError:
             raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
-    active_scan = lite_security.active_scan_state(profile, app_id)
-    if active_scan:
-        return active_scan
-    recent_scan = lite_security.recent_completed_scan_state(profile, app_id)
-    if recent_scan:
-        return recent_scan
     run_id = lite_security.new_run_id()
     command = {
         "run_id": run_id,
@@ -895,9 +895,14 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
         "reason": payload.reason or ("manual app check" if profile == lite_security.policy.SCAN_PROFILE_APP else "manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
         "requested_at": deps.now_utc_iso(),
     }
-    # Record the queued state before publishing so a fast worker cannot complete
-    # the scan and then have the API overwrite the completed state back to queued.
-    lite_security.record_queued_run(command)
+    reservation = lite_security.reserve_scan_request(command)
+    if not reservation.get("reserved"):
+        return reservation.get("response") or {
+            "status": "queued",
+            "accepted": True,
+            "deduplicated": True,
+            "summary": "A safety check is already in progress.",
+        }
     try:
         queued = await submit_domain_command(
             lite_security.policy.COMMAND_SUBJECT,
@@ -905,12 +910,15 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             command,
         )
     except Exception:
-        lite_security.discard_queued_run(run_id)
+        lite_security.fail_scan_submission(run_id)
         raise
+    lite_security.record_queued_run(command)
+    lite_security.mark_scan_accepted(command)
     queued.update(
         {
             "status": "queued",
             "accepted": True,
+            "deduplicated": False,
             "run_id": run_id,
             "command_subject": lite_security.policy.COMMAND_SUBJECT,
             "execution_mode": "worker",
@@ -975,7 +983,14 @@ async def check_lite_security_app(app_id: str, request: Request, payload: LiteAp
         "reason": (payload.reason if payload else None) or "manual app check",
         "requested_at": deps.now_utc_iso(),
     }
-    lite_security.record_queued_run(command)
+    reservation = lite_security.reserve_scan_request(command)
+    if not reservation.get("reserved"):
+        return reservation.get("response") or {
+            "status": "queued",
+            "accepted": True,
+            "deduplicated": True,
+            "summary": "A safety check is already in progress.",
+        }
     try:
         queued = await submit_domain_command(
             lite_security.policy.COMMAND_SUBJECT,
@@ -983,11 +998,14 @@ async def check_lite_security_app(app_id: str, request: Request, payload: LiteAp
             command,
         )
     except Exception:
-        lite_security.discard_queued_run(run_id)
+        lite_security.fail_scan_submission(run_id)
         raise
+    lite_security.record_queued_run(command)
+    lite_security.mark_scan_accepted(command)
     queued.update({
         "status": "queued",
         "accepted": True,
+        "deduplicated": False,
         "run_id": run_id,
         "command_subject": lite_security.policy.COMMAND_SUBJECT,
         "execution_mode": "worker",
