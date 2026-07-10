@@ -1,5 +1,3 @@
-  const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || '';
-  const [directSecurityProgressData, setDirectSecurityProgressData] = React.useState(null);
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { useQueryClient } from '@tanstack/react-query';
@@ -1884,6 +1882,8 @@ export function hasLiveSecurityOperation(payload) {
 
 export default function SecurityScreen() {
   const [result, setResult] = useState(null);
+  const activeSecurityProgressRunId = result?.run_id || result?.job_id || result?.command_id || result?.scan_progress?.run_id || '';
+  const [directSecurityProgressData, setDirectSecurityProgressData] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [busy, setBusy] = useState(false);
   const securityManageOpen = useLiteUiStore((state) => state.securityManageOpen);
