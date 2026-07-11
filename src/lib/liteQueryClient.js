@@ -53,7 +53,7 @@ export function createLiteQueryClient() {
         retryDelay: liteQueryRetryDelay,
         staleTime: 20_000,
         gcTime: 5 * 60_000,
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false,
         refetchOnReconnect: true,
         refetchInterval: false,
         refetchIntervalInBackground: false,

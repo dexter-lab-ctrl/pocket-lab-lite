@@ -37,6 +37,7 @@ export function useLiteStatus(intervalMs = litePollingIntervals.relaxed) {
     path: liteQueryPaths.status,
     queryFn: liteApi.status,
     pollingMode: 'relaxed',
+    refetchOnWindowFocus: false,
     refetchInterval: Math.max(litePollingIntervals.relaxed, intervalMs),
   });
 

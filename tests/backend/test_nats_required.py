@@ -1,4 +1,8 @@
-from pocket_lab_test_utils import client
+from pathlib import Path
+
+from pocket_lab_test_utils import client, ensure_runtime_path
+
+ensure_runtime_path()
 
 
 def test_nats_status_endpoint_registered():
@@ -81,5 +85,37 @@ def test_close_stale_client_clears_subscriptions():
         assert bus.nc is None
         assert bus.js is None
         assert bus._nats_subscriptions == []
+
+    asyncio.run(scenario())
+
+
+def test_core_publish_does_not_flush_after_every_message():
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+    ).read_text()
+    publish_block = source.split("async def publish_json", 1)[1].split("def _record", 1)[0]
+    assert "await self.nc.publish(subject, payload)" in publish_block
+    assert "await self.nc.flush(timeout=1)" not in publish_block
+    assert "async with self._flush_lock" in source
+
+
+def test_connected_invalid_state_error_is_counted_without_disconnect(monkeypatch):
+    import asyncio
+    from api_fastapi.services.nats_bus import PocketLabEventBus
+
+    class FakeClient:
+        is_connected = True
+
+    async def scenario():
+        bus = PocketLabEventBus()
+        bus.nc = FakeClient()
+        scheduled = []
+        monkeypatch.setattr(bus, "_schedule_reconnect", lambda: scheduled.append(True))
+        await bus._nats_error(asyncio.InvalidStateError("invalid state"))
+        status = bus.status()
+        assert status["connected"] is True
+        assert status["transient_invalid_state_errors"] == 1
+        assert status["last_error"] == ""
+        assert scheduled == []
 
     asyncio.run(scenario())

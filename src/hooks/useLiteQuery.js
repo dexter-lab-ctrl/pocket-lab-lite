@@ -108,7 +108,7 @@ export function useLiteQuery({
   pollingMode = 'normal',
   isLive,
   enabledWhenHidden = false,
-  refetchOnWindowFocus = true,
+  refetchOnWindowFocus = false,
   refetchOnMount = true,
   refetchOnReconnect = true,
   placeholderData,
