@@ -1,11 +1,16 @@
 export const LITE_CENTRAL_POLLING_POLICY = 'LITE_CENTRAL_POLLING_POLICY';
 
+export const LITE_IDLE_POLL_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
 export const litePollingIntervals = Object.freeze({
   realtime: 2_000,
   active: 5_000,
-  normal: 15_000,
-  relaxed: 30_000,
-  slow: 60_000,
+  normal: LITE_IDLE_POLL_INTERVAL_MS,
+  relaxed: LITE_IDLE_POLL_INTERVAL_MS,
+  slow: LITE_IDLE_POLL_INTERVAL_MS,
+  retrySoon: 5 * 60_000,
+  retryLater: 30 * 60_000,
+  retryLong: 6 * 60 * 60_000,
   background: false,
   off: false,
 });
@@ -91,10 +96,10 @@ export function litePollingModeFromValue(mode = 'normal') {
 export function litePollingBackoffInterval({ failureCount = 0, error = null, savedState = false } = {}) {
   const count = Number(failureCount) || 0;
   if (!error && !savedState && count <= 0) return null;
-  if (count <= 1) return litePollingIntervals.active;
-  if (count <= 3) return litePollingIntervals.normal;
-  if (count <= 6) return litePollingIntervals.relaxed;
-  return litePollingIntervals.slow;
+  if (count <= 1) return litePollingIntervals.retrySoon;
+  if (count <= 3) return litePollingIntervals.retryLater;
+  if (count <= 6) return litePollingIntervals.retryLong;
+  return LITE_IDLE_POLL_INTERVAL_MS;
 }
 
 export function liteQueryPollingInterval({

@@ -158,7 +158,7 @@ export default function DevicesScreen() {
     || hasLiveDeviceFleetOperation(fleetPayload)
   ), [busy, restartBusy, removeBusy, restartProgress, result]);
   const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.fleet, [], {
-    pollingMode: 'active',
+    pollingMode: 'slow',
     isLive: fleetPollingIsLive,
     staleTime: 15_000,
     select: selectDevicesScreenView,
