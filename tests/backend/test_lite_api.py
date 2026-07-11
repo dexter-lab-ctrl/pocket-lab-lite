@@ -4295,7 +4295,7 @@ def test_lite_use_lite_query_phase2_adaptive_polling_source():
 
     assert "pollingMode = 'normal'" in hook
     assert "enabledWhenHidden = false" in hook
-    assert "refetchOnWindowFocus = true" in hook
+    assert "refetchOnWindowFocus = false" in hook
     assert "refetchOnReconnect = true" in hook
     assert "typeof refetchInterval === 'function'" in hook
     assert "liteQueryPollingInterval" in hook
@@ -7435,3 +7435,15 @@ def test_lite_security_f2_summary_history_is_bounded():
     assert "history" in current_state
     assert "[:20]" in current_state or "limit=20" in current_state
 
+
+
+def test_lite_focus_refetch_is_opt_in_and_status_stays_quiet():
+    query_client = Path("src/lib/liteQueryClient.js").read_text()
+    use_query = Path("src/hooks/useLiteQuery.js").read_text()
+    use_status = Path("src/hooks/useLiteStatus.js").read_text()
+
+    assert "refetchOnWindowFocus: false" in query_client
+    assert "refetchOnWindowFocus = false" in use_query
+    assert "refetchOnWindowFocus: false" in use_status
+    assert "refetchOnReconnect: true" in query_client
+    assert "refetchOnReconnect = true" in use_query

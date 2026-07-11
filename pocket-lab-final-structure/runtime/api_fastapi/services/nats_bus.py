@@ -104,6 +104,9 @@ class PocketLabEventBus:
         self._stopping = False
         self._last_connected_at = ""
         self._last_disconnected_at = ""
+        self._flush_lock = asyncio.Lock()
+        self._transient_invalid_state_errors = 0
+        self._last_transient_invalid_state_at = ""
 
     def _client_is_connected(self) -> bool:
         nc = self.nc
@@ -130,7 +133,17 @@ class PocketLabEventBus:
             self._reconnect_task = None
 
     async def _nats_error(self, exc: Exception) -> None:
-        """Record client errors and recover only when the real client is down."""
+        """Record client errors and recover only when the real client is down.
+
+        nats-py can surface an asyncio InvalidStateError when a late PONG races
+        with a completed flush future. Treat that exact condition as transient
+        while the underlying client is still connected; the watchdog remains
+        authoritative for real disconnects.
+        """
+        if isinstance(exc, asyncio.InvalidStateError) and self._client_is_connected():
+            self._transient_invalid_state_errors += 1
+            self._last_transient_invalid_state_at = deps.now_utc_iso()
+            return
         self._last_error = f"{exc.__class__.__name__}: {exc}"
         if self._client_is_connected():
             return
@@ -387,8 +400,11 @@ class PocketLabEventBus:
                 ):
                     await self.js.publish(subject, payload)
                 else:
+                    # Core NATS publish is already buffered and drained by the
+                    # client writer task. Flushing after every event creates a
+                    # large number of ping/PONG futures and can trigger the
+                    # nats-py InvalidStateError race seen on Android/Termux.
                     await self.nc.publish(subject, payload)
-                    await self.nc.flush(timeout=1)
             except Exception as exc:
                 self.connected = False
                 self.fallback_reason = str(exc)
@@ -596,9 +612,23 @@ class PocketLabEventBus:
         return record
 
     async def flush(self) -> None:
-        if self.connected and self.nc is not None:
-            with contextlib.suppress(Exception):
+        """Explicit durability barrier for callers that truly require one.
+
+        The lock prevents concurrent flush futures from competing for the same
+        PONG. Routine publishes intentionally do not call this method.
+        """
+        if not self._client_is_connected() or self.nc is None:
+            return
+        async with self._flush_lock:
+            try:
                 await self.nc.flush(timeout=1)
+            except asyncio.InvalidStateError as exc:
+                if self._client_is_connected():
+                    self._transient_invalid_state_errors += 1
+                    self._last_transient_invalid_state_at = deps.now_utc_iso()
+                    return
+                await self._nats_error(exc)
+                raise
 
     def recent(
         self, limit: int = 100, subject_prefix: str = ""
@@ -645,6 +675,8 @@ class PocketLabEventBus:
             "watchdog_running": bool(
                 self._watchdog_task is not None and not self._watchdog_task.done()
             ),
+            "transient_invalid_state_errors": self._transient_invalid_state_errors,
+            "last_transient_invalid_state_at": self._last_transient_invalid_state_at,
         }
 
     async def subscribe_local(
