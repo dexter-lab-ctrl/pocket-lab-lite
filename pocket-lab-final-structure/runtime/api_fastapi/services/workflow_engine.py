@@ -22,6 +22,7 @@ on Android/Termux, but its model mirrors enterprise workflow engines:
 
 import json
 import os
+import threading
 import time
 import uuid
 from dataclasses import dataclass
@@ -155,6 +156,12 @@ class EventSourcedWorkflowEngine:
         self.history_limit = int(
             os.environ.get("POCKETLAB_WORKFLOW_HISTORY_LIMIT", "5000")
         )
+        self._status_cache: Dict[str, Any] | None = None
+        self._status_cache_at = 0.0
+        self._status_cache_ttl = max(1.0, float(
+            os.environ.get("POCKETLAB_WORKFLOW_STATUS_CACHE_SECONDS", "15")
+        ))
+        self._status_cache_lock = threading.RLock()
 
     @property
     def root(self) -> Path:
@@ -337,12 +344,18 @@ class EventSourcedWorkflowEngine:
             or {"workflow_id": str(workflow_id)}
         )
 
+    def _invalidate_status_cache(self) -> None:
+        with self._status_cache_lock:
+            self._status_cache = None
+            self._status_cache_at = 0.0
+
     def save_projection(self, projection: Dict[str, Any]) -> None:
         data = _read_json(self.projection_file, {"workflows": {}})
         workflows = data.setdefault("workflows", {})
         workflows[str(projection.get("workflow_id"))] = projection
         data["updated_at"] = deps.now_utc_iso()
         _write_json(self.projection_file, data)
+        self._invalidate_status_cache()
 
     def iter_events(
         self, workflow_id: str | None = None, limit: int = 1000
@@ -551,12 +564,18 @@ class EventSourcedWorkflowEngine:
         }
 
     def status(self) -> Dict[str, Any]:
+        now = time.monotonic()
+        with self._status_cache_lock:
+            cached = self._status_cache
+            if cached is not None and now - self._status_cache_at < self._status_cache_ttl:
+                return {**cached, "counts": dict(cached.get("counts") or {}), "cache": "hit"}
+
         projections = self.list_workflows(limit=1000)
         counts: Dict[str, int] = {}
         for item in projections:
             status = str(item.get("status") or "unknown")
             counts[status] = counts.get(status, 0) + 1
-        return {
+        result = {
             "status": "ok",
             "engine": "event-sourced-workflow-engine",
             "event_log": str(self.event_log),
@@ -564,7 +583,12 @@ class EventSourcedWorkflowEngine:
             "workflow_count": len(projections),
             "counts": counts,
             "history_limit": self.history_limit,
+            "cache_ttl_seconds": self._status_cache_ttl,
         }
+        with self._status_cache_lock:
+            self._status_cache = {**result, "counts": dict(counts)}
+            self._status_cache_at = now
+        return {**result, "counts": dict(counts), "cache": "miss"}
 
 
 WORKFLOW_ENGINE = EventSourcedWorkflowEngine()

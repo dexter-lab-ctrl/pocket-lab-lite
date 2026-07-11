@@ -10,7 +10,7 @@ export default function DisasterRecoveryTab({ simpleMode = false }) {
   const [backupRef, setBackupRef] = useState('latest');
   const [status, setStatus] = useState({ phase: 'idle', jobId: '', message: '' });
   const [verification, setVerification] = useState(null);
-  const { status: controlPlane } = useControlPlaneStatus(15000);
+  const { status: controlPlane } = useControlPlaneStatus();
   const isLiveEnv = controlPlane.ready;
   const [recentBackups, setRecentBackups] = useState([]);
 

@@ -56,7 +56,7 @@ export default function GitOpsTab({ simpleMode = false }) {
   const [running, setRunning] = useState(false);
   const [dispatching, setDispatching] = useState(false);
   const toast = useToast();
-  const { status: controlPlane } = useControlPlaneStatus(15000);
+  const { status: controlPlane } = useControlPlaneStatus();
   const isLiveEnv = controlPlane.ready;
   const logsEndRef = useRef(null);
 

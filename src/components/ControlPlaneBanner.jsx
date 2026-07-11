@@ -6,7 +6,7 @@ import { ProgressiveDisclosure, StatusBadge } from './ui.jsx';
 import { enterpriseDisplayText } from '../lib/enterpriseLabels.js';
 
 export default function ControlPlaneBanner({ compact = false, simpleMode = false }) {
-  const { status, refresh } = useControlPlaneStatus(15000);
+  const { status, refresh } = useControlPlaneStatus();
   const ready = status.ready;
   const Icon = ready ? CheckCircle2 : AlertTriangle;
   const label = simpleMode ? (ready ? 'Pocket Lab is ready' : 'Pocket Lab needs attention') : (ready ? 'Control plane ready' : 'Control plane degraded');
