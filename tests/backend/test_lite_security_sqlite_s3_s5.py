@@ -507,3 +507,72 @@ def test_s5_sqlite_compact_reads_keep_contract_etag_and_keyset_pagination(
     )
     assert not_modified.status_code == 304
     assert not_modified.headers["cache-control"] == "no-cache"
+
+
+def test_cutover_hotfix_keeps_terminal_stage_canonical_with_evidence_timeline(
+    tmp_path, monkeypatch
+):
+    _configure_sqlite(tmp_path, monkeypatch, "dual")
+    from api_fastapi.services import lite_security
+
+    base_run = {
+        "run_id": "security-terminal-stage",
+        "scan_profile": "quick",
+        "requested_at": "2026-07-10T10:00:00Z",
+        "started_at": "2026-07-10T10:00:01Z",
+        "execution_timeline": [
+            {"id": "evidence", "title": "Evidence saved", "status": "completed"}
+        ],
+    }
+
+    for status, expected in (
+        ("succeeded", "Safety check complete"),
+        ("degraded", "Safety check complete"),
+        ("cancelled", "Safety check complete"),
+        ("failed", "Safety check needs review"),
+    ):
+        progress = lite_security.scan_progress_for_run({**base_run, "status": status})
+        assert progress["stage"] == expected
+        assert progress["percent"] == 100
+
+
+def test_cutover_hotfix_compact_sqlite_reads_do_not_build_global_projection(
+    tmp_path, monkeypatch
+):
+    _configure_sqlite(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.services import lite_security
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    repo = SecuritySQLiteRepository()
+    assert repo.reserve_scan(
+        run_id="security-lightweight-reads",
+        profile="quick",
+        requested_at="2026-07-10T10:00:00Z",
+    ).reserved
+    repo.mark_running(
+        "security-lightweight-reads", started_at="2026-07-10T10:00:01Z"
+    )
+    repo.complete_run(
+        "security-lightweight-reads",
+        summary="No urgent safety issues.",
+        score=99,
+        completed_at="2026-07-10T10:01:00Z",
+        metadata={
+            "coverage_summary": {"checked_targets": ["Pocket Lab files"]},
+            "execution_timeline": [
+                {"id": "evidence", "title": "Evidence saved", "status": "completed"}
+            ],
+        },
+    )
+
+    def fail_global_projection():
+        raise AssertionError("compact endpoint rebuilt the global SQLite projection")
+
+    monkeypatch.setattr(lite_security, "_sqlite_state_projection", fail_global_projection)
+    lite_security.invalidate_security_read_caches()
+
+    assert lite_security.summary_state()["storage_backend"] == "sqlite"
+    assert lite_security.split_progress_state()["storage_backend"] == "sqlite"
+    assert lite_security.split_freshness_state()["storage_backend"] == "sqlite"
+    assert lite_security.split_profile_state("quick")["storage_backend"] == "sqlite"
+    assert lite_security.split_history_state(limit=20)["storage_backend"] == "sqlite"

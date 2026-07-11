@@ -1215,9 +1215,79 @@ def _sqlite_cached_read(kind: str, *signals: Any, builder) -> dict[str, Any]:
     return payload
 
 
+def _sqlite_compact_state_for_latest(
+    repository: Any,
+    latest_row: dict[str, Any] | None,
+    *,
+    history_rows: list[dict[str, Any]] | None = None,
+    profile_latest_rows: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    latest = _sqlite_run_payload(repository, latest_row, include_details=True, include_related=True)
+    history = [
+        item for item in (
+            _sqlite_run_payload(repository, row) for row in (history_rows or [])
+        ) if item
+    ]
+    profile_latest = {
+        profile: payload
+        for profile, row in (profile_latest_rows or {}).items()
+        if (payload := _sqlite_run_payload(repository, row, include_related=True))
+    }
+    findings = (
+        repository.list_findings(str(latest["run_id"]), limit=_SECURITY_SPLIT_FINDING_LIMIT)
+        if latest else []
+    )
+    counts = {
+        severity: int((latest or {}).get(f"{severity}_count") or 0)
+        for severity in policy.SEVERITIES
+    }
+    score = int((latest or {}).get("score") or policy.score_for_counts(counts)) if latest else 100
+    if latest and str(latest.get("status")) in {"queued", "accepted", "running", "working", "in_progress"}:
+        state_status = str(latest.get("status"))
+        state_summary = str(latest.get("summary") or "Safety check running.")
+    elif latest and str(latest.get("status")) == "failed":
+        state_status, state_summary = "degraded", str(latest.get("summary") or "Security check needs review.")
+    elif latest:
+        state_status, mapped = policy.status_for_score(score, counts)
+        state_summary = str(latest.get("summary") or mapped)
+    else:
+        state_status, state_summary = "healthy", "No urgent safety issues found."
+    progress = repository.get_progress(str(latest["run_id"])) if latest else None
+    revision_info = repository.get_domain_revision()
+    return policy.redact_value({
+        "status": state_status, "summary": state_summary, "score": score,
+        "last_run": latest, "checks_reviewed": int((latest or {}).get("checks_reviewed") or 0),
+        "items_to_review": int((latest or {}).get("items_to_review") or len(findings)),
+        "critical_issues": [item for item in findings if policy.normalize_severity(item.get("severity")) in {"critical", "high"}][:_SECURITY_SUMMARY_FINDING_LIMIT],
+        "guidance": policy.GUIDANCE, "component_posture": component_posture(findings),
+        "scan_profile": (latest or {}).get("scan_profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": (latest or {}).get("app_id") or "", "app_label": (latest or {}).get("app_label") or "",
+        "coverage_summary": (latest or {}).get("coverage_summary") or {},
+        "findings": findings, "evidence_refs": (latest or {}).get("evidence_refs") or [],
+        "history": history, "profile_latest": profile_latest,
+        "finding_delta": _sqlite_finding_delta(repository, latest_row),
+        "execution_timeline": (latest or {}).get("execution_timeline") or [],
+        "scan_progress": progress,
+        "updated_at": revision_info.get("updated_at") or (latest or {}).get("updated_at"),
+        "storage_backend": "sqlite",
+    })
+
+
 def _sqlite_summary_state() -> dict[str, Any]:
     def build() -> dict[str, Any]:
-        _, state, revision = _sqlite_state_projection()
+        repository = _security_repository()
+        revision = int(repository.get_domain_revision().get("revision") or 0)
+        active = repository.get_active_scan()
+        latest_row = active or repository.get_latest_run()
+        history_rows = repository.list_runs_page(limit=_SECURITY_SUMMARY_HISTORY_LIMIT).get("runs", [])
+        profile_rows = {
+            profile: row
+            for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)
+            if (row := repository.get_latest_run(profile))
+        }
+        state = _sqlite_compact_state_for_latest(
+            repository, latest_row, history_rows=history_rows, profile_latest_rows=profile_rows
+        )
         payload = _security_summary_from_state(state)
         payload.update({
             "revision": _revision_token("sqlite-summary", revision),
@@ -1229,10 +1299,24 @@ def _sqlite_summary_state() -> dict[str, Any]:
 
 def _sqlite_progress_state() -> dict[str, Any]:
     def build() -> dict[str, Any]:
-        _, state, revision = _sqlite_state_projection()
-        payload = _progress_from_state(state)
+        repository = _security_repository()
+        progress = repository.get_progress() or {}
+        revision = int(progress.get("domain_revision") or repository.get_domain_revision().get("revision") or 0)
+        payload = policy.redact_value({
+            "view_model": "security-progress-f7-v1",
+            "active_scan": bool(progress.get("active_scan")),
+            "run_id": progress.get("run_id") or None,
+            "profile": progress.get("profile") or policy.SCAN_PROFILE_QUICK,
+            "app_id": progress.get("app_id") or "",
+            "stage": progress.get("stage") or "Waiting",
+            "status": progress.get("status") or "idle",
+            "percent": int(progress.get("percent") or 0),
+            "message": progress.get("message") or "No safety check is running.",
+            "updated_at": progress.get("updated_at"),
+            "sanitized": True,
+        })
         payload.update({
-            "revision": _revision_token("sqlite-progress", revision, payload.get("run_id"), payload.get("status"), payload.get("percent")),
+            "revision": _revision_token("sqlite-progress", revision, payload.get("run_id"), payload.get("status"), payload.get("percent"), progress.get("event_id")),
             "source": "security_progress_sqlite", "storage_backend": "sqlite",
         })
         return payload
@@ -1241,29 +1325,57 @@ def _sqlite_progress_state() -> dict[str, Any]:
 
 def _sqlite_freshness_state() -> dict[str, Any]:
     def build() -> dict[str, Any]:
-        _, state, revision = _sqlite_state_projection()
-        payload = _freshness_from_state(state)
-        profile_latest = state.get("profile_latest") if isinstance(state.get("profile_latest"), dict) else {}
-        profile_revisions = {
-            profile: _revision_token("sqlite-profile", revision, profile, (profile_latest.get(profile) or {}).get("run_id"))
+        repository = _security_repository()
+        revision_info = repository.get_domain_revision()
+        revision = int(revision_info.get("revision") or 0)
+        progress = repository.get_progress() or {}
+        profile_rows = {
+            profile: repository.get_latest_run(profile)
             for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)
         }
-        payload.update({
+        profile_updated_at = {
+            profile: (row or {}).get("updated_at") or (row or {}).get("completed_at")
+            for profile, row in profile_rows.items()
+        }
+        profile_revisions = {
+            profile: _revision_token("sqlite-profile", revision, profile, (row or {}).get("run_id"), (row or {}).get("revision"))
+            for profile, row in profile_rows.items()
+        }
+        return policy.redact_value({
+            "view_model": "security-freshness-f9-v1",
+            "status": "running" if progress.get("active_scan") else "healthy",
             "revision": _revision_token("sqlite-freshness", revision),
+            "updated_at": revision_info.get("updated_at") or progress.get("updated_at"),
+            "active_scan": bool(progress.get("active_scan")),
+            "profile_updated_at": profile_updated_at,
+            "profile_revisions": profile_revisions,
             "summary_revision": _revision_token("sqlite-summary", revision),
             "history_revision": _revision_token("sqlite-history", revision),
-            "progress_revision": _revision_token("sqlite-progress", revision),
-            "profile_revisions": profile_revisions,
-            "source": "security_freshness_sqlite", "storage_backend": "sqlite",
+            "progress_revision": _revision_token("sqlite-progress", revision, progress.get("run_id"), progress.get("status"), progress.get("percent"), progress.get("event_id")),
+            "source": "security_freshness_sqlite",
+            "summary_endpoint": "/api/lite/security/summary",
+            "details_endpoint": "/api/lite/security",
+            "profiles_endpoint": "/api/lite/security/profiles/{profile}",
+            "history_endpoint": "/api/lite/security/history?limit=20",
+            "progress_endpoint": "/api/lite/security/progress",
+            "sanitized": True, "storage_backend": "sqlite",
         })
-        return payload
     return _sqlite_cached_read("freshness", builder=build)
 
 
 def _sqlite_profile_state(profile: str) -> dict[str, Any]:
     normalized = policy.normalize_scan_profile(profile)
     def build() -> dict[str, Any]:
-        _, state, revision = _sqlite_state_projection()
+        repository = _security_repository()
+        revision = int(repository.get_domain_revision().get("revision") or 0)
+        latest_row = repository.get_latest_run(normalized)
+        history_rows = repository.list_runs_page(
+            limit=_SECURITY_SPLIT_PREVIEW_LIMIT, profile=normalized
+        ).get("runs", [])
+        state = _sqlite_compact_state_for_latest(
+            repository, latest_row, history_rows=history_rows,
+            profile_latest_rows={normalized: latest_row} if latest_row else {},
+        )
         payload = _profile_state_from_state(normalized, state)
         payload.update({
             "revision": _revision_token("sqlite-profile", revision, normalized, (payload.get("latest_run") or {}).get("run_id")),
@@ -1299,7 +1411,8 @@ def _decode_history_cursor(cursor: str | None) -> tuple[int | None, str | None]:
 def _sqlite_history_state(limit: int | None = None, cursor: str | None = None) -> dict[str, Any]:
     bounded = max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT))
     def build() -> dict[str, Any]:
-        repository, _, revision = _sqlite_state_projection()
+        repository = _security_repository()
+        revision = int(repository.get_domain_revision().get("revision") or 0)
         cursor_epoch_ms, cursor_run_id = _decode_history_cursor(cursor)
         page = repository.list_runs_page(
             limit=bounded, cursor_epoch_ms=cursor_epoch_ms, cursor_run_id=cursor_run_id
@@ -2321,10 +2434,10 @@ def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
         remaining = max(0, estimated_total - elapsed)
         stage = "Running Full Local Check" if profile == policy.SCAN_PROFILE_FULL else "Running App Check" if profile == policy.SCAN_PROFILE_APP else "Running Quick Safety Check"
         step = 2
-    elif status in {"succeeded", "degraded", "failed"}:
+    elif status in {"succeeded", "completed", "degraded", "failed", "cancelled", "canceled"}:
         percent = 100
         remaining = 0
-        stage = "Safety check complete" if status != "failed" else "Safety check needs review"
+        stage = "Safety check needs review" if status == "failed" else "Safety check complete"
         step = 3
     else:
         percent = 0
@@ -2337,7 +2450,8 @@ def scan_progress_for_run(run: dict[str, Any]) -> dict[str, Any] | None:
         percent = timeline_progress["percent"]
         step = timeline_progress["step"]
         steps_total = timeline_progress["steps_total"]
-        stage = timeline_progress["stage"]
+        if status not in {"succeeded", "completed", "degraded", "failed", "cancelled", "canceled"}:
+            stage = timeline_progress["stage"]
     else:
         steps_total = 3
 
