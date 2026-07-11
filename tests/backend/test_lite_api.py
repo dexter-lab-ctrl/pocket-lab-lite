@@ -4254,9 +4254,13 @@ def test_lite_central_polling_policy_phase1_source():
     assert "LITE_CENTRAL_POLLING_POLICY" in policy
     assert "realtime: 2_000" in policy
     assert "active: 5_000" in policy
-    assert "normal: 15_000" in policy
-    assert "relaxed: 30_000" in policy
-    assert "slow: 60_000" in policy
+    assert "LITE_IDLE_POLL_INTERVAL_MS = 24 * 60 * 60 * 1000" in policy
+    assert "normal: LITE_IDLE_POLL_INTERVAL_MS" in policy
+    assert "relaxed: LITE_IDLE_POLL_INTERVAL_MS" in policy
+    assert "slow: LITE_IDLE_POLL_INTERVAL_MS" in policy
+    assert "retrySoon: 5 * 60_000" in policy
+    assert "retryLater: 30 * 60_000" in policy
+    assert "retryLong: 6 * 60 * 60_000" in policy
     assert "background: false" in policy
     assert "isLiteLiveStatus" in policy
     assert "hasLiteLiveOperation" in policy
@@ -4305,6 +4309,7 @@ def test_lite_use_lite_query_phase2_adaptive_polling_source():
     assert "if (!visible && !enabledWhenHidden) return litePollingIntervals.off" in policy
     assert "if (live) return litePollingIntervals.realtime" in policy
     assert "return litePollingIntervals.slow" in policy
+    assert "return LITE_IDLE_POLL_INTERVAL_MS" in policy
 
 
 def test_lite_query_wrapper_keeps_safe_snapshot_fallback_source():
@@ -4847,7 +4852,7 @@ def test_lite_devices_phase4_polling_policy_source():
     assert "hasLiteLiveOperation" in devices
     assert "isLiteLiveStatus" in devices
     assert "fleetPollingIsLive" in devices
-    assert "pollingMode: 'active'" in devices
+    assert "pollingMode: 'slow'" in devices
     assert "isLive: fleetPollingIsLive" in devices
     assert "staleTime: 15_000" in devices
     assert "busy" in devices
@@ -5085,7 +5090,7 @@ def test_lite_devices_render_reduction_preserves_polling_and_click_boundaries():
     assert "DEVICES_POLLING_POLICY_PHASE4" in devices
     assert "hasLiveDeviceFleetOperation" in devices
     assert "isLive: fleetPollingIsLive" in devices
-    assert "pollingMode: 'active'" in devices
+    assert "pollingMode: 'slow'" in devices
     assert "staleTime: 15_000" in devices
     assert "setInterval" not in devices
     assert "onClickCapture" not in card
@@ -5457,7 +5462,7 @@ def test_lite_devices_s3_uses_active_polling_and_live_detector():
     devices = Path("src/lite/LiteDevices.jsx").read_text()
     polling = Path("src/lib/litePollingPolicy.js").read_text()
 
-    assert "pollingMode: 'active'" in devices
+    assert "pollingMode: 'slow'" in devices
     assert "staleTime: 15_000" in devices or "staleTime: 10_000" in devices
     assert "fleetPollingIsLive" in devices
     assert "isLive: fleetPollingIsLive" in devices
@@ -5517,7 +5522,7 @@ def test_lite_devices_s3_no_manual_polling_regression():
 
     assert "window.setInterval" not in devices
     assert "setInterval" not in devices
-    assert "pollingMode: 'active'" in devices
+    assert "pollingMode: 'slow'" in devices
     assert "useLiteResource(liteApi.fleet" in devices
     assert "window.setTimeout(() => refresh()" not in devices
     assert "refresh();\n          if (['completed', 'failed']" not in devices
