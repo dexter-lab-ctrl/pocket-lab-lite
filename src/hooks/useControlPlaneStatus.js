@@ -50,7 +50,7 @@ async function readJson(path) {
   return data;
 }
 
-export function useControlPlaneStatus(intervalMs = 15000) {
+export function useControlPlaneStatus(intervalMs = 24 * 60 * 60 * 1000) {
   const [status, setStatus] = useState(INITIAL_STATUS);
 
   const refresh = useCallback(async () => {

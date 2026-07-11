@@ -99,44 +99,145 @@ class PocketLabEventBus:
         )
         self.durable_consumers: dict[str, str] = {}
         self._last_error: str = ""
+        self._watchdog_task: asyncio.Task[None] | None = None
+        self._reconnect_task: asyncio.Task[None] | None = None
+        self._stopping = False
+        self._last_connected_at = ""
+        self._last_disconnected_at = ""
+
+    def _client_is_connected(self) -> bool:
+        nc = self.nc
+        if nc is None:
+            return False
+        try:
+            return bool(nc.is_connected)
+        except Exception:
+            return False
+
+    def _schedule_reconnect(self) -> None:
+        if self._stopping or nats is None:
+            return
+        task = self._reconnect_task
+        if task is not None and not task.done():
+            return
+        try:
+            self._reconnect_task = asyncio.create_task(
+                self._reconnect_loop(), name="pocketlab-nats-reconnect"
+            )
+        except RuntimeError:
+            # A callback can race with event-loop shutdown. Lifespan startup will
+            # establish the next connection instead of creating an orphan task.
+            self._reconnect_task = None
 
     async def _nats_error(self, exc: Exception) -> None:
-        """Record client-level NATS errors without letting callbacks crash the process.
-
-        Termux/Android sleep-wake and short NATS restarts can surface nats-py
-        reader-loop errors such as InvalidStateError or BrokenPipeError. Those
-        should make the bus degraded and force the next publish to reconnect;
-        they must not take down FastAPI or the worker process.
-        """
+        """Record client errors and recover only when the real client is down."""
+        self._last_error = f"{exc.__class__.__name__}: {exc}"
+        if self._client_is_connected():
+            return
         self.connected = False
-        self._last_error = str(exc)
-        self.fallback_reason = self._last_error or exc.__class__.__name__
+        self.fallback_reason = self._last_error
+        self._last_disconnected_at = deps.now_utc_iso()
+        self._schedule_reconnect()
 
     async def _nats_disconnected(self) -> None:
         self.connected = False
         self.fallback_reason = "NATS disconnected"
+        self._last_disconnected_at = deps.now_utc_iso()
+        self._schedule_reconnect()
 
     async def _nats_reconnected(self) -> None:
-        self.connected = True
-        self.fallback_reason = ""
+        self.connected = self._client_is_connected()
+        if self.connected:
+            self.fallback_reason = ""
+            self._last_error = ""
+            self._last_connected_at = deps.now_utc_iso()
 
     async def _nats_closed(self) -> None:
         self.connected = False
-        self.fallback_reason = self.fallback_reason or "NATS connection closed"
+        self.fallback_reason = "NATS connection closed"
+        self._last_disconnected_at = deps.now_utc_iso()
+        self._schedule_reconnect()
 
     async def _close_stale_client(self) -> None:
-        if self.nc is None:
-            return
         stale = self.nc
         self.nc = None
         self.js = None
         self.connected = False
-        with contextlib.suppress(Exception):
-            await stale.close()
+        self._nats_subscriptions.clear()
+        if stale is not None:
+            with contextlib.suppress(Exception):
+                await stale.close()
+
+    async def _reconnect_loop(self) -> None:
+        delay = max(0.25, float(os.environ.get("POCKETLAB_NATS_RECONNECT_MIN_SECONDS", "1")))
+        maximum = max(delay, float(os.environ.get("POCKETLAB_NATS_RECONNECT_MAX_SECONDS", "30")))
+        try:
+            while not self._stopping:
+                if self._client_is_connected():
+                    self.connected = True
+                    self.fallback_reason = ""
+                    self._last_connected_at = deps.now_utc_iso()
+                    return
+                try:
+                    await self.start()
+                except Exception as exc:
+                    self._last_error = f"{exc.__class__.__name__}: {exc}"
+                    self.fallback_reason = self._last_error
+                if self._client_is_connected():
+                    return
+                await asyncio.sleep(delay)
+                delay = min(maximum, delay * 2)
+        except asyncio.CancelledError:
+            raise
+        finally:
+            if asyncio.current_task() is self._reconnect_task:
+                self._reconnect_task = None
+
+    async def _watchdog_loop(self) -> None:
+        interval = max(2.0, float(os.environ.get("POCKETLAB_NATS_WATCHDOG_SECONDS", "5")))
+        try:
+            while not self._stopping:
+                actual = self._client_is_connected()
+                self.connected = actual
+                if actual:
+                    self.fallback_reason = ""
+                else:
+                    if not self.fallback_reason:
+                        self.fallback_reason = "NATS client connection lost"
+                    self._schedule_reconnect()
+                await asyncio.sleep(interval)
+        except asyncio.CancelledError:
+            raise
+
+    async def start_watchdog(self) -> None:
+        if self._watchdog_task is not None and not self._watchdog_task.done():
+            return
+        self._stopping = False
+        self._watchdog_task = asyncio.create_task(
+            self._watchdog_loop(), name="pocketlab-nats-watchdog"
+        )
+
+    async def stop_watchdog(self) -> None:
+        self._stopping = True
+        current = asyncio.current_task()
+        tasks = [self._watchdog_task, self._reconnect_task]
+        for task in tasks:
+            if task is not None and task is not current and not task.done():
+                task.cancel()
+        for task in tasks:
+            if task is not None and task is not current:
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await task
+        self._watchdog_task = None
+        self._reconnect_task = None
 
     async def start(self) -> None:
         async with self._lock:
-            if self.connected:
+            if self._client_is_connected():
+                self.connected = self._client_is_connected()
+                self.fallback_reason = ""
+                self._last_error = ""
+                self._last_connected_at = deps.now_utc_iso()
                 return
             if nats is None:
                 self.fallback_reason = (
@@ -207,6 +308,7 @@ class PocketLabEventBus:
             self._nats_subscriptions.append(sub)
 
     async def stop(self) -> None:
+        await self.stop_watchdog()
         async with self._lock:
             for sub in list(self._nats_subscriptions):
                 with contextlib.suppress(Exception):
@@ -511,13 +613,20 @@ class PocketLabEventBus:
         return items[-max(1, min(limit, self.history_limit)) :]
 
     def status(self) -> Dict[str, Any]:
-        mode = "nats" if self.connected else "nats-required-unavailable"
+        actual = self._client_is_connected()
+        self.connected = actual
+        if actual:
+            self.fallback_reason = ""
+        mode = "nats" if actual else "nats-required-unavailable"
+        reconnect_pending = bool(
+            self._reconnect_task is not None and not self._reconnect_task.done()
+        )
         return BusStatus(
             mode=mode,
-            connected=self.connected,
+            connected=actual,
             servers=self.servers,
-            jetstream_enabled=bool(self.js is not None),
-            fallback_reason=self.fallback_reason,
+            jetstream_enabled=bool(actual and self.js is not None),
+            fallback_reason="" if actual else self.fallback_reason,
             published=self.published,
             received=self.received,
         ).__dict__ | {
@@ -529,16 +638,14 @@ class PocketLabEventBus:
             "command_max_deliver": self.command_max_deliver,
             "command_ack_wait_seconds": self.command_ack_wait_seconds,
             "streams": list(DEFAULT_STREAMS.keys()),
-            "workflow_engine": self._workflow_status(),
+            "last_error": self._last_error,
+            "last_connected_at": self._last_connected_at,
+            "last_disconnected_at": self._last_disconnected_at,
+            "reconnect_pending": reconnect_pending,
+            "watchdog_running": bool(
+                self._watchdog_task is not None and not self._watchdog_task.done()
+            ),
         }
-
-    def _workflow_status(self) -> Dict[str, Any]:
-        try:
-            from .workflow_engine import WORKFLOW_ENGINE
-
-            return WORKFLOW_ENGINE.status()
-        except Exception as exc:
-            return {"status": "unavailable", "error": str(exc)}
 
     async def subscribe_local(
         self, *, replay: int = 25

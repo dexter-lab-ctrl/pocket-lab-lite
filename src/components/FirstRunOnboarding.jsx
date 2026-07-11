@@ -11,7 +11,7 @@ const STORAGE_KEY = 'pocketlab_first_run_onboarding_completed_v1';
 export default function FirstRunOnboarding({ onNavigate }) {
   const { experienceMode } = useExperienceMode();
   const { governanceMode } = useGovernanceMode();
-  const { status, refresh } = useControlPlaneStatus(15000);
+  const { status, refresh } = useControlPlaneStatus();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

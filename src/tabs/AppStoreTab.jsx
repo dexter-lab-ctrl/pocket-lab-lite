@@ -32,7 +32,7 @@ export default function AppStoreTab({ simpleMode = false }) {
   const [deployStatus, setDeployStatus] = useState({ jobId: '', message: '', phase: 'idle' });
   const [lastCatalogRefresh, setLastCatalogRefresh] = useState('');
   const { health, refresh: refreshHealthEngine } = useHealthEngine(15000);
-  const { status: controlPlane } = useControlPlaneStatus(15000);
+  const { status: controlPlane } = useControlPlaneStatus();
 
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);

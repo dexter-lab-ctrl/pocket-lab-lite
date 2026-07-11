@@ -114,7 +114,14 @@ def worker_status(request: Request) -> dict:
     agents = list_agents(include_stale=True)
     return {
         "status": "ok",
-        "bus": BUS.status(),
+        "bus": {
+            key: value
+            for key, value in BUS.status().items()
+            if key in {
+                "mode", "connected", "jetstream_enabled",
+                "fallback_reason", "reconnect_pending", "watchdog_running",
+            }
+        },
         "workers_seen": len(
             {
                 (event.get("data") or {}).get("worker")
