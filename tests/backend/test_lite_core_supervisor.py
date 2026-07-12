@@ -48,10 +48,13 @@ def test_status_summary_reports_api_nats_health():
         True,
         {"mode": "nats", "connected": True, "fallback_reason": ""},
         True,
+        True,
     )
 
     assert summary["checks"]["nats_tcp_reachable"] is True
     assert summary["checks"]["api_nats_connected"] is True
+    assert summary["checks"]["caddy_tcp_reachable"] is True
+    assert summary["checks"]["caddy_upstream_http_reachable"] is True
     assert summary["checks"]["caddy_http_reachable"] is True
 
 
@@ -71,6 +74,8 @@ def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeyp
         "checks": {
             "nats_tcp_reachable": True,
             "api_nats_connected": False,
+            "caddy_tcp_reachable": True,
+            "caddy_upstream_http_reachable": True,
             "caddy_http_reachable": True,
         },
         "api_nats_mode": "nats",
@@ -103,3 +108,73 @@ def test_supervisor_does_not_restart_api_for_transient_nats_client_probe(monkeyp
     assert payload["supervisor_status"] == "repairing"
     assert calls["count"] == 2
     assert "api_nats_client_unhealthy_observed" in supervisor.events_file.read_text()
+
+
+def _healthy_observed(*, caddy_tcp=True, caddy_upstream=True):
+    return {
+        "services": {
+            "pocket-nats": "online",
+            "pocket-api": "online",
+            "pocket-worker": "online",
+            "caddy-proxy": "online",
+            "pocket-telemetry": "online",
+        },
+        "checks": {
+            "nats_tcp_reachable": True,
+            "api_nats_connected": True,
+            "caddy_tcp_reachable": caddy_tcp,
+            "caddy_upstream_http_reachable": caddy_upstream,
+            "caddy_http_reachable": caddy_upstream,
+        },
+        "api_nats_mode": "nats",
+        "api_nats_connected": True,
+        "api_nats_fallback_reason": "",
+    }
+
+
+def test_supervisor_does_not_restart_healthy_caddy_for_api_upstream_failure(monkeypatch, tmp_path):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    observed = _healthy_observed(caddy_tcp=True, caddy_upstream=False)
+    monkeypatch.setattr(supervisor, "collect", lambda: observed)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+
+    def fail_restart(service, reason):  # pragma: no cover - must not run
+        raise AssertionError(f"unexpected restart for {service}: {reason}")
+
+    monkeypatch.setattr(supervisor, "restart_pm2", fail_restart)
+    payload = supervisor.tick()
+
+    assert payload["actions"] == []
+    assert payload["supervisor_status"] == "healthy"
+    assert payload["caddy_health"]["tcp_reachable"] is True
+    assert payload["caddy_health"]["upstream_http_reachable"] is False
+    assert "caddy_upstream_probe_degraded" in supervisor.events_file.read_text()
+
+
+def test_supervisor_requires_consecutive_caddy_tcp_failures(monkeypatch, tmp_path):
+    supervisor_module = load_supervisor_module()
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    monkeypatch.setenv("POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD", "3")
+    supervisor = supervisor_module.LiteCoreSupervisor()
+    observed = _healthy_observed(caddy_tcp=False, caddy_upstream=False)
+    monkeypatch.setattr(supervisor, "collect", lambda: observed)
+    monkeypatch.setattr(supervisor_module, "pm2_available", lambda: True)
+    calls = []
+
+    def fake_restart(service, reason):
+        calls.append((service, reason))
+        return {"event": "restart_attempted", "service": service, "reason": reason, "acted": True}
+
+    monkeypatch.setattr(supervisor, "restart_pm2", fake_restart)
+
+    first = supervisor.tick()
+    second = supervisor.tick()
+    third = supervisor.tick()
+
+    assert first["actions"] == []
+    assert second["actions"] == []
+    assert third["actions"][0]["service"] == "caddy-proxy"
+    assert calls == [("caddy-proxy", "caddy_tcp_unreachable_confirmed")]
+    assert supervisor.caddy_tcp_failure_streak == 0
