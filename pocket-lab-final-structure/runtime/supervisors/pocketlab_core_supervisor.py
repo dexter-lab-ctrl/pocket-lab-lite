@@ -23,9 +23,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-SUPERVISOR_VERSION = "1.0.1-lite-core-supervisor"
+SUPERVISOR_VERSION = "1.0.2-lite-core-supervisor"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
+DEFAULT_CADDY_FAILURE_THRESHOLD = 3
 DEFAULT_API_PORT = 8080
 DEFAULT_CADDY_PORT = 8443
 DEFAULT_NATS_PORT = 4222
@@ -149,13 +150,25 @@ def nats_api_status_unhealthy(payload: Optional[Dict[str, Any]]) -> bool:
     return bool(fallback)
 
 
-def status_summary(statuses: Dict[str, str], nats_tcp: bool, api_nats_status: Optional[Dict[str, Any]], caddy_http: bool) -> Dict[str, Any]:
+def status_summary(
+    statuses: Dict[str, str],
+    nats_tcp: bool,
+    api_nats_status: Optional[Dict[str, Any]],
+    caddy_tcp: bool,
+    caddy_upstream_http: bool,
+) -> Dict[str, Any]:
     return {
         "services": statuses,
         "checks": {
             "nats_tcp_reachable": nats_tcp,
             "api_nats_connected": not nats_api_status_unhealthy(api_nats_status),
-            "caddy_http_reachable": caddy_http,
+            # caddy_tcp_reachable is the proxy-owned liveness signal.
+            # caddy_upstream_http_reachable traverses Caddy to FastAPI and is
+            # diagnostic only; it must never trigger a Caddy restart by itself.
+            "caddy_tcp_reachable": caddy_tcp,
+            "caddy_upstream_http_reachable": caddy_upstream_http,
+            # Backward-compatible field retained for existing evidence readers.
+            "caddy_http_reachable": caddy_upstream_http,
         },
         "api_nats_mode": (api_nats_status or {}).get("mode"),
         "api_nats_connected": (api_nats_status or {}).get("connected"),
@@ -170,6 +183,11 @@ class LiteCoreSupervisor:
         self.api_port = int(os.environ.get("API_PORT", os.environ.get("POCKETLAB_API_PORT", DEFAULT_API_PORT)))
         self.caddy_port = int(os.environ.get("DASH_PORT", os.environ.get("POCKETLAB_DASH_PORT", DEFAULT_CADDY_PORT)))
         self.nats_port = int(os.environ.get("POCKETLAB_NATS_PORT", DEFAULT_NATS_PORT))
+        self.caddy_failure_threshold = max(2, int(os.environ.get(
+            "POCKETLAB_CORE_SUPERVISOR_CADDY_FAILURE_THRESHOLD",
+            DEFAULT_CADDY_FAILURE_THRESHOLD,
+        )))
+        self.caddy_tcp_failure_streak = 0
         self.state_root = self._state_root()
         self.evidence_dir = self.state_root / "core-supervisor"
         self.state_file = self.evidence_dir / "state.json"
@@ -252,8 +270,15 @@ class LiteCoreSupervisor:
         api_nats_url = f"http://127.0.0.1:{self.api_port}/api/nats/status"
         caddy_url = f"http://127.0.0.1:{self.caddy_port}/health"
         api_nats = fetch_json(api_nats_url)
-        caddy_http = fetch_json(caddy_url) is not None
-        return status_summary(statuses, nats_tcp, api_nats, caddy_http)
+        caddy_tcp = tcp_reachable("127.0.0.1", self.caddy_port)
+        caddy_upstream_http = fetch_json(caddy_url) is not None
+        return status_summary(
+            statuses,
+            nats_tcp,
+            api_nats,
+            caddy_tcp,
+            caddy_upstream_http,
+        )
 
     def tick(self) -> Dict[str, Any]:
         if not pm2_available():
@@ -302,8 +327,45 @@ class LiteCoreSupervisor:
             if not is_online(statuses.get("pocket-worker", "missing")):
                 actions.append(self.restart_pm2("pocket-worker", "worker_pm2_not_online"))
 
-        if not is_online(statuses.get("caddy-proxy", "missing")) or not bool(observed["checks"].get("caddy_http_reachable")):
-            actions.append(self.restart_pm2("caddy-proxy", "caddy_unhealthy"))
+        caddy_status = statuses.get("caddy-proxy", "missing")
+        caddy_tcp_reachable = bool(observed["checks"].get("caddy_tcp_reachable"))
+        caddy_upstream_http_reachable = bool(
+            observed["checks"].get("caddy_upstream_http_reachable")
+        )
+        if not is_online(caddy_status):
+            self.caddy_tcp_failure_streak = 0
+            actions.append(self.restart_pm2("caddy-proxy", "caddy_pm2_not_online"))
+        elif caddy_tcp_reachable:
+            self.caddy_tcp_failure_streak = 0
+            if not caddy_upstream_http_reachable:
+                # /health is reverse-proxied to FastAPI. A failed upstream probe
+                # does not prove that Caddy is unhealthy. Restarting Caddy here
+                # causes visible control-plane interruptions and can create a
+                # restart loop while the API is merely busy. Preserve evidence
+                # and let API-specific recovery own the upstream condition.
+                self._append_event({
+                    "event": "caddy_upstream_probe_degraded",
+                    "service": "caddy-proxy",
+                    "reason": "api_health_unavailable_through_proxy",
+                    "acted": False,
+                    "caddy_tcp_reachable": True,
+                })
+        else:
+            self.caddy_tcp_failure_streak += 1
+            self._append_event({
+                "event": "caddy_tcp_probe_failed",
+                "service": "caddy-proxy",
+                "reason": "caddy_port_unreachable",
+                "acted": False,
+                "failure_streak": self.caddy_tcp_failure_streak,
+                "failure_threshold": self.caddy_failure_threshold,
+            })
+            if self.caddy_tcp_failure_streak >= self.caddy_failure_threshold:
+                actions.append(self.restart_pm2(
+                    "caddy-proxy",
+                    "caddy_tcp_unreachable_confirmed",
+                ))
+                self.caddy_tcp_failure_streak = 0
 
         if not is_online(statuses.get("pocket-telemetry", "missing")):
             actions.append(self.restart_pm2("pocket-telemetry", "telemetry_pm2_not_online"))
@@ -329,7 +391,13 @@ class LiteCoreSupervisor:
             "observed_after": post,
             "actions": actions,
             "last_actions": self.last_actions,
-            "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair"],
+            "caddy_health": {
+                "tcp_failure_streak": self.caddy_tcp_failure_streak,
+                "failure_threshold": self.caddy_failure_threshold,
+                "tcp_reachable": bool(post["checks"].get("caddy_tcp_reachable")),
+                "upstream_http_reachable": bool(post["checks"].get("caddy_upstream_http_reachable")),
+            },
+            "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "anti-flap-proxy-health"],
         }
         self._write_json(self.state_file, payload)
         if actions:
