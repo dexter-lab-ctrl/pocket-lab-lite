@@ -213,6 +213,45 @@ def _enable_wal_with_retry(conn: sqlite3.Connection, busy_timeout_ms: int) -> st
             delay = min(delay * 2, 0.25)
 
 
+def progress_read_timeout_ms() -> int:
+    """Short, bounded timeout for latency-sensitive live progress reads."""
+    return _bounded_int(
+        "POCKETLAB_LITE_DB_PROGRESS_READ_TIMEOUT_MS",
+        250,
+        minimum=25,
+        maximum=2_000,
+    )
+
+
+def open_fast_read_connection(*, timeout_ms: int | None = None) -> sqlite3.Connection:
+    """Open a read-only connection without write-oriented PRAGMA validation.
+
+    Live progress reads must never inherit the general 20-second writer busy
+    timeout. WAL readers are safe to fail fast and use a last-known snapshot.
+    """
+    settings = sqlite_settings()
+    path = settings.path
+    if not path.exists():
+        raise FileNotFoundError(path)
+    bounded_timeout = progress_read_timeout_ms() if timeout_ms is None else max(25, min(int(timeout_ms), 2_000))
+    conn = sqlite3.connect(
+        f"file:{path.as_posix()}?mode=ro",
+        uri=True,
+        timeout=bounded_timeout / 1000,
+        isolation_level=None,
+        check_same_thread=False,
+    )
+    try:
+        conn.row_factory = sqlite3.Row
+        conn.execute(f"PRAGMA busy_timeout = {bounded_timeout}")
+        conn.execute("PRAGMA query_only = ON")
+        conn.execute("PRAGMA temp_store = MEMORY")
+        return conn
+    except Exception:
+        conn.close()
+        raise
+
+
 def open_connection(*, read_only: bool = False) -> sqlite3.Connection:
     settings = sqlite_settings()
     path = settings.path
@@ -247,6 +286,15 @@ def open_connection(*, read_only: bool = False) -> sqlite3.Connection:
 @contextmanager
 def connection() -> Iterator[sqlite3.Connection]:
     conn = open_connection(read_only=False)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+@contextmanager
+def fast_read_connection(*, timeout_ms: int | None = None) -> Iterator[sqlite3.Connection]:
+    conn = open_fast_read_connection(timeout_ms=timeout_ms)
     try:
         yield conn
     finally:

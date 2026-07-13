@@ -5,6 +5,8 @@ import copy
 import hashlib
 import json
 import logging
+import sqlite3
+import threading
 import os
 import shutil
 import subprocess
@@ -22,6 +24,9 @@ from . import lite_security_policy as policy
 
 
 _LOGGER = logging.getLogger(__name__)
+_SQLITE_PROGRESS_SNAPSHOT_LOCK = threading.Lock()
+_SQLITE_PROGRESS_SNAPSHOT: dict[str, Any] | None = None
+_SQLITE_PROGRESS_FAILURES = 0
 
 
 def _security_store_api():
@@ -1297,30 +1302,88 @@ def _sqlite_summary_state() -> dict[str, Any]:
     return _sqlite_cached_read("summary", builder=build)
 
 
+def _sqlite_progress_payload(progress: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = progress if isinstance(progress, dict) else {}
+    revision = int(payload.get("domain_revision") or 0)
+    response = policy.redact_value({
+        "view_model": "security-progress-f7-v1",
+        "active_scan": bool(payload.get("active_scan")),
+        "run_id": payload.get("run_id") or None,
+        "profile": payload.get("profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": payload.get("app_id") or "",
+        "stage": payload.get("stage") or "Waiting",
+        "status": payload.get("status") or "idle",
+        "percent": int(payload.get("percent") or 0),
+        "message": payload.get("message") or "No safety check is running.",
+        "updated_at": payload.get("updated_at"),
+        "sanitized": True,
+        "revision": _revision_token(
+            "sqlite-progress", revision, payload.get("run_id"), payload.get("status"),
+            payload.get("percent"), payload.get("event_id"),
+        ),
+        "source": "security_progress_sqlite",
+        "storage_backend": "sqlite",
+    })
+    return response
+
+
+def _remember_sqlite_progress(payload: dict[str, Any]) -> dict[str, Any]:
+    global _SQLITE_PROGRESS_SNAPSHOT
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        _SQLITE_PROGRESS_SNAPSHOT = copy.deepcopy(payload)
+    return payload
+
+
+def _last_known_sqlite_progress(reason: str) -> dict[str, Any] | None:
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
+    if not snapshot:
+        return None
+    snapshot["read_degraded"] = True
+    snapshot["read_fallback"] = "last_known_sqlite_progress"
+    snapshot["read_error_type"] = reason
+    snapshot["source"] = "security_progress_sqlite"
+    snapshot["storage_backend"] = "sqlite"
+    return policy.redact_value(snapshot)
+
+
 def _sqlite_progress_state() -> dict[str, Any]:
-    def build() -> dict[str, Any]:
-        repository = _security_repository()
-        progress = repository.get_progress() or {}
-        revision = int(progress.get("domain_revision") or repository.get_domain_revision().get("revision") or 0)
-        payload = policy.redact_value({
-            "view_model": "security-progress-f7-v1",
-            "active_scan": bool(progress.get("active_scan")),
-            "run_id": progress.get("run_id") or None,
-            "profile": progress.get("profile") or policy.SCAN_PROFILE_QUICK,
-            "app_id": progress.get("app_id") or "",
-            "stage": progress.get("stage") or "Waiting",
-            "status": progress.get("status") or "idle",
-            "percent": int(progress.get("percent") or 0),
-            "message": progress.get("message") or "No safety check is running.",
-            "updated_at": progress.get("updated_at"),
-            "sanitized": True,
-        })
-        payload.update({
-            "revision": _revision_token("sqlite-progress", revision, payload.get("run_id"), payload.get("status"), payload.get("percent"), progress.get("event_id")),
-            "source": "security_progress_sqlite", "storage_backend": "sqlite",
-        })
+    global _SQLITE_PROGRESS_FAILURES
+    started_at = time.perf_counter()
+    try:
+        progress = _security_repository().get_progress() or {}
+        payload = _remember_sqlite_progress(_sqlite_progress_payload(progress))
+        _SQLITE_PROGRESS_FAILURES = 0
+        elapsed_ms = (time.perf_counter() - started_at) * 1000
+        payload["read_latency_ms"] = round(elapsed_ms, 2)
+        payload["read_degraded"] = False
         return payload
-    return _sqlite_cached_read("progress", builder=build)
+    except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError) as exc:
+        _SQLITE_PROGRESS_FAILURES += 1
+        reason = type(exc).__name__
+        fallback = _last_known_sqlite_progress(reason)
+        elapsed_ms = (time.perf_counter() - started_at) * 1000
+        _LOGGER.warning(
+            "Security SQLite progress read degraded after %.2f ms (%s, consecutive=%d)",
+            elapsed_ms, reason, _SQLITE_PROGRESS_FAILURES,
+        )
+        if fallback is not None:
+            fallback["read_latency_ms"] = round(elapsed_ms, 2)
+            fallback["read_failure_count"] = _SQLITE_PROGRESS_FAILURES
+            return fallback
+        # Startup-only fallback: keep the endpoint bounded while preserving the
+        # SQLite source contract. JSON remains compatibility evidence, not the
+        # authoritative cutover read.
+        json_progress = _progress_from_state(_ensure_compact_state())
+        payload = _sqlite_progress_payload(json_progress)
+        payload.update({
+            "read_degraded": True,
+            "read_fallback": "json_bootstrap_snapshot",
+            "read_error_type": reason,
+            "read_latency_ms": round(elapsed_ms, 2),
+            "read_failure_count": _SQLITE_PROGRESS_FAILURES,
+        })
+        return _remember_sqlite_progress(policy.redact_value(payload))
 
 
 def _sqlite_freshness_state() -> dict[str, Any]:

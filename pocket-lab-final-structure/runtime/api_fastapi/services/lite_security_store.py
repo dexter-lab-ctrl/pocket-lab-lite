@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from ..db.connection import begin_immediate, connection, database_path, read_connection
+from ..db.connection import begin_immediate, connection, database_path, fast_read_connection, read_connection
 from ..db.migrations import apply_migrations
 from . import lite_security_evidence as evidence
 from . import lite_security_policy as policy
@@ -956,7 +956,9 @@ class SecuritySQLiteRepository:
         }
 
     def get_progress(self, run_id: str | None = None) -> dict[str, Any] | None:
-        with read_connection() as conn:
+        # Progress is a user-facing live read. It uses a dedicated short read
+        # budget and must not wait behind the general writer busy timeout.
+        with fast_read_connection() as conn:
             if run_id:
                 row = conn.execute(
                     "SELECT * FROM security_scan_runs WHERE run_id = ?",
