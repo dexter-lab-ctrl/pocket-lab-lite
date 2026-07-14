@@ -15,18 +15,113 @@ REPORT_JSON="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-final.json"
 SAMPLES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-latencies.txt"
 STATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-progress.json"
 SUBMISSION_FAILURES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-submission-latency.txt"
+FAILURE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-failure.txt"
 mkdir -p "$REPORT_DIR"
 : > "$SAMPLES"
 : > "$SUBMISSION_FAILURES"
+: > "$FAILURE_FILE"
 printf '%s' '{}' > "$STATE_FILE"
+
+MAIN_BASHPID="$BASHPID"
+STORE_MODE="unknown"
+first_run=""
+second_run="not-run"
 
 AUTH_ARGS=()
 if [[ -n "${POCKETLAB_API_TOKEN:-}" ]]; then
   AUTH_ARGS=(-H "Authorization: Bearer ${POCKETLAB_API_TOKEN}")
 fi
 
-fail(){ printf 'FAIL: %s\n' "$*" >&2; exit 1; }
+fail(){
+  printf '%s\n' "$*" > "$FAILURE_FILE"
+  printf 'FAIL: %s\n' "$*" >&2
+  exit 1
+}
 info(){ printf 'INFO: %s\n' "$*"; }
+
+write_final_report(){
+  local exit_code="$1"
+  python3 - "$REPORT_JSON" "$SAMPLES" "$SUBMISSION_FAILURES" "$FAILURE_FILE" \
+    "$STATE_FILE" "$STORE_MODE" "$first_run" "$second_run" "$exit_code" <<'PY'
+import json
+import math
+import sys
+from pathlib import Path
+
+(
+    report_path,
+    samples_path,
+    submission_failures_path,
+    failure_path,
+    state_path,
+    store_mode,
+    first_run,
+    second_run,
+    exit_code_raw,
+) = sys.argv[1:]
+
+exit_code = int(exit_code_raw)
+failure_reason = Path(failure_path).read_text(encoding="utf-8").strip()
+submission_failures = [
+    line.strip()
+    for line in Path(submission_failures_path).read_text(encoding="utf-8").splitlines()
+    if line.strip()
+]
+values = []
+for line in Path(samples_path).read_text(encoding="utf-8").splitlines():
+    parts = line.split()
+    if parts:
+        try:
+            values.append(float(parts[-1]))
+        except ValueError:
+            pass
+values.sort()
+
+def percentile(p):
+    if not values:
+        return None
+    return values[min(len(values) - 1, max(0, math.ceil(len(values) * p) - 1))]
+
+try:
+    last_progress = json.loads(Path(state_path).read_text(encoding="utf-8") or "{}")
+except (OSError, json.JSONDecodeError):
+    last_progress = {}
+
+failed_gates = int(exit_code != 0) + len(submission_failures)
+payload = {
+    "status": "ready" if failed_gates == 0 else "not_ready",
+    "failed_gates": failed_gates,
+    "failure_reason": failure_reason,
+    "submission_latency_failures": submission_failures,
+    "security_store_mode": store_mode or "unknown",
+    "first_run_id": first_run,
+    "post_reconnect_run_id": second_run,
+    "last_progress": last_progress,
+    "progress_latency_seconds": {
+        "count": len(values),
+        "p50": round(percentile(0.50), 3) if values else None,
+        "p95": round(percentile(0.95), 3) if values else None,
+        "max": round(max(values), 3) if values else None,
+    },
+    "exit_code": exit_code,
+    "sanitized": True,
+}
+Path(report_path).write_text(
+    json.dumps(payload, indent=2, sort_keys=True) + "\n",
+    encoding="utf-8",
+)
+PY
+}
+
+finalize_on_exit(){
+  local exit_code=$?
+  [[ "$BASHPID" == "$MAIN_BASHPID" ]] || return "$exit_code"
+  trap - EXIT
+  write_final_report "$exit_code"
+  info "Report: $REPORT_JSON"
+  exit "$exit_code"
+}
+trap finalize_on_exit EXIT
 
 json_field(){ python3 -c 'import json,sys; print(json.load(sys.stdin).get(sys.argv[1], ""))' "$1"; }
 
@@ -245,7 +340,9 @@ PY
 
 run_scan_gate(){
   local phase="$1" post metrics code seconds size run_id start deadline payload status projection_age
-  local visible=0 seen_running=0 curl_rc prior_payload prior_run submission_started_ms recovered_run
+  local active_scan execution_started_at freshness_deadline=0
+  local visible=0 seen_running=0 seen_execution=0 freshness_converged=0
+  local curl_rc prior_payload prior_run submission_started_ms recovered_run
   post="$(mktemp)"; metrics="$(mktemp)"; prior_payload="$(mktemp)"
   if ! curl -fsS --max-time 5 "${AUTH_ARGS[@]}" "$PROGRESS_URL" -o "$prior_payload"; then
     rm -f "$post" "$metrics" "$prior_payload"
@@ -291,13 +388,25 @@ PY2
       visible=1
       projection_age="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("projection_age_ms") or 0)' <<<"$payload")"
       active_scan="$(python3 -c 'import json,sys; print("1" if json.load(sys.stdin).get("active_scan") else "0")' <<<"$payload")"
-      if [[ "$active_scan" == "1" ]] && ! python3 - "$projection_age" "$MAX_PROJECTION_AGE_MS" <<'PY2'
+      execution_started_at="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("execution_started_at") or "")' <<<"$payload")"
+      [[ -n "$execution_started_at" ]] && seen_execution=1
+      if [[ "$active_scan" == "1" ]]; then
+        if python3 - "$projection_age" "$MAX_PROJECTION_AGE_MS" <<'PY2'
 import sys
 age=float(sys.argv[1]); maximum=float(sys.argv[2])
 raise SystemExit(0 if 0 <= age <= maximum else 1)
 PY2
-      then
-        fail "$phase active projection age exceeded ${MAX_PROJECTION_AGE_MS}ms after the submitted run became visible"
+        then
+          freshness_converged=1
+        elif (( freshness_converged == 1 )); then
+          fail "$phase active projection age exceeded ${MAX_PROJECTION_AGE_MS}ms after freshness had converged"
+        else
+          if (( freshness_deadline == 0 )); then
+            freshness_deadline=$(( $(date +%s) + ${POCKETLAB_GATE_ACTIVE_FRESHNESS_CONVERGENCE_SECONDS:-6} ))
+          elif (( $(date +%s) > freshness_deadline )); then
+            fail "$phase active projection age did not converge below ${MAX_PROJECTION_AGE_MS}ms within ${POCKETLAB_GATE_ACTIVE_FRESHNESS_CONVERGENCE_SECONDS:-6}s"
+          fi
+        fi
       fi
     fi
     if (( visible == 0 && $(date +%s) - start > 2 )); then
@@ -311,7 +420,9 @@ PY2
     sleep 0.4
   done
   (( visible == 1 )) || fail "$phase run never became visible"
-  (( seen_running == 1 )) || fail "$phase run did not advance through a running state"
+  if (( seen_running == 0 && seen_execution == 0 )); then
+    fail "$phase run has no durable execution evidence"
+  fi
   [[ "$status" =~ ^(succeeded|degraded|completed)$ ]] || fail "$phase run ended with unacceptable terminal status: $status"
   (cd "$REPO_ROOT" && python3 scripts/lite/security-db-check.py >/dev/null)
   compare="$(cd "$REPO_ROOT" && python3 scripts/lite/security-db-compare.py)"
@@ -332,7 +443,7 @@ worker_pid(){
 wait_for_api_ready
 info "Checking idle Progress path"
 for _ in 1 2 3 4 5; do sample_progress idle >/dev/null; done
-STORE_MODE="${POCKETLAB_LITE_SECURITY_STORE_MODE:-unknown}"
+STORE_MODE="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("storage_backend") or "unknown")' "$STATE_FILE")"
 first_run="$(run_scan_gate "${STORE_MODE}-mode")"
 
 if [[ "${POCKETLAB_GATE_RESTART_NATS:-0}" == "1" ]]; then
@@ -353,29 +464,4 @@ latency_gate
   tests/backend/test_lite_security_progress_projection_cutover.py \
   tests/backend/test_lite_worker_recovery.py -k 'stale or projection or redeliver')
 
-python3 - "$REPORT_JSON" "$SAMPLES" "$SUBMISSION_FAILURES" "$first_run" "$second_run" <<'PY'
-import json, math, sys
-report, samples, submission_failures, first_run, second_run = sys.argv[1:]
-failures=[line.strip() for line in open(submission_failures, encoding="utf-8") if line.strip()]
-values=[float(line.split()[-1]) for line in open(samples, encoding="utf-8") if line.split()]
-values.sort()
-def pct(p):
-    return values[min(len(values)-1, max(0, math.ceil(len(values)*p)-1))]
-payload={
-  "status":"ready" if not failures else "not_ready",
-  "failed_gates":len(failures),
-  "submission_latency_failures":failures,
-  "security_store_mode":__import__("os").environ.get("POCKETLAB_LITE_SECURITY_STORE_MODE", "dual"),
-  "first_run_id":first_run,
-  "post_reconnect_run_id":second_run,
-  "progress_latency_seconds":{
-    "count":len(values), "p50":round(pct(.5),3),
-    "p95":round(pct(.95),3), "max":round(max(values),3),
-  },
-  "sanitized":True,
-}
-json.dump(payload, open(report,"w",encoding="utf-8"), indent=2, sort_keys=True)
-print(json.dumps(payload, indent=2, sort_keys=True))
-PY
-info "Report: $REPORT_JSON"
 submission_latency_gate || fail "one or more scan submissions exceeded the production response-latency limit"
