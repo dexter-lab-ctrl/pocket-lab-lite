@@ -9,6 +9,7 @@ import sqlite3
 import threading
 import os
 import shutil
+import signal
 import subprocess
 import time
 import urllib.error
@@ -317,6 +318,110 @@ def fail_scan_submission(run_id: str) -> None:
     )
     _write_security_state(state)
     _write_run_projection(run)
+
+
+def security_run_is_terminal(run_id: str) -> bool:
+    safe_run_id = str(run_id or "").strip()
+    if not safe_run_id:
+        return False
+    if _sqlite_lifecycle_enabled():
+        row = _security_repository().get_run(safe_run_id) or {}
+        return str(row.get("status") or "") in _security_store_api().TERMINAL_STATUSES
+    run = evidence.read_run(safe_run_id) or {}
+    return str(run.get("status") or "") in {
+        "succeeded", "degraded", "failed", "cancelled", "canceled"
+    }
+
+
+def stale_accepted_runs(
+    *, stale_seconds: int | None = None
+) -> list[dict[str, Any]]:
+    if not _sqlite_lifecycle_enabled():
+        return []
+    return _security_repository().list_stale_accepted_runs(
+        stale_seconds=stale_seconds
+    )
+
+
+def recover_stale_accepted_runs(
+    *, stale_seconds: int | None = None
+) -> list[dict[str, Any]]:
+    """Release accepted scans that never transitioned into worker execution."""
+    if not _sqlite_lifecycle_enabled():
+        return []
+    repository = _security_repository()
+    recovered: list[dict[str, Any]] = []
+    for candidate in repository.list_stale_accepted_runs(
+        stale_seconds=stale_seconds
+    ):
+        run_id = str(candidate.get("run_id") or "")
+        if not run_id:
+            continue
+        failed = repository.fail_stale_accepted_run(
+            run_id,
+            expected_updated_at_epoch_ms=int(
+                candidate.get("updated_at_epoch_ms") or 0
+            ),
+        )
+        if not failed:
+            continue
+        refs: list[str] = []
+        try:
+            refs.append(
+                evidence.write_evidence(
+                    run_id,
+                    "worker-start-recovery.json",
+                    {
+                        "run_id": run_id,
+                        "status": "failed",
+                        "failure_code": "worker_start_timeout",
+                        "summary": "The safety check could not start. Try again.",
+                        "recovered_at": failed.get("completed_at")
+                        or deps.now_utc_iso(),
+                        "sanitized": True,
+                    },
+                )
+            )
+        except (OSError, ValueError, TypeError) as exc:
+            _LOGGER.warning(
+                "Security worker-start recovery evidence degraded: %s",
+                type(exc).__name__,
+            )
+        repository.fail_run(
+            run_id,
+            failure_code="worker_start_timeout",
+            failure_message="The safety check could not start. Try again.",
+            summary="The safety check could not start. Try again.",
+            completed_at=failed.get("completed_at") or deps.now_utc_iso(),
+            findings=[],
+            evidence_refs=refs,
+            tool_results={},
+            metadata={
+                "worker_start_recovery": True,
+                "recovery_reason": "accepted_run_stale",
+            },
+        )
+        projected = _sqlite_run_payload(
+            repository,
+            repository.get_run(run_id),
+            include_details=True,
+            include_related=True,
+        )
+        if projected:
+            _write_run_projection(projected)
+        recovered.append(
+            {
+                "run_id": run_id,
+                "profile": failed.get("profile")
+                or policy.SCAN_PROFILE_QUICK,
+                "status": "failed",
+                "failure_code": "worker_start_timeout",
+            }
+        )
+    if recovered:
+        _, state, _ = _sqlite_state_projection()
+        _write_security_state(state)
+    return policy.redact_value(recovered)
 
 
 def fail_security_run(run_id: str, exc: Exception | None = None) -> None:
@@ -2263,35 +2368,98 @@ def _command_timeout(name: str) -> int:
     return int(policy.TIMEOUTS.get(name, 180))
 
 
-def _run_command(args: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
+def _terminate_process_tree(
+    process: subprocess.Popen[str], *, grace_seconds: float = 2.0
+) -> tuple[str, str, bool]:
+    """Terminate and reap a scanner process group without leaking descendants."""
+    if process.poll() is not None:
+        stdout, stderr = process.communicate()
+        return stdout or "", stderr or "", True
+
+    def _signal_group(sig: int) -> None:
+        if os.name != "nt" and hasattr(os, "killpg"):
+            try:
+                os.killpg(os.getpgid(process.pid), sig)
+                return
+            except (ProcessLookupError, PermissionError, OSError):
+                pass
+        try:
+            if sig == signal.SIGTERM:
+                process.terminate()
+            else:
+                process.kill()
+        except (ProcessLookupError, OSError):
+            pass
+
+    _signal_group(signal.SIGTERM)
     try:
-        completed = subprocess.run(
-            args,
-            cwd=str(cwd),
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            env={**os.environ, "NO_COLOR": "1", "TERM": "dumb"},
-        )
+        stdout, stderr = process.communicate(timeout=max(0.1, grace_seconds))
+    except subprocess.TimeoutExpired:
+        _signal_group(signal.SIGKILL)
+        try:
+            stdout, stderr = process.communicate(timeout=max(0.1, grace_seconds))
+        except subprocess.TimeoutExpired:
+            return "", "", False
+    return stdout or "", stderr or "", process.poll() is not None
+
+
+def _run_command(args: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
+    process: subprocess.Popen[str] | None = None
+    popen_kwargs: dict[str, Any] = {
+        "cwd": str(cwd),
+        "stdout": subprocess.PIPE,
+        "stderr": subprocess.PIPE,
+        "text": True,
+        "env": {**os.environ, "NO_COLOR": "1", "TERM": "dumb"},
+    }
+    if os.name == "nt":
+        create_group = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+        if create_group:
+            popen_kwargs["creationflags"] = create_group
+    else:
+        popen_kwargs["start_new_session"] = True
+
+    try:
+        process = subprocess.Popen(args, **popen_kwargs)
+        stdout, stderr = process.communicate(timeout=timeout)
         return {
-            "ok": completed.returncode == 0,
-            "returncode": completed.returncode,
-            "stdout": policy.redact_text(completed.stdout or ""),
-            "stderr": policy.redact_text(completed.stderr or ""),
+            "ok": process.returncode == 0,
+            "returncode": process.returncode,
+            "stdout": policy.redact_text(stdout or ""),
+            "stderr": policy.redact_text(stderr or ""),
             "timed_out": False,
+            "process_cleanup": "complete",
         }
-    except subprocess.TimeoutExpired as exc:
+    except subprocess.TimeoutExpired:
+        stdout = ""
+        stderr = ""
+        cleanup_confirmed = False
+        if process is not None:
+            stdout, stderr, cleanup_confirmed = _terminate_process_tree(process)
         return {
             "ok": False,
-            "returncode": None,
-            "stdout": policy.redact_text(exc.stdout or ""),
-            "stderr": policy.redact_text(exc.stderr or ""),
+            "returncode": process.returncode if process is not None else None,
+            "stdout": policy.redact_text(stdout),
+            "stderr": policy.redact_text(stderr),
             "timed_out": True,
             "timeout_seconds": timeout,
+            "process_cleanup": "complete" if cleanup_confirmed else "degraded",
         }
-    except Exception as exc:
-        return {"ok": False, "returncode": None, "stdout": "", "stderr": policy.redact_text(str(exc)), "timed_out": False}
+    except BaseException as exc:
+        if process is not None and process.poll() is None:
+            _terminate_process_tree(process)
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            raise
+        return {
+            "ok": False,
+            "returncode": process.returncode if process is not None else None,
+            "stdout": "",
+            "stderr": policy.redact_text(type(exc).__name__),
+            "timed_out": False,
+            "process_cleanup": "complete"
+            if process is None or process.poll() is not None
+            else "degraded",
+        }
 
 
 def missing_tool_finding(source: str) -> dict[str, Any]:
