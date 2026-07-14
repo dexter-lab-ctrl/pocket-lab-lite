@@ -10,7 +10,7 @@ NATS_STATUS_URL="$BASE_URL/api/nats/status"
 TIMEOUT_SECONDS="${POCKETLAB_GATE_SCAN_TIMEOUT_SECONDS:-5400}"
 MAX_PROJECTION_AGE_MS="${POCKETLAB_GATE_MAX_PROJECTION_AGE_MS:-5000}"
 REPORT_DIR="${POCKETLAB_GATE_REPORT_DIR:-${POCKETLAB_STATE_DIR:-$HOME/pocket-lab-lite/state}/.pocketlab-dev/reports}"
-STAMP="$(date -u +%Y%m%d-%H%M%S)"
+STAMP="$(date -u +%Y%m%d-%H%M%S)-$$"
 REPORT_JSON="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP.json"
 SAMPLES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-latencies.txt"
 STATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-progress.json"
@@ -25,6 +25,14 @@ fi
 
 fail(){ printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 info(){ printf 'INFO: %s\n' "$*"; }
+
+on_error(){
+  local rc=$?
+  local line="${BASH_LINENO[0]:-unknown}"
+  printf 'FAIL: production gate aborted at line %s with exit code %s\n' "$line" "$rc" >&2
+  exit "$rc"
+}
+trap on_error ERR
 json_field(){ python3 -c 'import json,sys; print(json.load(sys.stdin).get(sys.argv[1], ""))' "$1"; }
 
 curl_json(){
@@ -34,6 +42,44 @@ curl_json(){
     args+=(-H 'Content-Type: application/json' --data "$body")
   fi
   curl "${args[@]}" -o "$out" -w '%{http_code} %{time_total} %{size_download}' "$url" > "$metrics"
+}
+
+wait_for_api_ready(){
+  local deadline payload metrics code seconds size last_error=""
+  deadline=$(( $(date +%s) + ${POCKETLAB_GATE_API_READY_TIMEOUT_SECONDS:-120} ))
+
+  info "Waiting for API and Security Progress readiness"
+  while (( $(date +%s) <= deadline )); do
+    payload="$(mktemp)"
+    metrics="$(mktemp)"
+
+    if curl_json GET "$PROGRESS_URL" '' "$payload" "$metrics"; then
+      IFS=' ' read -r code seconds size < "$metrics"
+      if [[ "$code" == "200" && "$size" -gt 0 ]]; then
+        if python3 - "$payload" <<'PY2'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+raise SystemExit(0 if isinstance(payload, dict) and payload.get("view_model") else 1)
+PY2
+        then
+          rm -f "$payload" "$metrics"
+          info "API and Security Progress are ready"
+          return 0
+        fi
+        last_error="Progress response was not a valid view model"
+      else
+        last_error="Progress returned HTTP ${code:-unknown} with ${size:-0} bytes"
+      fi
+    else
+      last_error="Progress request failed or exceeded five seconds"
+    fi
+
+    rm -f "$payload" "$metrics"
+    sleep 2
+  done
+
+  fail "API readiness timed out after ${POCKETLAB_GATE_API_READY_TIMEOUT_SECONDS:-120}s: ${last_error:-unknown error}"
 }
 
 assert_progress_monotonic(){
@@ -76,12 +122,15 @@ sample_progress(){
     rm -f "$payload" "$metrics"
     fail "$label Progress request failed or exceeded five seconds"
   fi
-  read -r code seconds size < "$metrics"
+  IFS=' ' read -r code seconds size < "$metrics"
   [[ "$code" == "200" || "$code" == "304" ]] || fail "$label returned HTTP $code"
   [[ "$size" -gt 0 || "$code" == "304" ]] || fail "$label returned an empty reply"
   printf '%s %s\n' "$label" "$seconds" >> "$SAMPLES"
   if [[ "$code" == "200" ]]; then
-    assert_progress_monotonic "$payload"
+    if ! assert_progress_monotonic "$payload"; then
+      rm -f "$payload" "$metrics"
+      fail "$label Progress response violated monotonic state rules"
+    fi
     cat "$payload"
   else
     cat "$STATE_FILE"
@@ -95,7 +144,7 @@ wait_for_nats_reconnect(){
   while (( $(date +%s) <= deadline )); do
     payload="$(mktemp)"; metrics="$(mktemp)"
     if curl_json GET "$NATS_STATUS_URL" '' "$payload" "$metrics"; then
-      read -r code seconds size < "$metrics"
+      IFS=' ' read -r code seconds size < "$metrics"
       if [[ "$code" == "200" ]] && python3 - "$payload" <<'PY2'
 import json, sys
 payload=json.load(open(sys.argv[1], encoding="utf-8"))
@@ -142,7 +191,7 @@ run_scan_gate(){
   post="$(mktemp)"; metrics="$(mktemp)"
   curl_json POST "$CHECK_URL" '{"profile":"quick","reason":"production gate"}' "$post" "$metrics" \
     || fail "$phase scan submission failed"
-  read -r code seconds size < "$metrics"
+  IFS=' ' read -r code seconds size < "$metrics"
   [[ "$code" == "202" ]] || fail "$phase scan submission returned HTTP $code"
   run_id="$(cat "$post" | json_field run_id)"
   [[ -n "$run_id" ]] || fail "$phase scan submission did not return run_id"
@@ -190,6 +239,7 @@ worker_pid(){
   pm2 jlist 2>/dev/null | python3 -c 'import json,sys; rows=json.load(sys.stdin); print(next((r.get("pid","") for r in rows if r.get("name")=="pocket-worker"),""))'
 }
 
+wait_for_api_ready
 info "Checking idle Progress path"
 for _ in 1 2 3 4 5; do sample_progress idle >/dev/null; done
 first_run="$(run_scan_gate dual-mode)"
