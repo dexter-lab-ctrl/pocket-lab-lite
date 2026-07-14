@@ -443,6 +443,81 @@ def test_delivery_lifecycle_timestamps_and_state_specific_candidates(
     ) == []
 
 
+
+def test_worker_receipt_repairs_missing_publication_timestamp(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    repo = SecuritySQLiteRepository()
+    assert repo.reserve_scan(
+        run_id="security-worker-repair",
+        profile="quick",
+        requested_at="2020-01-01T00:00:00Z",
+    ).reserved
+    row = repo.mark_command_received(
+        "security-worker-repair",
+        received_at="2020-01-01T00:00:02Z",
+        published_at="2020-01-01T00:00:01Z",
+        delivery_attempt=1,
+    )
+    assert row["command_published_at"] == "2020-01-01T00:00:01Z"
+    assert row["command_received_at"] == "2020-01-01T00:00:02Z"
+
+
+def test_late_api_commit_repairs_publication_without_regressing_running(
+    tmp_path, monkeypatch
+):
+    _configure(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    repo = SecuritySQLiteRepository()
+    assert repo.reserve_scan(
+        run_id="security-api-repair",
+        profile="quick",
+        requested_at="2020-01-01T00:00:00Z",
+    ).reserved
+    repo.mark_command_received(
+        "security-api-repair",
+        received_at="2020-01-01T00:00:02Z",
+        delivery_attempt=1,
+    )
+    repo.mark_running(
+        "security-api-repair", started_at="2020-01-01T00:00:03Z"
+    )
+    row = repo.mark_published_and_accepted(
+        "security-api-repair",
+        published_at="2020-01-01T00:00:01Z",
+        accepted_at="2020-01-01T00:00:04Z",
+        summary="Queued",
+    )
+    assert row["status"] == "running"
+    assert row["command_published_at"] == "2020-01-01T00:00:01Z"
+    assert row["accepted_at"] is not None
+    assert row["accepted_at"] <= row["execution_started_at"]
+    assert row["execution_started_at"] == "2020-01-01T00:00:03Z"
+    assert row["publication_repaired_after_worker_progress"] is True
+
+
+def test_memory_progress_read_avoids_validated_database_path(tmp_path, monkeypatch):
+    _, lite_security = _configure(tmp_path, monkeypatch, "sqlite")
+    command = {
+        "run_id": "security-memory-identity",
+        "command_id": "security-memory-identity",
+        "profile": "quick",
+        "requested_at": "2020-01-01T00:00:00Z",
+    }
+    assert lite_security.reserve_scan_request(command)["reserved"] is True
+
+    def forbidden_database_path():
+        raise AssertionError("Progress memory reads must not resolve the database path")
+
+    monkeypatch.setattr(
+        lite_security._security_store_api(), "database_path", forbidden_database_path
+    )
+    payload = lite_security.split_progress_state()
+    assert payload["run_id"] == "security-memory-identity"
+    assert payload["read_projection"] == "memory"
+
 def test_stale_release_requires_recovery_and_callback_idle(tmp_path, monkeypatch):
     _, lite_security = _configure(tmp_path, monkeypatch, "dual")
     from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
