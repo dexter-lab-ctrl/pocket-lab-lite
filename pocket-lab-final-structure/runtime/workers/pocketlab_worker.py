@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import os
 import signal
@@ -38,6 +39,30 @@ COMMAND_SUBJECT = os.environ.get(
 COMMAND_QUEUE = os.environ.get("POCKETLAB_WORKER_QUEUE", "pocketlab_command_worker_v1")
 HEARTBEAT_SECONDS = int(os.environ.get("POCKETLAB_WORKER_HEARTBEAT_SECONDS", "30"))
 DURABLE_NAME = os.environ.get("POCKETLAB_WORKER_DURABLE", "pocketlab_command_worker_v1")
+
+
+def _env_int(name: str, default: int, *, minimum: int, maximum: int) -> int:
+    try:
+        value = int(os.environ.get(name, str(default)).strip())
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(value, maximum))
+
+
+def _worker_log(event: str, **data: Any) -> None:
+    safe = {
+        key: value
+        for key, value in data.items()
+        if key not in {"api_key", "token", "password", "secret"}
+    }
+    print(
+        json.dumps(
+            {"event": event, "worker": WORKER_NAME, **safe},
+            separators=(",", ":"),
+            sort_keys=True,
+        ),
+        flush=True,
+    )
 
 
 def _decode_message(data: bytes) -> Dict[str, Any]:
@@ -87,6 +112,7 @@ async def connect_worker_bus(stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
         try:
             await BUS.start()
+            await BUS.start_watchdog()
             install_operation_event_publisher(
                 deps.operation_service(), asyncio.get_running_loop(), source=WORKER_NAME
             )
@@ -94,6 +120,15 @@ async def connect_worker_bus(stop_event: asyncio.Event) -> None:
                 COMMAND_SUBJECT,
                 command_callback,
                 durable=DURABLE_NAME,
+            )
+            _worker_log(
+                "worker.consumer_ready",
+                durable=DURABLE_NAME,
+                subject=COMMAND_SUBJECT,
+                generation=(
+                    BUS.durable_consumer_status(DURABLE_NAME).get("generation")
+                    or 0
+                ),
             )
             await publish(
                 "pocketlab.events.worker.started",
@@ -113,6 +148,101 @@ async def connect_worker_bus(stop_event: asyncio.Event) -> None:
                 await asyncio.wait_for(stop_event.wait(), timeout=delay)
             except asyncio.TimeoutError:
                 continue
+
+
+async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
+    interval = _env_int(
+        "POCKETLAB_WORKER_RECOVERY_SECONDS", 10, minimum=2, maximum=300
+    )
+    stale_seconds = _env_int(
+        "POCKETLAB_LITE_SECURITY_ACCEPTED_STALE_SECONDS",
+        120,
+        minimum=30,
+        maximum=3600,
+    )
+    grace_seconds = _env_int(
+        "POCKETLAB_WORKER_ACCEPTED_RECOVERY_GRACE_SECONDS",
+        15,
+        minimum=2,
+        maximum=60,
+    )
+    while not stop_event.is_set():
+        try:
+            recovered = await BUS.recover_durable_consumers()
+            for durable in recovered:
+                status = BUS.durable_consumer_status(durable)
+                _worker_log(
+                    "worker.consumer_recovered",
+                    durable=durable,
+                    generation=status.get("generation"),
+                    recoveries=status.get("recoveries"),
+                )
+                with contextlib.suppress(Exception):
+                    await publish(
+                        "pocketlab.audit.worker.consumer_recovered",
+                        "worker.consumer_recovered",
+                        {
+                            "durable": durable,
+                            "generation": status.get("generation"),
+                            "recoveries": status.get("recoveries"),
+                            "sanitized": True,
+                        },
+                    )
+
+            status = BUS.durable_consumer_status(DURABLE_NAME)
+            if status.get("healthy") and not status.get("callback_inflight"):
+                from api_fastapi.services import lite_security  # type: ignore
+
+                stale = await asyncio.to_thread(
+                    lite_security.stale_accepted_runs,
+                    stale_seconds=stale_seconds,
+                )
+                if stale:
+                    await BUS.ensure_durable_consumer(
+                        DURABLE_NAME, force=True
+                    )
+                    try:
+                        await asyncio.wait_for(
+                            stop_event.wait(), timeout=grace_seconds
+                        )
+                    except asyncio.TimeoutError:
+                        pass
+                    if stop_event.is_set():
+                        break
+                    released = await asyncio.to_thread(
+                        lite_security.recover_stale_accepted_runs,
+                        stale_seconds=stale_seconds,
+                    )
+                    for item in released:
+                        _worker_log(
+                            "worker.accepted_run_released",
+                            run_id=item.get("run_id"),
+                            failure_code=item.get("failure_code"),
+                        )
+                        with contextlib.suppress(Exception):
+                            await publish(
+                                "pocketlab.audit.lite.security.scan.recovered",
+                                "lite.security.scan.recovered",
+                                {
+                                    "run_id": item.get("run_id"),
+                                    "status": "failed",
+                                    "failure_code": item.get("failure_code"),
+                                    "summary": "A safety check that could not start was released for retry.",
+                                    "sanitized": True,
+                                },
+                                trace_id=str(item.get("run_id") or "") or None,
+                            )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            _worker_log(
+                "worker.recovery_check_failed", error_type=type(exc).__name__
+            )
+
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=interval)
+        except asyncio.TimeoutError:
+            continue
 
 
 async def execute_operation_command(command: Dict[str, Any]) -> None:
@@ -225,6 +355,45 @@ async def command_callback(msg: Any) -> None:
     try:
         command = _decode_message(msg.data)
         subject = subject or _subject_from(command, msg)
+        command_id = str(
+            command.get("command_id")
+            or command.get("job_id")
+            or command.get("run_id")
+            or ""
+        )
+        _worker_log(
+            "worker.command_received",
+            subject=subject,
+            command_id=command_id,
+            attempt=attempt,
+        )
+        if subject == "pocketlab.commands.lite.security.scan":
+            from api_fastapi.services import lite_security  # type: ignore
+
+            run_id = str(command.get("run_id") or command_id)
+            if run_id and await asyncio.to_thread(
+                lite_security.security_run_is_terminal, run_id
+            ):
+                await publish(
+                    "pocketlab.events.worker.ignored",
+                    "worker.ignored",
+                    {
+                        "command_subject": subject,
+                        "command_id": command_id,
+                        "run_id": run_id,
+                        "reason": "security run is already terminal",
+                        "attempt": attempt,
+                    },
+                    trace_id=command_id or None,
+                )
+                await BUS.ack_message(msg)
+                _worker_log(
+                    "worker.command_ignored",
+                    subject=subject,
+                    command_id=command_id,
+                    reason="terminal_security_run",
+                )
+                return
         if subject.startswith("pocketlab.commands.node."):
             # Node-scoped fleet commands are consumed by NATS-backed device agents.
             # A JetStream worker durable consumer may still see them because it uses
@@ -264,6 +433,17 @@ async def command_callback(msg: Any) -> None:
         else:
             await execute_domain_command(subject, command)
         await BUS.ack_message(msg)
+        _worker_log(
+            "worker.command_acked",
+            subject=subject,
+            command_id=str(
+                command.get("command_id")
+                or command.get("job_id")
+                or command.get("run_id")
+                or ""
+            ),
+            attempt=attempt,
+        )
     except Exception as exc:
         error = str(exc)
         from api_fastapi.services import reliability  # type: ignore
@@ -307,6 +487,19 @@ async def command_callback(msg: Any) -> None:
             },
         )
         await BUS.nak_message(msg, delay=delay)
+        _worker_log(
+            "worker.command_retry_scheduled",
+            subject=subject,
+            command_id=str(
+                command.get("command_id")
+                or command.get("job_id")
+                or command.get("run_id")
+                or ""
+            ),
+            attempt=attempt,
+            retry_delay_seconds=delay,
+            error_type=type(exc).__name__,
+        )
 
 
 async def heartbeat(stop_event: asyncio.Event) -> None:
@@ -390,9 +583,19 @@ async def main_async() -> int:
     await connect_worker_bus(stop_event)
     if stop_event.is_set():
         return 0
-    hb_task = asyncio.create_task(heartbeat(stop_event))
+    hb_task = asyncio.create_task(
+        heartbeat(stop_event), name="pocketlab-worker-heartbeat"
+    )
+    recovery_task = asyncio.create_task(
+        worker_recovery_watchdog(stop_event),
+        name="pocketlab-worker-recovery-watchdog",
+    )
     await stop_event.wait()
-    hb_task.cancel()
+    for task in (hb_task, recovery_task):
+        task.cancel()
+    for task in (hb_task, recovery_task):
+        with contextlib.suppress(asyncio.CancelledError, Exception):
+            await task
     try:
         await publish(
             "pocketlab.events.worker.stopped", "worker.stopped", {"pid": os.getpid()}

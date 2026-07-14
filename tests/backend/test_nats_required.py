@@ -119,3 +119,78 @@ def test_connected_invalid_state_error_is_counted_without_disconnect(monkeypatch
         assert scheduled == []
 
     asyncio.run(scenario())
+
+
+def test_durable_pull_consumer_is_recreated_after_fetch_task_dies():
+    import asyncio
+    from api_fastapi.services.nats_bus import PocketLabEventBus
+
+    class FakeClient:
+        is_connected = True
+
+        async def drain(self):
+            return None
+
+        async def close(self):
+            self.is_connected = False
+
+    class FailingSubscription:
+        async def fetch(self, *, batch, timeout):
+            raise RuntimeError("stale subscription")
+
+        async def unsubscribe(self):
+            return None
+
+    class HealthySubscription:
+        async def fetch(self, *, batch, timeout):
+            await asyncio.sleep(0)
+            raise TimeoutError
+
+        async def unsubscribe(self):
+            return None
+
+    class FakeJetStream:
+        def __init__(self):
+            self.calls = 0
+
+        async def pull_subscribe(self, subject, *, durable, stream):
+            self.calls += 1
+            if self.calls == 1:
+                return FailingSubscription()
+            return HealthySubscription()
+
+    async def callback(_msg):
+        return None
+
+    async def scenario():
+        bus = PocketLabEventBus()
+        bus.nc = FakeClient()
+        bus.js = FakeJetStream()
+        bus.connected = True
+
+        await bus.subscribe_durable(
+            "pocketlab.commands.>",
+            callback,
+            durable="worker-test",
+        )
+        await asyncio.sleep(0.02)
+        assert bus.durable_consumer_status("worker-test")["task_alive"] is False
+
+        recovered = await bus.ensure_durable_consumer("worker-test")
+        assert recovered is True
+        status = bus.durable_consumer_status("worker-test")
+        assert status["task_alive"] is True
+        assert status["generation"] == 2
+        assert status["recoveries"] == 1
+        assert status["last_error_type"] == ""
+
+        await bus.stop()
+
+    asyncio.run(scenario())
+
+
+def test_progress_route_is_async_to_avoid_sync_threadpool_starvation():
+    import inspect
+    from api_fastapi.routers.lite import get_lite_security_progress
+
+    assert inspect.iscoroutinefunction(get_lite_security_progress)

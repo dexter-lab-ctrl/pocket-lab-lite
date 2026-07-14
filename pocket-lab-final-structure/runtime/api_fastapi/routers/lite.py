@@ -848,7 +848,10 @@ def get_lite_security_events(request: Request) -> Response:
     )
 
 @router.get("/security/progress")
-def get_lite_security_progress(request: Request) -> Response:
+async def get_lite_security_progress(request: Request) -> Response:
+    # The memory-backed projection is intentionally served on the event loop so
+    # active scanner subprocesses cannot starve this endpoint in FastAPI's
+    # synchronous worker-thread pool. No filesystem or SQLite read occurs here.
     deps.require_auth(request)
     return _security_compact_response(request, lite_security.split_progress_state())
 

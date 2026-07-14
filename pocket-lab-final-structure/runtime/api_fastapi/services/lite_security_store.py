@@ -116,6 +116,15 @@ def _bounded_environment_int(name: str, default: int, *, minimum: int, maximum: 
     return value
 
 
+def security_accepted_stale_seconds() -> int:
+    return _bounded_environment_int(
+        "POCKETLAB_LITE_SECURITY_ACCEPTED_STALE_SECONDS",
+        120,
+        minimum=30,
+        maximum=3600,
+    )
+
+
 def security_recent_completion_seconds() -> int:
     return _bounded_environment_int(
         "POCKETLAB_LITE_SECURITY_RECENT_COMPLETION_SECONDS",
@@ -411,6 +420,105 @@ class SecuritySQLiteRepository:
                     (_active_key(normalized_profile, normalized_app),),
                 ).fetchone()
         return _row(row)
+
+    def list_stale_accepted_runs(
+        self,
+        *,
+        now: str | None = None,
+        stale_seconds: int | None = None,
+        limit: int = 10,
+    ) -> list[dict[str, Any]]:
+        current_time = _parse_timestamp(now)
+        threshold = int(
+            stale_seconds
+            if stale_seconds is not None
+            else security_accepted_stale_seconds()
+        )
+        threshold = max(30, min(threshold, 3600))
+        cutoff = _epoch_ms(current_time) - threshold * 1000
+        bounded = max(1, min(int(limit), 50))
+        with read_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM security_scan_runs
+                WHERE status = 'accepted' AND active_key IS NOT NULL
+                  AND updated_at_epoch_ms <= ?
+                ORDER BY updated_at_epoch_ms ASC
+                LIMIT ?
+                """,
+                (cutoff, bounded),
+            ).fetchall()
+        return policy.redact_value([_row(row) or {} for row in rows])
+
+    def fail_stale_accepted_run(
+        self,
+        run_id: str,
+        *,
+        expected_updated_at_epoch_ms: int,
+        completed_at: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Fail one unchanged accepted run with a transactional compare-and-set."""
+        normalized_run = _normalize_run_id(run_id)
+        now = _parse_timestamp(completed_at)
+        now_epoch = _epoch_ms(now)
+        summary = "The safety check could not start. Try again."
+        stage = "Safety check could not start"
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+            if not current:
+                return None
+            if (
+                str(current["status"]) != "accepted"
+                or current["active_key"] is None
+                or int(current["updated_at_epoch_ms"])
+                != int(expected_updated_at_epoch_ms)
+            ):
+                return None
+            percent = int(current["current_percent"] or 0)
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET status = 'failed', active_key = NULL, summary = ?,
+                    completed_at = ?, completed_at_epoch_ms = ?,
+                    updated_at = ?, updated_at_epoch_ms = ?,
+                    current_stage = ?, current_percent = ?, current_message = ?,
+                    failure_code = 'worker_start_timeout',
+                    failure_message = ?, revision = revision + 1
+                WHERE run_id = ? AND status = 'accepted'
+                  AND updated_at_epoch_ms = ?
+                """,
+                (
+                    summary, now, now_epoch, now, now_epoch, stage, percent,
+                    summary, summary, normalized_run,
+                    int(expected_updated_at_epoch_ms),
+                ),
+            )
+            if tx.total_changes <= 0:
+                return None
+            event = self._append_progress_event(
+                tx,
+                normalized_run,
+                status="failed",
+                stage=stage,
+                percent=percent,
+                message=summary,
+                tool=None,
+                payload={"failure_code": "worker_start_timeout"},
+                created_at=now,
+            )
+            self._upsert_profile_snapshot(tx, normalized_run, updated_at=now)
+            revision = _bump_revision(tx, now)
+            row = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+        result = _row(row) or {}
+        result["domain_revision"] = revision
+        result["progress_event"] = event
+        return policy.redact_value(result)
 
     def get_recent_completion(
         self, profile: str, app_id: str | None = None, *, within_seconds: int = 30

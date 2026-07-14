@@ -5,6 +5,7 @@ import contextlib
 import json
 import os
 import ssl
+import time
 import uuid
 from collections import deque
 from dataclasses import dataclass
@@ -40,6 +41,15 @@ class BusStatus:
     fallback_reason: str = ""
     published: int = 0
     received: int = 0
+
+
+@dataclass(frozen=True)
+class DurableConsumerSpec:
+    subject: str
+    callback: Callable[[Any], Awaitable[None]]
+    durable: str
+    queue: str | None
+    stream: str
 
 
 class PocketLabEventBus:
@@ -107,6 +117,19 @@ class PocketLabEventBus:
         self._flush_lock = asyncio.Lock()
         self._transient_invalid_state_errors = 0
         self._last_transient_invalid_state_at = ""
+        self._durable_lock = asyncio.Lock()
+        self._durable_specs: dict[str, DurableConsumerSpec] = {}
+        self._durable_subscriptions: dict[str, Any] = {}
+        self._durable_tasks: dict[str, asyncio.Task[None]] = {}
+        self._durable_generation: dict[str, int] = {}
+        self._durable_started_monotonic: dict[str, float] = {}
+        self._durable_last_fetch_monotonic: dict[str, float] = {}
+        self._durable_last_fetch_at: dict[str, str] = {}
+        self._durable_last_message_at: dict[str, str] = {}
+        self._durable_last_callback_at: dict[str, str] = {}
+        self._durable_callback_inflight: dict[str, bool] = {}
+        self._durable_last_error: dict[str, str] = {}
+        self._durable_recoveries: dict[str, int] = {}
 
     def _client_is_connected(self) -> bool:
         nc = self.nc
@@ -164,6 +187,14 @@ class PocketLabEventBus:
             self.fallback_reason = ""
             self._last_error = ""
             self._last_connected_at = deps.now_utc_iso()
+            try:
+                asyncio.create_task(
+                    self.recover_durable_consumers(force=True),
+                    name="pocketlab-durable-reconnect-recovery",
+                )
+            except RuntimeError:
+                # Event-loop shutdown owns cleanup in this race.
+                pass
 
     async def _nats_closed(self) -> None:
         self.connected = False
@@ -173,6 +204,9 @@ class PocketLabEventBus:
 
     async def _close_stale_client(self) -> None:
         stale = self.nc
+        await self._dispose_all_durable_consumers(
+            forget_specs=False, shutdown=False
+        )
         self.nc = None
         self.js = None
         self.connected = False
@@ -214,6 +248,8 @@ class PocketLabEventBus:
                 self.connected = actual
                 if actual:
                     self.fallback_reason = ""
+                    with contextlib.suppress(Exception):
+                        await self.recover_durable_consumers()
                 else:
                     if not self.fallback_reason:
                         self.fallback_reason = "NATS client connection lost"
@@ -296,6 +332,7 @@ class PocketLabEventBus:
                 if self.require_jetstream and self.js is None:
                     raise RuntimeError("JetStream is required but unavailable")
                 await self._subscribe_event_fanout()
+                await self.recover_durable_consumers(force=True)
             except Exception as exc:
                 await self._close_stale_client()
                 self.fallback_reason = str(exc)
@@ -322,6 +359,9 @@ class PocketLabEventBus:
 
     async def stop(self) -> None:
         await self.stop_watchdog()
+        await self._dispose_all_durable_consumers(
+            forget_specs=True, shutdown=True
+        )
         async with self._lock:
             for sub in list(self._nats_subscriptions):
                 with contextlib.suppress(Exception):
@@ -472,6 +512,216 @@ class PocketLabEventBus:
         self._nats_subscriptions.append(sub)
         return sub
 
+    def durable_consumer_status(self, durable: str | None = None) -> Dict[str, Any]:
+        names = [durable] if durable else sorted(self._durable_specs)
+        now = time.monotonic()
+        payload: dict[str, Any] = {}
+        for name in names:
+            if not name:
+                continue
+            task = self._durable_tasks.get(name)
+            started = self._durable_started_monotonic.get(name, 0.0)
+            last_fetch = self._durable_last_fetch_monotonic.get(name, 0.0)
+            inflight = bool(self._durable_callback_inflight.get(name))
+            task_alive = bool(task is not None and not task.done())
+            payload[name] = {
+                "subject": self.durable_consumers.get(name, ""),
+                "task_alive": task_alive,
+                "subscription_present": name in self._durable_subscriptions,
+                "callback_inflight": inflight,
+                "healthy": bool(
+                    task_alive
+                    and name in self._durable_subscriptions
+                    and (self._client_is_connected() or inflight)
+                ),
+                "generation": int(self._durable_generation.get(name, 0)),
+                "recoveries": int(self._durable_recoveries.get(name, 0)),
+                "task_age_seconds": round(max(0.0, now - started), 3)
+                if started
+                else None,
+                "fetch_age_seconds": round(max(0.0, now - last_fetch), 3)
+                if last_fetch
+                else None,
+                "last_fetch_at": self._durable_last_fetch_at.get(name, ""),
+                "last_message_at": self._durable_last_message_at.get(name, ""),
+                "last_callback_at": self._durable_last_callback_at.get(name, ""),
+                "last_error_type": self._durable_last_error.get(name, ""),
+            }
+        if durable:
+            return payload.get(durable, {})
+        return payload
+
+    async def _dispose_durable_consumer_locked(
+        self,
+        durable: str,
+        *,
+        forget_spec: bool,
+        shutdown: bool,
+    ) -> None:
+        task = self._durable_tasks.get(durable)
+        inflight = bool(self._durable_callback_inflight.get(durable))
+        if task is not None and not task.done() and (shutdown or not inflight):
+            task.cancel()
+            if task is not asyncio.current_task():
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await task
+        if task is None or task.done() or shutdown or not inflight:
+            self._durable_tasks.pop(durable, None)
+            sub = self._durable_subscriptions.pop(durable, None)
+            if sub is not None:
+                with contextlib.suppress(Exception):
+                    await sub.unsubscribe()
+        if forget_spec:
+            self._durable_specs.pop(durable, None)
+            self.durable_consumers.pop(durable, None)
+
+    async def _dispose_all_durable_consumers(
+        self, *, forget_specs: bool, shutdown: bool
+    ) -> None:
+        async with self._durable_lock:
+            names = set(self._durable_specs) | set(self._durable_tasks)
+            for durable in sorted(names):
+                await self._dispose_durable_consumer_locked(
+                    durable, forget_spec=forget_specs, shutdown=shutdown
+                )
+
+    async def _start_durable_consumer(
+        self, durable: str, *, force: bool = False
+    ) -> Any:
+        spec = self._durable_specs.get(durable)
+        if spec is None:
+            raise RuntimeError(f"Durable consumer {durable} is not registered")
+        if not self.connected or self.nc is None:
+            await self.start()
+        if self.js is None:
+            raise RuntimeError("JetStream is required for durable command consumption")
+
+        async with self._durable_lock:
+            existing_task = self._durable_tasks.get(durable)
+            existing_sub = self._durable_subscriptions.get(durable)
+            inflight = bool(self._durable_callback_inflight.get(durable))
+            if (
+                existing_task is not None
+                and not existing_task.done()
+                and existing_sub is not None
+                and (not force or inflight)
+            ):
+                return existing_sub
+
+            replacing = existing_task is not None or existing_sub is not None
+            await self._dispose_durable_consumer_locked(
+                durable, forget_spec=False, shutdown=False
+            )
+            if bool(self._durable_callback_inflight.get(durable)):
+                # Never cancel a command callback that is already executing.
+                return self._durable_subscriptions.get(durable)
+
+            try:
+                sub = await self.js.pull_subscribe(
+                    spec.subject,
+                    durable=spec.durable,
+                    stream=spec.stream,
+                )
+            except Exception as exc:
+                self._durable_last_error[durable] = type(exc).__name__
+                raise RuntimeError(
+                    f"JetStream durable pull consumer setup failed for {spec.subject}: "
+                    f"{type(exc).__name__}"
+                ) from exc
+
+            generation = int(self._durable_generation.get(durable, 0)) + 1
+            self._durable_generation[durable] = generation
+            if replacing:
+                self._durable_recoveries[durable] = int(
+                    self._durable_recoveries.get(durable, 0)
+                ) + 1
+            self._durable_subscriptions[durable] = sub
+            self._durable_started_monotonic[durable] = time.monotonic()
+            self._durable_last_fetch_monotonic[durable] = time.monotonic()
+            self._durable_last_fetch_at[durable] = deps.now_utc_iso()
+            self._durable_last_error[durable] = ""
+            self._durable_callback_inflight[durable] = False
+
+            async def _pull_loop() -> None:
+                try:
+                    while not self._stopping:
+                        try:
+                            messages = await sub.fetch(batch=8, timeout=1)
+                            self._durable_last_fetch_monotonic[durable] = time.monotonic()
+                            self._durable_last_fetch_at[durable] = deps.now_utc_iso()
+                        except TimeoutError:
+                            self._durable_last_fetch_monotonic[durable] = time.monotonic()
+                            self._durable_last_fetch_at[durable] = deps.now_utc_iso()
+                            continue
+                        except asyncio.CancelledError:
+                            raise
+                        except Exception as exc:
+                            self._durable_last_error[durable] = type(exc).__name__
+                            return
+
+                        for msg in messages:
+                            self._durable_last_message_at[durable] = deps.now_utc_iso()
+                            self._durable_callback_inflight[durable] = True
+                            try:
+                                await spec.callback(msg)
+                            finally:
+                                self._durable_callback_inflight[durable] = False
+                                self._durable_last_callback_at[durable] = deps.now_utc_iso()
+                finally:
+                    self._durable_callback_inflight[durable] = False
+
+            task = asyncio.create_task(
+                _pull_loop(),
+                name=f"pocketlab-durable-{durable}-{generation}",
+            )
+            self._durable_tasks[durable] = task
+            return sub
+
+    async def ensure_durable_consumer(
+        self,
+        durable: str,
+        *,
+        stale_seconds: float | None = None,
+        force: bool = False,
+    ) -> bool:
+        if durable not in self._durable_specs:
+            return False
+        task = self._durable_tasks.get(durable)
+        inflight = bool(self._durable_callback_inflight.get(durable))
+        task_alive = bool(task is not None and not task.done())
+        sub_present = durable in self._durable_subscriptions
+        stale_limit = max(3.0, float(
+            stale_seconds
+            if stale_seconds is not None
+            else os.environ.get("POCKETLAB_NATS_DURABLE_STALE_SECONDS", "15")
+        ))
+        last_fetch = self._durable_last_fetch_monotonic.get(
+            durable, self._durable_started_monotonic.get(durable, 0.0)
+        )
+        stale = bool(
+            last_fetch
+            and time.monotonic() - last_fetch > stale_limit
+            and not inflight
+        )
+        if task_alive and sub_present and not stale and not force:
+            return False
+        if inflight:
+            return False
+        await self._start_durable_consumer(durable, force=True)
+        return True
+
+    async def recover_durable_consumers(self, *, force: bool = False) -> list[str]:
+        if not self._client_is_connected() or self.js is None:
+            return []
+        recovered: list[str] = []
+        for durable in sorted(self._durable_specs):
+            try:
+                if await self.ensure_durable_consumer(durable, force=force):
+                    recovered.append(durable)
+            except Exception as exc:
+                self._durable_last_error[durable] = type(exc).__name__
+        return recovered
+
     async def subscribe_durable(
         self,
         subject: str,
@@ -481,55 +731,26 @@ class PocketLabEventBus:
         queue: str | None = None,
         stream: str = "POCKETLAB_COMMANDS",
     ) -> Any:
-        """Subscribe with a JetStream pull durable consumer.
-
-        Enterprise behavior:
-        - Uses JetStream durable pull consumption.
-        - Uses manual ack.
-        - Does not use volatile NATS delivery.
-        - Does not use in-memory command fallback.
-        - Avoids push-consumer deliver-subject binding conflicts.
-        """
-        if not self.connected or self.nc is None:
-            await self.start()
-
-        if self.js is None:
-            raise RuntimeError("JetStream is required for durable command consumption")
-
-        self.durable_consumers[durable] = subject
-
-        try:
-            sub = await self.js.pull_subscribe(
-                subject,
-                durable=durable,
-                stream=stream,
-            )
-        except Exception as exc:
+        """Register and supervise one JetStream durable pull consumer."""
+        if not durable.strip():
+            raise ValueError("Durable consumer name is required")
+        spec = DurableConsumerSpec(
+            subject=subject,
+            callback=callback,
+            durable=durable,
+            queue=queue,
+            stream=stream,
+        )
+        current = self._durable_specs.get(durable)
+        if current is not None and (
+            current.subject != spec.subject or current.stream != spec.stream
+        ):
             raise RuntimeError(
-                f"JetStream durable pull consumer setup failed for {subject}: {exc}"
-            ) from exc
-
-        async def _pull_loop() -> None:
-            import asyncio
-
-            while True:
-                try:
-                    messages = await sub.fetch(batch=8, timeout=1)
-                    for msg in messages:
-                        await callback(msg)
-                except TimeoutError:
-                    continue
-                except Exception:
-                    await asyncio.sleep(1)
-                    if not self.connected:
-                        break
-
-        task = asyncio.create_task(_pull_loop())
-        if not hasattr(self, "_durable_tasks"):
-            self._durable_tasks = []
-        self._durable_tasks.append(task)
-
-        return sub
+                f"Durable consumer {durable} is already registered for another subject"
+            )
+        self._durable_specs[durable] = spec
+        self.durable_consumers[durable] = subject
+        return await self._start_durable_consumer(durable)
 
 
     async def ack_message(self, msg: Any) -> None:
@@ -677,6 +898,7 @@ class PocketLabEventBus:
             ),
             "transient_invalid_state_errors": self._transient_invalid_state_errors,
             "last_transient_invalid_state_at": self._last_transient_invalid_state_at,
+            "durable_consumer_health": self.durable_consumer_status(),
         }
 
     async def subscribe_local(
