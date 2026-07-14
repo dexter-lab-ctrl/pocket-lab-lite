@@ -125,6 +125,24 @@ def security_accepted_stale_seconds() -> int:
     )
 
 
+def security_received_stale_seconds() -> int:
+    return _bounded_environment_int(
+        "POCKETLAB_LITE_SECURITY_RECEIVED_STALE_SECONDS",
+        180,
+        minimum=30,
+        maximum=7200,
+    )
+
+
+def security_published_stale_seconds() -> int:
+    return _bounded_environment_int(
+        "POCKETLAB_LITE_SECURITY_PUBLISHED_STALE_SECONDS",
+        security_accepted_stale_seconds(),
+        minimum=30,
+        maximum=7200,
+    )
+
+
 def security_recent_completion_seconds() -> int:
     return _bounded_environment_int(
         "POCKETLAB_LITE_SECURITY_RECENT_COMPLETION_SECONDS",
@@ -421,6 +439,76 @@ class SecuritySQLiteRepository:
                 ).fetchone()
         return _row(row)
 
+    def list_stale_start_candidates(
+        self,
+        *,
+        now: str | None = None,
+        published_stale_seconds: int | None = None,
+        received_stale_seconds: int | None = None,
+        limit: int = 10,
+    ) -> list[dict[str, Any]]:
+        """Return queued/accepted runs that have not begun execution.
+
+        Published-but-never-received and received-but-never-started states use
+        separate bounded thresholds. Running rows are deliberately excluded.
+        """
+        current_time = _parse_timestamp(now)
+        current_epoch = _epoch_ms(current_time)
+        published_threshold = max(
+            30,
+            min(
+                int(
+                    published_stale_seconds
+                    if published_stale_seconds is not None
+                    else security_published_stale_seconds()
+                ),
+                7200,
+            ),
+        )
+        received_threshold = max(
+            30,
+            min(
+                int(
+                    received_stale_seconds
+                    if received_stale_seconds is not None
+                    else security_received_stale_seconds()
+                ),
+                7200,
+            ),
+        )
+        published_cutoff = current_epoch - published_threshold * 1000
+        received_cutoff = current_epoch - received_threshold * 1000
+        bounded = max(1, min(int(limit), 50))
+        with read_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM security_scan_runs
+                WHERE status IN ('queued', 'accepted')
+                  AND active_key IS NOT NULL
+                  AND execution_started_at IS NULL
+                  AND (
+                    (command_received_at IS NULL
+                     AND COALESCE(command_published_at_epoch_ms, updated_at_epoch_ms) <= ?)
+                    OR
+                    (command_received_at IS NOT NULL
+                     AND command_received_at_epoch_ms <= ?)
+                  )
+                ORDER BY updated_at_epoch_ms ASC
+                LIMIT ?
+                """,
+                (published_cutoff, received_cutoff, bounded),
+            ).fetchall()
+        payload: list[dict[str, Any]] = []
+        for row in rows:
+            item = _row(row) or {}
+            item["stale_state"] = (
+                "published_not_received"
+                if not item.get("command_received_at")
+                else "received_not_started"
+            )
+            payload.append(item)
+        return policy.redact_value(payload)
+
     def list_stale_accepted_runs(
         self,
         *,
@@ -428,37 +516,31 @@ class SecuritySQLiteRepository:
         stale_seconds: int | None = None,
         limit: int = 10,
     ) -> list[dict[str, Any]]:
-        current_time = _parse_timestamp(now)
-        threshold = int(
-            stale_seconds
-            if stale_seconds is not None
-            else security_accepted_stale_seconds()
+        """Backward-compatible accepted-start watchdog query."""
+        candidates = self.list_stale_start_candidates(
+            now=now,
+            published_stale_seconds=stale_seconds,
+            received_stale_seconds=stale_seconds,
+            limit=limit,
         )
-        threshold = max(30, min(threshold, 3600))
-        cutoff = _epoch_ms(current_time) - threshold * 1000
-        bounded = max(1, min(int(limit), 50))
-        with read_connection() as conn:
-            rows = conn.execute(
-                """
-                SELECT * FROM security_scan_runs
-                WHERE status = 'accepted' AND active_key IS NOT NULL
-                  AND updated_at_epoch_ms <= ?
-                ORDER BY updated_at_epoch_ms ASC
-                LIMIT ?
-                """,
-                (cutoff, bounded),
-            ).fetchall()
-        return policy.redact_value([_row(row) or {} for row in rows])
+        return [item for item in candidates if item.get("status") == "accepted"]
 
-    def fail_stale_accepted_run(
+    def fail_stale_start_run(
         self,
         run_id: str,
         *,
+        expected_status: str,
+        expected_revision: int,
         expected_updated_at_epoch_ms: int,
+        expected_active_key: str,
         completed_at: str | None = None,
+        failure_code: str = "worker_start_timeout",
     ) -> dict[str, Any] | None:
-        """Fail one unchanged accepted run with a transactional compare-and-set."""
+        """Terminalize one unchanged pre-execution run using compare-and-set."""
         normalized_run = _normalize_run_id(run_id)
+        normalized_status = _normalize_status(expected_status)
+        if normalized_status not in {"queued", "accepted"}:
+            return None
         now = _parse_timestamp(completed_at)
         now_epoch = _epoch_ms(now)
         summary = "The safety check could not start. Try again."
@@ -471,32 +553,35 @@ class SecuritySQLiteRepository:
             if not current:
                 return None
             if (
-                str(current["status"]) != "accepted"
-                or current["active_key"] is None
-                or int(current["updated_at_epoch_ms"])
+                str(current["status"]) != normalized_status
+                or str(current["active_key"] or "") != str(expected_active_key or "")
+                or int(current["revision"] or 0) != int(expected_revision)
+                or int(current["updated_at_epoch_ms"] or 0)
                 != int(expected_updated_at_epoch_ms)
+                or current["execution_started_at"] is not None
             ):
                 return None
             percent = int(current["current_percent"] or 0)
-            tx.execute(
+            cursor = tx.execute(
                 """
                 UPDATE security_scan_runs
                 SET status = 'failed', active_key = NULL, summary = ?,
                     completed_at = ?, completed_at_epoch_ms = ?,
                     updated_at = ?, updated_at_epoch_ms = ?,
                     current_stage = ?, current_percent = ?, current_message = ?,
-                    failure_code = 'worker_start_timeout',
-                    failure_message = ?, revision = revision + 1
-                WHERE run_id = ? AND status = 'accepted'
-                  AND updated_at_epoch_ms = ?
+                    failure_code = ?, failure_message = ?, revision = revision + 1
+                WHERE run_id = ? AND status = ? AND revision = ?
+                  AND updated_at_epoch_ms = ? AND active_key = ?
+                  AND execution_started_at IS NULL
                 """,
                 (
                     summary, now, now_epoch, now, now_epoch, stage, percent,
-                    summary, summary, normalized_run,
-                    int(expected_updated_at_epoch_ms),
+                    summary, policy.redact_text(failure_code)[:120], summary,
+                    normalized_run, normalized_status, int(expected_revision),
+                    int(expected_updated_at_epoch_ms), str(expected_active_key),
                 ),
             )
-            if tx.total_changes <= 0:
+            if cursor.rowcount != 1:
                 return None
             event = self._append_progress_event(
                 tx,
@@ -506,7 +591,7 @@ class SecuritySQLiteRepository:
                 percent=percent,
                 message=summary,
                 tool=None,
-                payload={"failure_code": "worker_start_timeout"},
+                payload={"failure_code": failure_code},
                 created_at=now,
             )
             self._upsert_profile_snapshot(tx, normalized_run, updated_at=now)
@@ -519,6 +604,34 @@ class SecuritySQLiteRepository:
         result["domain_revision"] = revision
         result["progress_event"] = event
         return policy.redact_value(result)
+
+    def fail_stale_accepted_run(
+        self,
+        run_id: str,
+        *,
+        expected_updated_at_epoch_ms: int,
+        completed_at: str | None = None,
+        expected_revision: int | None = None,
+        expected_active_key: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Backward-compatible accepted-run compare-and-set wrapper."""
+        current = self.get_run(run_id) or {}
+        return self.fail_stale_start_run(
+            run_id,
+            expected_status="accepted",
+            expected_revision=int(
+                expected_revision
+                if expected_revision is not None
+                else current.get("revision") or 0
+            ),
+            expected_updated_at_epoch_ms=expected_updated_at_epoch_ms,
+            expected_active_key=str(
+                expected_active_key
+                if expected_active_key is not None
+                else current.get("active_key") or ""
+            ),
+            completed_at=completed_at,
+        )
 
     def get_recent_completion(
         self, profile: str, app_id: str | None = None, *, within_seconds: int = 30
@@ -537,6 +650,89 @@ class SecuritySQLiteRepository:
                 (normalized_profile, normalized_app, cutoff),
             ).fetchone()
         return _row(row)
+
+    def mark_command_published(
+        self, run_id: str, *, published_at: str | None = None
+    ) -> dict[str, Any]:
+        normalized_run = _normalize_run_id(run_id)
+        now = _parse_timestamp(published_at)
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT status FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+            if not current:
+                raise SecurityStoreError("Security run not found")
+            if str(current["status"]) in TERMINAL_STATUSES:
+                return _row(
+                    tx.execute(
+                        "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                        (normalized_run,),
+                    ).fetchone()
+                ) or {}
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET command_published_at = COALESCE(command_published_at, ?),
+                    command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
+                    updated_at = ?, updated_at_epoch_ms = ?, revision = revision + 1
+                WHERE run_id = ?
+                """,
+                (now, _epoch_ms(now), now, _epoch_ms(now), normalized_run),
+            )
+            revision = _bump_revision(tx, now)
+            row = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+        result = _row(row) or {}
+        result["domain_revision"] = revision
+        return policy.redact_value(result)
+
+    def mark_command_received(
+        self,
+        run_id: str,
+        *,
+        received_at: str | None = None,
+        delivery_attempt: int = 1,
+    ) -> dict[str, Any]:
+        normalized_run = _normalize_run_id(run_id)
+        now = _parse_timestamp(received_at)
+        attempt = max(1, min(int(delivery_attempt or 1), 10_000))
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT status FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+            if not current:
+                raise SecurityStoreError("Security run not found")
+            if str(current["status"]) in TERMINAL_STATUSES:
+                return _row(
+                    tx.execute(
+                        "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                        (normalized_run,),
+                    ).fetchone()
+                ) or {}
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET command_received_at = COALESCE(command_received_at, ?),
+                    command_received_at_epoch_ms = COALESCE(command_received_at_epoch_ms, ?),
+                    delivery_attempt = CASE
+                        WHEN delivery_attempt > ? THEN delivery_attempt ELSE ? END,
+                    updated_at = ?, updated_at_epoch_ms = ?, revision = revision + 1
+                WHERE run_id = ?
+                """,
+                (now, _epoch_ms(now), attempt, attempt, now, _epoch_ms(now), normalized_run),
+            )
+            revision = _bump_revision(tx, now)
+            row = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+        result = _row(row) or {}
+        result["domain_revision"] = revision
+        return policy.redact_value(result)
 
     def mark_accepted(
         self, run_id: str, *, accepted_at: str | None = None, summary: str = ""
@@ -602,12 +798,20 @@ class SecuritySQLiteRepository:
                 SET status = 'running', accepted_at = COALESCE(accepted_at, ?),
                     started_at = COALESCE(started_at, ?),
                     started_at_epoch_ms = COALESCE(started_at_epoch_ms, ?),
+                    execution_started_at = COALESCE(execution_started_at, ?),
+                    execution_started_at_epoch_ms = COALESCE(execution_started_at_epoch_ms, ?),
+                    last_progress_at = COALESCE(last_progress_at, ?),
+                    last_progress_at_epoch_ms = COALESCE(last_progress_at_epoch_ms, ?),
                     updated_at = ?, updated_at_epoch_ms = ?,
                     summary = CASE WHEN ? = '' THEN summary ELSE ? END,
                     revision = revision + 1
                 WHERE run_id = ?
                 """,
-                (now, now, _epoch_ms(now), now, _epoch_ms(now), summary, policy.redact_text(summary)[:500], normalized_run),
+                (
+                    now, now, _epoch_ms(now), now, _epoch_ms(now),
+                    now, _epoch_ms(now), now, _epoch_ms(now), summary,
+                    policy.redact_text(summary)[:500], normalized_run,
+                ),
             )
             _bump_revision(tx, now)
             row = tx.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)).fetchone()
@@ -718,14 +922,16 @@ class SecuritySQLiteRepository:
                 """
                 UPDATE security_scan_runs
                 SET status = ?, active_key = ?, current_stage = ?, current_percent = ?,
-                    current_message = ?, current_tool = ?, updated_at = ?, updated_at_epoch_ms = ?,
+                    current_message = ?, current_tool = ?, last_progress_at = ?,
+                    last_progress_at_epoch_ms = ?, updated_at = ?, updated_at_epoch_ms = ?,
                     metadata_json = COALESCE(?, metadata_json), revision = revision + 1
                 WHERE run_id = ?
                 """,
                 (
                     normalized_status, active_key, clean_stage,
                     int(percent) if percent is not None else None, clean_message, clean_tool,
-                    now, _epoch_ms(now), _safe_json(payload), normalized_run,
+                    now, _epoch_ms(now), now, _epoch_ms(now),
+                    _safe_json(payload), normalized_run,
                 ),
             )
             revision = _bump_revision(tx, now)
@@ -844,6 +1050,16 @@ class SecuritySQLiteRepository:
             ).fetchone()
             if not current:
                 raise SecurityStoreError("Security run not found")
+            # A terminal write is authoritative, but its timestamp may come from
+            # scanner/tool metadata or a compatibility projection. Never commit a
+            # terminal row whose lifecycle clock moves backwards relative to the
+            # already-committed run. Otherwise the monotonic in-memory projection
+            # must correctly reject the terminal candidate and can remain stuck on
+            # the prior running state.
+            current_updated_at = _parse_timestamp(current["updated_at"])
+            if _epoch_ms(now) < int(current["updated_at_epoch_ms"] or 0):
+                now = current_updated_at
+
             current_metadata = _json_value(current["metadata_json"], {})
             if (
                 str(current["status"]) in TERMINAL_STATUSES
@@ -875,6 +1091,7 @@ class SecuritySQLiteRepository:
                 UPDATE security_scan_runs
                 SET status = ?, active_key = NULL, summary = ?, score = ?, partial_results = ?,
                     completed_at = ?, completed_at_epoch_ms = ?, updated_at = ?, updated_at_epoch_ms = ?,
+                    last_progress_at = ?, last_progress_at_epoch_ms = ?,
                     current_percent = ?, current_stage = ?, current_message = ?,
                     checks_reviewed = ?, items_to_review = ?, critical_count = ?, high_count = ?,
                     medium_count = ?, low_count = ?, info_count = ?, failure_code = ?,
@@ -884,8 +1101,9 @@ class SecuritySQLiteRepository:
                 (
                     status, policy.redact_text(summary)[:500],
                     int(score) if score is not None else None, int(bool(partial_results)),
-                    now, _epoch_ms(now), now, _epoch_ms(now), terminal_percent, terminal_stage,
-                    policy.redact_text(summary)[:500], max(0, int(checks_reviewed)),
+                    now, _epoch_ms(now), now, _epoch_ms(now), now, _epoch_ms(now),
+                    terminal_percent, terminal_stage, policy.redact_text(summary)[:500],
+                    max(0, int(checks_reviewed)),
                     max(0, int(items_to_review)), safe_counts["critical"], safe_counts["high"],
                     safe_counts["medium"], safe_counts["low"], safe_counts["info"],
                     failure_code, failure_message, int(bool(evidence_refs)),
@@ -1096,6 +1314,15 @@ class SecuritySQLiteRepository:
             "status": run["status"], "stage": run.get("current_stage"),
             "percent": run.get("current_percent"), "message": run.get("current_message"),
             "tool": run.get("current_tool"), "updated_at": run.get("updated_at"),
+            "updated_at_epoch_ms": int(run.get("updated_at_epoch_ms") or 0),
+            "requested_at": run.get("requested_at"),
+            "requested_at_epoch_ms": int(run.get("requested_at_epoch_ms") or 0),
+            "command_published_at": run.get("command_published_at"),
+            "command_received_at": run.get("command_received_at"),
+            "execution_started_at": run.get("execution_started_at"),
+            "last_progress_at": run.get("last_progress_at"),
+            "delivery_attempt": int(run.get("delivery_attempt") or 0),
+            "run_revision": int(run.get("revision") or 0),
             "active_scan": run["status"] in ACTIVE_STATUSES,
             "event_id": int(latest_event["event_id"]) if latest_event else 0,
             "sequence_no": int(latest_event["sequence_no"]) if latest_event else 0,

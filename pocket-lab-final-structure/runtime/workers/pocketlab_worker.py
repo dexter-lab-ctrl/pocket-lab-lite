@@ -209,9 +209,21 @@ async def worker_recovery_watchdog(stop_event: asyncio.Event) -> None:
                         pass
                     if stop_event.is_set():
                         break
+                    recovered_status = BUS.durable_consumer_status(DURABLE_NAME)
                     released = await asyncio.to_thread(
                         lite_security.recover_stale_accepted_runs,
                         stale_seconds=stale_seconds,
+                        callback_inflight=bool(
+                            recovered_status.get("callback_inflight")
+                        ),
+                        recovery_attempted=True,
+                        expected_candidates=stale,
+                        consumer_generation=int(
+                            recovered_status.get("generation") or 0
+                        ),
+                        recovery_count=int(
+                            recovered_status.get("recoveries") or 0
+                        ),
                     )
                     for item in released:
                         _worker_log(
@@ -371,6 +383,12 @@ async def command_callback(msg: Any) -> None:
             from api_fastapi.services import lite_security  # type: ignore
 
             run_id = str(command.get("run_id") or command_id)
+            if run_id:
+                await asyncio.to_thread(
+                    lite_security.mark_command_received,
+                    run_id,
+                    delivery_attempt=attempt,
+                )
             if run_id and await asyncio.to_thread(
                 lite_security.security_run_is_terminal, run_id
             ):

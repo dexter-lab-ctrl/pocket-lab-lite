@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import copy
 import hashlib
@@ -15,6 +16,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -30,9 +32,18 @@ _SQLITE_PROGRESS_SNAPSHOT: dict[str, Any] | None = None
 _SQLITE_PROGRESS_SNAPSHOT_DB = ""
 _SQLITE_PROGRESS_FAILURES = 0
 _SQLITE_PROGRESS_REFRESH_LOCK = threading.Lock()
-_SQLITE_PROGRESS_REFRESH_INFLIGHT = False
 _SQLITE_PROGRESS_REFRESHED_AT = 0.0
-_SQLITE_PROGRESS_REFRESH_INTERVAL_SECONDS = 0.20
+_SQLITE_PROGRESS_FALLBACK_INTERVAL_SECONDS = 5.0
+_SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS = 15_000
+_SQLITE_PROGRESS_DIRTY = threading.Event()
+_SQLITE_PROGRESS_STOP = threading.Event()
+_SQLITE_PROGRESS_THREAD: threading.Thread | None = None
+_SQLITE_PROGRESS_EPOCH = 0
+_SECURITY_MAINTENANCE_EXECUTOR = ThreadPoolExecutor(
+    max_workers=2, thread_name_prefix="pocketlab-security-maintenance"
+)
+_ACTIVE_PROGRESS_STATUSES = frozenset({"queued", "accepted", "running", "working", "in_progress"})
+_TERMINAL_PROGRESS_STATUSES = frozenset({"succeeded", "degraded", "failed", "cancelled", "canceled", "completed"})
 
 
 def _security_store_api():
@@ -43,6 +54,15 @@ def _security_store_api():
 
 def _security_repository():
     return _security_store_api().SecuritySQLiteRepository(initialize=True)
+
+
+async def run_api_maintenance(function, /, *args, **kwargs):
+    """Run bounded API-owned blocking maintenance outside the event loop."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        _SECURITY_MAINTENANCE_EXECUTOR,
+        lambda: function(*args, **kwargs),
+    )
 
 
 def initialize_security_sqlite_runtime(*, reconcile: bool = True) -> dict[str, Any]:
@@ -265,6 +285,7 @@ def reserve_scan_request(command: dict[str, Any]) -> dict[str, Any]:
     )
     if not result.reserved:
         return {"reserved": False, "response": _dedupe_response_from_reservation(result)}
+    publish_committed_progress(str(result.run.get("run_id") or ""), repository=repository)
     return {"reserved": True, "run": result.run, "response": None}
 
 
@@ -274,27 +295,65 @@ def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
         return None
     if not _sqlite_lifecycle_enabled():
         return evidence.read_run(run_id)
-    run = evidence.read_run(run_id) or {}
-    if not run:
-        return None
-    run.update({
-        "status": "accepted",
-        "accepted_at": deps.now_utc_iso(),
-        "updated_at": deps.now_utc_iso(),
-    })
-    state = build_state(
-        run, [], [], status_override="queued", summary_override=run.get("summary")
+    repository = _security_repository()
+    published_at = deps.now_utc_iso()
+    repository.mark_command_published(run_id, published_at=published_at)
+    accepted = repository.mark_accepted(
+        run_id,
+        accepted_at=published_at,
+        summary=_profile_copy(_scan_profile(command))["queued"],
     )
-    _write_security_state(state)
-    _write_run_projection(run)
-    return run
+    publish_committed_progress(run_id, repository=repository)
+    projected = _sqlite_run_payload(
+        repository, repository.get_run(run_id), include_details=True, include_related=True
+    )
+    if projected and _security_store_api().security_store_mode() == "dual":
+        _write_run_projection(projected)
+        _, state, _ = _sqlite_state_projection()
+        try:
+            evidence.write_state(state)
+            write_compact_security_state(state)
+        except (OSError, ValueError, TypeError) as exc:
+            _record_projection_status(
+                run_id, component="state", degraded=True,
+                reason=f"state_projection_{type(exc).__name__}",
+            )
+    return projected or accepted
+
+
+def mark_command_received(
+    run_id: str, *, delivery_attempt: int = 1, received_at: str | None = None
+) -> dict[str, Any] | None:
+    if not run_id or not _sqlite_lifecycle_enabled():
+        return None
+    repository = _security_repository()
+    row = repository.mark_command_received(
+        run_id, received_at=received_at or deps.now_utc_iso(),
+        delivery_attempt=delivery_attempt,
+    )
+    publish_committed_progress(run_id, repository=repository)
+    return row
 
 
 def fail_scan_submission(run_id: str) -> None:
     if not _sqlite_lifecycle_enabled():
         discard_queued_run(run_id)
         return
-    stored = _security_repository().get_run(run_id) or {}
+    repository = _security_repository()
+    stored = repository.get_run(run_id) or {}
+    if stored and str(stored.get("status") or "") not in _security_store_api().TERMINAL_STATUSES:
+        repository.fail_run(
+            run_id,
+            failure_code="submit_failed",
+            failure_message="The backend worker queue was unavailable.",
+            summary="The safety check could not be sent. Try again.",
+            completed_at=deps.now_utc_iso(),
+            findings=[], evidence_refs=[], tool_results={},
+            metadata={"submission_failed": True},
+        )
+        publish_committed_progress(run_id, repository=repository)
+    if _security_store_api().security_store_mode() == "sqlite":
+        return
     run = evidence.read_run(run_id) or {
         "run_id": run_id,
         "command_id": stored.get("command_id") or run_id,
@@ -338,48 +397,87 @@ def stale_accepted_runs(
 ) -> list[dict[str, Any]]:
     if not _sqlite_lifecycle_enabled():
         return []
-    return _security_repository().list_stale_accepted_runs(
-        stale_seconds=stale_seconds
+    return _security_repository().list_stale_start_candidates(
+        published_stale_seconds=stale_seconds,
+        received_stale_seconds=stale_seconds,
     )
 
 
 def recover_stale_accepted_runs(
-    *, stale_seconds: int | None = None
+    *,
+    stale_seconds: int | None = None,
+    callback_inflight: bool = False,
+    recovery_attempted: bool = False,
+    expected_candidates: list[dict[str, Any]] | None = None,
+    consumer_generation: int = 0,
+    recovery_count: int = 0,
 ) -> list[dict[str, Any]]:
-    """Release accepted scans that never transitioned into worker execution."""
-    if not _sqlite_lifecycle_enabled():
+    """Release only pre-execution runs unchanged across the recovery grace period."""
+    if not _sqlite_lifecycle_enabled() or callback_inflight or not recovery_attempted:
+        return []
+    observed = {
+        str(item.get("run_id") or ""): item
+        for item in (expected_candidates or [])
+        if isinstance(item, dict) and item.get("run_id")
+    }
+    if not observed:
         return []
     repository = _security_repository()
     recovered: list[dict[str, Any]] = []
-    for candidate in repository.list_stale_accepted_runs(
-        stale_seconds=stale_seconds
+    for candidate in repository.list_stale_start_candidates(
+        published_stale_seconds=stale_seconds,
+        received_stale_seconds=stale_seconds,
     ):
         run_id = str(candidate.get("run_id") or "")
-        if not run_id:
+        before_grace = observed.get(run_id)
+        previous_status = str(candidate.get("status") or "")
+        if (
+            not run_id
+            or not before_grace
+            or previous_status not in {"queued", "accepted"}
+            or candidate.get("execution_started_at")
+        ):
             continue
-        failed = repository.fail_stale_accepted_run(
+        unchanged = all(
+            candidate.get(field) == before_grace.get(field)
+            for field in ("status", "revision", "updated_at_epoch_ms", "active_key")
+        )
+        if not unchanged:
+            continue
+        failed = repository.fail_stale_start_run(
             run_id,
-            expected_updated_at_epoch_ms=int(
-                candidate.get("updated_at_epoch_ms") or 0
-            ),
+            expected_status=str(before_grace.get("status") or ""),
+            expected_revision=int(before_grace.get("revision") or 0),
+            expected_updated_at_epoch_ms=int(before_grace.get("updated_at_epoch_ms") or 0),
+            expected_active_key=str(before_grace.get("active_key") or ""),
+            failure_code="worker_start_timeout",
         )
         if not failed:
             continue
         refs: list[str] = []
+        recovered_at = failed.get("completed_at") or deps.now_utc_iso()
+        safe_recovery = {
+            "run_id": run_id,
+            "profile": failed.get("profile") or policy.SCAN_PROFILE_QUICK,
+            "status": "failed",
+            "failure_code": "worker_start_timeout",
+            "previous_status": previous_status,
+            "stale_state": candidate.get("stale_state") or "pre_execution_stall",
+            "recovery_attempted": True,
+            "consumer_generation": max(0, int(consumer_generation or 0)),
+            "recovery_count": max(0, int(recovery_count or 0)),
+            "delivery_attempt": max(0, int(candidate.get("delivery_attempt") or 0)),
+            "command_published_at": candidate.get("command_published_at"),
+            "command_received_at": candidate.get("command_received_at"),
+            "recovered_at": recovered_at,
+            "sanitized": True,
+        }
         try:
             refs.append(
                 evidence.write_evidence(
                     run_id,
                     "worker-start-recovery.json",
-                    {
-                        "run_id": run_id,
-                        "status": "failed",
-                        "failure_code": "worker_start_timeout",
-                        "summary": "The safety check could not start. Try again.",
-                        "recovered_at": failed.get("completed_at")
-                        or deps.now_utc_iso(),
-                        "sanitized": True,
-                    },
+                    safe_recovery,
                 )
             )
         except (OSError, ValueError, TypeError) as exc:
@@ -392,35 +490,45 @@ def recover_stale_accepted_runs(
             failure_code="worker_start_timeout",
             failure_message="The safety check could not start. Try again.",
             summary="The safety check could not start. Try again.",
-            completed_at=failed.get("completed_at") or deps.now_utc_iso(),
+            completed_at=recovered_at,
             findings=[],
             evidence_refs=refs,
             tool_results={},
             metadata={
                 "worker_start_recovery": True,
-                "recovery_reason": "accepted_run_stale",
+                "recovery_reason": candidate.get("stale_state") or "pre_execution_stall",
+                "previous_status": previous_status,
+                "consumer_generation": max(0, int(consumer_generation or 0)),
+                "recovery_count": max(0, int(recovery_count or 0)),
             },
         )
+        publish_committed_progress(run_id, repository=repository)
         projected = _sqlite_run_payload(
             repository,
             repository.get_run(run_id),
             include_details=True,
             include_related=True,
         )
-        if projected:
+        if projected and _security_store_api().security_store_mode() == "dual":
             _write_run_projection(projected)
         recovered.append(
             {
                 "run_id": run_id,
-                "profile": failed.get("profile")
-                or policy.SCAN_PROFILE_QUICK,
+                "profile": failed.get("profile") or policy.SCAN_PROFILE_QUICK,
                 "status": "failed",
                 "failure_code": "worker_start_timeout",
             }
         )
-    if recovered:
+    if recovered and _security_store_api().security_store_mode() == "dual":
         _, state, _ = _sqlite_state_projection()
-        _write_security_state(state)
+        try:
+            evidence.write_state(state)
+            write_compact_security_state(state)
+        except (OSError, ValueError, TypeError) as exc:
+            _LOGGER.warning(
+                "Security recovery compatibility projection degraded: %s",
+                type(exc).__name__,
+            )
     return policy.redact_value(recovered)
 
 
@@ -798,6 +906,18 @@ def invalidate_security_read_caches() -> None:
     _CURRENT_STATE_CACHE.update({"key": None, "cached_at": 0.0, "data": None, "live": False})
     _SECURITY_SUMMARY_CACHE.update({"key": None, "cached_at": 0.0, "data": None, "live": False})
     _SECURITY_SPLIT_READ_CACHE.clear()
+    if _sqlite_compact_reads_enabled():
+        mark_security_progress_dirty()
+        # Unit/maintenance callers may use this function without starting the
+        # FastAPI lifespan. Prime synchronously only when the production
+        # background refresher is not running; the normal GET path remains
+        # strictly memory-only.
+        thread = _SQLITE_PROGRESS_THREAD
+        if thread is None or not thread.is_alive():
+            try:
+                _refresh_sqlite_progress_snapshot()
+            except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError):
+                pass
 
 
 def _bounded_list(value: Any, limit: int) -> list[Any]:
@@ -1419,95 +1539,242 @@ def _sqlite_summary_state() -> dict[str, Any]:
     return _sqlite_cached_read("summary", builder=build)
 
 
+def _progress_status_is_active(status: Any) -> bool:
+    return str(status or "").strip().lower().replace("-", "_") in _ACTIVE_PROGRESS_STATUSES
+
+
+def _progress_status_is_terminal(status: Any) -> bool:
+    return str(status or "").strip().lower().replace("-", "_") in _TERMINAL_PROGRESS_STATUSES
+
+
 def _sqlite_progress_payload(progress: dict[str, Any] | None = None) -> dict[str, Any]:
     payload = progress if isinstance(progress, dict) else {}
-    revision = int(payload.get("domain_revision") or 0)
+    status = str(payload.get("status") or "idle").strip().lower().replace("-", "_")
+    run_id = str(payload.get("run_id") or "").strip() or None
+    active = _progress_status_is_active(status) and bool(run_id)
+    if _progress_status_is_terminal(status):
+        active = False
+    percent = max(0, min(int(payload.get("percent") or 0), 100))
+    if active and percent <= 0:
+        percent = 5
+    default_stage = "Getting ready" if active else (
+        "Safety check complete" if _progress_status_is_terminal(status) else "Waiting"
+    )
+    revision = int(payload.get("domain_revision") or payload.get("sqlite_revision") or 0)
+    updated_epoch = int(payload.get("updated_at_epoch_ms") or 0)
+    requested_epoch = int(payload.get("requested_at_epoch_ms") or 0)
     response = policy.redact_value({
         "view_model": "security-progress-f7-v1",
-        "active_scan": bool(payload.get("active_scan")),
-        "run_id": payload.get("run_id") or None,
+        "active_scan": active,
+        "run_id": run_id,
         "profile": payload.get("profile") or policy.SCAN_PROFILE_QUICK,
         "app_id": payload.get("app_id") or "",
-        "stage": payload.get("stage") or "Waiting",
-        "status": payload.get("status") or "idle",
-        "percent": int(payload.get("percent") or 0),
-        "message": payload.get("message") or "No safety check is running.",
+        "stage": payload.get("stage") or default_stage,
+        "status": status,
+        "percent": percent,
+        "message": payload.get("message") or (
+            "Getting the safety check ready." if active else "No safety check is running."
+        ),
         "updated_at": payload.get("updated_at"),
+        "updated_at_epoch_ms": updated_epoch,
+        "requested_at_epoch_ms": requested_epoch,
+        "command_published_at": payload.get("command_published_at"),
+        "command_received_at": payload.get("command_received_at"),
+        "execution_started_at": payload.get("execution_started_at"),
+        "last_progress_at": payload.get("last_progress_at"),
+        "delivery_attempt": int(payload.get("delivery_attempt") or 0),
+        "run_revision": int(payload.get("run_revision") or 0),
+        "sqlite_revision": revision,
         "sanitized": True,
         "revision": _revision_token(
-            "sqlite-progress", revision, payload.get("run_id"), payload.get("status"),
-            payload.get("percent"), payload.get("event_id"),
+            "sqlite-progress", revision, run_id, status, percent,
+            payload.get("event_id"), payload.get("run_revision"),
         ),
         "source": "security_progress_sqlite",
+        "projection_source": "sqlite_committed",
         "storage_backend": "sqlite",
     })
     return response
 
 
+def _progress_candidate_is_monotonic(
+    current: dict[str, Any] | None, candidate: dict[str, Any]
+) -> bool:
+    if not current:
+        return True
+    current_sqlite_revision = int(current.get("sqlite_revision") or 0)
+    candidate_sqlite_revision = int(candidate.get("sqlite_revision") or 0)
+    if candidate_sqlite_revision < current_sqlite_revision:
+        return False
+    current_run = str(current.get("run_id") or "")
+    candidate_run = str(candidate.get("run_id") or "")
+    if current_run and candidate_run and current_run != candidate_run:
+        current_requested = int(current.get("requested_at_epoch_ms") or 0)
+        candidate_requested = int(candidate.get("requested_at_epoch_ms") or 0)
+        if current_requested and candidate_requested and candidate_requested < current_requested:
+            return False
+        return True
+    if current_run and candidate_run == current_run:
+        current_updated = int(current.get("updated_at_epoch_ms") or 0)
+        candidate_updated = int(candidate.get("updated_at_epoch_ms") or 0)
+        if current_updated and candidate_updated and candidate_updated < current_updated:
+            return False
+        if int(candidate.get("run_revision") or 0) < int(current.get("run_revision") or 0):
+            return False
+        if int(candidate.get("percent") or 0) < int(current.get("percent") or 0):
+            return False
+        if _progress_status_is_terminal(current.get("status")) and _progress_status_is_active(candidate.get("status")):
+            return False
+    return True
+
+
 def _remember_sqlite_progress(payload: dict[str, Any]) -> dict[str, Any]:
     global _SQLITE_PROGRESS_SNAPSHOT, _SQLITE_PROGRESS_SNAPSHOT_DB
+    global _SQLITE_PROGRESS_EPOCH, _SQLITE_PROGRESS_REFRESHED_AT
+    candidate = copy.deepcopy(payload)
+    try:
+        current_db = str(_security_store_api().database_path())
+    except Exception:
+        current_db = ""
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
-        _SQLITE_PROGRESS_SNAPSHOT = copy.deepcopy(payload)
-        try:
-            _SQLITE_PROGRESS_SNAPSHOT_DB = str(_security_store_api().database_path())
-        except Exception:
-            _SQLITE_PROGRESS_SNAPSHOT_DB = ""
-    return payload
+        current = (
+            _SQLITE_PROGRESS_SNAPSHOT
+            if _SQLITE_PROGRESS_SNAPSHOT_DB == current_db
+            else None
+        )
+        if not _progress_candidate_is_monotonic(current, candidate):
+            return copy.deepcopy(current or candidate)
+        _SQLITE_PROGRESS_EPOCH += 1
+        candidate["projection_epoch"] = _SQLITE_PROGRESS_EPOCH
+        candidate["projection_source"] = candidate.get("projection_source") or "sqlite_committed"
+        _SQLITE_PROGRESS_SNAPSHOT = candidate
+        _SQLITE_PROGRESS_SNAPSHOT_DB = current_db
+        _SQLITE_PROGRESS_REFRESHED_AT = time.monotonic()
+        return copy.deepcopy(candidate)
 
 
 def _last_known_sqlite_progress(reason: str) -> dict[str, Any] | None:
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
+        refreshed_at = _SQLITE_PROGRESS_REFRESHED_AT
     if not snapshot:
         return None
+    age_ms = max(0.0, time.monotonic() - refreshed_at) * 1000
+    if age_ms > _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS:
+        return None
     snapshot["read_degraded"] = True
-    snapshot["read_fallback"] = "last_known_sqlite_progress"
+    snapshot["read_fallback"] = "bounded_memory_projection"
     snapshot["read_error_type"] = reason
+    snapshot["projection_source"] = "bounded_memory_projection"
+    snapshot["projection_age_ms"] = round(age_ms, 2)
     snapshot["source"] = "security_progress_sqlite"
     snapshot["storage_backend"] = "sqlite"
     return policy.redact_value(snapshot)
 
 
-def _refresh_sqlite_progress_snapshot(*, repository: Any | None = None) -> dict[str, Any]:
-    """Refresh the process-local live projection from committed SQLite state."""
-    global _SQLITE_PROGRESS_FAILURES, _SQLITE_PROGRESS_REFRESHED_AT
+def _sqlite_unavailable_progress(reason: str = "projection_not_primed") -> dict[str, Any]:
+    return policy.redact_value({
+        "view_model": "security-progress-f7-v1",
+        "active_scan": False,
+        "run_id": None,
+        "profile": policy.SCAN_PROFILE_QUICK,
+        "app_id": "",
+        "stage": "Safety status unavailable",
+        "status": "unavailable",
+        "percent": 0,
+        "message": "Safety status is temporarily unavailable. Try again shortly.",
+        "updated_at": None,
+        "updated_at_epoch_ms": 0,
+        "requested_at_epoch_ms": 0,
+        "sqlite_revision": 0,
+        "projection_epoch": _SQLITE_PROGRESS_EPOCH,
+        "projection_age_ms": None,
+        "projection_source": "sqlite_unavailable",
+        "read_projection": "memory",
+        "read_degraded": True,
+        "read_error_type": reason,
+        "source": "security_progress_sqlite",
+        "storage_backend": "sqlite",
+        "sanitized": True,
+        "revision": _revision_token("sqlite-progress-unavailable", reason, _SQLITE_PROGRESS_EPOCH),
+    })
+
+
+def _refresh_sqlite_progress_snapshot(
+    *, repository: Any | None = None, run_id: str | None = None
+) -> dict[str, Any]:
+    """Refresh from one committed SQLite row and publish monotonically."""
+    global _SQLITE_PROGRESS_FAILURES
     repo = repository or _security_repository()
-    progress = repo.get_progress() or {}
+    progress = repo.get_progress(run_id) if run_id else repo.get_progress()
+    if progress is None:
+        revision = repo.get_domain_revision()
+        progress = {
+            "status": "idle",
+            "domain_revision": int(revision.get("revision") or 0),
+            "updated_at": revision.get("updated_at"),
+        }
     payload = _remember_sqlite_progress(_sqlite_progress_payload(progress))
     _SQLITE_PROGRESS_FAILURES = 0
-    _SQLITE_PROGRESS_REFRESHED_AT = time.monotonic()
     return payload
 
 
-def _refresh_sqlite_progress_snapshot_worker() -> None:
-    global _SQLITE_PROGRESS_FAILURES, _SQLITE_PROGRESS_REFRESH_INFLIGHT
-    try:
-        _refresh_sqlite_progress_snapshot()
-    except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError) as exc:
-        _SQLITE_PROGRESS_FAILURES += 1
-        _LOGGER.warning(
-            "Security SQLite progress background refresh degraded (%s, consecutive=%d)",
-            type(exc).__name__,
-            _SQLITE_PROGRESS_FAILURES,
-        )
-    finally:
-        with _SQLITE_PROGRESS_REFRESH_LOCK:
-            _SQLITE_PROGRESS_REFRESH_INFLIGHT = False
+def publish_committed_progress(
+    run_id: str | None = None, *, repository: Any | None = None
+) -> dict[str, Any]:
+    """Publish the exact committed run after a lifecycle transaction."""
+    return _refresh_sqlite_progress_snapshot(repository=repository, run_id=run_id)
 
 
-def _schedule_sqlite_progress_refresh() -> None:
-    global _SQLITE_PROGRESS_REFRESH_INFLIGHT
-    if time.monotonic() - _SQLITE_PROGRESS_REFRESHED_AT < _SQLITE_PROGRESS_REFRESH_INTERVAL_SECONDS:
+def mark_security_progress_dirty() -> None:
+    if _sqlite_compact_reads_enabled():
+        _SQLITE_PROGRESS_DIRTY.set()
+
+
+def _projection_refresher_loop() -> None:
+    global _SQLITE_PROGRESS_FAILURES
+    while not _SQLITE_PROGRESS_STOP.is_set():
+        _SQLITE_PROGRESS_DIRTY.wait(timeout=_SQLITE_PROGRESS_FALLBACK_INTERVAL_SECONDS)
+        _SQLITE_PROGRESS_DIRTY.clear()
+        if _SQLITE_PROGRESS_STOP.is_set():
+            break
+        if not _sqlite_compact_reads_enabled():
+            continue
+        try:
+            _refresh_sqlite_progress_snapshot()
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            _SQLITE_PROGRESS_FAILURES += 1
+            _LOGGER.warning(
+                "Security SQLite projection refresh degraded (%s, consecutive=%d)",
+                type(exc).__name__, _SQLITE_PROGRESS_FAILURES,
+            )
+
+
+def start_security_projection_runtime() -> None:
+    global _SQLITE_PROGRESS_THREAD
+    if not _sqlite_compact_reads_enabled():
         return
     with _SQLITE_PROGRESS_REFRESH_LOCK:
-        if _SQLITE_PROGRESS_REFRESH_INFLIGHT:
+        if _SQLITE_PROGRESS_THREAD is not None and _SQLITE_PROGRESS_THREAD.is_alive():
             return
-        _SQLITE_PROGRESS_REFRESH_INFLIGHT = True
-    threading.Thread(
-        target=_refresh_sqlite_progress_snapshot_worker,
-        name="pocketlab-security-progress-refresh",
-        daemon=True,
-    ).start()
+        _SQLITE_PROGRESS_STOP.clear()
+        _SQLITE_PROGRESS_DIRTY.set()
+        _SQLITE_PROGRESS_THREAD = threading.Thread(
+            target=_projection_refresher_loop,
+            name="pocketlab-security-progress-refresher",
+            daemon=True,
+        )
+        _SQLITE_PROGRESS_THREAD.start()
+
+
+def stop_security_projection_runtime() -> None:
+    global _SQLITE_PROGRESS_THREAD
+    _SQLITE_PROGRESS_STOP.set()
+    _SQLITE_PROGRESS_DIRTY.set()
+    thread = _SQLITE_PROGRESS_THREAD
+    if thread is not None and thread.is_alive():
+        thread.join(timeout=2.0)
+    _SQLITE_PROGRESS_THREAD = None
 
 
 def _memory_sqlite_progress_snapshot() -> dict[str, Any] | None:
@@ -1519,56 +1786,29 @@ def _memory_sqlite_progress_snapshot() -> dict[str, Any] | None:
         if _SQLITE_PROGRESS_SNAPSHOT_DB != current_db:
             return None
         snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
+        refreshed_at = _SQLITE_PROGRESS_REFRESHED_AT
     if snapshot is None:
         return None
+    age_ms = max(0.0, time.monotonic() - refreshed_at) * 1000
+    if _SQLITE_PROGRESS_FAILURES and age_ms > _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS:
+        return None
     snapshot["read_latency_ms"] = 0.0
-    snapshot["read_degraded"] = False
+    snapshot["read_degraded"] = bool(_SQLITE_PROGRESS_FAILURES)
     snapshot["read_projection"] = "memory"
-    snapshot["projection_age_ms"] = round(
-        max(0.0, time.monotonic() - _SQLITE_PROGRESS_REFRESHED_AT) * 1000, 2
-    )
+    snapshot["projection_age_ms"] = round(age_ms, 2)
+    if _SQLITE_PROGRESS_FAILURES:
+        snapshot["read_fallback"] = "bounded_memory_projection"
+        snapshot["read_failure_count"] = _SQLITE_PROGRESS_FAILURES
+        snapshot["projection_source"] = "bounded_memory_projection"
     return policy.redact_value(snapshot)
 
 
 def _sqlite_progress_state() -> dict[str, Any]:
-    global _SQLITE_PROGRESS_FAILURES
+    """Return only the atomic process-local projection; never touch disk."""
     snapshot = _memory_sqlite_progress_snapshot()
     if snapshot is not None:
-        _schedule_sqlite_progress_refresh()
         return snapshot
-    started_at = time.perf_counter()
-    try:
-        payload = _refresh_sqlite_progress_snapshot()
-        elapsed_ms = (time.perf_counter() - started_at) * 1000
-        payload["read_latency_ms"] = round(elapsed_ms, 2)
-        payload["read_degraded"] = False
-        return payload
-    except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError) as exc:
-        _SQLITE_PROGRESS_FAILURES += 1
-        reason = type(exc).__name__
-        fallback = _last_known_sqlite_progress(reason)
-        elapsed_ms = (time.perf_counter() - started_at) * 1000
-        _LOGGER.warning(
-            "Security SQLite progress read degraded after %.2f ms (%s, consecutive=%d)",
-            elapsed_ms, reason, _SQLITE_PROGRESS_FAILURES,
-        )
-        if fallback is not None:
-            fallback["read_latency_ms"] = round(elapsed_ms, 2)
-            fallback["read_failure_count"] = _SQLITE_PROGRESS_FAILURES
-            return fallback
-        # Startup-only fallback: keep the endpoint bounded while preserving the
-        # SQLite source contract. JSON remains compatibility evidence, not the
-        # authoritative cutover read.
-        json_progress = _progress_from_state(_ensure_compact_state())
-        payload = _sqlite_progress_payload(json_progress)
-        payload.update({
-            "read_degraded": True,
-            "read_fallback": "json_bootstrap_snapshot",
-            "read_error_type": reason,
-            "read_latency_ms": round(elapsed_ms, 2),
-            "read_failure_count": _SQLITE_PROGRESS_FAILURES,
-        })
-        return _remember_sqlite_progress(policy.redact_value(payload))
+    return _sqlite_unavailable_progress()
 
 
 def _sqlite_freshness_state() -> dict[str, Any]:
@@ -1793,6 +2033,7 @@ def _persist_sqlite_state(state: dict[str, Any]) -> dict[str, Any]:
                     run_id, accepted_at=last_run.get("accepted_at") or state.get("updated_at"),
                     summary=str(last_run.get("summary") or state.get("summary") or ""),
                 )
+            publish_committed_progress(run_id, repository=repository)
             return state
         if existing_status in {"queued", "accepted"}:
             repository.mark_running(
@@ -1807,6 +2048,7 @@ def _persist_sqlite_state(state: dict[str, Any]) -> dict[str, Any]:
             tool=str(progress.get("tool") or "") or None, payload=metadata,
             created_at=progress.get("updated_at") or state.get("updated_at"),
         )
+        publish_committed_progress(run_id, repository=repository)
         return state
     findings = state.get("findings") if isinstance(state.get("findings"), list) else []
     refs = state.get("evidence_refs") if isinstance(state.get("evidence_refs"), list) else last_run.get("evidence_refs") if isinstance(last_run.get("evidence_refs"), list) else []
@@ -1833,15 +2075,14 @@ def _persist_sqlite_state(state: dict[str, Any]) -> dict[str, Any]:
             items_to_review=int(last_run.get("items_to_review") or state.get("items_to_review") or 0),
             metadata=metadata,
         )
+    publish_committed_progress(run_id, repository=repository)
     _, canonical_state, _ = _sqlite_state_projection()
     return canonical_state
 
 
 def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
     state = _persist_sqlite_state(state)
-    if _sqlite_compact_reads_enabled():
-        progress = state.get("scan_progress") if isinstance(state.get("scan_progress"), dict) else _progress_from_state(state)
-        _remember_sqlite_progress(_sqlite_progress_payload(progress))
+    mark_security_progress_dirty()
     run_id = str(((state.get("last_run") or {}) if isinstance(state.get("last_run"), dict) else {}).get("run_id") or "")
     try:
         clean = evidence.write_state(state)
@@ -1989,7 +2230,20 @@ def security_progress_event_fingerprint(event: dict[str, Any] | None = None) -> 
 
 def split_freshness_state() -> dict[str, Any]:
     if _sqlite_compact_reads_enabled():
-        return _sqlite_freshness_state()
+        try:
+            return _sqlite_freshness_state()
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "view_model": "security-freshness-f9-v1",
+                "status": "unavailable",
+                "revision": _revision_token("sqlite-freshness-unavailable", type(exc).__name__),
+                "updated_at": None,
+                "source": "security_freshness_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_freshness.json"
     key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
@@ -1999,7 +2253,21 @@ def split_freshness_state() -> dict[str, Any]:
 def split_profile_state(profile: str) -> dict[str, Any]:
     normalized_profile = policy.normalize_scan_profile(profile)
     if _sqlite_compact_reads_enabled():
-        return _sqlite_profile_state(normalized_profile)
+        try:
+            return _sqlite_profile_state(normalized_profile)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "view_model": "security-profile-f7-v1",
+                "profile": normalized_profile,
+                "status": "unavailable",
+                "latest_run": None,
+                "history": [],
+                "source": "security_profile_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     state = _ensure_compact_state()
     path = evidence.compact_profile_path(normalized_profile)
     key = _compact_file_key(path, normalized_profile, _compact_revision(state), _is_live_security_state(state))
@@ -2008,7 +2276,22 @@ def split_profile_state(profile: str) -> dict[str, Any]:
 
 def split_history_state(limit: int | None = None, cursor: str | None = None) -> dict[str, Any]:
     if _sqlite_compact_reads_enabled():
-        return _sqlite_history_state(limit, cursor)
+        try:
+            return _sqlite_history_state(limit, cursor)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "view_model": "security-history-f7-v1",
+                "limit": max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT)),
+                "history": [],
+                "has_more": False,
+                "next_cursor": None,
+                "status": "unavailable",
+                "source": "security_history_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     bounded_limit = max(1, min(int(limit or _SECURITY_SPLIT_HISTORY_DEFAULT_LIMIT), _SECURITY_SPLIT_HISTORY_MAX_LIMIT))
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_history_index.json"
@@ -2116,7 +2399,19 @@ def recent_completed_scan_state(profile: str | None = None, app_id: str | None =
 
 def split_run_details_state(run_id: str) -> dict[str, Any] | None:
     if _sqlite_compact_reads_enabled():
-        return _sqlite_details_state(run_id)
+        try:
+            return _sqlite_details_state(run_id)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "view_model": "security-details-f7-v1",
+                "run_id": evidence.safe_run_id(run_id),
+                "status": "unavailable",
+                "source": "security_details_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     state = _ensure_compact_state()
     safe_run_id = evidence.safe_run_id(run_id)
     path = evidence.compact_details_path(safe_run_id)
@@ -2130,7 +2425,19 @@ def split_run_details_state(run_id: str) -> dict[str, Any] | None:
 
 def split_evidence_summary_state(run_id: str) -> dict[str, Any] | None:
     if _sqlite_compact_reads_enabled():
-        return _sqlite_evidence_summary_state(run_id)
+        try:
+            return _sqlite_evidence_summary_state(run_id)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "view_model": "security-evidence-summary-f7-v1",
+                "run_id": evidence.safe_run_id(run_id),
+                "status": "unavailable",
+                "source": "security_evidence_summary_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     state = _ensure_compact_state()
     safe_run_id = evidence.safe_run_id(run_id)
     details_path = evidence.compact_details_path(safe_run_id)
@@ -2150,7 +2457,19 @@ def split_evidence_summary_state(run_id: str) -> dict[str, Any] | None:
 
 def summary_state() -> dict[str, Any]:
     if _sqlite_compact_reads_enabled():
-        return _sqlite_summary_state()
+        try:
+            return _sqlite_summary_state()
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                **_security_summary_from_state(default_state()),
+                "status": "unavailable",
+                "summary": "Safety status is temporarily unavailable.",
+                "source": "security_summary_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     state = _ensure_compact_state()
     path = evidence.compact_dir() / "security_summary.json"
     key = _compact_file_key(path, _compact_revision(state), _is_live_security_state(state))
@@ -2193,6 +2512,28 @@ def default_state() -> dict[str, Any]:
 
 
 def current_state() -> dict[str, Any]:
+    if _security_store_api().security_store_mode() == "sqlite":
+        try:
+            _, state, revision = _sqlite_state_projection()
+            state["read_cache"] = {
+                "status": "miss",
+                "source": "sqlite_authority",
+                "sqlite_revision": revision,
+                "ttl_seconds": 0,
+            }
+            return policy.redact_value(state)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            progress = _last_known_sqlite_progress(type(exc).__name__)
+            return policy.redact_value({
+                **default_state(),
+                "status": "unavailable",
+                "summary": "Safety status is temporarily unavailable.",
+                "scan_progress": progress or _sqlite_unavailable_progress(type(exc).__name__),
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "read_cache": {"status": "degraded", "source": "sqlite_authority"},
+            })
     started_at = time.monotonic()
     key = _state_file_key()
     cached = _get_current_state_cache(key)
@@ -2269,10 +2610,40 @@ def current_state() -> dict[str, Any]:
 
 
 def read_run(run_id: str) -> dict[str, Any] | None:
+    if _security_store_api().security_store_mode() == "sqlite":
+        try:
+            repository = _security_repository()
+            return _sqlite_run_payload(
+                repository, repository.get_run(run_id),
+                include_details=True, include_related=True,
+            )
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "run_id": evidence.safe_run_id(run_id),
+                "status": "unavailable",
+                "summary": "Safety check details are temporarily unavailable.",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     return evidence.read_run(run_id)
 
 
 def read_evidence(run_id: str) -> dict[str, Any] | None:
+    if _security_store_api().security_store_mode() == "sqlite":
+        try:
+            return _sqlite_evidence_summary_state(run_id)
+        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            return policy.redact_value({
+                "run_id": evidence.safe_run_id(run_id),
+                "status": "unavailable",
+                "summary": "Safety evidence is temporarily unavailable.",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     return evidence.read_evidence_summary(run_id)
 
 
@@ -2291,6 +2662,28 @@ def discard_queued_run(run_id: str) -> None:
 
 def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(command.get("run_id") or command.get("command_id") or new_run_id())
+    if _sqlite_lifecycle_enabled():
+        repository = _security_repository()
+        row = repository.get_run(run_id)
+        if not row:
+            reservation = repository.reserve_scan(
+                run_id=run_id,
+                profile=_scan_profile(command),
+                app_id=_scan_app_id(command),
+                app_label=_app_label(_scan_app_id(command)),
+                summary=_profile_copy(_scan_profile(command))["queued"],
+                requested_at=command.get("requested_at"),
+                command_id=str(command.get("command_id") or run_id),
+                recent_completion_seconds=0,
+            )
+            row = reservation.run
+        publish_committed_progress(run_id, repository=repository)
+        projected = _sqlite_run_payload(
+            repository, row, include_details=True, include_related=True
+        ) or {}
+        if _security_store_api().security_store_mode() == "dual" and projected:
+            _write_run_projection(projected)
+        return projected
     existing = evidence.read_run(run_id)
     if existing and str(existing.get("status") or "") not in {"", "queued"}:
         return existing
@@ -2333,6 +2726,19 @@ def record_queued_run(command: dict[str, Any]) -> dict[str, Any]:
 def mark_running(command: dict[str, Any]) -> dict[str, Any]:
     run_id = str(command.get("run_id") or command.get("command_id") or new_run_id())
     now = deps.now_utc_iso()
+    if _sqlite_lifecycle_enabled():
+        repository = _security_repository()
+        repository.mark_running(
+            run_id, started_at=now, summary=_profile_copy(_scan_profile(command))["running"]
+        )
+        publish_committed_progress(run_id, repository=repository)
+        projected = _sqlite_run_payload(
+            repository, repository.get_run(run_id),
+            include_details=True, include_related=True,
+        ) or {}
+        if _security_store_api().security_store_mode() == "dual" and projected:
+            _write_run_projection(projected)
+        return projected
     existing = evidence.read_run(run_id) or {}
     profile = _scan_profile(command)
     app_id = _scan_app_id(command)

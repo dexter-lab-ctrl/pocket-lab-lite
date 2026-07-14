@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
+import time
 import uuid
 
 from typing import Any, Literal
@@ -17,6 +19,7 @@ from ..services.action_queue import ensure_worker_execution_ready, submit_domain
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
+_LOGGER = logging.getLogger(__name__)
 
 def _lite_payload_dict(payload):
     """Return a request model as a dict on both Pydantic v1 and v2."""
@@ -849,11 +852,38 @@ def get_lite_security_events(request: Request) -> Response:
 
 @router.get("/security/progress")
 async def get_lite_security_progress(request: Request) -> Response:
-    # The memory-backed projection is intentionally served on the event loop so
-    # active scanner subprocesses cannot starve this endpoint in FastAPI's
-    # synchronous worker-thread pool. No filesystem or SQLite read occurs here.
+    # This route intentionally performs only authentication, one atomic memory
+    # snapshot read, and small response construction. SQLite/filesystem refresh
+    # is owned by the background projection refresher.
+    request_received = time.perf_counter()
     deps.require_auth(request)
-    return _security_compact_response(request, lite_security.split_progress_state())
+    dependencies_complete = time.perf_counter()
+    payload = lite_security.split_progress_state()
+    projection_loaded = time.perf_counter()
+    response = _security_compact_response(request, payload)
+    response_built = time.perf_counter()
+    dependency_ms = (dependencies_complete - request_received) * 1000
+    projection_ms = (projection_loaded - dependencies_complete) * 1000
+    serialization_ms = (response_built - projection_loaded) * 1000
+    total_ms = (response_built - request_received) * 1000
+    response.headers["Server-Timing"] = (
+        f"auth;dur={dependency_ms:.2f}, projection;dur={projection_ms:.2f}, "
+        f"serialize;dur={serialization_ms:.2f}, total;dur={total_ms:.2f}"
+    )
+    timing_log = (
+        _LOGGER.warning
+        if total_ms >= 3000
+        else _LOGGER.info
+        if total_ms >= 1000 or payload.get("read_degraded")
+        else _LOGGER.debug
+    )
+    timing_log(
+        "Security progress request timing total_ms=%.2f dependency_ms=%.2f "
+        "projection_ms=%.2f serialization_ms=%.2f projection_age_ms=%s status_class=%s",
+        total_ms, dependency_ms, projection_ms, serialization_ms,
+        payload.get("projection_age_ms"), f"{response.status_code // 100}xx",
+    )
+    return response
 
 
 @router.get("/security")
@@ -898,7 +928,9 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
         "reason": payload.reason or ("manual app check" if profile == lite_security.policy.SCAN_PROFILE_APP else "manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
         "requested_at": deps.now_utc_iso(),
     }
-    reservation = lite_security.reserve_scan_request(command)
+    reservation = await lite_security.run_api_maintenance(
+        lite_security.reserve_scan_request, command
+    )
     if not reservation.get("reserved"):
         return reservation.get("response") or {
             "status": "queued",
@@ -913,10 +945,16 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             command,
         )
     except Exception:
-        lite_security.fail_scan_submission(run_id)
+        await lite_security.run_api_maintenance(
+            lite_security.fail_scan_submission, run_id
+        )
         raise
-    lite_security.record_queued_run(command)
-    lite_security.mark_scan_accepted(command)
+    await lite_security.run_api_maintenance(
+        lite_security.record_queued_run, command
+    )
+    await lite_security.run_api_maintenance(
+        lite_security.mark_scan_accepted, command
+    )
     queued.update(
         {
             "status": "queued",
@@ -986,7 +1024,9 @@ async def check_lite_security_app(app_id: str, request: Request, payload: LiteAp
         "reason": (payload.reason if payload else None) or "manual app check",
         "requested_at": deps.now_utc_iso(),
     }
-    reservation = lite_security.reserve_scan_request(command)
+    reservation = await lite_security.run_api_maintenance(
+        lite_security.reserve_scan_request, command
+    )
     if not reservation.get("reserved"):
         return reservation.get("response") or {
             "status": "queued",
@@ -1001,10 +1041,16 @@ async def check_lite_security_app(app_id: str, request: Request, payload: LiteAp
             command,
         )
     except Exception:
-        lite_security.fail_scan_submission(run_id)
+        await lite_security.run_api_maintenance(
+            lite_security.fail_scan_submission, run_id
+        )
         raise
-    lite_security.record_queued_run(command)
-    lite_security.mark_scan_accepted(command)
+    await lite_security.run_api_maintenance(
+        lite_security.record_queued_run, command
+    )
+    await lite_security.run_api_maintenance(
+        lite_security.mark_scan_accepted, command
+    )
     queued.update({
         "status": "queued",
         "accepted": True,

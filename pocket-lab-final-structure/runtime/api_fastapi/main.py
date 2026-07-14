@@ -39,6 +39,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services import lite_security
 
     await asyncio.to_thread(lite_security.initialize_security_sqlite_runtime)
+    lite_security.start_security_projection_runtime()
     await BUS.start()
     await BUS.start_watchdog()
     install_operation_event_publisher(
@@ -61,6 +62,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
+        await asyncio.to_thread(lite_security.stop_security_projection_runtime)
         try:
             await BUS.publish_json(
                 "pocketlab.events.api.stopped",
