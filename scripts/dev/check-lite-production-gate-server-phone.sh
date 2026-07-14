@@ -34,7 +34,7 @@ curl_json(){
   if [[ -n "$body" ]]; then
     args+=(-H 'Content-Type: application/json' --data "$body")
   fi
-  curl "${args[@]}" -o "$out" -w '%{http_code} %{time_total} %{size_download}' "$url" > "$metrics"
+  curl "${args[@]}" -o "$out" -w '%{http_code} %{time_total} %{size_download}\n' "$url" > "$metrics"
 }
 
 wait_for_api_ready(){
