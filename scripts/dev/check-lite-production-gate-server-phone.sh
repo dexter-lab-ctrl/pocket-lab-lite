@@ -14,8 +14,10 @@ STAMP="$(date -u +%Y%m%d-%H%M%S)-$$"
 REPORT_JSON="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP.json"
 SAMPLES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-latencies.txt"
 STATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-progress.json"
+SUBMISSION_FAILURES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-submission-latency.txt"
 mkdir -p "$REPORT_DIR"
 : > "$SAMPLES"
+: > "$SUBMISSION_FAILURES"
 printf '%s' '{}' > "$STATE_FILE"
 
 AUTH_ARGS=()
@@ -182,6 +184,41 @@ PY2
   fail "FastAPI NATS client did not reconnect within the controlled timeout"
 }
 
+recover_timed_out_submission(){
+  local prior_run="$1" started_ms="$2" deadline payload metrics code seconds size
+  local candidate_run requested_ms status
+  deadline=$(( $(date +%s) + ${POCKETLAB_GATE_SUBMISSION_RECOVERY_SECONDS:-8} ))
+  while (( $(date +%s) <= deadline )); do
+    payload="$(mktemp)"; metrics="$(mktemp)"
+    if curl_json GET "$PROGRESS_URL" '' "$payload" "$metrics"; then
+      IFS=' ' read -r code seconds size < "$metrics"
+      if [[ "$code" == "200" && "$size" -gt 0 ]]; then
+        candidate_run="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("run_id") or "")' "$payload")"
+        requested_ms="$(python3 -c 'import json,sys; print(int(json.load(open(sys.argv[1])).get("requested_at_epoch_ms") or 0))' "$payload")"
+        status="$(python3 -c 'import json,sys; print(str(json.load(open(sys.argv[1])).get("status") or "").lower())' "$payload")"
+        if [[ -n "$candidate_run" && "$candidate_run" != "$prior_run" ]] \
+          && (( requested_ms >= started_ms - 2000 )) \
+          && [[ "$status" =~ ^(queued|accepted|running|working|in_progress|succeeded|degraded|completed|failed|cancelled|canceled)$ ]]; then
+          rm -f "$payload" "$metrics"
+          printf '%s' "$candidate_run"
+          return 0
+        fi
+      fi
+    fi
+    rm -f "$payload" "$metrics"
+    sleep 0.4
+  done
+  return 1
+}
+
+submission_latency_gate(){
+  if [[ -s "$SUBMISSION_FAILURES" ]]; then
+    printf 'Submission latency failures:\n' >&2
+    cat "$SUBMISSION_FAILURES" >&2
+    return 1
+  fi
+}
+
 latency_gate(){
   python3 - "$SAMPLES" <<'PY'
 import math, statistics, sys
@@ -208,14 +245,45 @@ PY
 
 run_scan_gate(){
   local phase="$1" post metrics code seconds size run_id start deadline payload status projection_age
-  local visible=0 seen_running=0
-  post="$(mktemp)"; metrics="$(mktemp)"
-  curl_json POST "$CHECK_URL" '{"profile":"quick","reason":"production gate"}' "$post" "$metrics" \
-    || fail "$phase scan submission failed"
-  IFS=' ' read -r code seconds size < "$metrics"
-  [[ "$code" == "202" ]] || fail "$phase scan submission returned HTTP $code"
-  run_id="$(cat "$post" | json_field run_id)"
-  [[ -n "$run_id" ]] || fail "$phase scan submission did not return run_id"
+  local visible=0 seen_running=0 curl_rc prior_payload prior_run submission_started_ms recovered_run
+  post="$(mktemp)"; metrics="$(mktemp)"; prior_payload="$(mktemp)"
+  if ! curl -fsS --max-time 5 "${AUTH_ARGS[@]}" "$PROGRESS_URL" -o "$prior_payload"; then
+    rm -f "$post" "$metrics" "$prior_payload"
+    fail "$phase could not capture pre-submission Progress state"
+  fi
+  prior_run="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("run_id") or "")' "$prior_payload")"
+  submission_started_ms="$(python3 -c 'import time; print(int(time.time() * 1000))')"
+
+  set +e
+  curl_json POST "$CHECK_URL" '{"profile":"quick","reason":"production gate"}' "$post" "$metrics"
+  curl_rc=$?
+  set -e
+
+  if (( curl_rc != 0 )); then
+    recovered_run="$(recover_timed_out_submission "$prior_run" "$submission_started_ms" || true)"
+    if [[ -z "$recovered_run" ]]; then
+      rm -f "$post" "$metrics" "$prior_payload"
+      fail "$phase scan submission timed out and no new run became visible"
+    fi
+    run_id="$recovered_run"
+    printf '%s response_timeout_but_run_visible run_id=%s\n' "$phase" "$run_id" >> "$SUBMISSION_FAILURES"
+    printf 'INFO: %s submission response exceeded five seconds; preserving visible run %s for validation\n' \
+      "$phase" "$run_id" >&2
+  else
+    IFS=' ' read -r code seconds size < "$metrics"
+    [[ "$code" == "202" ]] || fail "$phase scan submission returned HTTP $code"
+    run_id="$(cat "$post" | json_field run_id)"
+    [[ -n "$run_id" ]] || fail "$phase scan submission did not return run_id"
+    if ! python3 - "$seconds" "${POCKETLAB_GATE_SUBMISSION_MAX_SECONDS:-5}" <<'PY2'
+import sys
+raise SystemExit(0 if float(sys.argv[1]) < float(sys.argv[2]) else 1)
+PY2
+    then
+      printf '%s slow_response seconds=%s run_id=%s\n' "$phase" "$seconds" "$run_id" >> "$SUBMISSION_FAILURES"
+    fi
+  fi
+
+  rm -f "$prior_payload"
   start="$(date +%s)"; deadline=$((start + TIMEOUT_SECONDS))
   while (( $(date +%s) <= deadline )); do
     payload="$(sample_progress "$phase")"
@@ -263,7 +331,8 @@ worker_pid(){
 wait_for_api_ready
 info "Checking idle Progress path"
 for _ in 1 2 3 4 5; do sample_progress idle >/dev/null; done
-first_run="$(run_scan_gate dual-mode)"
+STORE_MODE="${POCKETLAB_LITE_SECURITY_STORE_MODE:-unknown}"
+first_run="$(run_scan_gate "${STORE_MODE}-mode")"
 
 if [[ "${POCKETLAB_GATE_RESTART_NATS:-0}" == "1" ]]; then
   before_pid="$(worker_pid)"; [[ -n "$before_pid" ]] || fail "could not read pocket-worker PID"
@@ -283,16 +352,18 @@ latency_gate
   tests/backend/test_lite_security_progress_projection_cutover.py \
   tests/backend/test_lite_worker_recovery.py -k 'stale or projection or redeliver')
 
-python3 - "$REPORT_JSON" "$SAMPLES" "$first_run" "$second_run" <<'PY'
+python3 - "$REPORT_JSON" "$SAMPLES" "$SUBMISSION_FAILURES" "$first_run" "$second_run" <<'PY'
 import json, math, sys
-report, samples, first_run, second_run = sys.argv[1:]
+report, samples, submission_failures, first_run, second_run = sys.argv[1:]
+failures=[line.strip() for line in open(submission_failures, encoding="utf-8") if line.strip()]
 values=[float(line.split()[-1]) for line in open(samples, encoding="utf-8") if line.split()]
 values.sort()
 def pct(p):
     return values[min(len(values)-1, max(0, math.ceil(len(values)*p)-1))]
 payload={
-  "status":"ready",
-  "failed_gates":0,
+  "status":"ready" if not failures else "not_ready",
+  "failed_gates":len(failures),
+  "submission_latency_failures":failures,
   "security_store_mode":__import__("os").environ.get("POCKETLAB_LITE_SECURITY_STORE_MODE", "dual"),
   "first_run_id":first_run,
   "post_reconnect_run_id":second_run,
@@ -306,3 +377,4 @@ json.dump(payload, open(report,"w",encoding="utf-8"), indent=2, sort_keys=True)
 print(json.dumps(payload, indent=2, sort_keys=True))
 PY
 info "Report: $REPORT_JSON"
+submission_latency_gate || fail "one or more scan submissions exceeded the production response-latency limit"

@@ -363,6 +363,44 @@ def test_published_but_never_received_uses_published_stale_threshold(
 
 
 
+def test_submission_stage_timing_header_is_sanitized(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch, "sqlite")
+    from fastapi import Response
+    from api_fastapi.routers import lite
+
+    response = Response()
+    lite._record_security_submission_timing(
+        response, run_id="security-timing", started=1.0, auth_done=1.01,
+        reservation_done=1.02, publish_done=1.03, queued_recorded=1.04,
+        accepted_recorded=1.05,
+    )
+    header = response.headers["server-timing"]
+    for stage in ("auth", "reservation", "publish", "record_queued", "mark_accepted", "total"):
+        assert f"{stage};dur=" in header
+    assert "security-timing" not in header
+
+
+def test_mark_scan_accepted_preserves_publish_boundary_timestamp(
+    tmp_path, monkeypatch
+):
+    _, lite_security = _configure(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    command = {
+        "run_id": "security-publish-boundary",
+        "command_id": "security-publish-boundary",
+        "profile": "quick",
+        "requested_at": "2020-01-01T00:00:00Z",
+        "command_published_at": "2020-01-01T00:00:01Z",
+    }
+    assert lite_security.reserve_scan_request(command)["reserved"] is True
+    lite_security.mark_scan_accepted(command)
+
+    row = SecuritySQLiteRepository().get_run("security-publish-boundary")
+    assert row["command_published_at"] == "2020-01-01T00:00:01Z"
+    assert row["accepted_at"] >= row["command_published_at"]
+
+
 def test_delivery_lifecycle_timestamps_and_state_specific_candidates(
     tmp_path, monkeypatch
 ):
