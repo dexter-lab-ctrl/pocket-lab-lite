@@ -84,7 +84,12 @@ def test_stale_accepted_recovery_projects_sanitized_evidence(tmp_path, monkeypat
         summary="Queued",
     )
 
-    recovered = lite_security.recover_stale_accepted_runs(stale_seconds=30)
+    observed = lite_security.stale_accepted_runs(stale_seconds=30)
+    recovered = lite_security.recover_stale_accepted_runs(
+        stale_seconds=30,
+        recovery_attempted=True,
+        expected_candidates=observed,
+    )
     assert recovered == [
         {
             "run_id": "security-stale-project",
