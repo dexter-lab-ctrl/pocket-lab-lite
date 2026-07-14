@@ -296,11 +296,11 @@ def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
     if not _sqlite_lifecycle_enabled():
         return evidence.read_run(run_id)
     repository = _security_repository()
-    published_at = deps.now_utc_iso()
+    published_at = str(command.get("command_published_at") or "").strip() or deps.now_utc_iso()
     repository.mark_command_published(run_id, published_at=published_at)
     accepted = repository.mark_accepted(
         run_id,
-        accepted_at=published_at,
+        accepted_at=deps.now_utc_iso(),
         summary=_profile_copy(_scan_profile(command))["queued"],
     )
     publish_committed_progress(run_id, repository=repository)

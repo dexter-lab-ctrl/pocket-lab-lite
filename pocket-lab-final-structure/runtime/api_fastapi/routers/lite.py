@@ -50,6 +50,51 @@ def _security_compact_response(request: Request, payload: dict[str, Any]) -> Res
     return JSONResponse(content=payload, headers=headers)
 
 
+def _record_security_submission_timing(
+    response: Response,
+    *,
+    run_id: str,
+    started: float,
+    auth_done: float,
+    reservation_done: float,
+    publish_done: float | None = None,
+    queued_recorded: float | None = None,
+    accepted_recorded: float | None = None,
+    deduplicated: bool = False,
+) -> None:
+    """Expose sanitized stage timings without leaking command payload data."""
+    end = accepted_recorded or queued_recorded or publish_done or reservation_done
+    stages = {
+        "auth": max(0.0, (auth_done - started) * 1000),
+        "reservation": max(0.0, (reservation_done - auth_done) * 1000),
+        "publish": max(0.0, ((publish_done or reservation_done) - reservation_done) * 1000),
+        "record_queued": max(
+            0.0, ((queued_recorded or publish_done or reservation_done) - (publish_done or reservation_done)) * 1000
+        ),
+        "mark_accepted": max(
+            0.0, ((accepted_recorded or queued_recorded or publish_done or reservation_done)
+                  - (queued_recorded or publish_done or reservation_done)) * 1000
+        ),
+        "total": max(0.0, (end - started) * 1000),
+    }
+    response.headers["Server-Timing"] = ", ".join(
+        f"{name};dur={duration:.2f}" for name, duration in stages.items()
+    )
+    timing_log = (
+        _LOGGER.warning if stages["total"] >= 3000
+        else _LOGGER.info if stages["total"] >= 1000
+        else _LOGGER.debug
+    )
+    timing_log(
+        "Security scan submission timing run_id=%s deduplicated=%s "
+        "auth_ms=%.2f reservation_ms=%.2f publish_ms=%.2f "
+        "record_queued_ms=%.2f mark_accepted_ms=%.2f total_ms=%.2f",
+        run_id, deduplicated, stages["auth"], stages["reservation"],
+        stages["publish"], stages["record_queued"],
+        stages["mark_accepted"], stages["total"],
+    )
+
+
 
 def _security_sse_payload(event: dict[str, Any]) -> str:
     event_type = str(event.get("type") or "security.scan.heartbeat")
@@ -900,8 +945,13 @@ def get_lite_security(request: Request) -> dict[str, Any]:
 
 
 @router.post("/security/check", status_code=202)
-async def check_lite_security(request: Request, payload: LiteSecurityScanRequest | None = Body(default=None)) -> dict[str, Any]:
+async def check_lite_security(
+    request: Request, response: Response,
+    payload: LiteSecurityScanRequest | None = Body(default=None),
+) -> dict[str, Any]:
+    request_started = time.perf_counter()
     deps.require_auth(request, write=True)
+    auth_done = time.perf_counter()
     payload = payload or LiteSecurityScanRequest()
     try:
         profile = lite_security.policy.normalize_scan_profile(payload.profile)
@@ -931,13 +981,23 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
     reservation = await lite_security.run_api_maintenance(
         lite_security.reserve_scan_request, command
     )
+    reservation_done = time.perf_counter()
     if not reservation.get("reserved"):
-        return reservation.get("response") or {
+        deduplicated = reservation.get("response") or {
             "status": "queued",
             "accepted": True,
             "deduplicated": True,
             "summary": "A safety check is already in progress.",
         }
+        _record_security_submission_timing(
+            response, run_id=str(deduplicated.get("run_id") or run_id),
+            started=request_started, auth_done=auth_done,
+            reservation_done=reservation_done, deduplicated=True,
+        )
+        return deduplicated
+    # Capture the publication boundary before NATS can deliver the command. The
+    # timestamp is persisted only after submit_domain_command succeeds.
+    command["command_published_at"] = deps.now_utc_iso()
     try:
         queued = await submit_domain_command(
             lite_security.policy.COMMAND_SUBJECT,
@@ -949,12 +1009,15 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             lite_security.fail_scan_submission, run_id
         )
         raise
+    publish_done = time.perf_counter()
     await lite_security.run_api_maintenance(
         lite_security.record_queued_run, command
     )
+    queued_recorded = time.perf_counter()
     await lite_security.run_api_maintenance(
         lite_security.mark_scan_accepted, command
     )
+    accepted_recorded = time.perf_counter()
     queued.update(
         {
             "status": "queued",
@@ -968,13 +1031,21 @@ async def check_lite_security(request: Request, payload: LiteSecurityScanRequest
             **({"app_id": app_id, "app_label": "PhotoPrism"} if app_id else {}),
         }
     )
+    _record_security_submission_timing(
+        response, run_id=run_id, started=request_started, auth_done=auth_done,
+        reservation_done=reservation_done, publish_done=publish_done,
+        queued_recorded=queued_recorded, accepted_recorded=accepted_recorded,
+    )
     return queued
 
 
 @router.post("/security/scan", status_code=202)
-async def scan_lite_security(request: Request, payload: LiteSecurityScanRequest | None = Body(default=None)) -> dict[str, Any]:
+async def scan_lite_security(
+    request: Request, response: Response,
+    payload: LiteSecurityScanRequest | None = Body(default=None),
+) -> dict[str, Any]:
     # Backward-compatible alias for older Lite UI builds. New UI calls /security/check.
-    return await check_lite_security(request, payload)
+    return await check_lite_security(request, response, payload)
 
 
 @router.get("/security/runs/{run_id}")
