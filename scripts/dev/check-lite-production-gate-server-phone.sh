@@ -26,13 +26,6 @@ fi
 fail(){ printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 info(){ printf 'INFO: %s\n' "$*"; }
 
-on_error(){
-  local rc=$?
-  local line="${BASH_LINENO[0]:-unknown}"
-  printf 'FAIL: production gate aborted at line %s with exit code %s\n' "$line" "$rc" >&2
-  exit "$rc"
-}
-trap on_error ERR
 json_field(){ python3 -c 'import json,sys; print(json.load(sys.stdin).get(sys.argv[1], ""))' "$1"; }
 
 curl_json(){
@@ -45,28 +38,56 @@ curl_json(){
 }
 
 wait_for_api_ready(){
-  local deadline payload metrics code seconds size last_error=""
+  local deadline payload metrics code seconds size
+  local curl_rc json_rc
+  local last_error=""
+
   deadline=$(( $(date +%s) + ${POCKETLAB_GATE_API_READY_TIMEOUT_SECONDS:-120} ))
 
   info "Waiting for API and Security Progress readiness"
+
   while (( $(date +%s) <= deadline )); do
     payload="$(mktemp)"
     metrics="$(mktemp)"
 
-    if curl_json GET "$PROGRESS_URL" '' "$payload" "$metrics"; then
+    set +e
+    curl_json GET "$PROGRESS_URL" '' "$payload" "$metrics"
+    curl_rc=$?
+    set -e
+
+    if (( curl_rc == 0 )); then
+      code=""
+      seconds=""
+      size=""
+
       IFS=' ' read -r code seconds size < "$metrics"
-      if [[ "$code" == "200" && "$size" -gt 0 ]]; then
-        if python3 - "$payload" <<'PY2'
-import json, sys
+
+      if [[ "$code" == "200" && "${size:-0}" -gt 0 ]]; then
+        set +e
+        python3 - "$payload" <<'PY2'
+import json
+import sys
+
 with open(sys.argv[1], encoding="utf-8") as handle:
     payload = json.load(handle)
-raise SystemExit(0 if isinstance(payload, dict) and payload.get("view_model") else 1)
+
+valid = (
+    isinstance(payload, dict)
+    and bool(payload.get("view_model"))
+    and isinstance(payload.get("active_scan"), bool)
+)
+
+raise SystemExit(0 if valid else 1)
 PY2
-        then
+        json_rc=$?
+        set -e
+
+        if (( json_rc == 0 )); then
           rm -f "$payload" "$metrics"
           info "API and Security Progress are ready"
           return 0
         fi
+
         last_error="Progress response was not a valid view model"
       else
         last_error="Progress returned HTTP ${code:-unknown} with ${size:-0} bytes"
