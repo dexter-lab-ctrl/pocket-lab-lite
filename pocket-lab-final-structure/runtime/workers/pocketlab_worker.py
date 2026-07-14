@@ -388,6 +388,7 @@ async def command_callback(msg: Any) -> None:
                     lite_security.mark_command_received,
                     run_id,
                     delivery_attempt=attempt,
+                    published_at=str(command.get("command_published_at") or "") or None,
                 )
             if run_id and await asyncio.to_thread(
                 lite_security.security_run_is_terminal, run_id

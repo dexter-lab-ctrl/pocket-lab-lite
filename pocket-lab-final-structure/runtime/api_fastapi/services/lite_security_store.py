@@ -697,35 +697,46 @@ class SecuritySQLiteRepository:
         *,
         received_at: str | None = None,
         delivery_attempt: int = 1,
+        published_at: str | None = None,
     ) -> dict[str, Any]:
+        """Record worker receipt and repair durable publication evidence.
+
+        The NATS command carries the API-captured publication timestamp. If the
+        worker wins the race against the API lifecycle commit, receipt repairs
+        command_published_at without changing the worker-owned run status.
+        """
         normalized_run = _normalize_run_id(run_id)
         now = _parse_timestamp(received_at)
+        published = _parse_timestamp(published_at) if published_at else None
         attempt = max(1, min(int(delivery_attempt or 1), 10_000))
         with connection() as conn, begin_immediate(conn) as tx:
             current = tx.execute(
-                "SELECT status FROM security_scan_runs WHERE run_id = ?",
+                "SELECT * FROM security_scan_runs WHERE run_id = ?",
                 (normalized_run,),
             ).fetchone()
             if not current:
                 raise SecurityStoreError("Security run not found")
-            if str(current["status"]) in TERMINAL_STATUSES:
-                return _row(
-                    tx.execute(
-                        "SELECT * FROM security_scan_runs WHERE run_id = ?",
-                        (normalized_run,),
-                    ).fetchone()
-                ) or {}
             tx.execute(
                 """
                 UPDATE security_scan_runs
-                SET command_received_at = COALESCE(command_received_at, ?),
+                SET command_published_at = COALESCE(command_published_at, ?),
+                    command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
+                    command_received_at = COALESCE(command_received_at, ?),
                     command_received_at_epoch_ms = COALESCE(command_received_at_epoch_ms, ?),
                     delivery_attempt = CASE
                         WHEN delivery_attempt > ? THEN delivery_attempt ELSE ? END,
-                    updated_at = ?, updated_at_epoch_ms = ?, revision = revision + 1
+                    updated_at = CASE
+                        WHEN updated_at_epoch_ms > ? THEN updated_at ELSE ? END,
+                    updated_at_epoch_ms = CASE
+                        WHEN updated_at_epoch_ms > ? THEN updated_at_epoch_ms ELSE ? END,
+                    revision = revision + 1
                 WHERE run_id = ?
                 """,
-                (now, _epoch_ms(now), attempt, attempt, now, _epoch_ms(now), normalized_run),
+                (
+                    published, _epoch_ms(published) if published else None,
+                    now, _epoch_ms(now), attempt, attempt,
+                    _epoch_ms(now), now, _epoch_ms(now), _epoch_ms(now), normalized_run,
+                ),
             )
             revision = _bump_revision(tx, now)
             row = tx.execute(
@@ -740,12 +751,20 @@ class SecuritySQLiteRepository:
         self, run_id: str, *, published_at: str, accepted_at: str | None = None,
         summary: str = ""
     ) -> dict[str, Any]:
-        """Commit API publication and acceptance in one SQLite transaction."""
+        """Commit publication evidence and API acceptance in one transaction.
+
+        A worker may receive and start the command before this transaction gets
+        the SQLite write lock. In that race, publication/acceptance timestamps
+        are repaired without regressing the worker-owned running or terminal
+        status and without appending a stale accepted progress event.
+        """
         normalized_run = _normalize_run_id(run_id)
         published = _parse_timestamp(published_at)
         accepted = _parse_timestamp(accepted_at)
         accepted_epoch = max(_epoch_ms(published), _epoch_ms(accepted))
-        accepted = datetime.fromtimestamp(accepted_epoch / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+        accepted = datetime.fromtimestamp(
+            accepted_epoch / 1000, tz=timezone.utc
+        ).isoformat().replace("+00:00", "Z")
         with connection() as conn, begin_immediate(conn) as tx:
             current = tx.execute(
                 "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
@@ -753,8 +772,31 @@ class SecuritySQLiteRepository:
             if not current:
                 raise SecurityStoreError("Security run not found")
             current_status = str(current["status"] or "")
-            if current_status in TERMINAL_STATUSES or current_status in {"running", "working", "in_progress"}:
-                return _row(current) or {}
+            worker_owned = current_status in TERMINAL_STATUSES or current_status in {
+                "running", "working", "in_progress"
+            }
+            if worker_owned:
+                tx.execute(
+                    """
+                    UPDATE security_scan_runs
+                    SET command_published_at = COALESCE(command_published_at, ?),
+                        command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
+                        accepted_at = COALESCE(accepted_at, ?),
+                        revision = revision + 1
+                    WHERE run_id = ?
+                    """,
+                    (published, _epoch_ms(published), accepted, normalized_run),
+                )
+                revision_time = _parse_timestamp(current["updated_at"] or accepted)
+                revision = _bump_revision(tx, revision_time)
+                row = tx.execute(
+                    "SELECT * FROM security_scan_runs WHERE run_id = ?",
+                    (normalized_run,),
+                ).fetchone()
+                result = _row(row) or {}
+                result["domain_revision"] = revision
+                result["publication_repaired_after_worker_progress"] = True
+                return policy.redact_value(result)
             tx.execute(
                 """
                 UPDATE security_scan_runs

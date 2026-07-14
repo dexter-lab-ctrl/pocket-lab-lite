@@ -57,6 +57,24 @@ def _security_repository():
     return _security_store_api().SecuritySQLiteRepository(initialize=True)
 
 
+def _sqlite_progress_database_identity() -> str:
+    """Return a cheap process-local identity without filesystem inspection.
+
+    The validated SQLite path is immutable for a running API process. Progress
+    reads must not call db.connection.database_path(), which resolves mounts and
+    filesystems and can block the event loop for seconds on Android/Termux.
+    """
+    override = os.environ.get("POCKETLAB_LITE_DB_PATH", "").strip()
+    if override:
+        return os.path.abspath(os.path.expanduser(override))
+    state_dir = os.environ.get("POCKETLAB_STATE_DIR", "").strip()
+    if state_dir:
+        return os.path.abspath(
+            os.path.join(os.path.expanduser(state_dir), "pocketlab-lite.sqlite3")
+        )
+    return "pocketlab-lite-default-database"
+
+
 async def run_api_maintenance(function, /, *args, **kwargs):
     """Run bounded API-owned blocking maintenance outside the event loop."""
     loop = asyncio.get_running_loop()
@@ -341,14 +359,15 @@ def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def mark_command_received(
-    run_id: str, *, delivery_attempt: int = 1, received_at: str | None = None
+    run_id: str, *, delivery_attempt: int = 1, received_at: str | None = None,
+    published_at: str | None = None,
 ) -> dict[str, Any] | None:
     if not run_id or not _sqlite_lifecycle_enabled():
         return None
     repository = _security_repository()
     row = repository.mark_command_received(
         run_id, received_at=received_at or deps.now_utc_iso(),
-        delivery_attempt=delivery_attempt,
+        delivery_attempt=delivery_attempt, published_at=published_at,
     )
     publish_committed_progress(run_id, repository=repository)
     return row
@@ -1651,10 +1670,7 @@ def _remember_sqlite_progress(payload: dict[str, Any]) -> dict[str, Any]:
     global _SQLITE_PROGRESS_SNAPSHOT, _SQLITE_PROGRESS_SNAPSHOT_DB
     global _SQLITE_PROGRESS_EPOCH, _SQLITE_PROGRESS_REFRESHED_AT
     candidate = copy.deepcopy(payload)
-    try:
-        current_db = str(_security_store_api().database_path())
-    except Exception:
-        current_db = ""
+    current_db = _sqlite_progress_database_identity()
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         current = (
             _SQLITE_PROGRESS_SNAPSHOT
@@ -1759,16 +1775,35 @@ def _projection_refresh_interval_seconds() -> float:
 
 def _projection_refresher_loop() -> None:
     global _SQLITE_PROGRESS_FAILURES
+    repository: Any | None = None
     while not _SQLITE_PROGRESS_STOP.is_set():
-        _SQLITE_PROGRESS_DIRTY.wait(timeout=_projection_refresh_interval_seconds())
+        interval = _projection_refresh_interval_seconds()
+        wait_started = time.monotonic()
+        signaled = _SQLITE_PROGRESS_DIRTY.wait(timeout=interval)
+        woke_at = time.monotonic()
         _SQLITE_PROGRESS_DIRTY.clear()
         if _SQLITE_PROGRESS_STOP.is_set():
             break
         if not _sqlite_compact_reads_enabled():
+            repository = None
             continue
         try:
-            _refresh_sqlite_progress_snapshot()
+            if repository is None:
+                repository = _security_repository()
+            refresh_started = time.monotonic()
+            _refresh_sqlite_progress_snapshot(repository=repository)
+            refresh_ms = (time.monotonic() - refresh_started) * 1000
+            drift_ms = max(0.0, woke_at - wait_started - interval) * 1000
+            if refresh_ms >= 1000 or (not signaled and drift_ms >= 500):
+                _LOGGER.warning(
+                    "Security SQLite projection refresher timing refresh_ms=%.2f "
+                    "schedule_drift_ms=%.2f interval_ms=%.2f active=%s signaled=%s",
+                    refresh_ms, drift_ms, interval * 1000,
+                    bool((_memory_sqlite_progress_snapshot() or {}).get("active_scan")),
+                    signaled,
+                )
         except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+            repository = None
             _SQLITE_PROGRESS_FAILURES += 1
             _LOGGER.warning(
                 "Security SQLite projection refresh degraded (%s, consecutive=%d)",
@@ -1804,10 +1839,7 @@ def stop_security_projection_runtime() -> None:
 
 
 def _memory_sqlite_progress_snapshot() -> dict[str, Any] | None:
-    try:
-        current_db = str(_security_store_api().database_path())
-    except Exception:
-        current_db = ""
+    current_db = _sqlite_progress_database_identity()
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         if _SQLITE_PROGRESS_SNAPSHOT_DB != current_db:
             return None
