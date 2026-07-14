@@ -33,7 +33,8 @@ _SQLITE_PROGRESS_SNAPSHOT_DB = ""
 _SQLITE_PROGRESS_FAILURES = 0
 _SQLITE_PROGRESS_REFRESH_LOCK = threading.Lock()
 _SQLITE_PROGRESS_REFRESHED_AT = 0.0
-_SQLITE_PROGRESS_FALLBACK_INTERVAL_SECONDS = 5.0
+_SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS = max(0.5, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_INTERVAL_SECONDS", "2.0")))
+_SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS = max(_SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "5.0")))
 _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS = 15_000
 _SQLITE_PROGRESS_DIRTY = threading.Event()
 _SQLITE_PROGRESS_STOP = threading.Event()
@@ -285,11 +286,20 @@ def reserve_scan_request(command: dict[str, Any]) -> dict[str, Any]:
     )
     if not result.reserved:
         return {"reserved": False, "response": _dedupe_response_from_reservation(result)}
-    publish_committed_progress(str(result.run.get("run_id") or ""), repository=repository)
+    # Seed the exact committed reservation directly from the transaction result.
+    # This preserves immediate run visibility without a second SQLite read.
+    _remember_sqlite_progress(_sqlite_progress_payload(result.run))
+    mark_security_progress_dirty()
     return {"reserved": True, "run": result.run, "response": None}
 
 
-def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
+def finalize_scan_submission(command: dict[str, Any]) -> dict[str, Any] | None:
+    """Persist successful publication and API acceptance in one transaction.
+
+    Worker receipt and execution timestamps remain worker-owned. The API only
+    records that the durable reservation was successfully published and
+    accepted for asynchronous execution.
+    """
     run_id = str(command.get("run_id") or command.get("command_id") or "")
     if not run_id:
         return None
@@ -297,17 +307,20 @@ def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
         return evidence.read_run(run_id)
     repository = _security_repository()
     published_at = str(command.get("command_published_at") or "").strip() or deps.now_utc_iso()
-    repository.mark_command_published(run_id, published_at=published_at)
-    accepted = repository.mark_accepted(
+    accepted = repository.mark_published_and_accepted(
         run_id,
+        published_at=published_at,
         accepted_at=deps.now_utc_iso(),
         summary=_profile_copy(_scan_profile(command))["queued"],
     )
-    publish_committed_progress(run_id, repository=repository)
-    projected = _sqlite_run_payload(
-        repository, repository.get_run(run_id), include_details=True, include_related=True
-    )
-    if projected and _security_store_api().security_store_mode() == "dual":
+    # Publish the exact committed transaction result without another SQLite
+    # round trip, then wake the background refresher for eventual reconciliation.
+    _remember_sqlite_progress(_sqlite_progress_payload(accepted))
+    mark_security_progress_dirty()
+    if _security_store_api().security_store_mode() == "dual":
+        projected = _sqlite_run_payload(
+            repository, accepted, include_details=True, include_related=True
+        ) or accepted
         _write_run_projection(projected)
         _, state, _ = _sqlite_state_projection()
         try:
@@ -318,7 +331,13 @@ def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
                 run_id, component="state", degraded=True,
                 reason=f"state_projection_{type(exc).__name__}",
             )
-    return projected or accepted
+        return projected
+    return accepted
+
+
+def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:
+    """Backward-compatible service entry point for existing callers/tests."""
+    return finalize_scan_submission(command)
 
 
 def mark_command_received(
@@ -1731,10 +1750,17 @@ def mark_security_progress_dirty() -> None:
         _SQLITE_PROGRESS_DIRTY.set()
 
 
+def _projection_refresh_interval_seconds() -> float:
+    snapshot = _memory_sqlite_progress_snapshot()
+    if snapshot and bool(snapshot.get("active_scan")):
+        return _SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS
+    return _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS
+
+
 def _projection_refresher_loop() -> None:
     global _SQLITE_PROGRESS_FAILURES
     while not _SQLITE_PROGRESS_STOP.is_set():
-        _SQLITE_PROGRESS_DIRTY.wait(timeout=_SQLITE_PROGRESS_FALLBACK_INTERVAL_SECONDS)
+        _SQLITE_PROGRESS_DIRTY.wait(timeout=_projection_refresh_interval_seconds())
         _SQLITE_PROGRESS_DIRTY.clear()
         if _SQLITE_PROGRESS_STOP.is_set():
             break

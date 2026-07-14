@@ -371,11 +371,10 @@ def test_submission_stage_timing_header_is_sanitized(tmp_path, monkeypatch):
     response = Response()
     lite._record_security_submission_timing(
         response, run_id="security-timing", started=1.0, auth_done=1.01,
-        reservation_done=1.02, publish_done=1.03, queued_recorded=1.04,
-        accepted_recorded=1.05,
+        reservation_done=1.02, publish_done=1.03, lifecycle_committed=1.05,
     )
     header = response.headers["server-timing"]
-    for stage in ("auth", "reservation", "publish", "record_queued", "mark_accepted", "total"):
+    for stage in ("auth", "reservation", "publish", "lifecycle_commit", "total"):
         assert f"{stage};dur=" in header
     assert "security-timing" not in header
 

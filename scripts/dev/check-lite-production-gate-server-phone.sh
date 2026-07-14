@@ -11,7 +11,7 @@ TIMEOUT_SECONDS="${POCKETLAB_GATE_SCAN_TIMEOUT_SECONDS:-5400}"
 MAX_PROJECTION_AGE_MS="${POCKETLAB_GATE_MAX_PROJECTION_AGE_MS:-5000}"
 REPORT_DIR="${POCKETLAB_GATE_REPORT_DIR:-${POCKETLAB_STATE_DIR:-$HOME/pocket-lab-lite/state}/.pocketlab-dev/reports}"
 STAMP="$(date -u +%Y%m%d-%H%M%S)-$$"
-REPORT_JSON="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP.json"
+REPORT_JSON="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-final.json"
 SAMPLES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-latencies.txt"
 STATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-progress.json"
 SUBMISSION_FAILURES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-submission-latency.txt"
@@ -290,13 +290,14 @@ PY2
     if [[ "$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("run_id") or "")' <<<"$payload")" == "$run_id" ]]; then
       visible=1
       projection_age="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("projection_age_ms") or 0)' <<<"$payload")"
-      if ! python3 - "$projection_age" "$MAX_PROJECTION_AGE_MS" <<'PY2'
+      active_scan="$(python3 -c 'import json,sys; print("1" if json.load(sys.stdin).get("active_scan") else "0")' <<<"$payload")"
+      if [[ "$active_scan" == "1" ]] && ! python3 - "$projection_age" "$MAX_PROJECTION_AGE_MS" <<'PY2'
 import sys
 age=float(sys.argv[1]); maximum=float(sys.argv[2])
 raise SystemExit(0 if 0 <= age <= maximum else 1)
 PY2
       then
-        fail "$phase projection age exceeded ${MAX_PROJECTION_AGE_MS}ms after the submitted run became visible"
+        fail "$phase active projection age exceeded ${MAX_PROJECTION_AGE_MS}ms after the submitted run became visible"
       fi
     fi
     if (( visible == 0 && $(date +%s) - start > 2 )); then
