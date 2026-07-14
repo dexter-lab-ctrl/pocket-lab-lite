@@ -26,7 +26,12 @@ from . import lite_security_policy as policy
 _LOGGER = logging.getLogger(__name__)
 _SQLITE_PROGRESS_SNAPSHOT_LOCK = threading.Lock()
 _SQLITE_PROGRESS_SNAPSHOT: dict[str, Any] | None = None
+_SQLITE_PROGRESS_SNAPSHOT_DB = ""
 _SQLITE_PROGRESS_FAILURES = 0
+_SQLITE_PROGRESS_REFRESH_LOCK = threading.Lock()
+_SQLITE_PROGRESS_REFRESH_INFLIGHT = False
+_SQLITE_PROGRESS_REFRESHED_AT = 0.0
+_SQLITE_PROGRESS_REFRESH_INTERVAL_SECONDS = 0.20
 
 
 def _security_store_api():
@@ -58,6 +63,13 @@ def initialize_security_sqlite_runtime(*, reconcile: bool = True) -> dict[str, A
             result["reconciled"] = reconciled
             if reconciled:
                 _project_reconciled_sqlite_runs(repository, reconciled)
+        if compact_reads:
+            try:
+                _refresh_sqlite_progress_snapshot(repository=repository)
+                result["progress_snapshot_primed"] = True
+            except Exception as exc:
+                result["progress_snapshot_primed"] = False
+                result["progress_snapshot_error"] = type(exc).__name__
     return policy.redact_value(result)
 
 
@@ -1328,9 +1340,13 @@ def _sqlite_progress_payload(progress: dict[str, Any] | None = None) -> dict[str
 
 
 def _remember_sqlite_progress(payload: dict[str, Any]) -> dict[str, Any]:
-    global _SQLITE_PROGRESS_SNAPSHOT
+    global _SQLITE_PROGRESS_SNAPSHOT, _SQLITE_PROGRESS_SNAPSHOT_DB
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         _SQLITE_PROGRESS_SNAPSHOT = copy.deepcopy(payload)
+        try:
+            _SQLITE_PROGRESS_SNAPSHOT_DB = str(_security_store_api().database_path())
+        except Exception:
+            _SQLITE_PROGRESS_SNAPSHOT_DB = ""
     return payload
 
 
@@ -1347,13 +1363,77 @@ def _last_known_sqlite_progress(reason: str) -> dict[str, Any] | None:
     return policy.redact_value(snapshot)
 
 
+def _refresh_sqlite_progress_snapshot(*, repository: Any | None = None) -> dict[str, Any]:
+    """Refresh the process-local live projection from committed SQLite state."""
+    global _SQLITE_PROGRESS_FAILURES, _SQLITE_PROGRESS_REFRESHED_AT
+    repo = repository or _security_repository()
+    progress = repo.get_progress() or {}
+    payload = _remember_sqlite_progress(_sqlite_progress_payload(progress))
+    _SQLITE_PROGRESS_FAILURES = 0
+    _SQLITE_PROGRESS_REFRESHED_AT = time.monotonic()
+    return payload
+
+
+def _refresh_sqlite_progress_snapshot_worker() -> None:
+    global _SQLITE_PROGRESS_FAILURES, _SQLITE_PROGRESS_REFRESH_INFLIGHT
+    try:
+        _refresh_sqlite_progress_snapshot()
+    except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError) as exc:
+        _SQLITE_PROGRESS_FAILURES += 1
+        _LOGGER.warning(
+            "Security SQLite progress background refresh degraded (%s, consecutive=%d)",
+            type(exc).__name__,
+            _SQLITE_PROGRESS_FAILURES,
+        )
+    finally:
+        with _SQLITE_PROGRESS_REFRESH_LOCK:
+            _SQLITE_PROGRESS_REFRESH_INFLIGHT = False
+
+
+def _schedule_sqlite_progress_refresh() -> None:
+    global _SQLITE_PROGRESS_REFRESH_INFLIGHT
+    if time.monotonic() - _SQLITE_PROGRESS_REFRESHED_AT < _SQLITE_PROGRESS_REFRESH_INTERVAL_SECONDS:
+        return
+    with _SQLITE_PROGRESS_REFRESH_LOCK:
+        if _SQLITE_PROGRESS_REFRESH_INFLIGHT:
+            return
+        _SQLITE_PROGRESS_REFRESH_INFLIGHT = True
+    threading.Thread(
+        target=_refresh_sqlite_progress_snapshot_worker,
+        name="pocketlab-security-progress-refresh",
+        daemon=True,
+    ).start()
+
+
+def _memory_sqlite_progress_snapshot() -> dict[str, Any] | None:
+    try:
+        current_db = str(_security_store_api().database_path())
+    except Exception:
+        current_db = ""
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        if _SQLITE_PROGRESS_SNAPSHOT_DB != current_db:
+            return None
+        snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
+    if snapshot is None:
+        return None
+    snapshot["read_latency_ms"] = 0.0
+    snapshot["read_degraded"] = False
+    snapshot["read_projection"] = "memory"
+    snapshot["projection_age_ms"] = round(
+        max(0.0, time.monotonic() - _SQLITE_PROGRESS_REFRESHED_AT) * 1000, 2
+    )
+    return policy.redact_value(snapshot)
+
+
 def _sqlite_progress_state() -> dict[str, Any]:
     global _SQLITE_PROGRESS_FAILURES
+    snapshot = _memory_sqlite_progress_snapshot()
+    if snapshot is not None:
+        _schedule_sqlite_progress_refresh()
+        return snapshot
     started_at = time.perf_counter()
     try:
-        progress = _security_repository().get_progress() or {}
-        payload = _remember_sqlite_progress(_sqlite_progress_payload(progress))
-        _SQLITE_PROGRESS_FAILURES = 0
+        payload = _refresh_sqlite_progress_snapshot()
         elapsed_ms = (time.perf_counter() - started_at) * 1000
         payload["read_latency_ms"] = round(elapsed_ms, 2)
         payload["read_degraded"] = False
@@ -1569,12 +1649,12 @@ def write_compact_security_state(state: dict[str, Any] | None = None) -> dict[st
     return payload
 
 
-def _persist_sqlite_state(state: dict[str, Any]) -> None:
+def _persist_sqlite_state(state: dict[str, Any]) -> dict[str, Any]:
     if not _sqlite_lifecycle_enabled():
-        return
+        return state
     last_run = state.get("last_run") if isinstance(state.get("last_run"), dict) else None
     if not last_run or not last_run.get("run_id"):
-        return
+        return state
     repository = _security_repository()
     run_id = str(last_run["run_id"])
     profile = _profile_for_run(last_run)
@@ -1601,14 +1681,14 @@ def _persist_sqlite_state(state: dict[str, Any]) -> None:
     if status in {"queued", "accepted", "running", "working", "in_progress"}:
         existing_status = str((existing or {}).get("status") or "")
         if status == "queued":
-            return
+            return state
         if status == "accepted":
             if existing_status == "queued":
                 repository.mark_accepted(
                     run_id, accepted_at=last_run.get("accepted_at") or state.get("updated_at"),
                     summary=str(last_run.get("summary") or state.get("summary") or ""),
                 )
-            return
+            return state
         if existing_status in {"queued", "accepted"}:
             repository.mark_running(
                 run_id, started_at=last_run.get("started_at") or state.get("updated_at"),
@@ -1622,7 +1702,7 @@ def _persist_sqlite_state(state: dict[str, Any]) -> None:
             tool=str(progress.get("tool") or "") or None, payload=metadata,
             created_at=progress.get("updated_at") or state.get("updated_at"),
         )
-        return
+        return state
     findings = state.get("findings") if isinstance(state.get("findings"), list) else []
     refs = state.get("evidence_refs") if isinstance(state.get("evidence_refs"), list) else last_run.get("evidence_refs") if isinstance(last_run.get("evidence_refs"), list) else []
     tools = last_run.get("tool_results") if isinstance(last_run.get("tool_results"), dict) else {}
@@ -1648,10 +1728,15 @@ def _persist_sqlite_state(state: dict[str, Any]) -> None:
             items_to_review=int(last_run.get("items_to_review") or state.get("items_to_review") or 0),
             metadata=metadata,
         )
+    _, canonical_state, _ = _sqlite_state_projection()
+    return canonical_state
 
 
 def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
-    _persist_sqlite_state(state)
+    state = _persist_sqlite_state(state)
+    if _sqlite_compact_reads_enabled():
+        progress = state.get("scan_progress") if isinstance(state.get("scan_progress"), dict) else _progress_from_state(state)
+        _remember_sqlite_progress(_sqlite_progress_payload(progress))
     run_id = str(((state.get("last_run") or {}) if isinstance(state.get("last_run"), dict) else {}).get("run_id") or "")
     try:
         clean = evidence.write_state(state)
