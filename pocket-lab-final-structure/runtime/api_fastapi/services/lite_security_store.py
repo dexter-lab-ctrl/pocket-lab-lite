@@ -418,11 +418,13 @@ class SecuritySQLiteRepository:
                 """,
                 (normalized_run, queued_message, now, now_epoch, fingerprint),
             )
-            _bump_revision(tx, now)
+            domain_revision = _bump_revision(tx, now)
             reserved = tx.execute(
                 "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
             ).fetchone()
-        return ReservationResult(True, "reserved", _row(reserved) or {})
+        run = _row(reserved) or {}
+        run["domain_revision"] = domain_revision
+        return ReservationResult(True, "reserved", run)
 
     def get_active_scan(self, profile: str | None = None, app_id: str | None = None) -> dict[str, Any] | None:
         with read_connection() as conn:
@@ -732,6 +734,56 @@ class SecuritySQLiteRepository:
             ).fetchone()
         result = _row(row) or {}
         result["domain_revision"] = revision
+        return policy.redact_value(result)
+
+    def mark_published_and_accepted(
+        self, run_id: str, *, published_at: str, accepted_at: str | None = None,
+        summary: str = ""
+    ) -> dict[str, Any]:
+        """Commit API publication and acceptance in one SQLite transaction."""
+        normalized_run = _normalize_run_id(run_id)
+        published = _parse_timestamp(published_at)
+        accepted = _parse_timestamp(accepted_at)
+        accepted_epoch = max(_epoch_ms(published), _epoch_ms(accepted))
+        accepted = datetime.fromtimestamp(accepted_epoch / 1000, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+            ).fetchone()
+            if not current:
+                raise SecurityStoreError("Security run not found")
+            current_status = str(current["status"] or "")
+            if current_status in TERMINAL_STATUSES or current_status in {"running", "working", "in_progress"}:
+                return _row(current) or {}
+            tx.execute(
+                """
+                UPDATE security_scan_runs
+                SET status = 'accepted',
+                    command_published_at = COALESCE(command_published_at, ?),
+                    command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
+                    accepted_at = COALESCE(accepted_at, ?),
+                    updated_at = ?, updated_at_epoch_ms = ?,
+                    summary = CASE WHEN ? = '' THEN summary ELSE ? END,
+                    revision = revision + 1
+                WHERE run_id = ?
+                """,
+                (
+                    published, _epoch_ms(published), accepted, accepted, accepted_epoch,
+                    summary, policy.redact_text(summary)[:500], normalized_run,
+                ),
+            )
+            event = self._append_progress_event(
+                tx, normalized_run, status="accepted", stage="accepted", percent=5,
+                message=summary or "Security check accepted.", tool=None, payload=None,
+                created_at=accepted,
+            )
+            revision = _bump_revision(tx, accepted)
+            row = tx.execute(
+                "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+            ).fetchone()
+        result = _row(row) or {}
+        result["domain_revision"] = revision
+        result["progress_event"] = event
         return policy.redact_value(result)
 
     def mark_accepted(

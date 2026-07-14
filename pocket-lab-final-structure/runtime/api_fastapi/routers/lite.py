@@ -58,22 +58,18 @@ def _record_security_submission_timing(
     auth_done: float,
     reservation_done: float,
     publish_done: float | None = None,
-    queued_recorded: float | None = None,
-    accepted_recorded: float | None = None,
+    lifecycle_committed: float | None = None,
     deduplicated: bool = False,
 ) -> None:
     """Expose sanitized stage timings without leaking command payload data."""
-    end = accepted_recorded or queued_recorded or publish_done or reservation_done
+    end = lifecycle_committed or publish_done or reservation_done
     stages = {
         "auth": max(0.0, (auth_done - started) * 1000),
         "reservation": max(0.0, (reservation_done - auth_done) * 1000),
         "publish": max(0.0, ((publish_done or reservation_done) - reservation_done) * 1000),
-        "record_queued": max(
-            0.0, ((queued_recorded or publish_done or reservation_done) - (publish_done or reservation_done)) * 1000
-        ),
-        "mark_accepted": max(
-            0.0, ((accepted_recorded or queued_recorded or publish_done or reservation_done)
-                  - (queued_recorded or publish_done or reservation_done)) * 1000
+        "lifecycle_commit": max(
+            0.0, ((lifecycle_committed or publish_done or reservation_done)
+                  - (publish_done or reservation_done)) * 1000
         ),
         "total": max(0.0, (end - started) * 1000),
     }
@@ -88,10 +84,9 @@ def _record_security_submission_timing(
     timing_log(
         "Security scan submission timing run_id=%s deduplicated=%s "
         "auth_ms=%.2f reservation_ms=%.2f publish_ms=%.2f "
-        "record_queued_ms=%.2f mark_accepted_ms=%.2f total_ms=%.2f",
+        "lifecycle_commit_ms=%.2f total_ms=%.2f",
         run_id, deduplicated, stages["auth"], stages["reservation"],
-        stages["publish"], stages["record_queued"],
-        stages["mark_accepted"], stages["total"],
+        stages["publish"], stages["lifecycle_commit"], stages["total"],
     )
 
 
@@ -1011,13 +1006,9 @@ async def check_lite_security(
         raise
     publish_done = time.perf_counter()
     await lite_security.run_api_maintenance(
-        lite_security.record_queued_run, command
+        lite_security.finalize_scan_submission, command
     )
-    queued_recorded = time.perf_counter()
-    await lite_security.run_api_maintenance(
-        lite_security.mark_scan_accepted, command
-    )
-    accepted_recorded = time.perf_counter()
+    lifecycle_committed = time.perf_counter()
     queued.update(
         {
             "status": "queued",
@@ -1034,7 +1025,7 @@ async def check_lite_security(
     _record_security_submission_timing(
         response, run_id=run_id, started=request_started, auth_done=auth_done,
         reservation_done=reservation_done, publish_done=publish_done,
-        queued_recorded=queued_recorded, accepted_recorded=accepted_recorded,
+        lifecycle_committed=lifecycle_committed,
     )
     return queued
 
