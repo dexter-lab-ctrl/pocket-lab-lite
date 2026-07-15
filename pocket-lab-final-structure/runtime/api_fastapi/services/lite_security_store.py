@@ -5,12 +5,20 @@ import json
 import os
 import sqlite3
 import threading
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from ..db.connection import begin_immediate, connection, database_path, fast_read_connection, read_connection
+from ..db.connection import (
+    begin_immediate,
+    connection,
+    database_path,
+    open_fast_read_connection,
+    progress_read_timeout_ms,
+    read_connection,
+)
 from ..db.migrations import apply_migrations
 from . import lite_security_evidence as evidence
 from . import lite_security_policy as policy
@@ -61,6 +69,173 @@ class SecurityStoreError(RuntimeError):
 
 class InvalidSecurityStoreValue(SecurityStoreError):
     """A status/profile/app/run value is outside the repository contract."""
+
+
+class SecurityProgressReadContention(SecurityStoreError):
+    """A latency-sensitive Progress read could not obtain SQLite promptly."""
+
+    def __init__(self, message: str, *, connection_wait_ms: float, query_ms: float) -> None:
+        super().__init__(message)
+        self.connection_wait_ms = float(connection_wait_ms)
+        self.query_ms = float(query_ms)
+
+
+@dataclass(frozen=True)
+class ProgressReadResult:
+    progress: dict[str, Any] | None
+    connection_wait_ms: float
+    query_ms: float
+    projection_build_ms: float
+
+
+_PROGRESS_COLUMNS = """
+    r.run_id,
+    r.profile,
+    r.app_id,
+    r.status,
+    r.current_stage,
+    r.current_percent,
+    r.current_message,
+    r.current_tool,
+    r.updated_at,
+    r.updated_at_epoch_ms,
+    r.requested_at,
+    r.requested_at_epoch_ms,
+    r.command_published_at,
+    r.command_received_at,
+    r.execution_started_at,
+    r.last_progress_at,
+    r.delivery_attempt,
+    r.revision AS run_revision,
+    COALESCE(pe.event_id, 0) AS event_id,
+    COALESCE(pe.sequence_no, 0) AS sequence_no,
+    COALESCE(dr.revision, 0) AS domain_revision
+"""
+_PROGRESS_LATEST_SQL = f"""
+    SELECT {_PROGRESS_COLUMNS}
+    FROM security_scan_runs AS r
+    LEFT JOIN security_scan_progress_events AS pe
+      ON pe.event_id = (
+        SELECT event_id
+        FROM security_scan_progress_events
+        WHERE run_id = r.run_id
+        ORDER BY event_id DESC
+        LIMIT 1
+      )
+    LEFT JOIN domain_revisions AS dr ON dr.domain = 'security'
+    ORDER BY (r.active_key IS NOT NULL) DESC, r.updated_at_epoch_ms DESC
+    LIMIT 1
+"""
+_PROGRESS_RUN_SQL = f"""
+    SELECT {_PROGRESS_COLUMNS}
+    FROM security_scan_runs AS r
+    LEFT JOIN security_scan_progress_events AS pe
+      ON pe.event_id = (
+        SELECT event_id
+        FROM security_scan_progress_events
+        WHERE run_id = r.run_id
+        ORDER BY event_id DESC
+        LIMIT 1
+      )
+    LEFT JOIN domain_revisions AS dr ON dr.domain = 'security'
+    WHERE r.run_id = ?
+    LIMIT 1
+"""
+
+
+def _progress_payload(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    run = dict(row)
+    status = str(run.get("status") or "")
+    return policy.redact_value({
+        "run_id": run.get("run_id"),
+        "profile": run.get("profile"),
+        "app_id": run.get("app_id"),
+        "status": status,
+        "stage": run.get("current_stage"),
+        "percent": run.get("current_percent"),
+        "message": run.get("current_message"),
+        "tool": run.get("current_tool"),
+        "updated_at": run.get("updated_at"),
+        "updated_at_epoch_ms": int(run.get("updated_at_epoch_ms") or 0),
+        "requested_at": run.get("requested_at"),
+        "requested_at_epoch_ms": int(run.get("requested_at_epoch_ms") or 0),
+        "command_published_at": run.get("command_published_at"),
+        "command_received_at": run.get("command_received_at"),
+        "execution_started_at": run.get("execution_started_at"),
+        "last_progress_at": run.get("last_progress_at"),
+        "delivery_attempt": int(run.get("delivery_attempt") or 0),
+        "run_revision": int(run.get("run_revision") or 0),
+        "active_scan": status in ACTIVE_STATUSES,
+        "event_id": int(run.get("event_id") or 0),
+        "sequence_no": int(run.get("sequence_no") or 0),
+        "domain_revision": int(run.get("domain_revision") or 0),
+    })
+
+
+class SecurityProgressReader:
+    """Dedicated reusable read-only connection for live Progress projection."""
+
+    def __init__(self, *, timeout_ms: int | None = None) -> None:
+        self.timeout_ms = (
+            progress_read_timeout_ms()
+            if timeout_ms is None
+            else max(25, min(int(timeout_ms), 2_000))
+        )
+        self._connection: sqlite3.Connection | None = None
+
+    def close(self) -> None:
+        connection = self._connection
+        self._connection = None
+        if connection is not None:
+            connection.close()
+
+    def _ensure_connection(self) -> float:
+        if self._connection is not None:
+            return 0.0
+        started = time.monotonic()
+        self._connection = open_fast_read_connection(timeout_ms=self.timeout_ms)
+        return (time.monotonic() - started) * 1000
+
+    def read(self, run_id: str | None = None) -> ProgressReadResult:
+        connection_wait_ms = self._ensure_connection()
+        query_started = time.monotonic()
+        try:
+            if run_id:
+                row = self._connection.execute(
+                    _PROGRESS_RUN_SQL,
+                    (_normalize_run_id(run_id),),
+                ).fetchone()
+            else:
+                row = self._connection.execute(_PROGRESS_LATEST_SQL).fetchone()
+        except sqlite3.OperationalError as exc:
+            query_ms = (time.monotonic() - query_started) * 1000
+            message = str(exc).lower()
+            if "locked" in message or "busy" in message:
+                raise SecurityProgressReadContention(
+                    "Security Progress SQLite read was busy",
+                    connection_wait_ms=connection_wait_ms,
+                    query_ms=query_ms,
+                ) from exc
+            self.close()
+            raise
+        query_ms = (time.monotonic() - query_started) * 1000
+        projection_started = time.monotonic()
+        progress = _progress_payload(row)
+        projection_build_ms = (time.monotonic() - projection_started) * 1000
+        return ProgressReadResult(
+            progress=progress,
+            connection_wait_ms=connection_wait_ms,
+            query_ms=query_ms,
+            projection_build_ms=projection_build_ms,
+        )
+
+    def __enter__(self) -> "SecurityProgressReader":
+        return self
+
+    def __exit__(self, _exc_type, _exc, _traceback) -> None:
+        self.close()
 
 
 def utc_now() -> str:
@@ -1376,52 +1551,9 @@ class SecuritySQLiteRepository:
         }
 
     def get_progress(self, run_id: str | None = None) -> dict[str, Any] | None:
-        # Progress is a user-facing live read. It uses a dedicated short read
-        # budget and must not wait behind the general writer busy timeout.
-        with fast_read_connection() as conn:
-            if run_id:
-                row = conn.execute(
-                    "SELECT * FROM security_scan_runs WHERE run_id = ?",
-                    (_normalize_run_id(run_id),),
-                ).fetchone()
-            else:
-                row = conn.execute(
-                    "SELECT * FROM security_scan_runs ORDER BY "
-                    "CASE WHEN active_key IS NOT NULL THEN 0 ELSE 1 END, "
-                    "updated_at_epoch_ms DESC LIMIT 1"
-                ).fetchone()
-            latest_event = None
-            if row:
-                latest_event = conn.execute(
-                    "SELECT event_id, sequence_no FROM security_scan_progress_events "
-                    "WHERE run_id = ? ORDER BY event_id DESC LIMIT 1",
-                    (row["run_id"],),
-                ).fetchone()
-            revision = conn.execute(
-                "SELECT revision, updated_at FROM domain_revisions WHERE domain = 'security'"
-            ).fetchone()
-        run = _row(row)
-        if not run:
-            return None
-        return policy.redact_value({
-            "run_id": run["run_id"], "profile": run["profile"], "app_id": run["app_id"],
-            "status": run["status"], "stage": run.get("current_stage"),
-            "percent": run.get("current_percent"), "message": run.get("current_message"),
-            "tool": run.get("current_tool"), "updated_at": run.get("updated_at"),
-            "updated_at_epoch_ms": int(run.get("updated_at_epoch_ms") or 0),
-            "requested_at": run.get("requested_at"),
-            "requested_at_epoch_ms": int(run.get("requested_at_epoch_ms") or 0),
-            "command_published_at": run.get("command_published_at"),
-            "command_received_at": run.get("command_received_at"),
-            "execution_started_at": run.get("execution_started_at"),
-            "last_progress_at": run.get("last_progress_at"),
-            "delivery_attempt": int(run.get("delivery_attempt") or 0),
-            "run_revision": int(run.get("revision") or 0),
-            "active_scan": run["status"] in ACTIVE_STATUSES,
-            "event_id": int(latest_event["event_id"]) if latest_event else 0,
-            "sequence_no": int(latest_event["sequence_no"]) if latest_event else 0,
-            "domain_revision": int(revision["revision"]) if revision else 0,
-        })
+        """Read Progress through the bounded dedicated reader contract."""
+        with SecurityProgressReader() as reader:
+            return reader.read(run_id).progress
 
     def list_progress_events(self, run_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
         bounded = max(1, min(int(limit), 500))

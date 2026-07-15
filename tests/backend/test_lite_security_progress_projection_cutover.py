@@ -638,3 +638,115 @@ def test_concurrent_running_transition_prevents_stale_compare_and_set(
     assert failed is None
     assert repo.get_run("security-cas-race")["status"] == "running"
     assert repo.get_run("security-cas-race")["active_key"] is not None
+
+
+def test_progress_reader_reuses_connection_and_latest_query_uses_index(
+    tmp_path, monkeypatch
+):
+    _configure(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.db.connection import read_connection
+    from api_fastapi.services import lite_security_store as store
+
+    repo = store.SecuritySQLiteRepository()
+    assert repo.reserve_scan(
+        run_id="security-reader-reuse",
+        profile="quick",
+        requested_at="2026-07-14T08:00:00Z",
+    ).reserved
+
+    opened = 0
+    original_open = store.open_fast_read_connection
+
+    def counted_open(*, timeout_ms=None):
+        nonlocal opened
+        opened += 1
+        return original_open(timeout_ms=timeout_ms)
+
+    monkeypatch.setattr(store, "open_fast_read_connection", counted_open)
+    with store.SecurityProgressReader(timeout_ms=250) as reader:
+        first = reader.read()
+        second = reader.read("security-reader-reuse")
+
+    assert opened == 1
+    assert first.progress["run_id"] == "security-reader-reuse"
+    assert second.progress["run_id"] == "security-reader-reuse"
+    assert first.connection_wait_ms >= 0
+    assert second.connection_wait_ms == 0
+
+    with read_connection() as conn:
+        plan = [
+            str(row["detail"])
+            for row in conn.execute(
+                "EXPLAIN QUERY PLAN " + store._PROGRESS_LATEST_SQL
+            )
+        ]
+    assert any("idx_security_runs_progress_latest" in detail for detail in plan)
+    assert not any("USE TEMP B-TREE FOR ORDER BY" in detail for detail in plan)
+
+
+def test_progress_reader_reports_bounded_contention_without_losing_snapshot(
+    tmp_path, monkeypatch
+):
+    _, lite_security = _configure(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.services import lite_security_store as store
+
+    command = _command("security-contention-fallback")
+    assert lite_security.reserve_scan_request(command)["reserved"] is True
+    before = lite_security.split_progress_state()
+
+    class BusyConnection:
+        def execute(self, *_args, **_kwargs):
+            raise sqlite3.OperationalError("database is locked")
+
+        def close(self):
+            return None
+
+    reader = store.SecurityProgressReader(timeout_ms=25)
+    reader._connection = BusyConnection()
+    with pytest.raises(store.SecurityProgressReadContention) as raised:
+        reader.read()
+    assert raised.value.connection_wait_ms == 0
+    assert raised.value.query_ms >= 0
+
+    lite_security._SQLITE_PROGRESS_FAILURES = 1
+    after = lite_security.split_progress_state()
+    assert after["run_id"] == before["run_id"]
+    assert after["sqlite_revision"] == before["sqlite_revision"]
+    assert after["read_degraded"] is True
+    assert after["projection_source"] == "bounded_memory_projection"
+
+
+def test_timed_projection_refresh_exposes_sanitized_phase_timings(
+    tmp_path, monkeypatch
+):
+    _, lite_security = _configure(tmp_path, monkeypatch, "sqlite")
+    from api_fastapi.services import lite_security_store as store
+
+    command = _command("security-reader-timings")
+    assert lite_security.reserve_scan_request(command)["reserved"] is True
+    with store.SecurityProgressReader(timeout_ms=250) as reader:
+        payload, timings = lite_security._refresh_sqlite_progress_snapshot_timed(
+            reader=reader
+        )
+
+    assert payload["run_id"] == command["run_id"]
+    assert set(timings) == {
+        "connection_wait_ms",
+        "query_ms",
+        "projection_build_ms",
+        "snapshot_publish_ms",
+    }
+    assert all(value >= 0 for value in timings.values())
+    assert "path" not in timings
+
+
+def test_projection_contention_retry_is_independent_of_periodic_cadence(
+    tmp_path, monkeypatch
+):
+    _, lite_security = _configure(tmp_path, monkeypatch, "sqlite")
+    assert lite_security._projection_retry_seconds(True) < (
+        lite_security._SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS
+    )
+    assert lite_security._projection_retry_seconds(False) < (
+        lite_security._SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS
+    )
