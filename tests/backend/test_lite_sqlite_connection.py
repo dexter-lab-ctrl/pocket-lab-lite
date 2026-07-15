@@ -141,3 +141,17 @@ def test_lite_sqlite_health_reports_corruption_without_raising(tmp_path, monkeyp
     assert health["schema_current"] is False
     assert health["quick_check"] == "unavailable"
     assert health["error_type"] in {"DatabaseError", "OperationalError"}
+
+
+def test_write_connection_reports_creation_stages(tmp_path, monkeypatch):
+    from api_fastapi.db.connection import connection
+
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(tmp_path / "timed.sqlite3"))
+    timing = {}
+    with connection(timing_sink=timing) as conn:
+        conn.execute("CREATE TABLE IF NOT EXISTS timed_test(id INTEGER PRIMARY KEY)")
+    assert timing["path_resolve_ms"] >= 0
+    assert timing["sqlite_connect_ms"] >= 0
+    assert timing["pragma_setup_ms"] >= 0
+    assert timing["total_ms"] >= 0

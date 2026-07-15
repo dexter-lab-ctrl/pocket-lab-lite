@@ -281,6 +281,9 @@ class PocketLabEventBus:
         self._reconnect_task = None
 
     async def start(self) -> None:
+        from .workflow_engine import WORKFLOW_ENGINE
+
+        WORKFLOW_ENGINE.start_writer()
         async with self._lock:
             if self._client_is_connected():
                 self.connected = self._client_is_connected()
@@ -375,6 +378,9 @@ class PocketLabEventBus:
             self.nc = None
             self.js = None
             self.connected = False
+        from .workflow_engine import WORKFLOW_ENGINE
+
+        await asyncio.to_thread(WORKFLOW_ENGINE.stop_writer)
 
     async def ensure_streams(self) -> None:
         if not self.js:
@@ -474,12 +480,15 @@ class PocketLabEventBus:
                 ) from exc
         post_ack_started = time.monotonic()
         self.published += 1
-        self._record(event)
+        record_timing: dict[str, float] = {}
+        self._record(event, timing_sink=record_timing)
         post_ack_done = time.monotonic()
         if timing_sink is not None:
             timing_sink.update({
                 "send_ms": send_ms,
                 "ack_wait_ms": ack_wait_ms,
+                "record_memory_ms": float(record_timing.get("record_memory_ms") or 0.0),
+                "workflow_enqueue_ms": float(record_timing.get("workflow_enqueue_ms") or 0.0),
                 "post_ack_ms": max(0.0, (post_ack_done - post_ack_started) * 1000.0),
                 "broker_ms": max(0.0, (post_ack_done - broker_started) * 1000.0),
             })
@@ -522,7 +531,10 @@ class PocketLabEventBus:
         self._record(event)
         return event
 
-    def _record(self, event: Dict[str, Any]) -> None:
+    def _record(
+        self, event: Dict[str, Any], *, timing_sink: dict[str, float] | None = None
+    ) -> None:
+        memory_started = time.monotonic()
         event_id = str(event.get("id") or "")
         if event_id:
             if event_id in self._seen_event_id_set:
@@ -532,16 +544,6 @@ class PocketLabEventBus:
             while len(self._seen_event_id_set) > self._seen_event_ids.maxlen:
                 old = self._seen_event_ids.popleft()
                 self._seen_event_id_set.discard(old)
-        # Phase 12: persist every event to the event-sourced workflow journal
-        # before in-memory fanout, so dead-letter/recovery can reconstruct state
-        # after API/worker restarts.  This is best effort; the event bus must not
-        # fail user workflows if the local projection file is temporarily locked.
-        try:
-            from .workflow_engine import WORKFLOW_ENGINE
-
-            WORKFLOW_ENGINE.ingest_event(event)
-        except Exception:
-            pass
         self._history.append(event)
         subject = str(event.get("subject") or "")
         if subject.startswith("pocketlab.events.fleet.node_"):
@@ -552,13 +554,28 @@ class PocketLabEventBus:
             except Exception:
                 pass
         stale: list[asyncio.Queue[Dict[str, Any]]] = []
-        for queue in list(self._subscribers):
+        for subscriber in list(self._subscribers):
             try:
-                queue.put_nowait(event)
+                subscriber.put_nowait(event)
             except asyncio.QueueFull:
-                stale.append(queue)
-        for queue in stale:
-            self._subscribers.discard(queue)
+                stale.append(subscriber)
+        for subscriber in stale:
+            self._subscribers.discard(subscriber)
+        memory_done = time.monotonic()
+
+        enqueue_started = memory_done
+        try:
+            from .workflow_engine import WORKFLOW_ENGINE
+
+            WORKFLOW_ENGINE.enqueue_event(event)
+        except Exception:
+            pass
+        enqueue_done = time.monotonic()
+        if timing_sink is not None:
+            timing_sink.update({
+                "record_memory_ms": max(0.0, (memory_done - memory_started) * 1000.0),
+                "workflow_enqueue_ms": max(0.0, (enqueue_done - enqueue_started) * 1000.0),
+            })
 
     async def subscribe_nats(
         self,

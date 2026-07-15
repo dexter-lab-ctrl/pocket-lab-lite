@@ -258,6 +258,8 @@ async def _publish_prepared_with_reconnect(
         timing_sink.update({
             f"{timing_prefix}_send_ms": publish_timing.get("send_ms", 0.0),
             f"{timing_prefix}_ack_wait_ms": publish_timing.get("ack_wait_ms", 0.0),
+            f"{timing_prefix}_record_memory_ms": publish_timing.get("record_memory_ms", 0.0),
+            f"{timing_prefix}_workflow_enqueue_ms": publish_timing.get("workflow_enqueue_ms", 0.0),
             f"{timing_prefix}_post_ack_ms": publish_timing.get("post_ack_ms", 0.0),
             f"{timing_prefix}_broker_ms": publish_timing.get("broker_ms", 0.0),
             f"{timing_prefix}_reconnect_ms": reconnect_ms,

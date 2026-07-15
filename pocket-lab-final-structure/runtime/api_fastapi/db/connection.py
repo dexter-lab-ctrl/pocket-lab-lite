@@ -252,9 +252,15 @@ def open_fast_read_connection(*, timeout_ms: int | None = None) -> sqlite3.Conne
         raise
 
 
-def open_connection(*, read_only: bool = False) -> sqlite3.Connection:
+def open_connection(
+    *, read_only: bool = False, timing_sink: dict[str, float] | None = None
+) -> sqlite3.Connection:
+    total_started = time.monotonic()
+    path_started = total_started
     settings = sqlite_settings()
     path = settings.path
+    path_done = time.monotonic()
+    connect_started = path_done
     if read_only:
         if not path.exists():
             raise FileNotFoundError(path)
@@ -273,10 +279,20 @@ def open_connection(*, read_only: bool = False) -> sqlite3.Connection:
             isolation_level=None,
             check_same_thread=False,
         )
+    connect_done = time.monotonic()
+    policy_started = connect_done
     try:
         _apply_connection_policy(conn, settings, read_only=read_only)
+        policy_done = time.monotonic()
         if not read_only:
             _chmod_best_effort(path, 0o600)
+        if timing_sink is not None:
+            timing_sink.update({
+                "path_resolve_ms": max(0.0, (path_done - path_started) * 1000.0),
+                "sqlite_connect_ms": max(0.0, (connect_done - connect_started) * 1000.0),
+                "pragma_setup_ms": max(0.0, (policy_done - policy_started) * 1000.0),
+                "total_ms": max(0.0, (policy_done - total_started) * 1000.0),
+            })
         return conn
     except Exception:
         conn.close()
@@ -284,8 +300,10 @@ def open_connection(*, read_only: bool = False) -> sqlite3.Connection:
 
 
 @contextmanager
-def connection() -> Iterator[sqlite3.Connection]:
-    conn = open_connection(read_only=False)
+def connection(
+    *, timing_sink: dict[str, float] | None = None
+) -> Iterator[sqlite3.Connection]:
+    conn = open_connection(read_only=False, timing_sink=timing_sink)
     try:
         yield conn
     finally:
