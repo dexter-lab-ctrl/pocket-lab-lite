@@ -75,7 +75,15 @@ def _record_security_submission_timing(
         "reservation_queue": float(reservation_timing.get("queue_wait_ms", 0.0)),
         "reservation_execution": float(reservation_timing.get("execution_ms", 0.0)),
         "reservation": max(0.0, (reservation_done - auth_done) * 1000),
+        "nats_payload_prepare": float(publish_timing.get("payload_prepare_ms", 0.0)),
         "nats_readiness_wait": float(publish_timing.get("readiness_wait_ms", 0.0)),
+        "nats_command_prepare": float(publish_timing.get("command_prepare_ms", 0.0)),
+        "nats_command_broker": float(publish_timing.get("command_broker_ms", 0.0)),
+        "nats_command_reconnect": float(publish_timing.get("command_reconnect_ms", 0.0)),
+        "nats_evidence_payload_prepare": float(publish_timing.get("evidence_payload_prepare_ms", 0.0)),
+        "nats_evidence_prepare": float(publish_timing.get("evidence_prepare_ms", 0.0)),
+        "nats_evidence_broker": float(publish_timing.get("evidence_broker_ms", 0.0)),
+        "nats_evidence_reconnect": float(publish_timing.get("evidence_reconnect_ms", 0.0)),
         "nats_publish_execution": float(publish_timing.get("execution_ms", 0.0)),
         "publish": max(0.0, ((publish_done or reservation_done) - reservation_done) * 1000),
         "lifecycle_queue": float(lifecycle_timing.get("queue_wait_ms", 0.0)),
@@ -94,12 +102,22 @@ def _record_security_submission_timing(
     timing_log(
         "Security scan submission timing run_id=%s deduplicated=%s "
         "auth_ms=%.2f reservation_queue_ms=%.2f reservation_execution_ms=%.2f "
-        "nats_readiness_wait_ms=%.2f nats_publish_execution_ms=%.2f "
-        "lifecycle_queue_ms=%.2f lifecycle_execution_ms=%.2f total_ms=%.2f",
+        "reservation_process_cpu_ms=%.2f nats_payload_prepare_ms=%.2f "
+        "nats_readiness_wait_ms=%.2f nats_command_prepare_ms=%.2f "
+        "nats_command_broker_ms=%.2f nats_command_reconnect_ms=%.2f "
+        "nats_evidence_payload_prepare_ms=%.2f nats_evidence_prepare_ms=%.2f "
+        "nats_evidence_broker_ms=%.2f nats_evidence_reconnect_ms=%.2f "
+        "lifecycle_queue_ms=%.2f lifecycle_execution_ms=%.2f "
+        "lifecycle_process_cpu_ms=%.2f total_ms=%.2f",
         run_id, deduplicated, stages["auth"], stages["reservation_queue"],
-        stages["reservation_execution"], stages["nats_readiness_wait"],
-        stages["nats_publish_execution"], stages["lifecycle_queue"],
-        stages["lifecycle_execution"], stages["total"],
+        stages["reservation_execution"], float(reservation_timing.get("process_cpu_ms", 0.0)),
+        stages["nats_payload_prepare"], stages["nats_readiness_wait"],
+        stages["nats_command_prepare"], stages["nats_command_broker"],
+        stages["nats_command_reconnect"], stages["nats_evidence_payload_prepare"],
+        stages["nats_evidence_prepare"], stages["nats_evidence_broker"],
+        stages["nats_evidence_reconnect"], stages["lifecycle_queue"],
+        stages["lifecycle_execution"], float(lifecycle_timing.get("process_cpu_ms", 0.0)),
+        stages["total"],
     )
 
 
@@ -1002,25 +1020,25 @@ async def check_lite_security(
         except ValueError:
             raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
     run_id = lite_security.new_run_id()
-    command = {
-        "run_id": run_id,
-        "command_id": run_id,
-        "scope": payload.scope or "local",
-        "profile": profile,
-        **({"app_id": app_id} if app_id else {}),
-        "reason": payload.reason or ("manual app check" if profile == lite_security.policy.SCAN_PROFILE_APP else "manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
-        "requested_at": deps.now_utc_iso(),
-    }
-    reservation_token = RUNTIME_DIAGNOSTICS.begin_operation("security.scan.reservation")
-    try:
-        reservation, reservation_timing = await lite_security.run_api_maintenance_timed(
-            lite_security.reserve_scan_request, command
-        )
-    except Exception:
-        RUNTIME_DIAGNOSTICS.end_operation(reservation_token, result="error")
-        raise
-    else:
-        RUNTIME_DIAGNOSTICS.end_operation(reservation_token)
+    reason = payload.reason or (
+        "manual app check"
+        if profile == lite_security.policy.SCAN_PROFILE_APP
+        else "manual full local check"
+        if profile == lite_security.policy.SCAN_PROFILE_FULL
+        else "manual quick safety check"
+    )
+    prepared, reservation_timing = await lite_security.run_api_maintenance_timed(
+        lite_security.build_and_reserve_scan_request,
+        run_id=run_id,
+        scope=payload.scope or "local",
+        profile=profile,
+        app_id=app_id,
+        reason=reason,
+        requested_at=deps.now_utc_iso(),
+        operation_name="security.scan.reservation",
+    )
+    command = prepared["command"]
+    reservation = prepared["reservation"]
     reservation_done = time.perf_counter()
     if not reservation.get("reserved"):
         deduplicated = reservation.get("response") or {
@@ -1040,7 +1058,6 @@ async def check_lite_security(
     # timestamp is persisted only after submit_domain_command succeeds.
     command["command_published_at"] = deps.now_utc_iso()
     publish_timing: dict[str, float] = {}
-    publish_token = RUNTIME_DIAGNOSTICS.begin_operation("security.scan.nats_publish")
     try:
         queued = await submit_domain_command(
             lite_security.policy.COMMAND_SUBJECT,
@@ -1049,24 +1066,18 @@ async def check_lite_security(
             timing_sink=publish_timing,
         )
     except Exception:
-        RUNTIME_DIAGNOSTICS.end_operation(publish_token, result="error")
         await lite_security.run_api_maintenance(
-            lite_security.fail_scan_submission, run_id
+            lite_security.fail_scan_submission,
+            run_id,
+            operation_name="security.scan.submission_failure_commit",
         )
         raise
-    else:
-        RUNTIME_DIAGNOSTICS.end_operation(publish_token)
     publish_done = time.perf_counter()
-    lifecycle_token = RUNTIME_DIAGNOSTICS.begin_operation("security.scan.lifecycle_commit")
-    try:
-        _result, lifecycle_timing = await lite_security.run_api_maintenance_timed(
-            lite_security.finalize_scan_submission, command
-        )
-    except Exception:
-        RUNTIME_DIAGNOSTICS.end_operation(lifecycle_token, result="error")
-        raise
-    else:
-        RUNTIME_DIAGNOSTICS.end_operation(lifecycle_token)
+    _result, lifecycle_timing = await lite_security.run_api_maintenance_timed(
+        lite_security.finalize_scan_submission,
+        command,
+        operation_name="security.scan.lifecycle_commit",
+    )
     lifecycle_committed = time.perf_counter()
     queued.update(
         {

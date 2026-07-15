@@ -394,3 +394,52 @@ def test_event_loop_and_gc_logs_are_rate_limited(caplog):
     snapshot = diagnostics.snapshot()
     assert snapshot["event_loop"]["suppressed_log_count"] >= 1
     assert snapshot["gc"]["suppressed_log_count"] >= 1
+
+
+def test_operation_attribution_records_executor_thread_and_cpu(tmp_path, monkeypatch):
+    _, lite_security = _configure_sqlite(tmp_path, monkeypatch)
+
+    async def exercise():
+        result, timing = await lite_security.run_api_maintenance_timed(
+            lambda: sum(range(1000)),
+            operation_name="security.scan.test_executor",
+        )
+        return result, timing
+
+    result, timing = asyncio.run(exercise())
+    assert result == sum(range(1000))
+    assert timing["thread_kind"] == "maintenance_executor"
+    assert timing["queue_wait_ms"] >= 0
+    assert timing["execution_ms"] >= 0
+    assert timing["process_cpu_ms"] >= 0
+
+    snapshot = lite_security.RUNTIME_DIAGNOSTICS.snapshot()["event_loop"]
+    operation = next(
+        item for item in snapshot["recent_operations"]
+        if item["name"] == "security.scan.test_executor"
+    )
+    assert operation["thread_kind"] == "maintenance_executor"
+    assert operation["process_cpu_ms"] >= 0
+    assert operation["thread_cpu_ms"] >= 0
+    assert operation["cpu_ratio"] >= 0
+
+
+def test_critical_lag_stack_capture_is_bounded_and_sanitized(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services.runtime_diagnostics import RuntimeDiagnostics
+
+    monkeypatch.setenv("POCKETLAB_CRITICAL_LAG_STACK_CAPTURE", "1")
+    monkeypatch.setenv("POCKETLAB_CRITICAL_LAG_STACK_INTERVAL_SECONDS", "10")
+    diagnostics = RuntimeDiagnostics(loop_warning_ms=1.0, loop_critical_ms=2.0)
+    diagnostics._event_loop_thread_id = __import__("threading").get_ident()
+    diagnostics.record_event_loop_lag(3.0)
+    snapshot = diagnostics.snapshot()["event_loop"]
+    assert snapshot["critical_stack_capture_enabled"] is True
+    assert len(snapshot["critical_stack_captures"]) == 1
+    capture = snapshot["critical_stack_captures"][0]
+    assert capture["thread_kind"] == "event_loop"
+    assert 1 <= len(capture["frames"]) <= 8
+    assert all(set(frame) == {"module", "function", "line"} for frame in capture["frames"])
+    serialized = json.dumps(capture).lower()
+    for forbidden in ("password", "authorization", "bearer", "nats://"):
+        assert forbidden not in serialized
