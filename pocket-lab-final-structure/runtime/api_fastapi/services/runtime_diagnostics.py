@@ -75,6 +75,9 @@ class RuntimeDiagnostics:
         self._active_operations: dict[str, dict[str, Any]] = {}
         self._recent_operations: deque[dict[str, Any]] = deque(maxlen=16)
         self._event_loop_thread_id: int | None = None
+        self._event_loop_heartbeat_monotonic = time.monotonic()
+        self._stack_watchdog_stop = threading.Event()
+        self._stack_watchdog_thread: threading.Thread | None = None
         self._critical_stack_capture_enabled = os.environ.get(
             "POCKETLAB_CRITICAL_LAG_STACK_CAPTURE", "0"
         ).strip().lower() in {"1", "true", "yes", "on"}
@@ -86,6 +89,9 @@ class RuntimeDiagnostics:
         self._last_stack_capture_monotonic = 0.0
         self._stack_capture_interval_seconds = _bounded_float(
             "POCKETLAB_CRITICAL_LAG_STACK_INTERVAL_SECONDS", 60.0, 10.0, 600.0
+        )
+        self._stack_watchdog_poll_seconds = _bounded_float(
+            "POCKETLAB_CRITICAL_LAG_STACK_POLL_SECONDS", 0.25, 0.10, 2.0
         )
         self._gc_installed = False
         self._gc_log_interval_seconds = _bounded_float(
@@ -126,6 +132,7 @@ class RuntimeDiagnostics:
                 self._loop_task = None
                 return False
         self._install_gc_callback()
+        self._start_stack_watchdog()
         return True
 
     async def stop(self) -> None:
@@ -139,18 +146,22 @@ class RuntimeDiagnostics:
                 await task
             except asyncio.CancelledError:
                 pass
+        self._stop_stack_watchdog()
         self._remove_gc_callback()
 
     async def _event_loop_lag_loop(self) -> None:
         loop = asyncio.get_running_loop()
         with self._lock:
             self._event_loop_thread_id = threading.get_ident()
+            self._event_loop_heartbeat_monotonic = time.monotonic()
         expected = loop.time() + self.loop_interval_seconds
         try:
             while True:
                 await asyncio.sleep(max(0.0, expected - loop.time()))
                 actual = loop.time()
                 lag_ms = max(0.0, (actual - expected) * 1000.0)
+                with self._lock:
+                    self._event_loop_heartbeat_monotonic = time.monotonic()
                 self.record_event_loop_lag(lag_ms)
                 expected = actual + self.loop_interval_seconds
         except asyncio.CancelledError:
@@ -197,8 +208,6 @@ class RuntimeDiagnostics:
                 })
             self._loop_last_severity = severity
             recent_max = max(self._loop_recent, default=0.0)
-        if severity == "critical":
-            self._capture_critical_stack(now_monotonic, lag_ms)
         if should_log:
             log = _LOGGER.error if severity == "critical" else _LOGGER.warning
             log(
@@ -269,7 +278,55 @@ class RuntimeDiagnostics:
             })
             return duration_ms
 
-    def _capture_critical_stack(self, now_monotonic: float, lag_ms: float) -> None:
+    def _start_stack_watchdog(self) -> None:
+        if not self._critical_stack_capture_enabled:
+            return
+        with self._lock:
+            thread = self._stack_watchdog_thread
+            if thread is not None and thread.is_alive():
+                return
+            self._stack_watchdog_stop.clear()
+            thread = threading.Thread(
+                target=self._stack_watchdog_loop,
+                name="pocketlab-critical-lag-watchdog",
+                daemon=True,
+            )
+            self._stack_watchdog_thread = thread
+        thread.start()
+
+    def _stop_stack_watchdog(self) -> None:
+        self._stack_watchdog_stop.set()
+        with self._lock:
+            thread = self._stack_watchdog_thread
+            self._stack_watchdog_thread = None
+        if thread is not None and thread.is_alive():
+            thread.join(timeout=1.0)
+
+    def _stack_watchdog_loop(self) -> None:
+        while not self._stack_watchdog_stop.wait(self._stack_watchdog_poll_seconds):
+            now = time.monotonic()
+            with self._lock:
+                heartbeat = self._event_loop_heartbeat_monotonic
+                thread_id = self._event_loop_thread_id
+                last_capture = self._last_stack_capture_monotonic
+            observed_stall_ms = max(0.0, (now - heartbeat) * 1000.0)
+            if thread_id is None or observed_stall_ms < self.loop_critical_ms:
+                continue
+            if now - last_capture < self._stack_capture_interval_seconds:
+                continue
+            self._capture_critical_stack(
+                now,
+                observed_stall_ms,
+                capture_source="watchdog_thread",
+            )
+
+    def _capture_critical_stack(
+        self,
+        now_monotonic: float,
+        lag_ms: float,
+        *,
+        capture_source: str,
+    ) -> None:
         if not self._critical_stack_capture_enabled:
             return
         with self._lock:
@@ -297,6 +354,8 @@ class RuntimeDiagnostics:
             capture = {
                 "captured_at": _utc_now(),
                 "lag_ms": round(max(0.0, float(lag_ms)), 2),
+                "observed_stall_ms": round(max(0.0, float(lag_ms)), 2),
+                "capture_source": str(capture_source or "unknown")[:40],
                 "thread_kind": "event_loop",
                 "frames": frames,
             }

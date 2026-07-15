@@ -439,8 +439,13 @@ class PocketLabEventBus:
         subject: str,
         event: Dict[str, Any],
         payload: bytes,
+        *,
+        timing_sink: dict[str, float] | None = None,
     ) -> Dict[str, Any]:
-        """Publish a pre-encoded event without rebuilding or serializing it."""
+        """Publish pre-encoded bytes and expose send/ack/post-ack timing."""
+        send_ms = 0.0
+        ack_wait_ms = 0.0
+        broker_started = time.monotonic()
         if self.connected and self.nc is not None:
             try:
                 if self.js is not None and (
@@ -448,9 +453,18 @@ class PocketLabEventBus:
                     or subject.startswith("pocketlab.audit.")
                     or subject.startswith("pocketlab.dlq.")
                 ):
-                    await self.js.publish(subject, payload)
+                    send_started = time.monotonic()
+                    publish_awaitable = self.js.publish(subject, payload)
+                    send_done = time.monotonic()
+                    await publish_awaitable
+                    ack_done = time.monotonic()
+                    send_ms = max(0.0, (send_done - send_started) * 1000.0)
+                    ack_wait_ms = max(0.0, (ack_done - send_done) * 1000.0)
                 else:
+                    send_started = time.monotonic()
                     await self.nc.publish(subject, payload)
+                    send_done = time.monotonic()
+                    send_ms = max(0.0, (send_done - send_started) * 1000.0)
             except Exception as exc:
                 self.connected = False
                 self.fallback_reason = str(exc)
@@ -458,8 +472,17 @@ class PocketLabEventBus:
                 raise RuntimeError(
                     f"NATS connection failed: {self.fallback_reason}"
                 ) from exc
+        post_ack_started = time.monotonic()
         self.published += 1
         self._record(event)
+        post_ack_done = time.monotonic()
+        if timing_sink is not None:
+            timing_sink.update({
+                "send_ms": send_ms,
+                "ack_wait_ms": ack_wait_ms,
+                "post_ack_ms": max(0.0, (post_ack_done - post_ack_started) * 1000.0),
+                "broker_ms": max(0.0, (post_ack_done - broker_started) * 1000.0),
+            })
         return event
 
     async def publish_json(
