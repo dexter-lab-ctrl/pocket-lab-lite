@@ -33,3 +33,21 @@ def test_gate_declares_all_required_functions_before_main_execution():
         assert f'{name}()' in text
     assert 'required_gate_functions' in text
     assert 'declare -F "$name"' in text
+
+
+def test_gate_pytest_is_optional_and_reported_for_runtime_portability():
+    text = GATE.read_text()
+    assert 'POCKETLAB_GATE_RUN_PYTEST:-0' in text
+    assert 'POCKETLAB_GATE_PYTHON:-python3' in text
+    assert 'run_pytest_gate()' in text
+    assert "import pytest" in text
+    assert 'disabled_for_runtime_gate' in text
+    assert '"pytest_gate": pytest_gate' in text
+    assert 'pytest regression gate requested but pytest is unavailable' in text
+
+
+def test_gate_uses_configured_python_for_requested_pytest_regressions():
+    text = GATE.read_text()
+    assert '"$GATE_PYTHON" -m pytest -q' in text
+    assert 'write_pytest_gate_evidence "passed" "regression_tests_passed"' in text
+    assert 'write_pytest_gate_evidence "failed" "regression_tests_failed"' in text
