@@ -25,6 +25,7 @@ from typing import Any, Mapping
 
 from .. import deps
 from . import lite_security_evidence as evidence
+from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from . import lite_security_policy as policy
 
 
@@ -118,32 +119,68 @@ def _sqlite_progress_database_identity() -> str:
     return "pocketlab-lite-default-database"
 
 
-async def run_api_maintenance(function, /, *args, **kwargs):
+async def run_api_maintenance(function, /, *args, operation_name: str | None = None, **kwargs):
     """Run bounded API-owned blocking maintenance outside the event loop."""
-    result, _timing = await run_api_maintenance_timed(function, *args, **kwargs)
+    result, _timing = await run_api_maintenance_timed(
+        function, *args, operation_name=operation_name, **kwargs
+    )
     return result
 
 
-async def run_api_maintenance_timed(function, /, *args, **kwargs):
-    """Return a maintenance result plus bounded executor queue/execution timing."""
+async def run_api_maintenance_timed(
+    function, /, *args, operation_name: str | None = None, **kwargs
+):
+    """Return result plus queue, wall, CPU, and executor-thread attribution."""
     loop = asyncio.get_running_loop()
     submitted = time.monotonic()
 
     def invoke():
         started = time.monotonic()
+        started_process_cpu = time.process_time()
+        started_thread_cpu = time.thread_time()
+        token = RUNTIME_DIAGNOSTICS.begin_operation(
+            operation_name or f"security.maintenance.{getattr(function, '__name__', 'call')}"
+        )
+        result = "ok"
         try:
-            return function(*args, **kwargs), started, time.monotonic(), "ok"
+            value = function(*args, **kwargs)
+            return (
+                value,
+                started,
+                time.monotonic(),
+                started_process_cpu,
+                time.process_time(),
+                started_thread_cpu,
+                time.thread_time(),
+            )
         except Exception:
-            completed = time.monotonic()
+            result = "error"
             raise
+        finally:
+            RUNTIME_DIAGNOSTICS.end_operation(token, result=result)
 
-    result, started, completed, _result = await loop.run_in_executor(
-        _SECURITY_MAINTENANCE_EXECUTOR, invoke
+    (
+        result,
+        started,
+        completed,
+        started_process_cpu,
+        completed_process_cpu,
+        started_thread_cpu,
+        completed_thread_cpu,
+    ) = await loop.run_in_executor(_SECURITY_MAINTENANCE_EXECUTOR, invoke)
+    process_cpu_ms = max(
+        0.0, (completed_process_cpu - started_process_cpu) * 1000.0
+    )
+    thread_cpu_ms = max(
+        0.0, (completed_thread_cpu - started_thread_cpu) * 1000.0
     )
     return result, {
         "queue_wait_ms": max(0.0, (started - submitted) * 1000.0),
         "execution_ms": max(0.0, (completed - started) * 1000.0),
         "total_ms": max(0.0, (completed - submitted) * 1000.0),
+        "process_cpu_ms": process_cpu_ms,
+        "thread_cpu_ms": thread_cpu_ms,
+        "thread_kind": "maintenance_executor",
     }
 
 
@@ -337,6 +374,29 @@ def _dedupe_response_from_reservation(result: Any) -> dict[str, Any]:
         "retry_after_seconds": max(0, window - elapsed),
         "summary": "A safety check just finished. Showing the latest saved result instead of starting another one.",
     })
+
+
+def build_and_reserve_scan_request(
+    *,
+    run_id: str,
+    scope: str,
+    profile: str,
+    app_id: str | None,
+    reason: str,
+    requested_at: str,
+) -> dict[str, Any]:
+    """Build the compact command and reserve it entirely in the maintenance lane."""
+    command = {
+        "run_id": run_id,
+        "command_id": run_id,
+        "scope": scope or "local",
+        "profile": profile,
+        **({"app_id": app_id} if app_id else {}),
+        "reason": reason,
+        "requested_at": requested_at,
+    }
+    reservation = reserve_scan_request(command)
+    return {"command": command, "reservation": reservation}
 
 
 def reserve_scan_request(command: dict[str, Any]) -> dict[str, Any]:

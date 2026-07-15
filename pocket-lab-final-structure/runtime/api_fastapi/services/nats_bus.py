@@ -419,6 +419,49 @@ class PocketLabEventBus:
             "data": data or {},
         }
 
+    def prepare_json_event(
+        self,
+        subject: str,
+        event_type: str,
+        data: Dict[str, Any] | None = None,
+        *,
+        trace_id: str | None = None,
+    ) -> tuple[Dict[str, Any], bytes]:
+        """Build and encode one event outside the event loop when requested."""
+        event = self.envelope(subject, event_type, data, trace_id=trace_id)
+        payload = json.dumps(event, ensure_ascii=False, separators=(",", ":")).encode(
+            "utf-8"
+        )
+        return event, payload
+
+    async def publish_prepared_json(
+        self,
+        subject: str,
+        event: Dict[str, Any],
+        payload: bytes,
+    ) -> Dict[str, Any]:
+        """Publish a pre-encoded event without rebuilding or serializing it."""
+        if self.connected and self.nc is not None:
+            try:
+                if self.js is not None and (
+                    subject.startswith("pocketlab.commands.")
+                    or subject.startswith("pocketlab.audit.")
+                    or subject.startswith("pocketlab.dlq.")
+                ):
+                    await self.js.publish(subject, payload)
+                else:
+                    await self.nc.publish(subject, payload)
+            except Exception as exc:
+                self.connected = False
+                self.fallback_reason = str(exc)
+                await self._close_stale_client()
+                raise RuntimeError(
+                    f"NATS connection failed: {self.fallback_reason}"
+                ) from exc
+        self.published += 1
+        self._record(event)
+        return event
+
     async def publish_json(
         self,
         subject: str,

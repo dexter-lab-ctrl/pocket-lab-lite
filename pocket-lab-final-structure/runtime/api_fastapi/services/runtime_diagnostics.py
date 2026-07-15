@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import gc
 import logging
 import os
+import sys
 import threading
 import time
 from typing import Any, Awaitable, Callable
@@ -73,6 +74,19 @@ class RuntimeDiagnostics:
         self._recent_lag_events: deque[dict[str, Any]] = deque(maxlen=12)
         self._active_operations: dict[str, dict[str, Any]] = {}
         self._recent_operations: deque[dict[str, Any]] = deque(maxlen=16)
+        self._event_loop_thread_id: int | None = None
+        self._critical_stack_capture_enabled = os.environ.get(
+            "POCKETLAB_CRITICAL_LAG_STACK_CAPTURE", "0"
+        ).strip().lower() in {"1", "true", "yes", "on"}
+        self._critical_stack_capture_limit = 6
+        self._critical_stack_frame_limit = 8
+        self._critical_stack_captures: deque[dict[str, Any]] = deque(
+            maxlen=self._critical_stack_capture_limit
+        )
+        self._last_stack_capture_monotonic = 0.0
+        self._stack_capture_interval_seconds = _bounded_float(
+            "POCKETLAB_CRITICAL_LAG_STACK_INTERVAL_SECONDS", 60.0, 10.0, 600.0
+        )
         self._gc_installed = False
         self._gc_log_interval_seconds = _bounded_float(
             "POCKETLAB_GC_LOG_INTERVAL_SECONDS", 60.0, 5.0, 600.0
@@ -129,6 +143,8 @@ class RuntimeDiagnostics:
 
     async def _event_loop_lag_loop(self) -> None:
         loop = asyncio.get_running_loop()
+        with self._lock:
+            self._event_loop_thread_id = threading.get_ident()
         expected = loop.time() + self.loop_interval_seconds
         try:
             while True:
@@ -170,16 +186,19 @@ class RuntimeDiagnostics:
                     self._loop_last_summary_monotonic = now_monotonic
                 else:
                     self._loop_suppressed_logs += 1
+                active_operations = sorted(
+                    {item["name"] for item in self._active_operations.values()}
+                )[:6]
                 self._recent_lag_events.append({
                     "captured_at": _utc_now(),
                     "severity": severity,
                     "lag_ms": round(self._loop_latest_ms, 2),
-                    "active_operations": sorted(
-                        {item["name"] for item in self._active_operations.values()}
-                    )[:6],
+                    "active_operations": active_operations,
                 })
             self._loop_last_severity = severity
             recent_max = max(self._loop_recent, default=0.0)
+        if severity == "critical":
+            self._capture_critical_stack(now_monotonic, lag_ms)
         if should_log:
             log = _LOGGER.error if severity == "critical" else _LOGGER.warning
             log(
@@ -189,31 +208,102 @@ class RuntimeDiagnostics:
                 recent_max,
             )
 
+    def _thread_kind(self, thread_id: int) -> str:
+        with self._lock:
+            event_loop_thread_id = self._event_loop_thread_id
+        if event_loop_thread_id is not None and thread_id == event_loop_thread_id:
+            return "event_loop"
+        name = threading.current_thread().name.lower()
+        if "pocketlab-security-maintenance" in name:
+            return "maintenance_executor"
+        return "other_worker"
+
     def begin_operation(self, name: str) -> str:
         token = uuid.uuid4().hex
         now = time.monotonic()
+        process_cpu = time.process_time()
+        thread_cpu = time.thread_time()
+        thread_id = threading.get_ident()
         safe_name = str(name or "unknown")[:80]
+        item = {
+            "name": safe_name,
+            "started_monotonic": now,
+            "started_process_cpu": process_cpu,
+            "started_thread_cpu": thread_cpu,
+            "thread_kind": self._thread_kind(thread_id),
+        }
         with self._lock:
             if len(self._active_operations) >= 16:
-                oldest = min(self._active_operations, key=lambda key: self._active_operations[key]["started_monotonic"])
+                oldest = min(
+                    self._active_operations,
+                    key=lambda key: self._active_operations[key]["started_monotonic"],
+                )
                 self._active_operations.pop(oldest, None)
-            self._active_operations[token] = {"name": safe_name, "started_monotonic": now}
+            self._active_operations[token] = item
         return token
 
     def end_operation(self, token: str, *, result: str = "ok") -> float:
         now = time.monotonic()
+        process_cpu = time.process_time()
+        thread_cpu = time.thread_time()
         with self._lock:
             item = self._active_operations.pop(token, None)
             if not item:
                 return 0.0
             duration_ms = max(0.0, (now - float(item["started_monotonic"])) * 1000.0)
+            process_cpu_ms = max(
+                0.0, (process_cpu - float(item["started_process_cpu"])) * 1000.0
+            )
+            thread_cpu_ms = max(
+                0.0, (thread_cpu - float(item["started_thread_cpu"])) * 1000.0
+            )
             self._recent_operations.append({
                 "name": item["name"],
                 "duration_ms": round(duration_ms, 2),
+                "process_cpu_ms": round(process_cpu_ms, 2),
+                "thread_cpu_ms": round(thread_cpu_ms, 2),
+                "cpu_ratio": round(process_cpu_ms / duration_ms, 3) if duration_ms else 0.0,
+                "thread_kind": item["thread_kind"],
                 "result": str(result or "unknown")[:24],
                 "completed_at": _utc_now(),
             })
             return duration_ms
+
+    def _capture_critical_stack(self, now_monotonic: float, lag_ms: float) -> None:
+        if not self._critical_stack_capture_enabled:
+            return
+        with self._lock:
+            thread_id = self._event_loop_thread_id
+            if thread_id is None:
+                return
+            if (
+                now_monotonic - self._last_stack_capture_monotonic
+                < self._stack_capture_interval_seconds
+            ):
+                return
+            self._last_stack_capture_monotonic = now_monotonic
+        try:
+            frame = sys._current_frames().get(thread_id)
+            frames: list[dict[str, Any]] = []
+            while frame is not None and len(frames) < self._critical_stack_frame_limit:
+                code = frame.f_code
+                module = str(frame.f_globals.get("__name__") or "unknown")[-120:]
+                frames.append({
+                    "module": module,
+                    "function": str(code.co_name or "unknown")[:120],
+                    "line": max(0, int(frame.f_lineno or 0)),
+                })
+                frame = frame.f_back
+            capture = {
+                "captured_at": _utc_now(),
+                "lag_ms": round(max(0.0, float(lag_ms)), 2),
+                "thread_kind": "event_loop",
+                "frames": frames,
+            }
+            with self._lock:
+                self._critical_stack_captures.append(capture)
+        except Exception:
+            return
 
     def latest_event_loop_lag_ms(self) -> float:
         with self._lock:
@@ -391,10 +481,13 @@ class RuntimeDiagnostics:
                         {
                             "name": item["name"],
                             "elapsed_ms": round(max(0.0, (time.monotonic() - item["started_monotonic"]) * 1000.0), 2),
+                            "thread_kind": item["thread_kind"],
                         }
                         for item in list(self._active_operations.values())[:8]
                     ],
                     "recent_operations": list(self._recent_operations),
+                    "critical_stack_capture_enabled": self._critical_stack_capture_enabled,
+                    "critical_stack_captures": list(self._critical_stack_captures),
                 },
                 "gc": {
                     "recent_max_pause_ms": round(gc_recent_max, 2),

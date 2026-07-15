@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid
 import time
@@ -8,7 +9,8 @@ from typing import Any, Callable, Dict, Optional
 from fastapi import HTTPException
 
 from .. import deps
-from ..services.nats_bus import BUS
+from ..services.nats_bus import BUS, PocketLabEventBus
+from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 
 OperationRequestLike = Any
 DomainFallback = Callable[[Dict[str, Any]], Dict[str, Any]]
@@ -68,16 +70,55 @@ async def ensure_worker_execution_ready() -> bool:
     return worker_execution_enabled()
 
 
-async def _publish_with_reconnect(subject: str, event_type: str, payload: Dict[str, Any], *, trace_id: str | None = None) -> None:
-    try:
-        await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
-        return
-    except Exception:
-        # A phone sleep/wake or NATS listener restart can leave the FastAPI bus
-        # object marked disconnected after the first publish attempt. Try one
-        # bounded reconnect before surfacing a structured failure to the API.
-        await BUS.start()
-        await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
+async def _publish_with_reconnect(
+    subject: str,
+    event_type: str,
+    payload: Dict[str, Any],
+    *,
+    trace_id: str | None = None,
+    timing_sink: dict[str, float] | None = None,
+    timing_prefix: str = "publish",
+) -> None:
+    prepare_started = time.monotonic()
+    native_publish = (
+        getattr(BUS.publish_json, "__func__", None) is PocketLabEventBus.publish_json
+    )
+    if native_publish:
+        event, encoded = await asyncio.to_thread(
+            BUS.prepare_json_event,
+            subject,
+            event_type,
+            payload,
+            trace_id=trace_id,
+        )
+        prepared = time.monotonic()
+        broker_started = prepared
+        reconnect_ms = 0.0
+        try:
+            await BUS.publish_prepared_json(subject, event, encoded)
+        except Exception:
+            reconnect_started = time.monotonic()
+            await BUS.start()
+            reconnect_ms = max(0.0, (time.monotonic() - reconnect_started) * 1000.0)
+            await BUS.publish_prepared_json(subject, event, encoded)
+    else:
+        prepared = time.monotonic()
+        broker_started = prepared
+        reconnect_ms = 0.0
+        try:
+            await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
+        except Exception:
+            reconnect_started = time.monotonic()
+            await BUS.start()
+            reconnect_ms = max(0.0, (time.monotonic() - reconnect_started) * 1000.0)
+            await BUS.publish_json(subject, event_type, payload, trace_id=trace_id)
+    broker_done = time.monotonic()
+    if timing_sink is not None:
+        timing_sink.update({
+            f"{timing_prefix}_prepare_ms": max(0.0, (prepared - prepare_started) * 1000.0),
+            f"{timing_prefix}_broker_ms": max(0.0, (broker_done - broker_started) * 1000.0),
+            f"{timing_prefix}_reconnect_ms": reconnect_ms,
+        })
 
 
 def operation_command_payload(
@@ -156,36 +197,80 @@ async def submit_domain_command(
     timing_sink: dict[str, float] | None = None,
 ) -> Dict[str, Any]:
     """Submit a non-operation domain command through durable NATS/JetStream only."""
-    payload = dict(data or {})
+    payload_prepare_started = time.monotonic()
+    payload = await asyncio.to_thread(dict, data or {})
     command_id = str(
         payload.get("command_id") or payload.get("job_id") or uuid.uuid4().hex
     )
     payload.setdefault("command_id", command_id)
     payload.setdefault("trace_id", trace_id or command_id)
+    payload_prepare_done = time.monotonic()
 
     operation_started = time.monotonic()
     ready_started = time.monotonic()
     await ensure_worker_execution_ready()
     ready_done = time.monotonic()
     try:
-        command_started = time.monotonic()
-        await _publish_with_reconnect(subject, event_type, payload, trace_id=payload["trace_id"])
-        command_done = time.monotonic()
-        evidence_started = time.monotonic()
-        await _publish_with_reconnect(
-            "pocketlab.events.command.queued",
-            "command.queued",
-            {"command_id": command_id, "command_subject": subject, **payload},
-            trace_id=payload["trace_id"],
+        publish_details: dict[str, float] = {}
+        command_token = (
+            RUNTIME_DIAGNOSTICS.begin_operation("security.scan.nats_command_publish")
+            if timing_sink is not None else ""
         )
-        evidence_done = time.monotonic()
+        try:
+            command_started = time.monotonic()
+            await _publish_with_reconnect(
+                subject,
+                event_type,
+                payload,
+                trace_id=payload["trace_id"],
+                timing_sink=publish_details,
+                timing_prefix="command",
+            )
+            command_done = time.monotonic()
+        except Exception:
+            if command_token:
+                RUNTIME_DIAGNOSTICS.end_operation(command_token, result="error")
+            raise
+        else:
+            if command_token:
+                RUNTIME_DIAGNOSTICS.end_operation(command_token)
+        evidence_payload_started = time.monotonic()
+        evidence_payload = await asyncio.to_thread(
+            lambda: {"command_id": command_id, "command_subject": subject, **payload}
+        )
+        evidence_payload_done = time.monotonic()
+        evidence_token = (
+            RUNTIME_DIAGNOSTICS.begin_operation("security.scan.nats_evidence_publish")
+            if timing_sink is not None else ""
+        )
+        try:
+            evidence_started = time.monotonic()
+            await _publish_with_reconnect(
+                "pocketlab.events.command.queued",
+                "command.queued",
+                evidence_payload,
+                trace_id=payload["trace_id"],
+                timing_sink=publish_details,
+                timing_prefix="evidence",
+            )
+            evidence_done = time.monotonic()
+        except Exception:
+            if evidence_token:
+                RUNTIME_DIAGNOSTICS.end_operation(evidence_token, result="error")
+            raise
+        else:
+            if evidence_token:
+                RUNTIME_DIAGNOSTICS.end_operation(evidence_token)
         if timing_sink is not None:
             timing_sink.update({
+                "payload_prepare_ms": max(0.0, (payload_prepare_done - payload_prepare_started) * 1000.0),
                 "readiness_wait_ms": max(0.0, (ready_done - ready_started) * 1000.0),
                 "command_publish_ms": max(0.0, (command_done - command_started) * 1000.0),
+                "evidence_payload_prepare_ms": max(0.0, (evidence_payload_done - evidence_payload_started) * 1000.0),
                 "evidence_publish_ms": max(0.0, (evidence_done - evidence_started) * 1000.0),
                 "execution_ms": max(0.0, (evidence_done - ready_done) * 1000.0),
                 "total_ms": max(0.0, (evidence_done - operation_started) * 1000.0),
+                **publish_details,
             })
     except Exception as exc:
         raise HTTPException(

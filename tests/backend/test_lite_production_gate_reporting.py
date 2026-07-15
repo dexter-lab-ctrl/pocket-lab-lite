@@ -16,3 +16,10 @@ def test_gate_wraps_database_commands_with_explicit_failures():
 def test_gate_is_valid_bash():
     result = subprocess.run(['bash','-n',str(GATE)], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
+
+def test_gate_preserves_runtime_diagnostics_capture_failure_evidence():
+    text = GATE.read_text()
+    assert '"capture_ok": False' in text
+    assert '"error_class": error_class' in text
+    assert '"timeout_seconds": 3' in text
+    assert 'error_class = "timeout" if rc == 28 else "capture_failed"' in text

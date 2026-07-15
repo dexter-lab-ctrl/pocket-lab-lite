@@ -65,8 +65,28 @@ PY2
   then
     mv "$tmp_file" "$DIAGNOSTICS_FILE"
   else
+    local curl_rc=$?
     rm -f "$tmp_file"
-    printf '%s' '{}' > "$DIAGNOSTICS_FILE"
+    python3 - "$DIAGNOSTICS_FILE" "$curl_rc" <<'PY2'
+import json
+import sys
+
+path, raw_rc = sys.argv[1:]
+try:
+    rc = int(raw_rc)
+except ValueError:
+    rc = 1
+error_class = "timeout" if rc == 28 else "capture_failed"
+payload = {
+    "capture_ok": False,
+    "error_class": error_class,
+    "curl_exit_code": rc,
+    "timeout_seconds": 3,
+    "sanitized": True,
+}
+with open(path, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, sort_keys=True)
+PY2
   fi
 }
 
