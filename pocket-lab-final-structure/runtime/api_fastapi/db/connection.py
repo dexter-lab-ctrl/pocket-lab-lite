@@ -4,6 +4,7 @@ import os
 import sqlite3
 import time
 from contextlib import contextmanager
+from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
@@ -57,10 +58,16 @@ def _bounded_int(name: str, default: int, *, minimum: int, maximum: int) -> int:
 
 def _resolved_database_path() -> Path:
     override = os.environ.get("POCKETLAB_LITE_DB_PATH", "").strip()
+    state_dir = "" if override else str(deps.settings().state_dir)
+    return _resolved_database_path_cached(override, state_dir)
+
+
+@lru_cache(maxsize=16)
+def _resolved_database_path_cached(override: str, state_dir: str) -> Path:
     raw_candidate = (
         Path(override).expanduser()
         if override
-        else Path(deps.settings().state_dir) / "pocketlab-lite.sqlite3"
+        else Path(state_dir) / "pocketlab-lite.sqlite3"
     )
     raw_normalized = raw_candidate.as_posix().lower()
     candidate = raw_candidate.resolve(strict=False)
@@ -111,16 +118,39 @@ def sqlite_settings() -> SQLiteSettings:
         raise SQLiteConfigurationError(
             "POCKETLAB_LITE_DB_SYNCHRONOUS must be NORMAL or FULL"
         )
-    return SQLiteSettings(
-        path=_resolved_database_path(),
-        busy_timeout_ms=_bounded_int(
-            "POCKETLAB_LITE_DB_BUSY_TIMEOUT_MS", 20_000, minimum=1_000, maximum=120_000
-        ),
-        synchronous=synchronous,
-        wal_autocheckpoint=_bounded_int(
-            "POCKETLAB_LITE_DB_WAL_AUTOCHECKPOINT", 1_000, minimum=1, maximum=100_000
-        ),
+    busy_timeout_ms = _bounded_int(
+        "POCKETLAB_LITE_DB_BUSY_TIMEOUT_MS", 20_000, minimum=1_000, maximum=120_000
     )
+    wal_autocheckpoint = _bounded_int(
+        "POCKETLAB_LITE_DB_WAL_AUTOCHECKPOINT", 1_000, minimum=1, maximum=100_000
+    )
+    override = os.environ.get("POCKETLAB_LITE_DB_PATH", "").strip()
+    state_dir = "" if override else str(deps.settings().state_dir)
+    return _sqlite_settings_cached(
+        override, state_dir, busy_timeout_ms, synchronous, wal_autocheckpoint
+    )
+
+
+@lru_cache(maxsize=16)
+def _sqlite_settings_cached(
+    override: str,
+    state_dir: str,
+    busy_timeout_ms: int,
+    synchronous: str,
+    wal_autocheckpoint: int,
+) -> SQLiteSettings:
+    return SQLiteSettings(
+        path=_resolved_database_path_cached(override, state_dir),
+        busy_timeout_ms=busy_timeout_ms,
+        synchronous=synchronous,
+        wal_autocheckpoint=wal_autocheckpoint,
+    )
+
+
+def reset_sqlite_path_cache() -> None:
+    """Clear process-local path/settings caches for tests or explicit reconfiguration."""
+    _resolved_database_path_cached.cache_clear()
+    _sqlite_settings_cached.cache_clear()
 
 
 def database_path() -> Path:

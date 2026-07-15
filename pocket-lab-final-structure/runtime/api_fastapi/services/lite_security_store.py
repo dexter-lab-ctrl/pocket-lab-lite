@@ -639,14 +639,30 @@ class SecuritySQLiteRepository:
                     (normalized_run, queued_message, now, now_epoch, fingerprint),
                 )
                 domain_revision = _bump_revision(tx, now)
-                reserved = tx.execute(
-                    "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
-                ).fetchone()
                 write_done = time.monotonic()
             commit_done = time.monotonic()
         result_started = commit_done
-        run = _row(reserved) or {}
-        run["domain_revision"] = domain_revision
+        run = {
+            "run_id": normalized_run,
+            "profile": normalized_profile,
+            "app_id": normalized_app,
+            "app_label": str(app_label or "")[:120],
+            "status": "queued",
+            "active_key": active_key,
+            "summary": queued_message,
+            "requested_at": now,
+            "updated_at": now,
+            "requested_at_epoch_ms": now_epoch,
+            "updated_at_epoch_ms": now_epoch,
+            "command_id": str(command_id or "")[:160] or None,
+            "correlation_id": str(correlation_id or "")[:160] or None,
+            "source": "security-api",
+            "revision": 1,
+            "percent": 5,
+            "stage": "queued",
+            "message": queued_message,
+            "domain_revision": domain_revision,
+        }
         result = ReservationResult(True, "reserved", run)
         result_done = time.monotonic()
         if timing_sink is not None:
@@ -989,15 +1005,10 @@ class SecuritySQLiteRepository:
 
     def mark_published_and_accepted(
         self, run_id: str, *, published_at: str, accepted_at: str | None = None,
-        summary: str = ""
+        summary: str = "", timing_sink: dict[str, float] | None = None,
     ) -> dict[str, Any]:
-        """Commit publication evidence and API acceptance in one transaction.
-
-        A worker may receive and start the command before this transaction gets
-        the SQLite write lock. In that race, publication/acceptance timestamps
-        are repaired without regressing the worker-owned running or terminal
-        status and without appending a stale accepted progress event.
-        """
+        """Commit publication evidence and API acceptance in one transaction."""
+        total_started = time.monotonic()
         normalized_run = _normalize_run_id(run_id)
         published = _parse_timestamp(published_at)
         accepted = _parse_timestamp(accepted_at)
@@ -1005,68 +1016,94 @@ class SecuritySQLiteRepository:
         accepted = datetime.fromtimestamp(
             accepted_epoch / 1000, tz=timezone.utc
         ).isoformat().replace("+00:00", "Z")
-        with connection() as conn, begin_immediate(conn) as tx:
-            current = tx.execute(
-                "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
-            ).fetchone()
-            if not current:
-                raise SecurityStoreError("Security run not found")
-            current_status = str(current["status"] or "")
-            worker_owned = current_status in TERMINAL_STATUSES or current_status in {
-                "running", "working", "in_progress"
-            }
-            if worker_owned:
-                tx.execute(
-                    """
-                    UPDATE security_scan_runs
-                    SET command_published_at = COALESCE(command_published_at, ?),
-                        command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
-                        accepted_at = COALESCE(accepted_at, ?),
-                        revision = revision + 1
-                    WHERE run_id = ?
-                    """,
-                    (published, _epoch_ms(published), accepted, normalized_run),
-                )
-                revision_time = _parse_timestamp(current["updated_at"] or accepted)
-                revision = _bump_revision(tx, revision_time)
-                row = tx.execute(
-                    "SELECT * FROM security_scan_runs WHERE run_id = ?",
-                    (normalized_run,),
+        normalize_done = time.monotonic()
+        connection_started = normalize_done
+        connection_timing: dict[str, float] = {}
+        with connection(timing_sink=connection_timing) as conn:
+            connection_done = time.monotonic()
+            begin_started = connection_done
+            with begin_immediate(conn) as tx:
+                begin_done = time.monotonic()
+                lookup_started = begin_done
+                current = tx.execute(
+                    "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
                 ).fetchone()
-                result = _row(row) or {}
-                result["domain_revision"] = revision
-                result["publication_repaired_after_worker_progress"] = True
-                return policy.redact_value(result)
-            tx.execute(
-                """
-                UPDATE security_scan_runs
-                SET status = 'accepted',
-                    command_published_at = COALESCE(command_published_at, ?),
-                    command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
-                    accepted_at = COALESCE(accepted_at, ?),
-                    updated_at = ?, updated_at_epoch_ms = ?,
-                    summary = CASE WHEN ? = '' THEN summary ELSE ? END,
-                    revision = revision + 1
-                WHERE run_id = ?
-                """,
-                (
-                    published, _epoch_ms(published), accepted, accepted, accepted_epoch,
-                    summary, policy.redact_text(summary)[:500], normalized_run,
-                ),
-            )
-            event = self._append_progress_event(
-                tx, normalized_run, status="accepted", stage="accepted", percent=5,
-                message=summary or "Security check accepted.", tool=None, payload=None,
-                created_at=accepted,
-            )
-            revision = _bump_revision(tx, accepted)
-            row = tx.execute(
-                "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
-            ).fetchone()
+                lookup_done = time.monotonic()
+                if not current:
+                    raise SecurityStoreError("Security run not found")
+                current_status = str(current["status"] or "")
+                worker_owned = current_status in TERMINAL_STATUSES or current_status in {
+                    "running", "working", "in_progress"
+                }
+                write_started = lookup_done
+                event = None
+                if worker_owned:
+                    tx.execute(
+                        """
+                        UPDATE security_scan_runs
+                        SET command_published_at = COALESCE(command_published_at, ?),
+                            command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
+                            accepted_at = COALESCE(accepted_at, ?),
+                            revision = revision + 1
+                        WHERE run_id = ?
+                        """,
+                        (published, _epoch_ms(published), accepted, normalized_run),
+                    )
+                    revision_time = _parse_timestamp(current["updated_at"] or accepted)
+                    revision = _bump_revision(tx, revision_time)
+                else:
+                    tx.execute(
+                        """
+                        UPDATE security_scan_runs
+                        SET status = 'accepted',
+                            command_published_at = COALESCE(command_published_at, ?),
+                            command_published_at_epoch_ms = COALESCE(command_published_at_epoch_ms, ?),
+                            accepted_at = COALESCE(accepted_at, ?),
+                            updated_at = ?, updated_at_epoch_ms = ?,
+                            summary = CASE WHEN ? = '' THEN summary ELSE ? END,
+                            revision = revision + 1
+                        WHERE run_id = ?
+                        """,
+                        (
+                            published, _epoch_ms(published), accepted, accepted, accepted_epoch,
+                            summary, policy.redact_text(summary)[:500], normalized_run,
+                        ),
+                    )
+                    event = self._append_progress_event(
+                        tx, normalized_run, status="accepted", stage="accepted", percent=5,
+                        message=summary or "Security check accepted.", tool=None, payload=None,
+                        created_at=accepted,
+                    )
+                    revision = _bump_revision(tx, accepted)
+                row = tx.execute(
+                    "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+                ).fetchone()
+                write_done = time.monotonic()
+            commit_done = time.monotonic()
+        result_started = commit_done
         result = _row(row) or {}
         result["domain_revision"] = revision
-        result["progress_event"] = event
-        return policy.redact_value(result)
+        if worker_owned:
+            result["publication_repaired_after_worker_progress"] = True
+        elif event is not None:
+            result["progress_event"] = event
+        result = policy.redact_value(result)
+        result_done = time.monotonic()
+        if timing_sink is not None:
+            timing_sink.update({
+                "normalize_ms": max(0.0, (normalize_done-total_started)*1000.0),
+                "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                "connection_path_resolve_ms": float(connection_timing.get("path_resolve_ms") or 0.0),
+                "connection_sqlite_connect_ms": float(connection_timing.get("sqlite_connect_ms") or 0.0),
+                "connection_pragma_setup_ms": float(connection_timing.get("pragma_setup_ms") or 0.0),
+                "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
+                "lookup_ms": max(0.0, (lookup_done-lookup_started)*1000.0),
+                "write_ms": max(0.0, (write_done-write_started)*1000.0),
+                "commit_ms": max(0.0, (commit_done-write_done)*1000.0),
+                "result_build_ms": max(0.0, (result_done-result_started)*1000.0),
+                "total_ms": max(0.0, (result_done-total_started)*1000.0),
+            })
+        return result
 
     def mark_accepted(
         self, run_id: str, *, accepted_at: str | None = None, summary: str = ""

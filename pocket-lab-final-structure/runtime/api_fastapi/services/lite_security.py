@@ -442,7 +442,9 @@ def reserve_scan_request(
     return {"reserved": True, "run": result.run, "response": None}
 
 
-def finalize_scan_submission(command: dict[str, Any]) -> dict[str, Any] | None:
+def finalize_scan_submission(
+    command: dict[str, Any], timing_sink: dict[str, float] | None = None
+) -> dict[str, Any] | None:
     """Persist successful publication and API acceptance in one transaction.
 
     Worker receipt and execution timestamps remain worker-owned. The API only
@@ -461,6 +463,7 @@ def finalize_scan_submission(command: dict[str, Any]) -> dict[str, Any] | None:
         published_at=published_at,
         accepted_at=deps.now_utc_iso(),
         summary=_profile_copy(_scan_profile(command))["queued"],
+        timing_sink=timing_sink,
     )
     # Publish the exact committed transaction result without another SQLite
     # round trip, then wake the background refresher for eventual reconciliation.

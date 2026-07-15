@@ -370,7 +370,7 @@ recover_timed_out_submission(){
   return 1
 }
 
-submission_latency_gate(){
+latency_gate(){
   local output rc
   set +e
   output="$(python3 - "$SAMPLES" <<'PYLAT'
@@ -403,6 +403,19 @@ PYLAT
   if (( rc != 0 )); then
     fail "Progress latency gate failed: ${output//$'\n'/; }"
   fi
+}
+
+submission_latency_gate(){
+  if [[ -s "$SUBMISSION_FAILURES" ]]; then
+    fail "one or more scan submissions exceeded the production response-latency limit: $(tr '\n' ';' < "$SUBMISSION_FAILURES")"
+  fi
+}
+
+required_gate_functions(){
+  local name
+  for name in latency_gate submission_latency_gate capture_runtime_diagnostics write_final_report run_scan_gate sample_progress; do
+    declare -F "$name" >/dev/null || fail "production gate is missing required function: $name"
+  done
 }
 
 
@@ -512,6 +525,7 @@ worker_pid(){
   pm2 jlist 2>/dev/null | python3 -c 'import json,sys; rows=json.load(sys.stdin); print(next((r.get("pid","") for r in rows if r.get("name")=="pocket-worker"),""))'
 }
 
+required_gate_functions
 wait_for_api_ready
 info "Checking idle Progress path"
 for _ in 1 2 3 4 5; do sample_progress idle >/dev/null; done

@@ -170,6 +170,9 @@ class EventSourcedWorkflowEngine:
         self._writer_queue: queue.Queue[Dict[str, Any] | None] = queue.Queue(
             maxsize=max(8, min(int(os.environ.get("POCKETLAB_WORKFLOW_WRITER_QUEUE_SIZE", "256")), 4096))
         )
+        self._writer_batch_size = max(
+            1, min(int(os.environ.get("POCKETLAB_WORKFLOW_WRITER_BATCH_SIZE", "32")), 256)
+        )
         self._writer_thread: threading.Thread | None = None
         self._writer_stop = threading.Event()
         self._writer_lock = threading.RLock()
@@ -258,29 +261,44 @@ class EventSourcedWorkflowEngine:
     def _writer_loop(self) -> None:
         while not self._writer_stop.is_set() or not self._writer_queue.empty():
             try:
-                event = self._writer_queue.get(timeout=0.25)
+                first = self._writer_queue.get(timeout=0.25)
             except queue.Empty:
                 continue
-            if event is None:
+            if first is None:
                 self._writer_queue.task_done()
                 continue
+            batch = [first]
+            while len(batch) < self._writer_batch_size:
+                try:
+                    item = self._writer_queue.get_nowait()
+                except queue.Empty:
+                    break
+                if item is None:
+                    self._writer_queue.task_done()
+                    continue
+                batch.append(item)
             started = time.monotonic()
             try:
-                self.ingest_event(event)
+                changed = self.ingest_events(batch)
             except Exception as exc:
                 with self._writer_lock:
-                    self._writer_stats["failed"] += 1
+                    self._writer_stats["failed"] += len(batch)
                     self._writer_stats["last_error_type"] = type(exc).__name__
             else:
                 duration_ms = max(0.0, (time.monotonic() - started) * 1000.0)
                 with self._writer_lock:
-                    self._writer_stats["written"] += 1
+                    self._writer_stats["written"] += len(batch)
+                    if len(batch) > 1:
+                        self._writer_stats["coalesced"] += len(batch) - 1
+                    if not changed:
+                        self._writer_stats["coalesced"] += 1
                     self._writer_stats["recent_max_write_ms"] = max(
                         float(self._writer_stats["recent_max_write_ms"]), duration_ms
                     )
                     self._writer_stats["last_write_at"] = deps.now_utc_iso()
             finally:
-                self._writer_queue.task_done()
+                for _ in batch:
+                    self._writer_queue.task_done()
 
     def writer_status(self) -> Dict[str, Any]:
         with self._writer_lock:
@@ -290,28 +308,50 @@ class EventSourcedWorkflowEngine:
             "running": bool(thread is not None and thread.is_alive()),
             "queue_depth": self._writer_queue.qsize(),
             "queue_capacity": self._writer_queue.maxsize,
+            "batch_size": self._writer_batch_size,
             **stats,
         }
 
     def ingest_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
-        """Persist an event and update the workflow projection.
+        """Persist one event using the same ordered batch pipeline as the writer."""
+        projections = self.ingest_events([event])
+        workflow_id = workflow_id_for_event(event) if isinstance(event, dict) else ""
+        return self.get_projection(workflow_id) if projections and workflow_id else {}
 
-        Called by the event bus for every event it records.  Duplicate event IDs
-        are harmless because projections are reconstructed deterministically from
-        the journal when needed.
-        """
-        if not isinstance(event, dict):
-            return {}
-        event = _safe(dict(event))
-        event.setdefault("time", deps.now_utc_iso())
-        event.setdefault("id", uuid.uuid4().hex)
-        workflow_id = workflow_id_for_event(event)
-        event["workflow_id"] = workflow_id
-        _append_jsonl(self.event_log, event)
-        projection = self._apply_event(self.get_projection(workflow_id), event)
-        self.save_projection(projection)
-        self._maybe_record_command(event)
-        return projection
+    def ingest_events(self, events: List[Dict[str, Any]]) -> bool:
+        """Append events in order and persist one coalesced projection snapshot."""
+        safe_events: List[Dict[str, Any]] = []
+        for raw in events:
+            if not isinstance(raw, dict):
+                continue
+            event = _safe(dict(raw))
+            event.setdefault("time", deps.now_utc_iso())
+            event.setdefault("id", uuid.uuid4().hex)
+            event["workflow_id"] = workflow_id_for_event(event)
+            safe_events.append(event)
+        if not safe_events:
+            return False
+        for event in safe_events:
+            _append_jsonl(self.event_log, event)
+        changed = False
+        with self._projection_lock:
+            data = self._projection_data()
+            workflows = data.setdefault("workflows", {})
+            for event in safe_events:
+                workflow_id = str(event["workflow_id"])
+                current = dict(workflows.get(workflow_id) or {"workflow_id": workflow_id})
+                projection = self._apply_event(current, event)
+                if workflows.get(workflow_id) != projection:
+                    workflows[workflow_id] = projection
+                    changed = True
+            if changed:
+                data["updated_at"] = deps.now_utc_iso()
+                _write_json(self.projection_file, data)
+        for event in safe_events:
+            self._maybe_record_command(event)
+        if changed:
+            self._invalidate_status_cache()
+        return changed
 
     def _maybe_record_command(self, event: Dict[str, Any]) -> None:
         subject = str(event.get("subject") or "")

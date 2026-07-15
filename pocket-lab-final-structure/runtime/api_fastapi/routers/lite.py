@@ -108,6 +108,15 @@ def _record_security_submission_timing(
         "publish": max(0.0, ((publish_done or reservation_done) - reservation_done) * 1000),
         "lifecycle_queue": float(lifecycle_timing.get("queue_wait_ms", 0.0)),
         "lifecycle_execution": float(lifecycle_timing.get("execution_ms", 0.0)),
+        "lifecycle_connection_wait": float(lifecycle_timing.get("stage_connection_wait_ms", 0.0)),
+        "lifecycle_connection_path_resolve": float(lifecycle_timing.get("stage_connection_path_resolve_ms", 0.0)),
+        "lifecycle_connection_sqlite_connect": float(lifecycle_timing.get("stage_connection_sqlite_connect_ms", 0.0)),
+        "lifecycle_connection_pragma_setup": float(lifecycle_timing.get("stage_connection_pragma_setup_ms", 0.0)),
+        "lifecycle_begin_wait": float(lifecycle_timing.get("stage_begin_wait_ms", 0.0)),
+        "lifecycle_lookup": float(lifecycle_timing.get("stage_lookup_ms", 0.0)),
+        "lifecycle_write": float(lifecycle_timing.get("stage_write_ms", 0.0)),
+        "lifecycle_transaction_commit": float(lifecycle_timing.get("stage_commit_ms", 0.0)),
+        "lifecycle_result_build": float(lifecycle_timing.get("stage_result_build_ms", 0.0)),
         "lifecycle_commit": max(0.0, ((lifecycle_committed or publish_done or reservation_done) - (publish_done or reservation_done)) * 1000),
         "total": max(0.0, (end - started) * 1000),
     }
@@ -135,7 +144,11 @@ def _record_security_submission_timing(
         "nats_evidence_send_ms=%.2f nats_evidence_ack_wait_ms=%.2f "
         "nats_evidence_record_memory_ms=%.2f nats_evidence_workflow_enqueue_ms=%.2f nats_evidence_post_ack_ms=%.2f nats_evidence_broker_ms=%.2f nats_evidence_reconnect_ms=%.2f "
         "lifecycle_queue_ms=%.2f lifecycle_execution_ms=%.2f "
-        "lifecycle_process_cpu_ms=%.2f total_ms=%.2f",
+        "lifecycle_process_cpu_ms=%.2f lifecycle_connection_wait_ms=%.2f "
+        "lifecycle_connection_path_resolve_ms=%.2f lifecycle_connection_sqlite_connect_ms=%.2f "
+        "lifecycle_connection_pragma_setup_ms=%.2f lifecycle_begin_wait_ms=%.2f "
+        "lifecycle_lookup_ms=%.2f lifecycle_write_ms=%.2f lifecycle_transaction_commit_ms=%.2f "
+        "lifecycle_result_build_ms=%.2f total_ms=%.2f",
         run_id, deduplicated, stages["auth"], stages["reservation_queue"],
         stages["reservation_execution"], float(reservation_timing.get("process_cpu_ms", 0.0)),
         stages["reservation_connection_wait"], stages["reservation_connection_path_resolve"],
@@ -156,7 +169,10 @@ def _record_security_submission_timing(
         stages["nats_evidence_workflow_enqueue"], stages["nats_evidence_post_ack"],
         stages["nats_evidence_broker"], stages["nats_evidence_reconnect"], stages["lifecycle_queue"],
         stages["lifecycle_execution"], float(lifecycle_timing.get("process_cpu_ms", 0.0)),
-        stages["total"],
+        stages["lifecycle_connection_wait"], stages["lifecycle_connection_path_resolve"],
+        stages["lifecycle_connection_sqlite_connect"], stages["lifecycle_connection_pragma_setup"],
+        stages["lifecycle_begin_wait"], stages["lifecycle_lookup"], stages["lifecycle_write"],
+        stages["lifecycle_transaction_commit"], stages["lifecycle_result_build"], stages["total"],
     )
 
 
@@ -1116,11 +1132,14 @@ async def check_lite_security(
         )
         raise
     publish_done = time.perf_counter()
+    lifecycle_stages: dict[str, float] = {}
     _result, lifecycle_timing = await lite_security.run_api_maintenance_timed(
         lite_security.finalize_scan_submission,
         command,
+        lifecycle_stages,
         operation_name="security.scan.lifecycle_commit",
     )
+    lifecycle_timing.update({f"stage_{key}": value for key, value in lifecycle_stages.items()})
     lifecycle_committed = time.perf_counter()
     queued.update(
         {
