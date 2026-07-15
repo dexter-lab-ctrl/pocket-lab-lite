@@ -17,6 +17,7 @@ from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
+from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 _LOGGER = logging.getLogger(__name__)
@@ -60,17 +61,26 @@ def _record_security_submission_timing(
     publish_done: float | None = None,
     lifecycle_committed: float | None = None,
     deduplicated: bool = False,
+    reservation_timing: dict[str, float] | None = None,
+    publish_timing: dict[str, float] | None = None,
+    lifecycle_timing: dict[str, float] | None = None,
 ) -> None:
     """Expose sanitized stage timings without leaking command payload data."""
     end = lifecycle_committed or publish_done or reservation_done
+    reservation_timing = reservation_timing or {}
+    publish_timing = publish_timing or {}
+    lifecycle_timing = lifecycle_timing or {}
     stages = {
         "auth": max(0.0, (auth_done - started) * 1000),
+        "reservation_queue": float(reservation_timing.get("queue_wait_ms", 0.0)),
+        "reservation_execution": float(reservation_timing.get("execution_ms", 0.0)),
         "reservation": max(0.0, (reservation_done - auth_done) * 1000),
+        "nats_readiness_wait": float(publish_timing.get("readiness_wait_ms", 0.0)),
+        "nats_publish_execution": float(publish_timing.get("execution_ms", 0.0)),
         "publish": max(0.0, ((publish_done or reservation_done) - reservation_done) * 1000),
-        "lifecycle_commit": max(
-            0.0, ((lifecycle_committed or publish_done or reservation_done)
-                  - (publish_done or reservation_done)) * 1000
-        ),
+        "lifecycle_queue": float(lifecycle_timing.get("queue_wait_ms", 0.0)),
+        "lifecycle_execution": float(lifecycle_timing.get("execution_ms", 0.0)),
+        "lifecycle_commit": max(0.0, ((lifecycle_committed or publish_done or reservation_done) - (publish_done or reservation_done)) * 1000),
         "total": max(0.0, (end - started) * 1000),
     }
     response.headers["Server-Timing"] = ", ".join(
@@ -83,10 +93,13 @@ def _record_security_submission_timing(
     )
     timing_log(
         "Security scan submission timing run_id=%s deduplicated=%s "
-        "auth_ms=%.2f reservation_ms=%.2f publish_ms=%.2f "
-        "lifecycle_commit_ms=%.2f total_ms=%.2f",
-        run_id, deduplicated, stages["auth"], stages["reservation"],
-        stages["publish"], stages["lifecycle_commit"], stages["total"],
+        "auth_ms=%.2f reservation_queue_ms=%.2f reservation_execution_ms=%.2f "
+        "nats_readiness_wait_ms=%.2f nats_publish_execution_ms=%.2f "
+        "lifecycle_queue_ms=%.2f lifecycle_execution_ms=%.2f total_ms=%.2f",
+        run_id, deduplicated, stages["auth"], stages["reservation_queue"],
+        stages["reservation_execution"], stages["nats_readiness_wait"],
+        stages["nats_publish_execution"], stages["lifecycle_queue"],
+        stages["lifecycle_execution"], stages["total"],
     )
 
 
@@ -998,9 +1011,16 @@ async def check_lite_security(
         "reason": payload.reason or ("manual app check" if profile == lite_security.policy.SCAN_PROFILE_APP else "manual full local check" if profile == lite_security.policy.SCAN_PROFILE_FULL else "manual quick safety check"),
         "requested_at": deps.now_utc_iso(),
     }
-    reservation = await lite_security.run_api_maintenance(
-        lite_security.reserve_scan_request, command
-    )
+    reservation_token = RUNTIME_DIAGNOSTICS.begin_operation("security.scan.reservation")
+    try:
+        reservation, reservation_timing = await lite_security.run_api_maintenance_timed(
+            lite_security.reserve_scan_request, command
+        )
+    except Exception:
+        RUNTIME_DIAGNOSTICS.end_operation(reservation_token, result="error")
+        raise
+    else:
+        RUNTIME_DIAGNOSTICS.end_operation(reservation_token)
     reservation_done = time.perf_counter()
     if not reservation.get("reserved"):
         deduplicated = reservation.get("response") or {
@@ -1013,26 +1033,40 @@ async def check_lite_security(
             response, run_id=str(deduplicated.get("run_id") or run_id),
             started=request_started, auth_done=auth_done,
             reservation_done=reservation_done, deduplicated=True,
+            reservation_timing=reservation_timing,
         )
         return deduplicated
     # Capture the publication boundary before NATS can deliver the command. The
     # timestamp is persisted only after submit_domain_command succeeds.
     command["command_published_at"] = deps.now_utc_iso()
+    publish_timing: dict[str, float] = {}
+    publish_token = RUNTIME_DIAGNOSTICS.begin_operation("security.scan.nats_publish")
     try:
         queued = await submit_domain_command(
             lite_security.policy.COMMAND_SUBJECT,
             "lite.security.scan.requested",
             command,
+            timing_sink=publish_timing,
         )
     except Exception:
+        RUNTIME_DIAGNOSTICS.end_operation(publish_token, result="error")
         await lite_security.run_api_maintenance(
             lite_security.fail_scan_submission, run_id
         )
         raise
+    else:
+        RUNTIME_DIAGNOSTICS.end_operation(publish_token)
     publish_done = time.perf_counter()
-    await lite_security.run_api_maintenance(
-        lite_security.finalize_scan_submission, command
-    )
+    lifecycle_token = RUNTIME_DIAGNOSTICS.begin_operation("security.scan.lifecycle_commit")
+    try:
+        _result, lifecycle_timing = await lite_security.run_api_maintenance_timed(
+            lite_security.finalize_scan_submission, command
+        )
+    except Exception:
+        RUNTIME_DIAGNOSTICS.end_operation(lifecycle_token, result="error")
+        raise
+    else:
+        RUNTIME_DIAGNOSTICS.end_operation(lifecycle_token)
     lifecycle_committed = time.perf_counter()
     queued.update(
         {
@@ -1050,7 +1084,8 @@ async def check_lite_security(
     _record_security_submission_timing(
         response, run_id=run_id, started=request_started, auth_done=auth_done,
         reservation_done=reservation_done, publish_done=publish_done,
-        lifecycle_committed=lifecycle_committed,
+        lifecycle_committed=lifecycle_committed, reservation_timing=reservation_timing,
+        publish_timing=publish_timing, lifecycle_timing=lifecycle_timing,
     )
     return queued
 
