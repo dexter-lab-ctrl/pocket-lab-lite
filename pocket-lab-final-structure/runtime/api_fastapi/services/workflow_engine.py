@@ -22,6 +22,7 @@ on Android/Termux, but its model mirrors enterprise workflow engines:
 
 import json
 import os
+import queue
 import threading
 import time
 import uuid
@@ -62,14 +63,6 @@ ACTIVE_TYPES = {
 SENSITIVE_KEYS = {"api_key", "token", "password", "secret", "value", "authorization"}
 
 
-def _state_dir() -> Path:
-    root = deps.settings().state_dir / "workflows"
-    root.mkdir(parents=True, exist_ok=True)
-    (root / "events").mkdir(parents=True, exist_ok=True)
-    (root / "projections").mkdir(parents=True, exist_ok=True)
-    (root / "commands").mkdir(parents=True, exist_ok=True)
-    return root
-
 
 def _safe(data: Any) -> Any:
     if isinstance(data, dict):
@@ -92,9 +85,14 @@ def _read_json(path: Path, default: Any) -> Any:
 
 
 def _write_json(path: Path, data: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    """Atomically persist compact JSON with optional durability sync."""
     tmp = path.with_suffix(path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
-    tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    with tmp.open("wb") as handle:
+        handle.write(payload)
+        handle.flush()
+        if os.environ.get("POCKETLAB_WORKFLOW_FSYNC", "0").strip().lower() in {"1", "true", "yes", "on"}:
+            os.fsync(handle.fileno())
     os.replace(tmp, path)
 
 
@@ -162,22 +160,138 @@ class EventSourcedWorkflowEngine:
             os.environ.get("POCKETLAB_WORKFLOW_STATUS_CACHE_SECONDS", "15")
         ))
         self._status_cache_lock = threading.RLock()
+        self._path_lock = threading.RLock()
+        self._root: Path | None = None
+        self._event_log: Path | None = None
+        self._projection_file: Path | None = None
+        self._command_file: Path | None = None
+        self._projection_lock = threading.RLock()
+        self._projection_cache: Dict[str, Any] | None = None
+        self._writer_queue: queue.Queue[Dict[str, Any] | None] = queue.Queue(
+            maxsize=max(8, min(int(os.environ.get("POCKETLAB_WORKFLOW_WRITER_QUEUE_SIZE", "256")), 4096))
+        )
+        self._writer_thread: threading.Thread | None = None
+        self._writer_stop = threading.Event()
+        self._writer_lock = threading.RLock()
+        self._writer_stats: Dict[str, Any] = {
+            "queued": 0, "written": 0, "coalesced": 0, "dropped": 0, "failed": 0,
+            "recent_max_write_ms": 0.0, "last_error_type": "", "last_write_at": "",
+        }
+
+    def _ensure_paths(self) -> None:
+        if self._root is not None:
+            return
+        with self._path_lock:
+            if self._root is not None:
+                return
+            root = deps.settings().state_dir / "workflows"
+            events = root / "events"
+            projections = root / "projections"
+            commands = root / "commands"
+            for path in (root, events, projections, commands):
+                path.mkdir(parents=True, exist_ok=True)
+            self._root = root
+            self._event_log = events / "workflow_events.jsonl"
+            self._projection_file = projections / "workflow_projections.json"
+            self._command_file = commands / "command_journal.json"
 
     @property
     def root(self) -> Path:
-        return _state_dir()
+        self._ensure_paths()
+        assert self._root is not None
+        return self._root
 
     @property
     def event_log(self) -> Path:
-        return self.root / "events" / "workflow_events.jsonl"
+        self._ensure_paths()
+        assert self._event_log is not None
+        return self._event_log
 
     @property
     def projection_file(self) -> Path:
-        return self.root / "projections" / "workflow_projections.json"
+        self._ensure_paths()
+        assert self._projection_file is not None
+        return self._projection_file
 
     @property
     def command_file(self) -> Path:
-        return self.root / "commands" / "command_journal.json"
+        self._ensure_paths()
+        assert self._command_file is not None
+        return self._command_file
+
+    def start_writer(self) -> None:
+        with self._writer_lock:
+            if self._writer_thread is not None and self._writer_thread.is_alive():
+                return
+            self._writer_stop.clear()
+            self._writer_thread = threading.Thread(
+                target=self._writer_loop, name="pocketlab-workflow-projection-writer", daemon=True
+            )
+            self._writer_thread.start()
+
+    def stop_writer(self, *, drain_timeout_seconds: float = 3.0) -> None:
+        thread = self._writer_thread
+        if thread is None:
+            return
+        self._writer_stop.set()
+        try:
+            self._writer_queue.put_nowait(None)
+        except queue.Full:
+            pass
+        thread.join(timeout=max(0.1, min(float(drain_timeout_seconds), 10.0)))
+        self._writer_thread = None
+
+    def enqueue_event(self, event: Dict[str, Any]) -> bool:
+        if not isinstance(event, dict):
+            return False
+        self.start_writer()
+        try:
+            self._writer_queue.put_nowait(dict(event))
+        except queue.Full:
+            with self._writer_lock:
+                self._writer_stats["dropped"] += 1
+            return False
+        with self._writer_lock:
+            self._writer_stats["queued"] += 1
+        return True
+
+    def _writer_loop(self) -> None:
+        while not self._writer_stop.is_set() or not self._writer_queue.empty():
+            try:
+                event = self._writer_queue.get(timeout=0.25)
+            except queue.Empty:
+                continue
+            if event is None:
+                self._writer_queue.task_done()
+                continue
+            started = time.monotonic()
+            try:
+                self.ingest_event(event)
+            except Exception as exc:
+                with self._writer_lock:
+                    self._writer_stats["failed"] += 1
+                    self._writer_stats["last_error_type"] = type(exc).__name__
+            else:
+                duration_ms = max(0.0, (time.monotonic() - started) * 1000.0)
+                with self._writer_lock:
+                    self._writer_stats["written"] += 1
+                    self._writer_stats["recent_max_write_ms"] = max(
+                        float(self._writer_stats["recent_max_write_ms"]), duration_ms
+                    )
+                    self._writer_stats["last_write_at"] = deps.now_utc_iso()
+            finally:
+                self._writer_queue.task_done()
+
+    def writer_status(self) -> Dict[str, Any]:
+        with self._writer_lock:
+            stats = dict(self._writer_stats)
+        thread = self._writer_thread
+        return {
+            "running": bool(thread is not None and thread.is_alive()),
+            "queue_depth": self._writer_queue.qsize(),
+            "queue_capacity": self._writer_queue.maxsize,
+            **stats,
+        }
 
     def ingest_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """Persist an event and update the workflow projection.
@@ -337,25 +451,44 @@ class EventSourcedWorkflowEngine:
             )
         return projection
 
+    def _projection_data(self) -> Dict[str, Any]:
+        with self._projection_lock:
+            if self._projection_cache is None:
+                loaded = _read_json(self.projection_file, {"workflows": {}})
+                self._projection_cache = loaded if isinstance(loaded, dict) else {"workflows": {}}
+                self._projection_cache.setdefault("workflows", {})
+            return self._projection_cache
+
     def get_projection(self, workflow_id: str) -> Dict[str, Any]:
-        data = _read_json(self.projection_file, {"workflows": {}})
-        return dict(
-            (data.get("workflows") or {}).get(str(workflow_id))
-            or {"workflow_id": str(workflow_id)}
-        )
+        with self._projection_lock:
+            data = self._projection_data()
+            return dict(
+                (data.get("workflows") or {}).get(str(workflow_id))
+                or {"workflow_id": str(workflow_id)}
+            )
 
     def _invalidate_status_cache(self) -> None:
         with self._status_cache_lock:
             self._status_cache = None
             self._status_cache_at = 0.0
 
-    def save_projection(self, projection: Dict[str, Any]) -> None:
-        data = _read_json(self.projection_file, {"workflows": {}})
-        workflows = data.setdefault("workflows", {})
-        workflows[str(projection.get("workflow_id"))] = projection
-        data["updated_at"] = deps.now_utc_iso()
-        _write_json(self.projection_file, data)
+    def save_projection(self, projection: Dict[str, Any]) -> bool:
+        workflow_id = str(projection.get("workflow_id") or "")
+        if not workflow_id:
+            return False
+        with self._projection_lock:
+            data = self._projection_data()
+            workflows = data.setdefault("workflows", {})
+            current = workflows.get(workflow_id)
+            if current == projection:
+                with self._writer_lock:
+                    self._writer_stats["coalesced"] += 1
+                return False
+            workflows[workflow_id] = dict(projection)
+            data["updated_at"] = deps.now_utc_iso()
+            _write_json(self.projection_file, data)
         self._invalidate_status_cache()
+        return True
 
     def iter_events(
         self, workflow_id: str | None = None, limit: int = 1000
@@ -403,6 +536,8 @@ class EventSourcedWorkflowEngine:
             "count": len(projections),
         }
         _write_json(self.projection_file, payload)
+        with self._projection_lock:
+            self._projection_cache = payload
         return payload
 
     def list_workflows(
@@ -584,6 +719,7 @@ class EventSourcedWorkflowEngine:
             "counts": counts,
             "history_limit": self.history_limit,
             "cache_ttl_seconds": self._status_cache_ttl,
+            "projection_writer": self.writer_status(),
         }
         with self._status_cache_lock:
             self._status_cache = {**result, "counts": dict(counts)}

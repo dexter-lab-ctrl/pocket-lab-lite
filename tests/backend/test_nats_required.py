@@ -226,3 +226,37 @@ def test_prepared_publish_reports_jetstream_ack_timing():
         assert timing["broker_ms"] >= 0
 
     asyncio.run(scenario())
+
+
+def test_prepared_publish_splits_memory_record_and_workflow_enqueue(monkeypatch):
+    import asyncio
+    from api_fastapi.services.nats_bus import PocketLabEventBus
+    from api_fastapi.services.workflow_engine import WORKFLOW_ENGINE
+
+    class FakeClient:
+        is_connected = True
+
+    class FakeJetStream:
+        async def publish(self, subject, payload):
+            return object()
+
+    async def scenario():
+        bus = PocketLabEventBus()
+        bus.nc = FakeClient()
+        bus.js = FakeJetStream()
+        bus.connected = True
+        queued = []
+        monkeypatch.setattr(WORKFLOW_ENGINE, "enqueue_event", lambda event: queued.append(event) or True)
+        event, encoded = bus.prepare_json_event(
+            "pocketlab.commands.test", "test.requested", {"command_id": "c1"}
+        )
+        timing = {}
+        await bus.publish_prepared_json(
+            "pocketlab.commands.test", event, encoded, timing_sink=timing
+        )
+        assert timing["record_memory_ms"] >= 0
+        assert timing["workflow_enqueue_ms"] >= 0
+        assert timing["post_ack_ms"] >= timing["workflow_enqueue_ms"]
+        assert queued == [event]
+
+    asyncio.run(scenario())

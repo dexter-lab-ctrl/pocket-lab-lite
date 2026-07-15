@@ -75,6 +75,9 @@ def _record_security_submission_timing(
         "reservation_queue": float(reservation_timing.get("queue_wait_ms", 0.0)),
         "reservation_execution": float(reservation_timing.get("execution_ms", 0.0)),
         "reservation_connection_wait": float(reservation_timing.get("stage_connection_wait_ms", 0.0)),
+        "reservation_connection_path_resolve": float(reservation_timing.get("stage_connection_path_resolve_ms", 0.0)),
+        "reservation_connection_sqlite_connect": float(reservation_timing.get("stage_connection_sqlite_connect_ms", 0.0)),
+        "reservation_connection_pragma_setup": float(reservation_timing.get("stage_connection_pragma_setup_ms", 0.0)),
         "reservation_begin_wait": float(reservation_timing.get("stage_begin_wait_ms", 0.0)),
         "reservation_active_lookup": float(reservation_timing.get("stage_active_lookup_ms", 0.0)),
         "reservation_recent_lookup": float(reservation_timing.get("stage_recent_lookup_ms", 0.0)),
@@ -87,6 +90,8 @@ def _record_security_submission_timing(
         "nats_command_prepare": float(publish_timing.get("command_prepare_ms", 0.0)),
         "nats_command_send": float(publish_timing.get("command_send_ms", 0.0)),
         "nats_command_ack_wait": float(publish_timing.get("command_ack_wait_ms", 0.0)),
+        "nats_command_record_memory": float(publish_timing.get("command_record_memory_ms", 0.0)),
+        "nats_command_workflow_enqueue": float(publish_timing.get("command_workflow_enqueue_ms", 0.0)),
         "nats_command_post_ack": float(publish_timing.get("command_post_ack_ms", 0.0)),
         "nats_command_broker": float(publish_timing.get("command_broker_ms", 0.0)),
         "nats_command_reconnect": float(publish_timing.get("command_reconnect_ms", 0.0)),
@@ -94,6 +99,8 @@ def _record_security_submission_timing(
         "nats_evidence_prepare": float(publish_timing.get("evidence_prepare_ms", 0.0)),
         "nats_evidence_send": float(publish_timing.get("evidence_send_ms", 0.0)),
         "nats_evidence_ack_wait": float(publish_timing.get("evidence_ack_wait_ms", 0.0)),
+        "nats_evidence_record_memory": float(publish_timing.get("evidence_record_memory_ms", 0.0)),
+        "nats_evidence_workflow_enqueue": float(publish_timing.get("evidence_workflow_enqueue_ms", 0.0)),
         "nats_evidence_post_ack": float(publish_timing.get("evidence_post_ack_ms", 0.0)),
         "nats_evidence_broker": float(publish_timing.get("evidence_broker_ms", 0.0)),
         "nats_evidence_reconnect": float(publish_timing.get("evidence_reconnect_ms", 0.0)),
@@ -116,21 +123,24 @@ def _record_security_submission_timing(
         "Security scan submission timing run_id=%s deduplicated=%s "
         "auth_ms=%.2f reservation_queue_ms=%.2f reservation_execution_ms=%.2f "
         "reservation_process_cpu_ms=%.2f reservation_connection_wait_ms=%.2f "
-        "reservation_begin_wait_ms=%.2f reservation_active_lookup_ms=%.2f "
+        "reservation_connection_path_resolve_ms=%.2f reservation_connection_sqlite_connect_ms=%.2f "
+        "reservation_connection_pragma_setup_ms=%.2f reservation_begin_wait_ms=%.2f reservation_active_lookup_ms=%.2f "
         "reservation_recent_lookup_ms=%.2f reservation_write_ms=%.2f "
         "reservation_commit_ms=%.2f reservation_result_build_ms=%.2f "
         "nats_payload_prepare_ms=%.2f command_encoded_bytes=%.0f evidence_encoded_bytes=%.0f "
         "nats_readiness_wait_ms=%.2f nats_command_prepare_ms=%.2f "
         "nats_command_send_ms=%.2f nats_command_ack_wait_ms=%.2f "
-        "nats_command_post_ack_ms=%.2f nats_command_broker_ms=%.2f nats_command_reconnect_ms=%.2f "
+        "nats_command_record_memory_ms=%.2f nats_command_workflow_enqueue_ms=%.2f nats_command_post_ack_ms=%.2f nats_command_broker_ms=%.2f nats_command_reconnect_ms=%.2f "
         "nats_evidence_payload_prepare_ms=%.2f nats_evidence_prepare_ms=%.2f "
         "nats_evidence_send_ms=%.2f nats_evidence_ack_wait_ms=%.2f "
-        "nats_evidence_post_ack_ms=%.2f nats_evidence_broker_ms=%.2f nats_evidence_reconnect_ms=%.2f "
+        "nats_evidence_record_memory_ms=%.2f nats_evidence_workflow_enqueue_ms=%.2f nats_evidence_post_ack_ms=%.2f nats_evidence_broker_ms=%.2f nats_evidence_reconnect_ms=%.2f "
         "lifecycle_queue_ms=%.2f lifecycle_execution_ms=%.2f "
         "lifecycle_process_cpu_ms=%.2f total_ms=%.2f",
         run_id, deduplicated, stages["auth"], stages["reservation_queue"],
         stages["reservation_execution"], float(reservation_timing.get("process_cpu_ms", 0.0)),
-        stages["reservation_connection_wait"], stages["reservation_begin_wait"],
+        stages["reservation_connection_wait"], stages["reservation_connection_path_resolve"],
+        stages["reservation_connection_sqlite_connect"], stages["reservation_connection_pragma_setup"],
+        stages["reservation_begin_wait"],
         stages["reservation_active_lookup"], stages["reservation_recent_lookup"],
         stages["reservation_write"], stages["reservation_commit"],
         stages["reservation_result_build"], stages["nats_payload_prepare"],
@@ -138,10 +148,12 @@ def _record_security_submission_timing(
         float(publish_timing.get("evidence_encoded_bytes", 0.0)),
         stages["nats_readiness_wait"], stages["nats_command_prepare"],
         stages["nats_command_send"], stages["nats_command_ack_wait"],
+        stages["nats_command_record_memory"], stages["nats_command_workflow_enqueue"],
         stages["nats_command_post_ack"], stages["nats_command_broker"],
         stages["nats_command_reconnect"], stages["nats_evidence_payload_prepare"],
         stages["nats_evidence_prepare"], stages["nats_evidence_send"],
-        stages["nats_evidence_ack_wait"], stages["nats_evidence_post_ack"],
+        stages["nats_evidence_ack_wait"], stages["nats_evidence_record_memory"],
+        stages["nats_evidence_workflow_enqueue"], stages["nats_evidence_post_ack"],
         stages["nats_evidence_broker"], stages["nats_evidence_reconnect"], stages["lifecycle_queue"],
         stages["lifecycle_execution"], float(lifecycle_timing.get("process_cpu_ms", 0.0)),
         stages["total"],

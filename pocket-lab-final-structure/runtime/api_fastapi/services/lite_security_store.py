@@ -539,7 +539,8 @@ class SecuritySQLiteRepository:
         active_key = _active_key(normalized_profile, normalized_app)
         normalize_done = time.monotonic()
         connection_started = normalize_done
-        with connection() as conn:
+        connection_timing: dict[str, float] = {}
+        with connection(timing_sink=connection_timing) as conn:
             connection_done = time.monotonic()
             begin_started = connection_done
             with begin_immediate(conn) as tx:
@@ -558,6 +559,9 @@ class SecuritySQLiteRepository:
                         timing_sink.update({
                             "normalize_ms": max(0.0, (normalize_done-normalize_started)*1000.0),
                             "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                            "connection_path_resolve_ms": float(connection_timing.get("path_resolve_ms") or 0.0),
+                            "connection_sqlite_connect_ms": float(connection_timing.get("sqlite_connect_ms") or 0.0),
+                            "connection_pragma_setup_ms": float(connection_timing.get("pragma_setup_ms") or 0.0),
                             "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
                             "active_lookup_ms": max(0.0, (active_done-active_started)*1000.0),
                             "recent_lookup_ms": 0.0,
@@ -592,6 +596,9 @@ class SecuritySQLiteRepository:
                         timing_sink.update({
                             "normalize_ms": max(0.0, (normalize_done-normalize_started)*1000.0),
                             "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                            "connection_path_resolve_ms": float(connection_timing.get("path_resolve_ms") or 0.0),
+                            "connection_sqlite_connect_ms": float(connection_timing.get("sqlite_connect_ms") or 0.0),
+                            "connection_pragma_setup_ms": float(connection_timing.get("pragma_setup_ms") or 0.0),
                             "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
                             "active_lookup_ms": max(0.0, (active_done-active_started)*1000.0),
                             "recent_lookup_ms": max(0.0, (recent_done-recent_started)*1000.0),
@@ -646,6 +653,9 @@ class SecuritySQLiteRepository:
             timing_sink.update({
                 "normalize_ms": max(0.0, (normalize_done-normalize_started)*1000.0),
                 "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                "connection_path_resolve_ms": float(connection_timing.get("path_resolve_ms") or 0.0),
+                "connection_sqlite_connect_ms": float(connection_timing.get("sqlite_connect_ms") or 0.0),
+                "connection_pragma_setup_ms": float(connection_timing.get("pragma_setup_ms") or 0.0),
                 "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
                 "active_lookup_ms": max(0.0, (active_done-active_started)*1000.0),
                 "recent_lookup_ms": max(0.0, (recent_done-recent_started)*1000.0),
