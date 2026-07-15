@@ -28,9 +28,15 @@ def _configure(
     lite_security.stop_security_projection_runtime()
     with lite_security._SQLITE_PROGRESS_SNAPSHOT_LOCK:
         lite_security._SQLITE_PROGRESS_SNAPSHOT = None
+        lite_security._SQLITE_PROGRESS_PREPARED = None
         lite_security._SQLITE_PROGRESS_SNAPSHOT_DB = ""
+        lite_security._SQLITE_PROGRESS_SNAPSHOT_IDENTITY = None
         lite_security._SQLITE_PROGRESS_REFRESHED_AT = 0.0
+        lite_security._SQLITE_PROGRESS_VERIFIED_AT = 0.0
         lite_security._SQLITE_PROGRESS_EPOCH = 0
+    with lite_security._SQLITE_PROGRESS_METRICS_LOCK:
+        for key in lite_security._SQLITE_PROGRESS_METRICS:
+            lite_security._SQLITE_PROGRESS_METRICS[key] = 0
     lite_security._SQLITE_PROGRESS_FAILURES = 0
     lite_security.invalidate_security_read_caches()
     return state, lite_security
@@ -735,7 +741,9 @@ def test_timed_projection_refresh_exposes_sanitized_phase_timings(
         "query_ms",
         "projection_build_ms",
         "snapshot_publish_ms",
+        "published",
     }
+    assert timings["published"] in {0.0, 1.0}
     assert all(value >= 0 for value in timings.values())
     assert "path" not in timings
 

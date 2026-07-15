@@ -7,6 +7,7 @@ BASE_URL="${POCKETLAB_GATE_BASE_URL:-http://127.0.0.1:8443}"
 PROGRESS_URL="$BASE_URL/api/lite/security/progress"
 CHECK_URL="$BASE_URL/api/lite/security/check"
 NATS_STATUS_URL="$BASE_URL/api/nats/status"
+DIAGNOSTICS_URL="$BASE_URL/api/lite/diagnostics/runtime"
 TIMEOUT_SECONDS="${POCKETLAB_GATE_SCAN_TIMEOUT_SECONDS:-5400}"
 MAX_PROJECTION_AGE_MS="${POCKETLAB_GATE_MAX_PROJECTION_AGE_MS:-5000}"
 REPORT_DIR="${POCKETLAB_GATE_REPORT_DIR:-${POCKETLAB_STATE_DIR:-$HOME/pocket-lab-lite/state}/.pocketlab-dev/reports}"
@@ -16,11 +17,13 @@ SAMPLES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-latencies.txt"
 STATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-progress.json"
 SUBMISSION_FAILURES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-submission-latency.txt"
 FAILURE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-failure.txt"
+DIAGNOSTICS_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-runtime-diagnostics.json"
 mkdir -p "$REPORT_DIR"
 : > "$SAMPLES"
 : > "$SUBMISSION_FAILURES"
 : > "$FAILURE_FILE"
 printf '%s' '{}' > "$STATE_FILE"
+printf '%s' '{}' > "$DIAGNOSTICS_FILE"
 
 MAIN_BASHPID="$BASHPID"
 STORE_MODE="unknown"
@@ -39,10 +42,38 @@ fail(){
 }
 info(){ printf 'INFO: %s\n' "$*"; }
 
+record_unexpected_failure(){
+  local exit_code="$1" line_number="$2"
+  if [[ "$exit_code" -ne 0 && ! -s "$FAILURE_FILE" ]]; then
+    printf 'Production gate command failed at line %s with exit code %s.\n' \
+      "$line_number" "$exit_code" > "$FAILURE_FILE"
+  fi
+}
+trap 'record_unexpected_failure "$?" "$LINENO"' ERR
+
+capture_runtime_diagnostics(){
+  local tmp_file
+  tmp_file="$(mktemp)"
+  if curl -fsS --max-time 3 "${AUTH_ARGS[@]}" \
+    -H 'Accept: application/json' "$DIAGNOSTICS_URL" -o "$tmp_file" \
+    && python3 - "$tmp_file" <<'PY2'
+import json
+import sys
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+raise SystemExit(0 if isinstance(payload, dict) and payload.get("sanitized") is True else 1)
+PY2
+  then
+    mv "$tmp_file" "$DIAGNOSTICS_FILE"
+  else
+    rm -f "$tmp_file"
+    printf '%s' '{}' > "$DIAGNOSTICS_FILE"
+  fi
+}
+
 write_final_report(){
   local exit_code="$1"
   python3 - "$REPORT_JSON" "$SAMPLES" "$SUBMISSION_FAILURES" "$FAILURE_FILE" \
-    "$STATE_FILE" "$STORE_MODE" "$first_run" "$second_run" "$exit_code" <<'PY'
+    "$STATE_FILE" "$DIAGNOSTICS_FILE" "$STORE_MODE" "$first_run" "$second_run" "$exit_code" <<'PY'
 import json
 import math
 import sys
@@ -54,6 +85,7 @@ from pathlib import Path
     submission_failures_path,
     failure_path,
     state_path,
+    diagnostics_path,
     store_mode,
     first_run,
     second_run,
@@ -62,6 +94,16 @@ from pathlib import Path
 
 exit_code = int(exit_code_raw)
 failure_reason = Path(failure_path).read_text(encoding="utf-8").strip()
+if exit_code != 0 and not failure_reason:
+    failure_reason = f"Production gate exited with code {exit_code}."
+try:
+    runtime_diagnostics = json.loads(
+        Path(diagnostics_path).read_text(encoding="utf-8") or "{}"
+    )
+except (OSError, json.JSONDecodeError):
+    runtime_diagnostics = {}
+if not isinstance(runtime_diagnostics, dict) or runtime_diagnostics.get("sanitized") is not True:
+    runtime_diagnostics = {}
 submission_failures = [
     line.strip()
     for line in Path(submission_failures_path).read_text(encoding="utf-8").splitlines()
@@ -97,6 +139,7 @@ payload = {
     "first_run_id": first_run,
     "post_reconnect_run_id": second_run,
     "last_progress": last_progress,
+    "runtime_diagnostics": runtime_diagnostics,
     "progress_latency_seconds": {
         "count": len(values),
         "p50": round(percentile(0.50), 3) if values else None,
@@ -117,6 +160,7 @@ finalize_on_exit(){
   local exit_code=$?
   [[ "$BASHPID" == "$MAIN_BASHPID" ]] || return "$exit_code"
   trap - EXIT
+  capture_runtime_diagnostics
   write_final_report "$exit_code"
   info "Report: $REPORT_JSON"
   exit "$exit_code"

@@ -17,9 +17,11 @@ import urllib.error
 import urllib.request
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Mapping
 
 from .. import deps
 from . import lite_security_evidence as evidence
@@ -27,12 +29,51 @@ from . import lite_security_policy as policy
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedSecurityProgress:
+    """Immutable response material prepared outside the request path."""
+
+    body_prefix: bytes
+    body_suffix: bytes
+    etag: str
+    headers: Mapping[str, str]
+    identity: tuple[Any, ...]
+    database_identity: str
+    projection_epoch: int
+    active_scan: bool
+    encoded_at_monotonic: float
+    static_content_length: int
+    dynamic_age: bool
+
+    def body_for_age(self, age_ms: float) -> bytes:
+        if not self.dynamic_age:
+            return self.body_prefix
+        bounded_age = max(0.0, min(float(age_ms), 999_999_999.99))
+        return self.body_prefix + f"{bounded_age:.2f}".encode("ascii") + self.body_suffix
 _SQLITE_PROGRESS_SNAPSHOT_LOCK = threading.Lock()
 _SQLITE_PROGRESS_SNAPSHOT: dict[str, Any] | None = None
+_SQLITE_PROGRESS_PREPARED: PreparedSecurityProgress | None = None
 _SQLITE_PROGRESS_SNAPSHOT_DB = ""
+_SQLITE_PROGRESS_SNAPSHOT_IDENTITY: tuple[Any, ...] | None = None
 _SQLITE_PROGRESS_FAILURES = 0
 _SQLITE_PROGRESS_REFRESH_LOCK = threading.Lock()
 _SQLITE_PROGRESS_REFRESHED_AT = 0.0
+_SQLITE_PROGRESS_VERIFIED_AT = 0.0
+_SQLITE_PROGRESS_METRICS_LOCK = threading.Lock()
+_SQLITE_PROGRESS_METRICS: dict[str, int] = {
+    "periodic_refreshes": 0,
+    "signaled_refreshes": 0,
+    "contention_retries": 0,
+    "successful_refreshes": 0,
+    "failed_refreshes": 0,
+    "unchanged_refreshes": 0,
+    "published_refreshes": 0,
+    "coalesced_dirty_notifications": 0,
+    "consecutive_immediate_wakeups": 0,
+    "reader_reconnects": 0,
+}
 _SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS = max(0.5, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_INTERVAL_SECONDS", "2.0")))
 _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS = max(_SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "5.0")))
 _SQLITE_PROGRESS_ACTIVE_RETRY_SECONDS = max(0.10, min(1.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_RETRY_SECONDS", "0.35"))))
@@ -1059,16 +1100,21 @@ def compact_response_etag(payload: dict[str, Any] | None = None) -> str:
 def if_none_match_matches(header_value: str | None, etag: str) -> bool:
     if not header_value:
         return False
-    expected = str(etag or "").strip()
+
+    def normalize(value: str) -> str:
+        normalized = str(value or "").strip()
+        if normalized.startswith("W/"):
+            normalized = normalized[2:].strip()
+        return normalized
+
+    expected = normalize(etag)
     if not expected:
         return False
     for candidate in str(header_value).split(","):
         value = candidate.strip()
         if value == "*":
             return True
-        if value.startswith("W/"):
-            value = value[2:].strip()
-        if value == expected:
+        if normalize(value) == expected:
             return True
     return False
 
@@ -1623,18 +1669,142 @@ def _sqlite_progress_payload(progress: dict[str, Any] | None = None) -> dict[str
         "execution_started_at": payload.get("execution_started_at"),
         "last_progress_at": payload.get("last_progress_at"),
         "delivery_attempt": int(payload.get("delivery_attempt") or 0),
-        "run_revision": int(payload.get("run_revision") or 0),
+        "run_revision": int(payload.get("run_revision") or payload.get("revision") or 0),
         "sqlite_revision": revision,
         "sanitized": True,
         "revision": _revision_token(
             "sqlite-progress", revision, run_id, status, percent,
-            payload.get("event_id"), payload.get("run_revision"),
+            payload.get("event_id"), payload.get("run_revision") or payload.get("revision"),
         ),
         "source": "security_progress_sqlite",
         "projection_source": "sqlite_committed",
         "storage_backend": "sqlite",
     })
     return response
+
+
+def _progress_response_identity(payload: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        payload.get("run_id"),
+        int(payload.get("run_revision") or 0),
+        int(payload.get("sqlite_revision") or 0),
+        str(payload.get("status") or ""),
+        int(payload.get("percent") or 0),
+        int(payload.get("updated_at_epoch_ms") or 0),
+        bool(payload.get("active_scan")),
+        bool(payload.get("read_degraded")),
+        int(payload.get("read_failure_count") or 0),
+        str(payload.get("read_error_type") or ""),
+        str(payload.get("revision") or ""),
+        str(payload.get("projection_source") or ""),
+    )
+
+
+def _prepare_security_progress(
+    payload: dict[str, Any],
+    *,
+    identity: tuple[Any, ...],
+    database_identity: str,
+    encoded_at_monotonic: float,
+) -> PreparedSecurityProgress:
+    stable_payload = dict(payload)
+    dynamic_age = stable_payload.get("projection_age_ms") is not None
+    if dynamic_age:
+        stable_payload.pop("projection_age_ms", None)
+    encoded = json.dumps(
+        stable_payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    if dynamic_age:
+        if encoded == b"{}":
+            prefix = b'{"projection_age_ms":'
+        else:
+            prefix = encoded[:-1] + b',"projection_age_ms":'
+        suffix = b"}"
+    else:
+        prefix = encoded
+        suffix = b""
+    etag = f"W/{compact_response_etag(payload)}"
+    headers = MappingProxyType(
+        {
+            "ETag": etag,
+            "Cache-Control": "no-cache",
+            "Content-Type": "application/json; charset=utf-8",
+            "X-Content-Type-Options": "nosniff",
+        }
+    )
+    return PreparedSecurityProgress(
+        body_prefix=prefix,
+        body_suffix=suffix,
+        etag=etag,
+        headers=headers,
+        identity=identity,
+        database_identity=database_identity,
+        projection_epoch=int(payload.get("projection_epoch") or 0),
+        active_scan=bool(payload.get("active_scan")),
+        encoded_at_monotonic=encoded_at_monotonic,
+        static_content_length=len(prefix) + len(suffix),
+        dynamic_age=dynamic_age,
+    )
+
+
+def _progress_metric_increment(name: str, amount: int = 1) -> None:
+    with _SQLITE_PROGRESS_METRICS_LOCK:
+        if name in _SQLITE_PROGRESS_METRICS:
+            _SQLITE_PROGRESS_METRICS[name] += int(amount)
+
+
+def _progress_metric_set(name: str, value: int) -> None:
+    with _SQLITE_PROGRESS_METRICS_LOCK:
+        if name in _SQLITE_PROGRESS_METRICS:
+            _SQLITE_PROGRESS_METRICS[name] = max(0, int(value))
+
+
+def _progress_metrics_snapshot() -> dict[str, int]:
+    with _SQLITE_PROGRESS_METRICS_LOCK:
+        return dict(_SQLITE_PROGRESS_METRICS)
+
+
+def security_progress_runtime_diagnostics() -> dict[str, Any]:
+    metrics = _progress_metrics_snapshot()
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        prepared = _SQLITE_PROGRESS_PREPARED
+        verified_at = _SQLITE_PROGRESS_VERIFIED_AT
+        failures = _SQLITE_PROGRESS_FAILURES
+        thread = _SQLITE_PROGRESS_THREAD
+    age_ms = (
+        max(0.0, time.monotonic() - verified_at) * 1000.0
+        if verified_at > 0
+        else None
+    )
+    return policy.redact_value(
+        {
+            **metrics,
+            "refresher_running": bool(thread is not None and thread.is_alive()),
+            "prepared_snapshot": prepared is not None,
+            "prepared_static_bytes": int(prepared.static_content_length if prepared else 0),
+            "projection_epoch": int(prepared.projection_epoch if prepared else 0),
+            "active_scan": bool(prepared.active_scan if prepared else False),
+            "projection_age_ms": round(age_ms, 2) if age_ms is not None else None,
+            "read_failure_count": int(failures),
+            "sanitized": True,
+        }
+    )
+
+
+def prepared_security_progress_enabled() -> bool:
+    return _sqlite_compact_reads_enabled()
+
+
+def prepared_security_progress() -> tuple[PreparedSecurityProgress, float]:
+    """Atomically return one prepared reference plus its verified age."""
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        prepared = _SQLITE_PROGRESS_PREPARED or _SQLITE_PROGRESS_BOOTSTRAP_PREPARED
+        verified_at = _SQLITE_PROGRESS_VERIFIED_AT
+    age_ms = max(0.0, time.monotonic() - verified_at) * 1000.0 if verified_at > 0 else 0.0
+    return prepared, age_ms
 
 
 def _progress_candidate_is_monotonic(
@@ -1668,40 +1838,106 @@ def _progress_candidate_is_monotonic(
     return True
 
 
-def _remember_sqlite_progress(payload: dict[str, Any]) -> dict[str, Any]:
-    global _SQLITE_PROGRESS_SNAPSHOT, _SQLITE_PROGRESS_SNAPSHOT_DB
+def _publish_sqlite_progress(
+    payload: dict[str, Any],
+    *,
+    verified: bool,
+    enforce_monotonic: bool = True,
+) -> tuple[dict[str, Any], bool]:
+    global _SQLITE_PROGRESS_SNAPSHOT, _SQLITE_PROGRESS_PREPARED
+    global _SQLITE_PROGRESS_SNAPSHOT_DB, _SQLITE_PROGRESS_SNAPSHOT_IDENTITY
     global _SQLITE_PROGRESS_EPOCH, _SQLITE_PROGRESS_REFRESHED_AT
+    global _SQLITE_PROGRESS_VERIFIED_AT
+
     candidate = copy.deepcopy(payload)
+    candidate.setdefault("read_latency_ms", 0.0)
+    candidate.setdefault("read_degraded", False)
+    candidate.setdefault("read_projection", "memory")
+    candidate.setdefault("projection_source", "sqlite_committed")
+    candidate["projection_age_ms"] = 0.0
     current_db = _sqlite_progress_database_identity()
+    now = time.monotonic()
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         current = (
             _SQLITE_PROGRESS_SNAPSHOT
             if _SQLITE_PROGRESS_SNAPSHOT_DB == current_db
             else None
         )
-        if not _progress_candidate_is_monotonic(current, candidate):
-            return copy.deepcopy(current or candidate)
+        if enforce_monotonic and not _progress_candidate_is_monotonic(current, candidate):
+            if verified:
+                _SQLITE_PROGRESS_VERIFIED_AT = now
+                _SQLITE_PROGRESS_REFRESHED_AT = now
+            return copy.deepcopy(current or candidate), False
+        identity = _progress_response_identity(candidate)
+        if current is not None and identity == _SQLITE_PROGRESS_SNAPSHOT_IDENTITY:
+            if verified:
+                _SQLITE_PROGRESS_VERIFIED_AT = now
+                _SQLITE_PROGRESS_REFRESHED_AT = now
+            return copy.deepcopy(current), False
         _SQLITE_PROGRESS_EPOCH += 1
         candidate["projection_epoch"] = _SQLITE_PROGRESS_EPOCH
-        candidate["projection_source"] = candidate.get("projection_source") or "sqlite_committed"
+        prepared = _prepare_security_progress(
+            candidate,
+            identity=identity,
+            database_identity=current_db,
+            encoded_at_monotonic=now,
+        )
         _SQLITE_PROGRESS_SNAPSHOT = candidate
+        _SQLITE_PROGRESS_PREPARED = prepared
         _SQLITE_PROGRESS_SNAPSHOT_DB = current_db
-        _SQLITE_PROGRESS_REFRESHED_AT = time.monotonic()
-        return copy.deepcopy(candidate)
+        _SQLITE_PROGRESS_SNAPSHOT_IDENTITY = identity
+        if verified or _SQLITE_PROGRESS_VERIFIED_AT <= 0:
+            _SQLITE_PROGRESS_VERIFIED_AT = now
+            _SQLITE_PROGRESS_REFRESHED_AT = now
+        return copy.deepcopy(candidate), True
+
+
+def _remember_sqlite_progress(payload: dict[str, Any]) -> dict[str, Any]:
+    remembered, _published = _publish_sqlite_progress(payload, verified=True)
+    return remembered
+
+
+def _publish_progress_read_degradation(reason: str) -> bool:
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
+        verified_at = _SQLITE_PROGRESS_VERIFIED_AT
+    age_ms = max(0.0, time.monotonic() - verified_at) * 1000.0 if verified_at else 0.0
+    if not snapshot or age_ms > _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS:
+        _payload, published = _publish_sqlite_progress(
+            _sqlite_unavailable_progress(reason),
+            verified=False,
+            enforce_monotonic=False,
+        )
+        return published
+    snapshot["read_degraded"] = True
+    snapshot["read_fallback"] = "bounded_memory_projection"
+    snapshot["read_error_type"] = reason
+    snapshot["read_failure_count"] = _SQLITE_PROGRESS_FAILURES
+    snapshot["projection_source"] = "bounded_memory_projection"
+    snapshot["source"] = "security_progress_sqlite"
+    snapshot["storage_backend"] = "sqlite"
+    _payload, published = _publish_sqlite_progress(snapshot, verified=False)
+    return published
 
 
 def _last_known_sqlite_progress(reason: str) -> dict[str, Any] | None:
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
-        refreshed_at = _SQLITE_PROGRESS_REFRESHED_AT
+        markers = [
+            value
+            for value in (_SQLITE_PROGRESS_VERIFIED_AT, _SQLITE_PROGRESS_REFRESHED_AT)
+            if value > 0
+        ]
+        verified_at = min(markers) if markers else 0.0
     if not snapshot:
         return None
-    age_ms = max(0.0, time.monotonic() - refreshed_at) * 1000
+    age_ms = max(0.0, time.monotonic() - verified_at) * 1000 if verified_at else 0.0
     if age_ms > _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS:
         return None
     snapshot["read_degraded"] = True
     snapshot["read_fallback"] = "bounded_memory_projection"
     snapshot["read_error_type"] = reason
+    snapshot["read_failure_count"] = _SQLITE_PROGRESS_FAILURES
     snapshot["projection_source"] = "bounded_memory_projection"
     snapshot["projection_age_ms"] = round(age_ms, 2)
     snapshot["source"] = "security_progress_sqlite"
@@ -1737,6 +1973,14 @@ def _sqlite_unavailable_progress(reason: str = "projection_not_primed") -> dict[
     })
 
 
+_SQLITE_PROGRESS_BOOTSTRAP_PREPARED = _prepare_security_progress(
+    _sqlite_unavailable_progress(),
+    identity=("bootstrap-unavailable",),
+    database_identity="uninitialized",
+    encoded_at_monotonic=0.0,
+)
+
+
 def _refresh_sqlite_progress_snapshot_timed(
     *,
     repository: Any | None = None,
@@ -1750,6 +1994,7 @@ def _refresh_sqlite_progress_snapshot_timed(
         "query_ms": 0.0,
         "projection_build_ms": 0.0,
         "snapshot_publish_ms": 0.0,
+        "published": 0.0,
     }
     if reader is not None:
         read_result = reader.read(run_id)
@@ -1778,9 +2023,10 @@ def _refresh_sqlite_progress_snapshot_timed(
     projected = _sqlite_progress_payload(progress)
     timings["projection_build_ms"] += (time.monotonic() - projection_started) * 1000
     publish_started = time.monotonic()
-    payload = _remember_sqlite_progress(projected)
-    timings["snapshot_publish_ms"] = (time.monotonic() - publish_started) * 1000
     _SQLITE_PROGRESS_FAILURES = 0
+    payload, published = _publish_sqlite_progress(projected, verified=True)
+    timings["snapshot_publish_ms"] = (time.monotonic() - publish_started) * 1000
+    timings["published"] = 1.0 if published else 0.0
     return payload, timings
 
 
@@ -1803,13 +2049,17 @@ def publish_committed_progress(
 
 
 def mark_security_progress_dirty() -> None:
-    if _sqlite_compact_reads_enabled():
-        _SQLITE_PROGRESS_DIRTY.set()
+    if not _sqlite_compact_reads_enabled():
+        return
+    if _SQLITE_PROGRESS_DIRTY.is_set():
+        _progress_metric_increment("coalesced_dirty_notifications")
+    _SQLITE_PROGRESS_DIRTY.set()
 
 
 def _projection_refresh_interval_seconds() -> float:
-    snapshot = _memory_sqlite_progress_snapshot()
-    if snapshot and bool(snapshot.get("active_scan")):
+    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+        prepared = _SQLITE_PROGRESS_PREPARED
+    if prepared is not None and prepared.active_scan:
         return _SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS
     return _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS
 
@@ -1827,31 +2077,58 @@ def _projection_refresher_loop() -> None:
     store = _security_store_api()
     reader: Any | None = None
     retry_delay: float | None = None
+    reader_opened_once = False
+    immediate_wakeups = 0
     try:
         while not _SQLITE_PROGRESS_STOP.is_set():
             periodic_interval = _projection_refresh_interval_seconds()
-            wait_interval = retry_delay if retry_delay is not None else periodic_interval
+            retrying = retry_delay is not None
+            wait_interval = retry_delay if retrying else periodic_interval
             wait_started = time.monotonic()
             signaled = _SQLITE_PROGRESS_DIRTY.wait(timeout=wait_interval)
             woke_at = time.monotonic()
             _SQLITE_PROGRESS_DIRTY.clear()
             if _SQLITE_PROGRESS_STOP.is_set():
                 break
+            if signaled and (woke_at - wait_started) <= 0.01:
+                immediate_wakeups += 1
+            else:
+                immediate_wakeups = 0
+            if immediate_wakeups >= 3:
+                _SQLITE_PROGRESS_STOP.wait(timeout=0.05)
+                immediate_wakeups = 0
+            _progress_metric_set("consecutive_immediate_wakeups", immediate_wakeups)
             if not _sqlite_compact_reads_enabled():
                 if reader is not None:
                     reader.close()
                     reader = None
                 retry_delay = None
                 continue
-            active = bool((_memory_sqlite_progress_snapshot() or {}).get("active_scan"))
+            if signaled:
+                _progress_metric_increment("signaled_refreshes")
+            elif not retrying:
+                _progress_metric_increment("periodic_refreshes")
+            with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+                active = bool(
+                    _SQLITE_PROGRESS_PREPARED is not None
+                    and _SQLITE_PROGRESS_PREPARED.active_scan
+                )
             try:
                 if reader is None:
                     reader = store.SecurityProgressReader()
+                    if reader_opened_once:
+                        _progress_metric_increment("reader_reconnects")
+                    reader_opened_once = True
                 refresh_started = time.monotonic()
                 _payload, timings = _refresh_sqlite_progress_snapshot_timed(reader=reader)
                 refresh_ms = (time.monotonic() - refresh_started) * 1000
                 drift_ms = max(0.0, woke_at - wait_started - wait_interval) * 1000
                 retry_delay = None
+                _progress_metric_increment("successful_refreshes")
+                if timings.get("published"):
+                    _progress_metric_increment("published_refreshes")
+                else:
+                    _progress_metric_increment("unchanged_refreshes")
                 if (
                     refresh_ms >= 1000
                     or timings["connection_wait_ms"] >= 250
@@ -1860,11 +2137,13 @@ def _projection_refresher_loop() -> None:
                     or timings["snapshot_publish_ms"] >= 100
                     or (not signaled and drift_ms >= 500)
                 ):
+                    metrics = _progress_metrics_snapshot()
                     _LOGGER.warning(
-                        "Security SQLite projection refresher timing "
+                        "pocketlab.security.progress_refresh_slow "
                         "connection_wait_ms=%.2f query_ms=%.2f projection_build_ms=%.2f "
                         "snapshot_publish_ms=%.2f refresh_ms=%.2f schedule_drift_ms=%.2f "
-                        "interval_ms=%.2f active=%s signaled=%s retry=false",
+                        "interval_ms=%.2f active=%s signaled=%s retry=%s "
+                        "published_refreshes=%d unchanged_refreshes=%d coalesced_dirty_notifications=%d",
                         timings["connection_wait_ms"],
                         timings["query_ms"],
                         timings["projection_build_ms"],
@@ -1874,12 +2153,19 @@ def _projection_refresher_loop() -> None:
                         periodic_interval * 1000,
                         active,
                         signaled,
+                        retrying,
+                        metrics["published_refreshes"],
+                        metrics["unchanged_refreshes"],
+                        metrics["coalesced_dirty_notifications"],
                     )
             except store.SecurityProgressReadContention as exc:
                 _SQLITE_PROGRESS_FAILURES += 1
+                _progress_metric_increment("failed_refreshes")
+                _progress_metric_increment("contention_retries")
+                _publish_progress_read_degradation(type(exc).__name__)
                 retry_delay = _projection_retry_seconds(active)
                 _LOGGER.warning(
-                    "Security SQLite projection refresh contention "
+                    "pocketlab.security.progress_refresh_contention "
                     "connection_wait_ms=%.2f query_ms=%.2f active=%s "
                     "retry_in_ms=%.2f consecutive=%d",
                     exc.connection_wait_ms,
@@ -1893,9 +2179,11 @@ def _projection_refresher_loop() -> None:
                     reader.close()
                     reader = None
                 _SQLITE_PROGRESS_FAILURES += 1
+                _progress_metric_increment("failed_refreshes")
+                _publish_progress_read_degradation(type(exc).__name__)
                 retry_delay = _projection_retry_seconds(active)
                 _LOGGER.warning(
-                    "Security SQLite projection refresh degraded "
+                    "pocketlab.security.progress_refresh_degraded "
                     "error_type=%s active=%s retry_in_ms=%.2f consecutive=%d",
                     type(exc).__name__,
                     active,
@@ -1914,8 +2202,16 @@ def start_security_projection_runtime() -> None:
     with _SQLITE_PROGRESS_REFRESH_LOCK:
         if _SQLITE_PROGRESS_THREAD is not None and _SQLITE_PROGRESS_THREAD.is_alive():
             return
+        with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+            prepared_missing = _SQLITE_PROGRESS_PREPARED is None
+        if prepared_missing:
+            _publish_sqlite_progress(
+                _sqlite_unavailable_progress(),
+                verified=False,
+                enforce_monotonic=False,
+            )
         _SQLITE_PROGRESS_STOP.clear()
-        _SQLITE_PROGRESS_DIRTY.set()
+        mark_security_progress_dirty()
         _SQLITE_PROGRESS_THREAD = threading.Thread(
             target=_projection_refresher_loop,
             name="pocketlab-security-progress-refresher",
@@ -1940,10 +2236,15 @@ def _memory_sqlite_progress_snapshot() -> dict[str, Any] | None:
         if _SQLITE_PROGRESS_SNAPSHOT_DB != current_db:
             return None
         snapshot = copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
-        refreshed_at = _SQLITE_PROGRESS_REFRESHED_AT
+        markers = [
+            value
+            for value in (_SQLITE_PROGRESS_VERIFIED_AT, _SQLITE_PROGRESS_REFRESHED_AT)
+            if value > 0
+        ]
+        verified_at = min(markers) if markers else 0.0
     if snapshot is None:
         return None
-    age_ms = max(0.0, time.monotonic() - refreshed_at) * 1000
+    age_ms = max(0.0, time.monotonic() - verified_at) * 1000 if verified_at else 0.0
     if _SQLITE_PROGRESS_FAILURES and age_ms > _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS:
         return None
     snapshot["read_latency_ms"] = 0.0
