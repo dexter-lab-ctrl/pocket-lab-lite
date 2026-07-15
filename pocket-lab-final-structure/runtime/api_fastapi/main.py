@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 import asyncio
+import logging
 import os
 from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+from .services.runtime_diagnostics import RuntimeTimingMiddleware
 
 from . import deps
 from .routers import (
@@ -32,33 +35,42 @@ from .routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    deps.settings().ensure_dirs()
     from .services.nats_bus import BUS
     from .services.operation_events import install_operation_event_publisher
     from .services.live_status import LIVE_STATUS
     from .services import lite_security
+    from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 
-    await asyncio.to_thread(lite_security.initialize_security_sqlite_runtime)
-    lite_security.start_security_projection_runtime()
-    await BUS.start()
-    await BUS.start_watchdog()
-    install_operation_event_publisher(
-        deps.operation_service(), asyncio.get_running_loop(), source="fastapi"
-    )
-    await BUS.publish_json(
-        "pocketlab.events.api.started",
-        "api.started",
-        {"service": deps.settings().server_name},
-    )
-    await LIVE_STATUS.start()
-    if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }:
-        deps.ensure_release_updater()
+    diagnostics_started = False
     try:
+        try:
+            diagnostics_started = await RUNTIME_DIAGNOSTICS.start()
+        except Exception as exc:
+            logging.getLogger(__name__).warning(
+                "pocketlab.runtime.diagnostics_start_degraded error_type=%s",
+                type(exc).__name__,
+            )
+        deps.settings().ensure_dirs()
+        await asyncio.to_thread(lite_security.initialize_security_sqlite_runtime)
+        lite_security.start_security_projection_runtime()
+        await BUS.start()
+        await BUS.start_watchdog()
+        install_operation_event_publisher(
+            deps.operation_service(), asyncio.get_running_loop(), source="fastapi"
+        )
+        await BUS.publish_json(
+            "pocketlab.events.api.started",
+            "api.started",
+            {"service": deps.settings().server_name},
+        )
+        await LIVE_STATUS.start()
+        if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }:
+            deps.ensure_release_updater()
         yield
     finally:
         await LIVE_STATUS.stop()
@@ -74,6 +86,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             # not turn graceful FastAPI shutdown into a crash/restart loop.
             pass
         await BUS.stop()
+        if diagnostics_started:
+            await RUNTIME_DIAGNOSTICS.stop()
 
 
 app = FastAPI(
@@ -100,6 +114,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RuntimeTimingMiddleware)
 
 for router in (
     health.router,

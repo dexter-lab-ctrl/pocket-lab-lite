@@ -892,38 +892,63 @@ def get_lite_security_events(request: Request) -> Response:
 
 @router.get("/security/progress")
 async def get_lite_security_progress(request: Request) -> Response:
-    # This route intentionally performs only authentication, one atomic memory
-    # snapshot read, and small response construction. SQLite/filesystem refresh
-    # is owned by the background projection refresher.
-    request_received = time.perf_counter()
+    # Constant-cost path: authenticate, atomically read one prepared reference,
+    # evaluate its precomputed ETag, and return pre-encoded response fragments.
+    route_entry = time.perf_counter()
+    middleware_entry = float(
+        getattr(request.state, "pocketlab_middleware_entry", route_entry)
+    )
     deps.require_auth(request)
-    dependencies_complete = time.perf_counter()
-    payload = lite_security.split_progress_state()
-    projection_loaded = time.perf_counter()
-    response = _security_compact_response(request, payload)
-    response_built = time.perf_counter()
-    dependency_ms = (dependencies_complete - request_received) * 1000
-    projection_ms = (projection_loaded - dependencies_complete) * 1000
-    serialization_ms = (response_built - projection_loaded) * 1000
-    total_ms = (response_built - request_received) * 1000
-    response.headers["Server-Timing"] = (
-        f"auth;dur={dependency_ms:.2f}, projection;dur={projection_ms:.2f}, "
-        f"serialize;dur={serialization_ms:.2f}, total;dur={total_ms:.2f}"
-    )
-    timing_log = (
-        _LOGGER.warning
-        if total_ms >= 3000
-        else _LOGGER.info
-        if total_ms >= 1000 or payload.get("read_degraded")
-        else _LOGGER.debug
-    )
-    timing_log(
-        "Security progress request timing total_ms=%.2f dependency_ms=%.2f "
-        "projection_ms=%.2f serialization_ms=%.2f projection_age_ms=%s status_class=%s",
-        total_ms, dependency_ms, projection_ms, serialization_ms,
-        payload.get("projection_age_ms"), f"{response.status_code // 100}xx",
+    auth_complete = time.perf_counter()
+    if lite_security.prepared_security_progress_enabled():
+        prepared, projection_age_ms = lite_security.prepared_security_progress()
+        snapshot_complete = time.perf_counter()
+        if lite_security.if_none_match_matches(
+            request.headers.get("if-none-match"), prepared.etag
+        ):
+            response = Response(status_code=304, headers=prepared.headers)
+        else:
+            response = Response(
+                content=prepared.body_for_age(projection_age_ms),
+                status_code=200,
+                headers=prepared.headers,
+            )
+        response.headers["X-PocketLab-Projection-Age-Ms"] = f"{projection_age_ms:.2f}"
+    else:
+        payload = lite_security.split_progress_state()
+        snapshot_complete = time.perf_counter()
+        response = _security_compact_response(request, payload)
+        projection_age_ms = float(payload.get("projection_age_ms") or 0.0)
+    response_complete = time.perf_counter()
+    phases = {
+        "middleware_to_route_ms": max(0.0, (route_entry - middleware_entry) * 1000),
+        "auth_ms": max(0.0, (auth_complete - route_entry) * 1000),
+        "snapshot_read_ms": max(0.0, (snapshot_complete - auth_complete) * 1000),
+        "response_build_ms": max(0.0, (response_complete - snapshot_complete) * 1000),
+        "route_handler_ms": max(0.0, (response_complete - route_entry) * 1000),
+    }
+    request.state.pocketlab_progress_timing = phases
+    response.headers["Server-Timing"] = ", ".join(
+        (
+            f"middleware_route;dur={phases['middleware_to_route_ms']:.2f}",
+            f"auth;dur={phases['auth_ms']:.2f}",
+            f"snapshot;dur={phases['snapshot_read_ms']:.2f}",
+            f"response_build;dur={phases['response_build_ms']:.2f}",
+            f"route;dur={phases['route_handler_ms']:.2f}",
+        )
     )
     return response
+
+
+@router.get("/diagnostics/runtime")
+def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
+
+    payload = RUNTIME_DIAGNOSTICS.snapshot()
+    payload["security_progress"] = lite_security.security_progress_runtime_diagnostics()
+    payload["sanitized"] = True
+    return payload
 
 
 @router.get("/security")
