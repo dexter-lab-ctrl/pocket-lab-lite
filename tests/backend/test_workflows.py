@@ -85,7 +85,31 @@ def test_workflow_paths_are_cached_and_unchanged_projection_is_coalesced(tmp_pat
     first_root = engine.root
     second_root = engine.root
     assert first_root is second_root
-    projection = {"workflow_id": "wf-1", "status": "queued"}
+    projection = {"workflow_id": f"wf-{tmp_path.name}", "status": "queued"}
     assert engine.save_projection(projection) is True
     assert engine.save_projection(dict(projection)) is False
     assert engine.writer_status()["coalesced"] == 1
+
+def test_workflow_writer_batches_projection_rewrites(tmp_path, monkeypatch):
+    import time
+    from api_fastapi.services.workflow_engine import EventSourcedWorkflowEngine
+
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    monkeypatch.setenv("POCKETLAB_WORKFLOW_WRITER_BATCH_SIZE", "8")
+    engine = EventSourcedWorkflowEngine()
+    engine.start_writer()
+    for index in range(4):
+        assert engine.enqueue_event({
+            "id": f"event-{index}",
+            "type": "command.queued",
+            "subject": "pocketlab.commands.test",
+            "data": {"command_id": "command-1", "sequence": index},
+        })
+    deadline = time.monotonic() + 3
+    while engine.writer_status()["written"] < 4 and time.monotonic() < deadline:
+        time.sleep(0.01)
+    engine.stop_writer()
+    status = engine.writer_status()
+    assert status["written"] == 4
+    assert status["batch_size"] == 8
+    assert status["coalesced"] >= 1

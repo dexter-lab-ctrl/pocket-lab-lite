@@ -155,3 +155,16 @@ def test_write_connection_reports_creation_stages(tmp_path, monkeypatch):
     assert timing["sqlite_connect_ms"] >= 0
     assert timing["pragma_setup_ms"] >= 0
     assert timing["total_ms"] >= 0
+
+def test_lite_sqlite_path_cache_reuses_resolution_and_can_reset(tmp_path, monkeypatch):
+    connection_module = importlib.import_module("api_fastapi.db.connection")
+    first = tmp_path / "one.sqlite3"
+    second = tmp_path / "two.sqlite3"
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(first))
+    connection_module.reset_sqlite_path_cache()
+    assert connection_module.database_path() == first.resolve()
+    assert connection_module.database_path() is connection_module.database_path()
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(second))
+    assert connection_module.database_path() == second.resolve()
+    connection_module.reset_sqlite_path_cache()
+    assert connection_module.database_path() == second.resolve()
