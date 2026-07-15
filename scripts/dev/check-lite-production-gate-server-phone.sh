@@ -18,12 +18,16 @@ STATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-progress.json"
 SUBMISSION_FAILURES="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-submission-latency.txt"
 FAILURE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-failure.txt"
 DIAGNOSTICS_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-runtime-diagnostics.json"
+PYTEST_GATE_FILE="$REPORT_DIR/pocketlab-lite-production-gate-$STAMP-pytest-gate.json"
+GATE_RUN_PYTEST="${POCKETLAB_GATE_RUN_PYTEST:-0}"
+GATE_PYTHON="${POCKETLAB_GATE_PYTHON:-python3}"
 mkdir -p "$REPORT_DIR"
 : > "$SAMPLES"
 : > "$SUBMISSION_FAILURES"
 : > "$FAILURE_FILE"
 printf '%s' '{}' > "$STATE_FILE"
 printf '%s' '{}' > "$DIAGNOSTICS_FILE"
+printf '%s' '{"status":"not_run","reason":"gate_not_reached"}' > "$PYTEST_GATE_FILE"
 
 MAIN_BASHPID="$BASHPID"
 STORE_MODE="unknown"
@@ -93,7 +97,7 @@ PY2
 write_final_report(){
   local exit_code="$1"
   python3 - "$REPORT_JSON" "$SAMPLES" "$SUBMISSION_FAILURES" "$FAILURE_FILE" \
-    "$STATE_FILE" "$DIAGNOSTICS_FILE" "$STORE_MODE" "$first_run" "$second_run" "$exit_code" <<'PY'
+    "$STATE_FILE" "$DIAGNOSTICS_FILE" "$PYTEST_GATE_FILE" "$STORE_MODE" "$first_run" "$second_run" "$exit_code" <<'PY'
 import json
 import math
 import sys
@@ -106,6 +110,7 @@ from pathlib import Path
     failure_path,
     state_path,
     diagnostics_path,
+    pytest_gate_path,
     store_mode,
     first_run,
     second_run,
@@ -124,6 +129,13 @@ except (OSError, json.JSONDecodeError):
     runtime_diagnostics = {}
 if not isinstance(runtime_diagnostics, dict) or runtime_diagnostics.get("sanitized") is not True:
     runtime_diagnostics = {}
+try:
+    pytest_gate = json.loads(Path(pytest_gate_path).read_text(encoding="utf-8") or "{}")
+except (OSError, json.JSONDecodeError):
+    pytest_gate = {"status": "unknown", "reason": "report_read_failed"}
+if not isinstance(pytest_gate, dict):
+    pytest_gate = {"status": "unknown", "reason": "invalid_report_shape"}
+
 submission_failures = [
     line.strip()
     for line in Path(submission_failures_path).read_text(encoding="utf-8").splitlines()
@@ -160,6 +172,7 @@ payload = {
     "post_reconnect_run_id": second_run,
     "last_progress": last_progress,
     "runtime_diagnostics": runtime_diagnostics,
+    "pytest_gate": pytest_gate,
     "progress_latency_seconds": {
         "count": len(values),
         "p50": round(percentile(0.50), 3) if values else None,
@@ -405,6 +418,55 @@ PYLAT
   fi
 }
 
+
+write_pytest_gate_evidence(){
+  local status="$1" reason="$2"
+  python3 - "$PYTEST_GATE_FILE" "$status" "$reason" <<'PY2'
+import json
+import sys
+from pathlib import Path
+
+path, status, reason = sys.argv[1:]
+payload = {"status": status, "reason": reason}
+Path(path).write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+PY2
+}
+
+# Dev PC and CI regression suites remain mandatory; this switch only controls the
+# optional on-device replay of the focused pytest subset.
+run_pytest_gate(){
+  case "${GATE_RUN_PYTEST,,}" in
+    0|false|no|off|'')
+      write_pytest_gate_evidence "skipped" "disabled_for_runtime_gate"
+      info "pytest regression gate skipped; set POCKETLAB_GATE_RUN_PYTEST=1 to enable it"
+      return 0
+      ;;
+    1|true|yes|on)
+      ;;
+    *)
+      write_pytest_gate_evidence "failed" "invalid_gate_run_pytest_value"
+      fail "POCKETLAB_GATE_RUN_PYTEST must be one of: 0, 1, false, true, no, yes, off, on"
+      ;;
+  esac
+
+  if ! command -v "$GATE_PYTHON" >/dev/null 2>&1; then
+    write_pytest_gate_evidence "failed" "python_interpreter_unavailable"
+    fail "pytest regression gate requested but POCKETLAB_GATE_PYTHON is unavailable: $GATE_PYTHON"
+  fi
+  if ! "$GATE_PYTHON" -c 'import pytest' >/dev/null 2>&1; then
+    write_pytest_gate_evidence "failed" "pytest_unavailable"
+    fail "pytest regression gate requested but pytest is unavailable for: $GATE_PYTHON"
+  fi
+
+  if ! (cd "$REPO_ROOT" && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 "$GATE_PYTHON" -m pytest -q \
+    tests/backend/test_lite_security_progress_projection_cutover.py \
+    tests/backend/test_lite_worker_recovery.py -k 'stale or projection or redeliver'); then
+    write_pytest_gate_evidence "failed" "regression_tests_failed"
+    fail "pytest regression gate failed"
+  fi
+  write_pytest_gate_evidence "passed" "regression_tests_passed"
+}
+
 submission_latency_gate(){
   if [[ -s "$SUBMISSION_FAILURES" ]]; then
     fail "one or more scan submissions exceeded the production response-latency limit: $(tr '\n' ';' < "$SUBMISSION_FAILURES")"
@@ -413,7 +475,7 @@ submission_latency_gate(){
 
 required_gate_functions(){
   local name
-  for name in latency_gate submission_latency_gate capture_runtime_diagnostics write_final_report run_scan_gate sample_progress; do
+  for name in latency_gate run_pytest_gate write_pytest_gate_evidence submission_latency_gate capture_runtime_diagnostics write_final_report run_scan_gate sample_progress; do
     declare -F "$name" >/dev/null || fail "production gate is missing required function: $name"
   done
 }
@@ -546,8 +608,5 @@ else
 fi
 
 latency_gate
-(cd "$REPO_ROOT" && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
-  tests/backend/test_lite_security_progress_projection_cutover.py \
-  tests/backend/test_lite_worker_recovery.py -k 'stale or projection or redeliver')
-
+run_pytest_gate
 submission_latency_gate || fail "one or more scan submissions exceeded the production response-latency limit"
