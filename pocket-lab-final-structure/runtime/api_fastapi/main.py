@@ -11,6 +11,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from .services.runtime_diagnostics import RuntimeTimingMiddleware
+from .services.request_limits import LiteRequestSizeLimitMiddleware
+from .services.workload_admission import WorkloadAdmissionError
 
 from . import deps
 from .routers import (
@@ -40,8 +42,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services.live_status import LIVE_STATUS
     from .services import lite_security
     from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
+    from .services.workload_admission import WORKLOAD_ADMISSION
 
     diagnostics_started = False
+    admission_started = False
     try:
         try:
             diagnostics_started = await RUNTIME_DIAGNOSTICS.start()
@@ -51,7 +55,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 type(exc).__name__,
             )
         deps.settings().ensure_dirs()
-        await asyncio.to_thread(lite_security.initialize_security_sqlite_runtime)
+        admission_started = await WORKLOAD_ADMISSION.start()
+        await WORKLOAD_ADMISSION.run(
+            "security.runtime.initialize",
+            lite_security.initialize_security_sqlite_runtime,
+        )
         lite_security.start_security_projection_runtime()
         await BUS.start()
         await BUS.start_watchdog()
@@ -74,7 +82,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
-        await asyncio.to_thread(lite_security.stop_security_projection_runtime)
+        try:
+            await WORKLOAD_ADMISSION.run(
+                "security.projection.stop",
+                lite_security.stop_security_projection_runtime,
+                admission_timeout_seconds=1.0,
+                deadline_seconds=5.0,
+            )
+        except Exception as exc:
+            logging.getLogger(__name__).warning(
+                "pocketlab.runtime.projection_stop_degraded error_type=%s",
+                type(exc).__name__,
+            )
         try:
             await BUS.publish_json(
                 "pocketlab.events.api.stopped",
@@ -86,6 +105,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             # not turn graceful FastAPI shutdown into a crash/restart loop.
             pass
         await BUS.stop()
+        if admission_started or WORKLOAD_ADMISSION.snapshot().get("status") == "running":
+            await WORKLOAD_ADMISSION.shutdown()
         if diagnostics_started:
             await RUNTIME_DIAGNOSTICS.stop()
 
@@ -114,6 +135,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LiteRequestSizeLimitMiddleware)
 app.add_middleware(RuntimeTimingMiddleware)
 
 for router in (
@@ -143,6 +165,51 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     payload = detail if isinstance(detail, dict) else {"error": str(detail)}
     return JSONResponse(
         payload, status_code=exc.status_code, headers=getattr(exc, "headers", None)
+    )
+
+
+@app.exception_handler(WorkloadAdmissionError)
+async def workload_admission_exception_handler(
+    request: Request, exc: WorkloadAdmissionError
+):
+    try:
+        from .services.nats_bus import BUS
+
+        await asyncio.wait_for(
+            BUS.publish_json(
+                "pocketlab.audit.control.rejected",
+                "control.rejected",
+                {
+                    "operation": exc.operation_id[:80],
+                    "outcome": "rejected",
+                    "reason": exc.reason[:64],
+                    "retryable": bool(exc.retryable),
+                    "capacity_class": exc.admission_class.value[:48],
+                    "captured_at": deps.now_utc_iso(),
+                    "sanitized": True,
+                },
+            ),
+            timeout=0.5,
+        )
+    except Exception as audit_exc:
+        logging.getLogger(__name__).warning(
+            "pocketlab.admission.audit_degraded operation=%s error_type=%s",
+            exc.operation_id[:80],
+            type(audit_exc).__name__,
+        )
+    return JSONResponse(
+        {
+            "status": "busy",
+            "accepted": False,
+            "reason": exc.reason,
+            "retryable": exc.retryable,
+            "operation": exc.operation_id,
+            "admission_class": exc.admission_class.value,
+            "message": exc.safe_message,
+            "sanitized": True,
+        },
+        status_code=503,
+        headers={"Retry-After": "2"},
     )
 
 

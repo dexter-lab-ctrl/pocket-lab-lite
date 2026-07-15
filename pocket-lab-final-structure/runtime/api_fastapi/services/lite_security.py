@@ -16,7 +16,6 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,6 +25,7 @@ from typing import Any, Mapping
 from .. import deps
 from . import lite_security_evidence as evidence
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
+from .workload_admission import WORKLOADS, WORKLOAD_ADMISSION
 from . import lite_security_policy as policy
 
 
@@ -84,9 +84,6 @@ _SQLITE_PROGRESS_DIRTY = threading.Event()
 _SQLITE_PROGRESS_STOP = threading.Event()
 _SQLITE_PROGRESS_THREAD: threading.Thread | None = None
 _SQLITE_PROGRESS_EPOCH = 0
-_SECURITY_MAINTENANCE_EXECUTOR = ThreadPoolExecutor(
-    max_workers=2, thread_name_prefix="pocketlab-security-maintenance"
-)
 _ACTIVE_PROGRESS_STATUSES = frozenset({"queued", "accepted", "running", "working", "in_progress"})
 _TERMINAL_PROGRESS_STATUSES = frozenset({"succeeded", "degraded", "failed", "cancelled", "canceled", "completed"})
 
@@ -119,69 +116,48 @@ def _sqlite_progress_database_identity() -> str:
     return "pocketlab-lite-default-database"
 
 
-async def run_api_maintenance(function, /, *args, operation_name: str | None = None, **kwargs):
-    """Run bounded API-owned blocking maintenance outside the event loop."""
+async def run_api_maintenance(
+    function, /, *args, operation_name: str | None = None,
+    admission_timeout_seconds: float | None = None,
+    deadline_seconds: float | None = None, **kwargs
+):
+    """Run classified API-owned blocking work through bounded admission."""
     result, _timing = await run_api_maintenance_timed(
-        function, *args, operation_name=operation_name, **kwargs
+        function, *args, operation_name=operation_name,
+        admission_timeout_seconds=admission_timeout_seconds,
+        deadline_seconds=deadline_seconds, **kwargs
     )
     return result
 
 
+def _maintenance_operation_for(function, operation_name: str | None) -> str:
+    if operation_name and operation_name in WORKLOADS:
+        return operation_name
+    name = str(getattr(function, "__name__", ""))
+    if name in {"build_and_reserve_scan_request", "reserve_scan_request"}:
+        return "security.scan.reservation"
+    if name in {
+        "finalize_scan_submission", "mark_scan_accepted", "record_queued_run",
+        "fail_scan_submission",
+    }:
+        return "security.scan.lifecycle_commit"
+    return "security.details.reconstruction"
+
+
 async def run_api_maintenance_timed(
-    function, /, *args, operation_name: str | None = None, **kwargs
+    function, /, *args, operation_name: str | None = None,
+    admission_timeout_seconds: float | None = None,
+    deadline_seconds: float | None = None, **kwargs
 ):
-    """Return result plus queue, wall, CPU, and executor-thread attribution."""
-    loop = asyncio.get_running_loop()
-    submitted = time.monotonic()
-
-    def invoke():
-        started = time.monotonic()
-        started_process_cpu = time.process_time()
-        started_thread_cpu = time.thread_time()
-        token = RUNTIME_DIAGNOSTICS.begin_operation(
-            operation_name or f"security.maintenance.{getattr(function, '__name__', 'call')}"
-        )
-        result = "ok"
-        try:
-            value = function(*args, **kwargs)
-            return (
-                value,
-                started,
-                time.monotonic(),
-                started_process_cpu,
-                time.process_time(),
-                started_thread_cpu,
-                time.thread_time(),
-            )
-        except Exception:
-            result = "error"
-            raise
-        finally:
-            RUNTIME_DIAGNOSTICS.end_operation(token, result=result)
-
-    (
-        result,
-        started,
-        completed,
-        started_process_cpu,
-        completed_process_cpu,
-        started_thread_cpu,
-        completed_thread_cpu,
-    ) = await loop.run_in_executor(_SECURITY_MAINTENANCE_EXECUTOR, invoke)
-    process_cpu_ms = max(
-        0.0, (completed_process_cpu - started_process_cpu) * 1000.0
+    """Return result plus bounded admission and executor attribution."""
+    operation_id = _maintenance_operation_for(function, operation_name)
+    return await WORKLOAD_ADMISSION.run(
+        operation_id, function, *args,
+        admission_timeout_seconds=admission_timeout_seconds,
+        deadline_seconds=deadline_seconds,
+        diagnostic_name=operation_name or operation_id,
+        **kwargs
     )
-    thread_cpu_ms = max(
-        0.0, (completed_thread_cpu - started_thread_cpu) * 1000.0
-    )
-    return result, {
-        "queue_wait_ms": max(0.0, (started - submitted) * 1000.0),
-        "execution_ms": max(0.0, (completed - started) * 1000.0),
-        "total_ms": max(0.0, (completed - submitted) * 1000.0),
-        "process_cpu_ms": process_cpu_ms,
-        "thread_cpu_ms": thread_cpu_ms,
-        "thread_kind": "maintenance_executor",
-    }
 
 
 def initialize_security_sqlite_runtime(*, reconcile: bool = True) -> dict[str, Any]:
@@ -443,7 +419,10 @@ def reserve_scan_request(
 
 
 def finalize_scan_submission(
-    command: dict[str, Any], timing_sink: dict[str, float] | None = None
+    command: dict[str, Any],
+    timing_sink: dict[str, float] | None = None,
+    *,
+    project_compatibility: bool = True,
 ) -> dict[str, Any] | None:
     """Persist successful publication and API acceptance in one transaction.
 
@@ -469,22 +448,53 @@ def finalize_scan_submission(
     # round trip, then wake the background refresher for eventual reconciliation.
     _remember_sqlite_progress(_sqlite_progress_payload(accepted))
     mark_security_progress_dirty()
-    if _security_store_api().security_store_mode() == "dual":
-        projected = _sqlite_run_payload(
-            repository, accepted, include_details=True, include_related=True
-        ) or accepted
-        _write_run_projection(projected)
-        _, state, _ = _sqlite_state_projection()
-        try:
-            evidence.write_state(state)
-            write_compact_security_state(state)
-        except (OSError, ValueError, TypeError) as exc:
-            _record_projection_status(
-                run_id, component="state", degraded=True,
-                reason=f"state_projection_{type(exc).__name__}",
-            )
-        return projected
+    if (
+        _security_store_api().security_store_mode() == "dual"
+        and project_compatibility
+    ):
+        return project_scan_submission_compatibility(command)
     return accepted
+
+
+def project_scan_submission_compatibility(
+    command: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Export committed SQLite lifecycle state to derived compatibility JSON.
+
+    This function must run only through the compatibility_write admission lane.
+    SQLite remains authoritative; projection failure records degraded status but
+    never rolls back the committed lifecycle transaction.
+    """
+    if _security_store_api().security_store_mode() != "dual":
+        return None
+    run_id = str(command.get("run_id") or command.get("command_id") or "")
+    if not run_id:
+        return None
+    repository = _security_repository()
+    row = repository.get_run(run_id)
+    projected = _sqlite_run_payload(
+        repository, row, include_details=True, include_related=True
+    ) or row
+    if not projected:
+        return None
+    _write_run_projection(projected)
+    _, state, _ = _sqlite_state_projection()
+    try:
+        evidence.write_state(state)
+        write_compact_security_state(state)
+        _record_projection_status(run_id, component="state", degraded=False)
+    except (OSError, ValueError, TypeError) as exc:
+        _record_projection_status(
+            run_id,
+            component="state",
+            degraded=True,
+            reason=f"state_projection_{type(exc).__name__}",
+        )
+        _LOGGER.warning(
+            "Security state JSON compatibility projection degraded: %s",
+            type(exc).__name__,
+        )
+    return projected
 
 
 def mark_scan_accepted(command: dict[str, Any]) -> dict[str, Any] | None:

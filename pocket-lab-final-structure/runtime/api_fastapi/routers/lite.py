@@ -18,9 +18,78 @@ from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
+from ..services.request_limits import request_limit_snapshot
+from ..services.workload_admission import (
+    AdmissionQueueFull,
+    AdmissionShutdown,
+    AdmissionTimeout,
+    ExecutorUnavailable,
+    OperationDeadlineExceeded,
+    WORKLOAD_ADMISSION,
+    WorkloadAdmissionError,
+    workload_classification_snapshot,
+)
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 _LOGGER = logging.getLogger(__name__)
+
+
+
+async def _record_admission_outcome(
+    *, operation: str, outcome: str, reason: str, retryable: bool, admission_class: str
+) -> None:
+    """Best-effort sanitized audit evidence without recursive admission."""
+    payload = {
+        "operation": str(operation or "lite_control")[:80],
+        "outcome": str(outcome or "rejected")[:24],
+        "reason": str(reason or "control_plane_busy")[:64],
+        "retryable": bool(retryable),
+        "capacity_class": str(admission_class or "unknown")[:48],
+        "captured_at": deps.now_utc_iso(),
+        "sanitized": True,
+    }
+    try:
+        from ..services.nats_bus import BUS
+
+        await asyncio.wait_for(
+            BUS.publish_json(
+                "pocketlab.audit.lite.control.rejected",
+                "lite.control.rejected",
+                payload,
+            ),
+            timeout=0.5,
+        )
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.admission.audit_degraded operation=%s error_type=%s",
+            payload["operation"],
+            type(exc).__name__,
+        )
+
+
+async def _raise_admission_http_error(exc: WorkloadAdmissionError, operation: str) -> None:
+    await _record_admission_outcome(
+        operation=operation,
+        outcome="rejected",
+        reason=exc.reason,
+        retryable=exc.retryable,
+        admission_class=exc.admission_class.value,
+    )
+    status_code = 503
+    message = exc.safe_message or "Pocket Lab is busy. Try again shortly."
+    raise HTTPException(
+        status_code=status_code,
+        headers={"Retry-After": "2", "Cache-Control": "no-store"},
+        detail={
+            "status": "busy",
+            "accepted": False,
+            "reason": exc.reason,
+            "retryable": bool(exc.retryable),
+            "operation": operation,
+            "message": message,
+            "sanitized": True,
+        },
+    )
 
 def _lite_payload_dict(payload):
     """Return a request model as a dict on both Pydantic v1 and v2."""
@@ -924,39 +993,67 @@ def get_lite_security_freshness(request: Request) -> Response:
 
 
 @router.get("/security/profiles/{profile}")
-def get_lite_security_profile(profile: str, request: Request) -> Response:
+async def get_lite_security_profile(profile: str, request: Request) -> Response:
     deps.require_auth(request)
     try:
-        return _security_compact_response(request, lite_security.split_profile_state(profile))
+        payload = await lite_security.run_api_maintenance(
+            lite_security.split_profile_state,
+            profile,
+            operation_name="security.profile.reconstruction",
+        )
+        return _security_compact_response(request, payload)
     except ValueError:
         raise HTTPException(status_code=404, detail="Security profile not found.")
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_profile_read")
 
 
 @router.get("/security/history")
-def get_lite_security_history(
+async def get_lite_security_history(
     request: Request, limit: int = 20, cursor: str | None = None
 ) -> Response:
     deps.require_auth(request)
     try:
-        payload = lite_security.split_history_state(limit=limit, cursor=cursor)
+        payload = await lite_security.run_api_maintenance(
+            lite_security.split_history_state,
+            limit=limit,
+            cursor=cursor,
+            operation_name="security.history.reconstruction",
+        )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid Security history cursor.")
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_history_read")
     return _security_compact_response(request, payload)
 
 
 @router.get("/security/details/{run_id}")
-def get_lite_security_details(run_id: str, request: Request) -> Response:
+async def get_lite_security_details(run_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    payload = lite_security.split_run_details_state(run_id)
+    try:
+        payload = await lite_security.run_api_maintenance(
+            lite_security.split_run_details_state,
+            run_id,
+            operation_name="security.details.reconstruction",
+        )
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_details_read")
     if not payload:
         raise HTTPException(status_code=404, detail="Security check details not found.")
     return _security_compact_response(request, payload)
 
 
 @router.get("/security/evidence/{run_id}/summary")
-def get_lite_security_evidence_summary(run_id: str, request: Request) -> Response:
+async def get_lite_security_evidence_summary(run_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    payload = lite_security.split_evidence_summary_state(run_id)
+    try:
+        payload = await lite_security.run_api_maintenance(
+            lite_security.split_evidence_summary_state,
+            run_id,
+            operation_name="security.evidence.summary",
+        )
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_evidence_summary")
     if not payload:
         raise HTTPException(status_code=404, detail="Security evidence summary not found.")
     return _security_compact_response(request, payload)
@@ -1029,25 +1126,36 @@ async def get_lite_security_progress(request: Request) -> Response:
 @router.get("/diagnostics/runtime")
 def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
-
     payload = RUNTIME_DIAGNOSTICS.snapshot()
     payload["security_progress"] = lite_security.security_progress_runtime_diagnostics()
+    payload["workload_admission"] = WORKLOAD_ADMISSION.snapshot()
+    payload["workload_classification"] = workload_classification_snapshot()
+    payload["request_limits"] = request_limit_snapshot()
     payload["sanitized"] = True
     return payload
 
 
 @router.get("/security")
-def get_lite_security(request: Request) -> dict[str, Any]:
+async def get_lite_security(request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    state = lite_security.current_state()
-    profiles = lite_app_profiles.app_security_profiles()
-    lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
-    state["protected_apps"] = profiles.get("apps", [])
-    state["app_security_profiles"] = profiles
-    state["app_lifecycle_profiles"] = lifecycle
-    state["details_payload"] = True
-    return state
+
+    def build_details_payload() -> dict[str, Any]:
+        state = lite_security.current_state()
+        profiles = lite_app_profiles.app_security_profiles()
+        lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
+        state["protected_apps"] = profiles.get("apps", [])
+        state["app_security_profiles"] = profiles
+        state["app_lifecycle_profiles"] = lifecycle
+        state["details_payload"] = True
+        return state
+
+    try:
+        return await lite_security.run_api_maintenance(
+            build_details_payload,
+            operation_name="security.current_state.read",
+        )
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_details_read")
 
 
 @router.post("/security/check", status_code=202)
@@ -1082,16 +1190,19 @@ async def check_lite_security(
         if profile == lite_security.policy.SCAN_PROFILE_FULL
         else "manual quick safety check"
     )
-    prepared, reservation_timing = await lite_security.run_api_maintenance_timed(
-        lite_security.build_and_reserve_scan_request,
-        run_id=run_id,
-        scope=payload.scope or "local",
-        profile=profile,
-        app_id=app_id,
-        reason=reason,
-        requested_at=deps.now_utc_iso(),
-        operation_name="security.scan.reservation",
-    )
+    try:
+        prepared, reservation_timing = await lite_security.run_api_maintenance_timed(
+            lite_security.build_and_reserve_scan_request,
+            run_id=run_id,
+            scope=payload.scope or "local",
+            profile=profile,
+            app_id=app_id,
+            reason=reason,
+            requested_at=deps.now_utc_iso(),
+            operation_name="security.scan.reservation",
+        )
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_scan")
     command = prepared["command"]
     reservation = prepared["reservation"]
     reservation_timing.update({
@@ -1125,22 +1236,75 @@ async def check_lite_security(
             timing_sink=publish_timing,
         )
     except Exception:
-        await lite_security.run_api_maintenance(
-            lite_security.fail_scan_submission,
-            run_id,
-            operation_name="security.scan.submission_failure_commit",
-        )
+        try:
+            await lite_security.run_api_maintenance(
+                lite_security.fail_scan_submission,
+                run_id,
+                operation_name="security.scan.submission_failure_commit",
+                admission_timeout_seconds=2.0,
+                deadline_seconds=12.0,
+            )
+        except WorkloadAdmissionError as cleanup_exc:
+            _LOGGER.warning(
+                "pocketlab.security.submission_cleanup_degraded error_type=%s",
+                type(cleanup_exc).__name__,
+            )
         raise
     publish_done = time.perf_counter()
     lifecycle_stages: dict[str, float] = {}
-    _result, lifecycle_timing = await lite_security.run_api_maintenance_timed(
-        lite_security.finalize_scan_submission,
-        command,
-        lifecycle_stages,
-        operation_name="security.scan.lifecycle_commit",
-    )
-    lifecycle_timing.update({f"stage_{key}": value for key, value in lifecycle_stages.items()})
-    lifecycle_committed = time.perf_counter()
+    lifecycle_pending = False
+    lifecycle_timing: dict[str, float] = {}
+    try:
+        _result, lifecycle_timing = await lite_security.run_api_maintenance_timed(
+            lite_security.finalize_scan_submission,
+            command,
+            lifecycle_stages,
+            operation_name="security.scan.lifecycle_commit",
+            admission_timeout_seconds=2.0,
+            deadline_seconds=12.0,
+            project_compatibility=False,
+        )
+        lifecycle_timing.update({f"stage_{key}": value for key, value in lifecycle_stages.items()})
+        lifecycle_committed = time.perf_counter()
+    except (OperationDeadlineExceeded, AdmissionTimeout, AdmissionQueueFull) as exc:
+        # The durable command was already published. Do not report a false
+        # rejection or cancel the shielded authoritative lifecycle write. The
+        # worker receipt path can also advance the reserved SQLite row.
+        lifecycle_pending = True
+        lifecycle_committed = None
+        lifecycle_timing = {
+            "admission_class": exc.admission_class.value,
+            "result": exc.reason,
+        }
+        await _record_admission_outcome(
+            operation="security_scan_lifecycle",
+            outcome="accepted_pending",
+            reason=exc.reason,
+            retryable=True,
+            admission_class=exc.admission_class.value,
+        )
+    compatibility_pending = lifecycle_pending
+    if (
+        not lifecycle_pending
+        and lite_security._security_store_api().security_store_mode() == "dual"
+    ):
+        try:
+            await lite_security.run_api_maintenance(
+                lite_security.project_scan_submission_compatibility,
+                command,
+                operation_name="security.compatibility.write",
+                admission_timeout_seconds=0.25,
+                deadline_seconds=10.0,
+            )
+        except WorkloadAdmissionError as exc:
+            compatibility_pending = True
+            await _record_admission_outcome(
+                operation="security_compatibility_write",
+                outcome="accepted_pending",
+                reason=exc.reason,
+                retryable=True,
+                admission_class=exc.admission_class.value,
+            )
     queued.update(
         {
             "status": "queued",
@@ -1151,6 +1315,8 @@ async def check_lite_security(
             "execution_mode": "worker",
             "summary": lite_security._profile_copy(profile)["queued"],
             "scan_profile": profile,
+            "lifecycle_pending": lifecycle_pending,
+            "compatibility_pending": compatibility_pending,
             **({"app_id": app_id, "app_label": "PhotoPrism"} if app_id else {}),
         }
     )
@@ -1173,18 +1339,32 @@ async def scan_lite_security(
 
 
 @router.get("/security/runs/{run_id}")
-def get_lite_security_run(run_id: str, request: Request) -> dict[str, Any]:
+async def get_lite_security_run(run_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    run = lite_security.read_run(run_id)
+    try:
+        run = await lite_security.run_api_maintenance(
+            lite_security.read_run,
+            run_id,
+            operation_name="security.details.reconstruction",
+        )
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_run_read")
     if not run:
         raise HTTPException(status_code=404, detail="Security check run not found.")
     return run
 
 
 @router.get("/security/evidence/{run_id}")
-def get_lite_security_evidence(run_id: str, request: Request) -> dict[str, Any]:
+async def get_lite_security_evidence(run_id: str, request: Request) -> dict[str, Any]:
     deps.require_auth(request)
-    payload = lite_security.read_evidence(run_id)
+    try:
+        payload = await lite_security.run_api_maintenance(
+            lite_security.read_evidence,
+            run_id,
+            operation_name="security.evidence.summary",
+        )
+    except WorkloadAdmissionError as exc:
+        await _raise_admission_http_error(exc, "security_evidence_read")
     if not payload:
         raise HTTPException(status_code=404, detail="Security evidence not found.")
     return payload
@@ -1203,64 +1383,26 @@ def get_lite_security_app(app_id: str, request: Request) -> dict[str, Any]:
 
 
 @router.post("/security/apps/{app_id}/check", status_code=202)
-async def check_lite_security_app(app_id: str, request: Request, payload: LiteAppSecurityCheckRequest | None = Body(default=None)) -> dict[str, Any]:
-    deps.require_auth(request, write=True)
+async def check_lite_security_app(
+    app_id: str,
+    request: Request,
+    response: Response,
+    payload: LiteAppSecurityCheckRequest | None = Body(default=None),
+) -> dict[str, Any]:
     try:
         normalized_app_id = lite_security.policy.normalize_app_id(app_id)
     except ValueError:
         raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
-    run_id = lite_security.new_run_id()
-    command = {
-        "run_id": run_id,
-        "command_id": run_id,
-        "scope": "local",
-        "profile": lite_security.policy.SCAN_PROFILE_APP,
-        "app_id": normalized_app_id,
-        "reason": (payload.reason if payload else None) or "manual app check",
-        "requested_at": deps.now_utc_iso(),
-    }
-    reservation = await lite_security.run_api_maintenance(
-        lite_security.reserve_scan_request, command
+    return await check_lite_security(
+        request,
+        response,
+        LiteSecurityScanRequest(
+            scope="local",
+            profile=lite_security.policy.SCAN_PROFILE_APP,
+            app_id=normalized_app_id,
+            reason=(payload.reason if payload else None) or "manual app check",
+        ),
     )
-    if not reservation.get("reserved"):
-        return reservation.get("response") or {
-            "status": "queued",
-            "accepted": True,
-            "deduplicated": True,
-            "summary": "A safety check is already in progress.",
-        }
-    try:
-        queued = await submit_domain_command(
-            lite_security.policy.COMMAND_SUBJECT,
-            "lite.security.app_check.requested",
-            command,
-        )
-    except Exception:
-        await lite_security.run_api_maintenance(
-            lite_security.fail_scan_submission, run_id
-        )
-        raise
-    await lite_security.run_api_maintenance(
-        lite_security.record_queued_run, command
-    )
-    await lite_security.run_api_maintenance(
-        lite_security.mark_scan_accepted, command
-    )
-    queued.update({
-        "status": "queued",
-        "accepted": True,
-        "deduplicated": False,
-        "run_id": run_id,
-        "command_subject": lite_security.policy.COMMAND_SUBJECT,
-        "execution_mode": "worker",
-        "summary": "PhotoPrism App Check queued.",
-        "scan_profile": lite_security.policy.SCAN_PROFILE_APP,
-        "app_id": normalized_app_id,
-        "app_label": "PhotoPrism",
-        "progress": {"phase": "queued", "step": "App Check queued.", "bounded": True},
-        "troubleshooting": {"status": "pending", "backend_only": True, "summary": "Backend App Check record pending."},
-    })
-    return queued
 
 
 @router.get("/fleet")

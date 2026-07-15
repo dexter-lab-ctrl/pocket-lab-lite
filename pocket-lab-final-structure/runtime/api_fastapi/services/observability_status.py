@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import asyncio
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
 import os
 import time
 from typing import Any
+
+from .workload_admission import WORKLOAD_ADMISSION
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
@@ -323,4 +324,9 @@ def build_observability_status_snapshot(*, use_cache: bool = True) -> dict[str, 
 
 
 async def get_observability_status_snapshot(*, use_cache: bool = True) -> dict[str, Any]:
-    return await asyncio.to_thread(build_observability_status_snapshot, use_cache=use_cache)
+    snapshot, _ = await WORKLOAD_ADMISSION.run(
+        "system.observability_probe",
+        build_observability_status_snapshot,
+        use_cache=use_cache,
+    )
+    return snapshot

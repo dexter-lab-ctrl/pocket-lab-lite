@@ -92,7 +92,7 @@ async function readJson(path, options = {}) {
       const cached = await readLiteSnapshotAsync(path);
       if (cached) return cached;
     }
-    const message = data?.summary || data?.detail?.summary || data?.detail || data?.error || response.statusText;
+    const message = data?.message || data?.summary || data?.detail?.message || data?.detail?.summary || data?.detail || data?.error || response.statusText;
     const error = new Error(typeof message === 'string' ? message : 'Pocket Lab Lite action could not be completed.');
     error.status = response.status;
     error.payload = data;

@@ -223,7 +223,17 @@ class RuntimeDiagnostics:
         if event_loop_thread_id is not None and thread_id == event_loop_thread_id:
             return "event_loop"
         name = threading.current_thread().name.lower()
-        if "pocketlab-security-maintenance" in name:
+        maintenance_prefixes = (
+            "pocketlab-security-maintenance",
+            "pocketlab-command-reservation",
+            "pocketlab-lifecycle-write",
+            "pocketlab-maintenance-read",
+            "pocketlab-compatibility-write",
+            "pocketlab-audit-aggregation",
+            "pocketlab-system-probe",
+            "pocketlab-cpu-normalization",
+        )
+        if any(prefix in name for prefix in maintenance_prefixes):
             return "maintenance_executor"
         return "other_worker"
 
