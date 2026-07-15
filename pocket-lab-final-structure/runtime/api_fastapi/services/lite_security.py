@@ -35,6 +35,8 @@ _SQLITE_PROGRESS_REFRESH_LOCK = threading.Lock()
 _SQLITE_PROGRESS_REFRESHED_AT = 0.0
 _SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS = max(0.5, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_INTERVAL_SECONDS", "2.0")))
 _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS = max(_SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "5.0")))
+_SQLITE_PROGRESS_ACTIVE_RETRY_SECONDS = max(0.10, min(1.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_RETRY_SECONDS", "0.35"))))
+_SQLITE_PROGRESS_IDLE_RETRY_SECONDS = max(0.25, min(5.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_RETRY_SECONDS", "1.0"))))
 _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS = 15_000
 _SQLITE_PROGRESS_DIRTY = threading.Event()
 _SQLITE_PROGRESS_STOP = threading.Event()
@@ -1735,22 +1737,61 @@ def _sqlite_unavailable_progress(reason: str = "projection_not_primed") -> dict[
     })
 
 
-def _refresh_sqlite_progress_snapshot(
-    *, repository: Any | None = None, run_id: str | None = None
-) -> dict[str, Any]:
-    """Refresh from one committed SQLite row and publish monotonically."""
+def _refresh_sqlite_progress_snapshot_timed(
+    *,
+    repository: Any | None = None,
+    reader: Any | None = None,
+    run_id: str | None = None,
+) -> tuple[dict[str, Any], dict[str, float]]:
+    """Refresh one committed Progress row and expose sanitized phase timings."""
     global _SQLITE_PROGRESS_FAILURES
-    repo = repository or _security_repository()
-    progress = repo.get_progress(run_id) if run_id else repo.get_progress()
+    timings = {
+        "connection_wait_ms": 0.0,
+        "query_ms": 0.0,
+        "projection_build_ms": 0.0,
+        "snapshot_publish_ms": 0.0,
+    }
+    if reader is not None:
+        read_result = reader.read(run_id)
+        progress = read_result.progress
+        timings["connection_wait_ms"] = read_result.connection_wait_ms
+        timings["query_ms"] = read_result.query_ms
+        timings["projection_build_ms"] = read_result.projection_build_ms
+    else:
+        repo = repository or _security_repository()
+        query_started = time.monotonic()
+        progress = repo.get_progress(run_id) if run_id else repo.get_progress()
+        timings["query_ms"] = (time.monotonic() - query_started) * 1000
+
     if progress is None:
+        repo = repository or _security_repository()
+        query_started = time.monotonic()
         revision = repo.get_domain_revision()
+        timings["query_ms"] += (time.monotonic() - query_started) * 1000
         progress = {
             "status": "idle",
             "domain_revision": int(revision.get("revision") or 0),
             "updated_at": revision.get("updated_at"),
         }
-    payload = _remember_sqlite_progress(_sqlite_progress_payload(progress))
+
+    projection_started = time.monotonic()
+    projected = _sqlite_progress_payload(progress)
+    timings["projection_build_ms"] += (time.monotonic() - projection_started) * 1000
+    publish_started = time.monotonic()
+    payload = _remember_sqlite_progress(projected)
+    timings["snapshot_publish_ms"] = (time.monotonic() - publish_started) * 1000
     _SQLITE_PROGRESS_FAILURES = 0
+    return payload, timings
+
+
+def _refresh_sqlite_progress_snapshot(
+    *, repository: Any | None = None, run_id: str | None = None
+) -> dict[str, Any]:
+    """Refresh from one committed SQLite row and publish monotonically."""
+    payload, _timings = _refresh_sqlite_progress_snapshot_timed(
+        repository=repository,
+        run_id=run_id,
+    )
     return payload
 
 
@@ -1773,42 +1814,97 @@ def _projection_refresh_interval_seconds() -> float:
     return _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS
 
 
+def _projection_retry_seconds(active: bool) -> float:
+    return (
+        _SQLITE_PROGRESS_ACTIVE_RETRY_SECONDS
+        if active
+        else _SQLITE_PROGRESS_IDLE_RETRY_SECONDS
+    )
+
+
 def _projection_refresher_loop() -> None:
     global _SQLITE_PROGRESS_FAILURES
-    repository: Any | None = None
-    while not _SQLITE_PROGRESS_STOP.is_set():
-        interval = _projection_refresh_interval_seconds()
-        wait_started = time.monotonic()
-        signaled = _SQLITE_PROGRESS_DIRTY.wait(timeout=interval)
-        woke_at = time.monotonic()
-        _SQLITE_PROGRESS_DIRTY.clear()
-        if _SQLITE_PROGRESS_STOP.is_set():
-            break
-        if not _sqlite_compact_reads_enabled():
-            repository = None
-            continue
-        try:
-            if repository is None:
-                repository = _security_repository()
-            refresh_started = time.monotonic()
-            _refresh_sqlite_progress_snapshot(repository=repository)
-            refresh_ms = (time.monotonic() - refresh_started) * 1000
-            drift_ms = max(0.0, woke_at - wait_started - interval) * 1000
-            if refresh_ms >= 1000 or (not signaled and drift_ms >= 500):
+    store = _security_store_api()
+    reader: Any | None = None
+    retry_delay: float | None = None
+    try:
+        while not _SQLITE_PROGRESS_STOP.is_set():
+            periodic_interval = _projection_refresh_interval_seconds()
+            wait_interval = retry_delay if retry_delay is not None else periodic_interval
+            wait_started = time.monotonic()
+            signaled = _SQLITE_PROGRESS_DIRTY.wait(timeout=wait_interval)
+            woke_at = time.monotonic()
+            _SQLITE_PROGRESS_DIRTY.clear()
+            if _SQLITE_PROGRESS_STOP.is_set():
+                break
+            if not _sqlite_compact_reads_enabled():
+                if reader is not None:
+                    reader.close()
+                    reader = None
+                retry_delay = None
+                continue
+            active = bool((_memory_sqlite_progress_snapshot() or {}).get("active_scan"))
+            try:
+                if reader is None:
+                    reader = store.SecurityProgressReader()
+                refresh_started = time.monotonic()
+                _payload, timings = _refresh_sqlite_progress_snapshot_timed(reader=reader)
+                refresh_ms = (time.monotonic() - refresh_started) * 1000
+                drift_ms = max(0.0, woke_at - wait_started - wait_interval) * 1000
+                retry_delay = None
+                if (
+                    refresh_ms >= 1000
+                    or timings["connection_wait_ms"] >= 250
+                    or timings["query_ms"] >= 250
+                    or timings["projection_build_ms"] >= 250
+                    or timings["snapshot_publish_ms"] >= 100
+                    or (not signaled and drift_ms >= 500)
+                ):
+                    _LOGGER.warning(
+                        "Security SQLite projection refresher timing "
+                        "connection_wait_ms=%.2f query_ms=%.2f projection_build_ms=%.2f "
+                        "snapshot_publish_ms=%.2f refresh_ms=%.2f schedule_drift_ms=%.2f "
+                        "interval_ms=%.2f active=%s signaled=%s retry=false",
+                        timings["connection_wait_ms"],
+                        timings["query_ms"],
+                        timings["projection_build_ms"],
+                        timings["snapshot_publish_ms"],
+                        refresh_ms,
+                        drift_ms,
+                        periodic_interval * 1000,
+                        active,
+                        signaled,
+                    )
+            except store.SecurityProgressReadContention as exc:
+                _SQLITE_PROGRESS_FAILURES += 1
+                retry_delay = _projection_retry_seconds(active)
                 _LOGGER.warning(
-                    "Security SQLite projection refresher timing refresh_ms=%.2f "
-                    "schedule_drift_ms=%.2f interval_ms=%.2f active=%s signaled=%s",
-                    refresh_ms, drift_ms, interval * 1000,
-                    bool((_memory_sqlite_progress_snapshot() or {}).get("active_scan")),
-                    signaled,
+                    "Security SQLite projection refresh contention "
+                    "connection_wait_ms=%.2f query_ms=%.2f active=%s "
+                    "retry_in_ms=%.2f consecutive=%d",
+                    exc.connection_wait_ms,
+                    exc.query_ms,
+                    active,
+                    retry_delay * 1000,
+                    _SQLITE_PROGRESS_FAILURES,
                 )
-        except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
-            repository = None
-            _SQLITE_PROGRESS_FAILURES += 1
-            _LOGGER.warning(
-                "Security SQLite projection refresh degraded (%s, consecutive=%d)",
-                type(exc).__name__, _SQLITE_PROGRESS_FAILURES,
-            )
+            except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
+                if reader is not None:
+                    reader.close()
+                    reader = None
+                _SQLITE_PROGRESS_FAILURES += 1
+                retry_delay = _projection_retry_seconds(active)
+                _LOGGER.warning(
+                    "Security SQLite projection refresh degraded "
+                    "error_type=%s active=%s retry_in_ms=%.2f consecutive=%d",
+                    type(exc).__name__,
+                    active,
+                    retry_delay * 1000,
+                    _SQLITE_PROGRESS_FAILURES,
+                )
+    finally:
+        if reader is not None:
+            reader.close()
 
 
 def start_security_projection_runtime() -> None:
