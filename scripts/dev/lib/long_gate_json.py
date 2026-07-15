@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
-ORCHESTRATOR_VERSION = "phase5-group1-v1"
+ORCHESTRATOR_VERSION = "phase5-group2-v1"
 REPORT_FORMAT_VERSION = "1"
 TERMINAL_CHECKPOINT_STATES = {"passed", "failed", "skipped", "unavailable"}
 CHECKPOINT_STATES = {
@@ -39,9 +39,9 @@ CHECKPOINT_STATES = {
     "unavailable",
 }
 REAL_PHASE5_GATES = {
-    "idle-stability",
-    "repeated-quick-scans",
-    "active-progress-soak",
+    "idle",
+    "repeated-scans",
+    "progress-soak",
     "submission-timeout-recovery",
     "nats-restart-endurance",
     "worker-restart",
@@ -49,6 +49,8 @@ REAL_PHASE5_GATES = {
     "low-storage",
     "android-background-resume",
 }
+IMPLEMENTED_PHASE5_GATES = {"idle", "repeated-scans", "progress-soak"}
+UNAVAILABLE_FUTURE_GATES = REAL_PHASE5_GATES - IMPLEMENTED_PHASE5_GATES
 
 SENSITIVE_KEY_RE = re.compile(
     r"(?i)(authorization|cookie|password|passwd|api[_-]?key|access[_-]?token|"
@@ -1351,6 +1353,13 @@ def aggregate(args: argparse.Namespace) -> int:
         "gates_skipped": counts["skipped"],
         "gates_unavailable": counts["unavailable"],
         "real_phase5_gates_executed": len(real_results),
+        "implemented_gates": sorted(IMPLEMENTED_PHASE5_GATES),
+        "selected_gates": list(manifest.get("selected_gates") or []),
+        "passed_gates": sorted(str(item.get("gate_id") or "") for item in results if item.get("status") == "passed"),
+        "failed_gates": sorted(str(item.get("gate_id") or "") for item in results if item.get("status") == "failed"),
+        "selected_unavailable_gates": sorted(str(item.get("gate_id") or "") for item in unavailable),
+        "unavailable_future_gates": sorted(UNAVAILABLE_FUTURE_GATES),
+        "phase5_scope_complete": False,
         "unexpected_process_restarts": restarts,
         "duplicate_runs": None,
         "stale_active_runs": None,

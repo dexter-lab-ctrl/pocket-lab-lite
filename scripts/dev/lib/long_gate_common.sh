@@ -111,3 +111,38 @@ long_gate_init_run() {
 long_gate_mark_interrupted_checkpoints() {
   long_gate_python mark-interrupted --run-dir "$LONG_GATE_RUN_DIR" --run-id "$LONG_GATE_RUN_ID"
 }
+
+long_gate_is_positive_integer() {
+  [[ "$1" =~ ^[0-9]+$ && "$1" -gt 0 ]]
+}
+
+long_gate_is_nonnegative_integer() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+long_gate_is_positive_number() {
+  [[ "$1" =~ ^([0-9]+([.][0-9]+)?|[.][0-9]+)$ ]] || return 1
+  [[ ! "$1" =~ ^0*([.]0*)?$ ]]
+}
+
+long_gate_validate_group2_configuration() {
+  long_gate_is_positive_integer "$LONG_GATE_IDLE_DURATION_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--duration-seconds must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--sample-interval-seconds must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--heavy-check-interval-seconds must be positive."
+  long_gate_is_nonnegative_integer "$LONG_GATE_IDLE_WARMUP_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--warmup-seconds must be non-negative."
+  (( LONG_GATE_IDLE_WARMUP_SECONDS < LONG_GATE_IDLE_DURATION_SECONDS )) || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--warmup-seconds must be shorter than --duration-seconds."
+  (( LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS >= LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS )) || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Heavy checks cannot be more frequent than light samples."
+  long_gate_is_positive_integer "$LONG_GATE_REPEATED_COUNT" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--count must be positive."
+  long_gate_is_nonnegative_integer "$LONG_GATE_REPEATED_COOLDOWN_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--cooldown-seconds must be non-negative."
+  long_gate_is_positive_integer "$LONG_GATE_RUN_TIMEOUT_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--run-timeout-seconds must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_REPEATED_PARITY_EVERY" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--parity-every must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_REPEATED_RESOURCE_EVERY" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--resource-sample-every must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_PROGRESS_SCAN_COUNT" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--scan-count must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_PROGRESS_SAMPLE_INTERVAL_MS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--sample-interval-ms must be positive."
+  (( LONG_GATE_PROGRESS_SAMPLE_INTERVAL_MS >= 200 )) || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--sample-interval-ms cannot be lower than 200."
+  long_gate_is_positive_integer "$LONG_GATE_PROGRESS_ETAG_EVERY" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--etag-check-every must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_REPORT_LIMIT_MB" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--report-limit-mb must be a positive integer."
+  long_gate_is_positive_number "$LONG_GATE_SUBMISSION_TIMEOUT_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--submission-timeout-seconds must be positive."
+  long_gate_is_positive_number "$LONG_GATE_PROGRESS_P95_BUDGET_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--p95-budget-seconds must be positive."
+  long_gate_is_positive_number "$LONG_GATE_PROGRESS_MAX_BUDGET_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--max-budget-seconds must be positive."
+}

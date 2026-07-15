@@ -62,3 +62,18 @@ long_gate_aggregate_summary() {
     --run-id "$LONG_GATE_RUN_ID" \
     --output "$LONG_GATE_RUN_DIR/summary.json"
 }
+
+long_gate_gate_failure_reason() {
+  local gate_id="$1"
+  local path="$LONG_GATE_RUN_DIR/gates/$gate_id/result.json"
+  [[ -f "$path" ]] || return 0
+  "$LONG_GATE_PYTHON" - "$path" <<'PY'
+import json, sys
+try:
+    payload = json.load(open(sys.argv[1], encoding="utf-8"))
+except (OSError, json.JSONDecodeError):
+    print("")
+else:
+    print(str(payload.get("failure_reason") or ""))
+PY
+}

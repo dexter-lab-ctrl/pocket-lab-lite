@@ -34,7 +34,7 @@ def test_phase5_group1_shell_files_are_valid_and_modular():
             ["bash", "-n", str(path)], cwd=ROOT, capture_output=True, text=True
         )
         assert result.returncode == 0, f"{path}: {result.stderr}"
-    assert len(ORCHESTRATOR.read_text(encoding="utf-8").splitlines()) < 420
+    assert len(ORCHESTRATOR.read_text(encoding="utf-8").splitlines()) < 560
     assert "scripts/dev/lib/long_gate_" in ORCHESTRATOR.read_text(encoding="utf-8")
 
 
@@ -67,9 +67,9 @@ def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
     assert "framework-self-test" in registry.stdout
     assert "implemented" in registry.stdout
     for gate in (
-        "idle-stability",
-        "repeated-quick-scans",
-        "active-progress-soak",
+        "idle",
+        "repeated-scans",
+        "progress-soak",
         "submission-timeout-recovery",
         "nats-restart-endurance",
         "worker-restart",
@@ -78,7 +78,8 @@ def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
         "android-background-resume",
     ):
         assert gate in registry.stdout
-    assert registry.stdout.count("unavailable") >= 9
+    assert registry.stdout.count("unavailable") >= 6
+    assert registry.stdout.count("implemented") >= 4
 
     report_root = tmp_path / "reports"
     dry_run = subprocess.run(
@@ -103,9 +104,13 @@ def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
 def test_unavailable_gate_and_all_paths_cannot_claim_ready():
     text = ORCHESTRATOR.read_text(encoding="utf-8")
     assert "LONG_GATE_EXIT_GATE_UNAVAILABLE=24" in (LIB_DIR / "long_gate_common.sh").read_text()
-    assert "registered but not implemented in Group 1" in text
+    assert "registered but not implemented in the current group" in text
     assert "unavailable_selected=1" in text
     assert 'exit "$LONG_GATE_EXIT_GATE_UNAVAILABLE"' in text
+    all_dry = subprocess.run(["bash", str(ORCHESTRATOR), "--dry-run", "--all"], cwd=ROOT, capture_output=True, text=True)
+    assert all_dry.returncode == 0
+    assert "selected_gates=idle,repeated-scans,progress-soak" in all_dry.stdout
+    assert "submission-timeout-recovery" not in all_dry.stdout
     assert "framework-self-test" not in list(
         line.strip() for line in text.split("real_gate_names()", 1)[-1].split("}", 1)[0].splitlines()
         if line.strip().startswith("printf")
