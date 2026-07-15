@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 import uuid
 import time
@@ -11,6 +10,7 @@ from fastapi import HTTPException
 from .. import deps
 from ..services.nats_bus import BUS, PocketLabEventBus
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
+from ..services.workload_admission import WORKLOAD_ADMISSION
 
 OperationRequestLike = Any
 DomainFallback = Callable[[Dict[str, Any]], Dict[str, Any]]
@@ -84,7 +84,8 @@ async def _publish_with_reconnect(
         getattr(BUS.publish_json, "__func__", None) is PocketLabEventBus.publish_json
     )
     if native_publish:
-        event, encoded = await asyncio.to_thread(
+        (event, encoded), _ = await WORKLOAD_ADMISSION.run(
+            "control.command_envelope.prepare",
             BUS.prepare_json_event,
             subject,
             event_type,
@@ -281,18 +282,26 @@ async def submit_domain_command(
     )
     prepare_started = time.monotonic()
     if native_publish:
-        bundle = await asyncio.to_thread(
-            _prepare_domain_publish_bundle, subject, event_type, data, trace_id
+        bundle, _ = await WORKLOAD_ADMISSION.run(
+            "control.command_envelope.prepare",
+            _prepare_domain_publish_bundle,
+            subject,
+            event_type,
+            data,
+            trace_id,
         )
     else:
-        payload = await asyncio.to_thread(dict, data or {})
+        payload, _ = await WORKLOAD_ADMISSION.run(
+            "control.command_envelope.prepare", dict, data or {}
+        )
         command_id = str(
             payload.get("command_id") or payload.get("job_id") or uuid.uuid4().hex
         )
         payload.setdefault("command_id", command_id)
         payload.setdefault("trace_id", trace_id or command_id)
-        evidence_payload = await asyncio.to_thread(
-            lambda: {"command_id": command_id, "command_subject": subject, **payload}
+        evidence_payload, _ = await WORKLOAD_ADMISSION.run(
+            "control.command_envelope.prepare",
+            lambda: {"command_id": command_id, "command_subject": subject, **payload},
         )
         bundle = {
             "command_id": command_id,

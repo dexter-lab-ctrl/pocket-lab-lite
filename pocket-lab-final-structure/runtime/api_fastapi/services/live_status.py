@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 
 from .. import deps
 from .nats_bus import BUS
+from .workload_admission import WORKLOAD_ADMISSION
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -200,7 +201,9 @@ class LiveStatusSampler:
             await asyncio.sleep(max(1.0, interval))
 
     async def sample_telemetry(self, *, source: str = "manual") -> Dict[str, Any]:
-        sample = await asyncio.to_thread(deps.core.telemetry_snapshot)
+        sample, _ = await WORKLOAD_ADMISSION.run(
+            "system.telemetry_probe", deps.core.telemetry_snapshot
+        )
         sample["sample_source"] = source
         sample["sampled_at"] = deps.now_utc_iso()
         changed = _telemetry_changed(
@@ -227,7 +230,9 @@ class LiveStatusSampler:
         return sample
 
     async def sample_health(self, *, source: str = "manual") -> Dict[str, Any]:
-        snapshot = await asyncio.to_thread(deps.core.build_health_engine_snapshot)
+        snapshot, _ = await WORKLOAD_ADMISSION.run(
+            "system.health_probe", deps.core.build_health_engine_snapshot
+        )
         snapshot["sample_source"] = source
         snapshot["sampled_at"] = deps.now_utc_iso()
         signature = _health_signature(snapshot)
@@ -276,7 +281,9 @@ class LiveStatusSampler:
     async def sample_fleet(self, *, source: str = "manual") -> Dict[str, Any]:
         from .fleet_registry import fleet_health_snapshot
 
-        snapshot = await asyncio.to_thread(fleet_health_snapshot)
+        snapshot, _ = await WORKLOAD_ADMISSION.run(
+            "system.fleet_probe", fleet_health_snapshot
+        )
         snapshot["sample_source"] = source
         snapshot["sampled_at"] = deps.now_utc_iso()
         signature = _fleet_signature(snapshot)
