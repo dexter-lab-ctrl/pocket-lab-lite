@@ -26,3 +26,11 @@ long_gate_curl_json() {
   fi
   curl "${args[@]}" -o "$output" "$url"
 }
+
+long_gate_proxy_base_url() {
+  printf '%s\n' "${LONG_GATE_PROXY_BASE_URL:-${POCKETLAB_LONG_GATE_PROXY_BASE_URL:-${POCKETLAB_LONG_GATE_BASE_URL:-http://127.0.0.1:8443}}}"
+}
+
+long_gate_direct_base_url() {
+  printf '%s\n' "${LONG_GATE_DIRECT_BASE_URL:-${POCKETLAB_LONG_GATE_DIRECT_BASE_URL:-http://127.0.0.1:8080}}"
+}
