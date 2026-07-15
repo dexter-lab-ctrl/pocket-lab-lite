@@ -74,14 +74,27 @@ def _record_security_submission_timing(
         "auth": max(0.0, (auth_done - started) * 1000),
         "reservation_queue": float(reservation_timing.get("queue_wait_ms", 0.0)),
         "reservation_execution": float(reservation_timing.get("execution_ms", 0.0)),
+        "reservation_connection_wait": float(reservation_timing.get("stage_connection_wait_ms", 0.0)),
+        "reservation_begin_wait": float(reservation_timing.get("stage_begin_wait_ms", 0.0)),
+        "reservation_active_lookup": float(reservation_timing.get("stage_active_lookup_ms", 0.0)),
+        "reservation_recent_lookup": float(reservation_timing.get("stage_recent_lookup_ms", 0.0)),
+        "reservation_write": float(reservation_timing.get("stage_write_ms", 0.0)),
+        "reservation_commit": float(reservation_timing.get("stage_commit_ms", 0.0)),
+        "reservation_result_build": float(reservation_timing.get("stage_result_build_ms", 0.0)),
         "reservation": max(0.0, (reservation_done - auth_done) * 1000),
         "nats_payload_prepare": float(publish_timing.get("payload_prepare_ms", 0.0)),
         "nats_readiness_wait": float(publish_timing.get("readiness_wait_ms", 0.0)),
         "nats_command_prepare": float(publish_timing.get("command_prepare_ms", 0.0)),
+        "nats_command_send": float(publish_timing.get("command_send_ms", 0.0)),
+        "nats_command_ack_wait": float(publish_timing.get("command_ack_wait_ms", 0.0)),
+        "nats_command_post_ack": float(publish_timing.get("command_post_ack_ms", 0.0)),
         "nats_command_broker": float(publish_timing.get("command_broker_ms", 0.0)),
         "nats_command_reconnect": float(publish_timing.get("command_reconnect_ms", 0.0)),
         "nats_evidence_payload_prepare": float(publish_timing.get("evidence_payload_prepare_ms", 0.0)),
         "nats_evidence_prepare": float(publish_timing.get("evidence_prepare_ms", 0.0)),
+        "nats_evidence_send": float(publish_timing.get("evidence_send_ms", 0.0)),
+        "nats_evidence_ack_wait": float(publish_timing.get("evidence_ack_wait_ms", 0.0)),
+        "nats_evidence_post_ack": float(publish_timing.get("evidence_post_ack_ms", 0.0)),
         "nats_evidence_broker": float(publish_timing.get("evidence_broker_ms", 0.0)),
         "nats_evidence_reconnect": float(publish_timing.get("evidence_reconnect_ms", 0.0)),
         "nats_publish_execution": float(publish_timing.get("execution_ms", 0.0)),
@@ -102,20 +115,34 @@ def _record_security_submission_timing(
     timing_log(
         "Security scan submission timing run_id=%s deduplicated=%s "
         "auth_ms=%.2f reservation_queue_ms=%.2f reservation_execution_ms=%.2f "
-        "reservation_process_cpu_ms=%.2f nats_payload_prepare_ms=%.2f "
+        "reservation_process_cpu_ms=%.2f reservation_connection_wait_ms=%.2f "
+        "reservation_begin_wait_ms=%.2f reservation_active_lookup_ms=%.2f "
+        "reservation_recent_lookup_ms=%.2f reservation_write_ms=%.2f "
+        "reservation_commit_ms=%.2f reservation_result_build_ms=%.2f "
+        "nats_payload_prepare_ms=%.2f command_encoded_bytes=%.0f evidence_encoded_bytes=%.0f "
         "nats_readiness_wait_ms=%.2f nats_command_prepare_ms=%.2f "
-        "nats_command_broker_ms=%.2f nats_command_reconnect_ms=%.2f "
+        "nats_command_send_ms=%.2f nats_command_ack_wait_ms=%.2f "
+        "nats_command_post_ack_ms=%.2f nats_command_broker_ms=%.2f nats_command_reconnect_ms=%.2f "
         "nats_evidence_payload_prepare_ms=%.2f nats_evidence_prepare_ms=%.2f "
-        "nats_evidence_broker_ms=%.2f nats_evidence_reconnect_ms=%.2f "
+        "nats_evidence_send_ms=%.2f nats_evidence_ack_wait_ms=%.2f "
+        "nats_evidence_post_ack_ms=%.2f nats_evidence_broker_ms=%.2f nats_evidence_reconnect_ms=%.2f "
         "lifecycle_queue_ms=%.2f lifecycle_execution_ms=%.2f "
         "lifecycle_process_cpu_ms=%.2f total_ms=%.2f",
         run_id, deduplicated, stages["auth"], stages["reservation_queue"],
         stages["reservation_execution"], float(reservation_timing.get("process_cpu_ms", 0.0)),
-        stages["nats_payload_prepare"], stages["nats_readiness_wait"],
-        stages["nats_command_prepare"], stages["nats_command_broker"],
+        stages["reservation_connection_wait"], stages["reservation_begin_wait"],
+        stages["reservation_active_lookup"], stages["reservation_recent_lookup"],
+        stages["reservation_write"], stages["reservation_commit"],
+        stages["reservation_result_build"], stages["nats_payload_prepare"],
+        float(publish_timing.get("command_encoded_bytes", 0.0)),
+        float(publish_timing.get("evidence_encoded_bytes", 0.0)),
+        stages["nats_readiness_wait"], stages["nats_command_prepare"],
+        stages["nats_command_send"], stages["nats_command_ack_wait"],
+        stages["nats_command_post_ack"], stages["nats_command_broker"],
         stages["nats_command_reconnect"], stages["nats_evidence_payload_prepare"],
-        stages["nats_evidence_prepare"], stages["nats_evidence_broker"],
-        stages["nats_evidence_reconnect"], stages["lifecycle_queue"],
+        stages["nats_evidence_prepare"], stages["nats_evidence_send"],
+        stages["nats_evidence_ack_wait"], stages["nats_evidence_post_ack"],
+        stages["nats_evidence_broker"], stages["nats_evidence_reconnect"], stages["lifecycle_queue"],
         stages["lifecycle_execution"], float(lifecycle_timing.get("process_cpu_ms", 0.0)),
         stages["total"],
     )
@@ -1039,6 +1066,10 @@ async def check_lite_security(
     )
     command = prepared["command"]
     reservation = prepared["reservation"]
+    reservation_timing.update({
+        f"stage_{key}": value
+        for key, value in (prepared.get("reservation_stages") or {}).items()
+    })
     reservation_done = time.perf_counter()
     if not reservation.get("reserved"):
         deduplicated = reservation.get("response") or {

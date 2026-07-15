@@ -187,6 +187,83 @@ async def submit_operation_command(
     return submitted
 
 
+def _prepare_domain_publish_bundle(
+    subject: str,
+    event_type: str,
+    data: Optional[Dict[str, Any]],
+    trace_id: str | None,
+) -> dict[str, Any]:
+    """Build immutable command and evidence envelopes in one worker-thread pass."""
+    payload = dict(data or {})
+    command_id = str(
+        payload.get("command_id") or payload.get("job_id") or uuid.uuid4().hex
+    )
+    payload.setdefault("command_id", command_id)
+    payload.setdefault("trace_id", trace_id or command_id)
+    evidence_payload = {
+        "command_id": command_id,
+        "command_subject": subject,
+        **payload,
+    }
+    command_event, command_encoded = BUS.prepare_json_event(
+        subject, event_type, payload, trace_id=payload["trace_id"]
+    )
+    evidence_subject = "pocketlab.events.command.queued"
+    evidence_event, evidence_encoded = BUS.prepare_json_event(
+        evidence_subject,
+        "command.queued",
+        evidence_payload,
+        trace_id=payload["trace_id"],
+    )
+    return {
+        "command_id": command_id,
+        "trace_id": payload["trace_id"],
+        "payload": payload,
+        "evidence_payload": evidence_payload,
+        "command_event": command_event,
+        "command_encoded": command_encoded,
+        "evidence_subject": evidence_subject,
+        "evidence_event": evidence_event,
+        "evidence_encoded": evidence_encoded,
+        "command_encoded_bytes": len(command_encoded),
+        "evidence_encoded_bytes": len(evidence_encoded),
+        "command_key_count": len(payload),
+        "evidence_key_count": len(evidence_payload),
+    }
+
+
+async def _publish_prepared_with_reconnect(
+    subject: str,
+    event: Dict[str, Any],
+    encoded: bytes,
+    *,
+    timing_sink: dict[str, float] | None,
+    timing_prefix: str,
+) -> None:
+    reconnect_ms = 0.0
+    publish_timing: dict[str, float] = {}
+    try:
+        await BUS.publish_prepared_json(
+            subject, event, encoded, timing_sink=publish_timing
+        )
+    except Exception:
+        reconnect_started = time.monotonic()
+        await BUS.start()
+        reconnect_ms = max(0.0, (time.monotonic() - reconnect_started) * 1000.0)
+        publish_timing = {}
+        await BUS.publish_prepared_json(
+            subject, event, encoded, timing_sink=publish_timing
+        )
+    if timing_sink is not None:
+        timing_sink.update({
+            f"{timing_prefix}_send_ms": publish_timing.get("send_ms", 0.0),
+            f"{timing_prefix}_ack_wait_ms": publish_timing.get("ack_wait_ms", 0.0),
+            f"{timing_prefix}_post_ack_ms": publish_timing.get("post_ack_ms", 0.0),
+            f"{timing_prefix}_broker_ms": publish_timing.get("broker_ms", 0.0),
+            f"{timing_prefix}_reconnect_ms": reconnect_ms,
+        })
+
+
 async def submit_domain_command(
     subject: str,
     event_type: str,
@@ -197,14 +274,36 @@ async def submit_domain_command(
     timing_sink: dict[str, float] | None = None,
 ) -> Dict[str, Any]:
     """Submit a non-operation domain command through durable NATS/JetStream only."""
-    payload_prepare_started = time.monotonic()
-    payload = await asyncio.to_thread(dict, data or {})
-    command_id = str(
-        payload.get("command_id") or payload.get("job_id") or uuid.uuid4().hex
+    native_publish = (
+        getattr(BUS.publish_json, "__func__", None) is PocketLabEventBus.publish_json
     )
-    payload.setdefault("command_id", command_id)
-    payload.setdefault("trace_id", trace_id or command_id)
-    payload_prepare_done = time.monotonic()
+    prepare_started = time.monotonic()
+    if native_publish:
+        bundle = await asyncio.to_thread(
+            _prepare_domain_publish_bundle, subject, event_type, data, trace_id
+        )
+    else:
+        payload = await asyncio.to_thread(dict, data or {})
+        command_id = str(
+            payload.get("command_id") or payload.get("job_id") or uuid.uuid4().hex
+        )
+        payload.setdefault("command_id", command_id)
+        payload.setdefault("trace_id", trace_id or command_id)
+        evidence_payload = await asyncio.to_thread(
+            lambda: {"command_id": command_id, "command_subject": subject, **payload}
+        )
+        bundle = {
+            "command_id": command_id,
+            "trace_id": payload["trace_id"],
+            "payload": payload,
+            "evidence_payload": evidence_payload,
+            "command_encoded_bytes": 0,
+            "evidence_encoded_bytes": 0,
+            "command_key_count": len(payload),
+            "evidence_key_count": len(evidence_payload),
+        }
+    prepare_done = time.monotonic()
+    command_id = str(bundle["command_id"])
 
     operation_started = time.monotonic()
     ready_started = time.monotonic()
@@ -218,14 +317,20 @@ async def submit_domain_command(
         )
         try:
             command_started = time.monotonic()
-            await _publish_with_reconnect(
-                subject,
-                event_type,
-                payload,
-                trace_id=payload["trace_id"],
-                timing_sink=publish_details,
-                timing_prefix="command",
-            )
+            if native_publish:
+                await _publish_prepared_with_reconnect(
+                    subject,
+                    bundle["command_event"],
+                    bundle["command_encoded"],
+                    timing_sink=publish_details,
+                    timing_prefix="command",
+                )
+            else:
+                await _publish_with_reconnect(
+                    subject, event_type, bundle["payload"],
+                    trace_id=bundle["trace_id"], timing_sink=publish_details,
+                    timing_prefix="command",
+                )
             command_done = time.monotonic()
         except Exception:
             if command_token:
@@ -234,25 +339,27 @@ async def submit_domain_command(
         else:
             if command_token:
                 RUNTIME_DIAGNOSTICS.end_operation(command_token)
-        evidence_payload_started = time.monotonic()
-        evidence_payload = await asyncio.to_thread(
-            lambda: {"command_id": command_id, "command_subject": subject, **payload}
-        )
-        evidence_payload_done = time.monotonic()
+
         evidence_token = (
             RUNTIME_DIAGNOSTICS.begin_operation("security.scan.nats_evidence_publish")
             if timing_sink is not None else ""
         )
         try:
             evidence_started = time.monotonic()
-            await _publish_with_reconnect(
-                "pocketlab.events.command.queued",
-                "command.queued",
-                evidence_payload,
-                trace_id=payload["trace_id"],
-                timing_sink=publish_details,
-                timing_prefix="evidence",
-            )
+            if native_publish:
+                await _publish_prepared_with_reconnect(
+                    bundle["evidence_subject"],
+                    bundle["evidence_event"],
+                    bundle["evidence_encoded"],
+                    timing_sink=publish_details,
+                    timing_prefix="evidence",
+                )
+            else:
+                await _publish_with_reconnect(
+                    "pocketlab.events.command.queued", "command.queued",
+                    bundle["evidence_payload"], trace_id=bundle["trace_id"],
+                    timing_sink=publish_details, timing_prefix="evidence",
+                )
             evidence_done = time.monotonic()
         except Exception:
             if evidence_token:
@@ -261,15 +368,20 @@ async def submit_domain_command(
         else:
             if evidence_token:
                 RUNTIME_DIAGNOSTICS.end_operation(evidence_token)
+
         if timing_sink is not None:
             timing_sink.update({
-                "payload_prepare_ms": max(0.0, (payload_prepare_done - payload_prepare_started) * 1000.0),
+                "payload_prepare_ms": max(0.0, (prepare_done - prepare_started) * 1000.0),
                 "readiness_wait_ms": max(0.0, (ready_done - ready_started) * 1000.0),
                 "command_publish_ms": max(0.0, (command_done - command_started) * 1000.0),
-                "evidence_payload_prepare_ms": max(0.0, (evidence_payload_done - evidence_payload_started) * 1000.0),
+                "evidence_payload_prepare_ms": 0.0,
                 "evidence_publish_ms": max(0.0, (evidence_done - evidence_started) * 1000.0),
                 "execution_ms": max(0.0, (evidence_done - ready_done) * 1000.0),
                 "total_ms": max(0.0, (evidence_done - operation_started) * 1000.0),
+                "command_encoded_bytes": float(bundle["command_encoded_bytes"]),
+                "evidence_encoded_bytes": float(bundle["evidence_encoded_bytes"]),
+                "command_key_count": float(bundle["command_key_count"]),
+                "evidence_key_count": float(bundle["evidence_key_count"]),
                 **publish_details,
             })
     except Exception as exc:

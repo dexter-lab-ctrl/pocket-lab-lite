@@ -194,3 +194,35 @@ def test_progress_route_is_async_to_avoid_sync_threadpool_starvation():
     from api_fastapi.routers.lite import get_lite_security_progress
 
     assert inspect.iscoroutinefunction(get_lite_security_progress)
+
+
+def test_prepared_publish_reports_jetstream_ack_timing():
+    import asyncio
+    from api_fastapi.services.nats_bus import PocketLabEventBus
+
+    class FakeClient:
+        is_connected = True
+
+    class FakeJetStream:
+        async def publish(self, subject, payload):
+            await asyncio.sleep(0)
+            return object()
+
+    async def scenario():
+        bus = PocketLabEventBus()
+        bus.nc = FakeClient()
+        bus.js = FakeJetStream()
+        bus.connected = True
+        event, encoded = bus.prepare_json_event(
+            "pocketlab.commands.test", "test.requested", {"command_id": "c1"}
+        )
+        timing = {}
+        await bus.publish_prepared_json(
+            "pocketlab.commands.test", event, encoded, timing_sink=timing
+        )
+        assert timing["send_ms"] >= 0
+        assert timing["ack_wait_ms"] >= 0
+        assert timing["post_ack_ms"] >= 0
+        assert timing["broker_ms"] >= 0
+
+    asyncio.run(scenario())

@@ -432,12 +432,16 @@ def test_critical_lag_stack_capture_is_bounded_and_sanitized(monkeypatch):
     monkeypatch.setenv("POCKETLAB_CRITICAL_LAG_STACK_INTERVAL_SECONDS", "10")
     diagnostics = RuntimeDiagnostics(loop_warning_ms=1.0, loop_critical_ms=2.0)
     diagnostics._event_loop_thread_id = __import__("threading").get_ident()
-    diagnostics.record_event_loop_lag(3.0)
+    diagnostics._capture_critical_stack(
+        time.monotonic(), 3.0, capture_source="watchdog_thread"
+    )
     snapshot = diagnostics.snapshot()["event_loop"]
     assert snapshot["critical_stack_capture_enabled"] is True
     assert len(snapshot["critical_stack_captures"]) == 1
     capture = snapshot["critical_stack_captures"][0]
     assert capture["thread_kind"] == "event_loop"
+    assert capture["capture_source"] == "watchdog_thread"
+    assert capture["observed_stall_ms"] == 3.0
     assert 1 <= len(capture["frames"]) <= 8
     assert all(set(frame) == {"module", "function", "line"} for frame in capture["frames"])
     serialized = json.dumps(capture).lower()

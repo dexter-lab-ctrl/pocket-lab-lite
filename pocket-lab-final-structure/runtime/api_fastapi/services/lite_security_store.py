@@ -527,79 +527,134 @@ class SecuritySQLiteRepository:
         command_id: str | None = None,
         correlation_id: str | None = None,
         recent_completion_seconds: int = 0,
+        timing_sink: dict[str, float] | None = None,
     ) -> ReservationResult:
+        total_started = time.monotonic()
+        normalize_started = total_started
         normalized_profile = _normalize_profile(profile)
         normalized_app = _normalize_app(normalized_profile, app_id)
         normalized_run = _normalize_run_id(run_id)
         now = _parse_timestamp(requested_at)
         now_epoch = _epoch_ms(now)
         active_key = _active_key(normalized_profile, normalized_app)
-        with connection() as conn, begin_immediate(conn) as tx:
-            active = tx.execute(
-                "SELECT * FROM security_scan_runs WHERE active_key = ? ORDER BY updated_at_epoch_ms DESC LIMIT 1",
-                (active_key,),
-            ).fetchone()
-            if active:
-                return ReservationResult(False, "active", _row(active) or {})
-            recent_window = max(
-                0, min(int(recent_completion_seconds), MAX_RECENT_COMPLETION_SECONDS)
-            )
-            if recent_window > 0:
-                cutoff = now_epoch - recent_window * 1000
-                recent = tx.execute(
-                    """
-                    SELECT * FROM security_scan_runs
-                    WHERE profile = ? AND app_id = ? AND status IN ('succeeded', 'degraded')
-                      AND completed_at_epoch_ms >= ?
-                    ORDER BY completed_at_epoch_ms DESC LIMIT 1
-                    """,
-                    (normalized_profile, normalized_app, cutoff),
+        normalize_done = time.monotonic()
+        connection_started = normalize_done
+        with connection() as conn:
+            connection_done = time.monotonic()
+            begin_started = connection_done
+            with begin_immediate(conn) as tx:
+                begin_done = time.monotonic()
+                active_started = begin_done
+                active = tx.execute(
+                    "SELECT * FROM security_scan_runs WHERE active_key = ? ORDER BY updated_at_epoch_ms DESC LIMIT 1",
+                    (active_key,),
                 ).fetchone()
+                active_done = time.monotonic()
+                if active:
+                    result_started = active_done
+                    result = ReservationResult(False, "active", _row(active) or {})
+                    result_done = time.monotonic()
+                    if timing_sink is not None:
+                        timing_sink.update({
+                            "normalize_ms": max(0.0, (normalize_done-normalize_started)*1000.0),
+                            "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                            "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
+                            "active_lookup_ms": max(0.0, (active_done-active_started)*1000.0),
+                            "recent_lookup_ms": 0.0,
+                            "write_ms": 0.0,
+                            "commit_ms": 0.0,
+                            "result_build_ms": max(0.0, (result_done-result_started)*1000.0),
+                            "total_ms": max(0.0, (result_done-total_started)*1000.0),
+                        })
+                    return result
+                recent_started = active_done
+                recent_window = max(
+                    0, min(int(recent_completion_seconds), MAX_RECENT_COMPLETION_SECONDS)
+                )
+                recent = None
+                if recent_window > 0:
+                    cutoff = now_epoch - recent_window * 1000
+                    recent = tx.execute(
+                        """
+                        SELECT * FROM security_scan_runs
+                        WHERE profile = ? AND app_id = ? AND status IN ('succeeded', 'degraded')
+                          AND completed_at_epoch_ms >= ?
+                        ORDER BY completed_at_epoch_ms DESC LIMIT 1
+                        """,
+                        (normalized_profile, normalized_app, cutoff),
+                    ).fetchone()
+                recent_done = time.monotonic()
                 if recent:
-                    return ReservationResult(False, "recent_completion", _row(recent) or {})
-            tx.execute(
-                """
-                INSERT INTO security_scan_runs(
-                    run_id, profile, app_id, app_label, status, active_key, summary,
-                    requested_at, updated_at, requested_at_epoch_ms, updated_at_epoch_ms,
-                    command_id, correlation_id, source, revision
-                ) VALUES (?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, 'security-api', 1)
-                """,
-                (
-                    normalized_run,
-                    normalized_profile,
-                    normalized_app,
-                    str(app_label or "")[:120],
-                    active_key,
-                    policy.redact_text(summary)[:500],
-                    now,
-                    now,
-                    now_epoch,
-                    now_epoch,
-                    str(command_id or "")[:160] or None,
-                    str(correlation_id or "")[:160] or None,
-                ),
-            )
-            queued_message = policy.redact_text(summary)[:500] or "Security check queued."
-            fingerprint = _progress_fingerprint(
-                normalized_run, "queued", "queued", 5, queued_message, None
-            )
-            tx.execute(
-                """
-                INSERT INTO security_scan_progress_events(
-                    run_id, sequence_no, status, stage, percent, message, tool,
-                    created_at, created_at_epoch_ms, payload_json, fingerprint
-                ) VALUES (?, 1, 'queued', 'queued', 5, ?, NULL, ?, ?, NULL, ?)
-                """,
-                (normalized_run, queued_message, now, now_epoch, fingerprint),
-            )
-            domain_revision = _bump_revision(tx, now)
-            reserved = tx.execute(
-                "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
-            ).fetchone()
+                    result_started = recent_done
+                    result = ReservationResult(False, "recent_completion", _row(recent) or {})
+                    result_done = time.monotonic()
+                    if timing_sink is not None:
+                        timing_sink.update({
+                            "normalize_ms": max(0.0, (normalize_done-normalize_started)*1000.0),
+                            "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                            "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
+                            "active_lookup_ms": max(0.0, (active_done-active_started)*1000.0),
+                            "recent_lookup_ms": max(0.0, (recent_done-recent_started)*1000.0),
+                            "write_ms": 0.0,
+                            "commit_ms": 0.0,
+                            "result_build_ms": max(0.0, (result_done-result_started)*1000.0),
+                            "total_ms": max(0.0, (result_done-total_started)*1000.0),
+                        })
+                    return result
+                write_started = recent_done
+                tx.execute(
+                    """
+                    INSERT INTO security_scan_runs(
+                        run_id, profile, app_id, app_label, status, active_key, summary,
+                        requested_at, updated_at, requested_at_epoch_ms, updated_at_epoch_ms,
+                        command_id, correlation_id, source, revision
+                    ) VALUES (?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, 'security-api', 1)
+                    """,
+                    (
+                        normalized_run, normalized_profile, normalized_app,
+                        str(app_label or "")[:120], active_key,
+                        policy.redact_text(summary)[:500], now, now, now_epoch, now_epoch,
+                        str(command_id or "")[:160] or None,
+                        str(correlation_id or "")[:160] or None,
+                    ),
+                )
+                queued_message = policy.redact_text(summary)[:500] or "Security check queued."
+                fingerprint = _progress_fingerprint(
+                    normalized_run, "queued", "queued", 5, queued_message, None
+                )
+                tx.execute(
+                    """
+                    INSERT INTO security_scan_progress_events(
+                        run_id, sequence_no, status, stage, percent, message, tool,
+                        created_at, created_at_epoch_ms, payload_json, fingerprint
+                    ) VALUES (?, 1, 'queued', 'queued', 5, ?, NULL, ?, ?, NULL, ?)
+                    """,
+                    (normalized_run, queued_message, now, now_epoch, fingerprint),
+                )
+                domain_revision = _bump_revision(tx, now)
+                reserved = tx.execute(
+                    "SELECT * FROM security_scan_runs WHERE run_id = ?", (normalized_run,)
+                ).fetchone()
+                write_done = time.monotonic()
+            commit_done = time.monotonic()
+        result_started = commit_done
         run = _row(reserved) or {}
         run["domain_revision"] = domain_revision
-        return ReservationResult(True, "reserved", run)
+        result = ReservationResult(True, "reserved", run)
+        result_done = time.monotonic()
+        if timing_sink is not None:
+            timing_sink.update({
+                "normalize_ms": max(0.0, (normalize_done-normalize_started)*1000.0),
+                "connection_wait_ms": max(0.0, (connection_done-connection_started)*1000.0),
+                "begin_wait_ms": max(0.0, (begin_done-begin_started)*1000.0),
+                "active_lookup_ms": max(0.0, (active_done-active_started)*1000.0),
+                "recent_lookup_ms": max(0.0, (recent_done-recent_started)*1000.0),
+                "write_ms": max(0.0, (write_done-write_started)*1000.0),
+                "commit_ms": max(0.0, (commit_done-write_done)*1000.0),
+                "result_build_ms": max(0.0, (result_done-result_started)*1000.0),
+                "total_ms": max(0.0, (result_done-total_started)*1000.0),
+            })
+        return result
 
     def get_active_scan(self, profile: str | None = None, app_id: str | None = None) -> dict[str, Any] | None:
         with read_connection() as conn:

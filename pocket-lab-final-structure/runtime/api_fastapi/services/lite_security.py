@@ -395,11 +395,18 @@ def build_and_reserve_scan_request(
         "reason": reason,
         "requested_at": requested_at,
     }
-    reservation = reserve_scan_request(command)
-    return {"command": command, "reservation": reservation}
+    reservation_stages: dict[str, float] = {}
+    reservation = reserve_scan_request(command, timing_sink=reservation_stages)
+    return {
+        "command": command,
+        "reservation": reservation,
+        "reservation_stages": reservation_stages,
+    }
 
 
-def reserve_scan_request(command: dict[str, Any]) -> dict[str, Any]:
+def reserve_scan_request(
+    command: dict[str, Any], *, timing_sink: dict[str, float] | None = None
+) -> dict[str, Any]:
     """Reserve one backend-owned scan before NATS publication."""
     profile = _scan_profile(command)
     app_id = _scan_app_id(command)
@@ -424,6 +431,7 @@ def reserve_scan_request(command: dict[str, Any]) -> dict[str, Any]:
         command_id=str(command.get("command_id") or "") or None,
         correlation_id=str(command.get("correlation_id") or "") or None,
         recent_completion_seconds=_security_store_api().security_recent_completion_seconds(),
+        timing_sink=timing_sink,
     )
     if not result.reserved:
         return {"reserved": False, "response": _dedupe_response_from_reservation(result)}
