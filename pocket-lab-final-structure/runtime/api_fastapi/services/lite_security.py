@@ -120,11 +120,31 @@ def _sqlite_progress_database_identity() -> str:
 
 async def run_api_maintenance(function, /, *args, **kwargs):
     """Run bounded API-owned blocking maintenance outside the event loop."""
+    result, _timing = await run_api_maintenance_timed(function, *args, **kwargs)
+    return result
+
+
+async def run_api_maintenance_timed(function, /, *args, **kwargs):
+    """Return a maintenance result plus bounded executor queue/execution timing."""
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        _SECURITY_MAINTENANCE_EXECUTOR,
-        lambda: function(*args, **kwargs),
+    submitted = time.monotonic()
+
+    def invoke():
+        started = time.monotonic()
+        try:
+            return function(*args, **kwargs), started, time.monotonic(), "ok"
+        except Exception:
+            completed = time.monotonic()
+            raise
+
+    result, started, completed, _result = await loop.run_in_executor(
+        _SECURITY_MAINTENANCE_EXECUTOR, invoke
     )
+    return result, {
+        "queue_wait_ms": max(0.0, (started - submitted) * 1000.0),
+        "execution_ms": max(0.0, (completed - started) * 1000.0),
+        "total_ms": max(0.0, (completed - submitted) * 1000.0),
+    }
 
 
 def initialize_security_sqlite_runtime(*, reconcile: bool = True) -> dict[str, Any]:

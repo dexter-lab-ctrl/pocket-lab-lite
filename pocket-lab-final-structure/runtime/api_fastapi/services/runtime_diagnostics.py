@@ -9,6 +9,7 @@ import os
 import threading
 import time
 from typing import Any, Awaitable, Callable
+import uuid
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,7 +66,19 @@ class RuntimeDiagnostics:
         self._loop_last_warning_at: str | None = None
         self._loop_last_severity = "healthy"
         self._loop_last_summary_monotonic = 0.0
+        self._loop_log_interval_seconds = _bounded_float(
+            "POCKETLAB_EVENT_LOOP_LOG_INTERVAL_SECONDS", 60.0, 5.0, 600.0
+        )
+        self._loop_suppressed_logs = 0
+        self._recent_lag_events: deque[dict[str, Any]] = deque(maxlen=12)
+        self._active_operations: dict[str, dict[str, Any]] = {}
+        self._recent_operations: deque[dict[str, Any]] = deque(maxlen=16)
         self._gc_installed = False
+        self._gc_log_interval_seconds = _bounded_float(
+            "POCKETLAB_GC_LOG_INTERVAL_SECONDS", 60.0, 5.0, 600.0
+        )
+        self._gc_last_log_monotonic = {generation: 0.0 for generation in range(3)}
+        self._gc_suppressed_logs = {generation: 0 for generation in range(3)}
         self._gc_started: dict[int, float] = {}
         self._gc_metrics: dict[int, dict[str, Any]] = {
             generation: {
@@ -81,6 +94,8 @@ class RuntimeDiagnostics:
         self._request_count = 0
         self._slow_request_count = 0
         self._failed_request_count = 0
+        self._requests_during_warning_lag = 0
+        self._requests_during_critical_lag = 0
 
     async def start(self) -> bool:
         """Start one lag monitor and install one GC callback."""
@@ -150,11 +165,19 @@ class RuntimeDiagnostics:
                 self._loop_warning_count += 1
             if severity != "healthy":
                 self._loop_last_warning_at = _utc_now()
-                should_log = severity != self._loop_last_severity
-                if not should_log and now_monotonic - self._loop_last_summary_monotonic >= 60.0:
-                    should_log = True
+                should_log = now_monotonic - self._loop_last_summary_monotonic >= self._loop_log_interval_seconds
                 if should_log:
                     self._loop_last_summary_monotonic = now_monotonic
+                else:
+                    self._loop_suppressed_logs += 1
+                self._recent_lag_events.append({
+                    "captured_at": _utc_now(),
+                    "severity": severity,
+                    "lag_ms": round(self._loop_latest_ms, 2),
+                    "active_operations": sorted(
+                        {item["name"] for item in self._active_operations.values()}
+                    )[:6],
+                })
             self._loop_last_severity = severity
             recent_max = max(self._loop_recent, default=0.0)
         if should_log:
@@ -165,6 +188,32 @@ class RuntimeDiagnostics:
                 lag_ms,
                 recent_max,
             )
+
+    def begin_operation(self, name: str) -> str:
+        token = uuid.uuid4().hex
+        now = time.monotonic()
+        safe_name = str(name or "unknown")[:80]
+        with self._lock:
+            if len(self._active_operations) >= 16:
+                oldest = min(self._active_operations, key=lambda key: self._active_operations[key]["started_monotonic"])
+                self._active_operations.pop(oldest, None)
+            self._active_operations[token] = {"name": safe_name, "started_monotonic": now}
+        return token
+
+    def end_operation(self, token: str, *, result: str = "ok") -> float:
+        now = time.monotonic()
+        with self._lock:
+            item = self._active_operations.pop(token, None)
+            if not item:
+                return 0.0
+            duration_ms = max(0.0, (now - float(item["started_monotonic"])) * 1000.0)
+            self._recent_operations.append({
+                "name": item["name"],
+                "duration_ms": round(duration_ms, 2),
+                "result": str(result or "unknown")[:24],
+                "completed_at": _utc_now(),
+            })
+            return duration_ms
 
     def latest_event_loop_lag_ms(self) -> float:
         with self._lock:
@@ -219,13 +268,24 @@ class RuntimeDiagnostics:
                 metric["collected"] += max(0, int(info.get("collected", 0) or 0))
                 metric["uncollectable"] += max(0, int(info.get("uncollectable", 0) or 0))
             if duration_ms >= self.gc_slow_ms:
-                _LOGGER.warning(
-                    "pocketlab.runtime.gc_pause generation=%d duration_ms=%.2f collected=%d uncollectable=%d",
-                    generation,
-                    duration_ms,
-                    max(0, int(info.get("collected", 0) or 0)),
-                    max(0, int(info.get("uncollectable", 0) or 0)),
-                )
+                now_monotonic = time.monotonic()
+                with self._lock:
+                    should_log = (
+                        now_monotonic - self._gc_last_log_monotonic[generation]
+                        >= self._gc_log_interval_seconds
+                    )
+                    if should_log:
+                        self._gc_last_log_monotonic[generation] = now_monotonic
+                    else:
+                        self._gc_suppressed_logs[generation] += 1
+                if should_log:
+                    _LOGGER.warning(
+                        "pocketlab.runtime.gc_pause generation=%d duration_ms=%.2f collected=%d uncollectable=%d",
+                        generation,
+                        duration_ms,
+                        max(0, int(info.get("collected", 0) or 0)),
+                        max(0, int(info.get("uncollectable", 0) or 0)),
+                    )
         except Exception:
             # GC callbacks must never affect collection or API availability.
             return
@@ -254,9 +314,13 @@ class RuntimeDiagnostics:
         total_ms = safe_phases.get("request_total_ms", 0.0)
         phase_slow = max(safe_phases.values(), default=0.0) >= self.request_phase_slow_ms
         failed = int(status_code) >= 400
-        slow = total_ms >= self.request_slow_ms or phase_slow or event_loop_lag_ms >= self.loop_warning_ms
+        slow = total_ms >= self.request_slow_ms or phase_slow
         with self._lock:
             self._request_count += 1
+            if event_loop_lag_ms >= self.loop_critical_ms:
+                self._requests_during_critical_lag += 1
+            elif event_loop_lag_ms >= self.loop_warning_ms:
+                self._requests_during_warning_lag += 1
             if failed:
                 self._failed_request_count += 1
             if slow or failed:
@@ -321,15 +385,32 @@ class RuntimeDiagnostics:
                     "latest_lag_ms": round(self._loop_latest_ms, 2),
                     "recent_max_lag_ms": round(loop_recent_max, 2),
                     "last_warning_at": self._loop_last_warning_at,
+                    "suppressed_log_count": self._loop_suppressed_logs,
+                    "recent_lag_events": list(self._recent_lag_events),
+                    "active_operations": [
+                        {
+                            "name": item["name"],
+                            "elapsed_ms": round(max(0.0, (time.monotonic() - item["started_monotonic"]) * 1000.0), 2),
+                        }
+                        for item in list(self._active_operations.values())[:8]
+                    ],
+                    "recent_operations": list(self._recent_operations),
                 },
                 "gc": {
                     "recent_max_pause_ms": round(gc_recent_max, 2),
                     "generations": gc_payload,
+                    "suppressed_log_count": sum(self._gc_suppressed_logs.values()),
+                    "suppressed_logs_by_generation": {
+                        f"generation_{generation}": count
+                        for generation, count in self._gc_suppressed_logs.items()
+                    },
                 },
                 "progress_requests": {
                     "request_count": self._request_count,
                     "slow_request_count": self._slow_request_count,
                     "failed_request_count": self._failed_request_count,
+                    "requests_during_warning_lag": self._requests_during_warning_lag,
+                    "requests_during_critical_lag": self._requests_during_critical_lag,
                     "recent_slow_requests": requests,
                 },
                 "sanitized": True,

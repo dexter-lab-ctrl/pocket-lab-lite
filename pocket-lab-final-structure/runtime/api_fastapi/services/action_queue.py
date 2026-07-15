@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import uuid
+import time
 from typing import Any, Callable, Dict, Optional
 
 from fastapi import HTTPException
@@ -152,6 +153,7 @@ async def submit_domain_command(
     *,
     fallback: Optional[DomainFallback] = None,
     trace_id: str | None = None,
+    timing_sink: dict[str, float] | None = None,
 ) -> Dict[str, Any]:
     """Submit a non-operation domain command through durable NATS/JetStream only."""
     payload = dict(data or {})
@@ -161,15 +163,30 @@ async def submit_domain_command(
     payload.setdefault("command_id", command_id)
     payload.setdefault("trace_id", trace_id or command_id)
 
+    operation_started = time.monotonic()
+    ready_started = time.monotonic()
     await ensure_worker_execution_ready()
+    ready_done = time.monotonic()
     try:
+        command_started = time.monotonic()
         await _publish_with_reconnect(subject, event_type, payload, trace_id=payload["trace_id"])
+        command_done = time.monotonic()
+        evidence_started = time.monotonic()
         await _publish_with_reconnect(
             "pocketlab.events.command.queued",
             "command.queued",
             {"command_id": command_id, "command_subject": subject, **payload},
             trace_id=payload["trace_id"],
         )
+        evidence_done = time.monotonic()
+        if timing_sink is not None:
+            timing_sink.update({
+                "readiness_wait_ms": max(0.0, (ready_done - ready_started) * 1000.0),
+                "command_publish_ms": max(0.0, (command_done - command_started) * 1000.0),
+                "evidence_publish_ms": max(0.0, (evidence_done - evidence_started) * 1000.0),
+                "execution_ms": max(0.0, (evidence_done - ready_done) * 1000.0),
+                "total_ms": max(0.0, (evidence_done - operation_started) * 1000.0),
+            })
     except Exception as exc:
         raise HTTPException(
             status_code=503,

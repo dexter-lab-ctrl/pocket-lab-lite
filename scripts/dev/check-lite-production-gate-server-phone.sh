@@ -351,36 +351,40 @@ recover_timed_out_submission(){
 }
 
 submission_latency_gate(){
-  if [[ -s "$SUBMISSION_FAILURES" ]]; then
-    printf 'Submission latency failures:\n' >&2
-    cat "$SUBMISSION_FAILURES" >&2
-    return 1
-  fi
-}
-
-latency_gate(){
-  python3 - "$SAMPLES" <<'PY'
-import math, statistics, sys
+  local output rc
+  set +e
+  output="$(python3 - "$SAMPLES" <<'PYLAT'
+import math, sys
 values=[]
 for line in open(sys.argv[1], encoding="utf-8"):
     parts=line.split()
     if parts:
         values.append(float(parts[-1]))
 if not values:
-    raise SystemExit("no latency samples")
+    print("no latency samples", file=sys.stderr)
+    raise SystemExit(1)
 values.sort()
 def pct(p):
     return values[min(len(values)-1, max(0, math.ceil(len(values)*p)-1))]
 p50=pct(.50); p95=pct(.95); maximum=max(values)
 print(f"Progress latency seconds: count={len(values)} p50={p50:.3f} p95={p95:.3f} max={maximum:.3f}")
-if any(v > 5.0 for v in values):
-    raise SystemExit("one or more requests exceeded five seconds")
-if p95 >= 1.0:
-    raise SystemExit("p95 latency is not below one second")
-if maximum >= 3.0:
-    raise SystemExit("maximum latency is not below three seconds")
-PY
+failures=[]
+if any(v > 5.0 for v in values): failures.append("one or more requests exceeded five seconds")
+if p95 >= 1.0: failures.append("p95 latency is not below one second")
+if maximum >= 3.0: failures.append("maximum latency is not below three seconds")
+if failures:
+    print("; ".join(failures), file=sys.stderr)
+    raise SystemExit(1)
+PYLAT
+  2>&1)"
+  rc=$?
+  set -e
+  printf '%s\n' "$output"
+  if (( rc != 0 )); then
+    fail "Progress latency gate failed: ${output//$'\n'/; }"
+  fi
 }
+
 
 run_scan_gate(){
   local phase="$1" post metrics code seconds size run_id start deadline payload status projection_age
@@ -468,8 +472,12 @@ PY2
     fail "$phase run has no durable execution evidence"
   fi
   [[ "$status" =~ ^(succeeded|degraded|completed)$ ]] || fail "$phase run ended with unacceptable terminal status: $status"
-  (cd "$REPO_ROOT" && python3 scripts/lite/security-db-check.py >/dev/null)
-  compare="$(cd "$REPO_ROOT" && python3 scripts/lite/security-db-compare.py)"
+  if ! (cd "$REPO_ROOT" && python3 scripts/lite/security-db-check.py >/dev/null); then
+    fail "$phase SQLite database check failed"
+  fi
+  if ! compare="$(cd "$REPO_ROOT" && python3 scripts/lite/security-db-compare.py)"; then
+    fail "$phase JSON/SQLite comparison command failed"
+  fi
   python3 -c 'import json,sys; d=json.load(sys.stdin); assert d.get("matched") is True and not d.get("mismatch_fields")' <<<"$compare" \
     || fail "$phase JSON/SQLite parity failed"
   if pgrep -f '[l]ynis|[t]rivy' >/dev/null 2>&1; then

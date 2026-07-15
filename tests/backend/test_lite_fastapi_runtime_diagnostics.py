@@ -339,3 +339,58 @@ def test_frontend_304_contract_and_production_gate_thresholds_are_preserved():
     assert 'maximum >= 3.0' in gate
     assert 'MAX_PROJECTION_AGE_MS' in gate
     assert "Production gate command failed at line" in gate
+
+def test_fast_request_during_ambient_lag_is_not_classified_slow(caplog):
+    ensure_runtime_path()
+    from api_fastapi.services.runtime_diagnostics import RuntimeDiagnostics
+
+    diagnostics = RuntimeDiagnostics(loop_warning_ms=250.0, loop_critical_ms=1000.0)
+    caplog.set_level(logging.INFO)
+    diagnostics.record_progress_request(
+        status_code=200,
+        phases={"request_total_ms": 8.0, "snapshot_read_ms": 0.1},
+        event_loop_lag_ms=2200.0,
+    )
+    payload = diagnostics.snapshot()["progress_requests"]
+    assert payload["slow_request_count"] == 0
+    assert payload["requests_during_critical_lag"] == 1
+    assert payload["recent_slow_requests"] == []
+    assert not any("progress_request_slow" in r.getMessage() for r in caplog.records)
+
+
+def test_active_operation_is_bounded_and_attached_to_lag_event():
+    ensure_runtime_path()
+    from api_fastapi.services.runtime_diagnostics import RuntimeDiagnostics
+
+    diagnostics = RuntimeDiagnostics(loop_warning_ms=10.0, loop_critical_ms=20.0)
+    token = diagnostics.begin_operation("security.scan.nats_publish")
+    diagnostics.record_event_loop_lag(25.0)
+    diagnostics.end_operation(token)
+    payload = diagnostics.snapshot()["event_loop"]
+    assert payload["recent_lag_events"][-1]["active_operations"] == ["security.scan.nats_publish"]
+    assert payload["active_operations"] == []
+    assert payload["recent_operations"][-1]["name"] == "security.scan.nats_publish"
+
+
+def test_event_loop_and_gc_logs_are_rate_limited(caplog):
+    ensure_runtime_path()
+    from api_fastapi.services.runtime_diagnostics import RuntimeDiagnostics
+
+    diagnostics = RuntimeDiagnostics(loop_warning_ms=10.0, loop_critical_ms=20.0, gc_slow_ms=0.01)
+    diagnostics._loop_log_interval_seconds = 60.0
+    diagnostics._gc_log_interval_seconds = 60.0
+    caplog.set_level(logging.WARNING)
+    diagnostics.record_event_loop_lag(25.0)
+    diagnostics.record_event_loop_lag(30.0)
+    diagnostics._gc_callback("start", {"generation": 0})
+    time.sleep(0.001)
+    diagnostics._gc_callback("stop", {"generation": 0, "collected": 0, "uncollectable": 0})
+    diagnostics._gc_callback("start", {"generation": 0})
+    time.sleep(0.001)
+    diagnostics._gc_callback("stop", {"generation": 0, "collected": 0, "uncollectable": 0})
+    messages = [r.getMessage() for r in caplog.records]
+    assert sum("event_loop_lag" in m for m in messages) == 1
+    assert sum("gc_pause" in m for m in messages) == 1
+    snapshot = diagnostics.snapshot()
+    assert snapshot["event_loop"]["suppressed_log_count"] >= 1
+    assert snapshot["gc"]["suppressed_log_count"] >= 1
