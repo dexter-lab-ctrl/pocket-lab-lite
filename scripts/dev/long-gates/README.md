@@ -136,3 +136,27 @@ bash scripts/dev/check-lite-long-duration-gates-server-phone.sh \
 ```
 
 The self-test result is `framework_validated`, not Phase 5 ready.
+
+## Group 3 — controlled disruption and recovery
+
+Group 3 adds three explicitly disruptive, resumable gates:
+
+```text
+submission-recovery
+nats-restart
+worker-restart
+```
+
+They never run through `--all` unless `--allow-disruptive` is also present.
+Explicit gate selection also requires `--allow-disruptive`. Dry-run prints the
+planned precise process action without creating evidence or changing services.
+
+The submission gate uses a short-lived, owner-only activation file and a random
+loopback request token. Normal UI requests cannot activate the delay. The file
+is removed in `finally` cleanup and on resume ambiguity.
+
+The NATS and worker gates use only verified PM2 process names. They never use
+numeric PM2 IDs, `pm2 kill`, `restart all`, stream deletion, or JetStream purge.
+Completed process actions are recorded in gate-local atomic state with
+`safe_to_repeat: false`, so resume verifies current state instead of repeating a
+completed disruption.
