@@ -140,3 +140,29 @@ def test_submission_resume_rediscovers_without_repeating_write():
     assert "find_new_run" in resume_block
     assert "submit_quick" not in resume_block
     assert "refusing to resubmit" in resume_block
+
+
+def test_submission_run_attribution_separates_primary_followup_and_unexpected():
+    module = load(GROUP3, "long_gate_group3_submission_attribution")
+    rows = [
+        {"run_id": "primary", "command_id": "cmd-primary"},
+        {"run_id": "follow", "command_id": "cmd-follow"},
+    ]
+    result = module.attribute_submission_runs(rows, "primary", "follow")
+    assert result == {
+        "primary_run_count": 1,
+        "follow_up_run_count": 1,
+        "unexpected_run_count": 0,
+    }
+    rows.append({"run_id": "unexpected", "command_id": "cmd-other"})
+    result = module.attribute_submission_runs(rows, "primary", "follow")
+    assert result["unexpected_run_count"] == 1
+
+
+def test_submission_gate_counts_primary_before_followup_and_reports_scoped_counts():
+    source = GROUP3.read_text(encoding="utf-8")
+    assert "primary_created" in source
+    assert "attribute_submission_runs(created, tracked, follow_id)" in source
+    assert 'failures.append("primary_run_count")' in source
+    assert 'failures.append("follow_up_run_count")' in source
+    assert '"unexpected_run_count": attribution["unexpected_run_count"]' in source
