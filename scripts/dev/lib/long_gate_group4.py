@@ -428,11 +428,16 @@ def bounded_parity_reconciliation(
     while True:
         attempt += 1
         last = g2.run_sqlite_tools(ctx.repo_root, ctx.state_dir, ctx.db_path)
+        parity_matched = last.get("parity_matched")
+        if parity_matched is None:
+            parity_matched = last.get("matched")
+        last["parity_matched"] = parity_matched
+
         sample = {
             "timestamp": g2.utc_now(),
             "attempt": attempt,
             "quick_check": last.get("quick_check"),
-            "parity_matched": last.get("parity_matched"),
+            "parity_matched": parity_matched,
             "mismatch_fields": list(last.get("mismatch_fields") or []),
             "sanitized": True,
         }
@@ -440,7 +445,7 @@ def bounded_parity_reconciliation(
             g2.append_jsonl(evidence_path, sample)
         if last.get("quick_check") != "ok":
             return {**last, "reconciliation_attempts": attempt, "reconciliation_status": "sqlite_unhealthy"}
-        if last.get("parity_matched") is True:
+        if parity_matched is True:
             return {**last, "reconciliation_attempts": attempt, "reconciliation_status": "matched"}
         if time.monotonic() >= deadline:
             return {**last, "reconciliation_attempts": attempt, "reconciliation_status": "timeout"}
