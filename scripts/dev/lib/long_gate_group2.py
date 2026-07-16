@@ -262,6 +262,86 @@ def direct_proxy_consistent(direct: dict[str, Any], proxy: dict[str, Any], *, ta
     return True, "consistent"
 
 
+def classify_deduplicated_submission(payload: dict[str, Any], *, tracked_run_id: str = "") -> str:
+    """Classify a backend deduplication response without weakening duplicate protection."""
+    if payload.get("deduplicated") is not True:
+        return "new"
+    run_id = str(payload.get("run_id") or "")
+    if tracked_run_id and run_id == tracked_run_id:
+        return "tracked"
+    if payload.get("recent_duplicate") is True and payload.get("already_completed") is True:
+        return "recent_completed"
+    if payload.get("already_running") is True or str(payload.get("status") or "").lower() in ACTIVE_STATUSES:
+        return "unrelated_active"
+    return "ambiguous"
+
+
+def recent_dedupe_retry_delay(payload: dict[str, Any], *, maximum_seconds: float = 120.0, margin_seconds: float = 2.0) -> float:
+    try:
+        retry_after = float(payload.get("retry_after_seconds") or 0.0)
+    except (TypeError, ValueError):
+        retry_after = 0.0
+    return min(maximum_seconds, max(0.0, retry_after) + max(0.0, margin_seconds))
+
+
+def _parse_utc_epoch(value: Any) -> float | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        return datetime.fromisoformat(value.strip().replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
+def event_loop_baseline(event_loop: dict[str, Any]) -> dict[str, Any]:
+    captures = event_loop.get("critical_stack_captures")
+    if not isinstance(captures, list):
+        captures = []
+    return {
+        "critical_count": int(event_loop.get("critical_count") or 0),
+        "critical_stack_capture_count": len(captures),
+    }
+
+
+def critical_event_loop_delta(
+    event_loop: dict[str, Any],
+    baseline: dict[str, Any],
+    *,
+    gate_started_at: str,
+    critical_threshold_ms: float,
+) -> dict[str, Any]:
+    current_count = int(event_loop.get("critical_count") or 0)
+    baseline_count = int(baseline.get("critical_count") or 0)
+    captures = event_loop.get("critical_stack_captures")
+    if not isinstance(captures, list):
+        captures = []
+    capture_delta = max(0, len(captures) - int(baseline.get("critical_stack_capture_count") or 0))
+    gate_epoch = _parse_utc_epoch(gate_started_at)
+    new_critical_events = 0
+    events = event_loop.get("recent_lag_events")
+    if isinstance(events, list):
+        for event in events:
+            if not isinstance(event, dict) or str(event.get("severity") or "").lower() != "critical":
+                continue
+            captured_epoch = _parse_utc_epoch(event.get("captured_at"))
+            if gate_epoch is not None and captured_epoch is not None and captured_epoch >= gate_epoch:
+                new_critical_events += 1
+    latest_lag = event_loop.get("latest_lag_ms")
+    try:
+        latest_violation = latest_lag is not None and float(latest_lag) > float(critical_threshold_ms)
+    except (TypeError, ValueError):
+        latest_violation = False
+    count_delta = max(0, current_count - baseline_count)
+    return {
+        "critical": bool(count_delta or capture_delta or new_critical_events or latest_violation),
+        "critical_count_delta": count_delta,
+        "critical_stack_capture_delta": capture_delta,
+        "new_critical_events": new_critical_events,
+        "latest_lag_violation": latest_violation,
+        "latest_lag_ms": latest_lag,
+    }
+
+
 def resume_scan_decision(state: dict[str, Any], lifecycle: dict[str, Any]) -> str:
     """Return monitor, finalize, submit, or ambiguous without mutating state."""
     tracked = str(state.get("tracked_run_id") or "")
@@ -277,6 +357,8 @@ def resume_scan_decision(state: dict[str, Any], lifecycle: dict[str, Any]) -> st
             return "finalize"
         return "ambiguous"
     if submission_started:
+        if state.get("recent_dedupe_retry_pending") is True:
+            return "submit"
         return "ambiguous"
     return "submit"
 
@@ -1222,12 +1304,13 @@ def run_repeated_scans(args: argparse.Namespace) -> int:
                 active_count = lifecycle.get("active_count")
                 if active_count not in (0, None):
                     raise GateFailure("A Security run was already active before sequential submission.", stage="pre-submit", retryable=True)
-                logical_id = f"scan-{index:03d}-{uuid.uuid4().hex[:8]}"
+                logical_id = str(state.get("logical_submission_id") or f"scan-{index:03d}-{uuid.uuid4().hex[:8]}")
                 state.update({
                     "logical_submission_id": logical_id,
                     "submission_started": True,
                     "submission_attempt": int(state.get("submission_attempt") or 0) + 1,
                     "tracked_run_id": "",
+                    "recent_dedupe_retry_pending": False,
                     "updated_at": utc_now(),
                 })
                 atomic_write_json(state_path, state)
@@ -1239,10 +1322,32 @@ def run_repeated_scans(args: argparse.Namespace) -> int:
                 run_id = str(payload.get("run_id") or "")
                 if not run_id:
                     raise GateFailure("Accepted Quick scan submission did not return a run ID.", stage="submission", retryable=False)
-                if payload.get("deduplicated") is True:
+                dedupe_class = classify_deduplicated_submission(payload)
+                if dedupe_class == "recent_completed":
+                    retry_count = int(state.get("recent_dedupe_retry_count") or 0) + 1
+                    if retry_count > 2:
+                        raise GateFailure("Recent-completion deduplication persisted beyond the bounded retry limit.", stage="submission", retryable=True)
+                    delay = recent_dedupe_retry_delay(payload)
+                    state.update({
+                        "recent_dedupe_retry_pending": True,
+                        "recent_dedupe_retry_count": retry_count,
+                        "recent_dedupe_retry_after_seconds": delay,
+                        "updated_at": utc_now(),
+                    })
+                    atomic_write_json(state_path, state)
+                    append_jsonl(events_path, {"timestamp": utc_now(), "event": "scan.recent_completion_deduplicated", "index": index, "logical_submission_id": logical_id, "existing_run_id": run_id, "retry_after_seconds": delay, "retry_count": retry_count, "sanitized": True})
+                    time.sleep(delay)
+                    active_after_wait = lifecycle_snapshot(ctx.db_path).get("active_count")
+                    if active_after_wait not in (0, None):
+                        raise GateFailure("A Security run became active while waiting for the recent-completion dedupe window.", stage="pre-submit", retryable=True)
+                    continue
+                if dedupe_class == "unrelated_active":
                     duplicate_runs += 1
-                    raise GateFailure("Quick scan submission was deduplicated against an existing run.", stage="submission", retryable=False)
-                state.update({"tracked_run_id": run_id, "submitted_at": submitted_at, "submission_payload_status": payload.get("status"), "updated_at": utc_now()})
+                    raise GateFailure("Quick scan submission was deduplicated against an unrelated active run.", stage="submission", retryable=True)
+                if dedupe_class != "new":
+                    duplicate_runs += 1
+                    raise GateFailure("Quick scan submission returned an ambiguous deduplication response.", stage="submission", retryable=False)
+                state.update({"tracked_run_id": run_id, "submitted_at": submitted_at, "submission_payload_status": payload.get("status"), "recent_dedupe_retry_pending": False, "recent_dedupe_retry_count": 0, "updated_at": utc_now()})
                 atomic_write_json(state_path, state)
                 append_jsonl(events_path, {"timestamp": utc_now(), "event": "scan.submitted", "index": index, "logical_submission_id": logical_id, "run_id": run_id, "submission_latency_seconds": round(result.time_total, 4), "sanitized": True})
                 decision = "monitor"
@@ -1348,6 +1453,8 @@ def run_repeated_scans(args: argparse.Namespace) -> int:
                     "logical_submission_id": "",
                     "submission_started": False,
                     "submission_payload_status": "",
+                    "recent_dedupe_retry_pending": False,
+                    "recent_dedupe_retry_count": 0,
                     "updated_at": utc_now(),
                 })
                 atomic_write_json(state_path, state)
@@ -1520,6 +1627,12 @@ def run_progress_soak(args: argparse.Namespace) -> int:
         }
         atomic_write_json(state_path, state)
     client = ctx.client(timeout=max(ctx.http_timeout, float(args.max_budget_seconds) + 1.0))
+    if "event_loop_baseline" not in state:
+        baseline_result = client.request("GET", ctx.proxy_base_url, "/api/lite/diagnostics/runtime", retry_read=True)
+        baseline_runtime = compact_runtime(baseline_result.body)
+        state["event_loop_baseline"] = event_loop_baseline(baseline_runtime.get("event_loop", {}))
+        state["event_loop_baseline_at"] = started_at
+        atomic_write_json(state_path, state)
     direct_latencies: list[float] = []
     proxy_latencies: list[float] = []
     direct_failures = 0
@@ -1659,10 +1772,16 @@ def run_progress_soak(args: argparse.Namespace) -> int:
                     resource = resource_snapshot(db_path=ctx.db_path, state_dir=ctx.state_dir, run_dir=ctx.run_dir, include_log_sizes=False, include_scanners=False)
                     runtime_result = client.request("GET", ctx.proxy_base_url, "/api/lite/diagnostics/runtime", retry_read=True)
                     runtime = compact_runtime(runtime_result.body)
-                    lag_values = numeric_values(runtime.get("event_loop", {}), key_pattern=re.compile(r"(?i)(lag|delay).*(?:ms|millisecond)?"))
-                    if lag_values and max(lag_values) > float(args.critical_event_loop_stall_ms):
+                    loop_evaluation = critical_event_loop_delta(
+                        runtime.get("event_loop", {}),
+                        state.get("event_loop_baseline", {}),
+                        gate_started_at=str(state.get("event_loop_baseline_at") or started_at),
+                        critical_threshold_ms=float(args.critical_event_loop_stall_ms),
+                    )
+                    if loop_evaluation.get("critical"):
                         critical_stalls += 1
                     resource["event_loop"] = runtime.get("event_loop", {})
+                    resource["event_loop_evaluation"] = loop_evaluation
                     append_jsonl(resources_path, resource)
                 regressions = progress_regressions(samples_by_endpoint["direct"]) + progress_regressions(samples_by_endpoint["proxy"])
                 if regressions:
