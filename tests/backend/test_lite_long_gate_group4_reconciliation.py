@@ -44,8 +44,8 @@ def test_bounded_parity_reconciliation_retries_mismatch_then_matches(monkeypatch
     tool = load_tool()
     ctx = context(tool, tmp_path)
     samples = iter([
-        {"quick_check": "ok", "parity_matched": False, "mismatch_fields": ["status"]},
-        {"quick_check": "ok", "parity_matched": True, "mismatch_fields": []},
+        {"quick_check": "ok", "matched": False, "mismatch_fields": ["status"]},
+        {"quick_check": "ok", "matched": True, "mismatch_fields": []},
     ])
     monkeypatch.setattr(tool.g2, "run_sqlite_tools", lambda *_args: next(samples))
     monkeypatch.setattr(tool.time, "sleep", lambda _seconds: None)
@@ -55,6 +55,29 @@ def test_bounded_parity_reconciliation_retries_mismatch_then_matches(monkeypatch
     assert result["quick_check"] == "ok"
     assert result["parity_matched"] is True
     assert result["reconciliation_attempts"] == 2
+    assert result["reconciliation_status"] == "matched"
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"quick_check": "ok", "matched": True, "mismatch_fields": []},
+        {"quick_check": "ok", "parity_matched": True, "mismatch_fields": []},
+    ],
+)
+def test_bounded_parity_reconciliation_accepts_supported_match_keys(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    payload: dict[str, object],
+):
+    tool = load_tool()
+    ctx = context(tool, tmp_path)
+    monkeypatch.setattr(tool.g2, "run_sqlite_tools", lambda *_args: dict(payload))
+
+    result = tool.bounded_parity_reconciliation(ctx, timeout_seconds=0)
+
+    assert result["quick_check"] == "ok"
+    assert result["parity_matched"] is True
     assert result["reconciliation_status"] == "matched"
 
 
