@@ -8,6 +8,7 @@ from typing import Any
 
 from .. import deps
 from . import lite_security_policy as policy
+from . import lite_storage_faults
 
 
 def security_root() -> Path:
@@ -38,9 +39,18 @@ def safe_run_id(run_id: str) -> str:
     return value[:120] or "unknown"
 
 
+def _write_failpoint_for(path: Path) -> str:
+    parts = {part.lower() for part in path.parts}
+    if "evidence" in parts:
+        return "security_evidence_write"
+    return "compatibility_json_write"
+
+
 def write_json(path: Path, data: Any) -> None:
     clean = policy.redact_value(data)
     path.parent.mkdir(parents=True, exist_ok=True)
+    lite_storage_faults.raise_if_storage_fault(_write_failpoint_for(path))
+    lite_storage_faults.raise_if_storage_fault("atomic_temp_write")
     tmp_name: str | None = None
     try:
         fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
@@ -48,11 +58,11 @@ def write_json(path: Path, data: Any) -> None:
             json.dump(clean, handle, indent=2, ensure_ascii=False)
             handle.write("\n")
             handle.flush()
-            try:
-                os.fsync(handle.fileno())
-            except OSError:
-                pass
+            lite_storage_faults.raise_if_storage_fault("atomic_fsync")
+            os.fsync(handle.fileno())
+        lite_storage_faults.raise_if_storage_fault("atomic_replace")
         os.replace(tmp_name, path)
+        tmp_name = None
     finally:
         if tmp_name:
             try:

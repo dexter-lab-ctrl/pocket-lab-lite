@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
-ORCHESTRATOR_VERSION = "phase5-group3-v1"
+ORCHESTRATOR_VERSION = "phase5-group4-v1"
 REPORT_FORMAT_VERSION = "1"
 TERMINAL_CHECKPOINT_STATES = {"passed", "failed", "skipped", "unavailable"}
 CHECKPOINT_STATES = {
@@ -45,11 +45,11 @@ REAL_PHASE5_GATES = {
     "submission-recovery",
     "nats-restart",
     "worker-restart",
-    "wal-checkpoint-pressure",
+    "wal-pressure",
     "low-storage",
-    "android-background-resume",
+    "android-resume",
 }
-IMPLEMENTED_PHASE5_GATES = {"idle", "repeated-scans", "progress-soak", "submission-recovery", "nats-restart", "worker-restart"}
+IMPLEMENTED_PHASE5_GATES = set(REAL_PHASE5_GATES)
 UNAVAILABLE_FUTURE_GATES = REAL_PHASE5_GATES - IMPLEMENTED_PHASE5_GATES
 
 SENSITIVE_KEY_RE = re.compile(
@@ -1341,6 +1341,12 @@ def aggregate(args: argparse.Namespace) -> int:
     after_parity = after.get("pocket_lab", {}).get("json_sqlite_parity", {}) if isinstance(after, dict) else {}
     checks = invariants.get("checks", {}) if isinstance(invariants, dict) else {}
     restarts = checks.get("unexpected_process_restarts", {}).get("evidence") if isinstance(checks, dict) else None
+    selected_real = {str(item) for item in (manifest.get("selected_gates") or []) if str(item) in REAL_PHASE5_GATES}
+    full_phase5_ready = bool(
+        selected_real == REAL_PHASE5_GATES
+        and {str(item.get("gate_id") or "") for item in real_passed} == REAL_PHASE5_GATES
+        and ready
+    )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "status": status,
@@ -1359,7 +1365,8 @@ def aggregate(args: argparse.Namespace) -> int:
         "failed_gates": sorted(str(item.get("gate_id") or "") for item in results if item.get("status") == "failed"),
         "selected_unavailable_gates": sorted(str(item.get("gate_id") or "") for item in unavailable),
         "unavailable_future_gates": sorted(UNAVAILABLE_FUTURE_GATES),
-        "phase5_scope_complete": False,
+        "phase5_scope_complete": full_phase5_ready,
+        "full_phase5_ready": full_phase5_ready,
         "unexpected_process_restarts": restarts,
         "duplicate_runs": None,
         "stale_active_runs": None,

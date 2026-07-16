@@ -73,13 +73,13 @@ def test_cli_help_registry_and_dry_run_are_truthful(tmp_path: Path):
         "submission-recovery",
         "nats-restart",
         "worker-restart",
-        "wal-checkpoint-pressure",
+        "wal-pressure",
         "low-storage",
-        "android-background-resume",
+        "android-resume",
     ):
         assert gate in registry.stdout
-    assert registry.stdout.count("unavailable") >= 3
-    assert registry.stdout.count("implemented") >= 7
+    assert registry.stdout.count("unavailable") == 0
+    assert registry.stdout.count("implemented") >= 10
 
     report_root = tmp_path / "reports"
     dry_run = subprocess.run(
@@ -109,7 +109,7 @@ def test_unavailable_gate_and_all_paths_cannot_claim_ready():
     assert 'exit "$LONG_GATE_EXIT_GATE_UNAVAILABLE"' in text
     all_dry = subprocess.run(["bash", str(ORCHESTRATOR), "--dry-run", "--all"], cwd=ROOT, capture_output=True, text=True)
     assert all_dry.returncode == 0
-    assert "selected_gates=idle,repeated-scans,progress-soak" in all_dry.stdout
+    assert "selected_gates=idle,repeated-scans,progress-soak,wal-pressure,low-storage" in all_dry.stdout
     assert "submission-recovery" not in all_dry.stdout
     assert "framework-self-test" not in list(
         line.strip() for line in text.split("real_gate_names()", 1)[-1].split("}", 1)[0].splitlines()

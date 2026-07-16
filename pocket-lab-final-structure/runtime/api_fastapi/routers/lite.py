@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from ..services.request_limits import request_limit_snapshot
 from ..services.workload_admission import (
@@ -308,6 +308,11 @@ class LiteSecurityScanRequest(BaseModel):
 
 class LiteAppSecurityCheckRequest(BaseModel):
     reason: str | None = None
+
+
+class LiteLifecycleDiagnosticsRequest(BaseModel):
+    challenge_id: str = ""
+    report: dict[str, Any] = Field(default_factory=dict)
 
 
 class LiteAppBackupRequest(BaseModel):
@@ -1131,8 +1136,23 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     payload["workload_admission"] = WORKLOAD_ADMISSION.snapshot()
     payload["workload_classification"] = workload_classification_snapshot()
     payload["request_limits"] = request_limit_snapshot()
+    payload["storage_readiness"] = lite_storage_guard.storage_readiness()
     payload["sanitized"] = True
     return payload
+
+
+@router.get("/diagnostics/frontend-lifecycle/challenge")
+def get_frontend_lifecycle_diagnostics_challenge(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_lifecycle_diagnostics.challenge()
+
+
+@router.post("/diagnostics/frontend-lifecycle")
+def record_frontend_lifecycle_diagnostics(
+    request: Request, payload: LiteLifecycleDiagnosticsRequest
+) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    return lite_lifecycle_diagnostics.record(payload.challenge_id, payload.report)
 
 
 @router.get("/security")
@@ -1182,6 +1202,13 @@ async def check_lite_security(
             app_id = lite_security.policy.normalize_app_id(payload.app_id)
         except ValueError:
             raise HTTPException(status_code=404, detail="App Check is not available for this app yet.")
+    storage_readiness = lite_storage_guard.storage_readiness(request)
+    if not storage_readiness.get("ready"):
+        return JSONResponse(
+            status_code=507,
+            content=lite_storage_guard.rejection_payload(storage_readiness),
+            headers={"Cache-Control": "no-store", "Retry-After": "30"},
+        )
     run_id = lite_security.new_run_id()
     reason = payload.reason or (
         "manual app check"

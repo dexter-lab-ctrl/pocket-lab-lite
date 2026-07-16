@@ -19,7 +19,7 @@ def load(path: Path, name: str):
     return module
 
 
-def test_summary_includes_group3_and_keeps_future_gates_unavailable(tmp_path: Path):
+def test_summary_includes_group3_and_group4_implementation(tmp_path: Path):
     tool = load(JSON_TOOL, "long_gate_json_group3_reporting")
     run_id = "pocketlab-long-gates-group3-summary"
     run_dir = tmp_path / run_id
@@ -34,8 +34,9 @@ def test_summary_includes_group3_and_keeps_future_gates_unavailable(tmp_path: Pa
     summary = json.loads(output.read_text())
     for gate in ("submission-recovery", "nats-restart", "worker-restart"):
         assert gate in summary["implemented_gates"]
-    for gate in ("wal-checkpoint-pressure", "low-storage", "android-background-resume"):
-        assert gate in summary["unavailable_future_gates"]
+    for gate in ("wal-pressure", "low-storage", "android-resume"):
+        assert gate in summary["implemented_gates"]
+    assert summary["unavailable_future_gates"] == []
     assert summary["phase5_scope_complete"] is False
 
 

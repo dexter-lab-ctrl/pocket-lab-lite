@@ -21,6 +21,7 @@ from ..db.connection import (
 )
 from ..db.migrations import apply_migrations
 from . import lite_security_evidence as evidence
+from . import lite_storage_faults
 from . import lite_security_policy as policy
 
 
@@ -530,6 +531,7 @@ class SecuritySQLiteRepository:
         timing_sink: dict[str, float] | None = None,
     ) -> ReservationResult:
         total_started = time.monotonic()
+        lite_storage_faults.raise_if_storage_fault("sqlite_lifecycle_write")
         normalize_started = total_started
         normalized_profile = _normalize_profile(profile)
         normalized_app = _normalize_app(normalized_profile, app_id)

@@ -160,3 +160,52 @@ numeric PM2 IDs, `pm2 kill`, `restart all`, stream deletion, or JetStream purge.
 Completed process actions are recorded in gate-local atomic state with
 `safe_to_repeat: false`, so resume verifies current state instead of repeating a
 completed disruption.
+
+## Group 4 — storage pressure and Android lifecycle
+
+Group 4 completes the registered Phase 5 gate set:
+
+```text
+wal-pressure
+low-storage
+android-resume
+```
+
+`wal-pressure` has an isolated repository-backed writer/reader stage and a
+bounded live Quick-scan observation stage. Checkpoint observation uses only
+`PRAGMA wal_checkpoint(PASSIVE)`. An optional final `TRUNCATE` checkpoint is off
+by default and is refused until isolated writers and readers have stopped.
+`VACUUM` is not used.
+
+`low-storage` defaults to deterministic ENOSPC probes in a run-owned isolated
+state directory. Failpoints are allowlisted, process-local, disabled by default,
+and require an isolated root. The live scenario additionally requires
+`--allow-disruptive`, `--allow-storage-pressure`, and an explicit positive
+`--max-allocation-bytes`. It writes only below the run directory, preserves an
+emergency reserve, enforces absolute and percentage floors, and removes the
+run-owned allocation through cleanup before a recovery scan.
+
+`android-resume` is operator-assisted and is excluded from `--all`. A short-lived
+backend activation allows the existing PWA to submit only sanitized lifecycle
+counters. The frontend closes SSE and fallback timers while hidden or offline,
+reconciles saved state with FastAPI on resume, and does not submit a scan as a
+lifecycle side effect. Missing optional Android automation degrades to bounded
+operator checkpoints rather than pretending the lifecycle action occurred.
+
+Short safe examples:
+
+```bash
+bash scripts/dev/check-lite-long-duration-gates-server-phone.sh \
+  --gate wal-pressure --scenario isolated --duration-seconds 300
+
+bash scripts/dev/check-lite-long-duration-gates-server-phone.sh \
+  --gate low-storage --scenario deterministic
+
+bash scripts/dev/check-lite-long-duration-gates-server-phone.sh \
+  --gate android-resume --scenario background-active
+```
+
+The live low-storage gate must be run last and only after its dry run displays a
+safe, device-specific cap. Group 4 does not make a selected-gate `ready` result a
+full Phase 5 claim; `full_phase5_ready` is true only when all nine real gates are
+selected and pass with final invariants, baselines, and sanitization.
