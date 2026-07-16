@@ -79,3 +79,27 @@ def test_source_safety_no_public_ui_or_secret_evidence():
     assert "submission-response-delay" not in frontend
     assert "pocket-nats" not in frontend
     assert "pocket-worker" not in frontend
+
+
+def test_active_nats_resume_reconciles_before_preflight_parity_and_never_restarts_twice():
+    source = GROUP3.read_text(encoding="utf-8")
+    loop = source.split('for scenario in _scenario_list(args.scenario, ("idle", "active")):', 1)[1]
+    assert loop.index("reconcile_active_nats_resume") < loop.index("_preflight_disruption")
+    helper = source.split("def reconcile_active_nats_resume", 1)[1].split("def run_nats_restart", 1)[0]
+    assert "wait_for_nats" in helper
+    assert "wait_terminal" in helper
+    assert "wait_for_reconciled_health" in helper
+    assert "run_pm2_action" not in helper
+    assert "refusing to restart twice" in helper
+
+
+def test_active_nats_resume_safety_order_is_explicit():
+    source = GROUP3.read_text(encoding="utf-8")
+    health = source.split("def wait_for_reconciled_health", 1)[1].split("def reconcile_active_nats_resume", 1)[0]
+    assert health.index('health.get("quick_check")') < health.index('health.get("matched")')
+    assert "resume_sqlite_quick_check" in health
+    assert "resume_final_parity" in health
+    resume = source.split("def reconcile_active_nats_resume", 1)[1].split("def run_nats_restart", 1)[0]
+    assert resume.index("resume_identity") < resume.index("wait_for_nats")
+    assert resume.index("wait_for_nats") < resume.index("wait_terminal")
+    assert resume.index("wait_terminal") < resume.index("wait_for_reconciled_health")

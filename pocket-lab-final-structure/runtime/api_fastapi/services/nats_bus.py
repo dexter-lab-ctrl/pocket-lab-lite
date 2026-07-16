@@ -109,6 +109,7 @@ class PocketLabEventBus:
         )
         self.durable_consumers: dict[str, str] = {}
         self._last_error: str = ""
+        self._last_error_at = ""
         self._watchdog_task: asyncio.Task[None] | None = None
         self._reconnect_task: asyncio.Task[None] | None = None
         self._stopping = False
@@ -168,6 +169,7 @@ class PocketLabEventBus:
             self._last_transient_invalid_state_at = deps.now_utc_iso()
             return
         self._last_error = f"{exc.__class__.__name__}: {exc}"
+        self._last_error_at = deps.now_utc_iso()
         if self._client_is_connected():
             return
         self.connected = False
@@ -229,6 +231,7 @@ class PocketLabEventBus:
                     await self.start()
                 except Exception as exc:
                     self._last_error = f"{exc.__class__.__name__}: {exc}"
+                    self._last_error_at = deps.now_utc_iso()
                     self.fallback_reason = self._last_error
                 if self._client_is_connected():
                     return
@@ -951,6 +954,8 @@ class PocketLabEventBus:
         self.connected = actual
         if actual:
             self.fallback_reason = ""
+            if not self._last_connected_at:
+                self._last_connected_at = deps.now_utc_iso()
         mode = "nats" if actual else "nats-required-unavailable"
         reconnect_pending = bool(
             self._reconnect_task is not None and not self._reconnect_task.done()
@@ -972,7 +977,10 @@ class PocketLabEventBus:
             "command_max_deliver": self.command_max_deliver,
             "command_ack_wait_seconds": self.command_ack_wait_seconds,
             "streams": list(DEFAULT_STREAMS.keys()),
-            "last_error": self._last_error,
+            "last_error": "" if actual else self._last_error,
+            "current_error": "" if actual else self._last_error,
+            "last_historical_error": self._last_error,
+            "last_error_at": self._last_error_at,
             "last_connected_at": self._last_connected_at,
             "last_disconnected_at": self._last_disconnected_at,
             "reconnect_pending": reconnect_pending,

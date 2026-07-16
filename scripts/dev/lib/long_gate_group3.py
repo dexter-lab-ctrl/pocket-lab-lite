@@ -388,6 +388,20 @@ def disable_activation(ctx: g2.Context) -> bool:
         return False
 
 
+def attribute_submission_runs(
+    created: list[dict[str, Any]], tracked_run_id: str, follow_run_id: str
+) -> dict[str, Any]:
+    primary = [row for row in created if str(row.get("run_id") or "") == tracked_run_id]
+    follow_up = [row for row in created if str(row.get("run_id") or "") == follow_run_id]
+    expected_ids = {value for value in (tracked_run_id, follow_run_id) if value}
+    unexpected = [row for row in created if str(row.get("run_id") or "") not in expected_ids]
+    return {
+        "primary_run_count": len(primary),
+        "follow_up_run_count": len(follow_up),
+        "unexpected_run_count": len(unexpected),
+    }
+
+
 def run_submission_recovery(args: argparse.Namespace) -> int:
     ctx = g2.common_context(args)
     ctx.gate_dir.mkdir(parents=True, exist_ok=True)
@@ -506,10 +520,10 @@ def run_submission_recovery(args: argparse.Namespace) -> int:
         if not terminal:
             return result_failure(ctx, started_at, started_mono, "The durable run did not reach a terminal state before the recovery deadline.", "wait_terminal", state)
         issues = lifecycle_order_issues(terminal)
-        after_runs = runs_after(ctx.db_path, int(state["submission_started_ms"]) - 1000)
-        created = [row for row in after_runs if str(row.get("run_id") or "") not in set(state.get("baseline_ids", []))]
-        same_command = [row for row in created if str(row.get("command_id") or "") == str(terminal.get("command_id") or "")]
-        duplicate_success = duplicate_terminal_success(created, str(terminal.get("command_id") or ""))
+        primary_runs = runs_after(ctx.db_path, int(state["submission_started_ms"]) - 1000)
+        primary_created = [row for row in primary_runs if str(row.get("run_id") or "") not in set(state.get("baseline_ids", []))]
+        same_command = [row for row in primary_created if str(row.get("command_id") or "") == str(terminal.get("command_id") or "")]
+        duplicate_success = duplicate_terminal_success(primary_created, str(terminal.get("command_id") or ""))
         residue = g2.wait_for_scanner_cleanup(20)
         follow_id, follow, follow_latency = final_independent_scan(ctx, "post-submission-recovery", timeout=float(args.run_timeout_seconds), progress_path=progress, lifecycle_path=lifecycle)
         state["post_recovery_scan_run_id"] = follow_id
@@ -517,8 +531,15 @@ def run_submission_recovery(args: argparse.Namespace) -> int:
         g2.append_jsonl(resources, g2.resource_snapshot(db_path=ctx.db_path, state_dir=ctx.state_dir, run_dir=ctx.run_dir))
         health = final_health(ctx)
         progress_issues = g2.progress_regressions(read_jsonl(progress))
+        all_runs = runs_after(ctx.db_path, int(state["submission_started_ms"]) - 1000)
+        created = [row for row in all_runs if str(row.get("run_id") or "") not in set(state.get("baseline_ids", []))]
+        attribution = attribute_submission_runs(created, tracked, follow_id)
         failures: list[str] = []
-        if len(created) != 2:  # tracked run plus independent follow-up
+        if attribution["primary_run_count"] != 1:
+            failures.append("primary_run_count")
+        if attribution["follow_up_run_count"] != 1:
+            failures.append("follow_up_run_count")
+        if attribution["unexpected_run_count"] != 0:
             failures.append("unexpected_run_count")
         if len(same_command) != 1:
             failures.append("logical_command_count")
@@ -558,7 +579,10 @@ def run_submission_recovery(args: argparse.Namespace) -> int:
             "retry_attempted": bool(state.get("retry_attempted")),
             "retry_result": state.get("retry_result"),
             "deduplicated": bool((state.get("retry_result") or {}).get("deduplicated")),
-            "run_count_created": len(created) - 1 if follow_id else len(created),
+            "run_count_created": len(created),
+            "primary_run_count": attribution["primary_run_count"],
+            "follow_up_run_count": attribution["follow_up_run_count"],
+            "unexpected_run_count": attribution["unexpected_run_count"],
             "logical_execution_count": len(same_command),
             "delivery_attempts": terminal.get("delivery_attempt"),
             "terminal_status": terminal.get("status"),
@@ -620,6 +644,116 @@ def _scenario_list(value: str, allowed: tuple[str, ...]) -> list[str]:
     return [value]
 
 
+def wait_for_reconciled_health(
+    ctx: g2.Context, *, timeout: float, events_path: Path
+) -> dict[str, Any]:
+    deadline = time.monotonic() + max(1.0, timeout)
+    client = ctx.client(timeout=min(ctx.http_timeout, 5.0))
+    while time.monotonic() <= deadline:
+        for path in ("/api/lite/security/progress", "/api/lite/security/summary"):
+            result = client.request("GET", ctx.proxy_base_url, path, retry_read=True)
+            g2.append_jsonl(events_path, {
+                "timestamp": g2.utc_now(), "event": "resume.projection_refresh",
+                "path": path, "http_status": result.status_code,
+                "ok": result.ok, "sanitized": True,
+            })
+        health = final_health(ctx)
+        if health.get("quick_check") != "ok":
+            raise g2.GateFailure(
+                "SQLite quick check failed during active NATS resume.",
+                stage="resume_sqlite_quick_check", retryable=False,
+            )
+        if health.get("matched") is True:
+            return health
+        time.sleep(1.0)
+    raise g2.GateFailure(
+        "JSON/SQLite parity did not recover after the tracked active run reconciled.",
+        stage="resume_final_parity", retryable=False,
+    )
+
+
+def reconcile_active_nats_resume(
+    ctx: g2.Context, scenario_state: dict[str, Any], state: dict[str, Any],
+    state_path: Path, *, args: argparse.Namespace, progress_path: Path,
+    lifecycle_path: Path, nats_status_path: Path, events_path: Path,
+) -> dict[str, Any] | None:
+    tracked_run = str(scenario_state.get("tracked_run_id") or "")
+    action = scenario_state.get("action") or {}
+    if not tracked_run or not action.get("action_started"):
+        return None
+
+    lifecycle = g2.lifecycle_snapshot(ctx.db_path)
+    active_ids = {
+        str(item.get("run_id") or "")
+        for item in (lifecycle.get("active_runs") or [])
+        if str(item.get("run_id") or "")
+    }
+    if active_ids and active_ids != {tracked_run}:
+        raise g2.GateFailure(
+            "Active NATS resume found an ambiguous or unrelated run identity.",
+            stage="resume_identity", retryable=False,
+        )
+    run = g2.lifecycle_snapshot(ctx.db_path, run_id=tracked_run).get("run") or {}
+    if not run:
+        raise g2.GateFailure(
+            "Active NATS resume could not find the tracked durable run.",
+            stage="resume_identity", retryable=False,
+        )
+
+    initial = scenario_state.get("process_before") or {}
+    before_nats = action.get("process_before") or initial.get("pocket-nats") or {}
+    current_nats = pm2_process(g2.pm2_snapshot(), "pocket-nats")
+    if not current_nats or current_nats.get("status") != "online":
+        raise g2.GateFailure(
+            "NATS is not online during active resume.",
+            stage="resume_nats_process", retryable=False,
+        )
+    old_pid = int(before_nats.get("pid") or 0)
+    new_pid = int(current_nats.get("pid") or 0)
+    if not action.get("action_completed"):
+        if old_pid and new_pid and new_pid != old_pid:
+            action.update({
+                "action_completed": True, "process_after": current_nats,
+                "completed_at": g2.utc_now(), "recovered_on_resume": True,
+            })
+            scenario_state["action"] = action
+            g2.atomic_write_json(state_path, state)
+        else:
+            raise g2.GateFailure(
+                "NATS restart state is ambiguous on resume; refusing to restart twice.",
+                stage="resume_disruption", retryable=False,
+            )
+
+    recovered = wait_for_nats(
+        ctx, timeout=float(args.service_recovery_timeout_seconds),
+        events_path=nats_status_path,
+    )
+    if not recovered or not recovered.get("healthy"):
+        raise g2.GateFailure(
+            "NATS, API, worker, or durable consumer did not recover during resume.",
+            stage="resume_nats_recovery", retryable=False,
+        )
+
+    if str(run.get("status") or "").lower() not in TERMINAL:
+        run = wait_terminal(
+            ctx, tracked_run, timeout=float(args.run_timeout_seconds),
+            progress_path=progress_path, lifecycle_path=lifecycle_path,
+        ) or {}
+    if not run or str(run.get("status") or "").lower() not in TERMINAL:
+        raise g2.GateFailure(
+            "The tracked active run did not reach a truthful terminal state on resume.",
+            stage="resume_wait_run", retryable=False,
+        )
+
+    wait_for_reconciled_health(
+        ctx, timeout=float(args.service_recovery_timeout_seconds),
+        events_path=events_path,
+    )
+    scenario_state["resume_reconciled"] = True
+    g2.atomic_write_json(state_path, state)
+    return run
+
+
 def run_nats_restart(args: argparse.Namespace) -> int:
     ctx = g2.common_context(args)
     ctx.gate_dir.mkdir(parents=True, exist_ok=True)
@@ -645,6 +779,13 @@ def run_nats_restart(args: argparse.Namespace) -> int:
                 results.append(scenario_state["result"])
                 continue
             tracked_run = str(scenario_state.get("tracked_run_id") or "")
+            resumed_terminal = None
+            if scenario == "active":
+                resumed_terminal = reconcile_active_nats_resume(
+                    ctx, scenario_state, state, state_path, args=args,
+                    progress_path=progress_path, lifecycle_path=lifecycle_path,
+                    nats_status_path=nats_status, events_path=events,
+                )
             _lifecycle, current_preflight = _preflight_disruption(ctx, allow_run_id=tracked_run)
             if "process_before" not in scenario_state:
                 scenario_state["process_before"] = process_evidence(
@@ -660,7 +801,7 @@ def run_nats_restart(args: argparse.Namespace) -> int:
                 g2.append_jsonl(nats_status, safe_nats_view(nats_before_result.body))
                 g2.atomic_write_json(state_path, state)
             before_consumer = scenario_state["consumer_before"]
-            terminal: dict[str, Any] | None = None
+            terminal: dict[str, Any] | None = resumed_terminal
             delivery_before = scenario_state.get("delivery_attempt_before")
             if scenario == "active" and not tracked_run:
                 submit, payload = submit_quick(
