@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
-ORCHESTRATOR_VERSION = "phase5-group2-v1"
+ORCHESTRATOR_VERSION = "phase5-group3-v1"
 REPORT_FORMAT_VERSION = "1"
 TERMINAL_CHECKPOINT_STATES = {"passed", "failed", "skipped", "unavailable"}
 CHECKPOINT_STATES = {
@@ -42,14 +42,14 @@ REAL_PHASE5_GATES = {
     "idle",
     "repeated-scans",
     "progress-soak",
-    "submission-timeout-recovery",
-    "nats-restart-endurance",
+    "submission-recovery",
+    "nats-restart",
     "worker-restart",
     "wal-checkpoint-pressure",
     "low-storage",
     "android-background-resume",
 }
-IMPLEMENTED_PHASE5_GATES = {"idle", "repeated-scans", "progress-soak"}
+IMPLEMENTED_PHASE5_GATES = {"idle", "repeated-scans", "progress-soak", "submission-recovery", "nats-restart", "worker-restart"}
 UNAVAILABLE_FUTURE_GATES = REAL_PHASE5_GATES - IMPLEMENTED_PHASE5_GATES
 
 SENSITIVE_KEY_RE = re.compile(

@@ -146,3 +146,16 @@ long_gate_validate_group2_configuration() {
   long_gate_is_positive_number "$LONG_GATE_PROGRESS_P95_BUDGET_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--p95-budget-seconds must be positive."
   long_gate_is_positive_number "$LONG_GATE_PROGRESS_MAX_BUDGET_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--max-budget-seconds must be positive."
 }
+
+long_gate_validate_group3_configuration() {
+  long_gate_is_positive_number "$LONG_GATE_CLIENT_TIMEOUT_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--client-timeout-seconds must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_RESPONSE_DELAY_MS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--response-delay-ms must be positive."
+  (( LONG_GATE_RESPONSE_DELAY_MS <= 30000 )) || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--response-delay-ms cannot exceed 30000."
+  "$LONG_GATE_PYTHON" - "$LONG_GATE_CLIENT_TIMEOUT_SECONDS" "$LONG_GATE_RESPONSE_DELAY_MS" <<'PY' || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--client-timeout-seconds must be shorter than --response-delay-ms."
+import sys
+raise SystemExit(0 if float(sys.argv[1]) * 1000 < int(sys.argv[2]) else 1)
+PY
+  long_gate_is_positive_integer "$LONG_GATE_DISCOVERY_TIMEOUT_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--discovery-timeout-seconds must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_SERVICE_RECOVERY_TIMEOUT_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--service-recovery-timeout-seconds must be positive."
+  long_gate_is_positive_integer "$LONG_GATE_EXECUTION_EVIDENCE_TIMEOUT_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--execution-evidence-timeout-seconds must be positive."
+}

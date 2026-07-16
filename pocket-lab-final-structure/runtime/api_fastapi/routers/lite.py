@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from ..services.request_limits import request_limit_snapshot
 from ..services.workload_admission import (
@@ -1326,6 +1326,11 @@ async def check_lite_security(
         lifecycle_committed=lifecycle_committed, reservation_timing=reservation_timing,
         publish_timing=publish_timing, lifecycle_timing=lifecycle_timing,
     )
+    # Gate-only fault injection occurs after durable reservation, publication,
+    # and authoritative lifecycle commit, but before the HTTP response. It is
+    # inert unless a loopback request presents a short-lived token matching an
+    # owner-only activation file created by the external Phase 5 gate.
+    await lite_gate_faults.maybe_delay_submission_response(request)
     return queued
 
 

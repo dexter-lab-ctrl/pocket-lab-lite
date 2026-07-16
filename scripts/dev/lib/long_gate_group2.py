@@ -331,11 +331,12 @@ class HttpClient:
         body: dict[str, Any] | None = None,
         etag: str = "",
         retry_read: bool = False,
+        extra_headers: dict[str, str] | None = None,
     ) -> HttpResult:
         attempts = 2 if retry_read and method.upper() == "GET" else 1
         last: HttpResult | None = None
         for attempt in range(attempts):
-            last = self._once(method, base_url, endpoint, body=body, etag=etag)
+            last = self._once(method, base_url, endpoint, body=body, etag=etag, extra_headers=extra_headers)
             if last.ok or last.status_code == 304 or attempt + 1 >= attempts:
                 return last
             time.sleep(0.1)
@@ -350,9 +351,15 @@ class HttpClient:
         *,
         body: dict[str, Any] | None,
         etag: str,
+        extra_headers: dict[str, str] | None,
     ) -> HttpResult:
         url = base_url.rstrip("/") + endpoint
         headers = {"Accept": "application/json"}
+        if extra_headers:
+            for key, value in extra_headers.items():
+                clean_key = str(key).strip()
+                if clean_key and "\n" not in clean_key and "\r" not in clean_key:
+                    headers[clean_key] = str(value).replace("\n", "").replace("\r", "")[:512]
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
         data = None
@@ -665,10 +672,12 @@ def lifecycle_snapshot(db_path: Path, *, run_id: str = "") -> dict[str, Any]:
         selected = [
             "run_id", "profile", "app_id", "status", "active_key", "summary", "score",
             "requested_at", "accepted_at", "started_at", "completed_at", "updated_at",
-            "requested_at_epoch_ms", "started_at_epoch_ms", "completed_at_epoch_ms", "updated_at_epoch_ms",
+            "requested_at_epoch_ms", "accepted_at_epoch_ms", "started_at_epoch_ms", "completed_at_epoch_ms", "updated_at_epoch_ms",
             "current_stage", "current_percent", "command_id", "correlation_id", "revision", "evidence_saved",
             "critical_count", "high_count", "medium_count", "low_count", "info_count",
-            "command_published_at", "command_received_at", "execution_started_at", "last_progress_at", "delivery_attempt",
+            "command_published_at", "command_published_at_epoch_ms", "command_received_at", "command_received_at_epoch_ms",
+            "execution_started_at", "execution_started_at_epoch_ms", "last_progress_at", "last_progress_at_epoch_ms",
+            "delivery_attempt", "failure_code", "failure_message",
         ]
         selected = [item for item in selected if item in columns]
         select_sql = ", ".join(selected)

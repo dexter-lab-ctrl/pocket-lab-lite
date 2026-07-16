@@ -43,10 +43,10 @@ def test_summary_distinguishes_implemented_selected_and_future(tmp_path: Path):
     output = run_dir / "summary.json"
     assert tool.aggregate(type("Args", (), {"run_dir": str(run_dir), "run_id": run_id, "output": str(output)})()) == 0
     summary = json.loads(output.read_text())
-    assert summary["implemented_gates"] == ["idle", "progress-soak", "repeated-scans"]
+    assert summary["implemented_gates"] == ["idle", "nats-restart", "progress-soak", "repeated-scans", "submission-recovery", "worker-restart"]
     assert summary["selected_gates"] == ["idle"]
     assert summary["passed_gates"] == ["idle"]
-    assert "worker-restart" in summary["unavailable_future_gates"]
+    assert "wal-checkpoint-pressure" in summary["unavailable_future_gates"]
     assert summary["phase5_scope_complete"] is False
 
 
