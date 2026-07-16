@@ -35,7 +35,7 @@ def test_group3_registry_and_disruptive_opt_in():
 
 def test_all_excludes_disruption_without_opt_in_and_includes_it_with_opt_in():
     safe = subprocess.run(["bash", str(ORCHESTRATOR), "--all", "--dry-run"], cwd=ROOT, text=True, capture_output=True, check=True)
-    assert "selected_gates=idle,repeated-scans,progress-soak" in safe.stdout
+    assert "selected_gates=idle,repeated-scans,progress-soak,wal-pressure,low-storage" in safe.stdout
     disruptive = subprocess.run(["bash", str(ORCHESTRATOR), "--all", "--allow-disruptive", "--dry-run"], cwd=ROOT, text=True, capture_output=True, check=True)
     assert "submission-recovery" in disruptive.stdout
     assert "nats-restart" in disruptive.stdout

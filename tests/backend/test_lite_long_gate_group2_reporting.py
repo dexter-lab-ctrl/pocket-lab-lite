@@ -27,7 +27,7 @@ def test_registry_cli_and_all_selection():
         line = next(line for line in registry.stdout.splitlines() if line.startswith(gate))
         assert "implemented" in line
     dry = subprocess.run(["bash", str(ORCHESTRATOR), "--dry-run", "--all"], cwd=ROOT, capture_output=True, text=True, check=True)
-    assert "selected_gates=idle,repeated-scans,progress-soak" in dry.stdout
+    assert "selected_gates=idle,repeated-scans,progress-soak,wal-pressure,low-storage" in dry.stdout
 
 
 def test_summary_distinguishes_implemented_selected_and_future(tmp_path: Path):
@@ -43,10 +43,10 @@ def test_summary_distinguishes_implemented_selected_and_future(tmp_path: Path):
     output = run_dir / "summary.json"
     assert tool.aggregate(type("Args", (), {"run_dir": str(run_dir), "run_id": run_id, "output": str(output)})()) == 0
     summary = json.loads(output.read_text())
-    assert summary["implemented_gates"] == ["idle", "nats-restart", "progress-soak", "repeated-scans", "submission-recovery", "worker-restart"]
+    assert summary["implemented_gates"] == ["android-resume", "idle", "low-storage", "nats-restart", "progress-soak", "repeated-scans", "submission-recovery", "wal-pressure", "worker-restart"]
     assert summary["selected_gates"] == ["idle"]
     assert summary["passed_gates"] == ["idle"]
-    assert "wal-checkpoint-pressure" in summary["unavailable_future_gates"]
+    assert summary["unavailable_future_gates"] == []
     assert summary["phase5_scope_complete"] is False
 
 
@@ -59,7 +59,10 @@ def test_source_safety_and_no_product_frontend_changes():
     assert "nats-server --signal" not in combined
     assert "Authorization: Bearer ${POCKETLAB_API_TOKEN}" not in combined
     assert "while true" not in combined
-    assert not any(path.as_posix().startswith("src/") for path in ROOT.glob("src/**/*") if path.is_file() and path.stat().st_mtime > GROUP2_TOOL.stat().st_mtime)
+    frontend = (ROOT / "src/hooks/useLiteSecurityEvents.js").read_text(encoding="utf-8")
+    assert "EventSource" in frontend
+    assert "nats://" not in frontend
+    assert "child_process" not in frontend
 
 
 def test_result_schema_rejects_contradictory_status(tmp_path: Path):

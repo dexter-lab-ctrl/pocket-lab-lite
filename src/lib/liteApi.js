@@ -129,6 +129,8 @@ function conditionalRead(path) {
 
 export const liteApi = {
   status: safeGet('/api/lite/status'),
+  lifecycleDiagnosticsChallenge: () => readJson('/api/lite/diagnostics/frontend-lifecycle/challenge'),
+  recordLifecycleDiagnostics: (challengeId, report = {}) => postJson('/api/lite/diagnostics/frontend-lifecycle', { challenge_id: challengeId, report }),
   catalog: safeGet('/api/lite/catalog'),
   appLifecycle: () => readJson('/api/lite/apps/lifecycle'),
   appLifecycleProfile: (appId = 'photoprism') => readJson(`/api/lite/apps/lifecycle/${encodeURIComponent(appId)}`),

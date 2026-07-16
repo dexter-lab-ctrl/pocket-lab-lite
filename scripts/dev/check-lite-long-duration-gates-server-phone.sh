@@ -7,8 +7,9 @@ LONG_GATE_REPO_ROOT="$REPO_ROOT"
 LONG_GATE_JSON_TOOL="$REPO_ROOT/scripts/dev/lib/long_gate_json.py"
 LONG_GATE_GROUP2_TOOL="$REPO_ROOT/scripts/dev/lib/long_gate_group2.py"
 LONG_GATE_GROUP3_TOOL="$REPO_ROOT/scripts/dev/lib/long_gate_group3.py"
+LONG_GATE_GROUP4_TOOL="$REPO_ROOT/scripts/dev/lib/long_gate_group4.py"
 LONG_GATE_PYTHON="${POCKETLAB_LONG_GATE_PYTHON:-python3}"
-export LONG_GATE_REPO_ROOT LONG_GATE_JSON_TOOL LONG_GATE_GROUP2_TOOL LONG_GATE_GROUP3_TOOL LONG_GATE_PYTHON
+export LONG_GATE_REPO_ROOT LONG_GATE_JSON_TOOL LONG_GATE_GROUP2_TOOL LONG_GATE_GROUP3_TOOL LONG_GATE_GROUP4_TOOL LONG_GATE_PYTHON
 
 source "$REPO_ROOT/scripts/dev/lib/long_gate_common.sh"
 source "$REPO_ROOT/scripts/dev/lib/long_gate_checkpoint.sh"
@@ -17,6 +18,7 @@ source "$REPO_ROOT/scripts/dev/lib/long_gate_http.sh"
 source "$REPO_ROOT/scripts/dev/lib/long_gate_sqlite.sh"
 source "$REPO_ROOT/scripts/dev/lib/long_gate_runtime.sh"
 source "$REPO_ROOT/scripts/dev/lib/long_gate_process.sh"
+source "$REPO_ROOT/scripts/dev/lib/long_gate_group4.sh"
 
 readonly REGISTRY_DELIMITER='|'
 GATE_REGISTRY=(
@@ -26,81 +28,33 @@ GATE_REGISTRY=(
   "submission-recovery|scripts/dev/long-gates/submission-timeout-recovery.sh|high|1|1|Submission timeout recovery|client_timeout=2;response_delay_ms=5000|http,sqlite,nats,worker,gate_fault|1|1"
   "nats-restart|scripts/dev/long-gates/nats-restart.sh|high|1|1|Controlled NATS restart recovery|scenario=both|pm2,nats,worker,sqlite|1|1"
   "worker-restart|scripts/dev/long-gates/worker-restart.sh|high|1|1|Controlled worker restart recovery|scenario=both|pm2,nats,worker,sqlite|1|1"
-  "wal-checkpoint-pressure|scripts/dev/long-gates/wal-checkpoint-pressure.sh|high|0|1|SQLite WAL checkpoint pressure||sqlite|1|1"
-  "low-storage|scripts/dev/long-gates/low-storage.sh|high|0|1|Bounded low-storage behavior||storage,sqlite|1|1"
-  "android-background-resume|scripts/dev/long-gates/android-background-resume.sh|medium|0|1|Android background and resume behavior||android,process|1|1"
+  "wal-pressure|scripts/dev/long-gates/wal-checkpoint-pressure.sh|high|1|1|SQLite WAL checkpoint pressure|scenario=isolated;duration=300|sqlite,progress|0|0"
+  "low-storage|scripts/dev/long-gates/low-storage.sh|high|1|1|Deterministic and bounded low-storage behavior|scenario=deterministic|storage,sqlite,gate_fault|0|0"
+  "android-resume|scripts/dev/long-gates/android-background-resume.sh|medium|1|1|Android background and resume behavior|scenario=background-active|android,frontend,operator|0|1"
   "framework-self-test|scripts/dev/long-gates/framework-self-test.sh|low|1|1|Non-disruptive Group 1 framework validation|||0|0"
 )
 usage() {
   cat <<'EOF'
 Pocket Lab Lite Phase 5 long-duration gate framework
 
-Usage:
-  bash scripts/dev/check-lite-long-duration-gates-server-phone.sh [options]
+Usage: bash scripts/dev/check-lite-long-duration-gates-server-phone.sh [options]
+Selection: --gate <name> | --all | --framework-self-test | --baseline-only | --list-gates
+Control: --resume --run-id <id> --report-dir <path> --dry-run --recover-stale-lock
+Risk opt-ins: --allow-disruptive --allow-storage-pressure
 
-Selection:
-  --gate <name>             Select one gate; may be repeated.
-  --all                     Select all currently implemented real Phase 5 gates.
-  --framework-self-test     Run only the non-disruptive framework validation gate.
-  --baseline-only           Capture before/after baselines without running a gate.
-  --list-gates              List the registry and implementation availability.
+Groups 2/3 retain their existing duration, scan, Progress, and recovery options.
+  --scenario <name>                     Scenario for one selected gate.
+  --wal-scenario isolated|live|both     WAL stage selection.
+  --storage-scenario deterministic|live|both
+  --android-scenario background-active|process-eviction|network-transition|repeated-resume|all
+  --writer-interval-ms <n> --reader-interval-ms <n>
+  --checkpoint-interval-seconds <n> --health-interval-seconds <n>
+  --wal-growth-budget-bytes <n> --reader-p95-budget-seconds <n> --writer-p95-budget-seconds <n>
+  --contention-retry-budget <n> --final-truncate-checkpoint
+  --min-free-space-bytes <n> --min-free-space-percent <n>
+  --emergency-reserve-bytes <n> --max-allocation-bytes <n> --absolute-allocation-cap-bytes <n>
+  --operator-timeout-seconds <n> --frontend-report-timeout-seconds <n> --resume-cycles <n>
 
-Run control:
-  --resume                  Resume a prior run from safe checkpoints.
-  --run-id <id>             Use an explicit stable run ID.
-  --report-dir <path>       Evidence root; each run is stored below this directory.
-  --recover-stale-lock      With --resume, recover a validated inactive stale lock.
-  --allow-disruptive        Explicitly authorize controlled Group 3 disruption.
-  --dry-run                 Print the resolved plan without creating evidence.
-  --help                    Show this help.
-
-Group 2 gate options:
-  --duration-seconds <n>              Idle duration (default 86400).
-  --sample-interval-seconds <n>       Idle light sample cadence (default 60).
-  --heavy-check-interval-seconds <n>  Idle heavy check cadence (default 3600).
-  --warmup-seconds <n>                Idle trend warm-up exclusion (default 900).
-  --rss-budget-mb <n>                 Sustained RSS growth budget (default 128).
-  --wal-budget-mb <n>                 Sustained WAL growth budget (default 64).
-  --log-growth-budget-mb <n>          Log growth budget (default 128).
-  --fd-growth-budget <n>              Open-FD growth budget (default 32).
-  --cpu-idle-threshold <n>            Persistent selected-process CPU threshold (default 20).
-  --count <n>                         Repeated Quick scan count (default 10).
-  --cooldown-seconds <n>              Cooldown between scans (default 5).
-  --run-timeout-seconds <n>           Per-scan terminal timeout (default 5400).
-  --submission-timeout-seconds <n>    Write submission timeout (default 10).
-  --parity-every <n>                  Repeated-scan parity cadence (default 1).
-  --resource-sample-every <n>         Repeated-scan resource cadence (default 1).
-  --stop-on-first-failure             Stop repeated scans after the first proven failure.
-  --scan-count <n>                    Progress soak scan count (default 1).
-  --sample-interval-ms <n>            Progress pair cadence, minimum 200 (default 500).
-  --direct-base-url <url>             Direct FastAPI base URL.
-  --proxy-base-url <url>              Caddy/same-origin base URL.
-  --etag-check-every <n>              Conditional-read cadence (default 10 pairs).
-  --max-projection-age-ms <n>         Active projection age budget (default 5000).
-  --p95-budget-seconds <n>            Progress p95 budget (default 1).
-  --max-budget-seconds <n>            Progress max budget (default 3).
-  --report-limit-mb <n>               Maximum evidence package size (default 128).
-
-Group 3 controlled recovery options:
-  --scenario <name>                    NATS: idle|active|both; worker: before-claim|after-claim|both.
-  --client-timeout-seconds <n>         Submission gate client timeout (default 2).
-  --response-delay-ms <n>              Gate-authorized response delay, max 30000 (default 5000).
-  --discovery-timeout-seconds <n>      Durable run discovery deadline (default 30).
-  --service-recovery-timeout-seconds <n> PM2/NATS recovery deadline (default 120).
-  --execution-evidence-timeout-seconds <n> Claim/execution evidence deadline (default 300).
-
-Exit codes:
-  0   Framework command completed truthfully (not necessarily Phase 5 ready).
-  22  Invalid CLI or unsupported argument.
-  23  Active/inconsistent run lock.
-  24  Selected gate is unavailable/not implemented.
-  25  Required baseline capture failed.
-  26  Manifest/checkpoint corruption or inconsistent resume state.
-  27  Sanitization validation failed.
-  28  Final invariant/readiness requirements failed.
-  29  Run interrupted at a resume-safe boundary.
-
-Groups 1-3 implement the framework, non-disruptive gates, and controlled recovery gates. Disruptive gates require --allow-disruptive. Storage and Android gates remain unavailable. A framework self-test is reported as framework_validated, never ready.
 EOF
 }
 
@@ -146,7 +100,7 @@ implemented_real_gate_names() {
   local row name script risk implemented resume_support description defaults capabilities disruptive confirmation
   for row in "${GATE_REGISTRY[@]}"; do
     IFS="$REGISTRY_DELIMITER" read -r name script risk implemented resume_support description defaults capabilities disruptive confirmation <<< "$row"
-    if [[ "$name" != "framework-self-test" && "$implemented" == "1" && -f "$REPO_ROOT/$script" && ( "$disruptive" != "1" || "$ALLOW_DISRUPTIVE" == "1" ) ]]; then
+    if [[ "$name" != "framework-self-test" && "$implemented" == "1" && -f "$REPO_ROOT/$script" && "$name" != "android-resume" && ( "$disruptive" != "1" || "$ALLOW_DISRUPTIVE" == "1" ) ]]; then
       printf '%s\n' "$name"
     fi
   done
@@ -186,6 +140,9 @@ SELECT_ALL=0
 BASELINE_ONLY=0
 FRAMEWORK_SELF_TEST=0
 ALLOW_DISRUPTIVE=0
+ALLOW_STORAGE_PRESSURE=0
+GENERIC_SCENARIO=''
+GENERIC_DURATION_SECONDS=''
 SELECTED_GATES=()
 
 LONG_GATE_RESUME=0
@@ -223,6 +180,7 @@ LONG_GATE_RESPONSE_DELAY_MS="${POCKETLAB_LONG_GATE_RESPONSE_DELAY_MS:-5000}"
 LONG_GATE_DISCOVERY_TIMEOUT_SECONDS="${POCKETLAB_LONG_GATE_DISCOVERY_TIMEOUT_SECONDS:-30}"
 LONG_GATE_SERVICE_RECOVERY_TIMEOUT_SECONDS="${POCKETLAB_LONG_GATE_SERVICE_RECOVERY_TIMEOUT_SECONDS:-120}"
 LONG_GATE_EXECUTION_EVIDENCE_TIMEOUT_SECONDS="${POCKETLAB_LONG_GATE_EXECUTION_EVIDENCE_TIMEOUT_SECONDS:-300}"
+long_gate_group4_defaults
 
 long_gate_require_option_value() {
   local option="$1" count="$2"
@@ -254,7 +212,8 @@ while [[ "$#" -gt 0 ]]; do
     --baseline-only) BASELINE_ONLY=1; shift ;;
     --recover-stale-lock) RECOVER_STALE_LOCK=1; shift ;;
     --allow-disruptive) ALLOW_DISRUPTIVE=1; shift ;;
-    --duration-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_DURATION_SECONDS="$2"; shift 2 ;;
+    --allow-storage-pressure) ALLOW_STORAGE_PRESSURE=1; shift ;;
+    --duration-seconds) long_gate_require_option_value "$1" "$#"; GENERIC_DURATION_SECONDS="$2"; shift 2 ;;
     --sample-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS="$2"; shift 2 ;;
     --heavy-check-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS="$2"; shift 2 ;;
     --warmup-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_WARMUP_SECONDS="$2"; shift 2 ;;
@@ -279,7 +238,28 @@ while [[ "$#" -gt 0 ]]; do
     --p95-budget-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_PROGRESS_P95_BUDGET_SECONDS="$2"; shift 2 ;;
     --max-budget-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_PROGRESS_MAX_BUDGET_SECONDS="$2"; shift 2 ;;
     --report-limit-mb) long_gate_require_option_value "$1" "$#"; LONG_GATE_REPORT_LIMIT_MB="$2"; shift 2 ;;
-    --scenario) long_gate_require_option_value "$1" "$#"; LONG_GATE_RECOVERY_SCENARIO="$2"; shift 2 ;;
+    --scenario) long_gate_require_option_value "$1" "$#"; GENERIC_SCENARIO="$2"; shift 2 ;;
+    --wal-scenario) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_SCENARIO="$2"; shift 2 ;;
+    --storage-scenario) long_gate_require_option_value "$1" "$#"; LONG_GATE_STORAGE_SCENARIO="$2"; shift 2 ;;
+    --android-scenario) long_gate_require_option_value "$1" "$#"; LONG_GATE_ANDROID_SCENARIO="$2"; shift 2 ;;
+    --writer-interval-ms) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_WRITER_INTERVAL_MS="$2"; shift 2 ;;
+    --reader-interval-ms) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_READER_INTERVAL_MS="$2"; shift 2 ;;
+    --checkpoint-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_CHECKPOINT_INTERVAL_SECONDS="$2"; shift 2 ;;
+    --health-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_HEALTH_INTERVAL_SECONDS="$2"; shift 2 ;;
+    --wal-growth-budget-bytes) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_GROWTH_BUDGET_BYTES="$2"; shift 2 ;;
+    --reader-p95-budget-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_READER_P95_SECONDS="$2"; shift 2 ;;
+    --writer-p95-budget-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_WRITER_P95_SECONDS="$2"; shift 2 ;;
+    --contention-retry-budget) long_gate_require_option_value "$1" "$#"; LONG_GATE_WAL_CONTENTION_RETRY_BUDGET="$2"; shift 2 ;;
+    --final-truncate-checkpoint) LONG_GATE_WAL_FINAL_TRUNCATE=1; shift ;;
+    --min-free-space-bytes) long_gate_require_option_value "$1" "$#"; LONG_GATE_MIN_FREE_SPACE_BYTES="$2"; shift 2 ;;
+    --min-free-space-percent) long_gate_require_option_value "$1" "$#"; LONG_GATE_MIN_FREE_SPACE_PERCENT="$2"; shift 2 ;;
+    --emergency-reserve-bytes) long_gate_require_option_value "$1" "$#"; LONG_GATE_EMERGENCY_RESERVE_BYTES="$2"; shift 2 ;;
+    --max-allocation-bytes) long_gate_require_option_value "$1" "$#"; LONG_GATE_MAX_ALLOCATION_BYTES="$2"; shift 2 ;;
+    --absolute-allocation-cap-bytes) long_gate_require_option_value "$1" "$#"; LONG_GATE_ABSOLUTE_ALLOCATION_CAP_BYTES="$2"; shift 2 ;;
+    --operator-timeout-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_ANDROID_OPERATOR_TIMEOUT_SECONDS="$2"; shift 2 ;;
+    --frontend-report-timeout-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_FRONTEND_REPORT_TIMEOUT_SECONDS="$2"; shift 2 ;;
+    --resume-cycles) long_gate_require_option_value "$1" "$#"; LONG_GATE_ANDROID_RESUME_CYCLES="$2"; shift 2 ;;
+    --auto-confirm-operator) LONG_GATE_ANDROID_AUTO_CONFIRM=1; shift ;;
     --client-timeout-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_CLIENT_TIMEOUT_SECONDS="$2"; shift 2 ;;
     --response-delay-ms) long_gate_require_option_value "$1" "$#"; LONG_GATE_RESPONSE_DELAY_MS="$2"; shift 2 ;;
     --discovery-timeout-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_DISCOVERY_TIMEOUT_SECONDS="$2"; shift 2 ;;
@@ -294,8 +274,7 @@ long_gate_require_command "$LONG_GATE_PYTHON"
 [[ -f "$LONG_GATE_JSON_TOOL" ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Structured evidence helper is missing or not executable."
 [[ -f "$LONG_GATE_GROUP2_TOOL" ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Group 2 gate helper is missing."
 [[ -f "$LONG_GATE_GROUP3_TOOL" ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Group 3 gate helper is missing."
-long_gate_validate_group2_configuration
-long_gate_validate_group3_configuration
+[[ -f "$LONG_GATE_GROUP4_TOOL" ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Group 4 gate helper is missing."
 LONG_GATE_REPORT_LIMIT_BYTES=$(( LONG_GATE_REPORT_LIMIT_MB * 1024 * 1024 ))
 LONG_GATE_RESUME="$RESUME"
 export LONG_GATE_RESUME LONG_GATE_PROXY_BASE_URL LONG_GATE_DIRECT_BASE_URL LONG_GATE_CONNECT_TIMEOUT LONG_GATE_HTTP_TIMEOUT
@@ -308,6 +287,7 @@ export LONG_GATE_PROGRESS_SCAN_COUNT LONG_GATE_PROGRESS_SAMPLE_INTERVAL_MS LONG_
 export LONG_GATE_PROGRESS_MAX_AGE_MS LONG_GATE_PROGRESS_P95_BUDGET_SECONDS LONG_GATE_PROGRESS_MAX_BUDGET_SECONDS
 export LONG_GATE_RECOVERY_SCENARIO LONG_GATE_CLIENT_TIMEOUT_SECONDS LONG_GATE_RESPONSE_DELAY_MS LONG_GATE_DISCOVERY_TIMEOUT_SECONDS
 export LONG_GATE_SERVICE_RECOVERY_TIMEOUT_SECONDS LONG_GATE_EXECUTION_EVIDENCE_TIMEOUT_SECONDS
+long_gate_export_group4_configuration
 
 if [[ "$LIST_ONLY" == "1" ]]; then
   list_gates
@@ -328,6 +308,11 @@ if [[ "$FRAMEWORK_SELF_TEST" == "1" ]]; then
 elif [[ "$SELECT_ALL" == "1" ]]; then
   mapfile -t SELECTED_GATES < <(implemented_real_gate_names)
 fi
+long_gate_resolve_shared_options
+long_gate_validate_group2_configuration
+long_gate_validate_group3_configuration
+long_gate_validate_group4_configuration
+
 if [[ "$BASELINE_ONLY" != "1" && "${#SELECTED_GATES[@]}" -eq 0 ]]; then
   if [[ "$DRY_RUN" == "1" ]]; then
     list_gates
@@ -352,6 +337,12 @@ for gate_id in "${SELECTED_GATES[@]}"; do
       ;;
     worker-restart)
       [[ "$LONG_GATE_RECOVERY_SCENARIO" =~ ^(before-claim|after-claim|both)$ ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Worker --scenario must be before-claim, after-claim, or both."
+      ;;
+    low-storage)
+      if [[ "$LONG_GATE_STORAGE_SCENARIO" =~ ^(live|both)$ ]]; then
+        [[ "$ALLOW_DISRUPTIVE" == '1' && "$ALLOW_STORAGE_PRESSURE" == '1' ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Live low-storage requires --allow-disruptive and --allow-storage-pressure."
+        (( LONG_GATE_MAX_ALLOCATION_BYTES > 0 )) || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Live low-storage requires an explicit positive --max-allocation-bytes."
+      fi
       ;;
   esac
 done
@@ -402,6 +393,7 @@ if [[ "$DRY_RUN" == "1" ]]; then
       submission-recovery) printf 'planned_actions=create short-lived gate activation; submit one Quick scan; no service restart\n' ;;
       nats-restart) printf 'planned_actions=restart pocket-nats only; scenario=%s\n' "$LONG_GATE_RECOVERY_SCENARIO" ;;
       worker-restart) printf 'planned_actions=stop/start or restart pocket-worker only; scenario=%s\n' "$LONG_GATE_RECOVERY_SCENARIO" ;;
+      wal-pressure|low-storage|android-resume) long_gate_group4_dry_run "$gate_id" ;;
     esac
   done
   exit 0

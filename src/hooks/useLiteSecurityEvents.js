@@ -3,6 +3,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { liteApi } from '../lib/liteApi.js';
 import { broadcastLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
+import {
+  publishLiteLifecycleDiagnostics,
+  reconcileLiteLifecycle,
+  trackLiteLifecycleEventSource,
+  trackLiteLifecycleListener,
+  trackLiteLifecyclePollTimer,
+  updateLiteLifecycleEnvironment,
+} from '../lib/liteLifecycleDiagnostics.js';
 
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
 const SECURITY_EVENTS_PATH = '/api/lite/security/events';
@@ -125,10 +133,18 @@ function applySecurityEvent(queryClient, event, historyLimit = 20) {
   const payload = normalizeSecurityEvent(event);
   const profile = normalizeProfile(payload.profile);
   const runId = payload.run_id || 'latest';
-  queryClient.setQueryData(liteQueryKeys.securityProgress(), (previous = {}) => ({
+  const previous = queryClient.getQueryData(liteQueryKeys.securityProgress()) || {};
+  queryClient.setQueryData(liteQueryKeys.securityProgress(), {
     ...previous,
     ...progressPayloadFromEvent(payload),
-  }));
+  });
+  reconcileLiteLifecycle({
+    cachedRunId: previous.run_id || '',
+    backendRunId: payload.run_id || '',
+    cachedRevision: previous.revision || '',
+    backendRevision: payload.progress_revision || payload.revision || '',
+    writeActionsBlocked: false,
+  });
 
   if (payload.type === 'security.scan.evidence_saved') {
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityEvidenceSummary(runId) });
@@ -155,23 +171,64 @@ async function loadProgressFallback(queryClient, historyLimit) {
   }, historyLimit);
 }
 
+function initialEnvironment() {
+  return {
+    visible: typeof document === 'undefined' || document.visibilityState !== 'hidden',
+    online: typeof navigator === 'undefined' || navigator.onLine !== false,
+  };
+}
+
+function useSecurityLifecycleEnvironment() {
+  const [environment, setEnvironment] = useState(initialEnvironment);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return undefined;
+    const update = () => {
+      const next = initialEnvironment();
+      setEnvironment(next);
+      updateLiteLifecycleEnvironment({ visibilityState: document.visibilityState, onlineState: next.online });
+      publishLiteLifecycleDiagnostics(liteApi);
+    };
+    trackLiteLifecycleListener('visibility', 1);
+    trackLiteLifecycleListener('online', 1);
+    trackLiteLifecycleListener('offline', 1);
+    document.addEventListener('visibilitychange', update);
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    update();
+    return () => {
+      document.removeEventListener('visibilitychange', update);
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+      trackLiteLifecycleListener('visibility', -1);
+      trackLiteLifecycleListener('online', -1);
+      trackLiteLifecycleListener('offline', -1);
+    };
+  }, []);
+
+  return environment;
+}
+
 export function useLiteSecurityEvents({ enabled = false, profile = 'quick', historyLimit = 20, forceFallback = false, activeRunId = '', localActive = false, onProgress = null } = {}) {
   const queryClient = useQueryClient();
   const [eventState, setEventState] = useState({ status: 'idle', usingFallback: false, event: null });
   const [fallbackActive, setFallbackActive] = useState(false);
   const lastEventActiveRef = useRef(false);
   const seenEventRef = useRef(false);
+  const sourceActiveRef = useRef(false);
+  const environment = useSecurityLifecycleEnvironment();
   const historyLimitValue = Number(historyLimit || 20);
   const profileValue = normalizeProfile(profile);
   const activeRunKey = securityRunKey(activeRunId);
   const localProgressActive = Boolean(localActive);
+  const canObserve = Boolean(enabled && environment.visible && environment.online);
 
   useEffect(() => {
     seenEventRef.current = false;
     lastEventActiveRef.current = false;
-    if (!enabled) {
+    if (!canObserve) {
       setFallbackActive(false);
-      setEventState((state) => ({ ...state, status: 'idle', usingFallback: false }));
+      setEventState((state) => ({ ...state, status: enabled ? 'paused' : 'idle', usingFallback: false }));
       return undefined;
     }
     if (typeof window === 'undefined' || typeof window.EventSource === 'undefined') {
@@ -181,7 +238,29 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
 
     let closed = false;
     const source = new window.EventSource(endpoint(SECURITY_EVENTS_PATH));
+    sourceActiveRef.current = true;
+    trackLiteLifecycleEventSource(true);
+    setFallbackActive(false);
     setEventState((state) => ({ ...state, status: 'connecting', usingFallback: false }));
+    publishLiteLifecycleDiagnostics(liteApi);
+
+    const closeSource = () => {
+      if (closed) return;
+      closed = true;
+      source.close();
+      if (sourceActiveRef.current) {
+        sourceActiveRef.current = false;
+        trackLiteLifecycleEventSource(false);
+      }
+      publishLiteLifecycleDiagnostics(liteApi);
+    };
+
+    source.onopen = () => {
+      if (closed) return;
+      setFallbackActive(false);
+      setEventState((state) => ({ ...state, status: 'connected', usingFallback: false }));
+      publishLiteLifecycleDiagnostics(liteApi);
+    };
 
     source.onmessage = (message) => {
       if (closed) return;
@@ -195,11 +274,11 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
         const keepFallbackAlive = shouldKeepSecurityFallbackAlive(event, { forceFallback, localActive: localProgressActive, activeRunId: activeRunKey });
         setEventState({ status: terminal ? 'done' : 'connected', usingFallback: false, event });
         if (terminal || !event.active_scan) {
-          source.close();
-          closed = true;
-          if (keepFallbackAlive) setFallbackActive(true);
+          closeSource();
+          if (keepFallbackAlive && environment.visible && environment.online) setFallbackActive(true);
         }
-      } catch (_error) {
+      } catch {
+        closeSource();
         setFallbackActive(true);
       }
     };
@@ -219,49 +298,60 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
 
     source.onerror = () => {
       if (closed) return;
-      source.close();
-      closed = true;
+      closeSource();
       if (lastEventActiveRef.current || !seenEventRef.current) {
         setFallbackActive(true);
         setEventState((state) => ({ ...state, status: 'paused', usingFallback: true }));
       }
     };
 
-    return () => {
-      closed = true;
-      source.close();
-    };
-  }, [activeRunKey, enabled, forceFallback, historyLimitValue, localProgressActive, onProgress, profileValue, queryClient]);
+    return closeSource;
+  }, [activeRunKey, canObserve, enabled, environment.online, environment.visible, forceFallback, historyLimitValue, localProgressActive, onProgress, profileValue, queryClient]);
 
   useEffect(() => {
-    if (!enabled || (!fallbackActive && !forceFallback)) return undefined;
+    if (!canObserve || sourceActiveRef.current || (!fallbackActive && !forceFallback)) return undefined;
     let stopped = false;
     let timer;
+    let timerTracked = false;
+
+    const schedule = () => {
+      if (stopped) return;
+      timer = window.setTimeout(tick, SECURITY_PROGRESS_FALLBACK_MS);
+      if (!timerTracked) {
+        timerTracked = true;
+        trackLiteLifecyclePollTimer(true);
+        publishLiteLifecycleDiagnostics(liteApi);
+      }
+    };
 
     const tick = async () => {
-      if (stopped) return;
+      if (stopped || sourceActiveRef.current) return;
       try {
         const event = await loadProgressFallback(queryClient, historyLimitValue);
+        onProgress?.(event);
         lastEventActiveRef.current = liveSecurityEvent(event);
         const terminal = terminalSecurityEvent(event);
         const keepFallbackAlive = shouldKeepSecurityFallbackAlive(event, { forceFallback, localActive: localProgressActive, activeRunId: activeRunKey });
         setEventState({ status: terminal ? 'done' : 'fallback', usingFallback: true, event });
+        publishLiteLifecycleDiagnostics(liteApi);
         if (!keepFallbackAlive && (terminal || !liveSecurityEvent(event))) {
           setFallbackActive(false);
           return;
         }
-      } catch (_error) {
+      } catch {
         setEventState((state) => ({ ...state, status: 'paused', usingFallback: true }));
       }
-      timer = window.setTimeout(tick, SECURITY_PROGRESS_FALLBACK_MS);
+      schedule();
     };
 
     tick();
     return () => {
       stopped = true;
       if (timer) window.clearTimeout(timer);
+      if (timerTracked) trackLiteLifecyclePollTimer(false);
+      publishLiteLifecycleDiagnostics(liteApi);
     };
-  }, [activeRunKey, enabled, fallbackActive, forceFallback, historyLimitValue, localProgressActive, onProgress, queryClient]);
+  }, [activeRunKey, canObserve, fallbackActive, forceFallback, historyLimitValue, localProgressActive, onProgress, queryClient]);
 
   return useMemo(() => ({
     data: eventState.event ? progressPayloadFromEvent(eventState.event) : null,
