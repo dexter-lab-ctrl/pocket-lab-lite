@@ -85,3 +85,59 @@ def test_etag_same_body_200_is_invalid():
     check = tool.etag_check(FakeClient(), "http://x", '"a"', {"revision": 1, "percent": 10, "status": "running"}, "direct")
     assert check["valid"] is False
     assert check["behavior"] == "etag_not_honored"
+
+
+def test_historical_warning_lag_does_not_count_as_critical():
+    tool = load_tool()
+    baseline = {"critical_count": 0, "critical_stack_capture_count": 0}
+    result = tool.critical_event_loop_delta(
+        {
+            "critical_count": 0,
+            "critical_stack_captures": [],
+            "latest_lag_ms": 120.0,
+            "recent_lag_events": [
+                {"captured_at": "2026-07-16T08:59:24Z", "lag_ms": 1641, "severity": "warning"},
+            ],
+        },
+        baseline,
+        gate_started_at="2026-07-16T09:27:00Z",
+        critical_threshold_ms=1000,
+    )
+    assert result["critical"] is False
+
+
+def test_new_critical_delta_or_stack_capture_fails():
+    tool = load_tool()
+    result = tool.critical_event_loop_delta(
+        {
+            "critical_count": 1,
+            "critical_stack_captures": [{"captured_at": "2026-07-16T09:28:00Z"}],
+            "latest_lag_ms": 50,
+            "recent_lag_events": [],
+        },
+        {"critical_count": 0, "critical_stack_capture_count": 0},
+        gate_started_at="2026-07-16T09:27:00Z",
+        critical_threshold_ms=1000,
+    )
+    assert result["critical"] is True
+    assert result["critical_count_delta"] == 1
+    assert result["critical_stack_capture_delta"] == 1
+
+
+def test_new_critical_event_after_gate_start_fails_but_old_event_does_not():
+    tool = load_tool()
+    result = tool.critical_event_loop_delta(
+        {
+            "critical_count": 0,
+            "critical_stack_captures": [],
+            "recent_lag_events": [
+                {"captured_at": "2026-07-16T09:20:00Z", "severity": "critical", "lag_ms": 2000},
+                {"captured_at": "2026-07-16T09:28:00Z", "severity": "critical", "lag_ms": 2000},
+            ],
+        },
+        {"critical_count": 0, "critical_stack_capture_count": 0},
+        gate_started_at="2026-07-16T09:27:00Z",
+        critical_threshold_ms=1000,
+    )
+    assert result["critical"] is True
+    assert result["new_critical_events"] == 1

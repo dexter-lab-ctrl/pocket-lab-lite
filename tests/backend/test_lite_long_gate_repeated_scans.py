@@ -60,3 +60,28 @@ def test_late_run_latency_trend_detects_material_degradation():
     assert trend["status"] == "failed"
     stable = tool.compare_latency_groups([10, 11, 12, 13, 14, 15], ratio_budget=2, absolute_budget=20)
     assert stable["status"] == "passed"
+
+
+def test_recent_completed_dedupe_is_retryable_without_counting_duplicate_work():
+    tool = load_tool()
+    payload = {
+        "deduplicated": True,
+        "recent_duplicate": True,
+        "already_completed": True,
+        "retry_after_seconds": 40,
+        "run_id": "prior-run",
+    }
+    assert tool.classify_deduplicated_submission(payload) == "recent_completed"
+    assert tool.recent_dedupe_retry_delay(payload) == 42.0
+
+
+def test_active_and_ambiguous_dedupe_still_fail_closed():
+    tool = load_tool()
+    assert tool.classify_deduplicated_submission({"deduplicated": True, "already_running": True, "run_id": "other"}) == "unrelated_active"
+    assert tool.classify_deduplicated_submission({"deduplicated": True, "run_id": "other"}) == "ambiguous"
+
+
+def test_resume_allows_only_checkpointed_recent_dedupe_retry():
+    tool = load_tool()
+    state = {"tracked_run_id": "", "submission_started": True, "recent_dedupe_retry_pending": True}
+    assert tool.resume_scan_decision(state, {}) == "submit"
