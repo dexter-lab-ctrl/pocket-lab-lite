@@ -410,6 +410,43 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return g3.read_jsonl(path)
 
 
+def bounded_parity_reconciliation(
+    ctx: g2.Context,
+    *,
+    timeout_seconds: float = 30.0,
+    interval_seconds: float = 2.0,
+    evidence_path: Path | None = None,
+) -> dict[str, Any]:
+    """Wait briefly for compatibility projections without weakening final parity.
+
+    SQLite quick-check remains fail-fast. Parity is retried only while SQLite is
+    healthy, and the final unmatched result is returned to the caller to fail.
+    """
+    deadline = time.monotonic() + max(0.0, timeout_seconds)
+    attempt = 0
+    last: dict[str, Any] = {}
+    while True:
+        attempt += 1
+        last = g2.run_sqlite_tools(ctx.repo_root, ctx.state_dir, ctx.db_path)
+        sample = {
+            "timestamp": g2.utc_now(),
+            "attempt": attempt,
+            "quick_check": last.get("quick_check"),
+            "parity_matched": last.get("parity_matched"),
+            "mismatch_fields": list(last.get("mismatch_fields") or []),
+            "sanitized": True,
+        }
+        if evidence_path is not None:
+            g2.append_jsonl(evidence_path, sample)
+        if last.get("quick_check") != "ok":
+            return {**last, "reconciliation_attempts": attempt, "reconciliation_status": "sqlite_unhealthy"}
+        if last.get("parity_matched") is True:
+            return {**last, "reconciliation_attempts": attempt, "reconciliation_status": "matched"}
+        if time.monotonic() >= deadline:
+            return {**last, "reconciliation_attempts": attempt, "reconciliation_status": "timeout"}
+        time.sleep(max(0.1, interval_seconds))
+
+
 def _wal_live(ctx: g2.Context, args: argparse.Namespace, state: dict[str, Any]) -> dict[str, Any]:
     checkpoints_path = ctx.gate_dir / "checkpoints.jsonl"
     readers_path = ctx.gate_dir / "readers.jsonl"
@@ -512,7 +549,11 @@ def run_wal_pressure(args: argparse.Namespace) -> int:
             contention_retry_budget=int(args.contention_retry_budget),
         )
         if ctx.db_path.exists():
-            health = g2.run_sqlite_tools(ctx.repo_root, ctx.state_dir, ctx.db_path)
+            health = bounded_parity_reconciliation(
+                ctx,
+                timeout_seconds=30.0,
+                evidence_path=ctx.gate_dir / "parity-reconciliation.jsonl",
+            )
             if health.get("quick_check") != "ok":
                 failures.append("final_sqlite_quick_check")
             if health.get("parity_matched") is not True:
@@ -759,6 +800,17 @@ def _low_storage_activation_path(ctx: g2.Context) -> Path:
     return ctx.state_dir / ".pocketlab-dev" / "gate-faults" / "low-storage-threshold.json"
 
 
+def low_storage_test_thresholds(
+    *,
+    free_bytes: int,
+    free_percent: float,
+    configured_floor_percent: float,
+) -> tuple[int, float]:
+    floor_bytes = min(16 * 1024 * 1024 * 1024, int(free_bytes) + 1024 * 1024)
+    floor_percent = min(99.9, max(float(configured_floor_percent), float(free_percent) + 0.5))
+    return floor_bytes, floor_percent
+
+
 def create_low_storage_activation(ctx: g2.Context, token: str, *, floor_bytes: int, floor_percent: float, lifetime_seconds: int = 300) -> Path:
     path = _low_storage_activation_path(ctx)
     payload = {
@@ -853,9 +905,16 @@ def _run_low_storage_live(ctx: g2.Context, args: argparse.Namespace, state: dict
         threshold = storage_metrics(ctx.state_dir)
         g2.append_jsonl(storage_path, {**threshold, "stage": "threshold"})
         # The gate threshold remains safely above real exhaustion and is scoped to
-        # this one loopback request by the activation token.
-        test_floor = min(16 * 1024 * 1024 * 1024, int(threshold["free_bytes"]) + 1024 * 1024)
-        create_low_storage_activation(ctx, token, floor_bytes=test_floor, floor_percent=floor_percent)
+        # this one loopback request by the activation token. On high-free-space
+        # devices the percentage threshold is what deterministically trips the guard.
+        test_floor, test_floor_percent = low_storage_test_thresholds(
+            free_bytes=int(threshold["free_bytes"]),
+            free_percent=float(threshold["free_percent"]),
+            configured_floor_percent=floor_percent,
+        )
+        if test_floor <= int(threshold["free_bytes"]) and test_floor_percent <= float(threshold["free_percent"]):
+            raise g2.GateFailure("A safe low-storage test threshold could not be constructed.", stage="live-threshold", retryable=False)
+        create_low_storage_activation(ctx, token, floor_bytes=test_floor, floor_percent=test_floor_percent)
         state["live_activation_created"] = True
         g2.atomic_write_json(ctx.gate_dir / "state.json", state)
         client = ctx.client(timeout=float(args.submission_timeout_seconds))
@@ -911,6 +970,8 @@ def _run_low_storage_live(ctx: g2.Context, args: argparse.Namespace, state: dict
         "free_percent_before": before["free_percent"],
         "configured_floor_bytes": floor_bytes,
         "configured_floor_percent": floor_percent,
+        "test_floor_bytes": test_floor,
+        "test_floor_percent": test_floor_percent,
         "reserve_bytes": reserve_bytes,
         "allocation_bytes": requested,
         "free_bytes_at_threshold": threshold["free_bytes"],
@@ -969,7 +1030,11 @@ def run_low_storage(args: argparse.Namespace) -> int:
             deterministic["post_recovery_scan_run_id"] = state.get("deterministic_post_recovery_scan_run_id")
         if "live" in scenarios:
             live = _run_low_storage_live(ctx, args, state)
-        health = g2.run_sqlite_tools(ctx.repo_root, ctx.state_dir, ctx.db_path)
+        health = bounded_parity_reconciliation(
+            ctx,
+            timeout_seconds=30.0,
+            evidence_path=ctx.gate_dir / "parity-reconciliation.jsonl",
+        )
         if health.get("quick_check") != "ok":
             failures.append("final_sqlite_quick_check")
         if health.get("parity_matched") is not True:
@@ -1039,13 +1104,87 @@ def android_reports(ctx: g2.Context, challenge_id: str) -> list[dict[str, Any]]:
     return reports
 
 
-def wait_android_reports(ctx: g2.Context, challenge_id: str, minimum: int, timeout: float) -> list[dict[str, Any]]:
+def wait_android_reports(
+    ctx: g2.Context,
+    challenge_id: str,
+    minimum: int,
+    timeout: float,
+    *,
+    label: str = "android",
+) -> list[dict[str, Any]]:
     deadline = time.monotonic() + max(1.0, timeout)
     reports = android_reports(ctx, challenge_id)
+    last_print = 0.0
+    last_count = -1
     while len(reports) < minimum and time.monotonic() < deadline:
+        now = time.monotonic()
+        if len(reports) != last_count or now - last_print >= 5.0:
+            remaining = max(0, int(deadline - now))
+            print(
+                f"INFO: Android diagnostics label={label} challenge_active={_android_activation_path(ctx).exists()} "
+                f"reports={len(reports)}/{minimum} remaining_seconds={remaining}",
+                flush=True,
+            )
+            last_count = len(reports)
+            last_print = now
         time.sleep(1)
         reports = android_reports(ctx, challenge_id)
+    print(
+        f"INFO: Android diagnostics label={label} reports={len(reports)}/{minimum} status="
+        f"{'ready' if len(reports) >= minimum else 'timeout'}",
+        flush=True,
+    )
     return reports
+
+
+def is_post_terminal_reconciliation(
+    report: dict[str, Any],
+    *,
+    run_id: str,
+    baseline_reconciliations: int,
+) -> bool:
+    return (
+        str(report.get("backend_run_id") or "") == run_id
+        and int(report.get("backend_reconciliation_count") or 0) > baseline_reconciliations
+    )
+
+
+def wait_post_terminal_frontend_report(
+    ctx: g2.Context,
+    challenge_id: str,
+    run_id: str,
+    baseline_reports: list[dict[str, Any]],
+    timeout: float,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    baseline_count = len(baseline_reports)
+    baseline_reconciliations = max(
+        (int(item.get("backend_reconciliation_count") or 0) for item in baseline_reports),
+        default=0,
+    )
+    deadline = time.monotonic() + max(1.0, timeout)
+    reports = list(baseline_reports)
+    while time.monotonic() < deadline:
+        reports = android_reports(ctx, challenge_id)
+        for report in reports[baseline_count:]:
+            if is_post_terminal_reconciliation(
+                report,
+                run_id=run_id,
+                baseline_reconciliations=baseline_reconciliations,
+            ):
+                print(
+                    f"INFO: Android post-terminal reconciliation observed run_id={run_id} "
+                    f"session={str(report.get('frontend_session_id') or '')[:24]}",
+                    flush=True,
+                )
+                return reports, report
+        remaining = max(0, int(deadline - time.monotonic()))
+        print(
+            f"INFO: Waiting for post-terminal frontend reconciliation run_id={run_id} "
+            f"reports={len(reports)} remaining_seconds={remaining}",
+            flush=True,
+        )
+        time.sleep(2)
+    return reports, None
 
 
 def operator_checkpoint(
@@ -1173,8 +1312,14 @@ def run_android_resume(args: argparse.Namespace) -> int:
                 minimum_before = len(android_reports(ctx, challenge))
                 stage, instruction = _android_instruction(scenario, cycle)
                 operator_checkpoint(operator_path, stage, instruction, auto_confirm=bool(args.auto_confirm_operator), timeout_seconds=int(args.operator_timeout_seconds))
-                reports = wait_android_reports(ctx, challenge, minimum_before + 1, float(args.frontend_report_timeout_seconds))
-                if not reports:
+                reports = wait_android_reports(
+                    ctx,
+                    challenge,
+                    minimum_before + 1,
+                    float(args.frontend_report_timeout_seconds),
+                    label=f"{scenario}:cycle-{cycle}",
+                )
+                if len(reports) < minimum_before + 1:
                     failures.append(f"frontend_diagnostics_missing:{scenario}")
                 for report in reports[minimum_before:]:
                     g2.append_jsonl(frontend_path, {**report, "scenario": scenario, "cycle": cycle})
@@ -1191,13 +1336,52 @@ def run_android_resume(args: argparse.Namespace) -> int:
                 g2.atomic_write_json(state_path, state)
             state["scenario_index"] = index + 1
             g2.atomic_write_json(state_path, state)
+        pre_terminal_reports = android_reports(ctx, challenge)
+        tracked_terminal = g3.wait_terminal(
+            ctx,
+            run_before,
+            timeout=max(1.0, float(args.run_timeout_seconds)),
+            progress_path=backend_path,
+            lifecycle_path=events_path,
+        )
+        if not tracked_terminal:
+            failures.append("backend_terminal_state_missing")
+            tracked_terminal = g2.lifecycle_snapshot(ctx.db_path, run_id=run_before).get("run") or {}
+        else:
+            print(
+                f"INFO: Android tracked backend run reached terminal status={tracked_terminal.get('status')} "
+                f"run_id={run_before}",
+                flush=True,
+            )
+        reports, post_terminal_report = wait_post_terminal_frontend_report(
+            ctx,
+            challenge,
+            run_before,
+            pre_terminal_reports,
+            float(args.frontend_report_timeout_seconds),
+        )
+        for report in reports[len(pre_terminal_reports):]:
+            g2.append_jsonl(frontend_path, {**report, "scenario": "post-terminal", "cycle": 0})
+        if post_terminal_report is None:
+            failures.append("frontend_post_terminal_reconciliation_missing")
+
+        health = bounded_parity_reconciliation(
+            ctx,
+            timeout_seconds=30.0,
+            evidence_path=ctx.gate_dir / "parity-reconciliation.jsonl",
+        )
+        if health.get("quick_check") != "ok":
+            failures.append("final_sqlite_quick_check")
+        if health.get("parity_matched") is not True:
+            failures.append("final_parity_mismatch")
+
         all_progress = _read_jsonl(backend_path)
         progress_regressions = g2.progress_regressions(all_progress)
         after_ids = {str(item.get("run_id") or "") for item in g3.runs_after(ctx.db_path, 0)}
         created = sorted(item for item in after_ids - baseline_ids if item)
         allowed_created = {run_before} if run_before not in baseline_ids else set()
         duplicate_submissions = len([item for item in created if item not in allowed_created])
-        tracked = g2.lifecycle_snapshot(ctx.db_path, run_id=run_before).get("run") or {}
+        tracked = tracked_terminal or g2.lifecycle_snapshot(ctx.db_path, run_id=run_before).get("run") or {}
         terminal_status = str(tracked.get("status") or "").lower()
         false_success = terminal_status in TERMINAL_SUCCESS and not bool(tracked.get("evidence_saved"))
         reports = android_reports(ctx, challenge)
@@ -1248,6 +1432,10 @@ def run_android_resume(args: argparse.Namespace) -> int:
             "listener_leak": frontend.get("listener_leak"),
             "backend_state_reconciled": frontend.get("backend_state_reconciled"),
             "terminal_state_truthful": not false_success,
+            "post_terminal_frontend_report_observed": post_terminal_report is not None,
+            "sqlite_quick_check": health.get("quick_check"),
+            "parity_matched": health.get("parity_matched"),
+            "parity_reconciliation_attempts": health.get("reconciliation_attempts"),
             "operator_checkpoints_completed": sum(1 for item in _read_jsonl(operator_path) if item.get("confirmed")),
             "initial_percent": initial_percent,
             "failed_stage": "evaluation" if failures else "",
