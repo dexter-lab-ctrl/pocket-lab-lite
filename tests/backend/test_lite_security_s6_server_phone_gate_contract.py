@@ -31,3 +31,15 @@ def test_s6_server_phone_gate_uses_real_schema_and_sql_literals():
     assert 'status IN (\'queued\',\'accepted\',\'running\',\'working\',\'in_progress\')' in script
     assert "return 1 2>/dev/null || exit 1" not in script
     assert "set -e" not in script
+
+
+def test_s6_server_phone_gate_parses_progress_fields_and_allows_heartbeat_margin():
+    script = Path(
+        "scripts/dev/check-lite-security-s6-backend-gate-server-phone.sh"
+    ).read_text(encoding="utf-8")
+
+    assert 'POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS:-35' in script
+    assert "IFS=$'\\t' read -r ACTIVE RUN_ID" in script
+    assert "IFS=$'\\t' read -r ACTIVE CURRENT_RUN" in script
+    assert '+ "\\t" + (p.get("run_id") or "")' in script
+    assert 'print("1" if p.get("active_scan") else "0", p.get("run_id") or "")' not in script
