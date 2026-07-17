@@ -128,6 +128,27 @@ export function reconcileLiteLifecycle({ cachedRunId = '', backendRunId = '', ca
   persist();
 }
 
+export function reconcileLiteSecurityProgress({ cachedProgress = {}, backendProgress = {}, writeActionsBlocked = false } = {}) {
+  const backendRunId = safeText(backendProgress?.run_id || '');
+  const backendRevision = safeText(
+    backendProgress?.revision
+      || backendProgress?.progress_revision
+      || backendProgress?.run_revision
+      || backendProgress?.sqlite_revision
+      || '',
+  );
+  if (!backendRunId || !backendRevision) return false;
+
+  reconcileLiteLifecycle({
+    cachedRunId: cachedProgress?.run_id || '',
+    backendRunId,
+    cachedRevision: cachedProgress?.revision || cachedProgress?.progress_revision || cachedProgress?.run_revision || '',
+    backendRevision,
+    writeActionsBlocked,
+  });
+  return true;
+}
+
 export function recordLiteDuplicateSubmission() {
   state.duplicate_submission_count = boundedCount(state.duplicate_submission_count) + 1;
   persist();

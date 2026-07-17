@@ -115,24 +115,58 @@ def test_high_free_space_threshold_uses_percentage_guard():
     assert floor_percent == pytest.approx(60.212)
 
 
-def test_post_terminal_reconciliation_requires_same_run_and_new_counter():
+def test_post_terminal_reconciliation_fail_closed_cases():
     tool = load_tool()
+    terminal_at = "2026-07-17T06:50:00Z"
+    base = {
+        "backend_run_id": "run-1",
+        "backend_revision": "rev-2",
+        "backend_reconciliation_count": 4,
+        "captured_at": "2026-07-17T06:50:01Z",
+    }
 
+    assert not tool.is_post_terminal_reconciliation(
+        {"captured_at": "2026-07-17T06:50:01Z"},
+        run_id="run-1",
+        baseline_reconciliations=3,
+        terminal_at=terminal_at,
+    )
+    assert not tool.is_post_terminal_reconciliation(
+        {**base, "backend_run_id": "run-2"},
+        run_id="run-1",
+        baseline_reconciliations=3,
+        terminal_at=terminal_at,
+    )
+    assert not tool.is_post_terminal_reconciliation(
+        {**base, "captured_at": "2026-07-17T06:49:59Z"},
+        run_id="run-1",
+        baseline_reconciliations=3,
+        terminal_at=terminal_at,
+    )
     assert tool.is_post_terminal_reconciliation(
-        {"backend_run_id": "run-1", "backend_reconciliation_count": 4},
+        base,
         run_id="run-1",
         baseline_reconciliations=3,
+        terminal_at=terminal_at,
     )
-    assert not tool.is_post_terminal_reconciliation(
-        {"backend_run_id": "run-2", "backend_reconciliation_count": 4},
-        run_id="run-1",
-        baseline_reconciliations=3,
-    )
-    assert not tool.is_post_terminal_reconciliation(
-        {"backend_run_id": "run-1", "backend_reconciliation_count": 3},
-        run_id="run-1",
-        baseline_reconciliations=3,
-    )
+
+
+def test_process_eviction_requires_new_session_and_visibility_only_does_not_reconcile():
+    tool = load_tool()
+    reports = [
+        {"frontend_session_id": "session-a", "visibility_state": "hidden", "backend_reconciliation_count": 0},
+        {"frontend_session_id": "session-b", "visibility_state": "visible", "backend_reconciliation_count": 1},
+    ]
+    result = tool.analyze_frontend_reports(reports)
+    assert result["process_recreated"] is True
+    assert result["backend_state_reconciled"] is True
+
+    visibility_only = tool.analyze_frontend_reports([
+        {"frontend_session_id": "session-a", "visibility_state": "hidden"},
+        {"frontend_session_id": "session-a", "visibility_state": "visible"},
+    ])
+    assert visibility_only["process_recreated"] is False
+    assert visibility_only["backend_state_reconciled"] is False
 
 
 def test_group4_source_preserves_fail_closed_final_checks():
