@@ -5217,7 +5217,8 @@ def test_lite_security_tab_uses_lazy_progressive_details_foundation():
     assert "LiteProgressiveDetails" in finding_details
     assert "SECURITY_PROGRESSIVE_DETAILS_MILESTONE_2" in finding_details
     assert "SECURITY_FINDING_DETAILS_ARE_LAZY" in finding_details
-    assert "LiteHistorySection" in history
+    assert "useInfiniteQuery" in history
+    assert "Load older checks" in history
     assert "SECURITY_HISTORY_ROWS_MOUNT_ONLY_WHEN_OPENED" in history
 
 
@@ -5231,7 +5232,7 @@ def test_lite_security_details_keep_history_lazy_and_technical_collapsed():
     assert "history={{" in finding_details
     assert "Finding history" in finding_details
     assert "technicalDetails={technicalRows" in finding_details
-    assert "Security run history" in security_history
+    assert 'data-security-history-cursor-v2="true"' in security_history
     assert "const [isOpen, setIsOpen] = useState(false)" in history
     assert "const shouldMountHistory = Boolean(isOpen && enabled)" in history
     assert "{shouldMountHistory ? (" in history
@@ -5628,7 +5629,7 @@ def test_lite_security_s3_uses_focused_invalidations():
     assert "fleet" not in security_slice
     assert "recovery" not in security_slice
     assert "liteQueryKeys.security()" in security
-    assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
+    assert "liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : '')" in security
     assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
     assert "window.setTimeout(() => refresh()" not in security
     assert "[700, 1800, 4000]" not in security
@@ -5893,7 +5894,7 @@ def test_lite_security_phase1_preserves_security_boundaries():
     assert "snapshotSelect: selectSecurityScreenView" in security
     assert "pollingMode: 'slow'" in security
     assert "liteQueryKeys.security()" in security
-    assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
+    assert "liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : '')" in security
     assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
     assert "fetch(" not in security
     assert "child_process" not in security
@@ -7160,7 +7161,7 @@ def test_lite_security_profile_focused_invalidation_and_polling_contract():
     mutation = Path("src/hooks/useLiteMutation.js").read_text()
     security = Path("src/lite/LiteSecurity.jsx").read_text()
 
-    assert "securityProfile: (profile = 'quick')" in query_client
+    assert "securityProfile: (profile = 'quick', appId = '')" in query_client
     assert "securityHistory: (limit = 20) => ['lite', 'security', 'history', Number(limit || 20)]" in query_client
     assert "LITE_SECURITY_PROFILE_POLLING_POLICY" in view_models
     assert "selectSecurityPollingPolicyView" in view_models
@@ -7183,7 +7184,7 @@ def test_lite_security_profile_focused_invalidation_and_polling_contract():
     assert "invalidateSecurityQuery('quick')" in security
     assert "invalidateSecurityQuery('full')" in security
     assert "invalidateSecurityQuery('app')" in security
-    assert "liteQueryKeys.securityProfile(normalizedProfile)" in security
+    assert "liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : '')" in security
     assert "window.setInterval" not in security
 
 
@@ -7308,7 +7309,7 @@ def test_lite_security_patch_e_cross_tab_scan_completion_sync_contract():
     assert "subscribeLiteSecurityScanCompleted" in snapshots
     assert "window.dispatchEvent" in snapshots
     assert "subscribeLiteSecurityScanCompleted" in security
-    assert "liteQueryKeys.securityProfile(profile)" in security
+    assert "liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : '')" in security
     assert "liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20)" in security
     assert "queryClient.invalidateQueries" in security
 

@@ -53,18 +53,18 @@ def test_lite_security_f3_frontend_uses_summary_for_initial_render_and_full_for_
     assert "security: conditionalGet('/api/lite/security/summary')" in api
     assert "securitySummary: conditionalGet('/api/lite/security/summary')" in api
     assert "securityDetails: safeGet('/api/lite/security')" in api
-    assert "securityProfile: (profile = 'quick')" in api
-    assert "securityHistory: (limit = 20)" in api
+    assert "securityProfile: (profile = 'quick', appId = '')" in api
+    assert "securityHistory: (limit = 20, cursor = '')" in api
     assert "securityDetails: () => ['lite', 'security', 'details']" in query
     assert "securityDetails: '/api/lite/security'" in query
     assert "liteQueryPaths.securityDetails" in status
     assert "useLiteResource(liteApi.securitySummary || liteApi.security" in screen
     assert "securityProfileLoader" in screen
-    assert "liteApi.securityProfile(scanProfile)" in screen
+    assert "liteApi.securityProfile(scanProfile, securityProfileAppId)" in screen
     assert "const shouldLoadSecurityDetails = securityManageOpen || Boolean(activeSecurityDetails);" in screen
     assert "enabled: shouldLoadSecurityDetails" in screen
     assert "const data = splitSecurityData || securitySummaryData;" in screen
-    assert "liteQueryKeys.securityProfile(profile)" in screen
+    assert "liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : '')" in screen
 
 
 def test_lite_security_f3_preserves_backend_owned_security_boundaries():
@@ -76,8 +76,8 @@ def test_lite_security_f3_preserves_backend_owned_security_boundaries():
     assert "lynis" not in api.lower()
     assert "trivy" not in api.lower()
     assert "securityDetails: safeGet('/api/lite/security')" in api
-    assert "securityProfile: (profile = 'quick')" in api
-    assert "securityHistory: (limit = 20)" in api
+    assert "securityProfile: (profile = 'quick', appId = '')" in api
+    assert "securityHistory: (limit = 20, cursor = '')" in api
 
 SECURITY_PRELOAD = ROOT / "src/lite/security/securityPreload.js"
 LITE_APP = ROOT / "src/lite/LiteApp.jsx"
@@ -101,7 +101,7 @@ def test_lite_security_group1_f4_f5_summary_stale_while_revalidate_contract():
 
     assert "useLiteResource(liteApi.securitySummary || liteApi.security" in screen
     assert "securityProfileLoader" in screen
-    assert "liteApi.securityProfile(scanProfile)" in screen
+    assert "liteApi.securityProfile(scanProfile, securityProfileAppId)" in screen
     assert "enabled: shouldLoadSecurityDetails" in screen
     assert "placeholderData: (previousData) => previousData" in screen
     assert "staleTime: (query) => securitySummaryStaleTime(query?.state?.data)" in screen

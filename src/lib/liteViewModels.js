@@ -5,7 +5,7 @@ const MAX_TECHNICAL_ITEMS = 8;
 
 export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-s3-v1';
 export const LITE_SECURITY_PROFILE_IDS = ['quick', 'full', 'app'];
-export const LITE_SECURITY_PROFILE_SNAPSHOT_VERSION = 'lite-security-profile-snapshot-v1';
+export const LITE_SECURITY_PROFILE_SNAPSHOT_VERSION = 'security-profile-snapshot-v2';
 export const LITE_SECURITY_HISTORY_SNAPSHOT_VERSION = 'lite-security-history-snapshot-v1';
 export const LITE_SECURITY_PROFILE_FRESHNESS_VERSION = 'lite-security-profile-freshness-v1';
 export const LITE_SECURITY_PROFILE_RETENTION_POLICY = {
@@ -113,7 +113,7 @@ function newerSecurityRun(current = null, candidate = null) {
   return securityRunTimestamp(candidate) >= securityRunTimestamp(current) ? candidate : current;
 }
 
-function securityFreshnessLabel(value = '', { empty = 'No saved check yet', prefix = 'Saved' } = {}) {
+export function securityFreshnessLabel(value = '', { empty = 'No saved check yet', prefix = 'Saved' } = {}) {
   const timestamp = value ? Date.parse(value) : 0;
   if (!Number.isFinite(timestamp) || timestamp <= 0) return empty;
   const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60000);
@@ -1128,17 +1128,23 @@ export function selectSecurityTimelineView(payload = {}) {
 }
 
 export function selectSecurityFindingDeltaView(payload = {}) {
-  const delta = isObject(payload?.finding_delta) ? payload.finding_delta : EMPTY_OBJECT;
+  const delta = isObject(payload?.finding_delta) ? payload.finding_delta : isObject(payload?.change_summary) ? payload.change_summary : EMPTY_OBJECT;
   const normalizeDeltaList = (items) => (Array.isArray(items) ? items : EMPTY_ARRAY).slice(0, 8).map(normalizeSecurityFinding).filter(Boolean);
-  return memoizeSecuritySelector(payload, 'finding-delta', securityCacheKey([securityPayloadRevision(payload), delta.updated_at, delta.new_count, delta.resolved_count, delta.unchanged_count, delta.still_present_count]), () => ({
-    new_count: safeNumber(delta.new_count, 0),
-    resolved_count: safeNumber(delta.resolved_count, 0),
-    unchanged_count: safeNumber(delta.unchanged_count, 0),
-    still_present_count: safeNumber(delta.still_present_count ?? delta.unchanged_count, 0),
+  return memoizeSecuritySelector(payload, 'finding-delta', securityCacheKey([securityPayloadRevision(payload), delta.updated_at, delta.new_count, delta.resolved_count, delta.ongoing_count, delta.unchanged_count, delta.comparison_run_id]), () => ({
+    comparison_available: safeBool(delta.comparison_available),
+    comparison_run_id: safeString(delta.comparison_run_id),
+    comparison_completed_at: safeIso(delta.comparison_completed_at),
+    comparison_reason: safeString(delta.comparison_reason),
+    new_count: safeNumber(delta.new_count ?? delta.new, 0),
+    resolved_count: safeNumber(delta.resolved_count ?? delta.resolved, 0),
+    ongoing_count: safeNumber(delta.ongoing_count ?? delta.ongoing ?? delta.unchanged_count, 0),
+    unchanged_count: safeNumber(delta.unchanged_count ?? delta.ongoing_count, 0),
+    still_present_count: safeNumber(delta.still_present_count ?? delta.ongoing_count ?? delta.unchanged_count, 0),
     new: normalizeDeltaList(delta.new),
     resolved: normalizeDeltaList(delta.resolved),
-    unchanged: normalizeDeltaList(delta.unchanged || delta.still_present),
-    still_present: normalizeDeltaList(delta.still_present || delta.unchanged),
+    ongoing: normalizeDeltaList(delta.ongoing || delta.unchanged),
+    unchanged: normalizeDeltaList(delta.unchanged || delta.ongoing || delta.still_present),
+    still_present: normalizeDeltaList(delta.still_present || delta.ongoing || delta.unchanged),
     summary: safeString(delta.summary || ''),
     updated_at: safeIso(delta.updated_at || delta.checked_at),
   }));
@@ -1317,7 +1323,12 @@ export function selectSecurityProfileHistoryView(payload = {}, profile = 'quick'
 
 export function selectSecurityProfileView(payload = {}, profile = 'quick') {
   const profileId = normalizeSecurityProfileId(profile);
-  if (payload?.view_model === 'security-profile-s3-v1' && normalizeSecurityProfileId(payload?.profile || payload?.scan_profile) === profileId) return payload;
+  if (['security-profile-s3-v1', 'security-profile-snapshot-v2'].includes(payload?.view_model) && normalizeSecurityProfileId(payload?.profile || payload?.scan_profile) === profileId) return payload;
+  const embeddedProfile = payload?.security_profiles?.[profileId];
+  if (['security-profile-s3-v1', 'security-profile-snapshot-v2'].includes(embeddedProfile?.view_model)
+      && normalizeSecurityProfileId(embeddedProfile?.profile || embeddedProfile?.scan_profile) === profileId) {
+    return embeddedProfile;
+  }
   return memoizeSecuritySelector(payload, `profile-view-${profileId}`, securityProfileRevision(payload, profileId), () => {
   const meta = snapshotMeta(payload);
   const latestByProfile = selectSecurityProfileLatestView(payload);
@@ -1347,7 +1358,7 @@ export function selectSecurityProfileView(payload = {}, profile = 'quick') {
   const toolResults = selectSecurityToolResultsView(profilePayload.tool_results || latestRun?.tool_results);
 
   return {
-    view_model: 'security-profile-s3-v1',
+    view_model: payload?.view_model === 'security-profile-snapshot-v2' ? 'security-profile-snapshot-v2' : 'security-profile-s3-v1',
     profile: profileId,
     scan_profile: profileId,
     has_run: Boolean(latestRun?.run_id || latestRun?.status || latestRun?.completed_at),
@@ -1408,83 +1419,54 @@ export function selectSecurityEvidenceProfileView(payload = {}, profile = 'quick
 export function selectSecurityProfileSnapshotView(payload = {}, profile = 'quick') {
   const view = selectSecurityProfileView(payload, profile);
   const freshness = view.freshness || selectSecurityProfileFreshnessView(view.latest_run, profile);
+  const delta = selectSecurityFindingDeltaView(view);
+  const toolStatus = Array.isArray(view.tool_status)
+    ? view.tool_status.slice(0, 12).map((item) => copySafeKeys(item, ['tool', 'status', 'duration_ms', 'timed_out']))
+    : Object.entries(view.tool_results || {}).slice(0, 12).map(([tool, result]) => ({
+        tool: safeString(tool), status: normalizeSecurityStatus(result?.status || ''),
+        duration_ms: safeNumber(result?.duration_ms, 0), timed_out: safeBool(result?.timed_out),
+      }));
+  const counts = view.finding_counts || {
+    critical: safeNumber(view.critical_count, 0), high: safeNumber(view.high_count, 0),
+    medium: safeNumber(view.medium_count, 0), low: safeNumber(view.low_count, 0), info: safeNumber(view.info_count, 0),
+  };
+  const completedAt = safeIso(view.completed_at || view.latest_run?.completed_at);
+  const latestRunId = safeString(view.latest_run_id || view.run_id || view.latest_run?.run_id);
+  const hasRun = Boolean(view.has_run || latestRunId || completedAt);
+  const rawDurationMs = view.duration_ms ?? view.latest_run?.duration_ms;
+  const rawScore = view.score ?? view.latest_run?.score;
   return {
     view_model: LITE_SECURITY_PROFILE_SNAPSHOT_VERSION,
-    profile: view.profile,
-    scan_profile: view.scan_profile,
-    has_run: Boolean(view.has_run),
-    run_id: safeString(view.run_id),
-    status: normalizeSecurityStatus(view.status),
-    score: Math.max(0, Math.min(100, safeNumber(view.score, 0))),
-    summary: safeString(view.summary),
-    requested_at: safeIso(view.requested_at),
-    started_at: safeIso(view.started_at),
-    completed_at: safeIso(view.completed_at),
-    updated_at: safeIso(view.updated_at || view.completed_at || view.started_at),
-    freshness,
+    profile: view.profile, app_id: safeString(view.app_id), app_label: safeString(view.app_label),
+    label: safeString(view.label || (view.profile === 'full' ? 'Full Local Check' : view.profile === 'app' ? `${view.app_label || 'App'} App Check` : 'Quick Scan')),
+    latest_run_id: latestRunId,
+    status: hasRun ? normalizeSecurityStatus(view.status) : 'not_checked',
+    score: hasRun && rawScore !== null && rawScore !== undefined ? Math.max(0, Math.min(100, safeNumber(rawScore, 0))) : null,
+    summary: safeString(view.summary || (hasRun ? 'Security result available.' : 'Not checked')), completed_at: completedAt,
+    saved_at: safeIso(freshness.saved_at || freshness.checked_at || completedAt),
+    evidence_saved: hasRun && safeBool(view.evidence_saved || view.evidence_summary?.evidence_saved),
+    evidence_saved_at: safeIso(view.evidence_saved_at),
+    duration_ms: rawDurationMs !== null && rawDurationMs !== undefined ? Math.max(0, safeNumber(rawDurationMs, 0)) : null,
+    finding_counts: copySafeKeys(counts, ['critical', 'high', 'medium', 'low', 'info']),
     snapshot_budget: {
       max_bytes: LITE_SECURITY_PROFILE_RETENTION_POLICY.maxProfileSnapshotBytes,
-      evidence_limit: LITE_SECURITY_PROFILE_RETENTION_POLICY.profileEvidenceLimit,
-      history_limit: LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit,
+      evidence_limit: 0,
+      history_limit: 0,
     },
-    app_id: safeString(view.app_id),
-    app_label: safeString(view.app_label),
-    tools: safeList(view.tools).slice(0, 6),
-    counts: {
-      critical: safeNumber(view.critical_count, 0),
-      high: safeNumber(view.high_count, 0),
-      medium: safeNumber(view.medium_count, 0),
-      low: safeNumber(view.low_count, 0),
-      info: safeNumber(view.info_count, 0),
+    change_summary: {
+      new: safeNumber(view.change_summary?.new ?? delta.new_count, 0),
+      resolved: safeNumber(view.change_summary?.resolved ?? delta.resolved_count, 0),
+      ongoing: safeNumber(view.change_summary?.ongoing ?? delta.ongoing_count, 0),
+      comparison_available: safeBool(view.change_summary?.comparison_available ?? delta.comparison_available),
+      comparison_run_id: safeString(view.change_summary?.comparison_run_id || delta.comparison_run_id),
+      comparison_completed_at: safeIso(view.change_summary?.comparison_completed_at || delta.comparison_completed_at),
+      comparison_reason: safeString(view.change_summary?.comparison_reason || delta.comparison_reason),
+      summary: safeString(view.change_summary?.summary || delta.summary),
     },
-    items_to_review: safeNumber(view.items_to_review, 0),
-    findings_count: safeNumber(view.findings_count, 0),
-    coverage_summary: view.coverage_summary,
-    tool_results: view.tool_results,
-    execution_timeline: Array.isArray(view.execution_timeline) ? view.execution_timeline.slice(0, 12) : [],
-    evidence_summary: view.evidence_summary,
-    evidence_refs: safeList(view.evidence_refs).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileEvidenceLimit),
-    finding_delta: view.finding_delta,
-    latest_run: view.latest_run ? {
-      run_id: safeString(view.latest_run.run_id),
-      scan_profile: view.scan_profile,
-      status: normalizeSecurityStatus(view.latest_run.status),
-      summary: safeString(view.latest_run.summary),
-      requested_at: safeIso(view.latest_run.requested_at),
-      started_at: safeIso(view.latest_run.started_at),
-      completed_at: safeIso(view.latest_run.completed_at),
-      updated_at: safeIso(view.latest_run.updated_at || view.latest_run.completed_at),
-      score: Math.max(0, Math.min(100, safeNumber(view.latest_run.score, view.score))),
-      critical_count: safeNumber(view.latest_run.critical_count, view.critical_count),
-      high_count: safeNumber(view.latest_run.high_count, view.high_count),
-      medium_count: safeNumber(view.latest_run.medium_count, view.medium_count),
-      low_count: safeNumber(view.latest_run.low_count, view.low_count),
-      info_count: safeNumber(view.latest_run.info_count, view.info_count),
-      tools: safeList(view.latest_run.tools || view.tools).slice(0, 6),
-      coverage_summary: view.latest_run.coverage_summary || view.coverage_summary,
-      tool_results: view.latest_run.tool_results || view.tool_results,
-      execution_timeline: Array.isArray(view.latest_run.execution_timeline) ? view.latest_run.execution_timeline.slice(0, 12) : view.execution_timeline,
-      evidence_refs: safeList(view.latest_run.evidence_refs || view.evidence_refs).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.profileEvidenceLimit),
-      app_id: safeString(view.latest_run.app_id || view.app_id),
-      app_label: safeString(view.latest_run.app_label || view.app_label),
-    } : null,
-    history: Array.isArray(view.history) ? view.history.slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit).map((run) => ({
-      run_id: safeString(run.run_id),
-      scan_profile: normalizeSecurityProfileId(run.scan_profile || view.profile),
-      status: normalizeSecurityStatus(run.status),
-      summary: safeString(run.summary),
-      started_at: safeIso(run.started_at),
-      completed_at: safeIso(run.completed_at),
-      updated_at: safeIso(run.updated_at || run.completed_at),
-      score: Math.max(0, Math.min(100, safeNumber(run.score, 0))),
-      critical_count: safeNumber(run.critical_count, 0),
-      high_count: safeNumber(run.high_count, 0),
-      medium_count: safeNumber(run.medium_count, 0),
-      low_count: safeNumber(run.low_count, 0),
-      info_count: safeNumber(run.info_count, 0),
-    })) : [],
-    saved_snapshot: true,
-    sanitized: true,
+    tool_status: toolStatus,
+    timeout: isObject(view.timeout) ? copySafeKeys(view.timeout, ['reason', 'summary', 'sanitized']) : null,
+    revision: safeString(view.revision || view.latest_run?.revision || ''), freshness,
+    saved_snapshot: true, sanitized: true,
   };
 }
 
@@ -1494,6 +1476,21 @@ export function selectSecurityProfileSnapshotViews(payload = {}) {
     return profiles;
   }, {});
 }
+
+export function mergeSecurityHistoryPages(pages = []) {
+  const seen = new Set();
+  const rows = [];
+  (Array.isArray(pages) ? pages : []).forEach((page) => {
+    (Array.isArray(page?.history) ? page.history : []).forEach((entry) => {
+      const runId = safeString(entry?.run_id);
+      if (!runId || seen.has(runId)) return;
+      seen.add(runId);
+      rows.push(entry);
+    });
+  });
+  return rows;
+}
+
 
 export function selectSecurityHistorySnapshotView(payload = {}) {
   const history = selectSecurityHistorySummaryView(payload).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit).map((run) => ({
@@ -1558,6 +1555,25 @@ export function selectSecurityScreenSnapshotView(payload = {}) {
     saved_snapshot: true,
     sanitized: true,
   };
+}
+
+export function selectSecurityStatePrecedence(payload = {}, profile = 'quick', appId = '') {
+  const profileId = normalizeSecurityProfileId(profile);
+  const progress = payload?.scan_progress || payload?.progress || payload?.progress_summary || null;
+  const progressProfile = normalizeSecurityProfileId(progress?.profile || progress?.scan_profile || payload?.scan_profile || 'quick');
+  const progressAppId = safeString(progress?.app_id || '');
+  const active = isObject(progress) && (safeBool(progress.active_scan || progress.running || progress.operation_running || progress.in_progress) || SECURITY_LIVE_STATUSES.has(normalizeSecurityStatus(progress.status || progress.state || progress.phase)));
+  if (active) return { precedence: 1, source: 'active_backend_scan', active: true, profile: progressProfile, app_id: progressAppId, state: progress, matches_selected_profile: progressProfile === profileId && (profileId !== 'app' || !appId || progressAppId === appId) };
+  const terminal = normalizeSecurityRun(payload?.last_run || payload?.current_run || payload?.latest_run || null);
+  const terminalStatus = normalizeSecurityStatus(terminal?.status || '');
+  if (terminal && TERMINAL_ACTION_STATUSES.has(terminalStatus)) return { precedence: 2, source: 'backend_terminal_result', active: false, profile: normalizeSecurityProfileId(terminal.scan_profile || (terminal.app_id ? 'app' : 'quick')), app_id: safeString(terminal.app_id), state: terminal };
+  const profileState = payload?.security_profiles?.[profileId] || selectSecurityProfileView(payload, profileId);
+  if (profileState?.has_run || profileState?.latest_run_id || profileState?.run_id) {
+    const meta = snapshotMeta(profileState) || snapshotMeta(payload);
+    const offline = Boolean(meta?.source === 'cache' || meta?.cached || meta?.stale);
+    return { precedence: offline ? 4 : 3, source: offline ? 'offline_dexie_snapshot' : 'profile_saved_backend_snapshot', active: false, profile: profileId, app_id: safeString(profileState.app_id), state: profileState, saved: true, stale: Boolean(meta?.stale || meta?.expired || meta?.isExpired), expired: Boolean(meta?.expired || meta?.isExpired) };
+  }
+  return { precedence: 5, source: 'empty', active: false, profile: profileId, app_id: safeString(appId), state: null };
 }
 
 export function selectSecuritySummaryView(payload = {}) {

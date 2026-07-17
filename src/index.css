@@ -20110,3 +20110,64 @@ textarea {
     transition: none;
   }
 }
+
+/* Security S7 — compact saved-state and cursor history UX */
+.theme-pocket-lite-daylight .lite-security-s7-saved-note { margin: 0; font-size: 0.82rem; opacity: 0.78; }
+.theme-pocket-lite-daylight .lite-security-s7-history-list { display: grid; gap: 0.65rem; margin: 0; padding: 0; list-style: none; }
+.theme-pocket-lite-daylight .lite-security-s7-history-row { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; padding: 0.85rem; border: 1px solid var(--lite-border); border-radius: 1rem; background: var(--lite-surface-soft); }
+.theme-pocket-lite-daylight .lite-security-s7-history-row > div { display: grid; gap: 0.2rem; min-width: 0; }
+.theme-pocket-lite-daylight .lite-security-s7-history-row span,
+.theme-pocket-lite-daylight .lite-security-s7-history-row small,
+.theme-pocket-lite-daylight .lite-security-s7-history-row time { font-size: 0.78rem; opacity: 0.76; }
+.theme-pocket-lite-daylight .lite-security-s7-load-older { width: 100%; min-height: 2.75rem; margin-top: 0.75rem; border-radius: 0.9rem; border: 1px solid var(--lite-border); background: var(--lite-surface); font-weight: 700; }
+@media (max-width: 640px) { .theme-pocket-lite-daylight .lite-security-s7-history-row { flex-direction: column; } }
+
+/* Phase S7: compact saved Security profiles stay on first paint; details remain lazy. */
+.lite-security-s7-profile-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.lite-security-s7-profile-card {
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--lite-border, rgba(71, 85, 105, 0.18));
+  border-radius: 1rem;
+  background: var(--lite-card, rgba(255, 255, 255, 0.82));
+  color: inherit;
+  text-align: left;
+  display: grid;
+  gap: 0.32rem;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.lite-security-s7-profile-card:hover,
+.lite-security-s7-profile-card:focus-visible,
+.lite-security-s7-profile-card.is-selected {
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.lite-security-s7-profile-card.is-active {
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.lite-security-s7-profile-card:hover { transform: translateY(-1px); }
+.lite-security-s7-profile-card strong { font-size: 0.98rem; }
+.lite-security-s7-profile-card small { color: var(--lite-muted, #64748b); }
+.lite-security-s7-profile-label { color: var(--lite-muted, #64748b); font-size: 0.74rem; font-weight: 750; letter-spacing: 0.02em; }
+.lite-security-s7-profile-card-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.2rem; }
+.lite-security-s7-profile-card-meta em { font-style: normal; font-size: 0.7rem; padding: 0.18rem 0.42rem; border-radius: 999px; background: rgba(148, 163, 184, 0.13); }
+
+@media (max-width: 760px) {
+  .lite-security-s7-profile-cards { grid-template-columns: 1fr; }
+  .lite-security-s7-profile-card { padding: 0.82rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-security-s7-profile-card { transition: none; }
+  .lite-security-s7-profile-card:hover { transform: none; }
+}

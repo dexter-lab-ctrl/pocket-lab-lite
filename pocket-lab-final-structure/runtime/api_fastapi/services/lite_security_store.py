@@ -1948,6 +1948,70 @@ class SecuritySQLiteRepository:
             ).fetchone()
         return policy.redact_value(dict(row)) if row else None
 
+    def get_previous_comparable_run(
+        self,
+        current_run_id: str,
+        *,
+        profile: str,
+        app_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Return the previous complete run for the exact profile/app scope."""
+        normalized_run = _normalize_run_id(current_run_id)
+        normalized_profile = _normalize_profile(profile)
+        normalized_app = _normalize_app(normalized_profile, app_id)
+        with read_connection() as conn:
+            current = conn.execute(
+                "SELECT completed_at_epoch_ms, run_id FROM security_scan_runs WHERE run_id = ?",
+                (normalized_run,),
+            ).fetchone()
+            if not current or current["completed_at_epoch_ms"] is None:
+                return None
+            row = conn.execute(
+                """
+                SELECT * FROM security_scan_runs
+                WHERE profile = ? AND app_id = ? AND run_id != ?
+                  AND status IN ('succeeded', 'degraded')
+                  AND partial_results = 0
+                  AND completed_at_epoch_ms IS NOT NULL
+                  AND (completed_at_epoch_ms < ?
+                       OR (completed_at_epoch_ms = ? AND run_id < ?))
+                ORDER BY completed_at_epoch_ms DESC, run_id DESC
+                LIMIT 1
+                """,
+                (
+                    normalized_profile, normalized_app, normalized_run,
+                    int(current["completed_at_epoch_ms"]),
+                    int(current["completed_at_epoch_ms"]),
+                    normalized_run,
+                ),
+            ).fetchone()
+        return _row(row)
+
+    def list_tool_runs_for_runs(
+        self, run_ids: Sequence[str], *, per_run_limit: int = 12
+    ) -> dict[str, list[dict[str, Any]]]:
+        """Read bounded tool summaries for a page of history in one query."""
+        normalized = [_normalize_run_id(value) for value in list(run_ids)[:MAX_HISTORY_LIMIT] if value]
+        if not normalized:
+            return {}
+        placeholders = ",".join("?" for _ in normalized)
+        bounded = max(1, min(int(per_run_limit), 20))
+        with read_connection() as conn:
+            rows = conn.execute(
+                f"SELECT * FROM security_scan_tool_runs WHERE run_id IN ({placeholders}) "
+                "ORDER BY run_id, tool_run_id",
+                tuple(normalized),
+            ).fetchall()
+        result: dict[str, list[dict[str, Any]]] = {}
+        for row in rows:
+            run_id = str(row["run_id"])
+            if len(result.get(run_id, [])) >= bounded:
+                continue
+            item = dict(row)
+            item["metadata"] = _json_value(item.pop("metadata_json", None), {})
+            result.setdefault(run_id, []).append(policy.redact_value(item))
+        return result
+
     def list_runs(self, *, limit: int = DEFAULT_HISTORY_LIMIT, profile: str | None = None, app_id: str | None = None) -> list[dict[str, Any]]:
         bounded = max(1, min(int(limit), MAX_HISTORY_LIMIT))
         with read_connection() as conn:

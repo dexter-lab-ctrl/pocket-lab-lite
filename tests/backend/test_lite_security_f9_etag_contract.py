@@ -91,7 +91,7 @@ def test_security_f9_compact_endpoints_return_etag_and_304(tmp_path):
         "/api/lite/security/summary",
         "/api/lite/security/profiles/quick",
         "/api/lite/security/profiles/full",
-        "/api/lite/security/profiles/app",
+        "/api/lite/security/profiles/app?app_id=photoprism",
         "/api/lite/security/history?limit=20",
         "/api/lite/security/progress",
         "/api/lite/security/details/security-f9-run",
@@ -158,13 +158,14 @@ def test_security_f9_frontend_handles_304_without_clearing_previous_data():
 
     assert "useQueryClient" in hook
     assert "queryClient.getQueryData(resolvedQueryKey)" in hook
-    assert "if (!isLiteNotModified(data)) return data;" in hook
+    assert "if (!isLiteNotModified(data)) {" in hook
     assert "writeLiteSnapshot(path" in hook
     assert "isLiteNotModified(data)" in hook
 
     assert "securityFreshness: () => ['lite', 'security', 'freshness']" in query
-    assert "securityProfile: (profile = 'quick')" in query
+    assert "securityProfile: (profile = 'quick', appId = '')" in query
     assert "securityHistory: (limit = 20)" in query
+    assert "securityHistoryPage: (limit = 20, cursor = '')" in query
     assert "securityProgress: '/api/lite/security/progress'" in query
     assert "securityFreshness" in status
 

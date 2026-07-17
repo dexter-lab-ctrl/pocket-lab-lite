@@ -1062,17 +1062,23 @@ def get_lite_security_freshness(request: Request) -> Response:
 
 
 @router.get("/security/profiles/{profile}")
-async def get_lite_security_profile(profile: str, request: Request) -> Response:
+async def get_lite_security_profile(
+    profile: str, request: Request, app_id: str | None = None
+) -> Response:
     deps.require_auth(request)
+    normalized_profile = str(profile or "").strip().lower()
+    if normalized_profile == "app" and not str(app_id or "").strip():
+        raise HTTPException(status_code=400, detail="app_id is required for App Check snapshots.")
     try:
         payload = await lite_security.run_api_maintenance(
             lite_security.split_profile_state,
             profile,
+            app_id,
             operation_name="security.profile.reconstruction",
         )
         return _security_compact_response(request, payload)
     except ValueError:
-        raise HTTPException(status_code=404, detail="Security profile not found.")
+        raise HTTPException(status_code=404, detail="Security profile or app not found.")
     except WorkloadAdmissionError as exc:
         await _raise_admission_http_error(exc, "security_profile_read")
 

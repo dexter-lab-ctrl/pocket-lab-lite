@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 
+const SecurityHistoryLazy = React.lazy(() => import('./SecurityHistoryLazy.jsx'));
+
 const SECURITY_PHASE2_PROGRESSIVE_DETAILS = true;
 const SECURITY_PHASE2_SUMMARY_FIRST = true;
 const SECURITY_PHASE2_NO_RAW_SCANNER_OUTPUT = 'Security progressive details show sanitized summaries only';
@@ -136,6 +138,7 @@ function buildDetails({ type, model = {} }) {
     activeProfileFreshness = null,
     backendReachable = true,
     securityHistory = [],
+    securityHistoryPage = null,
     latestHistory = null,
     previousHistory = null,
     scoreTrendView = null,
@@ -477,7 +480,19 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
         </button>
       </div>
       <animated.div className="lite-security-details-premium-content" data-security-react-spring="details-content" style={detailsContentSpring}>
-        <LiteProgressiveDetails {...details} />
+        <LiteProgressiveDetails {...details} history={type === 'history' ? null : details.history} />
+        {type === 'history' ? (
+          <React.Suspense fallback={<div className="lite-security-details-loading">Loading saved history…</div>}>
+            <SecurityHistoryLazy
+              history={model?.securityHistory || []}
+              initialPage={model?.securityHistoryPage || null}
+              latestScore={model?.safetyScore}
+              trendLabel={model?.scoreTrendView?.label || ''}
+              trendDetail={model?.scoreTrendView?.detail || ''}
+              savedStateOnly={Boolean(model?.savedStateOnly)}
+            />
+          </React.Suspense>
+        ) : null}
       </animated.div>
     </animated.section>
   );
