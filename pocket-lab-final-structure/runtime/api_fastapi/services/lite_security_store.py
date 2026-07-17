@@ -517,14 +517,29 @@ def _get_metadata(conn: sqlite3.Connection, key: str) -> dict[str, Any]:
     return _json_value(row["value_json"], {}) if row else {}
 
 
-def _finding_key(finding: Mapping[str, Any]) -> tuple[str, str]:
+def _normalized_finding_identity_material(finding: Mapping[str, Any]) -> list[str]:
+    technical = finding.get("technical") if isinstance(finding.get("technical"), Mapping) else {}
     source = str(finding.get("source") or "security").strip().lower()[:80]
-    rule_id = str(finding.get("id") or finding.get("rule_id") or finding.get("category") or "finding").strip().lower()
-    component = str(finding.get("component") or "").strip().lower()
-    safe_target = str(finding.get("file") or finding.get("target") or "").strip().lower()
-    material = policy.redact_value([source, rule_id, component, safe_target])
-    digest = hashlib.sha256(json.dumps(material, sort_keys=True, default=str).encode("utf-8")).hexdigest()
-    return f"{source}:{digest[:24]}", digest
+    category = str(finding.get("category") or technical.get("category") or "finding").strip().lower()[:120]
+    component = str(finding.get("component") or "").strip().lower()[:160]
+    safe_target = str(
+        finding.get("file") or finding.get("target") or technical.get("file") or technical.get("target") or ""
+    ).strip().replace("\\", "/").lower()[:300]
+    if category == "protected_runtime_secret" or "protected backend runtime secret" in str(
+        finding.get("title") or finding.get("summary") or ""
+    ).strip().lower():
+        # A protected-runtime-secret is a posture item, not a raw secret match.
+        # Scanner IDs, line numbers, match values, and redacted payload fragments are volatile,
+        # so identity is intentionally scoped to the sanitized component posture.
+        return [source, "protected_runtime_secret", component or "pocket-lab-lite"]
+    rule_id = str(finding.get("rule_id") or finding.get("id") or category or "finding").strip().lower()[:240]
+    return [source, category, rule_id, component, safe_target]
+
+
+def _finding_key(finding: Mapping[str, Any]) -> tuple[str, str]:
+    material = _normalized_finding_identity_material(finding)
+    digest = hashlib.sha256(json.dumps(material, separators=(",", ":"), ensure_ascii=True).encode("utf-8")).hexdigest()
+    return f"{material[0]}:{digest[:24]}", digest
 
 
 def _progress_fingerprint(
