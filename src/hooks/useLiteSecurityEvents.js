@@ -5,7 +5,7 @@ import { broadcastLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js'
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import {
   publishLiteLifecycleDiagnostics,
-  reconcileLiteLifecycle,
+  reconcileLiteSecurityProgress,
   trackLiteLifecycleEventSource,
   trackLiteLifecycleListener,
   trackLiteLifecyclePollTimer,
@@ -138,11 +138,9 @@ function applySecurityEvent(queryClient, event, historyLimit = 20) {
     ...previous,
     ...progressPayloadFromEvent(payload),
   });
-  reconcileLiteLifecycle({
-    cachedRunId: previous.run_id || '',
-    backendRunId: payload.run_id || '',
-    cachedRevision: previous.revision || '',
-    backendRevision: payload.progress_revision || payload.revision || '',
+  reconcileLiteSecurityProgress({
+    cachedProgress: previous,
+    backendProgress: progressPayloadFromEvent(payload),
     writeActionsBlocked: false,
   });
 
@@ -269,6 +267,7 @@ export function useLiteSecurityEvents({ enabled = false, profile = 'quick', hist
         seenEventRef.current = true;
         lastEventActiveRef.current = liveSecurityEvent(event);
         const appliedEvent = applySecurityEvent(queryClient, event, historyLimitValue);
+        publishLiteLifecycleDiagnostics(liteApi);
         onProgress?.(appliedEvent);
         const terminal = terminalSecurityEvent(event);
         const keepFallbackAlive = shouldKeepSecurityFallbackAlive(event, { forceFallback, localActive: localProgressActive, activeRunId: activeRunKey });

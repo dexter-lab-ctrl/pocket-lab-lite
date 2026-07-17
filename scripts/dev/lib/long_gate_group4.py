@@ -21,6 +21,7 @@ import statistics
 import sys
 import threading
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -1142,14 +1143,31 @@ def wait_android_reports(
     return reports
 
 
+def _iso_epoch(value: Any) -> float:
+    text = str(value or "").strip()
+    if not text:
+        return 0.0
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def is_post_terminal_reconciliation(
     report: dict[str, Any],
     *,
     run_id: str,
     baseline_reconciliations: int,
+    terminal_at: str,
 ) -> bool:
+    backend_run_id = str(report.get("backend_run_id") or "")
+    backend_revision = str(report.get("backend_revision") or "")
+    captured_at = _iso_epoch(report.get("captured_at") or report.get("reported_at"))
+    terminal_epoch = _iso_epoch(terminal_at)
     return (
-        str(report.get("backend_run_id") or "") == run_id
+        bool(backend_run_id and backend_revision and captured_at and terminal_epoch)
+        and backend_run_id == run_id
+        and captured_at > terminal_epoch
         and int(report.get("backend_reconciliation_count") or 0) > baseline_reconciliations
     )
 
@@ -1160,6 +1178,8 @@ def wait_post_terminal_frontend_report(
     run_id: str,
     baseline_reports: list[dict[str, Any]],
     timeout: float,
+    *,
+    terminal_at: str,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     baseline_count = len(baseline_reports)
     baseline_reconciliations = max(
@@ -1175,6 +1195,7 @@ def wait_post_terminal_frontend_report(
                 report,
                 run_id=run_id,
                 baseline_reconciliations=baseline_reconciliations,
+                terminal_at=terminal_at,
             ):
                 print(
                     f"INFO: Android post-terminal reconciliation observed run_id={run_id} "
@@ -1364,6 +1385,7 @@ def run_android_resume(args: argparse.Namespace) -> int:
             run_before,
             pre_terminal_reports,
             float(args.frontend_report_timeout_seconds),
+            terminal_at=str(tracked_terminal.get("completed_at") or tracked_terminal.get("updated_at") or ""),
         )
         for report in reports[len(pre_terminal_reports):]:
             g2.append_jsonl(frontend_path, {**report, "scenario": "post-terminal", "cycle": 0})

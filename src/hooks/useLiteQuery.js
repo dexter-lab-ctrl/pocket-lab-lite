@@ -11,8 +11,9 @@ import {
   writeLiteSnapshot,
 } from '../lib/liteSafeSnapshots.js';
 import { hasLiteLiveOperation, isLiteDocumentVisible, liteQueryPollingInterval } from '../lib/litePollingPolicy.js';
-import { liteQueryKeys } from '../lib/liteQueryClient.js';
-import { isLiteNotModified } from '../lib/liteApi.js';
+import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
+import { isLiteNotModified, liteApi } from '../lib/liteApi.js';
+import { publishLiteLifecycleDiagnostics, reconcileLiteSecurityProgress } from '../lib/liteLifecycleDiagnostics.js';
 
 const UNSAFE_METHOD_PATTERN = /^(POST|PUT|PATCH|DELETE)$/i;
 const UNSAFE_PATH_PATTERN = /bootstrap|invite|token|secret|password|evidence|receipt|debug|raw/i;
@@ -143,10 +144,17 @@ export function useLiteQuery({
     queryKey: resolvedQueryKey,
     enabled: Boolean(enabled && queryFn),
     queryFn: async () => {
+      const previous = queryClient.getQueryData(resolvedQueryKey) || {};
       const data = await queryWithSafeSnapshotFallback({ path: normalizedPath, queryFn, method, snapshotSelect: snapshotSelect || select });
-      if (!isLiteNotModified(data)) return data;
-      const previous = queryClient.getQueryData(resolvedQueryKey);
-      if (previous) return previous;
+      if (!isLiteNotModified(data)) {
+        if (normalizedPath === liteQueryPaths.securityProgress && !isSavedSnapshot(data)) {
+          const reconciled = reconcileLiteSecurityProgress({ cachedProgress: previous, backendProgress: data });
+          if (reconciled) publishLiteLifecycleDiagnostics(liteApi);
+        }
+        return data;
+      }
+      const cachedPrevious = queryClient.getQueryData(resolvedQueryKey);
+      if (cachedPrevious) return cachedPrevious;
       if (safeSnapshotPath) {
         const saved = await readLiteSnapshotAsync(safeSnapshotPath);
         if (saved) return saved;
