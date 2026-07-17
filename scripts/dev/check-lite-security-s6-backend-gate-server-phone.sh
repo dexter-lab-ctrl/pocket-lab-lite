@@ -13,7 +13,7 @@ PYTHON_BIN="${POCKETLAB_S6_GATE_PYTHON:-python3}"
 SQLITE_BIN="${POCKETLAB_S6_GATE_SQLITE:-sqlite3}"
 PM2_BIN="${POCKETLAB_S6_GATE_PM2:-pm2}"
 SCAN_TIMEOUT_SECONDS="${POCKETLAB_S6_GATE_SCAN_TIMEOUT_SECONDS:-900}"
-SSE_CAPTURE_SECONDS="${POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS:-27}"
+SSE_CAPTURE_SECONDS="${POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS:-35}"
 REPLAY_WAIT_SECONDS="${POCKETLAB_S6_GATE_REPLAY_WAIT_SECONDS:-600}"
 RUN_API_RESTART=0
 RUN_RETENTION=1
@@ -261,10 +261,10 @@ if ! curl -fsS --max-time 10 "${AUTH_ARGS[@]}" "$PROXY_BASE/api/lite/security/pr
   record FAIL "read Security progress"
   exit 1
 fi
-read -r ACTIVE RUN_ID < <("$PYTHON_BIN" - "$PROGRESS_JSON" <<'PY'
+IFS=$'\t' read -r ACTIVE RUN_ID < <("$PYTHON_BIN" - "$PROGRESS_JSON" <<'PY'
 import json, sys
 p=json.load(open(sys.argv[1], encoding="utf-8"))
-print("1" if p.get("active_scan") else "0", p.get("run_id") or "")
+print(("1" if p.get("active_scan") else "0") + "\t" + (p.get("run_id") or ""))
 PY
 )
 if [[ "$ACTIVE" != "1" ]]; then
@@ -285,10 +285,10 @@ fi
 ACTIVE_READY=0
 for ((attempt=1; attempt<=60; attempt++)); do
   if curl -fsS --max-time 10 "${AUTH_ARGS[@]}" "$PROXY_BASE/api/lite/security/progress" -o "$PROGRESS_JSON"; then
-    read -r ACTIVE CURRENT_RUN < <("$PYTHON_BIN" - "$PROGRESS_JSON" <<'PY'
+    IFS=$'\t' read -r ACTIVE CURRENT_RUN < <("$PYTHON_BIN" - "$PROGRESS_JSON" <<'PY'
 import json,sys
 p=json.load(open(sys.argv[1], encoding="utf-8"))
-print("1" if p.get("active_scan") else "0", p.get("run_id") or "")
+print(("1" if p.get("active_scan") else "0") + "\t" + (p.get("run_id") or ""))
 PY
 )
     if [[ "$ACTIVE" == "1" && "$CURRENT_RUN" == "$RUN_ID" ]]; then
