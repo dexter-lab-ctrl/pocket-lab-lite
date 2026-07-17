@@ -1593,6 +1593,13 @@ def _sqlite_run_payload(repository: Any, run: dict[str, Any] | None, *, include_
 def _sqlite_finding_identity(item: dict[str, Any] | None) -> str | None:
     if not isinstance(item, dict):
         return None
+    technical = item.get("technical") if isinstance(item.get("technical"), dict) else {}
+    category = str(item.get("category") or technical.get("category") or "").strip().lower()
+    title = str(item.get("title") or item.get("summary") or "").strip().lower()
+    if category == "protected_runtime_secret" or "protected backend runtime secret" in title:
+        source = str(item.get("source") or "security").strip().lower()
+        component = str(item.get("component") or "pocket-lab-lite").strip().lower()
+        return "|".join([source, "protected_runtime_secret", component])
     for key in ("finding_key", "fingerprint"):
         value = str(item.get(key) or "").strip()
         if value and value.lower() not in {"none", "unknown", "null"}:
@@ -2495,34 +2502,59 @@ def _sqlite_profile_state(profile: str, app_id: str | None = None) -> dict[str, 
     normalized_app = policy.normalize_app_id(app_id) if normalized == policy.SCAN_PROFILE_APP and app_id else ""
     if normalized == policy.SCAN_PROFILE_APP and not normalized_app:
         raise ValueError("app_id is required for App Check snapshots")
+
     def build() -> dict[str, Any]:
         repository = _security_repository()
         revision = int(repository.get_domain_revision().get("revision") or 0)
         snapshot = repository.get_profile_snapshot(normalized, normalized_app or None)
-        latest_row = repository.get_run(str(snapshot.get("latest_run_id"))) if snapshot and snapshot.get("latest_run_id") else repository.get_latest_run(normalized, normalized_app or None)
-        history_rows = repository.list_runs_page(limit=_SECURITY_SPLIT_PREVIEW_LIMIT, profile=normalized, app_id=normalized_app or None).get("runs", [])
+        latest_row = (
+            repository.get_run(str(snapshot.get("latest_run_id")))
+            if snapshot and snapshot.get("latest_run_id")
+            else repository.get_latest_run(normalized, normalized_app or None)
+        )
         latest = _sqlite_run_payload(repository, latest_row, include_related=True)
         delta = _sqlite_finding_delta(repository, latest_row)
         completed_at = (latest or {}).get("completed_at")
         payload = {
-            "view_model": "security-profile-snapshot-v2", "profile": normalized, "app_id": normalized_app,
-            "app_label": (latest or {}).get("app_label") or "", "label": _security_profile_label(normalized, (latest or {}).get("app_label") or ""),
-            "latest_run_id": (latest or {}).get("run_id"), "status": (latest or {}).get("status") or "not_checked",
-            "score": int((latest or {}).get("score")) if (latest or {}).get("score") is not None else None, "summary": (latest or {}).get("summary") or "Not checked",
-            "completed_at": completed_at, "age_seconds": _security_age_seconds(completed_at),
-            "evidence_saved": bool((latest or {}).get("evidence_saved")), "evidence_saved_at": (snapshot or {}).get("latest_evidence_at") or (completed_at if (latest or {}).get("evidence_saved") else None),
-            "duration_ms": (latest or {}).get("duration_ms"), "finding_counts": (latest or {}).get("finding_counts") or _finding_counts_from_run(latest_row),
-            "change_summary": {"new": int(delta.get("new_count") or 0), "resolved": int(delta.get("resolved_count") or 0),
+            "view_model": "security-profile-snapshot-v2",
+            "profile": normalized,
+            "app_id": normalized_app,
+            "app_label": (latest or {}).get("app_label") or "",
+            "label": _security_profile_label(normalized, (latest or {}).get("app_label") or ""),
+            "latest_run_id": (latest or {}).get("run_id"),
+            "status": (latest or {}).get("status") or "not_checked",
+            "score": int((latest or {}).get("score")) if (latest or {}).get("score") is not None else None,
+            "summary": (latest or {}).get("summary") or "Not checked",
+            "completed_at": completed_at,
+            "age_seconds": _security_age_seconds(completed_at),
+            "evidence_saved": bool((latest or {}).get("evidence_saved")),
+            "evidence_saved_at": (snapshot or {}).get("latest_evidence_at")
+            or (completed_at if (latest or {}).get("evidence_saved") else None),
+            "duration_ms": (latest or {}).get("duration_ms"),
+            "finding_counts": (latest or {}).get("finding_counts") or _finding_counts_from_run(latest_row),
+            "change_summary": {
+                "new": int(delta.get("new_count") or 0),
+                "resolved": int(delta.get("resolved_count") or 0),
                 "ongoing": int(delta.get("ongoing_count") or delta.get("unchanged_count") or 0),
-                "comparison_available": bool(delta.get("comparison_available")), "comparison_run_id": delta.get("comparison_run_id"),
-                "comparison_completed_at": delta.get("comparison_completed_at"), "comparison_reason": delta.get("comparison_reason"), "summary": delta.get("summary")},
-            "finding_delta": delta, "tool_status": (latest or {}).get("tool_status") or [], "tool_results": (latest or {}).get("tool_results") or {},
+                "comparison_available": bool(delta.get("comparison_available")),
+                "comparison_run_id": delta.get("comparison_run_id"),
+                "comparison_completed_at": delta.get("comparison_completed_at"),
+                "comparison_reason": delta.get("comparison_reason"),
+                "summary": delta.get("summary"),
+            },
+            "tool_status": ((latest or {}).get("tool_status") or [])[:12],
             "timeout": (latest or {}).get("timeout"),
-            "history": [item for item in (_sqlite_run_payload(repository, run) for run in history_rows) if item],
-            "revision": _revision_token("sqlite-profile-v2", revision, normalized, normalized_app, (latest or {}).get("run_id"), (latest or {}).get("revision")),
-            "source": "security_profile_sqlite", "storage_backend": "sqlite", "sanitized": True,
+            "snapshot_budget": {"max_bytes": 16 * 1024, "max_top_level_keys": 24, "history_limit": 0, "finding_detail_limit": 0},
+            "revision": _revision_token(
+                "sqlite-profile-v2", revision, normalized, normalized_app,
+                (latest or {}).get("run_id"), (latest or {}).get("revision"),
+            ),
+            "source": "security_profile_sqlite",
+            "storage_backend": "sqlite",
+            "sanitized": True,
         }
         return policy.redact_value(payload)
+
     return _sqlite_cached_read("profile-v2", normalized, normalized_app, builder=build)
 
 
@@ -3294,26 +3326,79 @@ def split_profile_state(profile: str, app_id: str | None = None) -> dict[str, An
         try:
             return _sqlite_profile_state(normalized_profile, normalized_app or None)
         except (sqlite3.OperationalError, sqlite3.DatabaseError, OSError, RuntimeError) as exc:
-            return policy.redact_value({"view_model": "security-profile-snapshot-v2", "profile": normalized_profile,
-                "app_id": normalized_app, "status": "unavailable", "latest_run": None, "history": [],
-                "source": "security_profile_sqlite", "storage_backend": "sqlite", "read_degraded": True,
-                "read_error_type": type(exc).__name__, "sanitized": True})
+            return policy.redact_value({
+                "view_model": "security-profile-snapshot-v2",
+                "profile": normalized_profile,
+                "app_id": normalized_app,
+                "app_label": "",
+                "label": _security_profile_label(normalized_profile),
+                "latest_run_id": None,
+                "status": "unavailable",
+                "score": None,
+                "summary": "Saved Security state is temporarily unavailable.",
+                "completed_at": None,
+                "age_seconds": None,
+                "evidence_saved": False,
+                "evidence_saved_at": None,
+                "duration_ms": None,
+                "finding_counts": {severity: 0 for severity in policy.SEVERITIES},
+                "change_summary": {
+                    "new": 0, "resolved": 0, "ongoing": 0, "comparison_available": False,
+                    "comparison_run_id": None, "comparison_completed_at": None,
+                    "comparison_reason": "Saved state could not be read safely.",
+                    "summary": "Comparison is temporarily unavailable.",
+                },
+                "tool_status": [],
+                "timeout": None,
+                "snapshot_budget": {"max_bytes": 16 * 1024, "max_top_level_keys": 24, "history_limit": 0, "finding_detail_limit": 0},
+                "revision": "",
+                "source": "security_profile_sqlite",
+                "storage_backend": "sqlite",
+                "read_degraded": True,
+                "read_error_type": type(exc).__name__,
+                "sanitized": True,
+            })
     state = _ensure_compact_state()
     key = (normalized_profile, normalized_app, _compact_revision(state), _is_live_security_state(state))
     compat = _profile_state_from_state(normalized_profile, state)
-    compat.update({"view_model": "security-profile-snapshot-v2", "app_id": normalized_app or compat.get("app_id") or "",
-        "label": _security_profile_label(normalized_profile, str(compat.get("app_label") or "")),
-        "latest_run_id": (compat.get("latest_run") or {}).get("run_id"),
-        "completed_at": (compat.get("latest_run") or {}).get("completed_at"),
-        "duration_ms": _security_duration_ms(compat.get("latest_run")),
-        "finding_counts": _finding_counts_from_run(compat.get("latest_run")),
-        "change_summary": {"new": int((compat.get("finding_delta") or {}).get("new_count") or 0),
-            "resolved": int((compat.get("finding_delta") or {}).get("resolved_count") or 0),
-            "ongoing": int((compat.get("finding_delta") or {}).get("ongoing_count") or (compat.get("finding_delta") or {}).get("unchanged_count") or 0),
-            "comparison_available": bool((compat.get("finding_delta") or {}).get("comparison_available")),
-            "summary": (compat.get("finding_delta") or {}).get("summary") or "No earlier check is available for comparison."},
-        "tool_status": _tool_status_list(compat.get("tool_results")), "sanitized": True})
-    return _cached_compact_read("profile", key, lambda: compat)
+    latest = compat.get("latest_run") if isinstance(compat.get("latest_run"), dict) else {}
+    delta = compat.get("finding_delta") if isinstance(compat.get("finding_delta"), dict) else {}
+    completed_at = latest.get("completed_at")
+    compact = {
+        "view_model": "security-profile-snapshot-v2",
+        "profile": normalized_profile,
+        "app_id": normalized_app or compat.get("app_id") or "",
+        "app_label": compat.get("app_label") or latest.get("app_label") or "",
+        "label": _security_profile_label(normalized_profile, str(compat.get("app_label") or latest.get("app_label") or "")),
+        "latest_run_id": latest.get("run_id"),
+        "status": compat.get("status") or latest.get("status") or "not_checked",
+        "score": compat.get("score") if compat.get("score") is not None else latest.get("score"),
+        "summary": compat.get("summary") or latest.get("summary") or "Not checked",
+        "completed_at": completed_at,
+        "age_seconds": _security_age_seconds(completed_at),
+        "evidence_saved": bool(compat.get("evidence_saved") or latest.get("evidence_saved")),
+        "evidence_saved_at": completed_at if (compat.get("evidence_saved") or latest.get("evidence_saved")) else None,
+        "duration_ms": _security_duration_ms(latest),
+        "finding_counts": _finding_counts_from_run(latest),
+        "change_summary": {
+            "new": int(delta.get("new_count") or 0),
+            "resolved": int(delta.get("resolved_count") or 0),
+            "ongoing": int(delta.get("ongoing_count") or delta.get("unchanged_count") or 0),
+            "comparison_available": bool(delta.get("comparison_available")),
+            "comparison_run_id": delta.get("comparison_run_id"),
+            "comparison_completed_at": delta.get("comparison_completed_at"),
+            "comparison_reason": delta.get("comparison_reason"),
+            "summary": delta.get("summary") or "No earlier check is available for comparison.",
+        },
+        "tool_status": _tool_status_list(compat.get("tool_results"))[:12],
+        "timeout": compat.get("timeout") if isinstance(compat.get("timeout"), dict) else None,
+        "snapshot_budget": {"max_bytes": 16 * 1024, "max_top_level_keys": 24, "history_limit": 0, "finding_detail_limit": 0},
+        "revision": compat.get("revision") or "",
+        "source": "security_profile_compact",
+        "storage_backend": compat.get("storage_backend") or "json",
+        "sanitized": True,
+    }
+    return _cached_compact_read("profile", key, lambda: compact)
 
 
 def split_history_state(limit: int | None = None, cursor: str | None = None) -> dict[str, Any]:
@@ -4245,14 +4330,22 @@ def _run_time_value(run: dict[str, Any]) -> float:
 
 
 def _finding_key(finding: dict[str, Any]) -> str:
+    technical = finding.get("technical") if isinstance(finding.get("technical"), dict) else {}
+    source = str(finding.get("source") or "security").strip().lower()
+    category = str(finding.get("category") or technical.get("category") or "finding").strip().lower()
+    component = str(finding.get("component") or "").strip().lower()
+    title = str(finding.get("title") or finding.get("summary") or "").strip().lower()
+    if category == "protected_runtime_secret" or "protected backend runtime secret" in title:
+        material = [source, "protected_runtime_secret", component or "pocket-lab-lite"]
+        return "|".join(material)
     for key in ("id", "evidence_ref"):
         value = str(finding.get(key) or "").strip()
         if value:
             return value
-    return "|".join(
-        str(finding.get(key) or "").strip().lower()
-        for key in ("source", "category", "component", "file", "summary")
-    )
+    safe_target = str(
+        finding.get("file") or finding.get("target") or technical.get("file") or technical.get("target") or ""
+    ).strip().replace("\\", "/").lower()
+    return "|".join([source, category, component, safe_target, str(finding.get("summary") or "").strip().lower()])
 
 
 def _finding_delta_item(finding: dict[str, Any]) -> dict[str, Any]:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
+import json
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -45,7 +46,12 @@ def test_s7_profile_snapshot_v2_is_exact_and_app_scoped(tmp_path, monkeypatch):
         assert item["view_model"] == "security-profile-snapshot-v2"
         assert item["sanitized"] is True
         assert set(item["finding_counts"]) == {"critical", "high", "medium", "low", "info"}
-        assert "evidence_refs" not in item
+        assert len(json.dumps(item, separators=(",", ":")).encode("utf-8")) <= 16 * 1024
+        assert len(item) <= 24
+        for forbidden in ("evidence_refs", "history", "finding_delta", "findings", "tool_results", "coverage_summary", "execution_timeline"):
+            assert forbidden not in item
+        assert item["snapshot_budget"]["max_bytes"] == 16 * 1024
+        assert item["snapshot_budget"]["history_limit"] == 0
     assert snapshots[2]["app_id"] == "photoprism"
     assert snapshots[2]["label"] == "PhotoPrism App Check"
     assert snapshots[0]["duration_ms"] == 60_000
@@ -68,10 +74,31 @@ def test_s7_delta_uses_stable_key_and_skips_partial_or_other_profile(tmp_path, m
     _complete(repo, "security-current", profile="quick", requested_at="2026-07-17T10:04:00Z", completed_at="2026-07-17T10:05:00Z", findings=[_finding("ongoing"), _finding("new")])
     _complete(repo, "security-full-other", profile="full", requested_at="2026-07-17T10:06:00Z", completed_at="2026-07-17T10:07:00Z", findings=[_finding("full-only")])
     service.invalidate_security_read_caches()
-    delta = service.split_profile_state("quick")["finding_delta"]
-    assert delta["comparison_run_id"] == "security-baseline"
-    assert (delta["new_count"], delta["resolved_count"], delta["ongoing_count"]) == (1, 1, 1)
-    assert "partial-only" not in str(delta) and "full-only" not in str(delta)
+    change = service.split_profile_state("quick")["change_summary"]
+    assert change["comparison_run_id"] == "security-baseline"
+    assert (change["new"], change["resolved"], change["ongoing"]) == (1, 1, 1)
+    assert "partial-only" not in str(change) and "full-only" not in str(change)
+
+
+def test_s7_protected_runtime_secret_identity_ignores_volatile_scanner_id(tmp_path, monkeypatch):
+    repo, service = _configure(tmp_path, monkeypatch)
+    baseline = {
+        "id": "trivy-secret-jwt-token-gitea/conf/app.runtime.ini",
+        "source": "trivy",
+        "category": "protected_runtime_secret",
+        "severity": "low",
+        "component": "Pocket Lab Lite",
+        "file": "gitea/conf/app.runtime.ini",
+        "summary": "Protected backend runtime secret found.",
+        "recommendation": "Keep it protected.",
+    }
+    current = {**baseline, "id": "trivy-secret-different-volatile-match-gitea/conf/app.runtime.ini"}
+    _complete(repo, "security-secret-baseline", profile="quick", requested_at="2026-07-17T10:10:00Z", completed_at="2026-07-17T10:11:00Z", findings=[baseline])
+    _complete(repo, "security-secret-current", profile="quick", requested_at="2026-07-17T10:12:00Z", completed_at="2026-07-17T10:13:00Z", findings=[current])
+    service.invalidate_security_read_caches()
+    change = service.split_profile_state("quick")["change_summary"]
+    assert change["comparison_run_id"] == "security-secret-baseline"
+    assert (change["new"], change["resolved"], change["ongoing"]) == (0, 0, 1)
 
 
 def test_s7_first_run_does_not_claim_no_new_changes(tmp_path, monkeypatch):
@@ -163,6 +190,9 @@ def test_s7_frontend_source_boundaries_and_lazy_composition():
     assert "PRAGMA quick_check" in gate
     assert "security-profile-snapshot-v2" in gate
     assert "security-history-cursor-v2" in gate
+    assert "16 * 1024" in gate
+    assert "max_top_level_keys" in gate
+    assert "finding_delta" in gate and "tool_results" in gate
     assert "matched" in gate and "security-db-compare.py" in gate
     assert "lite:security:s7:check" in taskfile
     assert "npm run build" in taskfile

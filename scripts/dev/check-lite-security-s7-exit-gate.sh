@@ -122,6 +122,12 @@ from pathlib import Path
 quick_path, full_path, app_path, history_path, cursor_path = sys.argv[1:]
 profiles = [json.load(open(path, encoding="utf-8")) for path in (quick_path, full_path, app_path)]
 expected = [("quick", ""), ("full", ""), ("app", "photoprism")]
+allowed_profile_keys = {
+    "view_model", "profile", "app_id", "app_label", "label", "latest_run_id", "status", "score", "summary",
+    "completed_at", "age_seconds", "evidence_saved", "evidence_saved_at", "duration_ms", "finding_counts",
+    "change_summary", "tool_status", "timeout", "snapshot_budget", "revision", "source", "storage_backend",
+    "sanitized", "read_cache",
+}
 for payload, (profile, app_id) in zip(profiles, expected):
     assert payload.get("view_model") == "security-profile-snapshot-v2", payload
     assert payload.get("profile") == profile, payload
@@ -129,6 +135,17 @@ for payload, (profile, app_id) in zip(profiles, expected):
     assert payload.get("sanitized") is True, payload
     assert isinstance(payload.get("finding_counts"), dict), payload
     assert len(payload.get("tool_status") or []) <= 12, payload
+    assert set(payload) <= allowed_profile_keys, sorted(set(payload) - allowed_profile_keys)
+    assert len(payload) <= 24, sorted(payload)
+    encoded = json.dumps(payload, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    assert len(encoded) <= 16 * 1024, len(encoded)
+    budget = payload.get("snapshot_budget") or {}
+    assert budget.get("max_bytes") == 16 * 1024, budget
+    assert budget.get("max_top_level_keys") == 24, budget
+    assert budget.get("history_limit") == 0, budget
+    assert budget.get("finding_detail_limit") == 0, budget
+    for forbidden_key in ("history", "finding_delta", "findings", "evidence_refs", "tool_results", "coverage_summary", "execution_timeline"):
+        assert forbidden_key not in payload, forbidden_key
     raw = json.dumps(payload).lower()
     for forbidden in ("password", "authorization", "nats://", "private_key", "command_payload", "raw_evidence"):
         assert forbidden not in raw, forbidden
@@ -143,7 +160,7 @@ for row in rows:
 Path(cursor_path).write_text(str(history.get("next_cursor") or ""), encoding="utf-8")
 PY
 then
-  record PASS "profile snapshots are independent, bounded, sanitized"
+  record PASS "profile snapshots are independent, compact, bounded, sanitized" "<=16 KiB and <=24 top-level keys"
   record PASS "history first page is compact and bounded" "20 rows maximum"
 else
   record FAIL "S7 profile/history payload contract"
