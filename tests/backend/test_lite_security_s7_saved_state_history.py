@@ -144,6 +144,11 @@ def test_s7_frontend_source_boundaries_and_lazy_composition():
     assert "<time" in history and "title={completedAt" in history
     assert "React.lazy(() => import('./SecurityHistoryLazy.jsx'))" in details
     assert "type === 'history'" in details
+    assert "children: (" in details
+    assert "<SecurityHistoryLazy" in details
+    history_section = (ROOT / "src/lite/components/LiteHistorySection.jsx").read_text(encoding="utf-8")
+    assert "className=\"lite-progressive-disclosure-toggle\"" in history_section
+    assert "{children}" in history_section
     assert "security-profile-snapshot-v2" in selectors
     assert "offline_dexie_snapshot" in selectors
     assert "liteSecurityProfileSnapshotPath" in snapshots

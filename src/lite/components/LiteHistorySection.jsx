@@ -31,6 +31,7 @@ export default function LiteHistorySection({
   savedState = false,
   emptyMessage = 'History will appear here after more runs.',
   onOpenChange,
+  children = null,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const safeItems = useMemo(() => safeHistoryItems(items), [items]);
@@ -63,7 +64,8 @@ export default function LiteHistorySection({
           {loading ? <p>Loading history…</p> : null}
           {error ? <p role="alert">History needs a moment. {String(error).slice(0, 140)}</p> : null}
           {savedState ? <p>Showing saved state.</p> : null}
-          {!loading && !error && safeItems.length ? (
+          {children}
+          {!children && !loading && !error && safeItems.length ? (
             <ol className="lite-history-section-list">
               {safeItems.map((item) => (
                 <li key={item.id}>
@@ -73,7 +75,7 @@ export default function LiteHistorySection({
               ))}
             </ol>
           ) : null}
-          {!loading && !error && !safeItems.length ? <p>{emptyMessage}</p> : null}
+          {!children && !loading && !error && !safeItems.length ? <p>{emptyMessage}</p> : null}
         </div>
       ) : null}
     </section>

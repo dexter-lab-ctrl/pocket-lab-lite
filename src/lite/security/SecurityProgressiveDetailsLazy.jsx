@@ -480,19 +480,27 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
         </button>
       </div>
       <animated.div className="lite-security-details-premium-content" data-security-react-spring="details-content" style={detailsContentSpring}>
-        <LiteProgressiveDetails {...details} history={type === 'history' ? null : details.history} />
-        {type === 'history' ? (
-          <React.Suspense fallback={<div className="lite-security-details-loading">Loading saved history…</div>}>
-            <SecurityHistoryLazy
-              history={model?.securityHistory || []}
-              initialPage={model?.securityHistoryPage || null}
-              latestScore={model?.safetyScore}
-              trendLabel={model?.scoreTrendView?.label || ''}
-              trendDetail={model?.scoreTrendView?.detail || ''}
-              savedStateOnly={Boolean(model?.savedStateOnly)}
-            />
-          </React.Suspense>
-        ) : null}
+        <LiteProgressiveDetails
+          {...details}
+          history={type === 'history' ? {
+            ...details.history,
+            title: details.history?.title || 'History',
+            summary: details.history?.summary || 'Open saved checks and load older history when needed.',
+            items: [],
+            children: (
+              <React.Suspense fallback={<div className="lite-security-details-loading">Loading saved history…</div>}>
+                <SecurityHistoryLazy
+                  history={model?.securityHistory || []}
+                  initialPage={model?.securityHistoryPage || null}
+                  latestScore={model?.safetyScore}
+                  trendLabel={model?.scoreTrendView?.label || ''}
+                  trendDetail={model?.scoreTrendView?.detail || ''}
+                  savedStateOnly={Boolean(model?.savedStateOnly)}
+                />
+              </React.Suspense>
+            ),
+          } : details.history}
+        />
       </animated.div>
     </animated.section>
   );
