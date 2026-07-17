@@ -1,61 +1,87 @@
-import React from 'react';
-import { formatLiteTime } from '../../lib/liteApi.js';
-import LiteHistorySection from '../components/LiteHistorySection.jsx';
+import React, { useMemo } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
+import { liteQueryKeys } from '../../lib/liteQueryClient.js';
+import { mergeSecurityHistoryPages } from '../../lib/liteViewModels.js';
 
 const SECURITY_HISTORY_IS_LAZY = true;
 const SECURITY_HISTORY_ROWS_MOUNT_ONLY_WHEN_OPENED = true;
+const SECURITY_HISTORY_CURSOR_V2 = 'security-history-cursor-v2';
 void SECURITY_HISTORY_IS_LAZY;
 void SECURITY_HISTORY_ROWS_MOUNT_ONLY_WHEN_OPENED;
+void SECURITY_HISTORY_CURSOR_V2;
 
-function formatDuration(seconds) {
-  const value = Number(seconds || 0);
-  if (!Number.isFinite(value) || value <= 0) return 'Duration not available';
-  if (value < 60) return `${Math.round(value)}s`;
-  return `${Math.round(value / 60)}m`;
+function formatDuration(durationMs, durationSeconds) {
+  const milliseconds = Number(durationMs || 0);
+  const seconds = milliseconds > 0 ? milliseconds / 1000 : Number(durationSeconds || 0);
+  if (!Number.isFinite(seconds) || seconds <= 0) return 'Duration not available';
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  return `${Math.round(seconds / 60)}m`;
 }
 
-function historyItems(history = []) {
-  return (Array.isArray(history) ? history : []).slice(0, 20).map((entry, index) => {
-    const reviewCount = Number(entry?.items_to_review || 0);
-    const evidenceCount = Number(entry?.evidence_count || 0);
-    const title = reviewCount ? `${reviewCount} review item${reviewCount === 1 ? '' : 's'}` : 'No urgent items';
-    const metaParts = [
-      entry?.score !== undefined ? `Score ${entry.score}` : '',
-      evidenceCount ? `${evidenceCount} evidence file${evidenceCount === 1 ? '' : 's'}` : 'Evidence pending',
-      formatDuration(entry?.duration_seconds),
-    ].filter(Boolean);
-    return {
-      id: entry?.run_id || `security-history-${index}`,
-      title,
-      meta: entry?.completed_at ? `${formatLiteTime(entry.completed_at)} · ${metaParts.join(' · ')}` : metaParts.join(' · '),
-    };
+function safeToolLabels(toolStatus = []) {
+  return (Array.isArray(toolStatus) ? toolStatus : []).slice(0, 4).map((item) => `${String(item?.tool || 'tool').slice(0, 28)} ${String(item?.status || 'recorded').slice(0, 28)}`);
+}
+
+function initialHistoryPage(initialPage, history) {
+  if (initialPage && typeof initialPage === 'object' && Array.isArray(initialPage.history)) return initialPage;
+  return { view_model: SECURITY_HISTORY_CURSOR_V2, history: Array.isArray(history) ? history.slice(0, 20) : [], has_more: false, next_cursor: null, sanitized: true };
+}
+
+export default function SecurityHistoryLazy({ history = [], initialPage = null, latestScore, trendLabel = '', trendDetail = '', savedStateOnly = false }) {
+  const firstPage = useMemo(() => initialHistoryPage(initialPage, history), [history, initialPage]);
+  const query = useInfiniteQuery({
+    queryKey: [...liteQueryKeys.securityHistory(20), 'cursor-v2'],
+    queryFn: ({ pageParam = '' }) => liteApi.securityHistory(20, pageParam),
+    initialPageParam: '',
+    getNextPageParam: (page) => (page?.has_more && page?.next_cursor ? page.next_cursor : undefined),
+    initialData: firstPage.history.length ? { pages: [firstPage], pageParams: [''] } : undefined,
+    enabled: !savedStateOnly,
+    staleTime: 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
   });
-}
-
-export default function SecurityHistoryLazy({ history = [], latestScore, trendLabel = '', trendDetail = '', savedStateOnly = false }) {
-  const items = historyItems(history);
+  const pages = query.data?.pages?.length ? query.data.pages : [firstPage];
+  const rows = useMemo(() => mergeSecurityHistoryPages(pages), [pages]);
+  const latestPage = pages[pages.length - 1] || firstPage;
+  const hasOlder = Boolean(latestPage?.has_more && latestPage?.next_cursor);
   return (
-    <div className="lite-security-history-lazy" data-security-history-lazy="true">
+    <div className="lite-security-history-lazy" data-security-history-lazy="true" data-security-history-cursor-v2="true">
       <div className="lite-security-trend-summary">
-        <div>
-          <span>Latest score</span>
-          <strong>{latestScore ?? '—'}</strong>
-        </div>
-        <div>
-          <span>Trend</span>
-          <strong>{trendLabel || 'Not enough history'}</strong>
-          {trendDetail ? <small>{trendDetail}</small> : null}
-        </div>
+        <div><span>Latest score</span><strong>{latestScore ?? '—'}</strong></div>
+        <div><span>Trend</span><strong>{trendLabel || 'Not enough history'}</strong>{trendDetail ? <small>{trendDetail}</small> : null}</div>
       </div>
-
-      <LiteHistorySection
-        title="Security run history"
-        summary={items.length ? `${items.length} safe security run${items.length === 1 ? '' : 's'} available.` : 'History will appear here after more safety checks.'}
-        items={items}
-        enabled
-        savedState={savedStateOnly}
-        emptyMessage="History will appear here after more safety checks."
-      />
+      {savedStateOnly ? <p className="lite-security-s7-saved-note">Showing saved history. Reconnect to load older checks.</p> : null}
+      {query.error ? <p role="alert">History needs a moment. {String(query.error?.message || query.error).slice(0, 140)}</p> : null}
+      {rows.length ? (
+        <ol className="lite-security-s7-history-list" aria-label="Security check history">
+          {rows.map((entry) => {
+            const counts = entry?.finding_counts || {};
+            const reviewCount = Number(counts.critical || 0) + Number(counts.high || 0);
+            const tools = safeToolLabels(entry?.tool_status);
+            const completedAt = entry?.completed_at || entry?.updated_at || '';
+            return (
+              <li key={entry.run_id} className="lite-security-s7-history-row">
+                <div>
+                  <strong>{entry?.summary || (reviewCount ? `${reviewCount} item${reviewCount === 1 ? '' : 's'} need attention` : 'Protected')}</strong>
+                  <span>{entry?.label || String(entry?.profile || 'quick')} · Score {entry?.score ?? '—'} · {formatDuration(entry?.duration_ms, entry?.duration_seconds)}</span>
+                  {tools.length ? <small>{tools.join(' · ')}</small> : null}
+                  {entry?.timeout?.summary ? <small>{entry.timeout.summary}</small> : null}
+                  {!entry?.timeout?.summary && entry?.status === 'failed' ? <small>{entry?.failure_message || 'The safety check did not finish.'}</small> : null}
+                  {entry?.evidence_saved ? <small>Evidence saved</small> : null}
+                </div>
+                <time dateTime={completedAt || undefined} title={completedAt ? formatLiteTime(completedAt) : 'Time unavailable'}>{completedAt ? formatLiteTime(completedAt) : 'Time unavailable'}</time>
+              </li>
+            );
+          })}
+        </ol>
+      ) : <p>History will appear here after completed safety checks.</p>}
+      {hasOlder && !savedStateOnly ? (
+        <button type="button" className="lite-security-s7-load-older" onClick={() => query.fetchNextPage()} disabled={query.isFetchingNextPage}>
+          {query.isFetchingNextPage ? 'Loading older checks…' : 'Load older checks'}
+        </button>
+      ) : null}
     </div>
   );
 }

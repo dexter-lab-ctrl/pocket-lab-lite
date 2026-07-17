@@ -178,7 +178,7 @@ def test_security_f14_security_screen_uses_zustand_and_preserves_split_reads():
     assert "const [selectedFinding, setSelectedFinding] = useState" not in screen
 
     assert "liteApi.securitySummary" in screen
-    assert "liteApi.securityProfile(scanProfile)" in screen
+    assert "liteApi.securityProfile(scanProfile, securityProfileAppId)" in screen
     assert "liteApi.securityHistory(activeSecurityHistoryLimit || 20)" in screen
     assert "liteApi.securityProgress()" in screen
     assert "liteApi.securityEvidenceSummary(runId)" in screen

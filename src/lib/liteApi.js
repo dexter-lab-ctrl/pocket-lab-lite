@@ -151,8 +151,17 @@ export const liteApi = {
   securitySummary: conditionalGet('/api/lite/security/summary'),
   securityDetails: safeGet('/api/lite/security'),
   securityFreshness: conditionalGet('/api/lite/security/freshness'),
-  securityProfile: (profile = 'quick') => conditionalRead(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`),
-  securityHistory: (limit = 20) => conditionalRead(`/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`),
+  securityProfile: (profile = 'quick', appId = '') => {
+    const query = String(profile || 'quick').toLowerCase() === 'app' && appId
+      ? `?app_id=${encodeURIComponent(appId)}`
+      : '';
+    return conditionalRead(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}${query}`);
+  },
+  securityHistory: (limit = 20, cursor = '') => {
+    const query = new URLSearchParams({ limit: String(limit || 20) });
+    if (cursor) query.set('cursor', cursor);
+    return conditionalRead(`/api/lite/security/history?${query.toString()}`);
+  },
   securityProgress: () => conditionalRead('/api/lite/security/progress'),
   securityRunDetails: (runId) => conditionalRead(`/api/lite/security/details/${encodeURIComponent(runId || '')}`),
   securityEvidenceSummary: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`),

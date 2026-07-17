@@ -68,11 +68,12 @@ def test_security_f7_freshness_profile_history_and_progress_endpoints_are_compac
     assert "findings" not in freshness_payload
 
     for profile in ("quick", "full", "app"):
-        response = http.get(f"/api/lite/security/profiles/{profile}")
+        suffix = "?app_id=photoprism" if profile == "app" else ""
+        response = http.get(f"/api/lite/security/profiles/{profile}{suffix}")
         assert response.status_code == 200
         payload = response.json()
         assert payload["profile"] == profile
-        assert payload["view_model"] == "security-profile-f7-v1"
+        assert payload["view_model"] == "security-profile-snapshot-v2"
         assert payload["sanitized"] is True
         assert len(payload.get("history", [])) <= 6
         assert "raw scanner" not in response.text.lower()
@@ -181,20 +182,20 @@ def test_security_f7_frontend_uses_split_read_endpoints_for_manage_details():
     screen = LITE_SECURITY.read_text()
 
     assert "security: conditionalGet('/api/lite/security/summary')" in api
-    assert "securityProfile: (profile = 'quick') => conditionalRead(`/api/lite/security/profiles/${encodeURIComponent(profile || 'quick')}`)" in api
-    assert "securityHistory: (limit = 20) => conditionalRead(`/api/lite/security/history?limit=${encodeURIComponent(limit || 20)}`)" in api
+    assert "securityProfile: (profile = 'quick', appId = '')" in api
+    assert "securityHistory: (limit = 20, cursor = '')" in api
     assert "securityProgress: () => conditionalRead('/api/lite/security/progress')" in api
     assert "securityRunDetails: (runId) => conditionalRead(`/api/lite/security/details/${encodeURIComponent(runId || '')}`)" in api
     assert "securityEvidenceSummary: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`)" in api
     assert "securityEvidence: (runId) => conditionalRead(`/api/lite/security/evidence/${encodeURIComponent(runId || '')}/summary`)" in api
 
-    assert "securityProfile: (profile = 'quick')" in query
+    assert "securityProfile: (profile = 'quick', appId = '')" in query
     assert "securityHistory: (limit = 20)" in query
     assert "securityFreshness" in status
     assert "securityProgress" in status
 
     assert "securityProfileLoader" in screen
-    assert "liteApi.securityProfile(scanProfile)" in screen
+    assert "liteApi.securityProfile(scanProfile, securityProfileAppId)" in screen
     assert "liteApi.securityHistory(20)" in screen
     assert "liteApi.securityProgress()" in screen
     assert "setEvidence(await liteApi.securityEvidenceSummary(runId));" in screen

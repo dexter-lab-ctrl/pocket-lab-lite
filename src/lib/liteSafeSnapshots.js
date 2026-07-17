@@ -30,6 +30,7 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/security/profiles/quick',
   '/api/lite/security/profiles/full',
   '/api/lite/security/profiles/app',
+  '/api/lite/security/profiles/app/photoprism',
   '/api/lite/security/history/index',
   '/api/lite/recovery',
 ]);
@@ -44,6 +45,7 @@ export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/security/profiles/quick': 60 * 60 * 1000,
   '/api/lite/security/profiles/full': 60 * 60 * 1000,
   '/api/lite/security/profiles/app': 60 * 60 * 1000,
+  '/api/lite/security/profiles/app/photoprism': 60 * 60 * 1000,
   '/api/lite/security/history/index': 60 * 60 * 1000,
   '/api/lite/recovery': 20 * 60 * 1000,
 };
@@ -61,10 +63,19 @@ const SECURITY_SNAPSHOT_ENDPOINT = '/api/lite/security';
 const SECURITY_SUMMARY_SNAPSHOT_ENDPOINT = '/api/lite/security/summary';
 const SECURITY_SNAPSHOT_ENDPOINTS = new Set([SECURITY_SNAPSHOT_ENDPOINT, SECURITY_SUMMARY_SNAPSHOT_ENDPOINT]);
 const SECURITY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/security/history/index';
+const SECURITY_DEFAULT_APP_ID = 'photoprism';
+const SECURITY_APP_SNAPSHOT_PATH_PATTERN = /^\/api\/lite\/security\/profiles\/app\/[a-z0-9][a-z0-9_-]{0,79}$/;
 const SECURITY_PROFILE_SNAPSHOT_ENDPOINTS = LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
   items[profile] = `/api/lite/security/profiles/${profile}`;
   return items;
 }, {});
+
+function securityProfileSnapshotEndpoint(profile = 'quick', appId = '') {
+  const normalizedProfile = LITE_SECURITY_PROFILE_IDS.includes(String(profile || '').toLowerCase()) ? String(profile || '').toLowerCase() : 'quick';
+  if (normalizedProfile !== 'app') return SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[normalizedProfile];
+  const safeAppId = String(appId || SECURITY_DEFAULT_APP_ID).toLowerCase().replace(/[^a-z0-9_-]+/g, '').slice(0, 80);
+  return `/api/lite/security/profiles/app/${safeAppId || SECURITY_DEFAULT_APP_ID}`;
+}
 export const LITE_SECURITY_SCAN_BROADCAST_CHANNEL = 'pocketlab-lite-security-scan-sync';
 export const LITE_SECURITY_SCAN_COMPLETED_EVENT = 'security:scan-completed';
 let hydrationStarted = false;
@@ -134,15 +145,26 @@ export function subscribeLiteSecurityScanCompleted(callback) {
 }
 
 export function normalizeLiteSnapshotPath(path = '') {
+  try {
+    const url = new URL(path, typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1');
+    if (url.pathname === '/api/lite/security/profiles/app' && url.searchParams.get('app_id')) {
+      return securityProfileSnapshotEndpoint('app', url.searchParams.get('app_id'));
+    }
+  } catch {
+    // Fall through to the shared endpoint normalizer.
+  }
   return normalizeOfflineEndpoint(path);
 }
 
 export function isSafeLiteSnapshotPath(path = '') {
-  return SAFE_LITE_GET_ENDPOINTS.has(normalizeLiteSnapshotPath(path));
+  const normalized = normalizeLiteSnapshotPath(path);
+  return SAFE_LITE_GET_ENDPOINTS.has(normalized) || SECURITY_APP_SNAPSHOT_PATH_PATTERN.test(normalized);
 }
 
 export function ttlForLiteSnapshotPath(path = '') {
-  return LITE_SNAPSHOT_TTL_MS[normalizeLiteSnapshotPath(path)] || DEFAULT_TTL_MS;
+  const normalized = normalizeLiteSnapshotPath(path);
+  if (SECURITY_APP_SNAPSHOT_PATH_PATTERN.test(normalized)) return LITE_SNAPSHOT_TTL_MS['/api/lite/security/profiles/app'];
+  return LITE_SNAPSHOT_TTL_MS[normalized] || DEFAULT_TTL_MS;
 }
 
 function nowIso() {
@@ -396,7 +418,7 @@ function writeSecurityProfileSnapshots(sourcePath = '', payload = null, sourceRe
     LITE_SECURITY_PROFILE_IDS.forEach((profile) => {
       const profilePayload = profiles[profile];
       if (!profilePayload || typeof profilePayload !== 'object') return;
-      const endpoint = SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[profile];
+      const endpoint = securityProfileSnapshotEndpoint(profile, profilePayload.app_id);
       const unsafeReason = findUnsafeLiteSnapshotContent(profilePayload);
       if (unsafeReason) {
         markLiteSnapshotRejected(endpoint, unsafeReason);
@@ -437,7 +459,8 @@ function readSecurityCompositeSnapshot(requestPath = SECURITY_SUMMARY_SNAPSHOT_E
   let newestProfile = '';
 
   LITE_SECURITY_PROFILE_IDS.forEach((profile) => {
-    const payload = readSnapshotPayloadWithoutMeta(SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[profile]);
+    const endpoint = profile === 'app' ? securityProfileSnapshotEndpoint('app', SECURITY_DEFAULT_APP_ID) : SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[profile];
+    const payload = readSnapshotPayloadWithoutMeta(endpoint) || (profile === 'app' ? readSnapshotPayloadWithoutMeta(SECURITY_PROFILE_SNAPSHOT_ENDPOINTS.app) : null);
     if (!payload || typeof payload !== 'object') return;
     securityProfiles[profile] = payload;
     if (payload.latest_run || payload.run_id || payload.completed_at) profileLatest[profile] = payload.latest_run || payload;
@@ -571,9 +594,8 @@ export async function readLiteSnapshotAsync(path = '') {
   return rememberDexieRecord(record);
 }
 
-export function liteSecurityProfileSnapshotPath(profile = 'quick') {
-  const normalizedProfile = LITE_SECURITY_PROFILE_IDS.includes(String(profile || '').toLowerCase()) ? String(profile || '').toLowerCase() : 'quick';
-  return SECURITY_PROFILE_SNAPSHOT_ENDPOINTS[normalizedProfile];
+export function liteSecurityProfileSnapshotPath(profile = 'quick', appId = '') {
+  return securityProfileSnapshotEndpoint(profile, appId);
 }
 
 export function liteSecurityHistorySnapshotPath() {

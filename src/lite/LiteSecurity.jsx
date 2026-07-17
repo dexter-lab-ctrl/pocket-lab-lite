@@ -41,8 +41,10 @@ import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js'
 import {
   isLiteSecurityViewLive,
   selectSecurityPollingPolicyView,
+  selectSecurityProfileSnapshotView,
   selectSecurityProfileView,
   selectSecurityScreenView,
+  selectSecurityStatePrecedence,
 } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
@@ -431,6 +433,27 @@ function profileRunTimestampLabel(run = null) {
   const timestamp = run?.completed_at || run?.started_at || run?.requested_at || run?.updated_at || '';
   return timestamp ? `Last ${formatLiteTime(timestamp)}` : 'No saved check yet';
 }
+
+function profileSavedAgeLabel(snapshot = {}) {
+  const freshness = snapshot?.freshness || {};
+  const label = String(freshness.label || freshness.short_label || '').trim();
+  if (freshness.is_expired) return label ? `${label.replace(/^Checked /, 'Saved ')} · old` : 'Saved state is old';
+  if (label) return label.replace(/^Checked /, 'Saved ');
+  return snapshot?.completed_at ? 'Saved result available' : 'Not checked';
+}
+
+function profileChangeSummary(snapshot = {}) {
+  const change = snapshot?.change_summary || {};
+  if (!change.comparison_available) return snapshot?.latest_run_id ? 'No earlier check to compare' : '';
+  const newCount = Number(change.new || 0);
+  const resolvedCount = Number(change.resolved || 0);
+  const ongoingCount = Number(change.ongoing || 0);
+  if (newCount > 0) return `${newCount} new item${newCount === 1 ? '' : 's'}`;
+  if (resolvedCount > 0) return `${resolvedCount} item${resolvedCount === 1 ? '' : 's'} resolved`;
+  if (ongoingCount > 0) return `${ongoingCount} item${ongoingCount === 1 ? '' : 's'} still need${ongoingCount === 1 ? 's' : ''} attention`;
+  return 'No new changes';
+}
+
 
 function securityToolChip(toolKey, toolLabel, toolResult = {}, context = {}) {
   const runStatus = String(context.runStatus || '').toLowerCase();
@@ -1940,15 +1963,16 @@ export default function SecurityScreen() {
     select: selectSecurityScreenView,
     snapshotSelect: selectSecurityScreenView,
   });
-  const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile), [scanProfile]);
+  const securityProfileAppId = scanProfile === 'app' ? 'photoprism' : '';
+  const securityProfileLoader = useCallback(() => liteApi.securityProfile(scanProfile, securityProfileAppId), [scanProfile, securityProfileAppId]);
   const securityHistoryLoader = useCallback(() => liteApi.securityHistory(activeSecurityHistoryLimit || 20), [activeSecurityHistoryLimit]);
   const {
     data: securityProfileData,
     refreshing: profileRefreshing,
     refresh: refreshSecurityDetails,
   } = useLiteResource(securityProfileLoader, [scanProfile], {
-    queryKey: liteQueryKeys.securityProfile(scanProfile),
-    path: liteQueryPaths.securityProfile(scanProfile),
+    queryKey: liteQueryKeys.securityProfile(scanProfile, securityProfileAppId),
+    path: liteQueryPaths.securityProfile(scanProfile, securityProfileAppId),
     enabled: shouldLoadSecurityDetails,
     pollingMode: 'relaxed',
     isLive: securityPollingIsLive,
@@ -2023,13 +2047,37 @@ export default function SecurityScreen() {
     };
   }, [scanProfile, securityHistoryData, securityProfileData, liveSecurityProgressData, securitySummaryData]);
   const data = splitSecurityData || securitySummaryData;
+  const securityPrecedence = useMemo(() => selectSecurityStatePrecedence(data || {}, scanProfile, securityProfileAppId), [data, scanProfile, securityProfileAppId]);
+  const securityProfileCards = useMemo(() => SECURITY_SCAN_PROFILES.map((profile) => {
+    const profileView = data?.security_profiles?.[profile.id] || selectSecurityProfileView(data || {}, profile.id);
+    const snapshot = selectSecurityProfileSnapshotView({
+      ...(data || {}),
+      security_profiles: { ...(data?.security_profiles || {}), [profile.id]: profileView },
+    }, profile.id);
+    const hasRun = Boolean(profileView?.has_run || snapshot.latest_run_id || snapshot.completed_at);
+    const isActive = Boolean(
+      securityPrecedence.active
+      && securityPrecedence.profile === profile.id
+      && (profile.id !== 'app' || !securityPrecedence.app_id || securityPrecedence.app_id === (snapshot.app_id || 'photoprism'))
+    );
+    return {
+      ...profile,
+      snapshot,
+      hasRun,
+      isActive,
+      statusLabel: isActive ? profile.running : hasRun ? (snapshot.summary || (snapshot.score >= 95 ? 'Protected' : 'Something changed')) : 'Not checked',
+      ageLabel: isActive ? 'Live backend progress' : profileSavedAgeLabel(snapshot),
+      changeLabel: isActive ? 'Saved result stays visible after completion' : profileChangeSummary(snapshot),
+      offline: Boolean(snapshot?.freshness?.is_saved || snapshot?.freshness?.is_stale),
+    };
+  }), [data, securityPrecedence]);
   const refreshing = summaryRefreshing || (shouldLoadSecurityDetails && profileRefreshing) || (shouldLoadSecurityHistory && historyRefreshing);
 
   useEffect(() => subscribeLiteSecurityScanCompleted((event = {}) => {
     if (event?.type && event.type !== 'security:scan-completed') return;
     const profile = normalizeSecurityProfileId(event.profile || 'quick');
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.security() });
-    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile) });
+    queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : '') });
     queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20) });
   }), [activeSecurityHistoryLimit, queryClient]);
 
@@ -2048,7 +2096,7 @@ export default function SecurityScreen() {
     const currentProfiles = securityFreshnessData.profile_revisions || {};
     ['quick', 'full', 'app'].forEach((profile) => {
       if (previousProfiles[profile] !== currentProfiles[profile]) {
-        invalidate(liteQueryKeys.securityProfile(profile));
+        invalidate(liteQueryKeys.securityProfile(profile, profile === 'app' ? 'photoprism' : ''));
       }
     });
 
@@ -2349,7 +2397,7 @@ export default function SecurityScreen() {
     const normalizedProfile = normalizeSecurityProfileId(profile || 'quick');
     [
       liteQueryKeys.security(),
-      liteQueryKeys.securityProfile(normalizedProfile),
+      liteQueryKeys.securityProfile(normalizedProfile, normalizedProfile === 'app' ? 'photoprism' : ''),
       liteQueryKeys.securityHistory(activeSecurityHistoryLimit || 20),
     ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
   }
@@ -2713,6 +2761,7 @@ export default function SecurityScreen() {
     activeProfileFreshness,
     backendReachable: effectiveBackendReachable,
     securityHistory: hydrateHistoryDetails ? (profileHistory.length ? profileHistory : securityHistory) : [],
+    securityHistoryPage: hydrateHistoryDetails ? securityHistoryData : null,
     latestHistory: hydrateHistoryDetails ? latestHistory : null,
     previousHistory: hydrateHistoryDetails ? previousHistory : null,
     scoreTrendView: hydrateHistoryDetails ? scoreTrendView : null,
@@ -2863,7 +2912,7 @@ export default function SecurityScreen() {
       <PageHeader
         eyebrow="Safety Center"
         title="Security"
-        description="A calm safety overview. Pick Quick, Full, or App Scan, then review the selected profile details."
+        description={securityPrecedence.active ? `${securityProfileMeta(securityPrecedence.profile).label} is active. Live backend progress takes priority over saved results.` : "A calm safety overview. Pick Quick, Full, or App Scan, then review the selected profile details."}
       />
 
       <animated.section className="lite-security-phase5-shell lite-security-phase4-motion" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
@@ -2931,6 +2980,26 @@ export default function SecurityScreen() {
             </animated.div>
           ) : null}
         </GlassCard>
+        <div className="lite-security-s7-profile-cards" aria-label="Saved Security profile results" data-security-s7-profile-cards="true">
+          {securityProfileCards.map((card) => (
+            <button
+              key={`${card.id}:${card.snapshot.app_id || ''}`}
+              type="button"
+              className={`lite-security-s7-profile-card ${scanProfile === card.id ? 'is-selected' : ''} ${card.isActive ? 'is-active' : ''}`.trim()}
+              onClick={() => chooseSecurityProfile(card.id)}
+              aria-label={`Show ${card.label} saved state`}
+            >
+              <span className="lite-security-s7-profile-label">{card.snapshot.label || card.label}</span>
+              <strong>{card.statusLabel}</strong>
+              <small>{card.ageLabel}</small>
+              <span className="lite-security-s7-profile-card-meta">
+                {card.snapshot.evidence_saved ? <em>Evidence saved</em> : null}
+                {card.changeLabel ? <em>{card.changeLabel}</em> : null}
+                {card.offline ? <em>Showing saved state</em> : null}
+              </span>
+            </button>
+          ))}
+        </div>
       </animated.section>
 
       {loading ? <LoadingCard label="Loading safety summary..." /> : null}

@@ -622,6 +622,14 @@ tasks:
     cmds:
       - mkdocs build --strict
 
+  lite:security:s7:check:
+    desc: Validate Phase S7 Security saved-state, history, frontend, and production build contracts
+    cmds:
+      - python3 -m py_compile pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_store.py pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py tests/backend/test_lite_security_s7_saved_state_history.py
+      - PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q tests/backend/test_lite_security_s7_saved_state_history.py tests/backend/test_lite_security_f7_split_read_contract.py tests/backend/test_lite_security_f3_summary_contract.py tests/backend/test_lite_security_f9_etag_contract.py tests/backend/test_lite_security_s6_replay.py tests/backend/test_lite_security_s6_retention.py
+      - npx vitest run src/lib/liteSecurityS7.test.js
+      - npm run build
+
   lite:check:
     desc: Run Pocket Lab Lite bootstrap, API, frontend, and docs validation
     cmds:
