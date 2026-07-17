@@ -13,6 +13,7 @@ PYTHON_BIN="${POCKETLAB_S6_GATE_PYTHON:-python3}"
 SQLITE_BIN="${POCKETLAB_S6_GATE_SQLITE:-sqlite3}"
 PM2_BIN="${POCKETLAB_S6_GATE_PM2:-pm2}"
 SCAN_TIMEOUT_SECONDS="${POCKETLAB_S6_GATE_SCAN_TIMEOUT_SECONDS:-900}"
+SCAN_TERMINAL_TIMEOUT_SECONDS="${POCKETLAB_S6_GATE_SCAN_TERMINAL_TIMEOUT_SECONDS:-$SCAN_TIMEOUT_SECONDS}"
 SSE_CAPTURE_SECONDS="${POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS:-35}"
 REPLAY_WAIT_SECONDS="${POCKETLAB_S6_GATE_REPLAY_WAIT_SECONDS:-600}"
 RUN_API_RESTART=0
@@ -34,6 +35,7 @@ Environment overrides:
   POCKETLAB_LITE_DIRECT_BASE_URL
   POCKETLAB_LITE_PROXY_BASE_URL
   POCKETLAB_S6_GATE_SCAN_TIMEOUT_SECONDS
+  POCKETLAB_S6_GATE_SCAN_TERMINAL_TIMEOUT_SECONDS
   POCKETLAB_S6_GATE_SSE_CAPTURE_SECONDS
   POCKETLAB_S6_GATE_REPLAY_WAIT_SECONDS
   POCKETLAB_API_TOKEN
@@ -423,6 +425,79 @@ then
   record PASS "stale, ahead, and malformed cursor resets"
 else
   record FAIL "stale, ahead, and malformed cursor resets"
+fi
+
+# Retention pressure must use a completed-run snapshot. Wait for the exact run
+# exercised above to reach a terminal state before copying the production DB.
+SCAN_TERMINAL=0
+SCAN_FINAL_STATUS=""
+SCAN_FINAL_PERCENT=""
+for ((attempt=1; attempt<=SCAN_TERMINAL_TIMEOUT_SECONDS; attempt++)); do
+  if curl -fsS --max-time 10 "${AUTH_ARGS[@]}" "$PROXY_BASE/api/lite/security/progress" -o "$PROGRESS_JSON"; then
+    IFS=$'\t' read -r CURRENT_RUN ACTIVE CURRENT_STATUS CURRENT_PERCENT < <("$PYTHON_BIN" - "$PROGRESS_JSON" <<'PY'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+print(
+    payload.get("run_id") or "",
+    "1" if payload.get("active_scan") else "0",
+    payload.get("status") or "",
+    int(payload.get("percent") or 0),
+    sep="\t",
+)
+PY
+)
+    case "$CURRENT_STATUS" in
+      succeeded|failed|cancelled|timed_out|degraded)
+        if [[ "$CURRENT_RUN" == "$RUN_ID" && "$ACTIVE" == "0" ]]; then
+          SCAN_TERMINAL=1
+          SCAN_FINAL_STATUS="$CURRENT_STATUS"
+          SCAN_FINAL_PERCENT="$CURRENT_PERCENT"
+          break
+        fi
+        ;;
+    esac
+  fi
+  sleep 1
+done
+
+if (( SCAN_TERMINAL == 0 )); then
+  record FAIL "submitted Quick Scan reached terminal state" "$RUN_ID"
+  exit 1
+fi
+if [[ "$SCAN_FINAL_STATUS" != "succeeded" || "$SCAN_FINAL_PERCENT" != "100" ]]; then
+  record FAIL "submitted Quick Scan reached terminal state" "status=$SCAN_FINAL_STATUS percent=$SCAN_FINAL_PERCENT"
+  exit 1
+fi
+record PASS "submitted Quick Scan reached terminal state" "status=$SCAN_FINAL_STATUS percent=$SCAN_FINAL_PERCENT"
+
+if "$PYTHON_BIN" - "$DB_PATH" "$RUN_ID" <<'PY'
+import sqlite3
+import sys
+
+path, run_id = sys.argv[1:]
+with sqlite3.connect(path) as conn:
+    row = conn.execute(
+        """
+        SELECT event_id, status, percent
+        FROM security_scan_progress_events
+        WHERE run_id = ?
+          AND status IN ('succeeded','failed','cancelled','timed_out','degraded')
+        ORDER BY event_id DESC
+        LIMIT 1
+        """,
+        (run_id,),
+    ).fetchone()
+assert row is not None, "submitted run has no terminal event"
+assert row[1] == "succeeded", row
+assert int(row[2] or 0) == 100, row
+PY
+then
+  record PASS "submitted Quick Scan terminal event persisted"
+else
+  record FAIL "submitted Quick Scan terminal event persisted" "$RUN_ID"
+  exit 1
 fi
 
 if (( RUN_RETENTION == 1 )); then

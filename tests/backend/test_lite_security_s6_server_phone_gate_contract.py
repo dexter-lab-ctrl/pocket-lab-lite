@@ -57,3 +57,22 @@ def test_s6_server_phone_gate_embedded_python_blocks_compile():
 
     for index, block in enumerate(blocks, start=1):
         compile(block, f"s6-gate-heredoc-{index}", "exec")
+
+
+
+def test_s6_server_phone_gate_waits_for_terminal_run_before_retention_copy():
+    script = Path(
+        "scripts/dev/check-lite-security-s6-backend-gate-server-phone.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "POCKETLAB_S6_GATE_SCAN_TERMINAL_TIMEOUT_SECONDS" in script
+    assert "submitted Quick Scan reached terminal state" in script
+    assert "submitted Quick Scan terminal event persisted" in script
+    assert "status=$SCAN_FINAL_STATUS percent=$SCAN_FINAL_PERCENT" in script
+    assert "submitted run has no terminal event" in script
+
+    terminal_wait = script.index("submitted Quick Scan reached terminal state")
+    terminal_event = script.index("submitted Quick Scan terminal event persisted")
+    retention_backup = script.index(".backup '$RET_DB'")
+
+    assert terminal_wait < terminal_event < retention_backup
