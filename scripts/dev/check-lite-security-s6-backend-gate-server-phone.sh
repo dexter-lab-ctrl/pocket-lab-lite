@@ -447,7 +447,7 @@ with sqlite3.connect(path) as conn:
         JOIN security_scan_runs r ON r.run_id=pe.run_id
         WHERE r.status IN ('succeeded','degraded','failed','cancelled')
         GROUP BY pe.run_id
-    ") if row[0] is not None}
+    """) if row[0] is not None}
     active=conn.execute("""
         SELECT COUNT(*) FROM security_scan_runs
         WHERE status IN ('queued','accepted','running','working','in_progress')
