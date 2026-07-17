@@ -142,6 +142,44 @@ _PROGRESS_RUN_SQL = f"""
     WHERE r.run_id = ?
     LIMIT 1
 """
+_PROGRESS_EVENT_SELECT = """
+    SELECT
+        pe.event_id,
+        pe.run_id,
+        pe.sequence_no,
+        pe.status,
+        pe.stage,
+        pe.percent,
+        pe.message,
+        pe.tool,
+        pe.created_at,
+        pe.created_at_epoch_ms,
+        pe.payload_json,
+        r.profile,
+        r.app_id,
+        r.updated_at AS run_updated_at,
+        r.updated_at_epoch_ms AS run_updated_at_epoch_ms,
+        r.revision AS run_revision,
+        COALESCE(dr.revision, 0) AS domain_revision
+    FROM security_scan_progress_events AS pe
+    JOIN security_scan_runs AS r ON r.run_id = pe.run_id
+    LEFT JOIN domain_revisions AS dr ON dr.domain = 'security'
+"""
+
+
+def _progress_event_payload(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    item = dict(row)
+    item["event_id"] = int(item.get("event_id") or 0)
+    item["sequence_no"] = int(item.get("sequence_no") or 0)
+    item["percent"] = max(0, min(100, int(item.get("percent") or 0)))
+    item["created_at_epoch_ms"] = int(item.get("created_at_epoch_ms") or 0)
+    item["run_updated_at_epoch_ms"] = int(item.get("run_updated_at_epoch_ms") or 0)
+    item["run_revision"] = int(item.get("run_revision") or 0)
+    item["domain_revision"] = int(item.get("domain_revision") or 0)
+    item["payload"] = _json_value(item.pop("payload_json", None), {})
+    return policy.redact_value(item)
 
 
 def _progress_payload(row: sqlite3.Row | None) -> dict[str, Any] | None:
@@ -1659,20 +1697,206 @@ class SecuritySQLiteRepository:
         with SecurityProgressReader() as reader:
             return reader.read(run_id).progress
 
+    def get_progress_event(self, event_id: int) -> dict[str, Any] | None:
+        numeric = int(event_id)
+        if numeric <= 0:
+            return None
+        with read_connection() as conn:
+            row = conn.execute(
+                _PROGRESS_EVENT_SELECT + " WHERE pe.event_id = ? LIMIT 1",
+                (numeric,),
+            ).fetchone()
+        return _progress_event_payload(row)
+
+    def get_latest_progress_event(
+        self, run_id: str | None = None
+    ) -> dict[str, Any] | None:
+        clause = ""
+        parameters: tuple[Any, ...] = ()
+        if run_id:
+            clause = " WHERE pe.run_id = ?"
+            parameters = (_normalize_run_id(run_id),)
+        with read_connection() as conn:
+            row = conn.execute(
+                _PROGRESS_EVENT_SELECT + clause + " ORDER BY pe.event_id DESC LIMIT 1",
+                parameters,
+            ).fetchone()
+        return _progress_event_payload(row)
+
+    def get_oldest_progress_event_id(self) -> int | None:
+        with read_connection() as conn:
+            row = conn.execute(
+                "SELECT MIN(event_id) AS event_id FROM security_scan_progress_events"
+            ).fetchone()
+        value = row["event_id"] if row else None
+        return int(value) if value is not None else None
+
+    def get_latest_progress_event_id(self) -> int | None:
+        with read_connection() as conn:
+            row = conn.execute(
+                "SELECT MAX(event_id) AS event_id FROM security_scan_progress_events"
+            ).fetchone()
+        value = row["event_id"] if row else None
+        return int(value) if value is not None else None
+
+    def list_progress_events_after(
+        self, event_id: int, *, limit: int = 200
+    ) -> list[dict[str, Any]]:
+        bounded = max(1, min(int(limit), 1000))
+        numeric = max(0, int(event_id))
+        with read_connection() as conn:
+            rows = conn.execute(
+                _PROGRESS_EVENT_SELECT
+                + " WHERE pe.event_id > ? ORDER BY pe.event_id ASC LIMIT ?",
+                (numeric, bounded),
+            ).fetchall()
+        return [payload for row in rows if (payload := _progress_event_payload(row))]
+
     def list_progress_events(self, run_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
         bounded = max(1, min(int(limit), 500))
         with read_connection() as conn:
             rows = conn.execute(
-                "SELECT * FROM security_scan_progress_events WHERE run_id = ? "
-                "ORDER BY event_id DESC LIMIT ?",
+                _PROGRESS_EVENT_SELECT
+                + " WHERE pe.run_id = ? ORDER BY pe.event_id DESC LIMIT ?",
                 (_normalize_run_id(run_id), bounded),
             ).fetchall()
-        payloads: list[dict[str, Any]] = []
-        for row in rows:
-            item = dict(row)
-            item["payload"] = _json_value(item.pop("payload_json", None), {})
-            payloads.append(policy.redact_value(item))
-        return payloads
+        return [payload for row in rows if (payload := _progress_event_payload(row))]
+
+    def prune_progress_events(
+        self,
+        *,
+        retention_days: int = 30,
+        max_rows: int = 20_000,
+        min_per_active_run: int = 100,
+        batch_size: int = 500,
+        now_epoch_ms: int | None = None,
+    ) -> dict[str, Any]:
+        """Prune one bounded batch while preserving active and terminal truth."""
+        days = max(1, min(int(retention_days), 3650))
+        row_cap = max(100, min(int(max_rows), 2_000_000))
+        minimum = max(1, min(int(min_per_active_run), 1000))
+        bounded_batch = max(1, min(int(batch_size), 2000))
+        current_epoch_ms = int(now_epoch_ms or time.time() * 1000)
+        cutoff_epoch_ms = current_epoch_ms - (days * 24 * 60 * 60 * 1000)
+        recorded_at = datetime.fromtimestamp(
+            current_epoch_ms / 1000, tz=timezone.utc
+        ).isoformat().replace("+00:00", "Z")
+
+        with connection() as conn, begin_immediate(conn) as tx:
+            total_before = int(
+                tx.execute(
+                    "SELECT COUNT(*) AS count FROM security_scan_progress_events"
+                ).fetchone()["count"]
+            )
+            active_ids = {
+                int(row["event_id"])
+                for row in tx.execute(
+                    """
+                    SELECT pe.event_id
+                    FROM security_scan_progress_events AS pe
+                    JOIN security_scan_runs AS r ON r.run_id = pe.run_id
+                    WHERE r.status IN ('queued','accepted','running','working','in_progress')
+                    """
+                ).fetchall()
+            }
+            terminal_ids = {
+                int(row["event_id"])
+                for row in tx.execute(
+                    """
+                    SELECT MAX(pe.event_id) AS event_id
+                    FROM security_scan_progress_events AS pe
+                    JOIN security_scan_runs AS r ON r.run_id = pe.run_id
+                    WHERE r.status IN ('succeeded','degraded','failed','cancelled')
+                    GROUP BY pe.run_id
+                    """
+                ).fetchall()
+                if row["event_id"] is not None
+            }
+            recent_completed_ids = {
+                int(row["event_id"])
+                for row in tx.execute(
+                    """
+                    SELECT event_id FROM (
+                        SELECT pe.event_id,
+                               ROW_NUMBER() OVER (
+                                   PARTITION BY pe.run_id ORDER BY pe.event_id DESC
+                               ) AS retained_rank
+                        FROM security_scan_progress_events AS pe
+                        JOIN security_scan_runs AS r ON r.run_id = pe.run_id
+                        WHERE r.status NOT IN ('queued','accepted','running','working','in_progress')
+                    )
+                    WHERE retained_rank <= ?
+                    """,
+                    (minimum,),
+                ).fetchall()
+            }
+            protected_ids = active_ids | terminal_ids | recent_completed_ids
+            scan_limit = min(
+                50_000,
+                max(bounded_batch * 10, bounded_batch + len(protected_ids)),
+            )
+            oldest_rows = tx.execute(
+                """
+                SELECT event_id, created_at_epoch_ms
+                FROM security_scan_progress_events
+                ORDER BY event_id ASC
+                LIMIT ?
+                """,
+                (scan_limit,),
+            ).fetchall()
+            age_candidates = [
+                int(row["event_id"])
+                for row in oldest_rows
+                if int(row["event_id"]) not in protected_ids
+                and int(row["created_at_epoch_ms"] or 0) < cutoff_epoch_ms
+            ]
+            excess = max(0, total_before - row_cap)
+            cap_candidates = [
+                int(row["event_id"])
+                for row in oldest_rows
+                if int(row["event_id"]) not in protected_ids
+            ][:excess]
+            delete_ids = list(dict.fromkeys(age_candidates + cap_candidates))[:bounded_batch]
+            if delete_ids:
+                placeholders = ",".join("?" for _ in delete_ids)
+                tx.execute(
+                    f"DELETE FROM security_scan_progress_events WHERE event_id IN ({placeholders})",
+                    tuple(delete_ids),
+                )
+            total_after = total_before - len(delete_ids)
+            oldest_row = tx.execute(
+                "SELECT MIN(event_id) AS event_id FROM security_scan_progress_events"
+            ).fetchone()
+            latest_row = tx.execute(
+                "SELECT MAX(event_id) AS event_id FROM security_scan_progress_events"
+            ).fetchone()
+            result = {
+                "status": "completed",
+                "retention_days": days,
+                "max_rows": row_cap,
+                "min_per_active_run": minimum,
+                "batch_size": bounded_batch,
+                "rows_before": total_before,
+                "rows_deleted": len(delete_ids),
+                "rows_after": total_after,
+                "active_event_rows_preserved": len(active_ids),
+                "terminal_event_rows_preserved": len(terminal_ids),
+                "oldest_retained_event_id": (
+                    int(oldest_row["event_id"])
+                    if oldest_row and oldest_row["event_id"] is not None
+                    else None
+                ),
+                "latest_retained_event_id": (
+                    int(latest_row["event_id"])
+                    if latest_row and latest_row["event_id"] is not None
+                    else None
+                ),
+                "row_cap_satisfied": total_after <= row_cap,
+                "recorded_at": recorded_at,
+                "sanitized": True,
+            }
+            _set_metadata(tx, "progress_retention:last", result, at=recorded_at)
+        return policy.redact_value(result)
 
     def list_tool_runs(self, run_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
         bounded = max(1, min(int(limit), 100))

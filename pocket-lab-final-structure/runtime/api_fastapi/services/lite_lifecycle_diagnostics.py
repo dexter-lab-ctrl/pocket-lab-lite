@@ -30,6 +30,12 @@ _ALLOWED_FIELDS: Final[tuple[str, ...]] = (
     "backend_revision",
     "write_actions_blocked",
     "duplicate_submission_count",
+    "last_accepted_event_id",
+    "replayed_event_count",
+    "duplicate_event_count",
+    "stale_event_rejection_count",
+    "polling_fallback_activation_count",
+    "completion_deduplication_count",
     "last_sse_opened_at",
     "last_sse_closed_at",
     "last_poll_started_at",
@@ -89,7 +95,7 @@ def sanitize_report(report: dict[str, Any]) -> dict[str, Any]:
     clean: dict[str, Any] = {}
     for key in _ALLOWED_FIELDS:
         value = report.get(key)
-        if key.endswith("_count"):
+        if key.endswith("_count") or key == "last_accepted_event_id":
             clean[key] = _bounded_int(value)
         elif key in {"online_state", "write_actions_blocked"}:
             clean[key] = bool(value)

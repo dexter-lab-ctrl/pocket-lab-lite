@@ -46,6 +46,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     diagnostics_started = False
     admission_started = False
+    security_retention_task: asyncio.Task[None] | None = None
     try:
         try:
             diagnostics_started = await RUNTIME_DIAGNOSTICS.start()
@@ -61,6 +62,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             lite_security.initialize_security_sqlite_runtime,
         )
         lite_security.start_security_projection_runtime()
+        security_retention_task = asyncio.create_task(
+            lite_security.security_progress_retention_loop(),
+            name="pocketlab-security-progress-retention",
+        )
         await BUS.start()
         await BUS.start_watchdog()
         install_operation_event_publisher(
@@ -82,6 +87,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
+        if security_retention_task is not None:
+            security_retention_task.cancel()
+            try:
+                await security_retention_task
+            except asyncio.CancelledError:
+                pass
         try:
             await WORKLOAD_ADMISSION.run(
                 "security.projection.stop",
