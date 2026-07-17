@@ -86,6 +86,26 @@ _SQLITE_PROGRESS_THREAD: threading.Thread | None = None
 _SQLITE_PROGRESS_EPOCH = 0
 _ACTIVE_PROGRESS_STATUSES = frozenset({"queued", "accepted", "running", "working", "in_progress"})
 _TERMINAL_PROGRESS_STATUSES = frozenset({"succeeded", "degraded", "failed", "cancelled", "canceled", "completed"})
+_SECURITY_EVENT_REPLAY_LOCK = threading.Lock()
+_SECURITY_EVENT_REPLAY_DIAGNOSTICS: dict[str, Any] = {
+    "requests": 0,
+    "snapshot_responses": 0,
+    "idle_responses": 0,
+    "replay_responses": 0,
+    "invalid_cursor_resets": 0,
+    "cursor_too_old_resets": 0,
+    "cursor_ahead_resets": 0,
+    "replay_limit_resets": 0,
+    "replayed_events": 0,
+    "last_outcome": "idle",
+    "last_checked_at": None,
+}
+_SECURITY_PROGRESS_RETENTION_LOCK = threading.Lock()
+_SECURITY_PROGRESS_RETENTION_DIAGNOSTICS: dict[str, Any] = {
+    "runs": 0,
+    "rows_deleted": 0,
+    "last_result": None,
+}
 
 
 def _security_store_api():
@@ -1890,6 +1910,8 @@ def security_progress_runtime_diagnostics() -> dict[str, Any]:
             "active_scan": bool(prepared.active_scan if prepared else False),
             "projection_age_ms": round(age_ms, 2) if age_ms is not None else None,
             "read_failure_count": int(failures),
+            "event_replay": security_event_replay_diagnostics(),
+            "progress_retention": security_progress_retention_diagnostics(),
             "sanitized": True,
         }
     )
@@ -2684,6 +2706,7 @@ def _ensure_compact_state() -> dict[str, Any]:
 
 _SECURITY_STREAM_ALLOWED_FIELDS = {
     "type",
+    "event_id",
     "run_id",
     "profile",
     "app_id",
@@ -2691,13 +2714,21 @@ _SECURITY_STREAM_ALLOWED_FIELDS = {
     "percent",
     "message",
     "status",
+    "tool",
     "revision",
     "updated_at",
+    "updated_at_epoch_ms",
     "active_scan",
+    "replayed",
+    "snapshot",
+    "reset",
+    "reset_reason",
     "summary_revision",
     "profile_revision",
     "history_revision",
     "progress_revision",
+    "server_time",
+    "sanitized",
 }
 _SECURITY_STREAM_TERMINAL_STATUSES = {"succeeded", "completed", "degraded", "failed", "cancelled", "canceled"}
 _SECURITY_STREAM_LIVE_STATUSES = {"queued", "accepted", "waiting", "running", "working", "in_progress", "lynis_running", "trivy_running", "posture_running", "evidence_saving"}
@@ -2745,44 +2776,405 @@ def _security_stream_message(progress: dict[str, Any] | None = None) -> str:
     return message or "Working"
 
 
-def security_progress_event() -> dict[str, Any]:
-    progress = split_progress_state()
-    freshness = split_freshness_state()
-    profile = str(progress.get("profile") or policy.SCAN_PROFILE_QUICK).strip().lower() or policy.SCAN_PROFILE_QUICK
-    profile_revisions = freshness.get("profile_revisions") if isinstance(freshness.get("profile_revisions"), dict) else {}
+def _bounded_security_event_limit(value: Any = None) -> int:
+    try:
+        parsed = int(
+            value
+            if value is not None
+            else os.environ.get("POCKETLAB_SECURITY_PROGRESS_REPLAY_LIMIT", "200")
+        )
+    except (TypeError, ValueError):
+        parsed = 200
+    return max(1, min(500, parsed))
+
+
+def _security_stream_clean(event: dict[str, Any]) -> dict[str, Any]:
+    return policy.redact_value(
+        {key: value for key, value in event.items() if key in _SECURITY_STREAM_ALLOWED_FIELDS}
+    )
+
+
+def security_progress_event_from_persisted(
+    row: dict[str, Any], *, replayed: bool = False
+) -> dict[str, Any]:
+    status = str(row.get("status") or "idle")
+    progress = {
+        "run_id": row.get("run_id"),
+        "profile": row.get("profile") or policy.SCAN_PROFILE_QUICK,
+        "app_id": row.get("app_id"),
+        "status": status,
+        "stage": row.get("stage"),
+        "percent": row.get("percent"),
+        "message": row.get("message"),
+        "active_scan": status in _ACTIVE_PROGRESS_STATUSES,
+    }
     event = {
         "type": _security_stream_event_type(progress),
-        "run_id": progress.get("run_id") or None,
+        "event_id": int(row.get("event_id") or 0),
+        "run_id": row.get("run_id") or None,
+        "profile": progress["profile"],
+        "app_id": row.get("app_id") or None,
+        "stage": row.get("stage") or status or "idle",
+        "percent": max(0, min(100, int(row.get("percent") or 0))),
+        "message": _security_stream_message(progress),
+        "status": status,
+        "tool": row.get("tool") or None,
+        "revision": str(row.get("domain_revision") or row.get("run_revision") or ""),
+        "updated_at": row.get("created_at") or row.get("run_updated_at"),
+        "updated_at_epoch_ms": int(
+            row.get("created_at_epoch_ms") or row.get("run_updated_at_epoch_ms") or 0
+        ),
+        "active_scan": status in _ACTIVE_PROGRESS_STATUSES,
+        "replayed": bool(replayed),
+        "snapshot": False,
+        "reset": False,
+        "progress_revision": str(row.get("event_id") or ""),
+        "sanitized": True,
+    }
+    return _security_stream_clean(event)
+
+
+def _security_snapshot_event(
+    repository: Any | None = None, *, reset_reason: str | None = None
+) -> dict[str, Any]:
+    repo = repository or _security_repository()
+    progress = split_progress_state()
+    latest = repo.get_latest_progress_event()
+    latest_id = int((latest or {}).get("event_id") or 0)
+    profile = str(
+        progress.get("profile") or (latest or {}).get("profile") or policy.SCAN_PROFILE_QUICK
+    ).strip().lower() or policy.SCAN_PROFILE_QUICK
+    event = {
+        "type": "security.scan.snapshot",
+        "event_id": latest_id or None,
+        "run_id": progress.get("run_id") or (latest or {}).get("run_id") or None,
         "profile": profile,
-        "app_id": progress.get("app_id") or None,
+        "app_id": progress.get("app_id") or (latest or {}).get("app_id") or None,
         "stage": progress.get("stage") or progress.get("status") or "idle",
-        "percent": int(progress.get("percent") or 0),
+        "percent": max(0, min(100, int(progress.get("percent") or 0))),
         "message": _security_stream_message(progress),
         "status": progress.get("status") or "idle",
-        "revision": progress.get("revision") or _progress_revision(_ensure_compact_state()),
-        "updated_at": progress.get("updated_at") or freshness.get("updated_at"),
+        "updated_at": progress.get("updated_at") or (latest or {}).get("created_at"),
+        "updated_at_epoch_ms": int(
+            progress.get("updated_at_epoch_ms") or (latest or {}).get("created_at_epoch_ms") or 0
+        ),
         "active_scan": bool(progress.get("active_scan")),
-        "summary_revision": freshness.get("summary_revision"),
-        "profile_revision": profile_revisions.get(profile),
-        "history_revision": freshness.get("history_revision"),
-        "progress_revision": freshness.get("progress_revision") or progress.get("revision"),
+        "replayed": False,
+        "snapshot": True,
+        "reset": bool(reset_reason),
+        "reset_reason": reset_reason,
+        "revision": progress.get("revision") or str(latest_id or ""),
+        "progress_revision": str(latest_id or progress.get("revision") or ""),
+        "sanitized": True,
     }
-    clean = policy.redact_value({key: value for key, value in event.items() if key in _SECURITY_STREAM_ALLOWED_FIELDS})
-    return clean
+    return _security_stream_clean(event)
+
+
+def security_progress_event() -> dict[str, Any]:
+    """Backward-compatible current canonical snapshot event."""
+    return _security_snapshot_event()
+
+
+def security_progress_heartbeat() -> dict[str, Any]:
+    progress = split_progress_state()
+    return _security_stream_clean({
+        "type": "security.scan.heartbeat",
+        "server_time": deps.now_utc_iso(),
+        "active_scan": bool(progress.get("active_scan")),
+        "sanitized": True,
+    })
+
+
+def get_security_progress_event(event_id: int) -> dict[str, Any] | None:
+    return _security_repository().get_progress_event(event_id)
+
+
+def get_latest_security_progress_event(run_id: str | None = None) -> dict[str, Any] | None:
+    return _security_repository().get_latest_progress_event(run_id)
+
+
+def get_oldest_security_progress_event_id() -> int | None:
+    return _security_repository().get_oldest_progress_event_id()
+
+
+def get_latest_security_progress_event_id() -> int | None:
+    return _security_repository().get_latest_progress_event_id()
+
+
+def list_security_progress_events_after(
+    event_id: int, *, limit: int = 200
+) -> list[dict[str, Any]]:
+    return _security_repository().list_progress_events_after(event_id, limit=limit)
+
+
+def _record_security_replay_outcome(outcome: str, replayed_count: int = 0) -> None:
+    now = deps.now_utc_iso()
+    counter = {
+        "snapshot": "snapshot_responses",
+        "idle": "idle_responses",
+        "replay": "replay_responses",
+        "invalid_cursor": "invalid_cursor_resets",
+        "cursor_too_old": "cursor_too_old_resets",
+        "cursor_ahead": "cursor_ahead_resets",
+        "replay_limit_exceeded": "replay_limit_resets",
+    }.get(outcome)
+    with _SECURITY_EVENT_REPLAY_LOCK:
+        _SECURITY_EVENT_REPLAY_DIAGNOSTICS["requests"] += 1
+        _SECURITY_EVENT_REPLAY_DIAGNOSTICS["last_outcome"] = outcome
+        _SECURITY_EVENT_REPLAY_DIAGNOSTICS["last_checked_at"] = now
+        _SECURITY_EVENT_REPLAY_DIAGNOSTICS["replayed_events"] += max(0, int(replayed_count))
+        if counter:
+            _SECURITY_EVENT_REPLAY_DIAGNOSTICS[counter] += 1
+
+
+def security_event_replay_diagnostics() -> dict[str, Any]:
+    with _SECURITY_EVENT_REPLAY_LOCK:
+        return policy.redact_value(
+            {**_SECURITY_EVENT_REPLAY_DIAGNOSTICS, "sanitized": True}
+        )
+
+
+def security_event_replay(
+    last_event_id: int | str | None,
+    replay_limit: int = 200,
+    *,
+    repository: Any | None = None,
+) -> dict[str, Any]:
+    repo = repository or _security_repository()
+    bounded_limit = _bounded_security_event_limit(replay_limit)
+    oldest = repo.get_oldest_progress_event_id()
+    latest = repo.get_latest_progress_event_id()
+
+    if last_event_id is None or str(last_event_id).strip() == "":
+        outcome = "idle" if latest is None else "snapshot"
+        _record_security_replay_outcome(outcome)
+        return {
+            "outcome": outcome,
+            "events": [_security_snapshot_event(repo)],
+            "resume_event_id": int(latest or 0),
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    try:
+        cursor = int(str(last_event_id).strip())
+        if cursor < 0:
+            raise ValueError("negative cursor")
+    except (TypeError, ValueError):
+        outcome = "invalid_cursor"
+        _LOGGER.warning("Security SSE cursor reset outcome=%s", outcome)
+        _record_security_replay_outcome(outcome)
+        return {
+            "outcome": outcome,
+            "events": [_security_snapshot_event(repo, reset_reason=outcome)],
+            "resume_event_id": int(latest or 0),
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    if latest is None:
+        outcome = "cursor_ahead" if cursor > 0 else "idle"
+        _record_security_replay_outcome(outcome)
+        return {
+            "outcome": outcome,
+            "events": [
+                _security_snapshot_event(
+                    repo, reset_reason=outcome if outcome != "idle" else None
+                )
+            ],
+            "resume_event_id": 0,
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    if oldest is not None and cursor < oldest:
+        outcome = "cursor_too_old"
+        _LOGGER.warning(
+            "Security SSE cursor reset outcome=%s oldest=%d latest=%d",
+            outcome,
+            oldest,
+            latest,
+        )
+        _record_security_replay_outcome(outcome)
+        return {
+            "outcome": outcome,
+            "events": [_security_snapshot_event(repo, reset_reason=outcome)],
+            "resume_event_id": latest,
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    if cursor > latest:
+        outcome = "cursor_ahead"
+        _LOGGER.warning(
+            "Security SSE cursor reset outcome=%s oldest=%s latest=%d",
+            outcome,
+            oldest,
+            latest,
+        )
+        _record_security_replay_outcome(outcome)
+        return {
+            "outcome": outcome,
+            "events": [_security_snapshot_event(repo, reset_reason=outcome)],
+            "resume_event_id": latest,
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    if cursor == latest:
+        _record_security_replay_outcome("replay")
+        return {
+            "outcome": "replay",
+            "events": [],
+            "resume_event_id": cursor,
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    rows = repo.list_progress_events_after(cursor, limit=bounded_limit + 1)
+    if len(rows) > bounded_limit:
+        outcome = "replay_limit_exceeded"
+        _LOGGER.warning(
+            "Security SSE cursor reset outcome=%s replay_limit=%d oldest=%s latest=%d",
+            outcome,
+            bounded_limit,
+            oldest,
+            latest,
+        )
+        _record_security_replay_outcome(outcome)
+        return {
+            "outcome": "snapshot",
+            "events": [_security_snapshot_event(repo, reset_reason=outcome)],
+            "resume_event_id": latest,
+            "oldest_event_id": oldest,
+            "latest_event_id": latest,
+            "sanitized": True,
+        }
+    events = [
+        security_progress_event_from_persisted(row, replayed=True) for row in rows
+    ]
+    resume_event_id = int(events[-1].get("event_id") or cursor) if events else cursor
+    _record_security_replay_outcome("replay", len(events))
+    return {
+        "outcome": "replay",
+        "events": events,
+        "resume_event_id": resume_event_id,
+        "oldest_event_id": oldest,
+        "latest_event_id": latest,
+        "sanitized": True,
+    }
 
 
 def security_progress_event_fingerprint(event: dict[str, Any] | None = None) -> str:
     payload = event if isinstance(event, dict) else {}
     return _revision_token(
         "stream",
+        payload.get("event_id"),
         payload.get("type"),
         payload.get("run_id"),
         payload.get("status"),
         payload.get("stage"),
         payload.get("percent"),
-        payload.get("revision") or payload.get("progress_revision"),
         payload.get("updated_at"),
     )
+
+
+def security_progress_retention_config() -> dict[str, int]:
+    def bounded(name: str, default: int, minimum: int, maximum: int) -> int:
+        try:
+            value = int(os.environ.get(name, str(default)))
+        except (TypeError, ValueError):
+            value = default
+        return max(minimum, min(maximum, value))
+
+    return {
+        "retention_days": bounded(
+            "POCKETLAB_SECURITY_PROGRESS_RETENTION_DAYS", 30, 1, 3650
+        ),
+        "max_rows": bounded(
+            "POCKETLAB_SECURITY_PROGRESS_MAX_ROWS", 20_000, 100, 2_000_000
+        ),
+        "min_per_active_run": bounded(
+            "POCKETLAB_SECURITY_PROGRESS_MIN_PER_ACTIVE_RUN", 100, 1, 1000
+        ),
+        "batch_size": bounded(
+            "POCKETLAB_SECURITY_PROGRESS_PRUNE_BATCH_SIZE", 500, 1, 2000
+        ),
+    }
+
+
+def run_security_progress_retention(
+    *, repository: Any | None = None, max_batches: int = 20
+) -> dict[str, Any]:
+    repo = repository or _security_repository()
+    config = security_progress_retention_config()
+    deleted = 0
+    last: dict[str, Any] = {}
+    batches = 0
+    for _ in range(max(1, min(int(max_batches), 50))):
+        batches += 1
+        last = repo.prune_progress_events(**config)
+        deleted += int(last.get("rows_deleted") or 0)
+        if int(last.get("rows_deleted") or 0) == 0:
+            break
+    result = policy.redact_value(
+        {
+            **last,
+            "batches": batches,
+            "rows_deleted": deleted,
+            "config": config,
+            "sanitized": True,
+        }
+    )
+    with _SECURITY_PROGRESS_RETENTION_LOCK:
+        _SECURITY_PROGRESS_RETENTION_DIAGNOSTICS["runs"] += 1
+        _SECURITY_PROGRESS_RETENTION_DIAGNOSTICS["rows_deleted"] += deleted
+        _SECURITY_PROGRESS_RETENTION_DIAGNOSTICS["last_result"] = result
+    return result
+
+
+def security_progress_retention_diagnostics() -> dict[str, Any]:
+    with _SECURITY_PROGRESS_RETENTION_LOCK:
+        return policy.redact_value(
+            {**_SECURITY_PROGRESS_RETENTION_DIAGNOSTICS, "sanitized": True}
+        )
+
+
+async def security_progress_retention_loop() -> None:
+    def bounded_env(name: str, default: int, minimum: int, maximum: int) -> int:
+        try:
+            value = int(os.environ.get(name, str(default)))
+        except (TypeError, ValueError):
+            value = default
+        return max(minimum, min(maximum, value))
+
+    initial_delay = bounded_env(
+        "POCKETLAB_SECURITY_PROGRESS_RETENTION_INITIAL_DELAY_SECONDS", 30, 5, 300
+    )
+    interval = bounded_env(
+        "POCKETLAB_SECURITY_PROGRESS_RETENTION_INTERVAL_SECONDS",
+        21600,
+        300,
+        7 * 24 * 60 * 60,
+    )
+    await asyncio.sleep(initial_delay)
+    while True:
+        try:
+            if _security_store_api().security_store_mode() in {"dual", "sqlite"}:
+                await run_api_maintenance(
+                    run_security_progress_retention,
+                    operation_name="security.progress.retention",
+                    deadline_seconds=30.0,
+                )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            _LOGGER.warning(
+                "Security progress retention degraded error_type=%s",
+                type(exc).__name__,
+            )
+        await asyncio.sleep(interval)
+
 
 def split_freshness_state() -> dict[str, Any]:
     if _sqlite_compact_reads_enabled():

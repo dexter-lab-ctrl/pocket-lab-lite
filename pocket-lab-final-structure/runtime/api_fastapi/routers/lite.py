@@ -248,24 +248,88 @@ def _record_security_submission_timing(
 
 def _security_sse_payload(event: dict[str, Any]) -> str:
     event_type = str(event.get("type") or "security.scan.heartbeat")
-    event_id = str(event.get("revision") or event.get("progress_revision") or uuid.uuid4().hex)
     data = json.dumps(event, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return f"id: {event_id}\nevent: {event_type}\ndata: {data}\n\n"
+    lines: list[str] = []
+    event_id = event.get("event_id")
+    if event_type != "security.scan.heartbeat" and isinstance(event_id, int) and event_id > 0:
+        lines.append(f"id: {event_id}")
+    lines.append(f"event: {event_type}")
+    lines.append(f"data: {data}")
+    return "\n".join(lines) + "\n\n"
+
+
+def _bounded_stream_number(name: str, default: float, minimum: float, maximum: float) -> float:
+    try:
+        value = float(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
 
 
 async def _security_events_generator(request: Request):
-    previous_fingerprint: str | None = None
+    replay_limit = int(
+        _bounded_stream_number(
+            "POCKETLAB_SECURITY_PROGRESS_REPLAY_LIMIT", 200, 1, 500
+        )
+    )
+    active_poll_seconds = _bounded_stream_number(
+        "POCKETLAB_SECURITY_PROGRESS_SSE_ACTIVE_POLL_SECONDS", 1.25, 0.5, 5.0
+    )
+    idle_poll_seconds = max(
+        active_poll_seconds,
+        _bounded_stream_number(
+            "POCKETLAB_SECURITY_PROGRESS_SSE_IDLE_POLL_SECONDS", 3.0, 1.0, 10.0
+        ),
+    )
+    heartbeat_seconds = _bounded_stream_number(
+        "POCKETLAB_SECURITY_PROGRESS_SSE_HEARTBEAT_SECONDS", 20.0, 15.0, 25.0
+    )
+    plan = lite_security.security_event_replay(
+        request.headers.get("last-event-id"), replay_limit=replay_limit
+    )
+    last_sent_id = max(0, int(plan.get("resume_event_id") or 0))
+    last_real_event_at = time.monotonic()
+    active_scan = False
+    emitted_initial_event = False
+
+    for event in plan.get("events") or []:
+        if await request.is_disconnected():
+            return
+        event_id = int(event.get("event_id") or 0)
+        if event_id and event_id < last_sent_id:
+            continue
+        if event_id:
+            last_sent_id = event_id
+        active_scan = bool(event.get("active_scan"))
+        last_real_event_at = time.monotonic()
+        emitted_initial_event = True
+        yield _security_sse_payload(event)
+
+    if not emitted_initial_event:
+        yield _security_sse_payload(lite_security.security_progress_heartbeat())
+        last_real_event_at = time.monotonic()
+
     while True:
         if await request.is_disconnected():
             break
-        event = lite_security.security_progress_event()
-        fingerprint = lite_security.security_progress_event_fingerprint(event)
-        if fingerprint != previous_fingerprint:
-            previous_fingerprint = fingerprint
-            yield _security_sse_payload(event)
-        if not event.get("active_scan"):
-            break
-        await asyncio.sleep(1.5)
+        rows = lite_security.list_security_progress_events_after(
+            last_sent_id, limit=replay_limit
+        )
+        if rows:
+            for row in rows:
+                event = lite_security.security_progress_event_from_persisted(row)
+                event_id = int(event.get("event_id") or 0)
+                if event_id <= last_sent_id:
+                    continue
+                last_sent_id = event_id
+                active_scan = bool(event.get("active_scan"))
+                last_real_event_at = time.monotonic()
+                yield _security_sse_payload(event)
+            continue
+        if (time.monotonic() - last_real_event_at) >= heartbeat_seconds:
+            yield _security_sse_payload(lite_security.security_progress_heartbeat())
+            last_real_event_at = time.monotonic()
+        await asyncio.sleep(active_poll_seconds if active_scan else idle_poll_seconds)
 
 
 class LiteCatalogInstallRequest(BaseModel):

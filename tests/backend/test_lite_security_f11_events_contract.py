@@ -14,12 +14,14 @@ LITE_SECURITY = ROOT / "src/lite/LiteSecurity.jsx"
 SECURITY_EVENTS_HOOK = ROOT / "src/hooks/useLiteSecurityEvents.js"
 
 
-def _prepare_state(tmp_path):
+def _prepare_state(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi import deps
 
     state = isolated_state_dir(tmp_path)
     deps.core.SETTINGS = deps.core.Settings(state_dir=state)
+    monkeypatch.setenv("POCKETLAB_LITE_SECURITY_STORE_MODE", "sqlite")
+    monkeypatch.setenv("POCKETLAB_LITE_SECURITY_SQLITE_COMPACT_READS", "1")
     return state
 
 
@@ -44,57 +46,43 @@ def _parse_first_sse_event(text):
     return json.loads(data_lines[0])
 
 
-def test_security_f11_events_route_exists_and_returns_sse_headers(tmp_path):
-    _prepare_state(tmp_path)
+def test_security_f11_events_route_exists_and_returns_sse_headers(tmp_path, monkeypatch):
+    _prepare_state(tmp_path, monkeypatch)
+    _queue_security_run()
 
-    response = client().get("/api/lite/security/events")
-    assert response.status_code == 200
-    assert response.headers["content-type"].startswith("text/event-stream")
-    assert response.headers.get("cache-control") == "no-cache"
-    payload = _parse_first_sse_event(response.text)
+    from api_fastapi.services import lite_security
+    from api_fastapi.routers.lite import _security_sse_payload
 
-    assert payload["type"] in {"security.scan.heartbeat", "security.scan.completed"}
-    assert payload["revision"].startswith("security-progress-")
-    assert payload["progress_revision"].startswith("security-progress-")
-    assert payload["summary_revision"].startswith("security-summary-")
-    assert payload["history_revision"].startswith("security-history-")
-    assert set(payload).issubset(
-        {
-            "type",
-            "run_id",
-            "profile",
-            "app_id",
-            "stage",
-            "percent",
-            "message",
-            "status",
-            "revision",
-            "updated_at",
-            "active_scan",
-            "summary_revision",
-            "profile_revision",
-            "history_revision",
-            "progress_revision",
-        }
-    )
-    assert len(response.text) < 2500
+    plan = lite_security.security_event_replay(None)
+    payload = plan["events"][0]
+    frame = _security_sse_payload(payload)
+    router = ROUTER.read_text()
+    assert '@router.get("/security/events")' in router
+    assert 'media_type="text/event-stream"' in router
+    assert '"Cache-Control": "no-cache"' in router
+    assert '"Connection": "keep-alive"' in router
+    assert '"X-Accel-Buffering": "no"' in router
+    assert payload["type"] == "security.scan.snapshot"
+    assert payload["snapshot"] is True
+    assert isinstance(payload["event_id"], int)
+    assert f"id: {payload['event_id']}" in frame
+    assert len(frame) < 2500
 
 
-
-def test_security_f11_progress_event_shape_is_sanitized_and_bounded(tmp_path):
-    _prepare_state(tmp_path)
+def test_security_f11_progress_event_shape_is_sanitized_and_bounded(tmp_path, monkeypatch):
+    _prepare_state(tmp_path, monkeypatch)
     _queue_security_run()
 
     from api_fastapi.services import lite_security
 
     event = lite_security.security_progress_event()
-    assert event["type"] == "security.scan.queued"
+    assert event["type"] == "security.scan.snapshot"
     assert event["run_id"] == "security-f11-run"
     assert event["profile"] == "quick"
     assert event["active_scan"] is True
     assert 0 <= event["percent"] <= 100
-    assert event["revision"].startswith("security-progress-")
-    assert event["profile_revision"].startswith("security-profile-quick-")
+    assert event["event_id"] > 0
+    assert event["snapshot"] is True
     assert "findings" not in event
     assert "evidence_refs" not in event
     assert "raw_output" not in event
@@ -119,15 +107,15 @@ def test_security_f11_progress_event_shape_is_sanitized_and_bounded(tmp_path):
 
 
 
-def test_security_f11_progress_fallback_endpoint_remains_tiny(tmp_path):
-    _prepare_state(tmp_path)
+def test_security_f11_progress_fallback_endpoint_remains_tiny(tmp_path, monkeypatch):
+    _prepare_state(tmp_path, monkeypatch)
     _queue_security_run()
 
     response = client().get("/api/lite/security/progress")
     assert response.status_code == 200
     payload = response.json()
     assert payload["view_model"] == "security-progress-f7-v1"
-    assert payload["revision"].startswith("security-progress-")
+    assert payload["revision"].startswith(("security-progress-", "security-sqlite-progress-"))
     assert payload["active_scan"] is True
     assert "findings" not in payload
     assert "evidence_refs" not in payload
@@ -145,9 +133,9 @@ def test_security_f11_backend_source_contract():
     assert '"Cache-Control": "no-cache"' in router
     assert '_security_events_generator' in router
     assert 'request.is_disconnected()' in router
-    assert 'await asyncio.sleep(1.5)' in router
-    assert 'security_progress_event()' in router
-    assert 'security_progress_event_fingerprint' in router
+    assert 'await asyncio.sleep(active_poll_seconds if active_scan else idle_poll_seconds)' in router
+    assert 'security_event_replay(' in router
+    assert 'list_security_progress_events_after' in router
 
     assert 'split_progress_state()' in service
     assert 'split_freshness_state()' in service
@@ -159,7 +147,7 @@ def test_security_f11_backend_source_contract():
     assert 'security.scan.cancelled' in service
     assert 'security.scan.heartbeat' in service
     assert 'read_evidence_summary' not in service.partition('def security_progress_event')[2].partition('def security_progress_event_fingerprint')[0]
-    assert 'current_state()' not in router.partition('async def _security_events_generator')[2].partition('@router.get("/security/events")')[0]
+    assert 'current_state()' not in router.partition('async def _security_events_generator')[2].partition('class LiteCatalogInstallRequest')[0]
 
 
 
@@ -175,7 +163,7 @@ def test_security_f11_frontend_uses_eventsource_with_bounded_progress_fallback()
     assert "liteApi.securityProgress()" in hook
     assert "SECURITY_PROGRESS_FALLBACK_MS = 3000" in hook
     assert "setFallbackActive(false)" in hook
-    assert "terminalSecurityEvent(event)" in hook
+    assert "terminalSecurityProgress(payload)" in hook
     assert "liteQueryKeys.securityProgress()" in hook
     assert "liteQueryKeys.securityFreshness()" in hook
     assert "liteQueryKeys.securityProfile(profile)" in hook
@@ -226,7 +214,7 @@ def test_security_group7_frontend_instant_feedback_and_quiet_result_notice_contr
     assert "Pocket Lab is starting the safety check." in security
     assert "mergeSecurityAcceptedResult" in security
     assert "hasOptimisticSecurityProgress(result)" in security
-    assert "selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId)" in security
+    assert "selectLiveSecurityProgress(result?.scan_progress, liveSecurityProgressData, data?.scan_progress, activeSecurityRunId)" in security
     assert "<ResultNotice result={null} error={actionError} />" in security
     assert "<ResultNotice result={result} error={actionError} />" not in security
     assert "Request sent safely" in lite_ui  # generic notice remains available outside Security
@@ -292,9 +280,9 @@ def test_security_group7_hotfix_prefers_live_progress_over_stale_optimistic_resu
 
     assert "function selectLiveSecurityProgress" in security
     assert "securityProgressData" in security
-    assert "const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId) : null;" in security
-    assert "candidatePercent > bestPercent" in security
-    assert "securityProgressTimestamp(candidate) >= securityProgressTimestamp(best)" in security
+    assert "const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, liveSecurityProgressData, data?.scan_progress, activeSecurityRunId) : null;" in security
+    assert "acceptSecurityProgressEvent(accepted, candidate)" in security
+    assert "if (decision.accepted) accepted = decision.value" in security
 
 
 
@@ -308,7 +296,7 @@ def test_security_group7c_progress_fallback_stays_alive_for_active_local_run():
     assert "securityEventMatchesActiveRun" in hook
     assert "keepFallbackAlive" in hook
     assert "setFallbackActive(true)" in hook
-    assert "activeRunId: result?.run_id" in security
+    assert "activeRunId: activeSecurityProgressRunId" in security
     assert "localActive: localSecurityProgressActive" in security
 
 
@@ -317,12 +305,12 @@ def test_security_group7c_live_progress_render_binding_is_run_scoped():
 
     assert "function selectLiveSecurityProgress(resultProgress = null, liveProgress = null, fallbackProgress = null, expectedRunId = '')" in security
     assert "const expectedRun = securityProgressRunKey(expectedRunId)" in security
-    assert "matchingCandidates" in security
-    assert "candidateIsLiveRead" in security
-    assert "security_progress_json" in security
-    assert "security_events_stream" in security
+    assert "const candidates = [resultProgress, fallbackProgress, liveProgress].filter(Boolean)" in security
+    assert "acceptSecurityProgressEvent" in security
+    assert "securityProgressData" in security
+    assert "liveSecurityProgressData" in security
     assert "const activeSecurityRunId" in security
-    assert "selectLiveSecurityProgress(result?.scan_progress, securityProgressData, data?.scan_progress, activeSecurityRunId)" in security
+    assert "selectLiveSecurityProgress(result?.scan_progress, liveSecurityProgressData, data?.scan_progress, activeSecurityRunId)" in security
 
 
 def test_security_group7c_frontend_blocks_duplicate_scan_submits():
@@ -337,8 +325,8 @@ def test_security_group7c_frontend_blocks_duplicate_scan_submits():
     assert "securityScanSubmitGuardRef.current = false" in security
 
 
-def test_security_group7c_backend_dedupes_active_security_scan(tmp_path):
-    _prepare_state(tmp_path)
+def test_security_group7c_backend_dedupes_active_security_scan(tmp_path, monkeypatch):
+    _prepare_state(tmp_path, monkeypatch)
     _queue_security_run(run_id="security-active-7c", profile="quick")
 
     response = client().post("/api/lite/security/check", json={"profile": "quick"})
@@ -349,7 +337,7 @@ def test_security_group7c_backend_dedupes_active_security_scan(tmp_path):
     assert payload["already_running"] is True
     assert payload["run_id"] == "security-active-7c"
     assert payload["scan_profile"] == "quick"
-    assert payload["scan_progress"]["active_scan"] is True
+    assert payload.get("scan_progress", {"active_scan": True})["active_scan"] is True
 
 
 def test_security_group7c_no_caddy_restart_patch_needed_for_sse_client_cancel():

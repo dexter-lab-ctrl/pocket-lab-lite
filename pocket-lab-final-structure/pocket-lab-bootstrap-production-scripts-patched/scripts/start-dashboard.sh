@@ -366,6 +366,12 @@ write_caddy_site() {
   handle /healthz {
     reverse_proxy 127.0.0.1:${API_PORT}
   }
+  handle /api/lite/security/events {
+    reverse_proxy 127.0.0.1:${API_PORT} {
+      flush_interval -1
+    }
+  }
+
   handle /api/* {
     reverse_proxy 127.0.0.1:${API_PORT}
   }

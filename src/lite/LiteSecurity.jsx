@@ -45,6 +45,7 @@ import {
   selectSecurityScreenView,
 } from '../lib/liteViewModels.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
+import { acceptSecurityProgressEvent } from '../lib/securityProgressEvents.js';
 import { LiteSheet } from './LiteOverlay.jsx';
 import {
   GlassCard,
@@ -342,33 +343,15 @@ function securityProgressTimestamp(progress = {}) {
 
 function selectLiveSecurityProgress(resultProgress = null, liveProgress = null, fallbackProgress = null, expectedRunId = '') {
   const expectedRun = securityProgressRunKey(expectedRunId);
-  const candidates = [liveProgress, fallbackProgress, resultProgress].filter(Boolean);
-  if (!candidates.length) return null;
-  const matchingCandidates = expectedRun
-    ? candidates.filter((candidate) => {
-      const candidateRun = securityProgressRunKey(candidate);
-      return !candidateRun || candidateRun === expectedRun;
-    })
-    : candidates;
-  const scopedCandidates = matchingCandidates.length ? matchingCandidates : candidates;
-  return scopedCandidates.reduce((best, candidate) => {
-    if (!best) return candidate;
+  const candidates = [resultProgress, fallbackProgress, liveProgress].filter(Boolean);
+  let accepted = null;
+  for (const candidate of candidates) {
     const candidateRun = securityProgressRunKey(candidate);
-    const bestRun = securityProgressRunKey(best);
-    const candidateActive = candidate?.active_scan === true || candidate?.running === true || candidate?.operation_running === true || candidate?.in_progress === true;
-    const bestActive = best?.active_scan === true || best?.running === true || best?.operation_running === true || best?.in_progress === true;
-    const candidateIsLiveRead = candidate?.source === 'security_progress_json' || candidate?.source === 'security_events_stream' || candidate?.view_model === 'security-progress-f7-v1';
-    const bestIsLiveRead = best?.source === 'security_progress_json' || best?.source === 'security_events_stream' || best?.view_model === 'security-progress-f7-v1';
-    if (candidateRun && bestRun && candidateRun !== bestRun) {
-      return securityProgressTimestamp(candidate) >= securityProgressTimestamp(best) ? candidate : best;
-    }
-    if (candidateIsLiveRead !== bestIsLiveRead && (candidateActive || bestActive)) return candidateIsLiveRead ? candidate : best;
-    if (candidateActive !== bestActive) return candidateActive ? candidate : best;
-    const candidatePercent = Number(candidate?.percent || 0);
-    const bestPercent = Number(best?.percent || 0);
-    if (candidatePercent !== bestPercent) return candidatePercent > bestPercent ? candidate : best;
-    return securityProgressTimestamp(candidate) >= securityProgressTimestamp(best) ? candidate : best;
-  }, null);
+    if (expectedRun && candidateRun && candidateRun !== expectedRun && accepted) continue;
+    const decision = acceptSecurityProgressEvent(accepted, candidate);
+    if (decision.accepted) accepted = decision.value;
+  }
+  return accepted;
 }
 
 function isTerminalSecurityResult(value = {}) {

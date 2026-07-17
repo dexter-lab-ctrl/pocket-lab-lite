@@ -31,6 +31,12 @@ const state = {
   backend_revision: '',
   write_actions_blocked: false,
   duplicate_submission_count: 0,
+  last_accepted_event_id: 0,
+  replayed_event_count: 0,
+  duplicate_event_count: 0,
+  stale_event_rejection_count: 0,
+  polling_fallback_activation_count: 0,
+  completion_deduplication_count: 0,
   last_sse_opened_at: '',
   last_sse_closed_at: '',
   last_poll_started_at: '',
@@ -75,6 +81,12 @@ export function snapshotLiteLifecycleDiagnostics() {
     reconnect_attempt_count: boundedCount(state.reconnect_attempt_count),
     backend_reconciliation_count: boundedCount(state.backend_reconciliation_count),
     duplicate_submission_count: boundedCount(state.duplicate_submission_count),
+    last_accepted_event_id: boundedCount(state.last_accepted_event_id),
+    replayed_event_count: boundedCount(state.replayed_event_count),
+    duplicate_event_count: boundedCount(state.duplicate_event_count),
+    stale_event_rejection_count: boundedCount(state.stale_event_rejection_count),
+    polling_fallback_activation_count: boundedCount(state.polling_fallback_activation_count),
+    completion_deduplication_count: boundedCount(state.completion_deduplication_count),
     cached_run_id: safeText(state.cached_run_id),
     backend_run_id: safeText(state.backend_run_id),
     cached_revision: safeText(state.cached_revision),
@@ -154,6 +166,26 @@ export function recordLiteDuplicateSubmission() {
   persist();
 }
 
+export function recordLiteSecurityProgressDecision(decision = {}, event = {}) {
+  const eventId = boundedCount(event?.event_id);
+  if (decision?.accepted) {
+    if (eventId) state.last_accepted_event_id = Math.max(state.last_accepted_event_id, eventId);
+    if (event?.replayed) state.replayed_event_count = boundedCount(state.replayed_event_count) + 1;
+  } else if (decision?.reason === 'duplicate_event_id') {
+    state.duplicate_event_count = boundedCount(state.duplicate_event_count) + 1;
+  } else if (decision?.reason === 'duplicate_completion' || decision?.duplicateCompletion) {
+    state.completion_deduplication_count = boundedCount(state.completion_deduplication_count) + 1;
+  } else {
+    state.stale_event_rejection_count = boundedCount(state.stale_event_rejection_count) + 1;
+  }
+  persist();
+}
+
+export function recordLiteSecurityFallbackActivation() {
+  state.polling_fallback_activation_count = boundedCount(state.polling_fallback_activation_count) + 1;
+  persist();
+}
+
 export function resetLiteLifecycleDiagnosticsForTest() {
   Object.assign(state, {
     frontend_session_id: randomId(),
@@ -173,6 +205,12 @@ export function resetLiteLifecycleDiagnosticsForTest() {
     backend_revision: '',
     write_actions_blocked: false,
     duplicate_submission_count: 0,
+    last_accepted_event_id: 0,
+    replayed_event_count: 0,
+    duplicate_event_count: 0,
+    stale_event_rejection_count: 0,
+    polling_fallback_activation_count: 0,
+    completion_deduplication_count: 0,
     last_sse_opened_at: '',
     last_sse_closed_at: '',
     last_poll_started_at: '',
