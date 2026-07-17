@@ -43,3 +43,17 @@ def test_s6_server_phone_gate_parses_progress_fields_and_allows_heartbeat_margin
     assert "IFS=$'\\t' read -r ACTIVE CURRENT_RUN" in script
     assert '+ "\\t" + (p.get("run_id") or "")' in script
     assert 'print("1" if p.get("active_scan") else "0", p.get("run_id") or "")' not in script
+
+
+def test_s6_server_phone_gate_embedded_python_blocks_compile():
+    import re
+
+    script = Path(
+        "scripts/dev/check-lite-security-s6-backend-gate-server-phone.sh"
+    ).read_text(encoding="utf-8")
+
+    blocks = re.findall(r"<<'PY'\n(.*?)\nPY", script, flags=re.DOTALL)
+    assert blocks, "expected embedded Python validation blocks"
+
+    for index, block in enumerate(blocks, start=1):
+        compile(block, f"s6-gate-heredoc-{index}", "exec")
