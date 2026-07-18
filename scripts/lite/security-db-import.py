@@ -36,6 +36,14 @@ def main() -> int:
         help="Re-import unchanged source data. Valid only with --apply.",
     )
     parser.add_argument(
+        "--reconcile",
+        action="store_true",
+        help=(
+            "Make SQLite exactly match the canonical JSON run set, rebuild "
+            "latest-profile projections, and roll back unless parity converges."
+        ),
+    )
+    parser.add_argument(
         "--hash-small-evidence",
         action="store_true",
         help="Hash only evidence files within the configured bounded size limit.",
@@ -49,6 +57,7 @@ def main() -> int:
             preview=not args.apply,
             hash_evidence=bool(args.hash_small_evidence and args.apply),
             force=bool(args.force),
+            reconcile=bool(args.reconcile),
         )
     except Exception as exc:  # CLI boundary: never print source payloads or paths.
         print(
