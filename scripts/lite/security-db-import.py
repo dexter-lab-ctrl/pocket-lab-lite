@@ -60,10 +60,16 @@ def main() -> int:
             reconcile=bool(args.reconcile),
         )
     except Exception as exc:  # CLI boundary: never print source payloads or paths.
-        print(
-            json.dumps({"ok": False, "error_type": type(exc).__name__}, indent=2),
-            file=sys.stderr,
-        )
+        payload: dict[str, object] = {
+            "ok": False,
+            "error_type": type(exc).__name__,
+        }
+        mismatch_fields = getattr(exc, "mismatch_fields", None)
+        if isinstance(mismatch_fields, (list, tuple, set)):
+            payload["mismatch_fields"] = sorted(
+                {str(field) for field in mismatch_fields}
+            )
+        print(json.dumps(payload, indent=2), file=sys.stderr)
         return 2
     print(json.dumps({"ok": True, **report}, indent=2))
     return 0

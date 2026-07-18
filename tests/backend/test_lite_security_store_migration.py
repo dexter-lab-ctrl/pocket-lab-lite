@@ -387,9 +387,97 @@ def test_reconcile_rolls_back_when_parity_does_not_converge(tmp_path, monkeypatc
     repo = SecuritySQLiteRepository()
     monkeypatch.setattr(
         repo,
-        "_compare_json_state_with_connection",
-        lambda *_args, **_kwargs: {"matched": False},
+        "_compare_projection_with_connection",
+        lambda *_args, **_kwargs: {
+            "matched": False,
+            "mismatch_fields": ["latest_run_ids"],
+        },
     )
     with pytest.raises(SecurityStoreError, match="did not converge"):
         repo.import_legacy_state(source_root=security, reconcile=True)
+    assert repo.list_runs(limit=100) == []
+
+
+def test_reconcile_uses_normalized_canonical_projection_not_raw_history(
+    tmp_path, monkeypatch
+):
+    ensure_runtime_path()
+    security = tmp_path / "state" / "security"
+    security.mkdir(parents=True)
+    runs = [
+        {
+            "run_id": "security-old",
+            "status": "succeeded",
+            "scan_profile": "quick",
+            "requested_at": "2026-07-18T09:00:00Z",
+            "updated_at": "2026-07-18T09:30:00Z",
+        },
+        {
+            "run_id": "security-new",
+            "status": "succeeded",
+            "scan_profile": "quick",
+            "requested_at": "2026-07-18T10:00:00Z",
+            "completed_at": "2026-07-18T10:10:00Z",
+        },
+    ]
+    state = {
+        "last_run": runs[1],
+        "history": [runs[0]],
+        "scan_progress": {},
+    }
+    (security / "security_state.json").write_text(
+        json.dumps(state), encoding="utf-8"
+    )
+    run_dir = security / "runs"
+    run_dir.mkdir()
+    for item in reversed(runs):
+        (run_dir / f'{item["run_id"]}.json').write_text(
+            json.dumps(item), encoding="utf-8"
+        )
+
+    monkeypatch.setenv(
+        "POCKETLAB_LITE_DB_PATH",
+        str(tmp_path / "state" / "pocketlab-lite.sqlite3"),
+    )
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    repo = SecuritySQLiteRepository()
+    report = repo.import_legacy_state(
+        source_root=security, force=True, reconcile=True
+    )
+
+    assert report["parity_matched"] is True
+    assert repo._sqlite_shadow_projection()["latest_run_ids"] == [
+        "security-new",
+        "security-old",
+    ]
+
+
+def test_reconciliation_error_exposes_only_mismatch_fields(tmp_path, monkeypatch):
+    ensure_runtime_path()
+    security = tmp_path / "state" / "security"
+    _write_legacy_state(security)
+    monkeypatch.setenv(
+        "POCKETLAB_LITE_DB_PATH",
+        str(tmp_path / "state" / "pocketlab-lite.sqlite3"),
+    )
+    from api_fastapi.services.lite_security_store import (
+        SecurityReconciliationError,
+        SecuritySQLiteRepository,
+    )
+
+    repo = SecuritySQLiteRepository()
+    monkeypatch.setattr(
+        repo,
+        "_compare_projection_with_connection",
+        lambda *_args, **_kwargs: {
+            "matched": False,
+            "mismatch_fields": ["score", "latest_run_ids"],
+        },
+    )
+
+    with pytest.raises(SecurityReconciliationError) as captured:
+        repo.import_legacy_state(source_root=security, reconcile=True)
+
+    assert captured.value.mismatch_fields == ["latest_run_ids", "score"]
     assert repo.list_runs(limit=100) == []
