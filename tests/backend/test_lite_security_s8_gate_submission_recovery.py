@@ -22,6 +22,8 @@ class FakeApi:
     def get(self, path: str):
         if path == "/api/lite/security/summary":
             return {"history": []}
+        if path == "/api/lite/security/history?limit=20":
+            return {"history": []}
         assert path == "/api/lite/security/progress"
         self.progress_reads += 1
         if self.progress_reads == 1:
@@ -162,6 +164,8 @@ class StaleProgressApi:
                 "profile": "quick",
                 "status": "succeeded",
             }
+        if path == "/api/lite/security/history?limit=20":
+            return {"history": []}
         assert path == "/api/lite/security/summary"
         self.summary_reads += 1
         status = "running" if self.summary_reads == 1 else "succeeded"
