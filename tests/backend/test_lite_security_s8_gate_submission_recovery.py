@@ -189,3 +189,38 @@ def test_quick_scan_recovers_from_summary_when_progress_is_stale(monkeypatch):
     assert result["run_id"] == "new-run"
     assert result["status"] == "succeeded"
     assert result["submission_recovered"] is True
+
+
+def test_state_file_hashes_include_run_projections(tmp_path):
+    state_dir = tmp_path / "state"
+    security = state_dir / "security"
+    runs = security / "runs"
+    compact = security / "compact"
+    runs.mkdir(parents=True)
+    compact.mkdir(parents=True)
+    (security / "security_state.json").write_text('{"state":1}\n', encoding="utf-8")
+    (runs / "run-a.json").write_text('{"run_id":"run-a"}\n', encoding="utf-8")
+    (compact / "security_summary.json").write_text('{"status":"healthy"}\n', encoding="utf-8")
+
+    hashes = long_gate_s8.state_file_hashes(state_dir)
+
+    assert set(hashes) == {
+        "security/security_state.json",
+        "security/runs/run-a.json",
+        "security/compact/security_summary.json",
+    }
+
+
+def test_failed_restore_expected_snapshot_is_captured_after_fault_restart():
+    source = MODULE_PATH.read_text(encoding="utf-8")
+    gate_start = source.index("def failed_restore_gate()")
+    gate_end = source.index('record("gate-6-failed-restore-rollback"', gate_start)
+    gate_source = source[gate_start:gate_end]
+
+    configure_at = gate_source.index('configure_worker_fault("after_sqlite_promotion")')
+    settle_at = gate_source.index("settled_progress = wait_security_idle", configure_at)
+    database_at = gate_source.index("pre_database = database_state(db_path)", settle_at)
+    files_at = gate_source.index("pre_files = state_file_hashes(state_dir)", database_at)
+    submit_at = gate_source.index("submitted_restore = api.post", files_at)
+
+    assert configure_at < settle_at < database_at < files_at < submit_at

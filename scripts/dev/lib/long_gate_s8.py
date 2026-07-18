@@ -155,6 +155,9 @@ def database_state(path: Path) -> dict[str, Any]:
 
 def state_file_hashes(state_dir: Path) -> dict[str, str]:
     candidates = [state_dir / "security" / "security_state.json"]
+    runs = state_dir / "security" / "runs"
+    if runs.exists():
+        candidates.extend(sorted(runs.glob("*.json")))
     compact = state_dir / "security" / "compact"
     if compact.exists():
         candidates.extend(sorted(compact.rglob("*.json")))
@@ -570,14 +573,23 @@ def main() -> int:
             fault_backup_id = str(submitted_backup.get("backup_id") or "")
             wait_backup(api, fault_backup_id, args.operation_timeout)
             marker_scan = run_quick_scan(api, args.scan_timeout)
-            pre_database = database_state(db_path)
-            state_dir = db_path.parent
-            pre_files = state_file_hashes(state_dir)
             api.post(f"/api/lite/recovery/database/backups/{fault_backup_id}/preview", {})
             preview = wait_preview(api, fault_backup_id, args.operation_timeout)
             fault_configured = False
             configure_worker_fault("after_sqlite_promotion")
             fault_configured = True
+
+            # The worker restart used to enable the bounded restore fault may
+            # legitimately update derived Security projections.  The restore
+            # transaction checkpoints state only after that restart, so the
+            # gate must capture its expected rollback snapshot at the same
+            # transaction boundary rather than before fault configuration.
+            settled_progress = wait_security_idle(api, args.scan_timeout)
+            if str(settled_progress.get("run_id") or "") != str(marker_scan.get("run_id") or ""):
+                raise GateError("Worker fault setup changed the pre-failure Security run identity")
+            pre_database = database_state(db_path)
+            state_dir = db_path.parent
+            pre_files = state_file_hashes(state_dir)
             failed: dict[str, Any] = {}
             try:
                 submitted_restore = api.post(
@@ -606,7 +618,17 @@ def main() -> int:
                 if failed.get("checkpoint_database_hash_matched") is not True:
                     raise GateError("Rollback checkpoint database hash proof is missing")
                 if post_files != pre_files:
-                    raise GateError("Rollback did not restore the exact pre-failure Security projection files")
+                    changed = sorted(
+                        key
+                        for key in set(pre_files) | set(post_files)
+                        if pre_files.get(key) != post_files.get(key)
+                    )
+                    preview_changed = ", ".join(changed[:6])
+                    suffix = "" if len(changed) <= 6 else f" (+{len(changed) - 6} more)"
+                    raise GateError(
+                        "Rollback did not restore the exact pre-failure Security projection files"
+                        + (f": {preview_changed}{suffix}" if preview_changed else "")
+                    )
                 progress = api.get("/api/lite/security/progress")
                 if str(progress.get("run_id") or "") != str(marker_scan.get("run_id") or ""):
                     raise GateError("Rollback did not restore the pre-failure Security state")
