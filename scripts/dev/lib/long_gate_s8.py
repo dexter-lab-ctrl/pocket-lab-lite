@@ -31,6 +31,14 @@ class GateError(RuntimeError):
     pass
 
 
+class ApiTransportError(GateError):
+    def __init__(self, method: str, path: str, error_type: str) -> None:
+        super().__init__(f"{method} {path} failed: {error_type}")
+        self.method = method
+        self.path = path
+        self.error_type = error_type
+
+
 class Api:
     def __init__(self, base_url: str, timeout: float) -> None:
         self.base_url = base_url.rstrip("/")
@@ -72,8 +80,14 @@ class Api:
                 else:
                     summary = str(detail.get("summary") or nested or summary)
             raise GateError(f"{method} {path} returned HTTP {exc.code}: {summary}") from exc
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
-            raise GateError(f"{method} {path} failed: {type(exc).__name__}") from exc
+        except json.JSONDecodeError as exc:
+            raise GateError(f"{method} {path} failed: JSONDecodeError") from exc
+        except urllib.error.URLError as exc:
+            reason = getattr(exc, "reason", None)
+            error_type = type(reason).__name__ if reason is not None else type(exc).__name__
+            raise ApiTransportError(method, path, error_type) from exc
+        except TimeoutError as exc:
+            raise ApiTransportError(method, path, type(exc).__name__) from exc
 
     def get(self, path: str) -> dict[str, Any]:
         return self.request("GET", path)
@@ -134,12 +148,51 @@ def recent_maintenance(api: Api, *, kind: str, mode: str | None, after: str, tim
 
 
 def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
-    submitted = api.post("/api/lite/security/check", {"profile": "quick"})
-    expected_run = str(submitted.get("run_id") or "")
+    baseline = api.get("/api/lite/security/progress")
+    if bool(baseline.get("active_scan")):
+        raise GateError("Quick Safety Check submission blocked because another scan is active")
+
+    baseline_run_id = str(baseline.get("run_id") or "")
+    submitted_after_epoch_ms = int(time.time() * 1000)
+    expected_run = ""
+    submission_recovered = False
+
+    try:
+        submitted = api.post("/api/lite/security/check", {"profile": "quick"})
+        expected_run = str(submitted.get("run_id") or "")
+    except ApiTransportError as exc:
+        if exc.method != "POST" or exc.path != "/api/lite/security/check" or "Timeout" not in exc.error_type:
+            raise
+
+        recovery_timeout = min(max(api.timeout * 2.0, 15.0), 60.0)
+
+        def adopted(payload: dict[str, Any]) -> bool:
+            run_id = str(payload.get("run_id") or "")
+            requested_at_epoch_ms = int(payload.get("requested_at_epoch_ms") or 0)
+            profile = str(payload.get("profile") or payload.get("scan_profile") or "")
+            return (
+                bool(run_id)
+                and run_id != baseline_run_id
+                and profile in {"", "quick"}
+                and requested_at_epoch_ms >= submitted_after_epoch_ms - 2000
+            )
+
+        recovered = poll(
+            "timed-out Quick Safety Check submission",
+            recovery_timeout,
+            1.0,
+            lambda: api.get("/api/lite/security/progress"),
+            adopted,
+        )
+        expected_run = str(recovered.get("run_id") or "")
+        submission_recovered = True
+
+    if not expected_run:
+        raise GateError("Quick Safety Check submission did not return or expose a run id")
 
     def terminal(payload: dict[str, Any]) -> bool:
         status = str(payload.get("status") or "").lower()
-        same = not expected_run or str(payload.get("run_id") or "") == expected_run
+        same = str(payload.get("run_id") or "") == expected_run
         return same and status in TERMINAL_SCAN
 
     progress = poll(
@@ -151,6 +204,7 @@ def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
         "run_id": progress.get("run_id"),
         "status": progress.get("status"),
         "percent": progress.get("percent") or progress.get("current_percent"),
+        "submission_recovered": submission_recovered,
     }
 
 

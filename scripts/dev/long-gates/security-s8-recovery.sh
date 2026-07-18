@@ -30,6 +30,6 @@ mkdir -p "$gate_dir"
   --db-path "$db_path" \
   --output "$gate_dir/s8-gates.json" \
   --platform "$platform" \
-  --http-timeout "${LONG_GATE_HTTP_TIMEOUT:-10}" \
+  --http-timeout "${POCKETLAB_S8_GATE_HTTP_TIMEOUT_SECONDS:-${LONG_GATE_HTTP_TIMEOUT:-10}}" \
   --operation-timeout "${POCKETLAB_S8_GATE_OPERATION_TIMEOUT_SECONDS:-600}" \
   --scan-timeout "${POCKETLAB_S8_GATE_SCAN_TIMEOUT_SECONDS:-1800}"
