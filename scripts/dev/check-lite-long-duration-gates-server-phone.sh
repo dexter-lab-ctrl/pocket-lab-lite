@@ -450,20 +450,49 @@ if [[ "$RESUME" == "1" ]]; then
 fi
 
 baseline_failed=0
+preflight_blocked=0
 if [[ ! -f "$LONG_GATE_RUN_DIR/baseline/before.json" ]]; then
   long_gate_info "Capturing sanitized before baseline"
   set +e
   long_gate_capture_baseline before
   before_rc=$?
   set -e
-  [[ "$before_rc" -eq 0 ]] || baseline_failed=1
+  if [[ "$before_rc" -ne 0 ]]; then
+    baseline_failed=1
+    preflight_blocked=1
+    long_gate_warn "Required preflight checks did not converge; selected gates will not run."
+  fi
 else
   long_gate_info "Preserving existing before baseline for resumed run"
+  before_status="$($LONG_GATE_PYTHON - "$LONG_GATE_RUN_DIR/baseline/before.json" <<'PY'
+import json, sys
+try:
+    payload = json.load(open(sys.argv[1], encoding='utf-8'))
+except (OSError, json.JSONDecodeError):
+    print('failed')
+else:
+    print(payload.get('status') or 'failed')
+PY
+)"
+  if [[ "$before_status" != "captured" ]]; then
+    baseline_failed=1
+    preflight_blocked=1
+    long_gate_warn "Preserved before baseline is not ready; selected gates will not run."
+  fi
 fi
 
 unavailable_selected=0
 gate_failed=0
 for gate_id in "${SELECTED_GATES[@]}"; do
+  if [[ "$preflight_blocked" -eq 1 ]]; then
+    reason="Preflight baseline did not converge; destructive or disruptive gate execution was blocked."
+    long_gate_write_gate_result \
+      "$gate_id" failed "$([[ "$gate_id" == 'framework-self-test' ]] && printf 0 || printf 1)" \
+      "$([[ "$gate_id" == 'framework-self-test' ]] && printf 1 || printf 0)" \
+      "$(long_gate_iso_timestamp)" 0 "$reason" preflight 1 1 "baseline/before.json"
+    gate_failed=1
+    continue
+  fi
   prior_result="$(result_status "$gate_id")"
   if [[ "$RESUME" == "1" && "$prior_result" == "passed" ]]; then
     long_gate_info "Preserving completed gate result on resume: $gate_id"
