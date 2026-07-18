@@ -269,6 +269,49 @@ def _find_scan(api: Api, predicate: Callable[[dict[str, Any]], bool]) -> dict[st
     return last
 
 
+def _security_idle_snapshot(api: Api) -> dict[str, Any]:
+    progress = api.get("/api/lite/security/progress")
+    if progress.get("active_scan") is False:
+        return progress
+
+    active_run_id = str(progress.get("run_id") or "")
+    if not active_run_id:
+        return progress
+
+    candidates = _scan_candidates(api)
+    active_candidates = [
+        item for item in candidates if str(item.get("run_id") or "") == active_run_id
+    ]
+    terminal = next(
+        (
+            item
+            for item in active_candidates
+            if str(item.get("status") or "").lower() in TERMINAL_SCAN
+        ),
+        None,
+    )
+    if terminal is None:
+        return progress
+
+    active_requested = max(
+        [_scan_requested_epoch_ms(item) for item in active_candidates] or [0]
+    )
+    for item in candidates:
+        run_id = str(item.get("run_id") or "")
+        status = str(item.get("status") or "").lower()
+        if not run_id or run_id == active_run_id or status in TERMINAL_SCAN:
+            continue
+        requested = _scan_requested_epoch_ms(item)
+        if requested >= active_requested:
+            return progress
+
+    reconciled = dict(terminal)
+    reconciled["active_scan"] = False
+    reconciled["idle_reconciled"] = True
+    reconciled["stale_progress_status"] = progress.get("status")
+    return reconciled
+
+
 def wait_security_idle(api: Api, timeout: float) -> dict[str, Any]:
     idle_timeout = min(
         max(float(os.environ.get("POCKETLAB_S8_GATE_SECURITY_IDLE_TIMEOUT", "120")), 15.0),
@@ -283,7 +326,7 @@ def wait_security_idle(api: Api, timeout: float) -> dict[str, Any]:
         "Security scan idle precondition",
         idle_timeout,
         2.0,
-        lambda: api.get("/api/lite/security/progress"),
+        lambda: _security_idle_snapshot(api),
         idle,
     )
 
