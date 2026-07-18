@@ -66,6 +66,7 @@ def test_s8_migration_and_database_package_contract(tmp_path):
         "migrations.json",
         "hashes.json",
         "evidence-manifest.json",
+        "canonical-projection.json",
         "restore-preview.json",
         "receipt.json",
     }
@@ -423,6 +424,8 @@ def test_s8_restore_preview_is_non_destructive_and_restore_is_atomic_with_rollba
 def test_s8_failed_post_replace_verification_rolls_back_prior_database(monkeypatch):
     from api_fastapi.db.connection import database_path
     from api_fastapi.services import lite_database_recovery
+    from api_fastapi.services import lite_security_evidence as evidence
+    from api_fastapi.services import lite_security_maintenance as maintenance
 
     repo = _repository()
     _terminal_run(repo, "security-fault-state-a", completed_at=_iso_days_ago(4))
@@ -432,29 +435,95 @@ def test_s8_failed_post_replace_verification_rolls_back_prior_database(monkeypat
     assert lite_database_recovery._refresh_security_projections()["status"] == "passed"
     preview = lite_database_recovery.create_database_restore_preview("db-backup-fault-a")
 
+    normalize_id = "normalize-before-fault"
+    maintenance.enter_maintenance(operation_id=normalize_id, kind="database_restore")
+    maintenance.update_maintenance(normalize_id, state="stopping_writers", writers_stopped=True)
+    maintenance.run_wal_checkpoint(mode="TRUNCATE", operation_id=normalize_id, writers_stopped=True)
+    maintenance.leave_maintenance(normalize_id)
+    before_projection = lite_database_recovery._database_projection(database_path())
+    before_state_hash = hashlib.sha256(evidence.state_path().read_bytes()).hexdigest()
+    before_compact = {
+        path.relative_to(evidence.security_root()).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in evidence.compact_dir().rglob("*.json")
+    }
+
     monkeypatch.setenv("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "1")
-    with pytest.raises(RuntimeError, match="Automatic rollback"):
-        lite_database_recovery.restore_database_backup(
-            {
-                "command_id": "db-restore-fault-a",
-                "backup_id": "db-backup-fault-a",
-                "preview_id": preview["preview_id"],
-                "confirm": True,
-                "gate_fail_after_replace": True,
-            }
-        )
-    failed = lite_database_recovery.get_database_restore_run("db-restore-fault-a")
+    monkeypatch.setenv("POCKETLAB_LITE_S8_FAULT_POINT", "after_sqlite_promotion")
+    failed = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "db-restore-fault-a",
+            "backup_id": "db-backup-fault-a",
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
     assert failed["status"] == "failed"
-    assert failed["rollback"]["status"] == "completed"
+    assert failed["phase"] == "rolled_back"
+    assert failed["rollback_status"] == "rolled_back"
+    assert failed["api_worker_restart_allowed"] is True
+    assert failed["checkpoint_database_hash_matched"] is True
+    assert lite_database_recovery._database_projection(database_path()) == before_projection
+    assert hashlib.sha256(evidence.state_path().read_bytes()).hexdigest() == before_state_hash
+    assert {
+        path.relative_to(evidence.security_root()).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in evidence.compact_dir().rglob("*.json")
+    } == before_compact
     with sqlite3.connect(database_path()) as conn:
         assert conn.execute(
             "SELECT COUNT(*) FROM security_scan_runs WHERE run_id='security-fault-state-b'"
         ).fetchone()[0] == 1
         assert conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
         restore_row = conn.execute(
             "SELECT state FROM security_database_restores WHERE restore_id='db-restore-fault-a'"
         ).fetchone()
-    assert restore_row and restore_row[0] == "failed"
+    assert restore_row is None
+
+
+def test_s8_restore_fault_is_not_public_api_input():
+    router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
+    gate = Path("scripts/dev/lib/long_gate_s8.py").read_text(encoding="utf-8")
+    assert "gate_fail_after_replace" not in router
+    assert "gate_fail_after_replace" not in gate
+    assert 'POCKETLAB_LITE_S8_FAULT_POINT' in gate
+    assert 'model_config = {"extra": "forbid"}' in router
+
+
+def test_s8_startup_recovery_rolls_back_promoting_transaction(monkeypatch):
+    from api_fastapi.db.connection import database_path
+    from api_fastapi.services import lite_database_recovery
+    from api_fastapi.services import lite_restore_transaction
+
+    repo = _repository()
+    _terminal_run(repo, "startup-state-a", completed_at=_iso_days_ago(4))
+    lite_database_recovery._refresh_security_projections()
+    lite_database_recovery.create_database_backup({"command_id": "startup-backup-a"})
+    _terminal_run(repo, "startup-state-b", completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    preview = lite_database_recovery.create_database_restore_preview("startup-backup-a")
+    def fail_restore_and_rollback(point):
+        if point in {"after_sqlite_promotion", "during_rollback"}:
+            raise lite_restore_transaction.RestoreFaultInjected(point)
+
+    monkeypatch.setattr(lite_restore_transaction, "inject_fault", fail_restore_and_rollback)
+    failed = lite_database_recovery.restore_database_backup({
+        "command_id": "startup-restore-a",
+        "backup_id": "startup-backup-a",
+        "preview_id": preview["preview_id"],
+        "confirm": True,
+    })
+    assert failed["phase"] == "rollback_failed"
+    assert lite_restore_transaction.guard_status()["api_worker_restart_allowed"] is False
+    monkeypatch.setattr(lite_restore_transaction, "inject_fault", lambda point: None)
+    recovered = lite_database_recovery.startup_recovery_guard("test")
+    assert recovered["guard"]["unresolved"] is False
+    final = lite_database_recovery.get_database_restore_run("startup-restore-a")
+    assert final["phase"] == "rolled_back"
+    assert final["api_worker_restart_allowed"] is True
+    with sqlite3.connect(database_path()) as conn:
+        assert conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
 def test_s8_architecture_and_ui_contracts_are_preserved():
@@ -485,3 +554,149 @@ def test_s8_architecture_and_ui_contracts_are_preserved():
     assert "nats" not in recovery_ui.lower()
     assert "child_process" not in recovery_ui
     assert "exec(" not in recovery_ui
+
+@pytest.mark.parametrize(
+    ("fault_point", "expected_rollback_status", "checkpoint_hash_expected"),
+    [
+        ("after_checkpoint", "not_required", False),
+        ("after_staging", "not_required", False),
+        ("after_staged_validation", "not_required", False),
+        ("before_first_promotion", "rolled_back", True),
+        ("after_first_promotion", "rolled_back", True),
+        ("after_sqlite_promotion", "rolled_back", True),
+        ("before_active_validation", "rolled_back", True),
+        ("during_active_validation", "rolled_back", True),
+        ("before_commit", "rolled_back", True),
+    ],
+)
+def test_s8_restore_fault_boundaries_fail_closed(
+    monkeypatch, fault_point, expected_rollback_status, checkpoint_hash_expected
+):
+    from api_fastapi.db.connection import database_path
+    from api_fastapi.services import lite_database_recovery
+
+    repo = _repository()
+    _terminal_run(repo, f"boundary-source-{fault_point}", completed_at=_iso_days_ago(4))
+    lite_database_recovery._refresh_security_projections()
+    backup_id = f"boundary-backup-{fault_point}"
+    lite_database_recovery.create_database_backup({"command_id": backup_id})
+    current_run = f"boundary-current-{fault_point}"
+    _terminal_run(repo, current_run, completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    before_projection = lite_database_recovery._database_projection(database_path())
+    preview = lite_database_recovery.create_database_restore_preview(backup_id)
+
+    monkeypatch.setenv("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_S8_FAULT_POINT", fault_point)
+    result = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": f"boundary-restore-{fault_point}",
+            "backup_id": backup_id,
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
+    assert result["status"] == "failed"
+    assert result["phase"] == "rolled_back"
+    assert result["rollback_status"] == expected_rollback_status
+    assert result["checkpoint_database_hash_matched"] is checkpoint_hash_expected
+    assert result["api_worker_restart_allowed"] is True
+    assert lite_database_recovery._database_projection(database_path()) == before_projection
+    with sqlite3.connect(database_path()) as conn:
+        assert conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+        assert conn.execute(
+            "SELECT COUNT(*) FROM security_scan_runs WHERE run_id=?", (current_run,)
+        ).fetchone()[0] == 1
+
+
+def test_s8_restore_insufficient_space_fails_before_promotion(monkeypatch):
+    from collections import namedtuple
+
+    from api_fastapi.db.connection import database_path
+    from api_fastapi.services import lite_database_recovery
+
+    repo = _repository()
+    _terminal_run(repo, "space-source", completed_at=_iso_days_ago(4))
+    lite_database_recovery._refresh_security_projections()
+    lite_database_recovery.create_database_backup({"command_id": "space-backup"})
+    _terminal_run(repo, "space-current", completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    before_projection = lite_database_recovery._database_projection(database_path())
+    preview = lite_database_recovery.create_database_restore_preview("space-backup")
+    Usage = namedtuple("Usage", "total used free")
+    monkeypatch.setattr(lite_database_recovery.shutil, "disk_usage", lambda path: Usage(100, 99, 1))
+
+    result = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "space-restore",
+            "backup_id": "space-backup",
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
+    assert result["phase"] == "rolled_back"
+    assert result["failure_category"] == "insufficient_space"
+    assert result["rollback_status"] == "not_required"
+    assert lite_database_recovery._database_projection(database_path()) == before_projection
+
+
+def test_s8_success_increments_restored_revision_once_and_failed_restore_does_not(monkeypatch):
+    from api_fastapi.db.connection import database_path
+    from api_fastapi.services import lite_database_recovery
+
+    repo = _repository()
+    _terminal_run(repo, "revision-source", completed_at=_iso_days_ago(4))
+    lite_database_recovery._refresh_security_projections()
+    lite_database_recovery.create_database_backup({"command_id": "revision-backup"})
+    package = lite_database_recovery.database_backup_package("revision-backup")
+    manifest = json.loads((package / "manifest.json").read_text(encoding="utf-8"))
+    backup_db = package / manifest["database_file"]
+    backup_revision = lite_database_recovery._database_revision(backup_db)
+
+    _terminal_run(repo, "revision-current", completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    preview = lite_database_recovery.create_database_restore_preview("revision-backup")
+    committed = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "revision-restore-success",
+            "backup_id": "revision-backup",
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
+    assert committed["phase"] == "committed"
+    assert lite_database_recovery._database_revision(database_path()) == backup_revision + 1
+
+    # Build a second backup/current pair and prove failed restore returns exactly
+    # to the pre-failure revision rather than incrementing it.
+    lite_database_recovery.create_database_backup({"command_id": "revision-backup-two"})
+    _terminal_run(repo, "revision-current-two", completed_at=_iso_days_ago(0))
+    lite_database_recovery._refresh_security_projections()
+    before_failed_revision = lite_database_recovery._database_revision(database_path())
+    preview_two = lite_database_recovery.create_database_restore_preview("revision-backup-two")
+    monkeypatch.setenv("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "1")
+    monkeypatch.setenv("POCKETLAB_LITE_S8_FAULT_POINT", "before_commit")
+    failed = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "revision-restore-failed",
+            "backup_id": "revision-backup-two",
+            "preview_id": preview_two["preview_id"],
+            "confirm": True,
+        }
+    )
+    assert failed["phase"] == "rolled_back"
+    assert lite_database_recovery._database_revision(database_path()) == before_failed_revision
+
+
+def test_s8_unreadable_restore_journal_blocks_restart():
+    from api_fastapi.services import lite_restore_transaction
+
+    directory = lite_restore_transaction.restore_transaction_dir("corrupt-restore")
+    directory.mkdir(parents=True)
+    (directory / "journal.json").write_text("{not-json", encoding="utf-8")
+    guard = lite_restore_transaction.guard_status()
+    assert guard["unresolved"] is True
+    assert guard["rollback_failed"] is True
+    assert guard["api_worker_restart_allowed"] is False

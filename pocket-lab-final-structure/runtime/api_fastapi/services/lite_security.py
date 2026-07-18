@@ -3277,7 +3277,12 @@ async def security_progress_retention_loop() -> None:
     await asyncio.sleep(initial_delay)
     while True:
         try:
-            if _security_store_api().security_store_mode() in {"dual", "sqlite"}:
+            from . import lite_security_maintenance
+
+            if (
+                not lite_security_maintenance.maintenance_state().get("active")
+                and _security_store_api().security_store_mode() in {"dual", "sqlite"}
+            ):
                 await run_api_maintenance(
                     run_security_progress_retention,
                     operation_name="security.progress.retention",

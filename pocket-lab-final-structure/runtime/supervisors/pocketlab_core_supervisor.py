@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-SUPERVISOR_VERSION = "1.0.2-lite-core-supervisor"
+SUPERVISOR_VERSION = "1.1.0-lite-restore-aware"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_CADDY_FAILURE_THRESHOLD = 3
@@ -193,6 +193,7 @@ class LiteCoreSupervisor:
         self.state_file = self.evidence_dir / "state.json"
         self.events_file = self.evidence_dir / "events.jsonl"
         self.maintenance_file = self.state_root / "security" / "maintenance" / "maintenance-state.json"
+        self.restore_transaction_root = self.state_root / "security" / "recovery" / "restore-transactions"
         self.last_actions: Dict[str, float] = self._load_last_actions()
 
     def _state_root(self) -> Path:
@@ -281,6 +282,40 @@ class LiteCoreSupervisor:
             caddy_upstream_http,
         )
 
+    def _restore_guard_state(self) -> Dict[str, Any]:
+        journals: List[Dict[str, Any]] = []
+        try:
+            for path in self.restore_transaction_root.glob("*/journal.json"):
+                try:
+                    payload = json.loads(path.read_text(encoding="utf-8"))
+                except Exception:
+                    continue
+                if not isinstance(payload, dict):
+                    continue
+                if payload.get("phase") in {"committed", "rolled_back"}:
+                    continue
+                journals.append(payload)
+        except Exception:
+            return {"active": False, "state": "ready", "sanitized": True}
+        if not journals:
+            return {"active": False, "state": "ready", "sanitized": True}
+        active = sorted(journals, key=lambda item: str(item.get("updated_at") or ""), reverse=True)[0]
+        phase = str(active.get("phase") or "unknown")
+        return sanitize({
+            "active": True,
+            "operation_id": active.get("restore_id"),
+            "kind": "database_restore",
+            "state": phase,
+            "writers_stopped": True,
+            "api_worker_restart_allowed": bool(active.get("api_worker_restart_allowed")),
+            "summary": (
+                "Restore rollback needs operator attention."
+                if phase == "rollback_failed"
+                else "Restore recovery is in progress."
+            ),
+            "sanitized": True,
+        })
+
     def _maintenance_state(self) -> Dict[str, Any]:
         try:
             payload = json.loads(self.maintenance_file.read_text(encoding="utf-8"))
@@ -288,7 +323,7 @@ class LiteCoreSupervisor:
                 return sanitize(payload)
         except Exception:
             pass
-        return {"active": False, "state": "ready", "sanitized": True}
+        return self._restore_guard_state()
 
     def tick(self) -> Dict[str, Any]:
         maintenance = self._maintenance_state()
@@ -297,14 +332,20 @@ class LiteCoreSupervisor:
             payload = {
                 "supervisor": "pocketlab-core-supervisor",
                 "version": SUPERVISOR_VERSION,
-                "supervisor_status": "maintenance",
+                "supervisor_status": (
+                    "recovery_blocked"
+                    if maintenance.get("state") == "rollback_failed"
+                    else "rollback_in_progress"
+                    if str(maintenance.get("state") or "").startswith("rollback")
+                    else "maintenance"
+                ),
                 "checked_at": now_iso(),
                 "maintenance": maintenance,
                 "observed_before": observed,
                 "observed_after": observed,
                 "actions": [],
                 "last_actions": self.last_actions,
-                "capabilities": ["core-service-supervision", "maintenance-aware", "pm2-repair"],
+                "capabilities": ["core-service-supervision", "maintenance-aware", "restore-recovery-aware", "pm2-repair"],
             }
             self._write_json(self.state_file, payload)
             self._append_event({

@@ -2,6 +2,27 @@ import React from 'react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import { LiteButton, StatusBadge } from '../LiteUi.jsx';
 
+const RESTORE_PHASE_LABELS = {
+  created: 'Preparing restore',
+  checkpointing: 'Creating checkpoint',
+  checkpoint_ready: 'Checkpoint saved',
+  staging: 'Preparing backup',
+  staged: 'Backup staged',
+  validating_staged: 'Checking backup',
+  ready_to_promote: 'Ready to restore',
+  promoting: 'Restoring Pocket Lab',
+  validating_active: 'Checking restored data',
+  committed: 'Restore complete',
+  rollback_started: 'Rolling back safely',
+  rollback_validating: 'Checking recovered state',
+  rolled_back: 'Recovery complete',
+  rollback_failed: 'Recovery needs attention',
+};
+
+function restorePhaseLabel(phase = '') {
+  return RESTORE_PHASE_LABELS[String(phase || '').toLowerCase()] || 'Ready';
+}
+
 function backupLabel(backup) {
   if (!backup) return 'No verified database backup yet.';
   const state = backup.verification_status === 'verified' ? 'Verified' : 'Not verified';
@@ -15,6 +36,8 @@ export default function RecoveryDatabaseDetailsLazy({
   latestPreview = null,
   lastRestore = null,
   maintenance = {},
+  restoreGuard = {},
+  activeRestore = null,
   writeBlocked = false,
   busy = '',
   onBackup,
@@ -28,6 +51,12 @@ export default function RecoveryDatabaseDetailsLazy({
   const verified = latestBackup?.verification_status === 'verified';
   const previewReady = latestPreview?.status === 'ready' && latestPreview?.restore_allowed !== false;
   const rollbackAvailable = Boolean(databaseProtection.rollback_available || lastRestore?.rollback_available);
+  const restoreState = activeRestore || lastRestore || {};
+  const restorePhase = restoreGuard?.phase || restoreState?.phase || restoreState?.terminal_status || '';
+  const recoveryBlocked = restoreGuard?.rollback_failed === true || restorePhase === 'rollback_failed';
+  const maintenanceStatusLabel = restorePhase
+    ? restorePhaseLabel(restorePhase)
+    : 'Maintenance in progress';
 
   return (
     <div className="lite-recovery-database-manage-content" data-recovery-s8-lazy-details="true">
@@ -35,10 +64,10 @@ export default function RecoveryDatabaseDetailsLazy({
         <div className="lite-recovery-database-manage-heading">
           <div>
             <span>Overview</span>
-            <h3>{maintenance?.active ? 'Maintenance in progress' : databaseProtection.summary || 'Database protection is ready.'}</h3>
+            <h3>{recoveryBlocked ? 'Recovery needs attention' : maintenance?.active || activeRestore ? maintenanceStatusLabel : databaseProtection.summary || 'Database protection is ready.'}</h3>
           </div>
-          <StatusBadge status={maintenance?.active ? 'checking' : verified ? 'healthy' : 'review'}>
-            {maintenance?.active ? 'Maintenance in progress' : verified ? 'Backup verified' : 'Backup needed'}
+          <StatusBadge status={recoveryBlocked ? 'danger' : maintenance?.active || activeRestore ? 'checking' : verified ? 'healthy' : 'review'}>
+            {recoveryBlocked ? 'Blocked for safety' : maintenance?.active || activeRestore ? maintenanceStatusLabel : verified ? 'Backup verified' : 'Backup needed'}
           </StatusBadge>
         </div>
         <p>Backups and restores stay backend-owned. Write actions remain disabled while offline or during maintenance.</p>
@@ -87,15 +116,15 @@ export default function RecoveryDatabaseDetailsLazy({
 
       <section>
         <span>Restore</span>
-        <h3>{lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmed restore only'}</h3>
-        <p>{lastRestore?.summary || 'Restore creates and validates a rollback copy before atomic replacement.'}</p>
+        <h3>{restorePhase ? restorePhaseLabel(restorePhase) : lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmed restore only'}</h3>
+        <p>{restoreState?.summary || 'Restore checkpoints current state, validates staging, promotes atomically, and rolls back automatically on failure.'}</p>
         <strong>{rollbackAvailable ? 'Rollback available' : 'Rollback is created during restore'}</strong>
       </section>
 
       <section>
         <span>Maintenance</span>
-        <h3>{maintenance?.active ? 'Pocket Lab is restarting safely' : 'Ready'}</h3>
-        <p>{maintenance?.summary || 'Normal reads remain available while intentional database maintenance is coordinated.'}</p>
+        <h3>{recoveryBlocked ? 'Writers blocked for safety' : maintenance?.active || activeRestore ? maintenanceStatusLabel : 'Ready'}</h3>
+        <p>{restoreGuard?.summary || maintenance?.summary || 'Normal reads remain available while intentional database maintenance is coordinated.'}</p>
       </section>
 
       <section>
@@ -111,6 +140,8 @@ export default function RecoveryDatabaseDetailsLazy({
           <div><dt>Journal mode</dt><dd>{databaseProtection?.wal?.journal_mode || 'Checking'}</dd></div>
           <div><dt>Last passive maintenance</dt><dd>{databaseProtection?.wal?.last_passive_checkpoint_at ? formatLiteTime(databaseProtection.wal.last_passive_checkpoint_at) : 'Not run yet'}</dd></div>
           <div><dt>Schema version</dt><dd>{latestBackup?.schema_version || 'Not available'}</dd></div>
+          <div><dt>Restore transaction</dt><dd>{restorePhase ? restorePhaseLabel(restorePhase) : 'Ready'}</dd></div>
+          <div><dt>Restart allowed</dt><dd>{restoreGuard?.unresolved ? (restoreGuard?.api_worker_restart_allowed ? 'Yes' : 'No') : 'Yes'}</dd></div>
           <div><dt>Evidence-file policy</dt><dd>Never deleted automatically</dd></div>
         </dl>
       </section>
