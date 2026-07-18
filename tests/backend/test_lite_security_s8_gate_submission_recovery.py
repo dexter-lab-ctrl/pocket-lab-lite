@@ -20,6 +20,8 @@ class FakeApi:
         self.progress_reads = 0
 
     def get(self, path: str):
+        if path == "/api/lite/security/summary":
+            return {"history": []}
         assert path == "/api/lite/security/progress"
         self.progress_reads += 1
         if self.progress_reads == 1:
@@ -98,3 +100,47 @@ def test_quick_scan_fails_closed_when_scan_already_active():
         raise AssertionError("expected GateError")
 
     assert api.post_calls == 0
+
+
+class StaleProgressApi:
+    timeout = 10.0
+
+    def __init__(self) -> None:
+        self.summary_reads = 0
+
+    def get(self, path: str):
+        if path == "/api/lite/security/progress":
+            return {
+                "active_scan": False,
+                "run_id": "old-run",
+                "requested_at_epoch_ms": 1000,
+                "profile": "quick",
+                "status": "succeeded",
+            }
+        assert path == "/api/lite/security/summary"
+        self.summary_reads += 1
+        status = "running" if self.summary_reads == 1 else "succeeded"
+        return {
+            "last_run": {
+                "run_id": "new-run",
+                "requested_at_epoch_ms": 9_999_999_999_999,
+                "scan_profile": "quick",
+                "status": status,
+                "percent": 100 if status == "succeeded" else 20,
+            },
+            "history": [],
+        }
+
+    def post(self, path: str, payload: dict):
+        raise long_gate_s8.ApiTransportError("POST", path, "TimeoutError")
+
+
+def test_quick_scan_recovers_from_summary_when_progress_is_stale(monkeypatch):
+    monkeypatch.setattr(long_gate_s8.time, "sleep", lambda _seconds: None)
+    api = StaleProgressApi()
+
+    result = long_gate_s8.run_quick_scan(api, timeout=5.0)
+
+    assert result["run_id"] == "new-run"
+    assert result["status"] == "succeeded"
+    assert result["submission_recovered"] is True

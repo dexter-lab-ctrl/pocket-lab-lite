@@ -300,3 +300,53 @@ def test_unavailable_real_gate_is_not_ready_and_counted(tmp_path: Path):
     assert summary["gates_unavailable"] == 1
     assert summary["real_phase5_gates_executed"] == 1
     assert "not implemented" in summary["failure_reason"].lower()
+
+
+def test_database_parity_retries_until_compact_projection_settles(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    tool = load_tool()
+    db_path = tmp_path / "state" / "pocketlab-lite.sqlite3"
+    db_path.parent.mkdir(parents=True)
+    db_path.write_bytes(b"sqlite-placeholder")
+    parity_calls = 0
+
+    def fake_run(command, **_kwargs):
+        nonlocal parity_calls
+        joined = " ".join(str(part) for part in command)
+        if "security-db-check.py" in joined:
+            return {
+                "ok": True,
+                "returncode": 0,
+                "stdout": json.dumps({
+                    "reachable": True,
+                    "schema_current": True,
+                    "quick_check": "ok",
+                    "migration_checksums_valid": True,
+                }),
+                "stderr": "",
+            }
+        assert "security-db-compare.py" in joined
+        parity_calls += 1
+        matched = parity_calls >= 2
+        return {
+            "ok": matched,
+            "returncode": 0 if matched else 1,
+            "stdout": json.dumps({
+                "ok": matched,
+                "matched": matched,
+                "mismatch_fields": [] if matched else ["latest_run_ids", "score"],
+                "compared_at": tool.utc_now(),
+            }),
+            "stderr": "",
+        }
+
+    monkeypatch.setattr(tool, "run_command", fake_run)
+    monkeypatch.setattr(tool.time, "sleep", lambda _seconds: None)
+    monkeypatch.setenv("POCKETLAB_LITE_SECURITY_STORE_MODE", "sqlite")
+    monkeypatch.setenv("POCKETLAB_LONG_GATE_PARITY_SETTLE_SECONDS", "5")
+
+    config, warnings, failures = tool.database_and_parity(ROOT, db_path, db_path.parent)
+
+    assert parity_calls == 2
+    assert config["json_sqlite_parity"]["matched"] is True
+    assert warnings == []
+    assert failures == []

@@ -625,13 +625,26 @@ def database_and_parity(repo_root: Path, db_path: Path | None, state_dir: Path) 
     elif not health_result.get("ok"):
         warnings.append("SQLite health unavailable in this environment")
 
-    parity_result = run_command(
-        [sys.executable, "scripts/lite/security-db-compare.py", "--no-record"],
-        cwd=repo_root,
-        timeout=float(os.getenv("POCKETLAB_LONG_GATE_DB_TIMEOUT", "12")),
-        env=env,
+    parity_timeout = float(os.getenv("POCKETLAB_LONG_GATE_DB_TIMEOUT", "12"))
+    parity_settle_seconds = max(
+        0.0, float(os.getenv("POCKETLAB_LONG_GATE_PARITY_SETTLE_SECONDS", "30"))
     )
-    parity_payload = parse_json_output(parity_result)
+    parity_deadline = time.monotonic() + parity_settle_seconds
+    parity_result: dict[str, Any]
+    parity_payload: Any
+    while True:
+        parity_result = run_command(
+            [sys.executable, "scripts/lite/security-db-compare.py", "--no-record"],
+            cwd=repo_root,
+            timeout=parity_timeout,
+            env=env,
+        )
+        parity_payload = parse_json_output(parity_result)
+        if not isinstance(parity_payload, dict) or parity_payload.get("matched") is not False:
+            break
+        if time.monotonic() >= parity_deadline:
+            break
+        time.sleep(2.0)
     if isinstance(parity_payload, dict):
         parity = {
             "ok": parity_payload.get("ok"),
