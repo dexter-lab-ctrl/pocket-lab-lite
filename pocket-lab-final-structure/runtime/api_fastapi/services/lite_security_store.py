@@ -71,6 +71,14 @@ class SecurityStoreError(RuntimeError):
     """Base error for the inactive SQLite Security repository."""
 
 
+class SecurityReconciliationError(SecurityStoreError):
+    """Canonical JSON reconciliation failed strict in-transaction parity."""
+
+    def __init__(self, message: str, *, mismatch_fields: Iterable[str]) -> None:
+        super().__init__(message)
+        self.mismatch_fields = sorted({str(field) for field in mismatch_fields})
+
+
 class InvalidSecurityStoreValue(SecurityStoreError):
     """A status/profile/app/run value is outside the repository contract."""
 
@@ -2383,11 +2391,15 @@ class SecuritySQLiteRepository:
                     self._upsert_profile_snapshot(
                         tx, str(row["run_id"]), updated_at=str(run["updated_at"])
                     )
-                parity = self._compare_json_state_with_connection(state, tx)
+                canonical_projection = _normalized_runs_shadow_projection(normalized)
+                parity = self._compare_projection_with_connection(
+                    canonical_projection, tx
+                )
                 report.parity_matched = bool(parity["matched"])
                 if not report.parity_matched:
-                    raise SecurityStoreError(
-                        "Legacy Security reconciliation did not converge"
+                    raise SecurityReconciliationError(
+                        "Legacy Security reconciliation did not converge",
+                        mismatch_fields=parity["mismatch_fields"],
                     )
             else:
                 for item in normalized:
@@ -2487,21 +2499,22 @@ class SecuritySQLiteRepository:
                 _set_metadata(tx, "shadow_compare:last", result)
         return result
 
-    def _compare_json_state_with_connection(
-        self, state: Mapping[str, Any], conn: sqlite3.Connection
+    def _compare_projection_with_connection(
+        self,
+        canonical_projection: Mapping[str, Any],
+        conn: sqlite3.Connection,
     ) -> dict[str, Any]:
-        json_projection = _json_shadow_projection(state)
         sqlite_projection = self._sqlite_shadow_projection(conn=conn)
-        fields = sorted(set(json_projection) | set(sqlite_projection))
+        fields = sorted(set(canonical_projection) | set(sqlite_projection))
         mismatches = [
             field
             for field in fields
-            if json_projection.get(field) != sqlite_projection.get(field)
+            if canonical_projection.get(field) != sqlite_projection.get(field)
         ]
         return {
             "matched": not mismatches,
             "mismatch_fields": mismatches,
-            "json_checksum": _projection_checksum(json_projection),
+            "json_checksum": _projection_checksum(canonical_projection),
             "sqlite_checksum": _projection_checksum(sqlite_projection),
             "compared_at": utc_now(),
         }
@@ -2753,6 +2766,42 @@ def _legacy_evidence_refs(root: Path, item: Mapping[str, Any], *, hash_evidence:
                 metadata["missing"] = True
             refs[relative] = metadata
     return list(refs.values())
+
+
+def _normalized_runs_shadow_projection(
+    normalized_runs: Iterable[Mapping[str, Any]],
+) -> dict[str, Any]:
+    runs = list(
+        _canonical_history(
+            normalized_runs,
+            limit=DEFAULT_HISTORY_LIMIT,
+        )
+    )
+    latest = runs[0] if runs else {}
+    counts = {
+        severity: int(latest.get(f"{severity}_count") or 0)
+        for severity in policy.SEVERITIES
+    }
+    findings = latest.get("findings")
+    if not any(counts.values()) and isinstance(findings, list):
+        for finding in findings:
+            if isinstance(finding, Mapping):
+                counts[policy.normalize_severity(finding.get("severity"))] += 1
+    refs = latest.get("evidence_refs")
+    return {
+        "latest_run_id": latest.get("run_id") or "",
+        "profile": latest.get("profile") or "",
+        "app_id": latest.get("app_id") or "",
+        "status": latest.get("status") or "",
+        "score": latest.get("score"),
+        "current_percent": latest.get("current_percent"),
+        "current_stage": latest.get("current_stage") or "",
+        "finding_counts": counts,
+        "evidence_saved": bool(latest.get("evidence_saved") or refs),
+        "latest_completed_at": latest.get("completed_at") or "",
+        "history_count": len(runs),
+        "latest_run_ids": [item.get("run_id") for item in runs],
+    }
 
 
 def _json_shadow_projection(state: Mapping[str, Any]) -> dict[str, Any]:
