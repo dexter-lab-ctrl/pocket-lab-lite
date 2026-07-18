@@ -81,6 +81,7 @@ _SQLITE_PROGRESS_ACTIVE_RETRY_SECONDS = max(0.10, min(1.0, float(os.environ.get(
 _SQLITE_PROGRESS_IDLE_RETRY_SECONDS = max(0.25, min(5.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_RETRY_SECONDS", "1.0"))))
 _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS = 15_000
 _SQLITE_PROGRESS_DIRTY = threading.Event()
+_SQLITE_PROGRESS_READER_RESET = threading.Event()
 _SQLITE_PROGRESS_STOP = threading.Event()
 _SQLITE_PROGRESS_THREAD: threading.Thread | None = None
 _SQLITE_PROGRESS_EPOCH = 0
@@ -2231,6 +2232,46 @@ def publish_committed_progress(
     return _refresh_sqlite_progress_snapshot(repository=repository, run_id=run_id)
 
 
+def reset_security_progress_after_database_restore(
+    *, repository: Any | None = None
+) -> dict[str, Any]:
+    """Replace process-local Progress state from the restored SQLite file.
+
+    Database restore atomically replaces the SQLite file.  The background
+    Progress reader may still own a connection to the previous inode, while
+    monotonic publication would reject the restored database moving backward
+    to an older run.  Publish one fresh committed snapshot without monotonic
+    comparison and force the long-lived reader to reconnect before its next
+    refresh.
+    """
+    repo = repository or _security_repository()
+    progress = repo.get_progress()
+    if progress is None:
+        revision = repo.get_domain_revision()
+        progress = {
+            "status": "idle",
+            "domain_revision": int(revision.get("revision") or 0),
+            "updated_at": revision.get("updated_at"),
+        }
+    projected = _sqlite_progress_payload(progress)
+    payload, published = _publish_sqlite_progress(
+        projected,
+        verified=True,
+        enforce_monotonic=False,
+    )
+    _SQLITE_PROGRESS_READER_RESET.set()
+    _SQLITE_PROGRESS_DIRTY.set()
+    return {
+        "status": "passed",
+        "run_id": payload.get("run_id"),
+        "scan_status": payload.get("status"),
+        "active_scan": bool(payload.get("active_scan")),
+        "published": bool(published),
+        "reader_reconnect_requested": True,
+        "sanitized": True,
+    }
+
+
 def mark_security_progress_dirty() -> None:
     if not _sqlite_compact_reads_enabled():
         return
@@ -2287,6 +2328,12 @@ def _projection_refresher_loop() -> None:
                     reader = None
                 retry_delay = None
                 continue
+            if _SQLITE_PROGRESS_READER_RESET.is_set():
+                if reader is not None:
+                    reader.close()
+                    reader = None
+                _SQLITE_PROGRESS_READER_RESET.clear()
+                _progress_metric_increment("reader_reconnects")
             if signaled:
                 _progress_metric_increment("signaled_refreshes")
             elif not retrying:
