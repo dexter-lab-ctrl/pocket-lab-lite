@@ -266,11 +266,27 @@ def _find_scan(api: Api, predicate: Callable[[dict[str, Any]], bool]) -> dict[st
     return last
 
 
-def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
-    baseline = api.get("/api/lite/security/progress")
-    if bool(baseline.get("active_scan")):
-        raise GateError("Quick Safety Check submission blocked because another scan is active")
+def wait_security_idle(api: Api, timeout: float) -> dict[str, Any]:
+    idle_timeout = min(
+        max(float(os.environ.get("POCKETLAB_S8_GATE_SECURITY_IDLE_TIMEOUT", "120")), 15.0),
+        max(timeout, 15.0),
+        300.0,
+    )
 
+    def idle(payload: dict[str, Any]) -> bool:
+        return payload.get("active_scan") is False
+
+    return poll(
+        "Security scan idle precondition",
+        idle_timeout,
+        2.0,
+        lambda: api.get("/api/lite/security/progress"),
+        idle,
+    )
+
+
+def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
+    baseline = wait_security_idle(api, timeout)
     baseline_run_id = str(baseline.get("run_id") or "")
     submitted_after_epoch_ms = int(time.time() * 1000)
     expected_run = ""

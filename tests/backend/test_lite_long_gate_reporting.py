@@ -350,3 +350,13 @@ def test_database_parity_retries_until_compact_projection_settles(monkeypatch: p
     assert config["json_sqlite_parity"]["matched"] is True
     assert warnings == []
     assert failures == []
+
+
+def test_orchestrator_blocks_selected_gates_when_before_baseline_fails():
+    script = (ROOT / "scripts/dev/check-lite-long-duration-gates-server-phone.sh").read_text(
+        encoding="utf-8"
+    )
+    assert 'preflight_blocked=1' in script
+    assert 'selected gates will not run' in script
+    assert 'failed_stage' not in script or 'preflight' in script
+    assert 'Preflight baseline did not converge; destructive or disruptive gate execution was blocked.' in script

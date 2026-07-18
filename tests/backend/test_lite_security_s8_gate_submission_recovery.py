@@ -84,18 +84,63 @@ def test_quick_scan_keeps_normal_submission_path(monkeypatch):
     assert api.post_calls == 1
 
 
-def test_quick_scan_fails_closed_when_scan_already_active():
+def test_quick_scan_waits_for_existing_scan_to_clear(monkeypatch):
+    api = FakeApi(timeout_on_post=False)
+    reads = {"count": 0}
+
+    def active_then_idle(path: str):
+        if path == "/api/lite/security/summary":
+            if api.post_calls:
+                return {
+                    "last_run": {
+                        "run_id": "new-run",
+                        "requested_at_epoch_ms": 9_999_999_999_999,
+                        "scan_profile": "quick",
+                        "status": "succeeded",
+                        "percent": 100,
+                    },
+                    "history": [],
+                }
+            return {"history": []}
+        if api.post_calls:
+            return {
+                "active_scan": False,
+                "run_id": "new-run",
+                "requested_at_epoch_ms": 9_999_999_999_999,
+                "profile": "quick",
+                "status": "succeeded",
+                "percent": 100,
+            }
+        reads["count"] += 1
+        if reads["count"] < 3:
+            return {"active_scan": True, "run_id": "existing", "profile": "quick", "status": "running"}
+        return {"active_scan": False, "run_id": "existing", "profile": "quick", "status": "succeeded"}
+
+    api.get = active_then_idle
+    monkeypatch.setattr(long_gate_s8.time, "sleep", lambda _seconds: None)
+
+    result = long_gate_s8.run_quick_scan(api, timeout=5.0)
+
+    assert result["run_id"] == "new-run"
+    assert api.post_calls == 1
+
+
+def test_quick_scan_fails_closed_when_active_scan_never_clears(monkeypatch):
     api = FakeApi(timeout_on_post=False)
 
-    def active(_path: str):
-        return {"active_scan": True, "run_id": "existing", "profile": "quick"}
+    def active(path: str):
+        if path == "/api/lite/security/summary":
+            return {"history": []}
+        return {"active_scan": True, "run_id": "existing", "profile": "quick", "status": "running"}
 
     api.get = active
+    monkeypatch.setenv("POCKETLAB_S8_GATE_SECURITY_IDLE_TIMEOUT", "15")
+    monkeypatch.setattr(long_gate_s8.time, "sleep", lambda _seconds: None)
 
     try:
-        long_gate_s8.run_quick_scan(api, timeout=5.0)
+        long_gate_s8.run_quick_scan(api, timeout=0.01)
     except long_gate_s8.GateError as exc:
-        assert "another scan is active" in str(exc)
+        assert "Security scan idle precondition" in str(exc)
     else:
         raise AssertionError("expected GateError")
 
