@@ -796,14 +796,78 @@ def _fsync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
+def _reconcile_security_run_projections(repository: Any) -> dict[str, Any]:
+    """Make derived run JSON exactly match the restored SQLite run set.
+
+    ``security/runs`` is compatibility output, not evidence.  Restore may move
+    SQLite backwards to a verified backup, so run projection files created
+    after that backup must not survive as canonical "future" runs.  Evidence
+    directories are intentionally untouched.
+    """
+    from . import lite_security
+
+    expected: set[str] = set()
+    written = 0
+    cursor_epoch_ms: int | None = None
+    cursor_run_id: str | None = None
+    while True:
+        page = repository.list_runs_page(
+            limit=200,
+            cursor_epoch_ms=cursor_epoch_ms,
+            cursor_run_id=cursor_run_id,
+        )
+        rows = page.get("runs") if isinstance(page, dict) else []
+        for row in rows if isinstance(rows, list) else []:
+            if not isinstance(row, dict):
+                continue
+            run_id = str(row.get("run_id") or "")
+            if not run_id:
+                continue
+            payload = lite_security._sqlite_run_payload(
+                repository,
+                row,
+                include_details=True,
+                include_related=True,
+            ) or row
+            evidence.write_run(run_id, payload)
+            expected.add(f"{evidence.safe_run_id(run_id)}.json")
+            written += 1
+        next_cursor = page.get("next_cursor") if isinstance(page, dict) else None
+        if not page.get("has_more") or not isinstance(next_cursor, dict):
+            break
+        cursor_epoch_ms = int(next_cursor.get("epoch_ms") or 0)
+        cursor_run_id = str(next_cursor.get("run_id") or "")
+        if cursor_epoch_ms <= 0 or not cursor_run_id:
+            raise RuntimeError("Security run projection cursor is invalid")
+
+    removed = 0
+    runs_directory = evidence.runs_dir()
+    for path in sorted(runs_directory.glob("*.json")):
+        if path.name not in expected:
+            path.unlink()
+            removed += 1
+    _fsync_directory(runs_directory)
+    return {
+        "status": "passed",
+        "written_run_projections": written,
+        "removed_stale_run_projections": removed,
+        "evidence_files_deleted": False,
+    }
+
+
 def _refresh_security_projections() -> dict[str, Any]:
     try:
         from . import lite_security
 
-        _repository, state, _revision = lite_security._sqlite_state_projection()
+        repository, state, _revision = lite_security._sqlite_state_projection()
+        runs = _reconcile_security_run_projections(repository)
         evidence.write_state(state)
         lite_security.write_compact_security_state(state)
-        return {"status": "passed", "summary": "Security projections refreshed."}
+        return {
+            "status": "passed",
+            "summary": "Security projections refreshed.",
+            "runs": runs,
+        }
     except Exception as exc:
         return {"status": "failed", "error_type": type(exc).__name__, "summary": "Security projection refresh failed."}
 
@@ -812,10 +876,10 @@ def _parity_check() -> dict[str, Any]:
     try:
         from .lite_security_store import SecuritySQLiteRepository
 
-        state = evidence.read_state()
-        if not isinstance(state, dict):
-            return {"status": "unavailable", "matched": None, "summary": "Compatibility state is not available."}
-        result = SecuritySQLiteRepository().compare_json_state(state, record=False)
+        result = SecuritySQLiteRepository().compare_legacy_source(
+            source_root=evidence.security_root(),
+            record=False,
+        )
         return {"status": "passed" if result.get("matched") else "failed", **result}
     except Exception as exc:
         return {"status": "failed", "matched": False, "error_type": type(exc).__name__}
@@ -874,6 +938,9 @@ def _truncate_wal_for_restore(path: Path) -> dict[str, Any]:
 def _security_projection_targets() -> list[Path]:
     """Files derived from Security lifecycle state that must move with SQLite."""
     targets: list[Path] = [evidence.state_path()]
+    runs = evidence.runs_dir()
+    if runs.exists():
+        targets.extend(sorted(path for path in runs.glob("*.json") if path.is_file()))
     compact = evidence.security_root() / "compact"
     if compact.exists():
         targets.extend(sorted(path for path in compact.rglob("*.json") if path.is_file()))
@@ -955,19 +1022,25 @@ def _restore_checkpoint_state_files(restore_id: str, manifest: dict[str, Any]) -
     expected: set[str] = set()
     restored = 0
     removed = 0
-    # Remove generated compact files that did not exist in the checkpoint.
+    # Remove generated compatibility projections that did not exist in the
+    # checkpoint.  Security evidence is deliberately outside these roots.
     compact = evidence.security_root() / "compact"
+    runs = evidence.runs_dir()
     checkpoint_relatives = {
         str(item.get("relative_path"))
         for item in records
         if isinstance(item, dict) and item.get("relative_path")
     }
-    if compact.exists():
-        for current in sorted(compact.rglob("*.json"), reverse=True):
+    for projection_root, recursive in ((compact, True), (runs, False)):
+        if not projection_root.exists():
+            continue
+        candidates = projection_root.rglob("*.json") if recursive else projection_root.glob("*.json")
+        for current in sorted(candidates, reverse=True):
             relative = _relative_state_path(current)
             if relative not in checkpoint_relatives:
                 current.unlink(missing_ok=True)
                 removed += 1
+        _fsync_directory(projection_root)
     for item in reversed(records):
         if not isinstance(item, dict):
             continue
@@ -1259,7 +1332,7 @@ def _restore_database_backup_unlocked(command: dict[str, Any]) -> dict[str, Any]
         restore_id=restore_id,
         backup_id=backup_id,
         preview_id=preview_id,
-        target_names=["pocketlab-lite.sqlite3", "security_state.json", "security/compact/*.json"],
+        target_names=["pocketlab-lite.sqlite3", "security_state.json", "security/runs/*.json", "security/compact/*.json"],
     )
     maintenance.enter_maintenance(operation_id=restore_id, kind="database_restore")
     journal = restore_txn.update_journal(
@@ -1354,7 +1427,7 @@ def _restore_database_backup_unlocked(command: dict[str, Any]) -> dict[str, Any]
             restore_id,
             summary="Validated database promoted. Active validation is required before commit.",
             promoted_paths=["pocketlab-lite.sqlite3"],
-            pending_paths=["security_state.json", "security/compact/*.json"],
+            pending_paths=["security_state.json", "security/runs/*.json", "security/compact/*.json"],
             active_hashes={"database": active["sha256"]},
         )
         _restore_run_snapshot(journal)
@@ -1403,7 +1476,7 @@ def _restore_database_backup_unlocked(command: dict[str, Any]) -> dict[str, Any]
             status="completed",
             terminal_status="committed",
             completed_at=completed_at,
-            promoted_paths=["pocketlab-lite.sqlite3", "security_state.json", "security/compact/*.json"],
+            promoted_paths=["pocketlab-lite.sqlite3", "security_state.json", "security/runs/*.json", "security/compact/*.json"],
             pending_paths=[],
             active_hashes={"database": _sha256(live_db)},
             api_worker_restart_allowed=True,

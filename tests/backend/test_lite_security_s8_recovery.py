@@ -700,3 +700,81 @@ def test_s8_unreadable_restore_journal_blocks_restart():
     assert guard["unresolved"] is True
     assert guard["rollback_failed"] is True
     assert guard["api_worker_restart_allowed"] is False
+
+
+def test_s8_restore_reconciles_canonical_run_projections_and_preserves_evidence():
+    from api_fastapi.services import lite_database_recovery, lite_security_evidence
+
+    repo = _repository()
+    _terminal_run(repo, "restore-source", completed_at=_iso_days_ago(3))
+    lite_database_recovery._refresh_security_projections()
+    lite_database_recovery.create_database_backup({"command_id": "projection-backup"})
+
+    _terminal_run(repo, "future-after-backup", completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    future_projection = lite_security_evidence.runs_dir() / "future-after-backup.json"
+    assert future_projection.is_file()
+    evidence_ref = lite_security_evidence.write_evidence(
+        "future-after-backup", "summary.json", {"status": "preserved"}
+    )
+    evidence_path = lite_security_evidence.security_root().parent / evidence_ref
+    assert evidence_path.is_file()
+
+    preview = lite_database_recovery.create_database_restore_preview("projection-backup")
+    result = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "projection-restore",
+            "backup_id": "projection-backup",
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
+
+    assert result["phase"] == "committed"
+    assert future_projection.exists() is False
+    assert evidence_path.is_file()
+    assert lite_database_recovery._parity_check()["matched"] is True
+
+
+def test_s8_projection_failure_rolls_back_exact_run_projection_set(monkeypatch):
+    from api_fastapi.services import (
+        lite_database_recovery,
+        lite_security,
+        lite_security_evidence,
+    )
+
+    repo = _repository()
+    _terminal_run(repo, "rollback-source", completed_at=_iso_days_ago(3))
+    lite_database_recovery._refresh_security_projections()
+    lite_database_recovery.create_database_backup({"command_id": "projection-rollback-backup"})
+
+    _terminal_run(repo, "rollback-current", completed_at=_iso_days_ago(1))
+    lite_database_recovery._refresh_security_projections()
+    current_projection = lite_security_evidence.runs_dir() / "rollback-current.json"
+    before = current_projection.read_bytes()
+    preview = lite_database_recovery.create_database_restore_preview(
+        "projection-rollback-backup"
+    )
+
+    original = lite_security.write_compact_security_state
+    calls = {"count": 0}
+
+    def fail_once(state):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise OSError("injected projection failure")
+        return original(state)
+
+    monkeypatch.setattr(lite_security, "write_compact_security_state", fail_once)
+    result = lite_database_recovery.restore_database_backup(
+        {
+            "command_id": "projection-rollback-restore",
+            "backup_id": "projection-rollback-backup",
+            "preview_id": preview["preview_id"],
+            "confirm": True,
+        }
+    )
+
+    assert result["phase"] == "rolled_back"
+    assert current_projection.read_bytes() == before
+    assert lite_database_recovery._parity_check()["matched"] is True
