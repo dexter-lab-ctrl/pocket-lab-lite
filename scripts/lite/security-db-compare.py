@@ -19,7 +19,16 @@ from api_fastapi.services.lite_security_store import (  # noqa: E402
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Compare bounded JSON and SQLite Security projections."
+        description=(
+            "Compare the complete normalized canonical JSON Security source "
+            "with SQLite."
+        )
+    )
+    parser.add_argument(
+        "--source-root",
+        type=Path,
+        default=None,
+        help="Canonical Security JSON root. Defaults to the configured state root.",
     )
     parser.add_argument(
         "--no-record",
@@ -28,9 +37,9 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        state = lite_security_evidence.read_state() or {}
-        result = SecuritySQLiteRepository().compare_json_state(
-            state, record=not args.no_record
+        result = SecuritySQLiteRepository().compare_legacy_source(
+            source_root=args.source_root or lite_security_evidence.security_root(),
+            record=not args.no_record,
         )
     except Exception as exc:  # CLI boundary: preserve JSON source privacy.
         print(
