@@ -1,0 +1,119 @@
+import React from 'react';
+import { formatLiteTime } from '../../lib/liteApi.js';
+import { LiteButton, StatusBadge } from '../LiteUi.jsx';
+
+function backupLabel(backup) {
+  if (!backup) return 'No verified database backup yet.';
+  const state = backup.verification_status === 'verified' ? 'Verified' : 'Not verified';
+  const when = backup.created_at ? formatLiteTime(backup.created_at) : 'Time unavailable';
+  return `${state} · ${when}`;
+}
+
+export default function RecoveryDatabaseDetailsLazy({
+  databaseProtection = {},
+  latestBackup = null,
+  latestPreview = null,
+  lastRestore = null,
+  maintenance = {},
+  writeBlocked = false,
+  busy = '',
+  onBackup,
+  onVerify,
+  onPreview,
+  onRestore,
+}) {
+  const history = Array.isArray(databaseProtection.backup_history)
+    ? databaseProtection.backup_history.slice(0, 10)
+    : [];
+  const verified = latestBackup?.verification_status === 'verified';
+  const previewReady = latestPreview?.status === 'ready' && latestPreview?.restore_allowed !== false;
+  const rollbackAvailable = Boolean(databaseProtection.rollback_available || lastRestore?.rollback_available);
+
+  return (
+    <div className="lite-recovery-database-manage-content" data-recovery-s8-lazy-details="true">
+      <section>
+        <div className="lite-recovery-database-manage-heading">
+          <div>
+            <span>Overview</span>
+            <h3>{maintenance?.active ? 'Maintenance in progress' : databaseProtection.summary || 'Database protection is ready.'}</h3>
+          </div>
+          <StatusBadge status={maintenance?.active ? 'checking' : verified ? 'healthy' : 'review'}>
+            {maintenance?.active ? 'Maintenance in progress' : verified ? 'Backup verified' : 'Backup needed'}
+          </StatusBadge>
+        </div>
+        <p>Backups and restores stay backend-owned. Write actions remain disabled while offline or during maintenance.</p>
+        <div className="lite-recovery-database-manage-actions">
+          <LiteButton onClick={onBackup} disabled={writeBlocked || busy === 'database-backup'}>
+            {busy === 'database-backup' ? 'Starting backup…' : 'Back Up Pocket Lab'}
+          </LiteButton>
+          <LiteButton tone="secondary" onClick={onVerify} disabled={!latestBackup || writeBlocked || busy === 'database-verify'}>
+            {busy === 'database-verify' ? 'Checking…' : 'Verify backup'}
+          </LiteButton>
+          <LiteButton tone="secondary" onClick={onPreview} disabled={!verified || writeBlocked || busy === 'database-preview'}>
+            {busy === 'database-preview' ? 'Preparing…' : 'Preview restore'}
+          </LiteButton>
+          <LiteButton tone="danger" onClick={onRestore} disabled={!verified || !previewReady || writeBlocked || busy === 'database-restore'}>
+            {busy === 'database-restore' ? 'Entering maintenance…' : 'Restore Pocket Lab'}
+          </LiteButton>
+        </div>
+      </section>
+
+      <section>
+        <span>Database backups</span>
+        <h3>Verified restore points</h3>
+        {history.length ? (
+          <div className="lite-recovery-database-history">
+            {history.map((backup) => (
+              <article key={backup.backup_id}>
+                <strong>{backupLabel(backup)}</strong>
+                <small>{backup.size_bytes ? `${Math.max(1, Math.round(backup.size_bytes / 1024))} KB` : 'Size unavailable'}</small>
+              </article>
+            ))}
+          </div>
+        ) : <p>No database backup history yet.</p>}
+      </section>
+
+      <section>
+        <span>Verification</span>
+        <h3>{verified ? 'Backup verified' : 'Verification required'}</h3>
+        <p>{latestBackup?.summary || 'A backup is marked ready only after integrity, schema, migration, and hash checks pass.'}</p>
+      </section>
+
+      <section>
+        <span>Restore preview</span>
+        <h3>{previewReady ? 'Preview ready' : 'Preview needed'}</h3>
+        <p>{latestPreview?.summary || 'Preview restore checks the selected backup without replacing the live database.'}</p>
+      </section>
+
+      <section>
+        <span>Restore</span>
+        <h3>{lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmed restore only'}</h3>
+        <p>{lastRestore?.summary || 'Restore creates and validates a rollback copy before atomic replacement.'}</p>
+        <strong>{rollbackAvailable ? 'Rollback available' : 'Rollback is created during restore'}</strong>
+      </section>
+
+      <section>
+        <span>Maintenance</span>
+        <h3>{maintenance?.active ? 'Pocket Lab is restarting safely' : 'Ready'}</h3>
+        <p>{maintenance?.summary || 'Normal reads remain available while intentional database maintenance is coordinated.'}</p>
+      </section>
+
+      <section>
+        <span>History</span>
+        <h3>Latest database recovery</h3>
+        <p>{lastRestore?.started_at ? `${lastRestore.state || lastRestore.status || 'Recorded'} · ${formatLiteTime(lastRestore.started_at)}` : 'No database restore has been recorded.'}</p>
+      </section>
+
+      <section className="lite-recovery-database-technical">
+        <span>Technical details</span>
+        <h3>Sanitized diagnostics</h3>
+        <dl>
+          <div><dt>Journal mode</dt><dd>{databaseProtection?.wal?.journal_mode || 'Checking'}</dd></div>
+          <div><dt>Last passive maintenance</dt><dd>{databaseProtection?.wal?.last_passive_checkpoint_at ? formatLiteTime(databaseProtection.wal.last_passive_checkpoint_at) : 'Not run yet'}</dd></div>
+          <div><dt>Schema version</dt><dd>{latestBackup?.schema_version || 'Not available'}</dd></div>
+          <div><dt>Evidence-file policy</dt><dd>Never deleted automatically</dd></div>
+        </dl>
+      </section>
+    </div>
+  );
+}

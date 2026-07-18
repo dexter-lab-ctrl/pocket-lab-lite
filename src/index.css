@@ -20171,3 +20171,226 @@ textarea {
   .lite-security-s7-profile-card { transition: none; }
   .lite-security-s7-profile-card:hover { transform: none; }
 }
+
+/* Phase S8 — compact database protection surface. */
+.lite-recovery-database-section {
+  margin: 1rem 0 1.25rem;
+}
+
+.lite-recovery-database-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.lite-recovery-database-copy > span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--lite-muted, #64748b);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lite-recovery-database-copy h2 {
+  margin: 0;
+}
+
+.lite-recovery-database-copy p {
+  margin: 0.45rem 0 0;
+}
+
+.lite-recovery-database-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.lite-recovery-database-facts > div {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.9rem;
+  background: rgba(248, 250, 252, 0.68);
+}
+
+.lite-recovery-database-facts span,
+.lite-recovery-database-facts strong {
+  display: block;
+}
+
+.lite-recovery-database-facts span {
+  margin-bottom: 0.25rem;
+  color: var(--lite-muted, #64748b);
+  font-size: 0.78rem;
+}
+
+.lite-recovery-database-facts strong {
+  overflow-wrap: anywhere;
+}
+
+.lite-recovery-database-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.lite-recovery-database-details {
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  padding-top: 0.8rem;
+  color: var(--lite-muted, #64748b);
+  font-size: 0.84rem;
+}
+
+.lite-recovery-database-details summary {
+  cursor: pointer;
+  color: inherit;
+  font-weight: 700;
+}
+
+.lite-recovery-database-details > div {
+  margin-top: 0.45rem;
+}
+
+@media (max-width: 760px) {
+  .lite-recovery-database-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lite-recovery-database-actions > * {
+    flex: 1 1 calc(50% - 0.65rem);
+  }
+}
+
+@media (max-width: 460px) {
+  .lite-recovery-database-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .lite-recovery-database-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-recovery-database-card,
+  .lite-recovery-database-card * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.lite-recovery-database-manage-sheet {
+  overscroll-behavior: contain;
+}
+
+.lite-recovery-database-manage-scroll {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.lite-recovery-database-manage-content {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.lite-recovery-database-manage-content > section {
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.95rem;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.lite-recovery-database-manage-content > section > span {
+  color: var(--lite-muted, #64748b);
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.lite-recovery-database-manage-content h3,
+.lite-recovery-database-manage-content p {
+  margin: 0.35rem 0 0;
+}
+
+.lite-recovery-database-manage-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.lite-recovery-database-manage-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.lite-recovery-database-history {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.lite-recovery-database-history article {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.lite-recovery-database-history small {
+  color: var(--lite-muted, #64748b);
+  white-space: nowrap;
+}
+
+.lite-recovery-database-technical dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+
+.lite-recovery-database-technical dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.lite-recovery-database-technical dt {
+  color: var(--lite-muted, #64748b);
+}
+
+.lite-recovery-database-technical dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  .lite-recovery-database-manage-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .lite-recovery-database-history article,
+  .lite-recovery-database-manage-heading,
+  .lite-recovery-database-technical dl > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lite-recovery-database-technical dd {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-recovery-database-manage-sheet,
+  .lite-recovery-database-manage-sheet * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}

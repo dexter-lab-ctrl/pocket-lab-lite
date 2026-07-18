@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from ..services.request_limits import request_limit_snapshot
 from ..services.workload_admission import (
@@ -452,6 +452,27 @@ class LiteRestoreRequest(BaseModel):
     preview_id: str | None = None
     confirm: bool = False
     dry_run: bool = False
+
+
+class LiteDatabaseBackupRequest(BaseModel):
+    reason: str | None = None
+
+
+class LiteDatabaseRestoreRequest(BaseModel):
+    backup_id: str
+    preview_id: str
+    confirm: bool = False
+    gate_fail_after_replace: bool = False
+
+
+class LiteRetentionRequest(BaseModel):
+    dry_run: bool = True
+    max_batches: int = Field(default=1, ge=1, le=100)
+
+
+class LiteCheckpointRequest(BaseModel):
+    mode: Literal["passive", "truncate"] = "passive"
+    confirm_controlled: bool = False
 
 
 def _operation_payload(operation: str, target: dict[str, Any], params: dict[str, Any], *, dry_run: bool = False) -> tuple[OperationRequest, dict[str, Any]]:
@@ -1609,9 +1630,203 @@ def get_lite_recovery(request: Request) -> dict[str, Any]:
     state["app_lifecycle_profiles"] = lifecycle
     state["backup_targets"] = targets.get("targets", [])
     state["backup_target_profiles"] = targets
+    state["database_protection"] = lite_database_recovery.database_recovery_status()
+    state["maintenance"] = lite_security_maintenance.maintenance_state()
     return state
 
 
+
+
+@router.get("/recovery/database")
+def get_lite_database_recovery(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_database_recovery.database_recovery_status()
+
+
+@router.post("/recovery/database/backup", status_code=202)
+async def backup_lite_database(payload: LiteDatabaseBackupRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.database.backup",
+        "lite.database.backup.queued",
+        {
+            "command_id": command_id,
+            "backup_id": f"db-backup-{command_id}",
+            "reason": payload.reason or "manual database backup",
+            "requested_by": "lite-api",
+        },
+    )
+    submitted.update(
+        {
+            "backup_id": f"db-backup-{command_id}",
+            "summary": "Pocket Lab database backup queued. The worker will create and verify it online.",
+        }
+    )
+    return submitted
+
+
+@router.get("/recovery/database/backups")
+def list_lite_database_backups(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_database_recovery.list_database_backups()
+
+
+@router.get("/recovery/database/backups/{backup_id}")
+def get_lite_database_backup(backup_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    payload = lite_database_recovery.get_database_backup(backup_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "Database backup was not found."})
+    return payload
+
+
+@router.post("/recovery/database/backups/{backup_id}/verify", status_code=202)
+async def verify_lite_database_backup(backup_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    if not lite_database_recovery.get_database_backup(backup_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Database backup was not found."},
+        )
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.database.backup.verify",
+        "lite.database.backup.verify_queued",
+        {"command_id": command_id, "backup_id": backup_id, "requested_by": "lite-api"},
+    )
+    submitted.update({"backup_id": backup_id, "summary": "Database backup verification queued."})
+    return submitted
+
+
+@router.post("/recovery/database/backups/{backup_id}/preview", status_code=202)
+async def preview_lite_database_restore(backup_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    if not lite_database_recovery.get_database_backup(backup_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "Database backup was not found."},
+        )
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.database.restore.preview",
+        "lite.database.restore.preview_queued",
+        {"command_id": command_id, "backup_id": backup_id, "requested_by": "lite-api"},
+    )
+    submitted.update({"backup_id": backup_id, "summary": "Database restore preview queued. No state will be changed."})
+    return submitted
+
+
+@router.get("/recovery/database/restore/previews/{preview_id}")
+def get_lite_database_restore_preview(preview_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    payload = lite_database_recovery.get_database_restore_preview(preview_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "Database restore preview was not found."})
+    return payload
+
+
+@router.post("/recovery/database/backups/{backup_id}/restore", status_code=202)
+async def restore_lite_database(backup_id: str, payload: LiteDatabaseRestoreRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    if not payload.confirm:
+        raise HTTPException(status_code=409, detail={"status": "confirmation_required", "summary": "Restore Pocket Lab requires explicit confirmation."})
+    if payload.backup_id != backup_id:
+        raise HTTPException(status_code=409, detail={"status": "backup_mismatch", "summary": "The selected backup does not match the restore request."})
+    preview = lite_database_recovery.get_database_restore_preview(payload.preview_id)
+    if not preview or preview.get("backup_id") != backup_id or preview.get("status") != "ready":
+        raise HTTPException(status_code=409, detail={"status": "preview_required", "summary": "Create a ready restore preview for this backup first."})
+    if lite_security_maintenance.active_security_scan():
+        raise HTTPException(status_code=409, detail={"status": "active_security_scan", "summary": "Restore is blocked while a Safety Check is active."})
+    allow_gate_faults = str(os.environ.get("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "0")).strip().lower() in {"1", "true", "yes", "on"}
+    if payload.gate_fail_after_replace and not allow_gate_faults:
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "gate_fault_disabled", "summary": "Restore fault injection is disabled outside an explicit S8 production gate."},
+        )
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.database.restore",
+        "lite.database.restore.queued",
+        {
+            "command_id": command_id,
+            "restore_id": f"db-restore-{command_id}",
+            "backup_id": backup_id,
+            "preview_id": payload.preview_id,
+            "confirm": True,
+            "gate_fail_after_replace": bool(payload.gate_fail_after_replace),
+            "requested_by": "lite-api",
+        },
+    )
+    submitted.update(
+        {
+            "restore_id": f"db-restore-{command_id}",
+            "backup_id": backup_id,
+            "preview_id": payload.preview_id,
+            "summary": "Restore queued. Pocket Lab will enter maintenance, create rollback, replace atomically, and verify recovery.",
+        }
+    )
+    return submitted
+
+
+@router.get("/recovery/database/restore/{restore_id}")
+def get_lite_database_restore_run(restore_id: str, request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    payload = lite_database_recovery.get_database_restore_run(restore_id)
+    if not payload:
+        raise HTTPException(status_code=404, detail={"status": "not_found", "summary": "Database restore run was not found."})
+    return payload
+
+
+@router.get("/recovery/maintenance")
+def get_lite_recovery_maintenance(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return lite_security_maintenance.maintenance_status()
+
+
+@router.post("/recovery/maintenance/retention", status_code=202)
+async def run_lite_recovery_retention(payload: LiteRetentionRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.maintenance.retention",
+        "lite.maintenance.retention_queued",
+        {
+            "command_id": command_id,
+            "dry_run": payload.dry_run,
+            "max_batches": payload.max_batches,
+            "requested_by": "lite-api",
+        },
+    )
+    submitted.update({"mode": "dry_run" if payload.dry_run else "apply", "summary": "Bounded Security retention queued."})
+    return submitted
+
+
+@router.post("/recovery/maintenance/checkpoint", status_code=202)
+async def run_lite_recovery_checkpoint(payload: LiteCheckpointRequest, request: Request) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    if payload.mode == "truncate" and not payload.confirm_controlled:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "status": "confirmation_required",
+                "summary": "Truncate checkpoint requires explicit controlled-maintenance confirmation.",
+            },
+        )
+    command_id = uuid.uuid4().hex
+    submitted = await submit_domain_command(
+        "pocketlab.commands.lite.maintenance.checkpoint",
+        "lite.maintenance.checkpoint_queued",
+        {
+            "command_id": command_id,
+            "operation_id": command_id,
+            "mode": payload.mode.upper(),
+            "confirm_controlled": bool(payload.confirm_controlled),
+            "requested_by": "lite-api",
+        },
+    )
+    submitted.update({"checkpoint_mode": payload.mode, "summary": "SQLite maintenance checkpoint queued."})
+    return submitted
 
 
 @router.get("/recovery/backup-targets")

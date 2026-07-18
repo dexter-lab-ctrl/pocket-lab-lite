@@ -192,6 +192,7 @@ class LiteCoreSupervisor:
         self.evidence_dir = self.state_root / "core-supervisor"
         self.state_file = self.evidence_dir / "state.json"
         self.events_file = self.evidence_dir / "events.jsonl"
+        self.maintenance_file = self.state_root / "security" / "maintenance" / "maintenance-state.json"
         self.last_actions: Dict[str, float] = self._load_last_actions()
 
     def _state_root(self) -> Path:
@@ -280,7 +281,39 @@ class LiteCoreSupervisor:
             caddy_upstream_http,
         )
 
+    def _maintenance_state(self) -> Dict[str, Any]:
+        try:
+            payload = json.loads(self.maintenance_file.read_text(encoding="utf-8"))
+            if isinstance(payload, dict) and payload.get("active") is True:
+                return sanitize(payload)
+        except Exception:
+            pass
+        return {"active": False, "state": "ready", "sanitized": True}
+
     def tick(self) -> Dict[str, Any]:
+        maintenance = self._maintenance_state()
+        if maintenance.get("active"):
+            observed = self.collect() if pm2_available() else {"services": {}, "checks": {}}
+            payload = {
+                "supervisor": "pocketlab-core-supervisor",
+                "version": SUPERVISOR_VERSION,
+                "supervisor_status": "maintenance",
+                "checked_at": now_iso(),
+                "maintenance": maintenance,
+                "observed_before": observed,
+                "observed_after": observed,
+                "actions": [],
+                "last_actions": self.last_actions,
+                "capabilities": ["core-service-supervision", "maintenance-aware", "pm2-repair"],
+            }
+            self._write_json(self.state_file, payload)
+            self._append_event({
+                "event": "maintenance_restart_suppressed",
+                "operation_id": maintenance.get("operation_id"),
+                "state": maintenance.get("state"),
+                "acted": False,
+            })
+            return payload
         if not pm2_available():
             payload = {
                 "supervisor_status": "degraded",

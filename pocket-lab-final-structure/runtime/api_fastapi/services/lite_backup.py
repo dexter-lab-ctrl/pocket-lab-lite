@@ -282,6 +282,34 @@ def _copy_sources_to_staging(backup_id: str, staging_root: Path) -> list[dict[st
     return copied
 
 
+def _copy_database_backup_to_staging(
+    database_backup_id: str, staging_root: Path
+) -> list[dict[str, Any]]:
+    from . import lite_database_recovery
+
+    package = lite_database_recovery.database_backup_package(database_backup_id)
+    if not package.is_dir():
+        raise RuntimeError("Verified database backup package was not created")
+    copied: list[dict[str, Any]] = []
+    for source in sorted(package.rglob("*")):
+        if not source.is_file():
+            continue
+        relative = Path("database-backup") / source.relative_to(package)
+        target = staging_root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        copied.append(
+            {
+                "set": "Pocket Lab database",
+                "source": str(relative),
+                "relative_path": str(relative),
+                "size_bytes": target.stat().st_size,
+                "sha256": _sha256(target),
+            }
+        )
+    return copied
+
+
 def _record_backup_failure(backup_id: str, *, reason: str, include_app_data: bool, error: str) -> None:
     safe_error = str(error or "backup failed").strip()
     if len(safe_error) > 2000:
@@ -1053,7 +1081,14 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
                     f"restic init failed: {init_result.stderr.strip() or init_result.stdout.strip()}"
                 )
 
+        from . import lite_database_recovery
+
+        database_backup_id = f"{backup_id}-database"
+        database_backup = lite_database_recovery.create_database_backup(
+            {"backup_id": database_backup_id, "reason": reason}
+        )
         copied = _copy_sources_to_staging(backup_id, staging_root)
+        copied.extend(_copy_database_backup_to_staging(database_backup_id, staging_root))
         backup_args = [
             restic,
             "backup",
@@ -1103,7 +1138,8 @@ def create_backup(command: dict[str, Any]) -> dict[str, Any]:
                 "stdout_summary": "restic backup completed",
                 "stderr_present": bool(backup_result.stderr.strip()),
             },
-            "summary": f"Backup created with {len(copied)} safe item(s). Evidence saved.",
+            "database_backup": database_backup,
+            "summary": f"Backup created with {len(copied)} safe item(s), including a verified Pocket Lab database backup. Evidence saved.",
         }
         manifest = lite_backup_manifest.write_manifest(manifest)
         receipt = lite_backup_manifest.write_receipt(

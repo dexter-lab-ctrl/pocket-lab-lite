@@ -20,6 +20,7 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { LiteSheet } from './LiteOverlay.jsx';
 import { selectRecoveryScreenView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
   GlassCard,
@@ -86,6 +87,7 @@ const RECOVERY_RENDER_REDUCTION_MILESTONE_1 = true;
 const RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
 const RecoveryActionDetailsLazy = React.lazy(() => import('./recovery/RecoveryActionDetailsLazy.jsx'));
 const RecoveryBackupHistory = React.lazy(() => import('./recovery/RecoveryBackupHistory.jsx'));
+const RecoveryDatabaseDetailsLazy = React.lazy(() => import('./recovery/RecoveryDatabaseDetailsLazy.jsx'));
 void RECOVERY_RENDER_REDUCTION_MILESTONE_1;
 void RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2;
 
@@ -118,6 +120,8 @@ export default function RecoveryScreen() {
   const [copiedEvidence, setCopiedEvidence] = useState('');
   const [activeActionPanel, setActiveActionPanel] = useState('');
   const [highlightedAction, setHighlightedAction] = useState('');
+  const [databaseResult, setDatabaseResult] = useState(null);
+  const [databaseManageOpen, setDatabaseManageOpen] = useState(false);
 
   const latestBackup = data?.last_backup || data?.latest_backup || null;
   const history = data?.backup_history || data?.available_restore_points || [];
@@ -131,6 +135,14 @@ export default function RecoveryScreen() {
   const healthValidation = lastRestore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
   const recoveryFlow = useLiteRecoveryFlow({ recovery: data, latestBackup, latestPreview, backendReachable, savedStateOnly });
+  const databaseProtection = data?.database_protection || {};
+  const latestDatabaseBackup = databaseProtection?.latest_backup || null;
+  const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
+  const databaseMaintenance = databaseProtection?.maintenance || data?.maintenance || {};
+  const databaseRestore = databaseProtection?.last_restore || null;
+  const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
+  const databasePreviewReady = latestDatabasePreview?.status === 'ready' && latestDatabasePreview?.restore_allowed !== false;
+  const databaseWriteBlocked = recoveryFlow.writeBlocked || databaseMaintenance?.active === true;
 
   const appBackups = Array.isArray(data?.app_backups)
     ? data.app_backups
@@ -254,6 +266,76 @@ export default function RecoveryScreen() {
       recoveryFlow.backupAccepted(payload);
       recoveryFlow.backupDone(payload);
       setBackupResult(payload);
+      refreshRecovery();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function backUpDatabase() {
+    if (databaseWriteBlocked) return;
+    setBusy('database-backup');
+    setDatabaseResult(null);
+    setActionError(null);
+    try {
+      const payload = await liteApi.backupDatabase({ reason: 'manual Pocket Lab database backup' });
+      setDatabaseResult(payload);
+      refreshRecovery();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function verifyDatabaseBackup() {
+    if (!latestDatabaseBackup?.backup_id || databaseWriteBlocked) return;
+    setBusy('database-verify');
+    setDatabaseResult(null);
+    setActionError(null);
+    try {
+      const payload = await liteApi.verifyDatabaseBackup(latestDatabaseBackup.backup_id);
+      setDatabaseResult(payload);
+      refreshRecovery();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function previewDatabaseRestore() {
+    if (!latestDatabaseBackup?.backup_id || databaseWriteBlocked) return;
+    setBusy('database-preview');
+    setDatabaseResult(null);
+    setActionError(null);
+    try {
+      const payload = await liteApi.previewDatabaseRestore(latestDatabaseBackup.backup_id);
+      setDatabaseResult(payload);
+      refreshRecovery();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function restoreDatabase() {
+    if (!latestDatabaseBackup?.backup_id || !latestDatabasePreview?.preview_id || databaseWriteBlocked) return;
+    const confirmed = window.confirm('Restore Pocket Lab to this verified database backup? Pocket Lab will enter maintenance and keep a rollback copy.');
+    if (!confirmed) return;
+    setBusy('database-restore');
+    setDatabaseResult(null);
+    setActionError(null);
+    try {
+      const payload = await liteApi.restoreDatabase(latestDatabaseBackup.backup_id, {
+        backup_id: latestDatabaseBackup.backup_id,
+        preview_id: latestDatabasePreview.preview_id,
+        confirm: true,
+      });
+      setDatabaseResult(payload);
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
@@ -430,6 +512,67 @@ export default function RecoveryScreen() {
         </div>
       </section>
 
+      <section className="lite-recovery-database-section" aria-label="Database protection">
+        <GlassCard className="lite-recovery-card lite-recovery-database-card">
+          <div className="lite-recovery-card-head">
+            <div className="lite-recovery-mini-icon">
+              <Database className="h-5 w-5" />
+            </div>
+            <StatusBadge status={databaseMaintenance?.active ? 'checking' : databaseBackupVerified ? 'healthy' : 'review'}>
+              {databaseMaintenance?.active ? 'Maintenance in progress' : databaseBackupVerified ? 'Database backup verified' : 'Database backup needed'}
+            </StatusBadge>
+          </div>
+          <div className="lite-recovery-database-copy">
+            <span>Database protection</span>
+            <h2>{databaseMaintenance?.active ? 'Pocket Lab is restarting safely' : databaseProtection?.summary || 'Protect Pocket Lab state'}</h2>
+            <p>Creates a consistent SQLite online backup, validates integrity and migrations, and keeps rollback available for confirmed restore.</p>
+          </div>
+          <div className="lite-recovery-database-facts">
+            <div><span>Latest backup</span><strong>{latestDatabaseBackup?.created_at ? formatLiteTime(latestDatabaseBackup.created_at) : 'None yet'}</strong></div>
+            <div><span>Verification</span><strong>{databaseBackupVerified ? 'Verified' : 'Not verified'}</strong></div>
+            <div><span>Backup size</span><strong>{latestDatabaseBackup?.size_bytes ? `${Math.max(1, Math.round(latestDatabaseBackup.size_bytes / 1024))} KB` : 'Not available'}</strong></div>
+            <div><span>Restore preview</span><strong>{databasePreviewReady ? 'Ready' : 'Not ready'}</strong></div>
+            <div><span>Rollback</span><strong>{databaseProtection?.rollback_available || databaseRestore?.rollback_available ? 'Available' : 'Created during restore'}</strong></div>
+            <div><span>Maintenance</span><strong>{databaseMaintenance?.active ? 'In progress' : 'Ready'}</strong></div>
+          </div>
+          <div className="lite-recovery-database-actions">
+            <LiteButton onClick={backUpDatabase} disabled={databaseWriteBlocked || busy === 'database-backup'}>
+              {busy === 'database-backup' ? 'Starting backup…' : 'Back Up Pocket Lab'}
+            </LiteButton>
+            <LiteButton tone="secondary" onClick={() => setDatabaseManageOpen(true)}>
+              Manage
+            </LiteButton>
+          </div>
+        </GlassCard>
+      </section>
+
+      <LiteSheet
+        open={databaseManageOpen}
+        onClose={() => setDatabaseManageOpen(false)}
+        title="Database protection"
+        eyebrow="Manage"
+        description="Back up, verify, preview, and restore Pocket Lab through the backend-owned recovery flow."
+        variant="security"
+        className="lite-recovery-database-manage-sheet"
+        bodyClassName="lite-recovery-database-manage-scroll"
+      >
+        <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading database protection…</div>}>
+          <RecoveryDatabaseDetailsLazy
+            databaseProtection={databaseProtection}
+            latestBackup={latestDatabaseBackup}
+            latestPreview={latestDatabasePreview}
+            lastRestore={databaseRestore}
+            maintenance={databaseMaintenance}
+            writeBlocked={databaseWriteBlocked}
+            busy={busy}
+            onBackup={backUpDatabase}
+            onVerify={verifyDatabaseBackup}
+            onPreview={previewDatabaseRestore}
+            onRestore={restoreDatabase}
+          />
+        </React.Suspense>
+      </LiteSheet>
+
       <section className="lite-recovery-app-profiles lite-recovery-backup-targets" aria-label="Backup targets">
         <div className="lite-recovery-section-heading">
           <div>
@@ -548,6 +691,15 @@ export default function RecoveryScreen() {
           tone="degraded"
           title="Recovery action needs attention"
           description={actionError}
+          className="mb-5"
+        />
+      ) : null}
+
+      {databaseResult ? (
+        <StateSurface
+          tone="healthy"
+          title="Database protection queued"
+          description={databaseResult.summary || 'Pocket Lab is running the database recovery action in the worker.'}
           className="mb-5"
         />
       ) : null}

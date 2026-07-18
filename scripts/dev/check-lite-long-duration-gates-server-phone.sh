@@ -31,6 +31,7 @@ GATE_REGISTRY=(
   "wal-pressure|scripts/dev/long-gates/wal-checkpoint-pressure.sh|high|1|1|SQLite WAL checkpoint pressure|scenario=isolated;duration=300|sqlite,progress|0|0"
   "low-storage|scripts/dev/long-gates/low-storage.sh|high|1|1|Deterministic and bounded low-storage behavior|scenario=deterministic|storage,sqlite,gate_fault|0|0"
   "android-resume|scripts/dev/long-gates/android-background-resume.sh|medium|1|1|Android background and resume behavior|scenario=background-active|android,frontend,operator|0|1"
+  "security-s8|scripts/dev/long-gates/security-s8-recovery.sh|high|1|1|Security S8 retention, WAL, backup, restore, rollback, and cross-platform qualification|platform=auto|http,sqlite,nats,worker,recovery|1|1"
   "framework-self-test|scripts/dev/long-gates/framework-self-test.sh|low|1|1|Non-disruptive Group 1 framework validation|||0|0"
 )
 usage() {
@@ -41,6 +42,11 @@ Usage: bash scripts/dev/check-lite-long-duration-gates-server-phone.sh [options]
 Selection: --gate <name> | --all | --framework-self-test | --baseline-only | --list-gates
 Control: --resume --run-id <id> --report-dir <path> --dry-run --recover-stale-lock
 Risk opt-ins: --allow-disruptive --allow-storage-pressure
+S8 qualification also requires environment opt-ins:
+  POCKETLAB_S8_GATE_ALLOW_RETENTION_APPLY=1
+  POCKETLAB_S8_GATE_ALLOW_RESTORE=1
+  POCKETLAB_S8_GATE_ALLOW_FAILED_RESTORE=1
+  POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS=1 (API/worker startup environment for Gate 6)
 
 Groups 2/3 retain their existing duration, scan, Progress, and recovery options.
   --scenario <name>                     Scenario for one selected gate.
