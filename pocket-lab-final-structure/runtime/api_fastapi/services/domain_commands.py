@@ -1215,26 +1215,45 @@ async def handle_lite_database_restore(command: Dict[str, Any]) -> Dict[str, Any
         trace_id=command_id,
     )
     result = await asyncio.to_thread(lite_database_recovery.restore_database_backup, command)
+    committed = result.get("phase") == "committed" or result.get("status") == "completed"
+    rollback_status = str(result.get("rollback_status") or ((result.get("rollback") or {}).get("status") if isinstance(result.get("rollback"), dict) else ""))
+    event_suffix = "completed" if committed else "failed"
     await _publish(
-        "pocketlab.events.lite.database.restore.completed",
-        "lite.database.restore.completed",
+        f"pocketlab.events.lite.database.restore.{event_suffix}",
+        f"lite.database.restore.{event_suffix}",
         {
             "command_id": command_id,
             "restore_id": result.get("restore_id"),
             "backup_id": result.get("backup_id"),
             "status": result.get("status"),
-            "rollback_available": result.get("rollback_available"),
+            "phase": result.get("phase"),
+            "rollback_status": rollback_status or None,
+            "api_worker_restart_allowed": result.get("api_worker_restart_allowed"),
         },
         trace_id=command_id,
     )
+    if rollback_status in {"rolled_back", "rollback_failed"}:
+        await _publish(
+            f"pocketlab.events.lite.database.restore.{rollback_status}",
+            f"lite.database.restore.{rollback_status}",
+            {
+                "command_id": command_id,
+                "restore_id": result.get("restore_id"),
+                "status": rollback_status,
+                "sanitized": True,
+            },
+            trace_id=command_id,
+        )
     await _publish(
-        "pocketlab.audit.lite.database.restore.completed",
-        "lite.database.restore.completed",
+        f"pocketlab.audit.lite.database.restore.{event_suffix}",
+        f"lite.database.restore.{event_suffix}",
         {
             "command_id": command_id,
             "restore_id": result.get("restore_id"),
             "backup_id": result.get("backup_id"),
             "status": result.get("status"),
+            "phase": result.get("phase"),
+            "rollback_status": rollback_status or None,
             "sanitized": True,
         },
         trace_id=command_id,

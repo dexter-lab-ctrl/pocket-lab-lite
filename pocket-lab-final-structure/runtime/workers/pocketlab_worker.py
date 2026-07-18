@@ -577,6 +577,12 @@ async def main_async() -> int:
         except Exception:
             pass
 
+    from api_fastapi.services import lite_database_recovery  # type: ignore
+
+    # Recover or block on any durable restore journal before this process can
+    # execute a normal or one-shot writer command.
+    await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "worker")
+
     # Workers require real NATS/JetStream for durable production execution.
     # POCKETLAB_WORKER_RUN_ONCE_JSON remains available only as an explicit
     # one-shot harness hook.

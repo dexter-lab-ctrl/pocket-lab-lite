@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import sqlite3
+import stat
 import time
 import uuid
 from contextlib import contextmanager
@@ -21,6 +22,7 @@ from . import lite_security_evidence as evidence
 from . import lite_security_policy as policy
 from .lite_backup_policy import backup_layout
 from . import lite_security_maintenance as maintenance
+from . import lite_restore_transaction as restore_txn
 
 _SAFE_IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,119}$")
 
@@ -186,6 +188,7 @@ def validate_database_file(path: Path) -> dict[str, Any]:
     try:
         integrity = str(conn.execute("PRAGMA integrity_check").fetchone()[0])
         quick_check = str(conn.execute("PRAGMA quick_check").fetchone()[0])
+        foreign_key_rows = conn.execute("PRAGMA foreign_key_check").fetchall()
         tables = {
             str(row[0])
             for row in conn.execute(
@@ -201,25 +204,188 @@ def validate_database_file(path: Path) -> dict[str, Any]:
                 "SELECT version, name, applied_at, checksum FROM schema_migrations ORDER BY version"
             ).fetchall()
         ]
+        journal_mode = str(conn.execute("PRAGMA journal_mode").fetchone()[0]).lower()
     finally:
         conn.close()
     migration_ok, migration_summary = _validate_migration_contract(migrations)
     missing_tables = sorted(CORE_TABLES - tables)
-    valid = integrity == "ok" and quick_check == "ok" and migration_ok and not missing_tables
+    supported_migrations = discover_migrations()
+    current_version = max((item.version for item in supported_migrations), default=0)
+    schema_current = schema_version == current_version
+    foreign_keys_clean = not foreign_key_rows
+    valid = (
+        integrity == "ok"
+        and quick_check == "ok"
+        and foreign_keys_clean
+        and migration_ok
+        and not missing_tables
+    )
     return {
         "valid": valid,
         "integrity_check": integrity,
         "quick_check": quick_check,
+        "foreign_keys_clean": foreign_keys_clean,
+        "foreign_key_violation_count": len(foreign_key_rows),
         "schema_version": schema_version,
+        "current_schema_version": current_version,
+        "schema_current": schema_current,
         "migration_checksums_valid": migration_ok,
         "migration_summary": migration_summary,
         "missing_core_tables": missing_tables,
+        "journal_mode": journal_mode,
+        "standalone_database": not any(
+            candidate.with_name(candidate.name + suffix).exists()
+            for suffix in ("-wal", "-shm")
+        ),
         "sqlite_version": sqlite3.sqlite_version,
         "size_bytes": candidate.stat().st_size,
         "sha256": _sha256(candidate),
         "sanitized": True,
     }
 
+
+def _migration_statements(sql: str):
+    buffer = ""
+    for line in sql.splitlines(keepends=True):
+        buffer += line
+        if sqlite3.complete_statement(buffer):
+            statement = buffer.strip()
+            buffer = ""
+            if statement:
+                yield statement
+    if buffer.strip():
+        raise RuntimeError("Migration SQL is incomplete")
+
+
+def _apply_migrations_to_database(path: Path) -> list[int]:
+    """Bring a staged standalone database to the current schema before promotion."""
+    applied_now: list[int] = []
+    migrations = discover_migrations()
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                version INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                applied_at TEXT NOT NULL,
+                checksum TEXT NOT NULL
+            )
+            """
+        )
+        applied = {
+            int(row["version"]): (str(row["name"]), str(row["checksum"]))
+            for row in conn.execute(
+                "SELECT version, name, checksum FROM schema_migrations ORDER BY version"
+            )
+        }
+        known_versions = {item.version for item in migrations}
+        unexpected = sorted(set(applied) - known_versions)
+        if unexpected:
+            raise RuntimeError("Database schema is newer than this Pocket Lab version")
+        for migration in migrations:
+            prior = applied.get(migration.version)
+            if prior:
+                if prior != (migration.name, migration.checksum):
+                    raise RuntimeError("Migration checksum or name does not match")
+                continue
+            for statement in _migration_statements(migration.sql):
+                conn.execute(statement)
+            conn.execute(
+                "INSERT INTO schema_migrations(version, name, applied_at, checksum) VALUES (?, ?, ?, ?)",
+                (migration.version, migration.name, _utc(), migration.checksum),
+            )
+            applied_now.append(migration.version)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return applied_now
+
+
+def _canonical_projection_from_json() -> dict[str, Any]:
+    from . import lite_security_store as store
+
+    state = evidence.read_state()
+    if isinstance(state, dict):
+        return policy.redact_value(store._json_shadow_projection(state))
+    # Early SQLite-only fixtures may not have emitted compatibility JSON yet.
+    # Seed the package projection from the already validated authoritative DB;
+    # production backups normally use the canonical JSON source above.
+    return _database_projection(database_path())
+
+
+def _database_projection(path: Path) -> dict[str, Any]:
+    from .lite_security_store import SecuritySQLiteRepository
+
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    try:
+        repository = SecuritySQLiteRepository(initialize=False)
+        return policy.redact_value(repository._sqlite_shadow_projection(conn=conn))
+    finally:
+        conn.close()
+
+
+def _projection_checksum(projection: dict[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(projection, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    ).hexdigest()
+
+
+def _compare_projection(expected: dict[str, Any], path: Path) -> dict[str, Any]:
+    from . import lite_security_store as store
+
+    actual = _database_projection(path)
+    result = store._compare_projections(expected, actual)
+    return policy.redact_value({**result, "expected_checksum": _projection_checksum(expected), "actual_checksum": _projection_checksum(actual)})
+
+
+def _remove_sqlite_sidecars(path: Path) -> list[str]:
+    removed: list[str] = []
+    for suffix in ("-wal", "-shm"):
+        sidecar = path.with_name(path.name + suffix)
+        try:
+            sidecar.unlink()
+            removed.append(suffix[1:])
+        except FileNotFoundError:
+            continue
+    if removed:
+        _fsync_directory(path.parent)
+    return removed
+
+
+def _bump_security_revision_once(path: Path) -> int:
+    now = _utc()
+    conn = sqlite3.connect(str(path))
+    try:
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            """
+            INSERT INTO domain_revisions(domain, revision, updated_at)
+            VALUES ('security', 1, ?)
+            ON CONFLICT(domain) DO UPDATE SET
+                revision = domain_revisions.revision + 1,
+                updated_at = excluded.updated_at
+            """,
+            (now,),
+        )
+        row = conn.execute(
+            "SELECT revision FROM domain_revisions WHERE domain='security'"
+        ).fetchone()
+        conn.commit()
+        return int(row[0]) if row else 0
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def _api_backup(manifest: dict[str, Any]) -> dict[str, Any]:
     verification = manifest.get("verification") if isinstance(manifest.get("verification"), dict) else {}
@@ -338,11 +504,25 @@ def _create_database_backup_unlocked(command: dict[str, Any] | None = None) -> d
             "automatic_deletion_enabled": False,
             "sanitized": True,
         }
+        canonical_projection = _canonical_projection_from_json()
+        projection_compare = _compare_projection(canonical_projection, backup_db)
+        if projection_compare.get("matched") is not True:
+            raise RuntimeError("SQLite online backup canonical projection validation failed")
+        projection_payload = {
+            "projection": canonical_projection,
+            "projection_checksum": _projection_checksum(canonical_projection),
+            "database_projection_checksum": projection_compare.get("actual_checksum"),
+            "matched": True,
+            "created_at": requested_at,
+            "sanitized": True,
+        }
         restore_preview = {
             "status": "available",
             "backup_id": backup_id,
             "schema_version": verification["schema_version"],
             "integrity_check": verification["integrity_check"],
+            "foreign_keys_clean": verification["foreign_keys_clean"],
+            "canonical_parity": True,
             "requires_confirmation": True,
             "destructive_changes_applied": False,
             "summary": "A restore preview can be generated without changing Pocket Lab.",
@@ -351,6 +531,7 @@ def _create_database_backup_unlocked(command: dict[str, Any] | None = None) -> d
         _write_json(tmp_package / "schema.json", schema_payload)
         _write_json(tmp_package / "migrations.json", migrations_payload)
         _write_json(tmp_package / "evidence-manifest.json", evidence_manifest)
+        _write_json(tmp_package / "canonical-projection.json", projection_payload)
         _write_json(tmp_package / "restore-preview.json", restore_preview)
         receipt = _write_json(
             tmp_package / "receipt.json",
@@ -371,6 +552,7 @@ def _create_database_backup_unlocked(command: dict[str, Any] | None = None) -> d
                 tmp_package / "schema.json",
                 tmp_package / "migrations.json",
                 tmp_package / "evidence-manifest.json",
+                tmp_package / "canonical-projection.json",
                 tmp_package / "restore-preview.json",
                 tmp_package / "receipt.json",
             )
@@ -386,6 +568,7 @@ def _create_database_backup_unlocked(command: dict[str, Any] | None = None) -> d
         }
         _write_json(tmp_package / "hashes.json", hashes_payload)
         manifest = {
+            "package_format_version": 2,
             "backup_id": backup_id,
             "status": "verified",
             "created_at": requested_at,
@@ -397,6 +580,9 @@ def _create_database_backup_unlocked(command: dict[str, Any] | None = None) -> d
             "schema_version": verification["schema_version"],
             "sqlite_version": verification["sqlite_version"],
             "logical_identity": "pocketlab-lite-security-state",
+            "canonical_projection_file": "canonical-projection.json",
+            "canonical_projection_checksum": projection_payload["projection_checksum"],
+            "canonical_parity": True,
             "migration_count": len(migrations),
             "evidence_reference_count": evidence_reference_count,
             "verification": verification,
@@ -510,6 +696,22 @@ def verify_database_backup(backup_id: str) -> dict[str, Any]:
         raise RuntimeError("Database backup schema version does not match")
     if not validation["valid"]:
         raise RuntimeError("Database backup validation failed")
+    projection_name = str(manifest.get("canonical_projection_file") or "")
+    if int(manifest.get("package_format_version") or 1) >= 2:
+        if not projection_name or Path(projection_name).name != projection_name:
+            raise RuntimeError("Database backup canonical projection is missing")
+        projection_payload = _read_json(package / projection_name, None)
+        if not isinstance(projection_payload, dict) or not isinstance(projection_payload.get("projection"), dict):
+            raise RuntimeError("Database backup canonical projection is invalid")
+        expected_projection = projection_payload["projection"]
+        expected_checksum = _projection_checksum(expected_projection)
+        if expected_checksum != str(projection_payload.get("projection_checksum") or ""):
+            raise RuntimeError("Database backup canonical projection checksum does not match")
+        projection_compare = _compare_projection(expected_projection, db_file)
+        if projection_compare.get("matched") is not True:
+            raise RuntimeError("Database backup canonical projection validation failed")
+        manifest["canonical_parity"] = True
+        manifest["canonical_projection_checksum"] = expected_checksum
     manifest["status"] = "verified"
     manifest["verified_at"] = _utc()
     manifest["verification"] = validation
@@ -647,6 +849,366 @@ def _record_restore_result(result: dict[str, Any], manifest: dict[str, Any]) -> 
         conn.commit()
 
 
+
+
+def _truncate_wal_for_restore(path: Path) -> dict[str, Any]:
+    """Checkpoint WAL without mutating Pocket Lab lifecycle/audit tables."""
+    conn = sqlite3.connect(str(path), timeout=15)
+    try:
+        row = conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()
+        quick = str(conn.execute("PRAGMA quick_check").fetchone()[0])
+    finally:
+        conn.close()
+    busy, log_frames, checkpointed_frames = (int(row[0]), int(row[1]), int(row[2]))
+    if busy or quick != "ok":
+        raise RuntimeError("Restore WAL checkpoint did not quiesce cleanly")
+    return {
+        "checkpoint_busy": busy,
+        "checkpoint_log_frames": log_frames,
+        "checkpointed_frames": checkpointed_frames,
+        "quick_check": quick,
+        "manual_wal_file_deletion": False,
+    }
+
+
+def _security_projection_targets() -> list[Path]:
+    """Files derived from Security lifecycle state that must move with SQLite."""
+    targets: list[Path] = [evidence.state_path()]
+    compact = evidence.security_root() / "compact"
+    if compact.exists():
+        targets.extend(sorted(path for path in compact.rglob("*.json") if path.is_file()))
+    # Keep expected compact roots in the checkpoint even when absent so rollback
+    # can remove files created by a failed restore.
+    expected = [
+        compact / "security_summary.json",
+        compact / "security_freshness.json",
+        compact / "security_progress.json",
+        compact / "security_history_index.json",
+        compact / "profile_latest.json",
+        compact / "coverage_summary_compact.json",
+    ]
+    targets.extend(path for path in expected if path not in targets)
+    return sorted(set(targets), key=lambda item: str(item))
+
+
+def _relative_state_path(path: Path) -> str:
+    root = deps.settings().state_dir.resolve()
+    resolved = path.resolve(strict=False)
+    try:
+        return resolved.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise RuntimeError("Restore state target is outside the Pocket Lab state directory") from exc
+
+
+def _copy_file_durable(source: Path, target: Path, *, mode: int | None = None) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex[:8]}.tmp")
+    try:
+        shutil.copyfile(source, temporary)
+        if mode is not None:
+            os.chmod(temporary, stat.S_IMODE(mode))
+        _fsync_file(temporary)
+        os.replace(temporary, target)
+        _fsync_directory(target.parent)
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def _checkpoint_state_files(restore_id: str) -> dict[str, Any]:
+    checkpoint_root = restore_txn.restore_transaction_dir(restore_id) / "checkpoint" / "state-files"
+    records: list[dict[str, Any]] = []
+    for source in _security_projection_targets():
+        relative = _relative_state_path(source)
+        record: dict[str, Any] = {"relative_path": relative, "existed": source.is_file()}
+        if source.is_file():
+            source_stat = source.stat()
+            target = checkpoint_root / relative
+            _copy_file_durable(source, target, mode=source_stat.st_mode)
+            record.update(
+                {
+                    "size_bytes": source_stat.st_size,
+                    "sha256": _sha256(source),
+                    "mode": stat.S_IMODE(source_stat.st_mode),
+                }
+            )
+        records.append(record)
+    manifest = {
+        "checkpoint_id": f"checkpoint-{restore_id}",
+        "created_at": _utc(),
+        "files": records,
+        "sanitized": True,
+    }
+    restore_txn.atomic_write_json(
+        restore_txn.restore_transaction_dir(restore_id) / "checkpoint" / "state-files.json",
+        manifest,
+    )
+    return manifest
+
+
+def _restore_checkpoint_state_files(restore_id: str, manifest: dict[str, Any]) -> dict[str, Any]:
+    state_root = deps.settings().state_dir.resolve()
+    checkpoint_root = restore_txn.restore_transaction_dir(restore_id) / "checkpoint" / "state-files"
+    records = manifest.get("files") if isinstance(manifest.get("files"), list) else []
+    expected: set[str] = set()
+    restored = 0
+    removed = 0
+    # Remove generated compact files that did not exist in the checkpoint.
+    compact = evidence.security_root() / "compact"
+    checkpoint_relatives = {
+        str(item.get("relative_path"))
+        for item in records
+        if isinstance(item, dict) and item.get("relative_path")
+    }
+    if compact.exists():
+        for current in sorted(compact.rglob("*.json"), reverse=True):
+            relative = _relative_state_path(current)
+            if relative not in checkpoint_relatives:
+                current.unlink(missing_ok=True)
+                removed += 1
+    for item in reversed(records):
+        if not isinstance(item, dict):
+            continue
+        relative = str(item.get("relative_path") or "")
+        if not relative:
+            continue
+        destination = (state_root / relative).resolve(strict=False)
+        try:
+            destination.relative_to(state_root)
+        except ValueError as exc:
+            raise RuntimeError("Checkpoint contains an unsafe state path") from exc
+        expected.add(relative)
+        if not bool(item.get("existed")):
+            if destination.exists():
+                destination.unlink()
+                removed += 1
+            continue
+        source = checkpoint_root / relative
+        if not source.is_file() or _sha256(source) != str(item.get("sha256") or ""):
+            raise RuntimeError("Checkpoint state file validation failed")
+        _copy_file_durable(source, destination, mode=int(item.get("mode") or 0o600))
+        if _sha256(destination) != str(item.get("sha256") or ""):
+            raise RuntimeError("Restored state file checksum does not match checkpoint")
+        restored += 1
+    return {"restored_files": restored, "removed_files": removed, "expected_files": len(expected)}
+
+
+def _read_state_file_manifest(restore_id: str) -> dict[str, Any]:
+    path = restore_txn.restore_transaction_dir(restore_id) / "checkpoint" / "state-files.json"
+    payload = _read_json(path, {})
+    if not isinstance(payload, dict):
+        raise RuntimeError("Restore checkpoint state manifest is unavailable")
+    return payload
+
+
+def _database_revision(path: Path) -> int:
+    conn = sqlite3.connect(str(path))
+    try:
+        row = conn.execute(
+            "SELECT revision FROM domain_revisions WHERE domain='security'"
+        ).fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        conn.close()
+
+
+def _required_free_bytes(source_db: Path, live_db: Path, state_manifest: dict[str, Any] | None = None) -> int:
+    state_bytes = sum(
+        int(item.get("size_bytes") or 0)
+        for item in (state_manifest or {}).get("files", [])
+        if isinstance(item, dict) and item.get("existed")
+    )
+    # checkpoint + staging + same-directory promotion temp + bounded safety reserve
+    return max(32 * 1024 * 1024, source_db.stat().st_size * 3 + live_db.stat().st_size + state_bytes * 2)
+
+
+def _ensure_restore_space(source_db: Path, live_db: Path, state_manifest: dict[str, Any] | None = None) -> dict[str, int]:
+    usage = shutil.disk_usage(live_db.parent)
+    required = _required_free_bytes(source_db, live_db, state_manifest)
+    if usage.free < required:
+        raise RuntimeError("Insufficient free space for a validated restore and rollback checkpoint")
+    return {"free_bytes": int(usage.free), "required_bytes": int(required)}
+
+
+def _restore_run_snapshot(
+    journal: dict[str, Any], *, persist: bool = True, **extra: Any
+) -> dict[str, Any]:
+    public = restore_txn.public_journal_view(journal) or {}
+    phase = str(public.get("phase") or "created")
+    terminal = phase in restore_txn.TERMINAL_PHASES
+    state = "completed" if phase == "committed" else "failed" if terminal else "running"
+    payload = {
+        **public,
+        "state": state,
+        "status": state,
+        "rollback_available": bool(journal.get("checkpoint_hashes")),
+        "rollback": journal.get("rollback") if isinstance(journal.get("rollback"), dict) else None,
+        "summary": journal.get("summary") or public.get("summary"),
+        "sanitized": True,
+        **extra,
+    }
+    if persist:
+        _write_json(database_restore_run_path(str(journal.get("restore_id") or "unknown")), payload)
+    return payload
+
+
+def _transition(restore_id: str, phase: str, summary: str, **updates: Any) -> dict[str, Any]:
+    journal = restore_txn.update_journal(
+        restore_id,
+        phase=phase,
+        summary=summary,
+        **updates,
+    )
+    maintenance.update_maintenance(
+        restore_id,
+        state=phase,
+        writers_stopped=phase not in {"created", "checkpointing"},
+        summary=summary,
+    )
+    _restore_run_snapshot(journal)
+    return journal
+
+
+def _promote_database(source: Path, live_db: Path) -> dict[str, Any]:
+    temporary = live_db.with_name(f".{live_db.name}.{uuid.uuid4().hex[:8]}.promote.tmp")
+    try:
+        shutil.copyfile(source, temporary)
+        _fsync_file(temporary)
+        staged_hash = _sha256(temporary)
+        _remove_sqlite_sidecars(live_db)
+        os.replace(temporary, live_db)
+        _fsync_directory(live_db.parent)
+        active_hash = _sha256(live_db)
+        if active_hash != staged_hash:
+            raise RuntimeError("Promoted database checksum does not match staged database")
+        return {"sha256": active_hash, "size_bytes": live_db.stat().st_size}
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _rollback_transaction(
+    restore_id: str,
+    *,
+    failure: BaseException | None = None,
+) -> dict[str, Any]:
+    journal = restore_txn.read_journal(restore_id)
+    if not journal:
+        raise RuntimeError("Restore journal is unavailable for rollback")
+    checkpoint_db = restore_txn.checkpoint_database_path(restore_id)
+    live_db = database_path()
+    attempts = int(journal.get("rollback_attempt_count") or 0) + 1
+    category = restore_txn.safe_failure_category(failure) if failure else str(journal.get("restore_failure_category") or "restore_interrupted")
+    journal = _transition(
+        restore_id,
+        "rollback_started",
+        "Restore did not commit. Pocket Lab is restoring the validated checkpoint.",
+        rollback_attempt_count=attempts,
+        restore_failure_category=category,
+        failure_category=category,
+        status="running",
+        api_worker_restart_allowed=False,
+        rollback={"status": "running", "attempted": True},
+    )
+    try:
+        restore_txn.inject_fault("during_rollback")
+        expected_hash = str((journal.get("checkpoint_hashes") or {}).get("database") or "")
+        if not checkpoint_db.is_file() or not expected_hash or _sha256(checkpoint_db) != expected_hash:
+            raise RuntimeError("Rollback checkpoint database checksum does not match")
+        promoted = _promote_database(checkpoint_db, live_db)
+        restore_txn.inject_fault("after_rollback_promotion")
+        files_result = _restore_checkpoint_state_files(restore_id, _read_state_file_manifest(restore_id))
+        journal = _transition(
+            restore_id,
+            "rollback_validating",
+            "Pocket Lab is validating the recovered checkpoint.",
+            active_hashes={"database": promoted["sha256"]},
+            rollback={"status": "validating", "attempted": True, **files_result},
+        )
+        validation = validate_database_file(live_db)
+        if not validation.get("valid") or not validation.get("schema_current"):
+            raise RuntimeError("Rollback database validation failed")
+        if _sha256(live_db) != expected_hash:
+            raise RuntimeError("Rollback database checksum is not identical to checkpoint")
+        checkpoint_projection = journal.get("checkpoint_projection")
+        if isinstance(checkpoint_projection, dict):
+            parity = _compare_projection(checkpoint_projection, live_db)
+            if parity.get("matched") is not True:
+                raise RuntimeError("Rollback canonical projection does not match checkpoint")
+        # Compatibility files were restored byte-for-byte above; do not regenerate
+        # them here because exact rollback is part of the transaction contract.
+        completed_at = _utc()
+        journal = restore_txn.update_journal(
+            restore_id,
+            phase="rolled_back",
+            summary="Restore failed safely. The pre-restore checkpoint was recovered and validated.",
+            status="failed",
+            terminal_status="rolled_back",
+            completed_at=completed_at,
+            api_worker_restart_allowed=True,
+            rollback={
+                "status": "rolled_back",
+                "attempted": True,
+                "verification": validation,
+                "checkpoint_database_hash_matched": True,
+                **files_result,
+            },
+        )
+        result = _restore_run_snapshot(journal, failed_at=completed_at)
+        maintenance.leave_maintenance(
+            restore_id,
+            state="rolled_back",
+            summary="Restore failed safely and the validated checkpoint was recovered.",
+        )
+        return result
+    except Exception as rollback_error:
+        failed_at = _utc()
+        journal = restore_txn.update_journal(
+            restore_id,
+            phase="rollback_failed",
+            summary="Automatic rollback could not be validated. Database writers remain blocked.",
+            status="failed",
+            terminal_status="rollback_failed",
+            completed_at=failed_at,
+            failure_category="rollback_validation_failed",
+            rollback_failure_category=restore_txn.safe_failure_category(rollback_error),
+            api_worker_restart_allowed=False,
+            rollback={
+                "status": "rollback_failed",
+                "attempted": True,
+                "error_type": type(rollback_error).__name__,
+            },
+        )
+        result = _restore_run_snapshot(journal, failed_at=failed_at)
+        # Deliberately do not clear maintenance. The supervisor and startup guard
+        # keep writers stopped until an operator repairs the checkpoint issue.
+        return result
+
+
+def _abandon_before_promotion(restore_id: str, error: BaseException) -> dict[str, Any]:
+    completed_at = _utc()
+    journal = restore_txn.update_journal(
+        restore_id,
+        phase="rolled_back",
+        summary="Restore stopped before active data changed.",
+        status="failed",
+        terminal_status="rolled_back",
+        completed_at=completed_at,
+        restore_failure_category=restore_txn.safe_failure_category(error),
+        failure_category=restore_txn.safe_failure_category(error),
+        api_worker_restart_allowed=True,
+        rollback={"status": "not_required", "attempted": False},
+    )
+    result = _restore_run_snapshot(journal, failed_at=completed_at)
+    maintenance.leave_maintenance(
+        restore_id,
+        state="rolled_back",
+        summary="Restore stopped before promotion. Active data was unchanged.",
+    )
+    return result
+
+
 def _restore_database_backup_unlocked(command: dict[str, Any]) -> dict[str, Any]:
     if not bool(command.get("confirm")):
         raise RuntimeError("Explicit restore confirmation is required")
@@ -661,140 +1223,258 @@ def _restore_database_backup_unlocked(command: dict[str, Any]) -> dict[str, Any]
         raise RuntimeError("Restore preview is not ready")
     if maintenance.active_security_scan():
         raise RuntimeError("Restore is blocked while a Security scan is active")
+    existing_guard = restore_txn.guard_status()
+    restore_id = _safe_name(str(command.get("restore_id") or command.get("command_id") or _safe_id("db-restore")))
+    if existing_guard.get("unresolved") and existing_guard.get("restore_id") != restore_id:
+        raise RuntimeError("Another restore transaction requires recovery")
 
-    verification = verify_database_backup(backup_id)
+    verify_database_backup(backup_id)
     package = database_backup_package(backup_id)
     manifest = _read_json(package / "manifest.json", {})
     source_db = package / str(manifest.get("database_file") or "")
-    restore_id = _safe_name(str(command.get("restore_id") or command.get("command_id") or _safe_id("db-restore")))
-    started_at = _utc()
+    canonical_file = package / str(manifest.get("canonical_projection_file") or "canonical-projection.json")
+    projection_payload = _read_json(canonical_file, None)
+    expected_projection = (
+        projection_payload.get("projection")
+        if isinstance(projection_payload, dict)
+        else None
+    )
+    if not isinstance(expected_projection, dict):
+        raise RuntimeError("Backup canonical projection is unavailable")
     live_db = database_path()
-    rollback_name = f"pocketlab-lite-pre-restore-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{restore_id[-8:]}.sqlite3"
-    rollback_db = database_backup_root() / "rollback" / rollback_name
-    staged_restore = live_db.with_name(f".{live_db.name}.{restore_id}.restore.tmp")
-    result: dict[str, Any]
+    started_at = _utc()
+    checkpoint_db = restore_txn.checkpoint_database_path(restore_id)
+    staged_db = restore_txn.staged_database_path(restore_id)
+    promoted = False
 
+    journal = restore_txn.read_journal(restore_id)
+    if journal and journal.get("phase") in {"committed", "rolled_back"}:
+        return _restore_run_snapshot(journal)
+    if journal:
+        return recover_restore_transaction(restore_id)
+
+    if maintenance.maintenance_state().get("active"):
+        raise RuntimeError("Another maintenance operation is already active")
+    journal = restore_txn.create_journal(
+        restore_id=restore_id,
+        backup_id=backup_id,
+        preview_id=preview_id,
+        target_names=["pocketlab-lite.sqlite3", "security_state.json", "security/compact/*.json"],
+    )
     maintenance.enter_maintenance(operation_id=restore_id, kind="database_restore")
+    journal = restore_txn.update_journal(
+        restore_id,
+        summary="Preparing a validated restore transaction.",
+        started_at=started_at,
+        source_package_fingerprint=manifest.get("package_fingerprint"),
+    )
+    _restore_run_snapshot(journal)
     try:
-        maintenance.update_maintenance(restore_id, state="validating", summary="Validating the selected database backup.")
-        validate_database_file(source_db)
-        if maintenance.active_security_scan():
-            raise RuntimeError("Restore was blocked by a newly active Security scan")
-
-        maintenance.update_maintenance(restore_id, state="stopping_writers", writers_stopped=True, summary="Database writers are quiesced for restore.")
+        _transition(restore_id, "checkpointing", "Creating a validated pre-restore checkpoint.")
+        maintenance.update_maintenance(
+            restore_id,
+            state="checkpointing",
+            writers_stopped=True,
+            summary="Database writers are quiesced while Pocket Lab creates a checkpoint.",
+        )
         grace_seconds = max(0.0, min(float(os.environ.get("POCKETLAB_LITE_RESTORE_QUIESCE_SECONDS", "0.25")), 5.0))
         if grace_seconds:
             time.sleep(grace_seconds)
-        maintenance.run_wal_checkpoint(mode="TRUNCATE", operation_id=restore_id, writers_stopped=True)
+        wal_checkpoint = _truncate_wal_for_restore(live_db)
+        checkpoint_db.parent.mkdir(parents=True, exist_ok=True)
+        # Writers are blocked and WAL has been truncated, so a durable ordinary
+        # file copy preserves the exact active database bytes for rollback.
+        _copy_file_durable(live_db, checkpoint_db, mode=live_db.stat().st_mode)
+        checkpoint_validation = validate_database_file(checkpoint_db)
+        if not checkpoint_validation.get("valid") or not checkpoint_validation.get("schema_current"):
+            raise RuntimeError("Pre-restore checkpoint validation failed")
+        checkpoint_projection = _database_projection(checkpoint_db)
+        state_manifest = _checkpoint_state_files(restore_id)
+        space = _ensure_restore_space(source_db, live_db, state_manifest)
+        checkpoint_hashes = {
+            "database": _sha256(checkpoint_db),
+            "state_files_manifest": _sha256(
+                restore_txn.restore_transaction_dir(restore_id) / "checkpoint" / "state-files.json"
+            ),
+        }
+        journal = _transition(
+            restore_id,
+            "checkpoint_ready",
+            "Validated pre-restore checkpoint saved.",
+            checkpoint_hashes=checkpoint_hashes,
+            checkpoint_metadata={
+                "database": checkpoint_validation,
+                "state_file_count": len(state_manifest.get("files") or []),
+                "security_revision": _database_revision(checkpoint_db),
+                "space": space,
+                "wal_checkpoint": wal_checkpoint,
+            },
+            checkpoint_projection=checkpoint_projection,
+        )
+        restore_txn.inject_fault("after_checkpoint")
 
-        maintenance.update_maintenance(restore_id, state="creating_rollback", writers_stopped=True, summary="Creating a validated rollback copy.")
-        online_backup(rollback_db)
-        rollback_validation = validate_database_file(rollback_db)
-        if not rollback_validation["valid"]:
-            raise RuntimeError("Rollback copy validation failed")
+        _transition(restore_id, "staging", "Copying the selected backup into isolated staging.")
+        staged_db.parent.mkdir(parents=True, exist_ok=True)
+        _copy_file_durable(source_db, staged_db, mode=source_db.stat().st_mode)
+        _remove_sqlite_sidecars(staged_db)
+        journal = _transition(
+            restore_id,
+            "staged",
+            "Backup copied to isolated staging.",
+            staged_hashes={"database_before_migration": _sha256(staged_db)},
+        )
+        restore_txn.inject_fault("after_staging")
 
-        maintenance.update_maintenance(restore_id, state="replacing", writers_stopped=True, summary="Replacing the database atomically.")
-        shutil.copy2(source_db, staged_restore)
-        _fsync_file(staged_restore)
-        staged_validation = validate_database_file(staged_restore)
-        if not staged_validation["valid"]:
-            raise RuntimeError("Staged restore database validation failed")
-        os.replace(staged_restore, live_db)
-        _fsync_directory(live_db.parent)
+        _transition(restore_id, "validating_staged", "Validating and migrating the staged database.")
+        applied = _apply_migrations_to_database(staged_db)
+        staged_validation = validate_database_file(staged_db)
+        staged_parity = _compare_projection(expected_projection, staged_db)
+        if (
+            not staged_validation.get("valid")
+            or not staged_validation.get("schema_current")
+            or staged_parity.get("matched") is not True
+        ):
+            raise RuntimeError("Staged restore validation failed")
+        journal = _transition(
+            restore_id,
+            "ready_to_promote",
+            "Staged restore is validated and ready to promote.",
+            staged_hashes={"database": _sha256(staged_db)},
+            staged_validation=staged_validation,
+            staged_projection_checksum=_projection_checksum(expected_projection),
+            staged_migrations_applied=applied,
+        )
+        restore_txn.inject_fault("after_staged_validation")
 
-        maintenance.update_maintenance(restore_id, state="restarting", writers_stopped=True, summary="Reopening Pocket Lab database services safely.")
-        apply_migrations()
-        _upsert_database_backup_record(manifest)
-        gate_fault_enabled = str(os.environ.get("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "0")).strip().lower() in {"1", "true", "yes", "on"}
-        if bool(command.get("gate_fail_after_replace")) and gate_fault_enabled:
-            raise RuntimeError("Bounded S8 post-replacement verification fault")
-        maintenance.update_maintenance(restore_id, state="verifying", writers_stopped=True, summary="Verifying restored Pocket Lab state.")
-        restored_validation = validate_database_file(live_db)
+        _transition(restore_id, "promoting", "Promoting the validated database atomically.")
+        restore_txn.inject_fault("before_first_promotion")
+        active = _promote_database(staged_db, live_db)
+        promoted = True
+        journal = restore_txn.update_journal(
+            restore_id,
+            summary="Validated database promoted. Active validation is required before commit.",
+            promoted_paths=["pocketlab-lite.sqlite3"],
+            pending_paths=["security_state.json", "security/compact/*.json"],
+            active_hashes={"database": active["sha256"]},
+        )
+        _restore_run_snapshot(journal)
+        restore_txn.inject_fault("after_first_promotion")
+        restore_txn.inject_fault("after_sqlite_promotion")
+
+        _transition(restore_id, "validating_active", "Validating restored data before commit.")
+        restore_txn.inject_fault("before_active_validation")
+        active_validation = validate_database_file(live_db)
+        restore_txn.inject_fault("during_active_validation")
+        active_parity = _compare_projection(expected_projection, live_db)
+        if (
+            not active_validation.get("valid")
+            or not active_validation.get("schema_current")
+            or active_parity.get("matched") is not True
+            or _sha256(live_db) != str((journal.get("staged_hashes") or {}).get("database") or "")
+        ):
+            raise RuntimeError("Active restored database validation failed")
+        restore_txn.inject_fault("before_commit")
+        # The restored canonical state has passed independent active validation.
+        # Only now advance the Security revision once, then regenerate derived
+        # compatibility projections from the committed candidate.
+        revision = _bump_security_revision_once(live_db)
         projection = _refresh_security_projections()
         parity = _parity_check()
-        quick_ok = restored_validation.get("quick_check") == "ok"
-        if not restored_validation.get("valid") or not quick_ok or projection.get("status") != "passed" or parity.get("matched") is not True:
-            raise RuntimeError("Post-restore verification failed")
-
+        if projection.get("status") != "passed" or parity.get("matched") is not True:
+            raise RuntimeError("Restored compatibility projection validation failed")
+        _upsert_database_backup_record(manifest)
         completed_at = _utc()
-        result = {
-            "status": "completed",
-            "state": "completed",
+        result_for_audit = {
             "restore_id": restore_id,
             "backup_id": backup_id,
             "preview_id": preview_id,
+            "state": "completed",
             "started_at": started_at,
             "completed_at": completed_at,
-            "rollback_available": True,
-            "rollback_file_name": rollback_name,
-            "verification": restored_validation,
-            "projection": projection,
-            "parity": parity,
-            "manual_wal_file_deletion": False,
-            "summary": "Database recovery completed. Rollback remains available.",
+            "summary": "Database recovery completed and validation passed.",
             "sanitized": True,
         }
-        _write_json(database_restore_run_path(restore_id), result)
-        _record_restore_result(result, manifest)
-        maintenance.leave_maintenance(restore_id, state="completed", summary="Database recovery completed.")
+        _record_restore_result(result_for_audit, manifest)
+        final_validation = validate_database_file(live_db)
+        journal = restore_txn.update_journal(
+            restore_id,
+            phase="committed",
+            summary="Database recovery completed and validation passed.",
+            status="completed",
+            terminal_status="committed",
+            completed_at=completed_at,
+            promoted_paths=["pocketlab-lite.sqlite3", "security_state.json", "security/compact/*.json"],
+            pending_paths=[],
+            active_hashes={"database": _sha256(live_db)},
+            api_worker_restart_allowed=True,
+            final_validation=final_validation,
+            canonical_parity=parity,
+            security_revision=revision,
+            rollback={"status": "available", "attempted": False},
+        )
+        result = _restore_run_snapshot(
+            journal,
+            completed_at=completed_at,
+            verification=final_validation,
+            projection=projection,
+            parity=parity,
+            rollback_available=True,
+            manual_wal_file_deletion=False,
+        )
+        maintenance.leave_maintenance(
+            restore_id,
+            state="committed",
+            summary="Database recovery completed and validation passed.",
+        )
         return result
-    except Exception as exc:
-        rollback_result = {"attempted": False, "status": "not_available"}
-        if rollback_db.exists():
-            rollback_result = {"attempted": True, "status": "rolling_back"}
-            try:
-                maintenance.update_maintenance(restore_id, state="rolling_back", writers_stopped=True, summary="Restore verification failed. Rolling back safely.")
-                rollback_stage = live_db.with_name(f".{live_db.name}.{restore_id}.rollback.tmp")
-                shutil.copy2(rollback_db, rollback_stage)
-                _fsync_file(rollback_stage)
-                if not validate_database_file(rollback_stage)["valid"]:
-                    raise RuntimeError("Rollback database validation failed")
-                os.replace(rollback_stage, live_db)
-                _fsync_directory(live_db.parent)
-                apply_migrations()
-                rollback_validation = validate_database_file(live_db)
-                projection = _refresh_security_projections()
-                parity = _parity_check()
-                rollback_result = {
-                    "attempted": True,
-                    "status": "completed" if rollback_validation.get("valid") and projection.get("status") == "passed" and parity.get("matched") is True else "failed",
-                    "verification": rollback_validation,
-                    "projection": projection,
-                    "parity": parity,
-                }
-            except Exception as rollback_exc:
-                rollback_result = {"attempted": True, "status": "failed", "error_type": type(rollback_exc).__name__}
-        failed = {
-            "status": "failed",
-            "state": "failed",
-            "restore_id": restore_id,
-            "backup_id": backup_id,
-            "preview_id": preview_id,
-            "started_at": started_at,
-            "failed_at": _utc(),
-            "error_type": type(exc).__name__,
-            "summary": "Database restore failed. Automatic rollback was attempted.",
-            "rollback": rollback_result,
-            "rollback_available": rollback_db.exists(),
-            "rollback_file_name": rollback_name if rollback_db.exists() else None,
-            "manual_wal_file_deletion": False,
-            "sanitized": True,
-        }
-        _write_json(database_restore_run_path(restore_id), failed)
-        try:
-            _record_restore_result(failed, manifest)
-        except Exception:
-            pass
-        try:
-            maintenance.leave_maintenance(restore_id, state="failed", summary=failed["summary"])
-        except Exception:
-            pass
-        raise RuntimeError(failed["summary"]) from exc
+    except Exception as error:
+        current = restore_txn.read_journal(restore_id) or journal
+        phase = str(current.get("phase") or "created")
+        if promoted or phase in restore_txn.UNSAFE_RECOVERY_PHASES:
+            return _rollback_transaction(restore_id, failure=error)
+        return _abandon_before_promotion(restore_id, error)
     finally:
+        staged_db.unlink(missing_ok=True)
+        _remove_sqlite_sidecars(staged_db)
+
+
+def recover_restore_transaction(restore_id: str) -> dict[str, Any]:
+    journal = restore_txn.read_journal(restore_id)
+    if not journal:
+        raise RuntimeError("Restore transaction journal is unavailable")
+    phase = str(journal.get("phase") or "created")
+    if phase in {"committed", "rolled_back"}:
+        return _restore_run_snapshot(journal)
+    maintenance.enter_maintenance(operation_id=restore_id, kind="database_restore")
+    if phase in restore_txn.PRE_PROMOTION_PHASES:
+        return _abandon_before_promotion(restore_id, RuntimeError("Restore was interrupted before promotion"))
+    return _rollback_transaction(restore_id, failure=RuntimeError("Restore was interrupted after promotion"))
+
+
+def recover_incomplete_restores(*, role: str = "runtime") -> dict[str, Any]:
+    results: list[dict[str, Any]] = []
+    for journal in restore_txn.unresolved_journals():
+        restore_id = str(journal.get("restore_id") or "")
+        if not restore_id:
+            continue
         try:
-            staged_restore.unlink()
-        except FileNotFoundError:
-            pass
+            with _database_recovery_lock(f"startup-{role}-{restore_id}"):
+                result = recover_restore_transaction(restore_id)
+        except RuntimeError as exc:
+            if "already running" in str(exc).lower():
+                continue
+            raise
+        results.append(restore_txn.public_journal_view(restore_txn.read_journal(restore_id)) or result)
+    guard = restore_txn.guard_status()
+    return {"role": _safe_name(role), "recovered": results, "guard": guard, "sanitized": True}
+
+
+def startup_recovery_guard(role: str = "runtime") -> dict[str, Any]:
+    recovery = recover_incomplete_restores(role=role)
+    guard = recovery["guard"]
+    if guard.get("unresolved") and not guard.get("api_worker_restart_allowed"):
+        raise RuntimeError("Unresolved database restore requires recovery before writers may start")
+    return recovery
 
 
 def restore_database_backup(command: dict[str, Any]) -> dict[str, Any]:
@@ -806,6 +1486,9 @@ def restore_database_backup(command: dict[str, Any]) -> dict[str, Any]:
 def get_database_restore_run(restore_id: str) -> dict[str, Any] | None:
     if not _is_safe_identifier(restore_id):
         return None
+    journal = restore_txn.read_journal(restore_id)
+    if journal:
+        return _restore_run_snapshot(journal, persist=False)
     payload = _read_json(database_restore_run_path(restore_id), None)
     return payload if isinstance(payload, dict) else None
 
@@ -817,17 +1500,34 @@ def database_recovery_status() -> dict[str, Any]:
     if previews:
         latest_preview = _read_json(previews[0], None)
     latest_restore = None
-    restores = sorted((database_backup_root() / "restore-runs").glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
-    if restores:
-        latest_restore = _read_json(restores[0], None)
+    journals = restore_txn.list_journals(include_terminal=True)
+    if journals:
+        latest_restore = _restore_run_snapshot(journals[0], persist=False)
+    else:
+        restores = sorted((database_backup_root() / "restore-runs").glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
+        if restores:
+            latest_restore = _read_json(restores[0], None)
+    guard = restore_txn.guard_status()
+    maintenance_state = maintenance.maintenance_state()
+    if guard.get("rollback_failed"):
+        status = "needs_attention"
+        summary = "Recovery needs attention. Database writers remain blocked."
+    elif guard.get("unresolved") or maintenance_state.get("active"):
+        status = "maintenance"
+        summary = "Database recovery is in progress."
+    else:
+        status = "healthy" if backups.get("count") else "ready"
+        summary = "Database protection is ready." if backups.get("count") else "Create a verified Pocket Lab database backup."
     return {
-        "status": "maintenance" if maintenance.maintenance_state().get("active") else ("healthy" if backups.get("count") else "ready"),
-        "summary": "Database protection is ready." if backups.get("count") else "Create a verified Pocket Lab database backup.",
+        "status": status,
+        "summary": summary,
         "latest_backup": backups.get("latest_backup"),
         "backup_history": backups.get("backups"),
         "latest_restore_preview": latest_preview,
         "last_restore": latest_restore,
-        "maintenance": maintenance.maintenance_state(),
+        "active_restore": restore_txn.public_journal_view(journals[0]) if journals and journals[0].get("phase") not in restore_txn.TERMINAL_PHASES else None,
+        "restore_guard": guard,
+        "maintenance": maintenance_state,
         "wal": maintenance.wal_diagnostics(),
         "rollback_available": bool(latest_restore and latest_restore.get("rollback_available")),
         "updated_at": _utc(),

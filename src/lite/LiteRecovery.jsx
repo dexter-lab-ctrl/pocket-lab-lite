@@ -140,9 +140,13 @@ export default function RecoveryScreen() {
   const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
   const databaseMaintenance = databaseProtection?.maintenance || data?.maintenance || {};
   const databaseRestore = databaseProtection?.last_restore || null;
+  const databaseRestoreGuard = databaseProtection?.restore_guard || {};
+  const activeDatabaseRestore = databaseProtection?.active_restore || null;
   const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
   const databasePreviewReady = latestDatabasePreview?.status === 'ready' && latestDatabasePreview?.restore_allowed !== false;
-  const databaseWriteBlocked = recoveryFlow.writeBlocked || databaseMaintenance?.active === true;
+  const databaseWriteBlocked = recoveryFlow.writeBlocked
+    || databaseMaintenance?.active === true
+    || databaseRestoreGuard?.unresolved === true;
 
   const appBackups = Array.isArray(data?.app_backups)
     ? data.app_backups
@@ -524,7 +528,7 @@ export default function RecoveryScreen() {
           </div>
           <div className="lite-recovery-database-copy">
             <span>Database protection</span>
-            <h2>{databaseMaintenance?.active ? 'Pocket Lab is restarting safely' : databaseProtection?.summary || 'Protect Pocket Lab state'}</h2>
+            <h2>{databaseRestoreGuard?.rollback_failed ? 'Recovery needs attention' : databaseMaintenance?.active || activeDatabaseRestore ? 'Pocket Lab is recovering safely' : databaseProtection?.summary || 'Protect Pocket Lab state'}</h2>
             <p>Creates a consistent SQLite online backup, validates integrity and migrations, and keeps rollback available for confirmed restore.</p>
           </div>
           <div className="lite-recovery-database-facts">
@@ -533,7 +537,7 @@ export default function RecoveryScreen() {
             <div><span>Backup size</span><strong>{latestDatabaseBackup?.size_bytes ? `${Math.max(1, Math.round(latestDatabaseBackup.size_bytes / 1024))} KB` : 'Not available'}</strong></div>
             <div><span>Restore preview</span><strong>{databasePreviewReady ? 'Ready' : 'Not ready'}</strong></div>
             <div><span>Rollback</span><strong>{databaseProtection?.rollback_available || databaseRestore?.rollback_available ? 'Available' : 'Created during restore'}</strong></div>
-            <div><span>Maintenance</span><strong>{databaseMaintenance?.active ? 'In progress' : 'Ready'}</strong></div>
+            <div><span>Maintenance</span><strong>{databaseRestoreGuard?.rollback_failed ? 'Blocked for safety' : databaseMaintenance?.active || activeDatabaseRestore ? 'In progress' : 'Ready'}</strong></div>
           </div>
           <div className="lite-recovery-database-actions">
             <LiteButton onClick={backUpDatabase} disabled={databaseWriteBlocked || busy === 'database-backup'}>
@@ -563,6 +567,8 @@ export default function RecoveryScreen() {
             latestPreview={latestDatabasePreview}
             lastRestore={databaseRestore}
             maintenance={databaseMaintenance}
+            restoreGuard={databaseRestoreGuard}
+            activeRestore={activeDatabaseRestore}
             writeBlocked={databaseWriteBlocked}
             busy={busy}
             onBackup={backUpDatabase}
@@ -697,8 +703,8 @@ export default function RecoveryScreen() {
 
       {databaseResult ? (
         <StateSurface
-          tone="healthy"
-          title="Database protection queued"
+          tone={databaseResult.status === 'failed' || databaseResult.phase === 'rollback_failed' ? 'degraded' : 'healthy'}
+          title={databaseResult.phase === 'rollback_failed' ? 'Recovery needs attention' : databaseResult.status === 'failed' ? 'Restore failed safely' : 'Database protection queued'}
           description={databaseResult.summary || 'Pocket Lab is running the database recovery action in the worker.'}
           className="mb-5"
         />

@@ -1754,6 +1754,15 @@ const RECOVERY_LIVE_STATUSES = new Set([
   'previewing',
   'restoring',
   'checkpointing',
+  'checkpoint_ready',
+  'staging',
+  'staged',
+  'validating_staged',
+  'ready_to_promote',
+  'promoting',
+  'validating_active',
+  'rollback_started',
+  'rollback_validating',
   'validating',
   'entering_maintenance',
   'stopping_writers',
@@ -2078,7 +2087,25 @@ function normalizeRecoveryDatabaseProtection(payload = {}) {
     ? copySafeKeys(payload.latest_restore_preview, ['preview_id', 'backup_id', 'status', 'created_at', 'restore_allowed', 'requires_confirmation', 'destructive_changes_applied', 'schema_version', 'summary'])
     : null;
   const lastRestore = isObject(payload.last_restore)
-    ? copySafeKeys(payload.last_restore, ['restore_id', 'backup_id', 'preview_id', 'status', 'state', 'started_at', 'completed_at', 'failed_at', 'rollback_available', 'summary'])
+    ? copySafeKeys(payload.last_restore, [
+      'restore_id', 'backup_id', 'preview_id', 'status', 'state', 'phase',
+      'terminal_status', 'started_at', 'completed_at', 'failed_at',
+      'rollback_available', 'rollback_status', 'rollback_attempt_count',
+      'failure_category', 'api_worker_restart_allowed', 'summary',
+    ])
+    : null;
+  const restoreGuard = isObject(payload.restore_guard)
+    ? copySafeKeys(payload.restore_guard, [
+      'unresolved', 'rollback_failed', 'restore_id', 'phase',
+      'api_worker_restart_allowed', 'summary', 'sanitized',
+    ])
+    : null;
+  const activeRestore = isObject(payload.active_restore)
+    ? copySafeKeys(payload.active_restore, [
+      'restore_id', 'backup_id', 'preview_id', 'phase', 'status',
+      'rollback_status', 'rollback_attempt_count', 'failure_category',
+      'api_worker_restart_allowed', 'created_at', 'updated_at', 'summary',
+    ])
     : null;
   return {
     status: normalizeRecoveryStatus(payload.status || 'ready'),
@@ -2087,6 +2114,8 @@ function normalizeRecoveryDatabaseProtection(payload = {}) {
     backup_history: (Array.isArray(payload.backup_history) ? payload.backup_history : []).slice(0, 10).map(normalizeRecoveryDatabaseBackup).filter(Boolean),
     latest_restore_preview: latestPreview,
     last_restore: lastRestore,
+    active_restore: activeRestore,
+    restore_guard: restoreGuard,
     maintenance,
     wal,
     rollback_available: Boolean(payload.rollback_available || lastRestore?.rollback_available),
@@ -2165,6 +2194,9 @@ export function isLiteRecoveryViewLive(payload = {}) {
     databasePreview.status,
     databaseRestore.status,
     databaseRestore.state,
+    databaseRestore.phase,
+    databaseProtection.active_restore?.phase,
+    databaseProtection.restore_guard?.phase,
     operation.status,
     operation.state,
     operation.phase,

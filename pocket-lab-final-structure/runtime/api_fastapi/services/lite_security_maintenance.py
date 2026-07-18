@@ -55,22 +55,41 @@ def orphan_evidence_manifest_path() -> Path:
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
-    clean = policy.redact_value(payload)
-    deps.core.write_json_file(path, clean)
-    return clean
+    from . import lite_restore_transaction
+
+    return lite_restore_transaction.atomic_write_json(path, payload)
 
 
 def maintenance_state() -> dict[str, Any]:
     payload = deps.core.read_json_file(maintenance_marker_path(), {})
-    if not isinstance(payload, dict) or not payload.get("active"):
+    if isinstance(payload, dict) and payload.get("active"):
+        return policy.redact_value(payload)
+    # A journal is durable evidence even if Android/process death occurred before
+    # the maintenance marker was flushed. Fail closed for every new writer.
+    try:
+        from . import lite_restore_transaction
+
+        guard = lite_restore_transaction.guard_status()
+    except Exception:
+        guard = {"unresolved": False}
+    if guard.get("unresolved"):
         return {
-            "active": False,
-            "state": "ready",
-            "summary": "Maintenance is not active.",
-            "writers_stopped": False,
+            "active": True,
+            "operation_id": guard.get("restore_id"),
+            "kind": "database_restore",
+            "state": guard.get("phase"),
+            "summary": guard.get("summary"),
+            "writers_stopped": True,
+            "api_worker_restart_allowed": guard.get("api_worker_restart_allowed"),
             "sanitized": True,
         }
-    return policy.redact_value(payload)
+    return {
+        "active": False,
+        "state": "ready",
+        "summary": "Maintenance is not active.",
+        "writers_stopped": False,
+        "sanitized": True,
+    }
 
 
 def enter_maintenance(

@@ -42,6 +42,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services.operation_events import install_operation_event_publisher
     from .services.live_status import LIVE_STATUS
     from .services import lite_security
+    from .services import lite_database_recovery
     from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
     from .services.workload_admission import WORKLOAD_ADMISSION
 
@@ -57,6 +58,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 type(exc).__name__,
             )
         deps.settings().ensure_dirs()
+        await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "api")
         admission_started = await WORKLOAD_ADMISSION.start()
         await WORKLOAD_ADMISSION.run(
             "security.runtime.initialize",

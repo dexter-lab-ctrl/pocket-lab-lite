@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 import time
 import urllib.error
@@ -111,15 +113,76 @@ def poll(label: str, timeout: float, interval: float, operation: Callable[[], di
     raise GateError(f"Timed out waiting for {label}; last status was {status}")
 
 
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def database_state(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise GateError("SQLite database file is unavailable")
     uri = f"file:{path}?mode=ro"
     with sqlite3.connect(uri, uri=True, timeout=5) as conn:
         quick = str(conn.execute("PRAGMA quick_check").fetchone()[0])
+        integrity = str(conn.execute("PRAGMA integrity_check").fetchone()[0])
+        foreign_key_violations = len(conn.execute("PRAGMA foreign_key_check").fetchall())
         run_count = int(conn.execute("SELECT COUNT(*) FROM security_scan_runs").fetchone()[0])
         version = int(conn.execute("SELECT COALESCE(MAX(version),0) FROM schema_migrations").fetchone()[0])
-    return {"quick_check": quick, "security_run_count": run_count, "schema_version": version}
+        revision_row = conn.execute("SELECT revision FROM domain_revisions WHERE domain='security'").fetchone()
+        latest_row = conn.execute(
+            "SELECT run_id FROM security_scan_runs ORDER BY COALESCE(completed_at_epoch_ms,updated_at_epoch_ms) DESC, run_id DESC LIMIT 1"
+        ).fetchone()
+        migrations = [list(row) for row in conn.execute(
+            "SELECT version,name,checksum FROM schema_migrations ORDER BY version"
+        ).fetchall()]
+    return {
+        "sha256": file_sha256(path),
+        "quick_check": quick,
+        "integrity_check": integrity,
+        "foreign_key_violation_count": foreign_key_violations,
+        "security_run_count": run_count,
+        "schema_version": version,
+        "security_revision": int(revision_row[0]) if revision_row else 0,
+        "latest_run_id": str(latest_row[0]) if latest_row else None,
+        "migration_contract": migrations,
+        "wal_present": path.with_name(path.name + "-wal").exists(),
+        "shm_present": path.with_name(path.name + "-shm").exists(),
+    }
+
+
+def state_file_hashes(state_dir: Path) -> dict[str, str]:
+    candidates = [state_dir / "security" / "security_state.json"]
+    compact = state_dir / "security" / "compact"
+    if compact.exists():
+        candidates.extend(sorted(compact.rglob("*.json")))
+    result: dict[str, str] = {}
+    for path in candidates:
+        if path.is_file():
+            result[path.relative_to(state_dir).as_posix()] = file_sha256(path)
+    return result
+
+
+def configure_worker_fault(point: str | None) -> None:
+    env = os.environ.copy()
+    env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "1" if point else "0"
+    env["POCKETLAB_LITE_S8_FAULT_POINT"] = point or ""
+    try:
+        result = subprocess.run(
+            ["pm2", "restart", "pocket-worker", "--update-env"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=45,
+            env=env,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise GateError(f"Could not configure the worker restore fault: {type(exc).__name__}") from exc
+    if result.returncode != 0:
+        raise GateError("Could not restart pocket-worker with the bounded S8 gate environment")
+    time.sleep(3)
 
 
 def recent_maintenance(api: Api, *, kind: str, mode: str | None, after: str, timeout: float) -> dict[str, Any]:
@@ -402,14 +465,14 @@ def main() -> int:
             }
             post_scan = run_quick_scan(api, args.scan_timeout)
             state = database_state(db_path)
-            if not restored.get("rollback_available") or restored.get("parity", {}).get("matched") is not True:
-                raise GateError("Restore did not retain rollback or pass parity")
+            if not restored.get("rollback_available") or restored.get("canonical_parity_matched") is not True:
+                raise GateError("Restore did not retain rollback or pass canonical parity")
             return {
                 "state_b_scan": state_b_scan,
                 "preview_id": preview.get("preview_id"),
                 "restore_id": restore_id,
                 "rollback_available": restored.get("rollback_available"),
-                "parity_matched": restored.get("parity", {}).get("matched"),
+                "parity_matched": restored.get("canonical_parity_matched"),
                 "post_restore_health": post_health,
                 "post_restore_scan": post_scan,
                 "database": state,
@@ -426,31 +489,65 @@ def main() -> int:
             fault_backup_id = str(submitted_backup.get("backup_id") or "")
             wait_backup(api, fault_backup_id, args.operation_timeout)
             marker_scan = run_quick_scan(api, args.scan_timeout)
+            pre_database = database_state(db_path)
+            state_dir = db_path.parent
+            pre_files = state_file_hashes(state_dir)
             api.post(f"/api/lite/recovery/database/backups/{fault_backup_id}/preview", {})
             preview = wait_preview(api, fault_backup_id, args.operation_timeout)
-            submitted_restore = api.post(
-                f"/api/lite/recovery/database/backups/{fault_backup_id}/restore",
-                {
-                    "backup_id": fault_backup_id,
-                    "preview_id": preview["preview_id"],
-                    "confirm": True,
-                    "gate_fail_after_replace": True,
-                },
-            )
-            restore_id = str(submitted_restore.get("restore_id") or "")
-            failed = wait_restore(api, restore_id, args.operation_timeout, "failed")
-            rollback = failed.get("rollback") or {}
-            if rollback.get("status") != "completed":
-                raise GateError("Injected restore failure did not complete automatic rollback")
-            progress = api.get("/api/lite/security/progress")
-            if str(progress.get("run_id") or "") != str(marker_scan.get("run_id") or ""):
-                raise GateError("Rollback did not restore the pre-failure Security state")
-            state = database_state(db_path)
+            configure_worker_fault("after_sqlite_promotion")
+            failed: dict[str, Any] = {}
+            restart_allowed = False
+            try:
+                submitted_restore = api.post(
+                    f"/api/lite/recovery/database/backups/{fault_backup_id}/restore",
+                    {
+                        "backup_id": fault_backup_id,
+                        "preview_id": preview["preview_id"],
+                        "confirm": True,
+                    },
+                )
+                restore_id = str(submitted_restore.get("restore_id") or "")
+                failed = wait_restore(api, restore_id, args.operation_timeout, "failed")
+                if failed.get("phase") != "rolled_back" or failed.get("rollback_status") != "rolled_back":
+                    raise GateError("Injected restore failure did not reach a validated rolled_back phase")
+                if failed.get("api_worker_restart_allowed") is not True:
+                    raise GateError("Worker restart remains blocked because rollback validation did not complete")
+                restart_allowed = True
+                post_database = database_state(db_path)
+                post_files = state_file_hashes(state_dir)
+                logical_keys = {
+                    "quick_check", "integrity_check", "foreign_key_violation_count",
+                    "security_run_count", "schema_version", "security_revision",
+                    "latest_run_id", "migration_contract",
+                }
+                if {key: post_database.get(key) for key in logical_keys} != {key: pre_database.get(key) for key in logical_keys}:
+                    raise GateError("Rollback did not restore the exact pre-failure SQLite logical state")
+                if failed.get("checkpoint_database_hash_matched") is not True:
+                    raise GateError("Rollback checkpoint database hash proof is missing")
+                if post_files != pre_files:
+                    raise GateError("Rollback did not restore the exact pre-failure Security projection files")
+                progress = api.get("/api/lite/security/progress")
+                if str(progress.get("run_id") or "") != str(marker_scan.get("run_id") or ""):
+                    raise GateError("Rollback did not restore the pre-failure Security state")
+                recovery = api.get("/api/lite/recovery/database")
+                guard = recovery.get("restore_guard") or {}
+                if guard.get("unresolved"):
+                    raise GateError("Restore guard remained unresolved after validated rollback")
+            finally:
+                if restart_allowed:
+                    configure_worker_fault(None)
+            post_scan = run_quick_scan(api, args.scan_timeout)
             return {
-                "restore_id": restore_id,
-                "rollback_status": rollback.get("status"),
+                "restore_id": failed.get("restore_id"),
+                "phase": failed.get("phase"),
+                "rollback_status": failed.get("rollback_status"),
+                "restart_allowed_after_validation": failed.get("api_worker_restart_allowed"),
                 "marker_run_restored": True,
-                "database": state,
+                "database_logical_match": True,
+                "checkpoint_database_hash_matched": failed.get("checkpoint_database_hash_matched"),
+                "state_files_exact_match": True,
+                "post_rollback_scan": post_scan,
+                "database": database_state(db_path),
             }
 
         record("gate-6-failed-restore-rollback", failed_restore_gate)

@@ -459,10 +459,11 @@ class LiteDatabaseBackupRequest(BaseModel):
 
 
 class LiteDatabaseRestoreRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
     backup_id: str
     preview_id: str
     confirm: bool = False
-    gate_fail_after_replace: bool = False
 
 
 class LiteRetentionRequest(BaseModel):
@@ -1738,11 +1739,14 @@ async def restore_lite_database(backup_id: str, payload: LiteDatabaseRestoreRequ
         raise HTTPException(status_code=409, detail={"status": "preview_required", "summary": "Create a ready restore preview for this backup first."})
     if lite_security_maintenance.active_security_scan():
         raise HTTPException(status_code=409, detail={"status": "active_security_scan", "summary": "Restore is blocked while a Safety Check is active."})
-    allow_gate_faults = str(os.environ.get("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS", "0")).strip().lower() in {"1", "true", "yes", "on"}
-    if payload.gate_fail_after_replace and not allow_gate_faults:
+    restore_guard = lite_database_recovery.database_recovery_status().get("restore_guard") or {}
+    if restore_guard.get("unresolved"):
         raise HTTPException(
             status_code=409,
-            detail={"status": "gate_fault_disabled", "summary": "Restore fault injection is disabled outside an explicit S8 production gate."},
+            detail={
+                "status": "restore_recovery_required",
+                "summary": "Another database restore must recover before a new restore can start.",
+            },
         )
     command_id = uuid.uuid4().hex
     submitted = await submit_domain_command(
@@ -1754,7 +1758,6 @@ async def restore_lite_database(backup_id: str, payload: LiteDatabaseRestoreRequ
             "backup_id": backup_id,
             "preview_id": payload.preview_id,
             "confirm": True,
-            "gate_fail_after_replace": bool(payload.gate_fail_after_replace),
             "requested_by": "lite-api",
         },
     )
@@ -1763,7 +1766,7 @@ async def restore_lite_database(backup_id: str, payload: LiteDatabaseRestoreRequ
             "restore_id": f"db-restore-{command_id}",
             "backup_id": backup_id,
             "preview_id": payload.preview_id,
-            "summary": "Restore queued. Pocket Lab will enter maintenance, create rollback, replace atomically, and verify recovery.",
+            "summary": "Restore queued. Pocket Lab will checkpoint, stage, promote atomically, and validate before commit.",
         }
     )
     return submitted
