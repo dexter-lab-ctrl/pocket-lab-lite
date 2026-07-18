@@ -228,6 +228,23 @@ def _scan_requested_epoch_ms(item: dict[str, Any]) -> int:
         return 0
 
 
+def _scan_status_rank(item: dict[str, Any]) -> int:
+    status = str(item.get("status") or "").lower()
+    if status in TERMINAL_SCAN:
+        return 2
+    if status in {"accepted", "queued", "running", "in_progress"}:
+        return 1
+    return 0
+
+
+def _prefer_scan_candidate(current: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    current_rank = _scan_status_rank(current)
+    candidate_rank = _scan_status_rank(candidate)
+    if candidate_rank != current_rank:
+        return candidate_rank > current_rank
+    return _scan_requested_epoch_ms(candidate) >= _scan_requested_epoch_ms(current)
+
+
 def _scan_candidates(api: Api) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     progress = api.get("/api/lite/security/progress")
@@ -249,13 +266,24 @@ def _scan_candidates(api: Api) -> list[dict[str, Any]]:
             if isinstance(item, dict):
                 candidates.append(item)
 
+    # The cursor history endpoint is SQLite-backed and provides an independent
+    # persisted terminal source when /progress temporarily regresses.
+    try:
+        history = api.get("/api/lite/security/history?limit=20")
+    except GateError:
+        history = {}
+    if isinstance(history, dict):
+        for item in history.get("history") or []:
+            if isinstance(item, dict):
+                candidates.append(item)
+
     deduped: dict[str, dict[str, Any]] = {}
     for item in candidates:
         run_id = str(item.get("run_id") or "")
         if not run_id:
             continue
         prior = deduped.get(run_id)
-        if prior is None or _scan_requested_epoch_ms(item) >= _scan_requested_epoch_ms(prior):
+        if prior is None or _prefer_scan_candidate(prior, item):
             deduped[run_id] = item
     return sorted(deduped.values(), key=_scan_requested_epoch_ms, reverse=True)
 
