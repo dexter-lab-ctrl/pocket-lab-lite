@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -481,3 +483,104 @@ def test_reconciliation_error_exposes_only_mismatch_fields(tmp_path, monkeypatch
 
     assert captured.value.mismatch_fields == ["latest_run_ids", "score"]
     assert repo.list_runs(limit=100) == []
+
+
+def test_canonical_source_compare_uses_full_normalized_runs_and_preserves_raw_compare(
+    tmp_path, monkeypatch
+):
+    ensure_runtime_path()
+    security = tmp_path / "state" / "security"
+    security.mkdir(parents=True)
+    old = {
+        "run_id": "security-old",
+        "status": "succeeded",
+        "scan_profile": "quick",
+        "requested_at": "2026-07-18T09:00:00Z",
+        "completed_at": "2026-07-18T09:05:00Z",
+    }
+    new = {
+        "run_id": "security-new",
+        "status": "succeeded",
+        "scan_profile": "quick",
+        "requested_at": "2026-07-18T10:00:00Z",
+        "completed_at": "2026-07-18T10:05:00Z",
+    }
+    state = {
+        "last_run": new,
+        "history": [old],
+        "scan_progress": {},
+    }
+    (security / "security_state.json").write_text(
+        json.dumps(state), encoding="utf-8"
+    )
+    runs = security / "runs"
+    runs.mkdir()
+    (runs / "security-old.json").write_text(json.dumps(old), encoding="utf-8")
+    (runs / "security-new.json").write_text(json.dumps(new), encoding="utf-8")
+
+    monkeypatch.setenv(
+        "POCKETLAB_LITE_DB_PATH",
+        str(tmp_path / "state" / "pocketlab-lite.sqlite3"),
+    )
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    repo = SecuritySQLiteRepository()
+    repo.import_legacy_state(source_root=security, reconcile=True)
+
+    raw = repo.compare_json_state(state, record=False)
+    canonical = repo.compare_legacy_source(source_root=security, record=False)
+
+    assert raw["matched"] is False
+    assert raw["mismatch_fields"] == ["history_count", "latest_run_ids"]
+    assert canonical["matched"] is True
+    assert canonical["mismatch_fields"] == []
+    assert canonical["runs_seen"] == 2
+    assert canonical["runs_normalized"] == 2
+
+
+def test_security_db_compare_cli_uses_canonical_source(
+    tmp_path, monkeypatch
+):
+    ensure_runtime_path()
+    security = tmp_path / "state" / "security"
+    state, _ = _write_legacy_state(security)
+    state["history"] = [state["history"][1]]
+    (security / "security_state.json").write_text(
+        json.dumps(state), encoding="utf-8"
+    )
+    database = tmp_path / "state" / "pocketlab-lite.sqlite3"
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(database))
+
+    from api_fastapi.services.lite_security_store import SecuritySQLiteRepository
+
+    SecuritySQLiteRepository().import_legacy_state(
+        source_root=security, reconcile=True
+    )
+
+    root = Path(__file__).resolve().parents[2]
+    env = dict(os.environ)
+    env["POCKETLAB_LITE_DB_PATH"] = str(database)
+    env["PYTHONPATH"] = str(
+        root / "pocket-lab-final-structure" / "runtime"
+    )
+    completed = subprocess.run(
+        [
+            "python3",
+            "scripts/lite/security-db-compare.py",
+            "--source-root",
+            str(security),
+            "--no-record",
+        ],
+        cwd=root,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["ok"] is True
+    assert payload["matched"] is True
+    assert payload["mismatch_fields"] == []
+    assert payload["runs_normalized"] == 2

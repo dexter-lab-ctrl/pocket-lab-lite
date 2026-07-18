@@ -2301,15 +2301,7 @@ class SecuritySQLiteRepository:
             source_root=root.name or "security",
             source_checksum=source_checksum,
         )
-        candidates = _legacy_run_candidates(root, state, report)
-        report.runs_seen = len(candidates)
-        normalized: list[dict[str, Any]] = []
-        for candidate in candidates:
-            try:
-                normalized.append(_normalize_legacy_run(candidate, state))
-            except (InvalidSecurityStoreValue, TypeError, ValueError) as exc:
-                report.runs_skipped += 1
-                report.warnings.append(policy.redact_text(str(exc))[:240])
+        normalized = _normalized_legacy_runs(root, state, report)
         selected_active = None
         active_candidates = [item for item in normalized if item["status"] in ACTIVE_STATUSES]
         if active_candidates:
@@ -2482,42 +2474,62 @@ class SecuritySQLiteRepository:
             ),
         )
 
-    def compare_json_state(self, state: Mapping[str, Any], *, record: bool = True) -> dict[str, Any]:
-        json_projection = _json_shadow_projection(state)
-        sqlite_projection = self._sqlite_shadow_projection()
-        fields = sorted(set(json_projection) | set(sqlite_projection))
-        mismatches = [field for field in fields if json_projection.get(field) != sqlite_projection.get(field)]
-        result = {
-            "matched": not mismatches,
-            "mismatch_fields": mismatches,
-            "json_checksum": _projection_checksum(json_projection),
-            "sqlite_checksum": _projection_checksum(sqlite_projection),
-            "compared_at": utc_now(),
-        }
+    def compare_json_state(
+        self, state: Mapping[str, Any], *, record: bool = True
+    ) -> dict[str, Any]:
+        """Compare the bounded raw compatibility-state projection."""
+        result = _compare_projections(
+            _json_shadow_projection(state),
+            self._sqlite_shadow_projection(),
+        )
         if record:
             with connection() as conn, begin_immediate(conn) as tx:
                 _set_metadata(tx, "shadow_compare:last", result)
         return result
+
+    def compare_legacy_source(
+        self,
+        *,
+        source_root: Path | None = None,
+        record: bool = True,
+    ) -> dict[str, Any]:
+        """Compare SQLite with the complete normalized canonical JSON source."""
+        root = (source_root or evidence.security_root()).resolve()
+        state = _load_core_json(root / "security_state.json")
+        report = ImportReport(
+            preview=True,
+            source_root=root.name or "security",
+            source_checksum=_source_checksum(root),
+        )
+        normalized = _normalized_legacy_runs(root, state, report)
+        result = _compare_projections(
+            _normalized_runs_shadow_projection(normalized),
+            self._sqlite_shadow_projection(),
+        )
+        result.update(
+            {
+                "source_root": report.source_root,
+                "runs_seen": report.runs_seen,
+                "runs_normalized": len(normalized),
+                "runs_skipped": report.runs_skipped,
+                "malformed_optional_files": report.malformed_optional_files,
+                "warnings": report.warnings,
+            }
+        )
+        if record:
+            with connection() as conn, begin_immediate(conn) as tx:
+                _set_metadata(tx, "shadow_compare:last", result)
+        return policy.redact_value(result)
 
     def _compare_projection_with_connection(
         self,
         canonical_projection: Mapping[str, Any],
         conn: sqlite3.Connection,
     ) -> dict[str, Any]:
-        sqlite_projection = self._sqlite_shadow_projection(conn=conn)
-        fields = sorted(set(canonical_projection) | set(sqlite_projection))
-        mismatches = [
-            field
-            for field in fields
-            if canonical_projection.get(field) != sqlite_projection.get(field)
-        ]
-        return {
-            "matched": not mismatches,
-            "mismatch_fields": mismatches,
-            "json_checksum": _projection_checksum(canonical_projection),
-            "sqlite_checksum": _projection_checksum(sqlite_projection),
-            "compared_at": utc_now(),
-        }
+        return _compare_projections(
+            canonical_projection,
+            self._sqlite_shadow_projection(conn=conn),
+        )
 
     def _sqlite_shadow_projection(
         self, *, conn: sqlite3.Connection | None = None
@@ -2659,6 +2671,23 @@ def _legacy_run_candidates(root: Path, state: Mapping[str, Any], report: ImportR
         if run_id != "unknown":
             candidates.setdefault(run_id, policy.redact_value(payload))
     return list(candidates.values())
+
+
+def _normalized_legacy_runs(
+    root: Path,
+    state: Mapping[str, Any],
+    report: ImportReport,
+) -> list[dict[str, Any]]:
+    candidates = _legacy_run_candidates(root, state, report)
+    report.runs_seen = len(candidates)
+    normalized: list[dict[str, Any]] = []
+    for candidate in candidates:
+        try:
+            normalized.append(_normalize_legacy_run(candidate, state))
+        except (InvalidSecurityStoreValue, TypeError, ValueError) as exc:
+            report.runs_skipped += 1
+            report.warnings.append(policy.redact_text(str(exc))[:240])
+    return normalized
 
 
 def _normalize_legacy_run(payload: Mapping[str, Any], state: Mapping[str, Any]) -> dict[str, Any]:
@@ -2842,6 +2871,25 @@ def _json_shadow_projection(state: Mapping[str, Any]) -> dict[str, Any]:
 def _projection_checksum(value: Mapping[str, Any]) -> str:
     clean = policy.redact_value(value)
     return hashlib.sha256(json.dumps(clean, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
+
+
+def _compare_projections(
+    canonical_projection: Mapping[str, Any],
+    sqlite_projection: Mapping[str, Any],
+) -> dict[str, Any]:
+    fields = sorted(set(canonical_projection) | set(sqlite_projection))
+    mismatches = [
+        field
+        for field in fields
+        if canonical_projection.get(field) != sqlite_projection.get(field)
+    ]
+    return {
+        "matched": not mismatches,
+        "mismatch_fields": mismatches,
+        "json_checksum": _projection_checksum(canonical_projection),
+        "sqlite_checksum": _projection_checksum(sqlite_projection),
+        "compared_at": utc_now(),
+    }
 
 
 def shadow_compare_if_enabled(state: Mapping[str, Any]) -> dict[str, Any] | None:
