@@ -863,10 +863,15 @@ def _refresh_security_projections() -> dict[str, Any]:
         runs = _reconcile_security_run_projections(repository)
         evidence.write_state(state)
         lite_security.write_compact_security_state(state)
+        lite_security.invalidate_security_read_caches()
+        progress = lite_security.reset_security_progress_after_database_restore(
+            repository=repository,
+        )
         return {
             "status": "passed",
             "summary": "Security projections refreshed.",
             "runs": runs,
+            "progress": progress,
         }
     except Exception as exc:
         return {"status": "failed", "error_type": type(exc).__name__, "summary": "Security projection refresh failed."}
