@@ -57,6 +57,9 @@ class ImportReport:
     findings_imported: int = 0
     tools_imported: int = 0
     evidence_refs_imported: int = 0
+    runs_deleted: int = 0
+    reconciled: bool = False
+    parity_matched: bool | None = None
     malformed_optional_files: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
@@ -290,6 +293,35 @@ def _parse_timestamp(value: Any, *, default: str | None = None) -> str:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
     return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _history_sort_key(item: Mapping[str, Any]) -> tuple[int, str]:
+    epoch = item.get("completed_at_epoch_ms")
+    if epoch is None:
+        epoch = item.get("updated_at_epoch_ms")
+    if epoch is None:
+        epoch = item.get("requested_at_epoch_ms")
+    if epoch is None:
+        timestamp = (
+            item.get("completed_at")
+            or item.get("updated_at")
+            or item.get("requested_at")
+        )
+        epoch = _epoch_ms(timestamp) if timestamp else 0
+    return int(epoch or 0), str(item.get("run_id") or "")
+
+
+def _canonical_history(
+    items: Iterable[Mapping[str, Any]],
+    *,
+    limit: int | None = None,
+) -> list[Mapping[str, Any]]:
+    ordered = sorted(
+        (item for item in items if str(item.get("run_id") or "").strip()),
+        key=_history_sort_key,
+        reverse=True,
+    )
+    return ordered if limit is None else ordered[: max(0, int(limit))]
 
 
 def _epoch_ms(value: Any) -> int:
@@ -2032,14 +2064,14 @@ class SecuritySQLiteRepository:
         with read_connection() as conn:
             if profile is None:
                 rows = conn.execute(
-                    "SELECT * FROM security_scan_runs ORDER BY updated_at_epoch_ms DESC LIMIT ?",
+                    "SELECT * FROM security_scan_runs ORDER BY COALESCE(completed_at_epoch_ms, updated_at_epoch_ms, requested_at_epoch_ms) DESC, run_id DESC LIMIT ?",
                     (bounded,),
                 ).fetchall()
             else:
                 normalized_profile = _normalize_profile(profile)
                 normalized_app = _normalize_app(normalized_profile, app_id)
                 rows = conn.execute(
-                    "SELECT * FROM security_scan_runs WHERE profile = ? AND app_id = ? ORDER BY updated_at_epoch_ms DESC LIMIT ?",
+                    "SELECT * FROM security_scan_runs WHERE profile = ? AND app_id = ? ORDER BY COALESCE(completed_at_epoch_ms, updated_at_epoch_ms, requested_at_epoch_ms) DESC, run_id DESC LIMIT ?",
                     (normalized_profile, normalized_app, bounded),
                 ).fetchall()
         return [_row(item) or {} for item in rows]
@@ -2063,15 +2095,15 @@ class SecuritySQLiteRepository:
             parameters.extend([normalized_profile, normalized_app])
         if cursor_epoch_ms is not None and cursor_run_id:
             clauses.append(
-                "(COALESCE(completed_at_epoch_ms, updated_at_epoch_ms) < ? "
-                "OR (COALESCE(completed_at_epoch_ms, updated_at_epoch_ms) = ? AND run_id < ?))"
+                "(COALESCE(completed_at_epoch_ms, updated_at_epoch_ms, requested_at_epoch_ms) < ? "
+                "OR (COALESCE(completed_at_epoch_ms, updated_at_epoch_ms, requested_at_epoch_ms) = ? AND run_id < ?))"
             )
             parameters.extend([int(cursor_epoch_ms), int(cursor_epoch_ms), _normalize_run_id(cursor_run_id)])
         where = " WHERE " + " AND ".join(clauses) if clauses else ""
         with read_connection() as conn:
             rows = conn.execute(
                 "SELECT * FROM security_scan_runs" + where +
-                " ORDER BY COALESCE(completed_at_epoch_ms, updated_at_epoch_ms) DESC, run_id DESC LIMIT ?",
+                " ORDER BY COALESCE(completed_at_epoch_ms, updated_at_epoch_ms, requested_at_epoch_ms) DESC, run_id DESC LIMIT ?",
                 (*parameters, bounded + 1),
             ).fetchall()
         has_more = len(rows) > bounded
@@ -2080,7 +2112,7 @@ class SecuritySQLiteRepository:
         if has_more and selected:
             last = selected[-1]
             next_cursor = {
-                "epoch_ms": int(last["completed_at_epoch_ms"] or last["updated_at_epoch_ms"]),
+                "epoch_ms": int(last["completed_at_epoch_ms"] or last["updated_at_epoch_ms"] or last["requested_at_epoch_ms"]),
                 "run_id": str(last["run_id"]),
             }
         return {
@@ -2250,6 +2282,7 @@ class SecuritySQLiteRepository:
         preview: bool = False,
         hash_evidence: bool = False,
         force: bool = False,
+        reconcile: bool = False,
     ) -> dict[str, Any]:
         root = (source_root or evidence.security_root()).resolve()
         state_path = root / "security_state.json"
@@ -2273,6 +2306,8 @@ class SecuritySQLiteRepository:
         active_candidates = [item for item in normalized if item["status"] in ACTIVE_STATUSES]
         if active_candidates:
             selected_active = max(active_candidates, key=lambda item: item["updated_at_epoch_ms"])["run_id"]
+        canonical_run_ids = {str(item["run_id"]) for item in normalized}
+        report.reconciled = bool(reconcile)
         if preview:
             report.runs_imported = len(normalized)
             for item in normalized:
@@ -2284,6 +2319,7 @@ class SecuritySQLiteRepository:
             previous = _get_metadata(tx, "legacy_import:last")
             if (
                 not force
+                and not reconcile
                 and previous.get("source_checksum") == source_checksum
                 and int(previous.get("import_version") or 0) == IMPORT_VERSION
             ):
@@ -2305,8 +2341,59 @@ class SecuritySQLiteRepository:
                 report.evidence_refs_imported += self._replace_evidence_refs(tx, item["run_id"], refs, created_at=item["updated_at"])
                 if item.get("progress"):
                     self._upsert_imported_progress(tx, item)
-                self._upsert_profile_snapshot(tx, item["run_id"], updated_at=item["updated_at"])
                 report.runs_imported += 1
+            if reconcile:
+                existing_run_ids = {
+                    str(row[0])
+                    for row in tx.execute("SELECT run_id FROM security_scan_runs")
+                }
+                stale_run_ids = sorted(existing_run_ids - canonical_run_ids)
+                if stale_run_ids:
+                    placeholders = ",".join("?" for _ in stale_run_ids)
+                    deleted = tx.execute(
+                        f"DELETE FROM security_scan_runs WHERE run_id IN ({placeholders})",
+                        stale_run_ids,
+                    )
+                    report.runs_deleted = max(0, int(deleted.rowcount))
+                tx.execute("DELETE FROM security_profile_snapshots")
+                latest_rows = tx.execute(
+                    """
+                    SELECT run_id
+                    FROM security_scan_runs
+                    ORDER BY
+                        profile, app_id,
+                        COALESCE(
+                            completed_at_epoch_ms,
+                            updated_at_epoch_ms,
+                            requested_at_epoch_ms
+                        ) DESC,
+                        run_id DESC
+                    """
+                ).fetchall()
+                seen_profiles: set[tuple[str, str]] = set()
+                for row in latest_rows:
+                    run = tx.execute(
+                        "SELECT profile, app_id, updated_at FROM security_scan_runs WHERE run_id = ?",
+                        (row["run_id"],),
+                    ).fetchone()
+                    key = (str(run["profile"]), str(run["app_id"]))
+                    if key in seen_profiles:
+                        continue
+                    seen_profiles.add(key)
+                    self._upsert_profile_snapshot(
+                        tx, str(row["run_id"]), updated_at=str(run["updated_at"])
+                    )
+                parity = self._compare_json_state_with_connection(state, tx)
+                report.parity_matched = bool(parity["matched"])
+                if not report.parity_matched:
+                    raise SecurityStoreError(
+                        "Legacy Security reconciliation did not converge"
+                    )
+            else:
+                for item in normalized:
+                    self._upsert_profile_snapshot(
+                        tx, item["run_id"], updated_at=item["updated_at"]
+                    )
             revision = _bump_revision(tx)
             metadata = {
                 **report.to_dict(),
@@ -2400,11 +2487,64 @@ class SecuritySQLiteRepository:
                 _set_metadata(tx, "shadow_compare:last", result)
         return result
 
-    def _sqlite_shadow_projection(self) -> dict[str, Any]:
-        runs = self.list_runs(limit=DEFAULT_HISTORY_LIMIT)
+    def _compare_json_state_with_connection(
+        self, state: Mapping[str, Any], conn: sqlite3.Connection
+    ) -> dict[str, Any]:
+        json_projection = _json_shadow_projection(state)
+        sqlite_projection = self._sqlite_shadow_projection(conn=conn)
+        fields = sorted(set(json_projection) | set(sqlite_projection))
+        mismatches = [
+            field
+            for field in fields
+            if json_projection.get(field) != sqlite_projection.get(field)
+        ]
+        return {
+            "matched": not mismatches,
+            "mismatch_fields": mismatches,
+            "json_checksum": _projection_checksum(json_projection),
+            "sqlite_checksum": _projection_checksum(sqlite_projection),
+            "compared_at": utc_now(),
+        }
+
+    def _sqlite_shadow_projection(
+        self, *, conn: sqlite3.Connection | None = None
+    ) -> dict[str, Any]:
+        if conn is None:
+            runs = self.list_runs(limit=DEFAULT_HISTORY_LIMIT)
+        else:
+            rows = conn.execute(
+                """
+                SELECT * FROM security_scan_runs
+                ORDER BY COALESCE(
+                    completed_at_epoch_ms,
+                    updated_at_epoch_ms,
+                    requested_at_epoch_ms
+                ) DESC, run_id DESC
+                LIMIT ?
+                """,
+                (DEFAULT_HISTORY_LIMIT,),
+            ).fetchall()
+            runs = [_row(row) or {} for row in rows]
+        runs = list(_canonical_history(runs, limit=DEFAULT_HISTORY_LIMIT))
         latest = runs[0] if runs else {}
-        findings = self.list_findings(str(latest.get("run_id"))) if latest.get("run_id") else []
-        refs = self.list_evidence_refs(str(latest.get("run_id"))) if latest.get("run_id") else []
+        if latest.get("run_id") and conn is None:
+            findings = self.list_findings(str(latest.get("run_id")))
+            refs = self.list_evidence_refs(str(latest.get("run_id")))
+        elif latest.get("run_id"):
+            findings = [
+                dict(row)
+                for row in conn.execute(
+                    "SELECT severity FROM security_scan_findings WHERE run_id = ?",
+                    (str(latest.get("run_id")),),
+                ).fetchall()
+            ]
+            refs = conn.execute(
+                "SELECT 1 FROM security_scan_evidence_refs WHERE run_id = ? LIMIT 1",
+                (str(latest.get("run_id")),),
+            ).fetchall()
+        else:
+            findings = []
+            refs = []
         counts = {severity: int(latest.get(f"{severity}_count") or 0) for severity in policy.SEVERITIES}
         if findings and not any(counts.values()):
             for finding in findings:
@@ -2618,11 +2758,16 @@ def _legacy_evidence_refs(root: Path, item: Mapping[str, Any], *, hash_evidence:
 def _json_shadow_projection(state: Mapping[str, Any]) -> dict[str, Any]:
     last = state.get("last_run") if isinstance(state.get("last_run"), Mapping) else {}
     progress = state.get("scan_progress") if isinstance(state.get("scan_progress"), Mapping) else {}
-    history = (
-        state.get("history")[:DEFAULT_HISTORY_LIMIT]
-        if isinstance(state.get("history"), list)
-        else []
-    )
+    history = list(
+        _canonical_history(
+            (
+                item
+                for item in state.get("history", [])
+                if isinstance(item, Mapping)
+            ),
+            limit=DEFAULT_HISTORY_LIMIT,
+        )
+    ) if isinstance(state.get("history"), list) else []
     counts = {severity: int(last.get(f"{severity}_count") or 0) for severity in policy.SEVERITIES}
     if not any(counts.values()) and isinstance(state.get("findings"), list):
         for finding in state.get("findings") or []:
@@ -2641,7 +2786,7 @@ def _json_shadow_projection(state: Mapping[str, Any]) -> dict[str, Any]:
         "evidence_saved": bool(refs),
         "latest_completed_at": last.get("completed_at") or "",
         "history_count": len(history),
-        "latest_run_ids": [item.get("run_id") for item in history[:DEFAULT_HISTORY_LIMIT] if isinstance(item, Mapping)],
+        "latest_run_ids": [item.get("run_id") for item in history],
     }
 
 
