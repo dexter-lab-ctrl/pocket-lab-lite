@@ -210,6 +210,62 @@ def recent_maintenance(api: Api, *, kind: str, mode: str | None, after: str, tim
     return matched
 
 
+def _scan_requested_epoch_ms(item: dict[str, Any]) -> int:
+    raw = item.get("requested_at_epoch_ms")
+    try:
+        return int(raw or 0)
+    except (TypeError, ValueError):
+        pass
+    raw_iso = str(item.get("requested_at") or "").strip()
+    if not raw_iso:
+        return 0
+    try:
+        return int(datetime.fromisoformat(raw_iso.replace("Z", "+00:00")).timestamp() * 1000)
+    except ValueError:
+        return 0
+
+
+def _scan_candidates(api: Api) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+    progress = api.get("/api/lite/security/progress")
+    if isinstance(progress, dict):
+        candidates.append(progress)
+
+    summary = api.get("/api/lite/security/summary")
+    if isinstance(summary, dict):
+        for key in ("scan_progress", "last_run"):
+            item = summary.get(key)
+            if isinstance(item, dict):
+                candidates.append(item)
+        profile_latest = summary.get("profile_latest")
+        if isinstance(profile_latest, dict):
+            quick = profile_latest.get("quick")
+            if isinstance(quick, dict):
+                candidates.append(quick)
+        for item in summary.get("history") or []:
+            if isinstance(item, dict):
+                candidates.append(item)
+
+    deduped: dict[str, dict[str, Any]] = {}
+    for item in candidates:
+        run_id = str(item.get("run_id") or "")
+        if not run_id:
+            continue
+        prior = deduped.get(run_id)
+        if prior is None or _scan_requested_epoch_ms(item) >= _scan_requested_epoch_ms(prior):
+            deduped[run_id] = item
+    return sorted(deduped.values(), key=_scan_requested_epoch_ms, reverse=True)
+
+
+def _find_scan(api: Api, predicate: Callable[[dict[str, Any]], bool]) -> dict[str, Any]:
+    last: dict[str, Any] = {}
+    for item in _scan_candidates(api):
+        last = item
+        if predicate(item):
+            return item
+    return last
+
+
 def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
     baseline = api.get("/api/lite/security/progress")
     if bool(baseline.get("active_scan")):
@@ -224,27 +280,32 @@ def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
         submitted = api.post("/api/lite/security/check", {"profile": "quick"})
         expected_run = str(submitted.get("run_id") or "")
     except ApiTransportError as exc:
-        if exc.method != "POST" or exc.path != "/api/lite/security/check" or "Timeout" not in exc.error_type:
+        is_submission_timeout = (
+            exc.method == "POST"
+            and exc.path == "/api/lite/security/check"
+            and "timeout" in exc.error_type.lower()
+        )
+        if not is_submission_timeout:
             raise
 
-        recovery_timeout = min(max(api.timeout * 2.0, 15.0), 60.0)
+        configured_recovery = float(os.environ.get("POCKETLAB_S8_GATE_SUBMISSION_RECOVERY_TIMEOUT", "90"))
+        recovery_timeout = min(max(configured_recovery, api.timeout * 4.0, 30.0), timeout, 180.0)
 
-        def adopted(payload: dict[str, Any]) -> bool:
-            run_id = str(payload.get("run_id") or "")
-            requested_at_epoch_ms = int(payload.get("requested_at_epoch_ms") or 0)
-            profile = str(payload.get("profile") or payload.get("scan_profile") or "")
+        def adopted(item: dict[str, Any]) -> bool:
+            run_id = str(item.get("run_id") or "")
+            profile = str(item.get("profile") or item.get("scan_profile") or "")
             return (
                 bool(run_id)
                 and run_id != baseline_run_id
                 and profile in {"", "quick"}
-                and requested_at_epoch_ms >= submitted_after_epoch_ms - 2000
+                and _scan_requested_epoch_ms(item) >= submitted_after_epoch_ms - 5000
             )
 
         recovered = poll(
             "timed-out Quick Safety Check submission",
             recovery_timeout,
             1.0,
-            lambda: api.get("/api/lite/security/progress"),
+            lambda: _find_scan(api, adopted),
             adopted,
         )
         expected_run = str(recovered.get("run_id") or "")
@@ -253,13 +314,17 @@ def run_quick_scan(api: Api, timeout: float) -> dict[str, Any]:
     if not expected_run:
         raise GateError("Quick Safety Check submission did not return or expose a run id")
 
-    def terminal(payload: dict[str, Any]) -> bool:
-        status = str(payload.get("status") or "").lower()
-        same = str(payload.get("run_id") or "") == expected_run
+    def terminal(item: dict[str, Any]) -> bool:
+        status = str(item.get("status") or "").lower()
+        same = str(item.get("run_id") or "") == expected_run
         return same and status in TERMINAL_SCAN
 
     progress = poll(
-        "Quick Safety Check", timeout, 2.0, lambda: api.get("/api/lite/security/progress"), terminal
+        "Quick Safety Check",
+        timeout,
+        2.0,
+        lambda: _find_scan(api, terminal),
+        terminal,
     )
     if str(progress.get("status") or "").lower() not in {"succeeded", "degraded"}:
         raise GateError(f"Quick Safety Check ended with {progress.get('status')}")
@@ -494,9 +559,10 @@ def main() -> int:
             pre_files = state_file_hashes(state_dir)
             api.post(f"/api/lite/recovery/database/backups/{fault_backup_id}/preview", {})
             preview = wait_preview(api, fault_backup_id, args.operation_timeout)
+            fault_configured = False
             configure_worker_fault("after_sqlite_promotion")
+            fault_configured = True
             failed: dict[str, Any] = {}
-            restart_allowed = False
             try:
                 submitted_restore = api.post(
                     f"/api/lite/recovery/database/backups/{fault_backup_id}/restore",
@@ -512,7 +578,6 @@ def main() -> int:
                     raise GateError("Injected restore failure did not reach a validated rolled_back phase")
                 if failed.get("api_worker_restart_allowed") is not True:
                     raise GateError("Worker restart remains blocked because rollback validation did not complete")
-                restart_allowed = True
                 post_database = database_state(db_path)
                 post_files = state_file_hashes(state_dir)
                 logical_keys = {
@@ -534,8 +599,14 @@ def main() -> int:
                 if guard.get("unresolved"):
                     raise GateError("Restore guard remained unresolved after validated rollback")
             finally:
-                if restart_allowed:
-                    configure_worker_fault(None)
+                if fault_configured:
+                    try:
+                        recovery = api.get("/api/lite/recovery/database")
+                        guard = recovery.get("restore_guard") or {}
+                    except GateError:
+                        guard = {}
+                    if guard.get("api_worker_restart_allowed") is True:
+                        configure_worker_fault(None)
             post_scan = run_quick_scan(api, args.scan_timeout)
             return {
                 "restore_id": failed.get("restore_id"),
