@@ -1755,6 +1755,13 @@ const RECOVERY_LIVE_STATUSES = new Set([
   'restoring',
   'checkpointing',
   'validating',
+  'entering_maintenance',
+  'stopping_writers',
+  'creating_rollback',
+  'replacing',
+  'restarting',
+  'rolling_back',
+  'maintenance',
 ]);
 
 function normalizeRecoveryStatus(value = '') {
@@ -2042,6 +2049,52 @@ export function selectRecoveryEvidenceSummaryView(payload = {}) {
   };
 }
 
+function normalizeRecoveryDatabaseBackup(backup = {}) {
+  if (!isObject(backup)) return null;
+  return copySafeKeys(backup, [
+    'backup_id',
+    'status',
+    'created_at',
+    'verified_at',
+    'verification_status',
+    'size_bytes',
+    'schema_version',
+    'sqlite_version',
+    'evidence_reference_count',
+    'summary',
+    'rollback_available',
+  ]);
+}
+
+function normalizeRecoveryDatabaseProtection(payload = {}) {
+  if (!isObject(payload)) return null;
+  const maintenance = isObject(payload.maintenance)
+    ? copySafeKeys(payload.maintenance, ['active', 'state', 'kind', 'started_at', 'updated_at', 'completed_at', 'writers_stopped', 'summary'])
+    : null;
+  const wal = isObject(payload.wal)
+    ? copySafeKeys(payload.wal, ['journal_mode', 'wal_bytes', 'shm_bytes', 'wal_warning', 'last_passive_checkpoint_at', 'last_truncate_checkpoint_at', 'maintenance_active', 'writers_stopped', 'sanitized'])
+    : null;
+  const latestPreview = isObject(payload.latest_restore_preview)
+    ? copySafeKeys(payload.latest_restore_preview, ['preview_id', 'backup_id', 'status', 'created_at', 'restore_allowed', 'requires_confirmation', 'destructive_changes_applied', 'schema_version', 'summary'])
+    : null;
+  const lastRestore = isObject(payload.last_restore)
+    ? copySafeKeys(payload.last_restore, ['restore_id', 'backup_id', 'preview_id', 'status', 'state', 'started_at', 'completed_at', 'failed_at', 'rollback_available', 'summary'])
+    : null;
+  return {
+    status: normalizeRecoveryStatus(payload.status || 'ready'),
+    summary: safeString(payload.summary || 'Database protection is ready.'),
+    latest_backup: normalizeRecoveryDatabaseBackup(payload.latest_backup || {}),
+    backup_history: (Array.isArray(payload.backup_history) ? payload.backup_history : []).slice(0, 10).map(normalizeRecoveryDatabaseBackup).filter(Boolean),
+    latest_restore_preview: latestPreview,
+    last_restore: lastRestore,
+    maintenance,
+    wal,
+    rollback_available: Boolean(payload.rollback_available || lastRestore?.rollback_available),
+    updated_at: safeString(payload.updated_at || ''),
+    sanitized: true,
+  };
+}
+
 export function selectRecoveryScreenView(payload = {}) {
   const summary = selectRecoverySummaryView(payload || {});
   const appBackups = Array.isArray(payload?.app_backups)
@@ -2071,6 +2124,10 @@ export function selectRecoveryScreenView(payload = {}) {
     app_backups: appBackups.slice(0, 8).map(normalizeRecoveryAppBackup).filter(Boolean),
     app_backup_profiles: { apps: appBackups.slice(0, 8).map(normalizeRecoveryAppBackup).filter(Boolean) },
     app_lifecycle_profiles: { apps: lifecycleApps.slice(0, 8).map(selectRecoveryAppLifecycle).filter(Boolean) },
+    database_protection: normalizeRecoveryDatabaseProtection(payload?.database_protection || {}),
+    maintenance: isObject(payload?.maintenance)
+      ? copySafeKeys(payload.maintenance, ['active', 'state', 'kind', 'started_at', 'updated_at', 'completed_at', 'writers_stopped', 'summary'])
+      : null,
     live: isLiteRecoveryViewLive(payload),
   });
 }
@@ -2081,6 +2138,11 @@ export function isLiteRecoveryViewLive(payload = {}) {
   const preview = payload.latest_restore_preview || payload.restore_preview || payload.preview || {};
   const checkpoint = payload.pre_restore_checkpoint || payload.checkpoint || {};
   const restore = payload.last_restore || payload.latest_restore || {};
+  const databaseProtection = payload.database_protection || {};
+  const databaseMaintenance = databaseProtection.maintenance || payload.maintenance || {};
+  const databaseBackup = databaseProtection.latest_backup || {};
+  const databasePreview = databaseProtection.latest_restore_preview || {};
+  const databaseRestore = databaseProtection.last_restore || {};
   const operation = payload.current_operation || payload.latest_operation || payload.operation || payload.action_progress || payload.progress || {};
   const statuses = [
     payload.status,
@@ -2097,6 +2159,12 @@ export function isLiteRecoveryViewLive(payload = {}) {
     restore.status,
     restore.state,
     restore.phase,
+    databaseProtection.status,
+    databaseMaintenance.state,
+    databaseBackup.status,
+    databasePreview.status,
+    databaseRestore.status,
+    databaseRestore.state,
     operation.status,
     operation.state,
     operation.phase,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
@@ -1128,6 +1129,196 @@ async def handle_lite_app_media(command: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
+async def handle_lite_database_backup(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    await _publish(
+        "pocketlab.events.lite.database.backup.started",
+        "lite.database.backup.started",
+        {"command_id": command_id},
+        trace_id=command_id,
+    )
+    from . import lite_database_recovery
+
+    result = await asyncio.to_thread(lite_database_recovery.create_database_backup, command)
+    await _publish(
+        "pocketlab.events.lite.database.backup.verified",
+        "lite.database.backup.verified",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id"),
+            "status": result.get("status"),
+            "schema_version": result.get("schema_version"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.database.backup.verified",
+        "lite.database.backup.verified",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_database_backup_verify(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    from . import lite_database_recovery
+
+    result = await asyncio.to_thread(
+        lite_database_recovery.verify_database_backup,
+        str(command.get("backup_id") or "latest"),
+    )
+    await _publish(
+        "pocketlab.events.lite.database.backup.verified",
+        "lite.database.backup.verified",
+        {"command_id": command_id, "backup_id": result.get("backup_id"), "status": result.get("status")},
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_database_restore_preview(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    from . import lite_database_recovery
+
+    result = await asyncio.to_thread(
+        lite_database_recovery.create_database_restore_preview,
+        str(command.get("backup_id") or "latest"),
+    )
+    await _publish(
+        "pocketlab.events.lite.database.restore.preview_ready",
+        "lite.database.restore.preview_ready",
+        {
+            "command_id": command_id,
+            "backup_id": result.get("backup_id"),
+            "preview_id": result.get("preview_id"),
+            "status": result.get("status"),
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_database_restore(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    from . import lite_database_recovery
+
+    await _publish(
+        "pocketlab.events.lite.database.restore.started",
+        "lite.database.restore.started",
+        {"command_id": command_id, "backup_id": command.get("backup_id"), "preview_id": command.get("preview_id")},
+        trace_id=command_id,
+    )
+    result = await asyncio.to_thread(lite_database_recovery.restore_database_backup, command)
+    await _publish(
+        "pocketlab.events.lite.database.restore.completed",
+        "lite.database.restore.completed",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "status": result.get("status"),
+            "rollback_available": result.get("rollback_available"),
+        },
+        trace_id=command_id,
+    )
+    await _publish(
+        "pocketlab.audit.lite.database.restore.completed",
+        "lite.database.restore.completed",
+        {
+            "command_id": command_id,
+            "restore_id": result.get("restore_id"),
+            "backup_id": result.get("backup_id"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_maintenance_retention(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    from . import lite_security_maintenance
+
+    result = await asyncio.to_thread(
+        lite_security_maintenance.run_retention,
+        dry_run=bool(command.get("dry_run", True)),
+        max_batches=int(command.get("max_batches") or 1),
+    )
+    await _publish(
+        "pocketlab.audit.lite.maintenance.retention",
+        "lite.maintenance.retention",
+        {
+            "command_id": command_id,
+            "mode": result.get("mode"),
+            "runs_deleted": result.get("runs_deleted"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
+async def handle_lite_maintenance_checkpoint(command: Dict[str, Any]) -> Dict[str, Any]:
+    command_id = _command_id(command)
+    from . import lite_security_maintenance
+
+    mode = str(command.get("mode") or "PASSIVE").upper()
+    operation_id = str(command.get("operation_id") or command_id)
+    writers_stopped = False
+    if mode == "TRUNCATE":
+        if not bool(command.get("confirm_controlled")):
+            raise RuntimeError("Controlled WAL maintenance confirmation is required")
+        if lite_security_maintenance.active_security_scan():
+            raise RuntimeError("TRUNCATE checkpoint is blocked while a Security scan is active")
+        lite_security_maintenance.enter_maintenance(
+            operation_id=operation_id,
+            kind="wal_truncate",
+            writers_stopped=False,
+        )
+        await asyncio.sleep(max(0.0, min(float(os.environ.get("POCKETLAB_LITE_WAL_QUIESCE_SECONDS", "0.25")), 5.0)))
+        lite_security_maintenance.update_maintenance(
+            operation_id,
+            state="stopping_writers",
+            writers_stopped=True,
+            summary="Database writers are quiesced for controlled WAL maintenance.",
+        )
+        writers_stopped = True
+    try:
+        result = await asyncio.to_thread(
+            lite_security_maintenance.run_wal_checkpoint,
+            mode=mode,
+            operation_id=operation_id,
+            writers_stopped=writers_stopped,
+        )
+    finally:
+        if mode == "TRUNCATE":
+            lite_security_maintenance.leave_maintenance(
+                operation_id,
+                state="completed",
+                summary="Controlled WAL maintenance completed.",
+            )
+    await _publish(
+        "pocketlab.audit.lite.maintenance.checkpoint",
+        "lite.maintenance.checkpoint",
+        {
+            "command_id": command_id,
+            "checkpoint_mode": result.get("checkpoint_mode"),
+            "status": result.get("status"),
+            "sanitized": True,
+        },
+        trace_id=command_id,
+    )
+    return result
+
+
 HANDLERS = {
     "pocketlab.commands.lite.catalog.install": handle_lite_catalog_install,
     "pocketlab.commands.catalog.refresh": handle_catalog_refresh,
@@ -1163,6 +1354,12 @@ HANDLERS = {
     "pocketlab.commands.lite.backup.verify": handle_lite_backup_verify,
     "pocketlab.commands.lite.restore.preview": handle_lite_restore_preview,
     "pocketlab.commands.lite.restore.apply": handle_lite_restore_apply,
+    "pocketlab.commands.lite.database.backup": handle_lite_database_backup,
+    "pocketlab.commands.lite.database.backup.verify": handle_lite_database_backup_verify,
+    "pocketlab.commands.lite.database.restore.preview": handle_lite_database_restore_preview,
+    "pocketlab.commands.lite.database.restore": handle_lite_database_restore,
+    "pocketlab.commands.lite.maintenance.retention": handle_lite_maintenance_retention,
+    "pocketlab.commands.lite.maintenance.checkpoint": handle_lite_maintenance_checkpoint,
 }
 
 

@@ -150,6 +150,7 @@ def api_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         "evidence_references": manifest.get("evidence_references", []),
         "summary": manifest.get("summary"),
         "verification": manifest.get("verification"),
+        "database_backup": manifest.get("database_backup"),
     }
 
 

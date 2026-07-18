@@ -379,6 +379,28 @@ async def command_callback(msg: Any) -> None:
             command_id=command_id,
             attempt=attempt,
         )
+        from api_fastapi.services import lite_security_maintenance  # type: ignore
+
+        if not lite_security_maintenance.worker_command_allowed(subject):
+            await publish(
+                "pocketlab.events.worker.maintenance_deferred",
+                "worker.maintenance_deferred",
+                {
+                    "command_subject": subject,
+                    "command_id": command_id,
+                    "retry_delay_seconds": 5,
+                    "sanitized": True,
+                },
+                trace_id=command_id or None,
+            )
+            await BUS.nak_message(msg, delay=5)
+            _worker_log(
+                "worker.command_maintenance_deferred",
+                subject=subject,
+                command_id=command_id,
+                attempt=attempt,
+            )
+            return
         if subject == "pocketlab.commands.lite.security.scan":
             from api_fastapi.services import lite_security  # type: ignore
 

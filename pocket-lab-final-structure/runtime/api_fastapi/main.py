@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .services.runtime_diagnostics import RuntimeTimingMiddleware
 from .services.request_limits import LiteRequestSizeLimitMiddleware
+from .services.lite_security_maintenance import LiteMaintenanceModeMiddleware
 from .services.workload_admission import WorkloadAdmissionError
 
 from . import deps
@@ -147,6 +148,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(LiteRequestSizeLimitMiddleware)
+app.add_middleware(LiteMaintenanceModeMiddleware)
 app.add_middleware(RuntimeTimingMiddleware)
 
 for router in (

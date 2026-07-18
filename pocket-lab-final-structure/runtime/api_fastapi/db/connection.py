@@ -173,19 +173,38 @@ def ensure_database_parent(path: Path | None = None) -> Path:
     return target
 
 
-def online_backup(destination: Path) -> Path:
-    """Create a consistent SQLite backup without copying live WAL/SHM files."""
+def online_backup(
+    destination: Path,
+    *,
+    pages: int | None = None,
+    sleep: float | None = None,
+    progress=None,
+) -> Path:
+    """Create a bounded consistent SQLite backup without copying WAL/SHM files."""
     source_path = database_path()
     target = Path(destination).expanduser().resolve(strict=False)
     if target == source_path:
         raise SQLiteConfigurationError("SQLite backup destination must differ from the live database")
     if target.suffix.lower() not in {".db", ".sqlite", ".sqlite3"}:
         raise SQLiteConfigurationError("SQLite backup destination must use a database file suffix")
+    bounded_pages = pages if pages is not None else _bounded_int(
+        "POCKETLAB_LITE_DB_BACKUP_PAGES", 256, minimum=1, maximum=65_536
+    )
+    bounded_sleep = sleep if sleep is not None else (
+        _bounded_int(
+            "POCKETLAB_LITE_DB_BACKUP_SLEEP_MS", 25, minimum=0, maximum=1_000
+        ) / 1000.0
+    )
     ensure_database_parent(target)
     with read_connection() as source:
         backup = sqlite3.connect(str(target), isolation_level=None)
         try:
-            source.backup(backup)
+            source.backup(
+                backup,
+                pages=int(bounded_pages),
+                progress=progress,
+                sleep=float(bounded_sleep),
+            )
         finally:
             backup.close()
     _chmod_best_effort(target, 0o600)
