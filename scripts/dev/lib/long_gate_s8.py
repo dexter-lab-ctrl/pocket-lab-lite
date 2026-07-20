@@ -33,6 +33,12 @@ class GateError(RuntimeError):
     pass
 
 
+class RestoreExpectationError(GateError):
+    def __init__(self, message: str, detail: dict[str, Any]) -> None:
+        super().__init__(message)
+        self.detail = detail
+
+
 class ApiTransportError(GateError):
     def __init__(self, method: str, path: str, error_type: str) -> None:
         super().__init__(f"{method} {path} failed: {error_type}")
@@ -203,6 +209,57 @@ def configure_worker_fault(point: str | None) -> None:
     if result.returncode != 0:
         raise GateError("Could not restart pocket-worker with the bounded S8 gate environment")
     time.sleep(3)
+
+
+def worker_fault_environment() -> dict[str, Any]:
+    try:
+        result = subprocess.run(
+            ["pm2", "jlist"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise GateError(f"Could not inspect pocket-worker fault state: {type(exc).__name__}") from exc
+    if result.returncode != 0:
+        raise GateError("Could not inspect pocket-worker fault state")
+    try:
+        processes = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise GateError("PM2 returned invalid JSON while inspecting pocket-worker") from exc
+    if not isinstance(processes, list):
+        raise GateError("PM2 returned an invalid process list")
+    for process in processes:
+        if not isinstance(process, dict) or process.get("name") != "pocket-worker":
+            continue
+        env = ((process.get("pm2_env") or {}).get("env") or {})
+        enabled_raw = str(env.get("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS") or "0").strip().lower()
+        point = str(env.get("POCKETLAB_LITE_S8_FAULT_POINT") or "").strip()
+        return {
+            "checked": True,
+            "enabled": enabled_raw in {"1", "true", "yes", "on"},
+            "point": point or None,
+            "sanitized": True,
+        }
+    raise GateError("pocket-worker is unavailable while inspecting S8 fault state")
+
+
+def ensure_worker_fault_disabled() -> dict[str, Any]:
+    before = worker_fault_environment()
+    stale = bool(before.get("enabled") or before.get("point"))
+    if stale:
+        configure_worker_fault(None)
+    after = worker_fault_environment()
+    if after.get("enabled") or after.get("point"):
+        raise GateError("Could not clear stale pocket-worker S8 fault injection")
+    return {
+        "checked": True,
+        "stale_fault_detected": stale,
+        "worker_restarted": stale,
+        "fault_disabled": True,
+        "sanitized": True,
+    }
 
 
 def recent_maintenance(api: Api, *, kind: str, mode: str | None, after: str, timeout: float) -> dict[str, Any]:
@@ -471,6 +528,31 @@ def wait_preview(api: Api, backup_id: str, timeout: float) -> dict[str, Any]:
     return result
 
 
+def sanitized_restore_result(item: dict[str, Any]) -> dict[str, Any]:
+    rollback = item.get("rollback") if isinstance(item.get("rollback"), dict) else {}
+    parity = item.get("parity") if isinstance(item.get("parity"), dict) else {}
+    projection = item.get("projection") if isinstance(item.get("projection"), dict) else {}
+    return {
+        "restore_id": item.get("restore_id"),
+        "backup_id": item.get("backup_id"),
+        "status": item.get("status"),
+        "state": item.get("state"),
+        "phase": item.get("phase"),
+        "error_type": item.get("error_type"),
+        "summary": item.get("summary"),
+        "rollback_status": item.get("rollback_status") or rollback.get("status"),
+        "rollback_attempted": rollback.get("attempted"),
+        "rollback_available": item.get("rollback_available"),
+        "api_worker_restart_allowed": item.get("api_worker_restart_allowed"),
+        "checkpoint_database_hash_matched": item.get("checkpoint_database_hash_matched"),
+        "canonical_parity_matched": item.get("canonical_parity_matched")
+        if "canonical_parity_matched" in item
+        else parity.get("matched"),
+        "projection_status": projection.get("status"),
+        "sanitized": True,
+    }
+
+
 def wait_restore(api: Api, restore_id: str, timeout: float, expected: str) -> dict[str, Any]:
     result = poll(
         f"database restore {restore_id}",
@@ -480,7 +562,11 @@ def wait_restore(api: Api, restore_id: str, timeout: float, expected: str) -> di
         lambda item: item.get("status") in {"completed", "failed"},
     )
     if result.get("status") != expected:
-        raise GateError(f"Restore expected {expected} but finished {result.get('status')}")
+        detail = sanitized_restore_result(result)
+        raise RestoreExpectationError(
+            f"Restore expected {expected} but finished {result.get('status')}",
+            detail,
+        )
     return result
 
 
@@ -536,6 +622,9 @@ def main() -> int:
                 "error_type": type(exc).__name__,
                 "summary": str(exc)[:300],
             }
+            failure_detail = getattr(exc, "detail", None)
+            if isinstance(failure_detail, dict):
+                item["detail"] = failure_detail
             report["gates"].append(item)
             output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             raise
@@ -544,14 +633,26 @@ def main() -> int:
         return detail
 
     try:
-        record(
-            "preflight",
-            lambda: {
+        def preflight_gate() -> dict[str, Any]:
+            fault_state = (
+                ensure_worker_fault_disabled()
+                if args.platform == "termux"
+                else {
+                    "checked": False,
+                    "reason": "worker fault state is owned by the Termux host",
+                    "sanitized": True,
+                }
+            )
+            return {
                 "health": api.get("/health").get("status", "reachable"),
                 "database": database_state(db_path),
-                "maintenance_active": bool(api.get("/api/lite/recovery/maintenance").get("maintenance", {}).get("active")),
-            },
-        )
+                "maintenance_active": bool(
+                    api.get("/api/lite/recovery/maintenance").get("maintenance", {}).get("active")
+                ),
+                "worker_fault_guard": fault_state,
+            }
+
+        record("preflight", preflight_gate)
 
         def retention_dry() -> dict[str, Any]:
             before = database_state(db_path)
