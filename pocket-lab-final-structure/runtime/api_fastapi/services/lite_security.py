@@ -85,6 +85,7 @@ _SQLITE_PROGRESS_READER_RESET = threading.Event()
 _SQLITE_PROGRESS_STOP = threading.Event()
 _SQLITE_PROGRESS_THREAD: threading.Thread | None = None
 _SQLITE_PROGRESS_EPOCH = 0
+_SQLITE_PROGRESS_RESTORE_FENCE_LOCK = threading.Lock()
 _ACTIVE_PROGRESS_STATUSES = frozenset({"queued", "accepted", "running", "working", "in_progress"})
 _TERMINAL_PROGRESS_STATUSES = frozenset({"succeeded", "degraded", "failed", "cancelled", "canceled", "completed"})
 _SECURITY_EVENT_REPLAY_LOCK = threading.Lock()
@@ -117,6 +118,84 @@ def _security_store_api():
 
 def _security_repository():
     return _security_store_api().SecuritySQLiteRepository(initialize=True)
+
+
+def fence_security_progress_after_database_restore(
+    *, repository: Any | None = None
+) -> dict[str, Any]:
+    """Fence pre-restore Progress memory and reload the promoted SQLite state.
+
+    A destructive restore is allowed to move the authoritative run set
+    backwards. Any process-local Progress snapshot created before promotion
+    must therefore become ineligible for publication, even when it has a
+    later timestamp or a non-terminal lifecycle status.
+
+    The epoch change is the publication fence. Clearing the prepared and
+    decoded snapshots removes the immediate request-path copy, while the
+    reader-reset event forces the background reader to discard its pre-restore
+    SQLite connection. The synchronous refresh makes restore completion
+    contingent on serving the promoted database state in this process.
+    """
+
+    global _SQLITE_PROGRESS_SNAPSHOT
+    global _SQLITE_PROGRESS_PREPARED
+    global _SQLITE_PROGRESS_SNAPSHOT_DB
+    global _SQLITE_PROGRESS_SNAPSHOT_IDENTITY
+    global _SQLITE_PROGRESS_FAILURES
+    global _SQLITE_PROGRESS_REFRESHED_AT
+    global _SQLITE_PROGRESS_VERIFIED_AT
+    global _SQLITE_PROGRESS_EPOCH
+
+    repo = repository or _security_repository()
+
+    with _SQLITE_PROGRESS_RESTORE_FENCE_LOCK:
+        with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+            previous = (
+                copy.deepcopy(_SQLITE_PROGRESS_SNAPSHOT)
+                if isinstance(_SQLITE_PROGRESS_SNAPSHOT, dict)
+                else {}
+            )
+            _SQLITE_PROGRESS_EPOCH += 1
+            fenced_epoch = _SQLITE_PROGRESS_EPOCH
+            _SQLITE_PROGRESS_SNAPSHOT = None
+            _SQLITE_PROGRESS_PREPARED = None
+            _SQLITE_PROGRESS_SNAPSHOT_DB = ""
+            _SQLITE_PROGRESS_SNAPSHOT_IDENTITY = None
+            _SQLITE_PROGRESS_FAILURES = 0
+            _SQLITE_PROGRESS_REFRESHED_AT = 0.0
+            _SQLITE_PROGRESS_VERIFIED_AT = 0.0
+
+        # An in-flight read that started before this point carries the old
+        # projection epoch and cannot replace the synchronously refreshed
+        # snapshot. The reader reconnect is still requested so subsequent
+        # reads use a connection opened against the promoted database file.
+        _SQLITE_PROGRESS_READER_RESET.set()
+        _SQLITE_PROGRESS_DIRTY.set()
+
+        refreshed = _refresh_sqlite_progress_snapshot(repository=repo)
+        run_id = str(refreshed.get("run_id") or "")
+        active_scan = bool(refreshed.get("active_scan"))
+        status = str(refreshed.get("status") or "idle").lower()
+
+        if active_scan and (not run_id or repo.get_run(run_id) is None):
+            raise RuntimeError(
+                "Restored Security progress references a missing active run"
+            )
+
+        return policy.redact_value(
+            {
+                "status": "passed",
+                "sanitized": True,
+                "projection_epoch": fenced_epoch,
+                "previous_run_id": str(previous.get("run_id") or ""),
+                "previous_active_scan": bool(previous.get("active_scan")),
+                "run_id": run_id,
+                "scan_status": status,
+                "active_scan": active_scan,
+                "reader_reconnect_requested": True,
+                "published": True,
+            }
+        )
 
 
 def _sqlite_progress_database_identity() -> str:
