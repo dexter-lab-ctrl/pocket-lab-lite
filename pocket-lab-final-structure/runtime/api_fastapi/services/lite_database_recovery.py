@@ -864,7 +864,7 @@ def _refresh_security_projections() -> dict[str, Any]:
         evidence.write_state(state)
         lite_security.write_compact_security_state(state)
         lite_security.invalidate_security_read_caches()
-        progress = lite_security.reset_security_progress_after_database_restore(
+        progress = lite_security.fence_security_progress_after_database_restore(
             repository=repository,
         )
         return {
