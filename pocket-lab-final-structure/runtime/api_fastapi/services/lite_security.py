@@ -2847,6 +2847,105 @@ def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
         return policy.redact_value(state)
 
 
+class SecurityTerminalCommitError(RuntimeError):
+    """Authoritative Security terminal state was not durably committed."""
+
+
+def verify_terminal_security_commit(
+    run_id: str,
+    *,
+    expected_status: str | None = None,
+    repository: Any | None = None,
+) -> dict[str, Any]:
+    """Read back and verify one terminal Security run from authoritative SQLite."""
+    if not _sqlite_lifecycle_enabled():
+        return policy.redact_value({
+            "status": "not_required",
+            "run_id": str(run_id or ""),
+            "sqlite_committed": False,
+            "storage_backend": "json",
+            "sanitized": True,
+        })
+    safe_run_id = str(run_id or "").strip()
+    if not safe_run_id:
+        raise SecurityTerminalCommitError(
+            "Security terminal commit verification requires a run id"
+        )
+    repo = repository or _security_repository()
+    stored = repo.get_run(safe_run_id)
+    if not isinstance(stored, dict):
+        raise SecurityTerminalCommitError(
+            "Security terminal run was not found in authoritative storage"
+        )
+    stored_status = str(stored.get("status") or "").strip().lower()
+    terminal_statuses = set(_security_store_api().TERMINAL_STATUSES)
+    if stored_status not in terminal_statuses:
+        raise SecurityTerminalCommitError(
+            "Security run is not terminal in authoritative storage"
+        )
+    normalized_expected = str(expected_status or "").strip().lower()
+    if normalized_expected == "canceled":
+        normalized_expected = "cancelled"
+    if normalized_expected and normalized_expected not in terminal_statuses:
+        raise SecurityTerminalCommitError(
+            "Security terminal commit expected status is invalid"
+        )
+    if normalized_expected and stored_status != normalized_expected:
+        raise SecurityTerminalCommitError(
+            "Security terminal status does not match authoritative storage"
+        )
+    if not stored.get("completed_at"):
+        raise SecurityTerminalCommitError(
+            "Security terminal run is missing its completion timestamp"
+        )
+    revision = repo.get_domain_revision()
+    return policy.redact_value({
+        "status": "committed",
+        "run_id": safe_run_id,
+        "terminal_status": stored_status,
+        "sqlite_committed": True,
+        "domain_revision": int(revision.get("revision") or 0),
+        "storage_backend": "sqlite",
+        "sanitized": True,
+    })
+
+
+def _finalize_security_scan_result(
+    *,
+    run: dict[str, Any],
+    state: dict[str, Any],
+    findings: list[dict[str, Any]],
+    evidence_refs: list[str],
+) -> dict[str, Any]:
+    """Commit terminal SQLite state, verify it, then derive compatibility JSON."""
+    run_id = str(run.get("run_id") or "")
+    expected_status = str(run.get("status") or "")
+    canonical_state = _write_security_state(state)
+    receipt = verify_terminal_security_commit(
+        run_id, expected_status=expected_status
+    )
+    canonical_run = run
+    if receipt.get("sqlite_committed") is True:
+        repository = _security_repository()
+        stored = repository.get_run(run_id)
+        projected = _sqlite_run_payload(
+            repository, stored, include_details=True, include_related=True
+        )
+        if not projected:
+            raise SecurityTerminalCommitError(
+                "Security terminal projection could not be rebuilt from SQLite"
+            )
+        canonical_run = projected
+    projected_run = _write_run_projection(canonical_run)
+    return {
+        "run": projected_run,
+        "state": canonical_state,
+        "findings": findings,
+        "evidence_refs": evidence_refs,
+        "commit": receipt,
+    }
+
+
 def _ensure_compact_state() -> dict[str, Any]:
     root = evidence.compact_dir()
     required = [
@@ -5271,9 +5370,9 @@ def _run_quick_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
     state["evidence_refs"] = evidence_refs
-    _write_security_state(state)
-    _write_run_projection(run)
-    return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
+    return _finalize_security_scan_result(
+        run=run, state=state, findings=findings, evidence_refs=evidence_refs
+    )
 
 
 
@@ -5755,9 +5854,9 @@ def _run_full_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
     state["evidence_refs"] = evidence_refs
-    _write_security_state(state)
-    _write_run_projection(run)
-    return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
+    return _finalize_security_scan_result(
+        run=run, state=state, findings=findings, evidence_refs=evidence_refs
+    )
 
 
 
@@ -5890,9 +5989,9 @@ def _run_app_security_scan(command: dict[str, Any]) -> dict[str, Any]:
         evidence_refs.insert(0, summary_ref)
     run["evidence_refs"] = evidence_refs
     state["evidence_refs"] = evidence_refs
-    _write_security_state(state)
-    _write_run_projection(run)
-    return {"run": run, "state": state, "findings": findings, "evidence_refs": evidence_refs}
+    return _finalize_security_scan_result(
+        run=run, state=state, findings=findings, evidence_refs=evidence_refs
+    )
 
 
 def run_security_scan(command: dict[str, Any]) -> dict[str, Any]:
