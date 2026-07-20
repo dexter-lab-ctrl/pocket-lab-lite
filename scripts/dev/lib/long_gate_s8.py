@@ -324,15 +324,77 @@ def _worker_pm2_context() -> tuple[str, str, dict[str, str]]:
     return pm2_bin, worker_name, env
 
 
+_WORKER_SUBPROCESS_BLOCKED_KEYS = frozenset(
+    {
+        "NODE_APP_INSTANCE",
+        "PM2_HOME",
+        "PM2_JSON_PROCESSING",
+        "PM2_USAGE",
+        "pm_id",
+        "restart_time",
+        "status",
+        "unique_id",
+    }
+)
+
+
 def _string_environment(value: Any) -> dict[str, str]:
+    """Return a POSIX-safe worker environment without PM2 process metadata."""
+
     if not isinstance(value, dict):
         return {}
+
     result: dict[str, str] = {}
+
     for key, item in value.items():
-        if not isinstance(key, str) or item is None or isinstance(item, (dict, list, tuple, set)):
+        if not isinstance(key, str) or not key or "=" in key or "\x00" in key:
             continue
-        result[key] = str(item)
+
+        lowered = key.lower()
+        if (
+            key in _WORKER_SUBPROCESS_BLOCKED_KEYS
+            or lowered.startswith(("pm2_", "axm_"))
+        ):
+            continue
+
+        if isinstance(item, str):
+            normalized = item
+        elif isinstance(item, (bool, int, float)):
+            normalized = str(item)
+        else:
+            # PM2 may embed nested metadata such as {"pocket-worker": {}}.
+            continue
+
+        if "\x00" in normalized:
+            continue
+
+        result[key] = normalized
+
     return result
+
+
+def _validate_subprocess_environment(env: dict[str, str]) -> None:
+    if not env:
+        raise GateError(
+            "Configured pocket-worker restart environment is empty"
+        )
+
+    for key, value in env.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            raise GateError(
+                "Configured pocket-worker restart environment is not POSIX-safe"
+            )
+
+        if (
+            not key
+            or "=" in key
+            or "\x00" in key
+            or "\x00" in value
+        ):
+            raise GateError(
+                "Configured pocket-worker restart environment "
+                "contains an invalid entry"
+            )
 
 
 def _worker_identity(runtime_env: dict[str, str]) -> dict[str, str | None]:
@@ -344,6 +406,7 @@ def _validate_worker_identity(
     runtime_env: dict[str, str],
     control_env: dict[str, str],
 ) -> dict[str, str | None]:
+    _validate_subprocess_environment(runtime_env)
     identity = _worker_identity(runtime_env)
     required = ("HOME", "PREFIX", "TMPDIR", "PATH", "POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH")
     if any(not identity.get(key) for key in required):
@@ -358,6 +421,21 @@ def _validate_worker_identity(
         value = str(identity.get(key) or "")
         if not value.startswith("/"):
             raise GateError("Configured pocket-worker runtime identity contains a non-absolute path")
+
+    prefix_bin = str(Path(str(identity["PREFIX"])) / "bin")
+    path_entries = str(identity["PATH"]).split(os.pathsep)
+    if prefix_bin not in path_entries:
+        raise GateError("Configured pocket-worker PATH does not contain the selected runtime bin directory")
+
+    state_dir = Path(str(identity["POCKETLAB_STATE_DIR"]))
+    database_path = Path(str(identity["POCKETLAB_LITE_DB_PATH"]))
+    if database_path.parent != state_dir:
+        raise GateError("Configured pocket-worker database path is outside the selected state directory")
+
+    user = str(identity.get("USER") or "")
+    logname = str(identity.get("LOGNAME") or "")
+    if user and logname and user != logname:
+        raise GateError("Configured pocket-worker USER and LOGNAME identities do not match")
 
     return identity
 
