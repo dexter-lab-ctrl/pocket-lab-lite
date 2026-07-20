@@ -326,6 +326,12 @@ def _worker_pm2_context() -> tuple[str, str, dict[str, str]]:
 
 _WORKER_SUBPROCESS_BLOCKED_KEYS = frozenset(
     {
+        "CPLUS_INCLUDE_PATH",
+        "CPATH",
+        "C_INCLUDE_PATH",
+        "LD_LIBRARY_PATH",
+        "LD_PRELOAD",
+        "LIBRARY_PATH",
         "NODE_APP_INSTANCE",
         "PM2_HOME",
         "PM2_JSON_PROCESSING",
