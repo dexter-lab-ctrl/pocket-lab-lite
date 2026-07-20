@@ -857,6 +857,7 @@ def _reconcile_security_run_projections(repository: Any) -> dict[str, Any]:
 
 def _refresh_security_projections() -> dict[str, Any]:
     try:
+        from . import lite_security_generation
         from . import lite_security
 
         repository, state, _revision = lite_security._sqlite_state_projection()
@@ -867,11 +868,18 @@ def _refresh_security_projections() -> dict[str, Any]:
         progress = lite_security.fence_security_progress_after_database_restore(
             repository=repository,
         )
+        generation = lite_security_generation.publish_security_progress_generation(
+            run_id=str(progress.get("run_id") or ""),
+            sqlite_revision=max(0, int(progress.get("sqlite_revision") or 0)),
+            published_at=deps.now_utc_iso(),
+            reason="database_projection_refresh",
+        )
         return {
             "status": "passed",
             "summary": "Security projections refreshed.",
             "runs": runs,
             "progress": progress,
+            "generation": generation,
         }
     except Exception as exc:
         return {"status": "failed", "error_type": type(exc).__name__, "summary": "Security projection refresh failed."}

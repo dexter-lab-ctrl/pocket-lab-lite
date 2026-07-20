@@ -27,6 +27,7 @@ from . import lite_security_evidence as evidence
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from .workload_admission import WORKLOADS, WORKLOAD_ADMISSION
 from . import lite_security_policy as policy
+from . import lite_security_generation
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -86,6 +87,10 @@ _SQLITE_PROGRESS_STOP = threading.Event()
 _SQLITE_PROGRESS_THREAD: threading.Thread | None = None
 _SQLITE_PROGRESS_EPOCH = 0
 _SQLITE_PROGRESS_RESTORE_FENCE_LOCK = threading.Lock()
+_SQLITE_PROGRESS_GENERATION_LOCK = threading.Lock()
+_SQLITE_PROGRESS_GENERATION_TOKEN = ""
+_SQLITE_PROGRESS_GENERATION_CHECKED_AT = 0.0
+_SQLITE_PROGRESS_GENERATION_CHECK_INTERVAL_SECONDS = 0.25
 _ACTIVE_PROGRESS_STATUSES = frozenset({"queued", "accepted", "running", "working", "in_progress"})
 _TERMINAL_PROGRESS_STATUSES = frozenset({"succeeded", "degraded", "failed", "cancelled", "canceled", "completed"})
 _SECURITY_EVENT_REPLAY_LOCK = threading.Lock()
@@ -175,6 +180,7 @@ def fence_security_progress_after_database_restore(
         refreshed = _refresh_sqlite_progress_snapshot(repository=repo)
         run_id = str(refreshed.get("run_id") or "")
         active_scan = bool(refreshed.get("active_scan"))
+        sqlite_revision = max(0, int(refreshed.get("sqlite_revision") or 0))
         status = str(refreshed.get("status") or "idle").lower()
 
         if active_scan and (not run_id or repo.get_run(run_id) is None):
@@ -191,6 +197,7 @@ def fence_security_progress_after_database_restore(
                 "previous_active_scan": bool(previous.get("active_scan")),
                 "run_id": run_id,
                 "scan_status": status,
+                "sqlite_revision": sqlite_revision,
                 "active_scan": active_scan,
                 "reader_reconnect_requested": True,
                 "published": True,
@@ -2061,8 +2068,44 @@ def prepared_security_progress_enabled() -> bool:
     return _sqlite_compact_reads_enabled()
 
 
+def _observe_durable_security_progress_generation() -> None:
+    """Fence this process when another process promotes or rolls back SQLite."""
+
+    global _SQLITE_PROGRESS_GENERATION_TOKEN
+    global _SQLITE_PROGRESS_GENERATION_CHECKED_AT
+
+    now = time.monotonic()
+    with _SQLITE_PROGRESS_GENERATION_LOCK:
+        if (
+            _SQLITE_PROGRESS_GENERATION_CHECKED_AT > 0
+            and now - _SQLITE_PROGRESS_GENERATION_CHECKED_AT
+            < _SQLITE_PROGRESS_GENERATION_CHECK_INTERVAL_SECONDS
+        ):
+            return
+        _SQLITE_PROGRESS_GENERATION_CHECKED_AT = now
+        marker = lite_security_generation.read_security_progress_generation()
+        if not marker:
+            return
+        generation = str(marker.get("generation") or "")
+        if not generation or generation == _SQLITE_PROGRESS_GENERATION_TOKEN:
+            return
+
+        refreshed = fence_security_progress_after_database_restore()
+        expected_run_id = str(marker.get("run_id") or "")
+        expected_revision = max(0, int(marker.get("sqlite_revision") or 0))
+        actual_run_id = str(refreshed.get("run_id") or "")
+        actual_revision = max(0, int(refreshed.get("sqlite_revision") or 0))
+        if actual_run_id != expected_run_id or actual_revision != expected_revision:
+            raise RuntimeError(
+                "Durable Security progress generation did not match promoted SQLite"
+            )
+        _SQLITE_PROGRESS_GENERATION_TOKEN = generation
+
+
 def prepared_security_progress() -> tuple[PreparedSecurityProgress, float]:
     """Atomically return one prepared reference plus its verified age."""
+
+    _observe_durable_security_progress_generation()
     with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
         prepared = _SQLITE_PROGRESS_PREPARED or _SQLITE_PROGRESS_BOOTSTRAP_PREPARED
         verified_at = _SQLITE_PROGRESS_VERIFIED_AT
