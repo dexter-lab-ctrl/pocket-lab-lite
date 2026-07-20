@@ -270,13 +270,99 @@ def authoritative_idle_checkpoint_run_id(
         raise GateError("Worker fault setup did not settle on the authoritative SQLite run identity")
     return run_id
 
-def configure_worker_fault(point: str | None) -> None:
+def _worker_pm2_context() -> tuple[str, str, dict[str, str]]:
+    """Resolve the PM2 control plane that owns pocket-worker.
+
+    PRoot Ubuntu can see the Termux pm2 executable through PATH, but without
+    an explicit PM2_HOME that executable starts a separate empty daemon under
+    /root/.pm2. When a host PM2 home is configured, bind every worker
+    lifecycle operation to that exact context.
+    """
+
     env = os.environ.copy()
-    env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "1" if point else "0"
-    env["POCKETLAB_LITE_S8_FAULT_POINT"] = point or ""
+    pm2_bin = (os.environ.get("POCKETLAB_S8_GATE_WORKER_PM2_BIN") or "pm2").strip()
+    worker_name = (os.environ.get("POCKETLAB_S8_GATE_WORKER_NAME") or "pocket-worker").strip()
+    pm2_home = (os.environ.get("POCKETLAB_S8_GATE_WORKER_PM2_HOME") or "").strip()
+
+    if not pm2_bin:
+        raise GateError("Configured worker PM2 executable is empty")
+    if not worker_name:
+        raise GateError("Configured worker process name is empty")
+
+    if pm2_home:
+        pm2_home_path = Path(pm2_home).expanduser()
+        if not pm2_home_path.is_dir():
+            raise GateError("Configured worker PM2 home is unavailable")
+        if not (pm2_home_path / "rpc.sock").exists() or not (pm2_home_path / "pub.sock").exists():
+            raise GateError("Configured worker PM2 home does not expose the expected daemon sockets")
+        env["PM2_HOME"] = str(pm2_home_path)
+
+    if str(Path.home()) == "/root" and not pm2_home:
+        raise GateError(
+            "Cross-environment S8 worker restart requires "
+            "POCKETLAB_S8_GATE_WORKER_PM2_HOME"
+        )
+
+    return pm2_bin, worker_name, env
+
+
+def _pm2_worker_state(
+    *,
+    pm2_bin: str,
+    worker_name: str,
+    env: dict[str, str],
+) -> dict[str, Any]:
     try:
         result = subprocess.run(
-            ["pm2", "restart", "pocket-worker", "--update-env"],
+            [pm2_bin, "jlist"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+            env=env,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise GateError(
+            f"Could not inspect the configured PM2 worker context: {type(exc).__name__}"
+        ) from exc
+    if result.returncode != 0:
+        raise GateError("Could not inspect the configured PM2 worker context")
+    try:
+        processes = json.loads(result.stdout or "[]")
+    except json.JSONDecodeError as exc:
+        raise GateError("Configured PM2 context returned malformed process metadata") from exc
+    if not isinstance(processes, list):
+        raise GateError("Configured PM2 context returned invalid process metadata")
+
+    for process in processes:
+        if not isinstance(process, dict) or process.get("name") != worker_name:
+            continue
+        pm2_env = process.get("pm2_env") if isinstance(process.get("pm2_env"), dict) else {}
+        process_env = pm2_env.get("env") if isinstance(pm2_env.get("env"), dict) else {}
+        enabled_raw = str(
+            process_env.get("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS") or "0"
+        ).strip().lower()
+        point = str(process_env.get("POCKETLAB_LITE_S8_FAULT_POINT") or "").strip()
+        return {
+            "name": worker_name,
+            "status": str(pm2_env.get("status") or "unknown"),
+            "pid": int(process.get("pid") or 0),
+            "restart_time": int(pm2_env.get("restart_time") or 0),
+            "fault_enabled": enabled_raw in {"1", "true", "yes", "on"},
+            "fault_point": point or None,
+        }
+
+    raise GateError("pocket-worker is unavailable in the configured PM2 context")
+
+
+def configure_worker_fault(point: str | None) -> None:
+    pm2_bin, worker_name, env = _worker_pm2_context()
+    env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "1" if point else "0"
+    env["POCKETLAB_LITE_S8_FAULT_POINT"] = point or ""
+    before = _pm2_worker_state(pm2_bin=pm2_bin, worker_name=worker_name, env=env)
+    try:
+        result = subprocess.run(
+            [pm2_bin, "restart", worker_name, "--update-env"],
             check=False,
             capture_output=True,
             text=True,
@@ -287,41 +373,39 @@ def configure_worker_fault(point: str | None) -> None:
         raise GateError(f"Could not configure the worker restore fault: {type(exc).__name__}") from exc
     if result.returncode != 0:
         raise GateError("Could not restart pocket-worker with the bounded S8 gate environment")
-    time.sleep(3)
+
+    deadline = time.monotonic() + 45.0
+    while time.monotonic() < deadline:
+        time.sleep(0.5)
+        current = _pm2_worker_state(pm2_bin=pm2_bin, worker_name=worker_name, env=env)
+        if current["status"] != "online" or current["pid"] <= 0:
+            continue
+        if current["fault_enabled"] != bool(point):
+            continue
+        if point and current["fault_point"] != point:
+            continue
+        if not point and current["fault_point"] is not None:
+            continue
+        if current["pid"] == before["pid"] and current["restart_time"] <= before["restart_time"]:
+            continue
+        return
+
+    raise GateError("pocket-worker did not become online with the requested bounded S8 environment")
 
 
 def worker_fault_environment() -> dict[str, Any]:
-    try:
-        result = subprocess.run(
-            ["pm2", "jlist"],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=20,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        raise GateError(f"Could not inspect pocket-worker fault state: {type(exc).__name__}") from exc
-    if result.returncode != 0:
-        raise GateError("Could not inspect pocket-worker fault state")
-    try:
-        processes = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise GateError("PM2 returned invalid JSON while inspecting pocket-worker") from exc
-    if not isinstance(processes, list):
-        raise GateError("PM2 returned an invalid process list")
-    for process in processes:
-        if not isinstance(process, dict) or process.get("name") != "pocket-worker":
-            continue
-        env = ((process.get("pm2_env") or {}).get("env") or {})
-        enabled_raw = str(env.get("POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS") or "0").strip().lower()
-        point = str(env.get("POCKETLAB_LITE_S8_FAULT_POINT") or "").strip()
-        return {
-            "checked": True,
-            "enabled": enabled_raw in {"1", "true", "yes", "on"},
-            "point": point or None,
-            "sanitized": True,
-        }
-    raise GateError("pocket-worker is unavailable while inspecting S8 fault state")
+    pm2_bin, worker_name, env = _worker_pm2_context()
+    state = _pm2_worker_state(
+        pm2_bin=pm2_bin,
+        worker_name=worker_name,
+        env=env,
+    )
+    return {
+        "checked": True,
+        "enabled": state["fault_enabled"],
+        "point": state["fault_point"],
+        "sanitized": True,
+    }
 
 
 def ensure_worker_fault_disabled() -> dict[str, Any]:
@@ -329,9 +413,11 @@ def ensure_worker_fault_disabled() -> dict[str, Any]:
     stale = bool(before.get("enabled") or before.get("point"))
     if stale:
         configure_worker_fault(None)
+
     after = worker_fault_environment()
     if after.get("enabled") or after.get("point"):
         raise GateError("Could not clear stale pocket-worker S8 fault injection")
+
     return {
         "checked": True,
         "stale_fault_detected": stale,
@@ -339,7 +425,6 @@ def ensure_worker_fault_disabled() -> dict[str, Any]:
         "fault_disabled": True,
         "sanitized": True,
     }
-
 
 def recent_maintenance(api: Api, *, kind: str, mode: str | None, after: str, timeout: float) -> dict[str, Any]:
     def match(payload: dict[str, Any]) -> bool:
