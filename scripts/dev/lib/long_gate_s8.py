@@ -168,6 +168,23 @@ def state_file_hashes(state_dir: Path) -> dict[str, str]:
     return result
 
 
+
+
+def authoritative_idle_checkpoint_run_id(
+    progress: dict[str, Any],
+    database: dict[str, Any],
+) -> str:
+    if bool(progress.get("active_scan")):
+        raise GateError("Worker fault setup did not reach an idle Security checkpoint")
+    run_id = str(progress.get("run_id") or "").strip()
+    status = str(progress.get("status") or "").strip().lower()
+    if not run_id or status not in TERMINAL_SCAN:
+        raise GateError("Worker fault setup did not expose a terminal Security checkpoint")
+    latest_run_id = str(database.get("latest_run_id") or "").strip()
+    if latest_run_id != run_id:
+        raise GateError("Worker fault setup did not settle on the authoritative SQLite run identity")
+    return run_id
+
 def configure_worker_fault(point: str | None) -> None:
     env = os.environ.copy()
     env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "1" if point else "0"
@@ -656,9 +673,12 @@ def main() -> int:
             # gate must capture its expected rollback snapshot at the same
             # transaction boundary rather than before fault configuration.
             settled_progress = wait_security_idle(api, args.scan_timeout)
-            if str(settled_progress.get("run_id") or "") != str(marker_scan.get("run_id") or ""):
-                raise GateError("Worker fault setup changed the pre-failure Security run identity")
             pre_database = database_state(db_path)
+            checkpoint_run_id = authoritative_idle_checkpoint_run_id(
+                settled_progress,
+                pre_database,
+            )
+            marker_run_id = str(marker_scan.get("run_id") or "")
             state_dir = db_path.parent
             pre_files = state_file_hashes(state_dir)
             failed: dict[str, Any] = {}
@@ -701,8 +721,13 @@ def main() -> int:
                         + (f": {preview_changed}{suffix}" if preview_changed else "")
                     )
                 progress = api.get("/api/lite/security/progress")
-                if str(progress.get("run_id") or "") != str(marker_scan.get("run_id") or ""):
-                    raise GateError("Rollback did not restore the pre-failure Security state")
+                post_database = database_state(db_path)
+                restored_run_id = authoritative_idle_checkpoint_run_id(
+                    progress,
+                    post_database,
+                )
+                if restored_run_id != checkpoint_run_id:
+                    raise GateError("Rollback did not restore the authoritative pre-failure Security state")
                 recovery = api.get("/api/lite/recovery/database")
                 guard = recovery.get("restore_guard") or {}
                 if guard.get("unresolved"):
@@ -722,7 +747,10 @@ def main() -> int:
                 "phase": failed.get("phase"),
                 "rollback_status": failed.get("rollback_status"),
                 "restart_allowed_after_validation": failed.get("api_worker_restart_allowed"),
-                "marker_run_restored": True,
+                "marker_run_id": marker_run_id,
+                "checkpoint_run_id": checkpoint_run_id,
+                "marker_superseded_during_fault_setup": marker_run_id != checkpoint_run_id,
+                "checkpoint_run_restored": True,
                 "database_logical_match": True,
                 "checkpoint_database_hash_matched": failed.get("checkpoint_database_hash_matched"),
                 "state_files_exact_match": True,
