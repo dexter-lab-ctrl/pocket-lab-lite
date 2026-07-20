@@ -65,6 +65,21 @@ class Api:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.token = (os.environ.get("POCKETLAB_API_TOKEN") or "").strip()
+        try:
+            configured_attempts = int(
+                os.environ.get("POCKETLAB_S8_GATE_GET_RETRY_ATTEMPTS", "3")
+            )
+        except (TypeError, ValueError):
+            configured_attempts = 3
+        try:
+            configured_delay = float(
+                os.environ.get("POCKETLAB_S8_GATE_GET_RETRY_DELAY_SECONDS", "0.5")
+            )
+        except (TypeError, ValueError):
+            configured_delay = 0.5
+        self.get_retry_attempts = max(1, min(configured_attempts, 5))
+        self.get_retry_delay_seconds = max(0.05, min(configured_delay, 2.0))
+        self.transport_retry_events: list[dict[str, Any]] = []
 
     def request(self, method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         body = None
@@ -122,7 +137,47 @@ class Api:
             ) from exc
 
     def get(self, path: str) -> dict[str, Any]:
-        return self.request("GET", path)
+        """Perform a bounded retry for transient, read-only transport failures.
+
+        GET retries are safe because they do not submit maintenance, backup,
+        restore, or scan work. HTTP/application failures remain fail-closed.
+        """
+
+        for attempt in range(1, self.get_retry_attempts + 1):
+            try:
+                return self.request("GET", path)
+            except ApiTransportError as exc:
+                if (
+                    not _retryable_get_transport(exc)
+                    or attempt >= self.get_retry_attempts
+                ):
+                    raise
+                self.transport_retry_events.append(
+                    {
+                        "method": "GET",
+                        "path": path,
+                        "error_type": exc.error_type,
+                        "elapsed_seconds": (
+                            round(float(exc.elapsed_seconds), 2)
+                            if exc.elapsed_seconds is not None
+                            else None
+                        ),
+                        "attempt": attempt,
+                        "sanitized": True,
+                    }
+                )
+                time.sleep(self.get_retry_delay_seconds)
+
+        raise GateError(f"GET {path} exhausted its bounded retry policy")
+
+    def transport_retry_snapshot(self) -> dict[str, Any]:
+        return {
+            "get_retry_attempts": self.get_retry_attempts,
+            "get_retry_delay_seconds": self.get_retry_delay_seconds,
+            "recovered_transport_failures": list(self.transport_retry_events),
+            "recovered_transport_failure_count": len(self.transport_retry_events),
+            "sanitized": True,
+        }
 
     def post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
         return self.request("POST", path, payload)
@@ -596,7 +651,7 @@ def wait_restore(api: Api, restore_id: str, timeout: float, expected: str) -> di
 
 
 
-def _retryable_post_restore_transport(error: ApiTransportError) -> bool:
+def _retryable_get_transport(error: ApiTransportError) -> bool:
     if error.method != "GET":
         return False
     normalized = error.error_type.lower()
@@ -610,6 +665,12 @@ def _retryable_post_restore_transport(error: ApiTransportError) -> bool:
             "brokenpipe",
         )
     )
+
+
+def _retryable_post_restore_transport(error: ApiTransportError) -> bool:
+    """Compatibility alias for the generation-specific readiness loop."""
+
+    return _retryable_get_transport(error)
 
 
 def wait_post_restore_readiness(
@@ -706,7 +767,7 @@ def wait_post_restore_readiness(
             if consecutive >= required:
                 return last
         except ApiTransportError as exc:
-            if not _retryable_post_restore_transport(exc):
+            if not _retryable_get_transport(exc):
                 raise
             consecutive = 0
             transient_failures.append(
@@ -871,6 +932,7 @@ def main() -> int:
                 "wal": maintenance.get("wal"),
                 "manual_wal_file_deletion": False,
                 "database": state,
+                "transport_recovery": api.transport_retry_snapshot(),
             }
 
         record("gate-3-wal-maintenance", wal_gate)
