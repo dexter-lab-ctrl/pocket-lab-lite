@@ -40,11 +40,24 @@ class RestoreExpectationError(GateError):
 
 
 class ApiTransportError(GateError):
-    def __init__(self, method: str, path: str, error_type: str) -> None:
-        super().__init__(f"{method} {path} failed: {error_type}")
+    def __init__(
+        self,
+        method: str,
+        path: str,
+        error_type: str,
+        *,
+        elapsed_seconds: float | None = None,
+    ) -> None:
+        elapsed = (
+            f" elapsed_seconds={max(0.0, float(elapsed_seconds)):.2f}"
+            if elapsed_seconds is not None
+            else ""
+        )
+        super().__init__(f"{method} {path} failed: {error_type}{elapsed}")
         self.method = method
         self.path = path
         self.error_type = error_type
+        self.elapsed_seconds = elapsed_seconds
 
 
 class Api:
@@ -64,6 +77,7 @@ class Api:
         request = urllib.request.Request(
             f"{self.base_url}{path}", data=body, headers=headers, method=method
         )
+        started = time.monotonic()
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 raw = response.read()
@@ -93,9 +107,19 @@ class Api:
         except urllib.error.URLError as exc:
             reason = getattr(exc, "reason", None)
             error_type = type(reason).__name__ if reason is not None else type(exc).__name__
-            raise ApiTransportError(method, path, error_type) from exc
+            raise ApiTransportError(
+                method,
+                path,
+                error_type,
+                elapsed_seconds=time.monotonic() - started,
+            ) from exc
         except TimeoutError as exc:
-            raise ApiTransportError(method, path, type(exc).__name__) from exc
+            raise ApiTransportError(
+                method,
+                path,
+                type(exc).__name__,
+                elapsed_seconds=time.monotonic() - started,
+            ) from exc
 
     def get(self, path: str) -> dict[str, Any]:
         return self.request("GET", path)
@@ -570,6 +594,149 @@ def wait_restore(api: Api, restore_id: str, timeout: float, expected: str) -> di
     return result
 
 
+
+
+def _retryable_post_restore_transport(error: ApiTransportError) -> bool:
+    if error.method != "GET":
+        return False
+    normalized = error.error_type.lower()
+    return any(
+        marker in normalized
+        for marker in (
+            "timeout",
+            "connectionreset",
+            "connectionaborted",
+            "remotedisconnected",
+            "brokenpipe",
+        )
+    )
+
+
+def wait_post_restore_readiness(
+    api: Api,
+    timeout: float,
+    *,
+    interval: float = 1.0,
+    required_consecutive: int = 2,
+) -> dict[str, Any]:
+    """Wait for bounded, generation-consistent API reads after restore commit.
+
+    A committed restore can briefly outlive one client socket while FastAPI
+    discards old SQLite readers and warms generation-scoped projections. Only
+    transient GET transport failures are retried. Restore guard, rollback, and
+    authoritative run-identity violations remain immediate gate failures.
+    """
+
+    deadline = time.monotonic() + max(1.0, float(timeout))
+    required = max(1, int(required_consecutive))
+    consecutive = 0
+    attempts = 0
+    transient_failures: list[dict[str, Any]] = []
+    last: dict[str, Any] = {}
+
+    while time.monotonic() < deadline:
+        attempts += 1
+        try:
+            recovery = api.get("/api/lite/recovery/database")
+            guard = recovery.get("restore_guard") or {}
+            maintenance = recovery.get("maintenance") or {}
+
+            if bool(guard.get("rollback_failed")):
+                raise GateError("Post-restore readiness found a failed rollback guard")
+            if bool(guard.get("unresolved")):
+                raise GateError("Post-restore readiness found an unresolved restore guard")
+
+            if bool(maintenance.get("active")):
+                consecutive = 0
+                last = {
+                    "status": "maintenance",
+                    "maintenance_state": maintenance.get("state"),
+                }
+                time.sleep(interval)
+                continue
+
+            health = api.get("/health")
+            lite_status = api.get("/api/lite/status")
+            summary = api.get("/api/lite/security/summary")
+            progress = api.get("/api/lite/security/progress")
+            history = api.get("/api/lite/security/history?limit=2")
+
+            summary_last = summary.get("last_run") or {}
+            summary_run_id = str(summary_last.get("run_id") or "")
+            progress_run_id = str(progress.get("run_id") or "")
+            if summary_run_id and progress_run_id and summary_run_id != progress_run_id:
+                raise GateError(
+                    "Post-restore Security summary and Progress run identities disagree"
+                )
+
+            if bool(progress.get("read_degraded")):
+                consecutive = 0
+                last = {"status": "progress_degraded"}
+                time.sleep(interval)
+                continue
+            if bool(progress.get("active_scan")):
+                consecutive = 0
+                last = {"status": "scan_active", "run_id": progress_run_id}
+                time.sleep(interval)
+                continue
+            if str(summary.get("status") or "").lower() in {"unavailable", "unknown"}:
+                consecutive = 0
+                last = {"status": "summary_unavailable"}
+                time.sleep(interval)
+                continue
+
+            consecutive += 1
+            last = {
+                "health": health.get("status", "reachable"),
+                "status": lite_status.get("status"),
+                "summary": summary.get("status"),
+                "progress": progress.get("status"),
+                "run_id": progress_run_id or summary_run_id or None,
+                "sqlite_revision": progress.get("sqlite_revision"),
+                "history_count": len(history.get("history") or []),
+                "restore_guard": {
+                    "unresolved": bool(guard.get("unresolved")),
+                    "rollback_failed": bool(guard.get("rollback_failed")),
+                },
+                "maintenance_active": bool(maintenance.get("active")),
+                "attempts": attempts,
+                "consecutive_passes": consecutive,
+                "transient_transport_failures": transient_failures,
+            }
+            if consecutive >= required:
+                return last
+        except ApiTransportError as exc:
+            if not _retryable_post_restore_transport(exc):
+                raise
+            consecutive = 0
+            transient_failures.append(
+                {
+                    "method": exc.method,
+                    "path": exc.path,
+                    "error_type": exc.error_type,
+                    "elapsed_seconds": (
+                        round(float(exc.elapsed_seconds), 2)
+                        if exc.elapsed_seconds is not None
+                        else None
+                    ),
+                }
+            )
+            last = {
+                "status": "transport_retry",
+                "path": exc.path,
+                "error_type": exc.error_type,
+            }
+
+        time.sleep(interval)
+
+    raise GateError(
+        "Timed out waiting for post-restore API readiness; "
+        f"attempts={attempts} consecutive={consecutive} "
+        f"transient_transport_failures={len(transient_failures)} "
+        f"last_status={last.get('status', 'unknown')}"
+    )
+
+
 def safe_backup_summary(item: dict[str, Any]) -> dict[str, Any]:
     return {
         "backup_id": item.get("backup_id"),
@@ -588,6 +755,11 @@ def main() -> int:
     parser.add_argument("--platform", choices=("termux", "ubuntu"), required=True)
     parser.add_argument("--http-timeout", type=float, default=10.0)
     parser.add_argument("--operation-timeout", type=float, default=300.0)
+    parser.add_argument(
+        "--post-restore-readiness-timeout",
+        type=float,
+        default=float(os.environ.get("POCKETLAB_S8_GATE_POST_RESTORE_READINESS_TIMEOUT", "60")),
+    )
     parser.add_argument("--scan-timeout", type=float, default=1800.0)
     args = parser.parse_args()
 
@@ -729,13 +901,11 @@ def main() -> int:
             )
             restore_id = str(submitted.get("restore_id") or "")
             restored = wait_restore(api, restore_id, args.operation_timeout, "completed")
-            post_health = {
-                "health": api.get("/health").get("status", "reachable"),
-                "status": api.get("/api/lite/status").get("status"),
-                "summary": api.get("/api/lite/security/summary").get("status"),
-                "progress": api.get("/api/lite/security/progress").get("status"),
-                "history_count": len(api.get("/api/lite/security/history?limit=2").get("history") or []),
-            }
+            post_health = wait_post_restore_readiness(
+                api,
+                args.post_restore_readiness_timeout,
+                required_consecutive=2,
+            )
             post_scan = run_quick_scan(api, args.scan_timeout)
             state = database_state(db_path)
             if not restored.get("rollback_available") or restored.get("canonical_parity_matched") is not True:
