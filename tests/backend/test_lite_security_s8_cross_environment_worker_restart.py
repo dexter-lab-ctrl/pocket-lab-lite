@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -21,20 +22,43 @@ def load_module():
 
 
 def pm2_list(*, status="online", pid=100, restart_time=2, enabled=False, point=""):
-    return json.dumps([
-        {
-            "name": "pocket-worker",
-            "pid": pid,
-            "pm2_env": {
-                "status": status,
-                "restart_time": restart_time,
-                "env": {
-                    "POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS": "1" if enabled else "0",
-                    "POCKETLAB_LITE_S8_FAULT_POINT": point,
+    configured_pm2_home = os.environ.get(
+        "POCKETLAB_S8_GATE_WORKER_PM2_HOME",
+        "/tmp/pocketlab-test/.pm2",
+    )
+    runtime_home = str(Path(configured_pm2_home).parent)
+
+    runtime_env = {
+        "HOME": runtime_home,
+        "USER": "u0_a312",
+        "LOGNAME": "u0_a312",
+        "PREFIX": "/termux/usr",
+        "TMPDIR": "/termux/usr/tmp",
+        "PATH": "/termux/usr/bin",
+        "PWD": f"{runtime_home}/pocket-lab-lite",
+        "POCKETLAB_STATE_DIR": f"{runtime_home}/pocket-lab-lite/state",
+        "POCKETLAB_LITE_DB_PATH": (
+            f"{runtime_home}/pocket-lab-lite/state/pocketlab-lite.sqlite3"
+        ),
+        "POCKETLAB_PROFILE": "lite",
+        "POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS": "1" if enabled else "0",
+        "POCKETLAB_LITE_S8_FAULT_POINT": point,
+    }
+
+    return json.dumps(
+        [
+            {
+                "name": "pocket-worker",
+                "pid": pid,
+                "pm2_env": {
+                    "status": status,
+                    "restart_time": restart_time,
+                    "username": "u0_a312",
+                    "env": runtime_env,
                 },
-            },
-        }
-    ])
+            }
+        ]
+    )
 
 
 def make_pm2_home(tmp_path: Path) -> Path:

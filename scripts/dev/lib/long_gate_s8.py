@@ -255,6 +255,24 @@ def state_file_hashes(state_dir: Path) -> dict[str, str]:
 
 
 
+_WORKER_IDENTITY_KEYS = (
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "PREFIX",
+    "TMPDIR",
+    "PATH",
+    "PWD",
+    "POCKETLAB_STATE_DIR",
+    "POCKETLAB_LITE_DB_PATH",
+    "POCKETLAB_PROFILE",
+)
+_WORKER_FAULT_KEYS = (
+    "POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS",
+    "POCKETLAB_LITE_S8_FAULT_POINT",
+)
+
+
 def authoritative_idle_checkpoint_run_id(
     progress: dict[str, Any],
     database: dict[str, Any],
@@ -306,6 +324,44 @@ def _worker_pm2_context() -> tuple[str, str, dict[str, str]]:
     return pm2_bin, worker_name, env
 
 
+def _string_environment(value: Any) -> dict[str, str]:
+    if not isinstance(value, dict):
+        return {}
+    result: dict[str, str] = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or item is None or isinstance(item, (dict, list, tuple, set)):
+            continue
+        result[key] = str(item)
+    return result
+
+
+def _worker_identity(runtime_env: dict[str, str]) -> dict[str, str | None]:
+    return {key: runtime_env.get(key) for key in _WORKER_IDENTITY_KEYS}
+
+
+def _validate_worker_identity(
+    *,
+    runtime_env: dict[str, str],
+    control_env: dict[str, str],
+) -> dict[str, str | None]:
+    identity = _worker_identity(runtime_env)
+    required = ("HOME", "PREFIX", "TMPDIR", "PATH", "POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH")
+    if any(not identity.get(key) for key in required):
+        raise GateError("Configured pocket-worker is missing required runtime identity fields")
+
+    pm2_home = Path(control_env.get("PM2_HOME") or "").expanduser()
+    expected_home = str(pm2_home.parent) if str(pm2_home) else ""
+    if expected_home and identity.get("HOME") != expected_home:
+        raise GateError("Configured pocket-worker runtime HOME does not match the selected PM2 host")
+
+    for key in ("HOME", "PREFIX", "TMPDIR", "POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH"):
+        value = str(identity.get(key) or "")
+        if not value.startswith("/"):
+            raise GateError("Configured pocket-worker runtime identity contains a non-absolute path")
+
+    return identity
+
+
 def _pm2_worker_state(
     *,
     pm2_bin: str,
@@ -350,16 +406,29 @@ def _pm2_worker_state(
             "restart_time": int(pm2_env.get("restart_time") or 0),
             "fault_enabled": enabled_raw in {"1", "true", "yes", "on"},
             "fault_point": point or None,
+            "runtime_env": _string_environment(process_env),
+            "pm2_user": str(pm2_env.get("username") or "") or None,
         }
 
     raise GateError("pocket-worker is unavailable in the configured PM2 context")
 
 
 def configure_worker_fault(point: str | None) -> None:
-    pm2_bin, worker_name, env = _worker_pm2_context()
-    env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "1" if point else "0"
-    env["POCKETLAB_LITE_S8_FAULT_POINT"] = point or ""
-    before = _pm2_worker_state(pm2_bin=pm2_bin, worker_name=worker_name, env=env)
+    pm2_bin, worker_name, control_env = _worker_pm2_context()
+    before = _pm2_worker_state(pm2_bin=pm2_bin, worker_name=worker_name, env=control_env)
+    before_runtime_env = dict(before["runtime_env"])
+    before_identity = _validate_worker_identity(runtime_env=before_runtime_env, control_env=control_env)
+
+    restart_env = dict(before_runtime_env)
+    restart_env["PM2_HOME"] = control_env["PM2_HOME"]
+    restart_env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "1" if point else "0"
+    restart_env["POCKETLAB_LITE_S8_FAULT_POINT"] = point or ""
+
+    # Never forward controller-only PRoot identity into the Termux worker.
+    for key in _WORKER_IDENTITY_KEYS:
+        if key in before_runtime_env:
+            restart_env[key] = before_runtime_env[key]
+
     try:
         result = subprocess.run(
             [pm2_bin, "restart", worker_name, "--update-env"],
@@ -367,7 +436,7 @@ def configure_worker_fault(point: str | None) -> None:
             capture_output=True,
             text=True,
             timeout=45,
-            env=env,
+            env=restart_env,
         )
     except (OSError, subprocess.SubprocessError) as exc:
         raise GateError(f"Could not configure the worker restore fault: {type(exc).__name__}") from exc
@@ -377,7 +446,7 @@ def configure_worker_fault(point: str | None) -> None:
     deadline = time.monotonic() + 45.0
     while time.monotonic() < deadline:
         time.sleep(0.5)
-        current = _pm2_worker_state(pm2_bin=pm2_bin, worker_name=worker_name, env=env)
+        current = _pm2_worker_state(pm2_bin=pm2_bin, worker_name=worker_name, env=control_env)
         if current["status"] != "online" or current["pid"] <= 0:
             continue
         if current["fault_enabled"] != bool(point):
@@ -388,6 +457,47 @@ def configure_worker_fault(point: str | None) -> None:
             continue
         if current["pid"] == before["pid"] and current["restart_time"] <= before["restart_time"]:
             continue
+
+        identity_validation_failed = False
+        try:
+            current_identity = _validate_worker_identity(
+                runtime_env=dict(current["runtime_env"]),
+                control_env=control_env,
+            )
+        except GateError:
+            identity_validation_failed = True
+            current_identity = {}
+
+        if identity_validation_failed or current_identity != before_identity:
+            recovery_env = dict(before_runtime_env)
+            recovery_env["PM2_HOME"] = control_env["PM2_HOME"]
+            recovery_env["POCKETLAB_LITE_ENABLE_S8_GATE_FAULTS"] = "0"
+            recovery_env["POCKETLAB_LITE_S8_FAULT_POINT"] = ""
+
+            try:
+                recovery = subprocess.run(
+                    [pm2_bin, "restart", worker_name, "--update-env"],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    timeout=45,
+                    env=recovery_env,
+                )
+            except (OSError, subprocess.SubprocessError) as exc:
+                raise GateError(
+                    "pocket-worker runtime identity drifted and recovery failed"
+                ) from exc
+
+            if recovery.returncode != 0:
+                raise GateError(
+                    "pocket-worker runtime identity drifted and recovery failed"
+                )
+
+            raise GateError(
+                "pocket-worker runtime identity drifted during S8 restart "
+                "and was recovered"
+            )
+
         return
 
     raise GateError("pocket-worker did not become online with the requested bounded S8 environment")
