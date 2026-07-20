@@ -942,6 +942,26 @@ async def handle_lite_security_scan(command: Dict[str, Any]) -> Dict[str, Any]:
 
     run = result.get("run") or {}
     state = result.get("state") or {}
+    commit = result.get("commit") or {}
+    expected_status = str(run.get("status") or "")
+    verified_commit = await asyncio.to_thread(
+        lite_security.verify_terminal_security_commit,
+        run_id,
+        expected_status=expected_status,
+    )
+    if lite_security._sqlite_lifecycle_enabled():
+        if commit.get("sqlite_committed") is not True:
+            raise lite_security.SecurityTerminalCommitError(
+                "Security scan did not return an authoritative SQLite commit receipt"
+            )
+        if verified_commit.get("sqlite_committed") is not True:
+            raise lite_security.SecurityTerminalCommitError(
+                "Security scan terminal SQLite commit could not be verified"
+            )
+        if str(commit.get("run_id") or "") != run_id:
+            raise lite_security.SecurityTerminalCommitError(
+                "Security scan commit receipt belongs to another run"
+            )
     tool_results = run.get("tool_results") or {}
     for tool, payload in tool_results.items():
         status = str((payload or {}).get("status") or "unknown")
