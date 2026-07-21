@@ -2976,6 +2976,70 @@ def _write_security_state(state: dict[str, Any]) -> dict[str, Any]:
         return policy.redact_value(state)
 
 
+def repair_security_projection_drift(
+    *,
+    source_root: Path | None = None,
+    record: bool = True,
+) -> dict[str, Any]:
+    """Repair only bounded derived timestamp drift from authoritative SQLite.
+
+    This never imports canonical JSON into SQLite, deletes runs, or changes the
+    Security domain revision. It rewrites only the latest run/state/compact JSON
+    compatibility projections, then requires strict parity.
+    """
+    repository = _security_repository()
+    root = (source_root or evidence.security_root()).resolve()
+    before = repository.compare_legacy_source(source_root=root, record=False)
+    result = {**before, "repair_attempted": False, "repaired": False}
+    mismatch_fields = set(before.get("mismatch_fields") or [])
+    if before.get("matched"):
+        if record:
+            repository.record_projection_drift_result(result)
+        return policy.redact_value(result)
+    if mismatch_fields != {"latest_completed_at"}:
+        result["repair_blocked_reason"] = "non_derived_mismatch"
+        if record:
+            repository.record_projection_drift_result(result)
+        return policy.redact_value(result)
+
+    result["repair_attempted"] = True
+    revision_before = int(repository.get_domain_revision().get("revision") or 0)
+    latest = repository.get_latest_run()
+    projected = _sqlite_run_payload(
+        repository, latest, include_details=True, include_related=True
+    )
+    if not projected:
+        result["repair_blocked_reason"] = "latest_run_unavailable"
+        if record:
+            repository.record_projection_drift_result(result)
+        return policy.redact_value(result)
+
+    _write_run_projection(projected)
+    _, state, _ = _sqlite_state_projection()
+    clean = evidence.write_state(state)
+    write_compact_security_state(clean)
+    invalidate_security_read_caches()
+
+    after = repository.compare_legacy_source(source_root=root, record=False)
+    revision_after = int(repository.get_domain_revision().get("revision") or 0)
+    result = {
+        **after,
+        "repair_attempted": True,
+        "repaired": bool(after.get("matched")),
+        "repaired_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "repaired_run_id": str(projected.get("run_id") or ""),
+        "runs_deleted": 0,
+        "domain_revision_before": revision_before,
+        "domain_revision_after": revision_after,
+        "domain_revision_unchanged": revision_before == revision_after,
+    }
+    if not after.get("matched"):
+        result["repair_blocked_reason"] = "repair_did_not_converge"
+    if record:
+        repository.record_projection_drift_result(result)
+    return policy.redact_value(result)
+
+
 class SecurityTerminalCommitError(RuntimeError):
     """Authoritative Security terminal state was not durably committed."""
 
