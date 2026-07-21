@@ -4,6 +4,7 @@ import { isLiteRecoveryViewLive, selectRecoveryScreenView } from './liteViewMode
 
 const recoverySource = readFileSync(new URL('../lite/LiteRecovery.jsx', import.meta.url), 'utf8');
 const detailsSource = readFileSync(new URL('../lite/recovery/RecoveryDatabaseDetailsLazy.jsx', import.meta.url), 'utf8');
+const manageSource = readFileSync(new URL('../lite/recovery/RecoveryManageSheetLazy.jsx', import.meta.url), 'utf8');
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 
 describe('Pocket Lab Lite Security S8 recovery UI', () => {
@@ -42,8 +43,9 @@ describe('Pocket Lab Lite Security S8 recovery UI', () => {
 
   it('keeps first paint compact and lazy-loads database management', () => {
     expect(recoverySource).toContain("React.lazy(() => import('./recovery/RecoveryDatabaseDetailsLazy.jsx'))");
-    expect(recoverySource).toContain('Back Up Pocket Lab');
-    expect(recoverySource).toContain('Manage');
+    expect(manageSource).toContain('Back Up Pocket Lab');
+    expect(recoverySource).toContain('Manage Recovery');
+    expect(recoverySource).toContain('variant="manage"');
     expect(recoverySource).toContain('variant="security"');
     expect(recoverySource).toContain('window.confirm');
     expect(recoverySource).toContain('databaseWriteBlocked');

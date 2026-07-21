@@ -1,5 +1,4 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import { LiteButton } from '../LiteUi.jsx';
@@ -97,7 +96,6 @@ export default function RecoveryActionDetailsLazy({
   history = [],
   savedStateOnly = false,
   evidenceItems = [],
-  onClose,
   onOpenEvidence,
 }) {
   const title = panelTitle(panel, actionKey);
@@ -120,10 +118,7 @@ export default function RecoveryActionDetailsLazy({
   if (!whatChanged.length) whatChanged.push('No local state was changed by opening these details.');
 
   return (
-    <div className="lite-recovery-flip-face lite-recovery-flip-back lite-recovery-details-lazy" data-recovery-progressive-details="true">
-      <button type="button" className="lite-recovery-flip-close" onClick={onClose} aria-label="Show restore controls">
-        <X className="h-4 w-4" />
-      </button>
+    <div className="lite-recovery-action-details-shell lite-recovery-details-lazy" data-recovery-progressive-details="true">
       <LiteProgressiveDetails
         title={title}
         status={status}
