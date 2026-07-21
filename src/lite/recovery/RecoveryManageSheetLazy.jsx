@@ -163,16 +163,16 @@ export default function RecoveryManageSheetLazy({
         ))}
       </div>
 
-      {detailsLoading ? <LoadingCard label="Loading Recovery details…" /> : null}
+      {detailsLoading ? <LoadingCard label="Loading recovery workspace…" /> : null}
       {detailsError ? (
-        <StateSurface tone="degraded" title="Recovery details need a moment" description={detailsError}>
+        <StateSurface tone="degraded" title="Recovery information is temporarily unavailable" description={detailsError}>
           {onRetryDetails ? <LiteButton tone="secondary" onClick={onRetryDetails}>Retry</LiteButton> : null}
         </StateSurface>
       ) : null}
 
       {activeSection === 'backup' ? (
         <section id="recovery-manage-panel-backup" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-backup" tabIndex={0}>
-          <SectionHeading eyebrow="Backup" title="Create a safe copy" description="Backup actions stay backend-owned and collapse after completion." />
+          <SectionHeading eyebrow="Backup" title="Create and manage restore points" description="Create verified restore points for Pocket Lab Lite, its database, and supported apps." />
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
               icon={ArchiveRestore}
@@ -245,12 +245,12 @@ export default function RecoveryManageSheetLazy({
 
       {activeSection === 'restore' ? (
         <section id="recovery-manage-panel-restore" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-restore" tabIndex={0}>
-          <SectionHeading eyebrow="Restore" title="Restore safely" description="Verify, preview, and confirm before local state changes." />
+          <SectionHeading eyebrow="Restore" title="Review and restore safely" description="Verify the selected backup, review expected changes, and confirm before restoration begins." />
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
               icon={CheckCircle2}
               title="Verify backup"
-              description={latestBackupVerified ? 'Evidence checks passed and the backup is ready.' : 'Check the latest backup evidence and repository metadata.'}
+              description={latestBackupVerified ? 'Evidence checks passed and the backup is ready.' : 'Confirm the latest backup passed integrity and readiness checks.'}
               status={latestBackupVerified ? 'Verified' : 'Required'}
               statusTone={latestBackupVerified ? 'healthy' : 'review'}
               actionLabel="Verify"
@@ -263,7 +263,7 @@ export default function RecoveryManageSheetLazy({
             <RecoveryActionRow
               icon={FileCheck}
               title="Preview restore"
-              description={latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'See exactly what would change before restore is enabled.'}
+              description={latestPreviewReady ? `${latestPreview?.change_count || 0} item(s) checked without changing local state.` : 'Review expected changes before restoration is enabled.'}
               status={latestPreviewReady ? 'Ready' : 'Preview needed'}
               statusTone={latestPreviewReady ? 'healthy' : 'review'}
               actionLabel="Preview"
@@ -276,7 +276,7 @@ export default function RecoveryManageSheetLazy({
             <RecoveryActionRow
               icon={RotateCcw}
               title="Restore latest backup"
-              description={restoreSucceeded ? lastRestore?.summary || 'The last restore completed.' : 'Creates a checkpoint and requires explicit confirmation.'}
+              description={restoreSucceeded ? lastRestore?.summary || 'The last restore completed.' : 'Creates a safety checkpoint and requires explicit confirmation.'}
               status={restoreSucceeded ? 'Completed' : latestPreviewReady && latestBackupVerified ? 'Ready' : 'Protected'}
               statusTone={restoreSucceeded ? 'healthy' : latestPreviewReady && latestBackupVerified ? 'review' : 'unknown'}
               actionLabel="Restore"
@@ -304,7 +304,7 @@ export default function RecoveryManageSheetLazy({
 
       {activeSection === 'protection' ? (
         <section id="recovery-manage-panel-protection" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-protection" tabIndex={0}>
-          <SectionHeading eyebrow="Protection" title="What recovery protects" description="Technical details remain available without crowding the main screen." />
+          <SectionHeading eyebrow="Protection" title="Protection coverage" description="Review what is included, excluded, and available for recovery." />
           <div className="lite-recovery-protection-grid">
             <article>
               <ShieldCheck className="h-5 w-5" />
@@ -324,19 +324,19 @@ export default function RecoveryManageSheetLazy({
               <StatusBadge status={databaseMaintenance?.active ? 'checking' : databaseBackupVerified ? 'healthy' : 'review'}>
                 {databaseMaintenance?.active ? 'Working' : databaseBackupVerified ? 'Healthy' : 'Review'}
               </StatusBadge>
-              <LiteButton tone="secondary" onClick={onOpenDatabaseDetails}>Technical details</LiteButton>
+              <LiteButton tone="secondary" onClick={onOpenDatabaseDetails}>Protection details</LiteButton>
             </article>
           </div>
           <div className="lite-recovery-manage-evidence-callout">
-            <div><FileCheck className="h-5 w-5" /><span><strong>Recovery evidence</strong><small>Safe IDs and receipts are available only when requested.</small></span></div>
-            <LiteButton tone="secondary" onClick={onOpenEvidence}>Open details</LiteButton>
+            <div><FileCheck className="h-5 w-5" /><span><strong>Recovery evidence</strong><small>Sanitized records and receipts are available when needed.</small></span></div>
+            <LiteButton tone="secondary" onClick={onOpenEvidence}>View evidence</LiteButton>
           </div>
         </section>
       ) : null}
 
       {activeSection === 'history' ? (
         <section id="recovery-manage-panel-history" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-history" tabIndex={0}>
-          <SectionHeading eyebrow="History" title="Recent recovery activity" description="Only recent summaries mount here; full history opens on demand." />
+          <SectionHeading eyebrow="History" title="Recovery activity" description="Review recent backups, restore previews, checkpoints, and completed recovery actions." />
           <div className="lite-recovery-recent-list">
             {latestBackup ? (
               <article><ArchiveRestore className="h-4 w-4" /><span><strong>{latestBackupVerified ? 'Backup verified' : 'Backup saved'}</strong><small>{latestBackup.created_at ? formatLiteTime(latestBackup.created_at) : 'Time unavailable'}</small></span></article>
