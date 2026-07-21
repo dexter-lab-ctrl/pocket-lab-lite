@@ -5,6 +5,7 @@ import {
   describeLiteSnapshot,
   isSafeLiteSnapshotPath,
   markLiteSnapshotBackendUnreachable,
+  normalizeLiteSnapshotPath,
   readLiteSnapshot,
   readLiteSnapshotAsync,
   snapshotAgeLabel,
@@ -19,12 +20,7 @@ const UNSAFE_METHOD_PATTERN = /^(POST|PUT|PATCH|DELETE)$/i;
 const UNSAFE_PATH_PATTERN = /bootstrap|invite|token|secret|password|evidence|receipt|debug|raw/i;
 
 function normalizeQueryPath(path = '') {
-  try {
-    const url = new URL(path, typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1');
-    return url.pathname;
-  } catch {
-    return String(path || '').split('?')[0];
-  }
+  return normalizeLiteSnapshotPath(path);
 }
 
 function isUnsafeSnapshotRequest(path = '', method = 'GET') {

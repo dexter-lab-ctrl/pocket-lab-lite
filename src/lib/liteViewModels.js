@@ -1814,6 +1814,10 @@ function normalizeRecoveryBackup(backup = {}) {
     'verified_at',
     'evidence_saved',
     'receipt_id',
+    'engine',
+    'included_file_count',
+    'size_bytes',
+    'risk_level',
   ]);
 }
 
@@ -2050,6 +2054,45 @@ export function selectRecoveryHistorySummaryView(payload = {}) {
   return history.slice(0, 10).map(normalizeRecoveryBackup).filter(Boolean);
 }
 
+export const LITE_RECOVERY_HISTORY_SNAPSHOT_VERSION = 'recovery-history-snapshot-v1';
+export const LITE_RECOVERY_HISTORY_SNAPSHOT_LIMIT = 10;
+
+function normalizeRecoveryHistorySnapshotBackup(backup = {}) {
+  if (!isObject(backup)) return null;
+  return copySafeKeys(backup, [
+    'backup_id',
+    'snapshot_id',
+    'status',
+    'state',
+    'summary',
+    'created_at',
+    'completed_at',
+    'updated_at',
+    'pending',
+    'verification_status',
+    'verified_at',
+    'engine',
+    'included_file_count',
+    'size_bytes',
+    'risk_level',
+  ]);
+}
+
+export function selectRecoveryHistorySnapshotView(payload = {}) {
+  const backups = (Array.isArray(payload?.backups) ? payload.backups : [])
+    .slice(0, LITE_RECOVERY_HISTORY_SNAPSHOT_LIMIT)
+    .map(normalizeRecoveryHistorySnapshotBackup)
+    .filter(Boolean);
+  return {
+    view_model: LITE_RECOVERY_HISTORY_SNAPSHOT_VERSION,
+    backups,
+    next_cursor: '',
+    has_more: false,
+    offline_first_page_only: true,
+    sanitized: true,
+  };
+}
+
 export function selectRecoveryEvidenceSummaryView(payload = {}) {
   const latestBackup = selectRecoveryLatestBackupView(payload);
   const latestPreview = selectRecoveryRestorePreviewView(payload);
@@ -2231,14 +2274,15 @@ export function getLiteRecoveryMutationInvalidations(actionId = '', result = {})
     'backup_now',
     'recovery_backup',
     'backup',
+    'database_backup',
+    'app_backup',
     'verify_backup',
     'recovery_verify',
-    'preview_restore',
-    'preview_restore_recovery',
-    'recovery_preview',
+    'database_verify',
     'restore_latest',
     'recovery_restore',
     'restore_backup',
+    'database_restore',
   ].includes(normalized)) {
     keys.push(['lite', 'recovery', 'history']);
   }

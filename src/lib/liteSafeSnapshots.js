@@ -13,6 +13,7 @@ import {
   markLiteBackendUnreachable,
   markLiteSnapshotRejected,
   normalizeOfflineEndpoint,
+  LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY,
   pruneExpiredOfflineSnapshots,
   readOfflineSafeSnapshot,
   setOfflineCacheMeta,
@@ -20,6 +21,7 @@ import {
 } from './liteOfflineDb.js';
 
 const SNAPSHOT_PREFIX = 'pocketlab:lite:safe-snapshot:';
+export const RECOVERY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/recovery/backups/index';
 export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/status',
   '/api/lite/catalog',
@@ -35,6 +37,7 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/recovery',
   '/api/lite/recovery/summary',
   '/api/lite/recovery/details',
+  RECOVERY_HISTORY_SNAPSHOT_ENDPOINT,
 ]);
 
 export const LITE_SNAPSHOT_TTL_MS = {
@@ -52,6 +55,7 @@ export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/recovery': 20 * 60 * 1000,
   '/api/lite/recovery/summary': 20 * 60 * 1000,
   '/api/lite/recovery/details': 20 * 60 * 1000,
+  [RECOVERY_HISTORY_SNAPSHOT_ENDPOINT]: 20 * 60 * 1000,
 };
 
 const DEFAULT_TTL_MS = 10 * 60 * 1000;
@@ -153,6 +157,9 @@ export function normalizeLiteSnapshotPath(path = '') {
     const url = new URL(path, typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1');
     if (url.pathname === '/api/lite/security/profiles/app' && url.searchParams.get('app_id')) {
       return securityProfileSnapshotEndpoint('app', url.searchParams.get('app_id'));
+    }
+    if (url.pathname === '/api/lite/recovery/backups' && !url.searchParams.get('cursor')) {
+      return RECOVERY_HISTORY_SNAPSHOT_ENDPOINT;
     }
   } catch {
     // Fall through to the shared endpoint normalizer.
@@ -610,6 +617,11 @@ export function writeLiteSnapshot(path = '', data) {
   const normalizedPath = normalizeLiteSnapshotPath(path);
   if (!isSafeLiteSnapshotPath(normalizedPath) || !data || typeof data !== 'object') return { stored: false, reason: 'unsafe_path_or_payload' };
   const payload = stripSnapshotMeta(data);
+  if (normalizedPath === RECOVERY_HISTORY_SNAPSHOT_ENDPOINT
+    && safeApproximateSize(payload) > LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes) {
+    markLiteSnapshotRejected(normalizedPath, 'Recovery history snapshot too large');
+    return { stored: false, rejected: true, reason: 'recovery_history_snapshot_too_large' };
+  }
   const unsafeReason = findUnsafeLiteSnapshotContent(payload);
   if (unsafeReason) {
     markLiteSnapshotRejected(normalizedPath, unsafeReason);

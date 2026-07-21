@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteQueryKeys } from '../../lib/liteQueryClient.js';
+import { selectRecoveryHistorySnapshotView } from '../../lib/liteViewModels.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import LiteHistorySection from '../components/LiteHistorySection.jsx';
 import { GlassCard, LiteButton, StatusBadge } from '../LiteUi.jsx';
@@ -42,6 +43,7 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
     refetchInterval: false,
     pollingMode: 'slow',
     refetchOnWindowFocus: false,
+    snapshotSelect: cursor ? undefined : selectRecoveryHistorySnapshotView,
   });
 
   useEffect(() => {
@@ -63,7 +65,8 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
   }, [pageItems, pageOrder]);
   const items = useMemo(() => safeHistoryItems(history, latestPreviewReady), [history, latestPreviewReady]);
   const nextCursor = String(query.data?.next_cursor || '');
-  const hasMore = Boolean(query.data?.has_more && nextCursor);
+  const hasMore = Boolean(!query.savedStateOnly && query.data?.has_more && nextCursor);
+  const historySavedStateOnly = Boolean(savedStateOnly || query.savedStateOnly);
 
   return (
     <GlassCard className="lite-recovery-card mt-4 lite-recovery-history-card" data-recovery-history-lazy="true" data-recovery-history-r3="cursor">
@@ -79,7 +82,7 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
         summary={items.length ? `${items.length} saved restore point${items.length === 1 ? '' : 's'} loaded.` : query.loading ? 'Loading backup history…' : 'History will appear after your first backup.'}
         items={items}
         enabled
-        savedState={savedStateOnly}
+        savedState={historySavedStateOnly}
         emptyMessage={query.error ? 'Backup history could not be loaded. Retry when Pocket Lab is reachable.' : 'Use Backup Now to create your first encrypted local backup.'}
       />
       <div className="lite-recovery-history-actions">

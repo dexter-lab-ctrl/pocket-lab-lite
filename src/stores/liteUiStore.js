@@ -5,6 +5,10 @@ const DEFAULT_MANAGE_SECTION = 'media';
 const DEFAULT_SECURITY_PROFILE = 'quick';
 const DEFAULT_SECURITY_MANAGE_SECTION = 'overview';
 const DEFAULT_SECURITY_HISTORY_LIMIT = 20;
+const DEFAULT_RECOVERY_MANAGE_SECTION = 'backup';
+const RECOVERY_MANAGE_SECTIONS = new Set(['backup', 'restore', 'protection', 'history']);
+const RECOVERY_DETAILS_PANELS = new Set(['verify', 'preview', 'restore']);
+const RECOVERY_CONFIRMATION_KINDS = new Set(['lite', 'database']);
 const TOAST_KINDS = new Set(['info', 'success', 'warning', 'error']);
 const REFRESH_RESULTS = new Set(['refreshing', 'fresh', 'saved', 'stale', 'expired', 'unreachable', 'failed']);
 
@@ -56,6 +60,27 @@ function normalizeSecurityDetailsPanel(value = null) {
 
 function normalizeSecurityFindingId(value = null) {
   return normalizeId(value).slice(0, 160) || null;
+}
+
+function normalizeRecoveryManageSection(value = DEFAULT_RECOVERY_MANAGE_SECTION) {
+  const section = normalizeId(value, DEFAULT_RECOVERY_MANAGE_SECTION);
+  return RECOVERY_MANAGE_SECTIONS.has(section) ? section : DEFAULT_RECOVERY_MANAGE_SECTION;
+}
+
+function normalizeRecoveryDetailsPanel(value = null) {
+  const panel = normalizeId(value);
+  return RECOVERY_DETAILS_PANELS.has(panel) ? panel : null;
+}
+
+function normalizeRecoveryConfirmation(value = null) {
+  const kind = normalizeId(value);
+  return RECOVERY_CONFIRMATION_KINDS.has(kind) ? kind : null;
+}
+
+function recoveryOverlayFallback(state = {}) {
+  return state.recoveryManageOpen
+    ? normalizeOverlay({ type: 'manage', id: 'recovery', source: 'recovery' })
+    : null;
 }
 
 function normalizeRefreshResult(result) {
@@ -162,6 +187,82 @@ export const useLiteUiStore = create((set, get) => ({
   },
   setActiveSecurityEvidenceRunId: (runId) => set({ activeSecurityEvidenceRunId: normalizeSecurityFindingId(runId) }),
 
+
+  recoveryManageOpen: false,
+  activeRecoveryManageSection: DEFAULT_RECOVERY_MANAGE_SECTION,
+  activeRecoveryDetailsPanel: null,
+  recoveryDatabaseDetailsOpen: false,
+  recoveryEvidenceOpen: false,
+  recoveryRestoreConfirmation: null,
+  setRecoveryManageOpen: (open) => set((state) => {
+    const nextOpen = Boolean(open);
+    return {
+      recoveryManageOpen: nextOpen,
+      activeRecoveryDetailsPanel: nextOpen ? state.activeRecoveryDetailsPanel : null,
+      recoveryDatabaseDetailsOpen: nextOpen ? state.recoveryDatabaseDetailsOpen : false,
+      recoveryEvidenceOpen: nextOpen ? state.recoveryEvidenceOpen : false,
+      recoveryRestoreConfirmation: nextOpen ? state.recoveryRestoreConfirmation : null,
+      activeOverlay: nextOpen
+        ? normalizeOverlay({ type: 'manage', id: 'recovery', source: 'recovery' })
+        : state.activeOverlay?.source === 'recovery' ? null : state.activeOverlay,
+    };
+  }),
+  setActiveRecoveryManageSection: (sectionId) => set({
+    activeRecoveryManageSection: normalizeRecoveryManageSection(sectionId),
+  }),
+  setActiveRecoveryDetailsPanel: (panelId) => set((state) => {
+    const nextPanel = normalizeRecoveryDetailsPanel(panelId);
+    return {
+      activeRecoveryDetailsPanel: nextPanel,
+      activeOverlay: nextPanel
+        ? normalizeOverlay({ type: 'details', id: nextPanel, source: 'recovery' })
+        : recoveryOverlayFallback(state),
+    };
+  }),
+  setRecoveryDatabaseDetailsOpen: (open) => set((state) => {
+    const nextOpen = Boolean(open);
+    return {
+      recoveryDatabaseDetailsOpen: nextOpen,
+      activeOverlay: nextOpen
+        ? normalizeOverlay({ type: 'details', id: 'database', source: 'recovery' })
+        : recoveryOverlayFallback(state),
+    };
+  }),
+  setRecoveryEvidenceOpen: (open) => set((state) => {
+    const nextOpen = Boolean(open);
+    return {
+      recoveryEvidenceOpen: nextOpen,
+      activeOverlay: nextOpen
+        ? normalizeOverlay({ type: 'details', id: 'evidence', source: 'recovery' })
+        : recoveryOverlayFallback(state),
+    };
+  }),
+  setRecoveryRestoreConfirmation: (kind) => set((state) => {
+    const nextKind = normalizeRecoveryConfirmation(kind);
+    return {
+      recoveryRestoreConfirmation: nextKind,
+      activeOverlay: nextKind
+        ? normalizeOverlay({ type: 'confirmation', id: nextKind, source: 'recovery' })
+        : recoveryOverlayFallback(state),
+    };
+  }),
+  resetRecoveryTransientUi: () => set((state) => ({
+    activeRecoveryDetailsPanel: null,
+    recoveryDatabaseDetailsOpen: false,
+    recoveryEvidenceOpen: false,
+    recoveryRestoreConfirmation: null,
+    activeOverlay: recoveryOverlayFallback(state),
+  })),
+  resetRecoveryUi: () => set((state) => ({
+    recoveryManageOpen: false,
+    activeRecoveryManageSection: DEFAULT_RECOVERY_MANAGE_SECTION,
+    activeRecoveryDetailsPanel: null,
+    recoveryDatabaseDetailsOpen: false,
+    recoveryEvidenceOpen: false,
+    recoveryRestoreConfirmation: null,
+    activeOverlay: state.activeOverlay?.source === 'recovery' ? null : state.activeOverlay,
+  })),
+
   closeOverlay: (typeOrId) => set((state) => {
     if (!typeOrId) return { activeOverlay: null };
     const wanted = normalizeId(typeOrId);
@@ -169,7 +270,7 @@ export const useLiteUiStore = create((set, get) => ({
     if (!current || current.type === wanted || current.id === wanted) return { activeOverlay: null };
     return {};
   }),
-  closeAllOverlays: () => set({ activeOverlay: null, manageAppId: null, activeDetailsActionId: null, securityManageOpen: false, activeSecurityDetailsPanel: null, expandedSecurityFindingId: null }),
+  closeAllOverlays: () => set({ activeOverlay: null, manageAppId: null, activeDetailsActionId: null, securityManageOpen: false, activeSecurityDetailsPanel: null, expandedSecurityFindingId: null, recoveryManageOpen: false, activeRecoveryDetailsPanel: null, recoveryDatabaseDetailsOpen: false, recoveryEvidenceOpen: false, recoveryRestoreConfirmation: null }),
 
   toasts: [],
   pushToast: (toast) => {
@@ -294,6 +395,20 @@ export function useLiteSecurityManageState() {
   }));
 }
 
+
+export function useLiteRecoveryManageState() {
+  return useLiteUiStore((state) => ({
+    recoveryManageOpen: state.recoveryManageOpen,
+    activeRecoveryManageSection: state.activeRecoveryManageSection,
+    activeRecoveryDetailsPanel: state.activeRecoveryDetailsPanel,
+    recoveryDatabaseDetailsOpen: state.recoveryDatabaseDetailsOpen,
+    recoveryEvidenceOpen: state.recoveryEvidenceOpen,
+    recoveryRestoreConfirmation: state.recoveryRestoreConfirmation,
+  }));
+}
+
+export const LITE_UI_STORE_RECOVERY_UI_ONLY = true;
+export const LITE_UI_STORE_DOES_NOT_STORE_RECOVERY_PAYLOADS = true;
 export const LITE_UI_STORE_SECURITY_UI_ONLY = true;
 export const LITE_UI_STORE_DOES_NOT_STORE_SECURITY_PAYLOADS = true;
 export const LITE_UI_STORE_IS_UI_ONLY = true;
