@@ -6,6 +6,7 @@ import os
 import sqlite3
 import threading
 import time
+import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -1872,6 +1873,57 @@ class SecuritySQLiteRepository:
             "revision": int(row["revision"]) if row else 0,
             "updated_at": row["updated_at"] if row else None,
         }
+
+    def get_or_create_database_instance_id(self) -> str:
+        """Return one durable identity for the currently promoted SQLite database."""
+        with connection() as conn, begin_immediate(conn) as tx:
+            current = _get_metadata(tx, "database_instance")
+            instance_id = str(current.get("instance_id") or "").strip()
+            if not instance_id:
+                instance_id = uuid.uuid4().hex
+                _set_metadata(
+                    tx,
+                    "database_instance",
+                    {"instance_id": instance_id, "created_at": utc_now()},
+                )
+        return instance_id
+
+    def rotate_database_instance_id(self, *, reason: str) -> str:
+        """Rotate the promoted-database identity without bumping domain state."""
+        instance_id = uuid.uuid4().hex
+        with connection() as conn, begin_immediate(conn) as tx:
+            _set_metadata(
+                tx,
+                "database_instance",
+                {
+                    "instance_id": instance_id,
+                    "rotated_at": utc_now(),
+                    "reason": str(reason or "database_promotion")[:64],
+                },
+            )
+        return instance_id
+
+    def record_progress_generation_recovery(
+        self, result: Mapping[str, Any]
+    ) -> None:
+        """Record bounded sanitized evidence without changing the domain revision."""
+        safe = policy.redact_value(
+            {
+                "status": str(result.get("status") or "unknown")[:32],
+                "reason": str(result.get("reason") or "unknown")[:64],
+                "marker_status": str(result.get("marker_status") or "unknown")[:32],
+                "run_id": str(result.get("run_id") or "")[:160],
+                "sqlite_revision": max(0, int(result.get("sqlite_revision") or 0)),
+                "database_instance_matched": bool(
+                    result.get("database_instance_matched")
+                ),
+                "repaired": bool(result.get("repaired")),
+                "recorded_at": str(result.get("recorded_at") or utc_now()),
+                "sanitized": True,
+            }
+        )
+        with connection() as conn, begin_immediate(conn) as tx:
+            _set_metadata(tx, "progress_generation_recovery:last", safe)
 
     def get_progress(self, run_id: str | None = None) -> dict[str, Any] | None:
         """Read Progress through the bounded dedicated reader contract."""

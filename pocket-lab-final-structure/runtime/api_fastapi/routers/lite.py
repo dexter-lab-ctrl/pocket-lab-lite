@@ -1181,7 +1181,19 @@ async def get_lite_security_progress(request: Request) -> Response:
     deps.require_auth(request)
     auth_complete = time.perf_counter()
     if lite_security.prepared_security_progress_enabled():
-        prepared, projection_age_ms = lite_security.prepared_security_progress()
+        try:
+            prepared, projection_age_ms = lite_security.prepared_security_progress()
+        except lite_security.SecurityProgressGenerationUnavailable:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "temporarily_unavailable",
+                    "summary": "Safety status is recovering after a database change.",
+                    "retryable": True,
+                    "sanitized": True,
+                },
+                headers={"Retry-After": "2", "Cache-Control": "no-store"},
+            )
         snapshot_complete = time.perf_counter()
         if lite_security.if_none_match_matches(
             request.headers.get("if-none-match"), prepared.etag

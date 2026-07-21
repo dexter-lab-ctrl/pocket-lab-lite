@@ -33,6 +33,10 @@ from . import lite_security_generation
 _LOGGER = logging.getLogger(__name__)
 
 
+class SecurityProgressGenerationUnavailable(RuntimeError):
+    """Raised when the durable Progress fence cannot be reconciled safely."""
+
+
 @dataclass(frozen=True, slots=True)
 class PreparedSecurityProgress:
     """Immutable response material prepared outside the request path."""
@@ -290,9 +294,19 @@ def initialize_security_sqlite_runtime(*, reconcile: bool = True) -> dict[str, A
             try:
                 _refresh_sqlite_progress_snapshot(repository=repository)
                 result["progress_snapshot_primed"] = True
+                result["progress_generation"] = (
+                    recover_security_progress_generation_at_startup(
+                        repository=repository
+                    )
+                )
             except Exception as exc:
                 result["progress_snapshot_primed"] = False
                 result["progress_snapshot_error"] = type(exc).__name__
+                _LOGGER.warning(
+                    "pocketlab.security.progress_generation_startup_degraded "
+                    "error_type=%s",
+                    type(exc).__name__,
+                )
     return policy.redact_value(result)
 
 
@@ -2070,8 +2084,80 @@ def prepared_security_progress_enabled() -> bool:
     return _sqlite_compact_reads_enabled()
 
 
+def _current_progress_generation_identity(
+    repository: Any | None = None,
+) -> dict[str, Any]:
+    repo = repository or _security_repository()
+    refreshed = fence_security_progress_after_database_restore(repository=repo)
+    return {
+        "run_id": str(refreshed.get("run_id") or ""),
+        "sqlite_revision": max(0, int(refreshed.get("sqlite_revision") or 0)),
+        "database_instance_id": repo.get_or_create_database_instance_id(),
+    }
+
+
+def recover_security_progress_generation_at_startup(
+    *, repository: Any | None = None
+) -> dict[str, Any]:
+    """Validate or rebuild the durable marker from authoritative SQLite."""
+
+    global _SQLITE_PROGRESS_GENERATION_TOKEN
+    global _SQLITE_PROGRESS_GENERATION_CHECKED_AT
+
+    repo = repository or _security_repository()
+    inspected = lite_security_generation.inspect_security_progress_generation()
+    marker_status = str(inspected.get("status") or "invalid")
+    marker = inspected.get("marker") if isinstance(inspected.get("marker"), dict) else {}
+    current = _current_progress_generation_identity(repo)
+    marker_matches = bool(
+        marker
+        and str(marker.get("run_id") or "") == current["run_id"]
+        and max(0, int(marker.get("sqlite_revision") or 0))
+        == current["sqlite_revision"]
+        and str(marker.get("database_instance_id") or "")
+        == current["database_instance_id"]
+    )
+    repaired = not marker_matches
+    if repaired:
+        marker = lite_security_generation.publish_security_progress_generation(
+            run_id=current["run_id"],
+            sqlite_revision=current["sqlite_revision"],
+            database_instance_id=current["database_instance_id"],
+            published_at=deps.now_utc_iso(),
+            reason="cold_start_sqlite_rebuild",
+        )
+    result = policy.redact_value(
+        {
+            "status": "passed",
+            "reason": "cold_start_validation",
+            "marker_status": marker_status,
+            "run_id": current["run_id"],
+            "sqlite_revision": current["sqlite_revision"],
+            "database_instance_matched": bool(marker_matches),
+            "repaired": repaired,
+            "recorded_at": deps.now_utc_iso(),
+            "sanitized": True,
+        }
+    )
+    try:
+        repo.record_progress_generation_recovery(result)
+        result["evidence_recorded"] = True
+    except (sqlite3.Error, OSError, RuntimeError, ValueError, TypeError) as exc:
+        result["evidence_recorded"] = False
+        result["evidence_error_type"] = type(exc).__name__
+        _LOGGER.warning(
+            "pocketlab.security.progress_generation_recovery_evidence_degraded "
+            "error_type=%s",
+            type(exc).__name__,
+        )
+    with _SQLITE_PROGRESS_GENERATION_LOCK:
+        _SQLITE_PROGRESS_GENERATION_TOKEN = str(marker.get("generation") or "")
+        _SQLITE_PROGRESS_GENERATION_CHECKED_AT = time.monotonic()
+    return result
+
+
 def _observe_durable_security_progress_generation() -> None:
-    """Fence this process when another process promotes or rolls back SQLite."""
+    """Fence live reads when another process promotes or replaces SQLite."""
 
     global _SQLITE_PROGRESS_GENERATION_TOKEN
     global _SQLITE_PROGRESS_GENERATION_CHECKED_AT
@@ -2085,20 +2171,27 @@ def _observe_durable_security_progress_generation() -> None:
         ):
             return
         _SQLITE_PROGRESS_GENERATION_CHECKED_AT = now
-        marker = lite_security_generation.read_security_progress_generation()
-        if not marker:
-            return
+        inspected = lite_security_generation.inspect_security_progress_generation()
+        marker = inspected.get("marker")
+        if not isinstance(marker, dict):
+            raise SecurityProgressGenerationUnavailable(
+                "Security progress generation marker is unavailable"
+            )
         generation = str(marker.get("generation") or "")
-        if not generation or generation == _SQLITE_PROGRESS_GENERATION_TOKEN:
+        if generation == _SQLITE_PROGRESS_GENERATION_TOKEN:
             return
 
-        refreshed = fence_security_progress_after_database_restore()
+        repo = _security_repository()
+        current = _current_progress_generation_identity(repo)
         expected_run_id = str(marker.get("run_id") or "")
         expected_revision = max(0, int(marker.get("sqlite_revision") or 0))
-        actual_run_id = str(refreshed.get("run_id") or "")
-        actual_revision = max(0, int(refreshed.get("sqlite_revision") or 0))
-        if actual_run_id != expected_run_id or actual_revision != expected_revision:
-            raise RuntimeError(
+        expected_database = str(marker.get("database_instance_id") or "")
+        if (
+            current["run_id"] != expected_run_id
+            or current["sqlite_revision"] != expected_revision
+            or current["database_instance_id"] != expected_database
+        ):
+            raise SecurityProgressGenerationUnavailable(
                 "Durable Security progress generation did not match promoted SQLite"
             )
         _SQLITE_PROGRESS_GENERATION_TOKEN = generation
