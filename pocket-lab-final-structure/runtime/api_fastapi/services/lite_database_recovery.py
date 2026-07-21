@@ -868,9 +868,13 @@ def _refresh_security_projections() -> dict[str, Any]:
         progress = lite_security.fence_security_progress_after_database_restore(
             repository=repository,
         )
+        database_instance_id = repository.rotate_database_instance_id(
+            reason="database_projection_refresh"
+        )
         generation = lite_security_generation.publish_security_progress_generation(
             run_id=str(progress.get("run_id") or ""),
             sqlite_revision=max(0, int(progress.get("sqlite_revision") or 0)),
+            database_instance_id=database_instance_id,
             published_at=deps.now_utc_iso(),
             reason="database_projection_refresh",
         )

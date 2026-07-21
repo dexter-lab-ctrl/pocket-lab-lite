@@ -34,22 +34,23 @@ def test_api_observer_fences_once_per_generation(monkeypatch):
         "generation": "generation-a",
         "run_id": "security-restored-terminal",
         "sqlite_revision": 77,
+        "database_instance_id": "database-a",
         "sanitized": True,
     }
     calls = []
 
     monkeypatch.setattr(
         lite_security.lite_security_generation,
-        "read_security_progress_generation",
-        lambda: dict(marker),
+        "inspect_security_progress_generation",
+        lambda: {"status": "valid", "marker": dict(marker), "sanitized": True},
     )
     monkeypatch.setattr(
         lite_security,
-        "fence_security_progress_after_database_restore",
-        lambda: calls.append("fenced") or {
-            "status": "passed",
+        "_current_progress_generation_identity",
+        lambda _repo=None: calls.append("fenced") or {
             "run_id": "security-restored-terminal",
             "sqlite_revision": 77,
+            "database_instance_id": "database-a",
         },
     )
     monkeypatch.setattr(lite_security, "_SQLITE_PROGRESS_GENERATION_TOKEN", "")
@@ -72,21 +73,26 @@ def test_api_observer_fails_closed_on_identity_mismatch(monkeypatch):
 
     monkeypatch.setattr(
         lite_security.lite_security_generation,
-        "read_security_progress_generation",
+        "inspect_security_progress_generation",
         lambda: {
-            "generation": "generation-b",
-            "run_id": "security-authoritative",
-            "sqlite_revision": 81,
+            "status": "valid",
+            "marker": {
+                "generation": "generation-b",
+                "run_id": "security-authoritative",
+                "sqlite_revision": 81,
+                "database_instance_id": "database-b",
+                "sanitized": True,
+            },
             "sanitized": True,
         },
     )
     monkeypatch.setattr(
         lite_security,
-        "fence_security_progress_after_database_restore",
-        lambda: {
-            "status": "passed",
+        "_current_progress_generation_identity",
+        lambda _repo=None: {
             "run_id": "security-stale",
             "sqlite_revision": 80,
+            "database_instance_id": "database-a",
         },
     )
     monkeypatch.setattr(lite_security, "_SQLITE_PROGRESS_GENERATION_TOKEN", "")
@@ -99,7 +105,7 @@ def test_api_observer_fails_closed_on_identity_mismatch(monkeypatch):
 
     try:
         lite_security._observe_durable_security_progress_generation()
-    except RuntimeError as exc:
+    except lite_security.SecurityProgressGenerationUnavailable as exc:
         assert "did not match promoted SQLite" in str(exc)
     else:
         raise AssertionError("generation mismatch must fail closed")
