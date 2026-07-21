@@ -243,11 +243,14 @@ def _apply_connection_policy(conn: sqlite3.Connection, settings: SQLiteSettings,
 
 
 def _enable_wal_with_retry(conn: sqlite3.Connection, busy_timeout_ms: int) -> str:
-    """Handle the short first-open race when API and worker create the DB together."""
+    """Enable WAL once, avoiding a write-oriented journal transition per connection."""
     deadline = time.monotonic() + (busy_timeout_ms / 1000)
     delay = 0.025
     while True:
         try:
+            current = str(conn.execute("PRAGMA journal_mode").fetchone()[0]).lower()
+            if current == "wal":
+                return current
             return str(conn.execute("PRAGMA journal_mode = WAL").fetchone()[0]).lower()
         except sqlite3.OperationalError as exc:
             message = str(exc).lower()

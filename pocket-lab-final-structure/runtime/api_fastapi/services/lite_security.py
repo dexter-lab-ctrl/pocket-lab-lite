@@ -1875,7 +1875,9 @@ def _sqlite_summary_state() -> dict[str, Any]:
         revision = int(repository.get_domain_revision().get("revision") or 0)
         active = repository.get_active_scan()
         latest_row = active or repository.get_latest_run()
-        history_rows = repository.list_runs_page(limit=_SECURITY_SUMMARY_HISTORY_LIMIT).get("runs", [])
+        history_rows = repository.list_runs_page(
+            limit=_SECURITY_SUMMARY_HISTORY_LIMIT, compact=True
+        ).get("runs", [])
         profile_rows = {
             profile: row
             for profile in (policy.SCAN_PROFILE_QUICK, policy.SCAN_PROFILE_FULL, policy.SCAN_PROFILE_APP)
@@ -2756,7 +2758,12 @@ def _sqlite_history_state(limit: int | None = None, cursor: str | None = None) -
         repository = _security_repository()
         revision = int(repository.get_domain_revision().get("revision") or 0)
         cursor_epoch_ms, cursor_run_id = _decode_history_cursor(cursor)
-        page = repository.list_runs_page(limit=bounded, cursor_epoch_ms=cursor_epoch_ms, cursor_run_id=cursor_run_id)
+        page = repository.list_runs_page(
+            limit=bounded,
+            cursor_epoch_ms=cursor_epoch_ms,
+            cursor_run_id=cursor_run_id,
+            compact=True,
+        )
         rows = page.get("runs", []) if isinstance(page.get("runs"), list) else []
         tool_rows = repository.list_tool_runs_for_runs([str(run.get("run_id") or "") for run in rows if run.get("run_id")])
         history: list[dict[str, Any]] = []
