@@ -555,7 +555,7 @@ export default function RecoveryScreen() {
       ) : null}
 
       {loading ? <LoadingCard label="Loading recovery…" /> : null}
-      {error ? <StateSurface tone="degraded" title="Recovery needs a moment" description={error} className="mb-5" /> : null}
+      {error ? <StateSurface tone="degraded" title="Recovery information is temporarily unavailable" description={error} className="mb-5" /> : null}
       {actionError ? <StateSurface tone="degraded" title="Recovery action needs attention" description={actionError} className="mb-5" /> : null}
 
       <div className="lite-recovery-r1-summary-grid">
@@ -645,7 +645,7 @@ export default function RecoveryScreen() {
         onClose={() => setActiveActionPanel('')}
         title={activePanel?.title || 'Recovery details'}
         eyebrow="Action Details"
-        description={activePanel?.subtitle || 'Safe recovery details from the backend-owned workflow.'}
+        description={activePanel?.subtitle || 'Verified recovery details and recorded outcomes.'}
         variant="security"
         className="lite-recovery-action-details-sheet"
         bodyClassName="lite-recovery-action-details-scroll"

@@ -123,13 +123,13 @@ export default function RecoveryActionDetailsLazy({
         title={title}
         status={status}
         statusLabel={statusLabel}
-        summary={panel?.subtitle || 'Pocket Lab keeps recovery work backend-owned and protected.'}
+        summary={panel?.subtitle || 'Pocket Lab coordinates each recovery step and records a sanitized result.'}
         what_happened={logs.length ? logs : ['Pocket Lab checked the recovery state through the Lite API.']}
         what_changed={whatChanged}
         what_did_not_happen={[
           'The browser did not run recovery commands.',
           'The browser did not read backup files.',
-          'Protected troubleshooting records remain backend-owned.',
+          'Sanitized troubleshooting records are available for review.',
         ]}
         saved_for_troubleshooting={{
           saved: Boolean(latestBackup?.backup_id || latestPreview?.preview_id || checkpoint?.checkpoint_id || lastRestore?.restore_id),

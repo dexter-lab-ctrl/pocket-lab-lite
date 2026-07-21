@@ -70,7 +70,7 @@ export default function RecoveryDatabaseDetailsLazy({
             {recoveryBlocked ? 'Blocked for safety' : maintenance?.active || activeRestore ? maintenanceStatusLabel : verified ? 'Backup verified' : 'Backup needed'}
           </StatusBadge>
         </div>
-        <p>Backups and restores stay backend-owned. Write actions remain disabled while offline or during maintenance.</p>
+        <p>Pocket Lab coordinates recovery operations. Actions are paused while the device is offline or database maintenance is in progress.</p>
         <div className="lite-recovery-database-manage-actions">
           <LiteButton onClick={onBackup} disabled={writeBlocked || busy === 'database-backup'}>
             {busy === 'database-backup' ? 'Starting backup…' : 'Back Up Pocket Lab'}
@@ -116,7 +116,7 @@ export default function RecoveryDatabaseDetailsLazy({
 
       <section>
         <span>Restore</span>
-        <h3>{restorePhase ? restorePhaseLabel(restorePhase) : lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmed restore only'}</h3>
+        <h3>{restorePhase ? restorePhaseLabel(restorePhase) : lastRestore?.status === 'completed' ? 'Recovery completed' : 'Confirmation required'}</h3>
         <p>{restoreState?.summary || 'Restore checkpoints current state, validates staging, promotes atomically, and rolls back automatically on failure.'}</p>
         <strong>{rollbackAvailable ? 'Rollback available' : 'Rollback is created during restore'}</strong>
       </section>
@@ -124,7 +124,7 @@ export default function RecoveryDatabaseDetailsLazy({
       <section>
         <span>Maintenance</span>
         <h3>{recoveryBlocked ? 'Writers blocked for safety' : maintenance?.active || activeRestore ? maintenanceStatusLabel : 'Ready'}</h3>
-        <p>{restoreGuard?.summary || maintenance?.summary || 'Normal reads remain available while intentional database maintenance is coordinated.'}</p>
+        <p>{restoreGuard?.summary || maintenance?.summary || 'Recovery actions remain paused while database maintenance is safely completed.'}</p>
       </section>
 
       <section>

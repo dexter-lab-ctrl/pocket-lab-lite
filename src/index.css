@@ -21219,3 +21219,51 @@ textarea {
     scroll-behavior: auto;
   }
 }
+
+/* Recovery UI polish — resilient segmented navigation and customer-facing language. */
+.theme-pocket-lite-daylight .lite-recovery-manage-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0;
+  overflow: visible;
+  padding: 0.35rem;
+  background: rgba(248, 250, 252, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-tabs button {
+  min-width: 0;
+  width: 100%;
+  padding-inline: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-section-heading {
+  gap: 0.3rem;
+  padding: 0.9rem 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-section-heading > p {
+  max-width: 48rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 460px) {
+  .theme-pocket-lite-daylight .lite-recovery-manage-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-manage-tabs button {
+    min-height: 2.7rem;
+    white-space: normal;
+  }
+}
