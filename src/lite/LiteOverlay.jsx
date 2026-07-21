@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { animated, useSpring } from '@react-spring/web';
@@ -103,6 +103,44 @@ function useReducedMotionPreference() {
   return reducedMotionRef;
 }
 
+
+export function useFocusTrap(open, surfaceRef) {
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return undefined;
+    const surface = surfaceRef?.current;
+    if (!(surface instanceof HTMLElement)) return undefined;
+    const focusableSelector = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const onKeyDown = (event) => {
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(surface.querySelectorAll(focusableSelector))
+        .filter((element) => element instanceof HTMLElement && !element.hidden && element.getAttribute('aria-hidden') !== 'true');
+      if (!focusable.length) {
+        event.preventDefault();
+        surface.focus?.({ preventScroll: true });
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus({ preventScroll: true });
+      }
+    };
+    surface.addEventListener('keydown', onKeyDown);
+    return () => surface.removeEventListener('keydown', onKeyDown);
+  }, [open, surfaceRef]);
+}
+
 export function LiteOverlayRoot({ children }) {
   if (typeof document === 'undefined') return null;
   return createPortal(children, document.body);
@@ -169,6 +207,12 @@ export function LiteSheet({
   const titleId = labelledBy || `lite-sheet-title-${generatedId}`;
   const internalCloseRef = useRef(null);
   const closeRef = externalCloseRef || internalCloseRef;
+  const internalSurfaceRef = useRef(null);
+  const setSurfaceRef = useCallback((node) => {
+    internalSurfaceRef.current = node;
+    if (typeof surfaceRef === 'function') surfaceRef(node);
+    else if (surfaceRef && typeof surfaceRef === 'object') surfaceRef.current = node;
+  }, [surfaceRef]);
   const variantClasses = LITE_SHEET_VARIANTS[variant] || LITE_SHEET_VARIANTS.manage;
   const reducedMotionRef = useReducedMotionPreference();
   const safeMotionEnabled = motion === 'safe-grip' && open;
@@ -177,6 +221,7 @@ export function LiteSheet({
   useBodyScrollLock(open);
   useEscapeToClose(open, onClose);
   useFocusReturn(open, closeRef);
+  useFocusTrap(open, internalSurfaceRef);
 
   const [{ y, scale, opacity }, api] = useSpring(() => ({
     y: 0,
@@ -238,10 +283,11 @@ export function LiteSheet({
       <div className={`theme-pocket-lite-daylight lite-overlay-root ${variantClasses.layer} ${layerClassName}`.trim()} role="presentation" data-lite-overlay-portal="true">
         <LiteBackdrop onClose={onClose} label={variantClasses.backdropLabel} className={variantClasses.backdrop} />
         <Surface
-          ref={surfaceRef}
+          ref={setSurfaceRef}
           className={`lite-overlay-surface ${variantClasses.surface} ${className}`.trim()}
           style={motionStyle}
           role="dialog"
+          tabIndex={-1}
           aria-modal="true"
           aria-labelledby={titleId}
           data-lite-sheet-variant={variant}

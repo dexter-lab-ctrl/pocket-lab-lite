@@ -187,11 +187,11 @@ def repository_readiness() -> dict[str, Any]:
     }
 
 
-def recovery_status() -> dict[str, Any]:
+def recovery_status(*, history_limit: int = 25) -> dict[str, Any]:
     readiness = repository_readiness()
     backups = [
         lite_backup_manifest.api_manifest(item)
-        for item in lite_backup_manifest.list_manifests(limit=25)
+        for item in lite_backup_manifest.list_manifests(limit=max(1, min(int(history_limit or 1), 25)))
     ]
     latest = backups[0] if backups else None
     pending = pending_backup() if not latest else None
@@ -238,6 +238,143 @@ def recovery_status() -> dict[str, Any]:
         "planned_actions": [],
         "updated_at": _utc(),
     }
+
+
+def _compact_backup_summary(backup: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(backup, dict):
+        return None
+    allowed = (
+        "backup_id",
+        "created_at",
+        "engine",
+        "included_file_count",
+        "verification_status",
+        "verified_at",
+        "risk_level",
+        "summary",
+        "pending",
+        "status",
+        "size_bytes",
+    )
+    return {key: backup.get(key) for key in allowed if backup.get(key) is not None}
+
+
+def _compact_restore_preview(preview: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(preview, dict):
+        return None
+    allowed = (
+        "preview_id",
+        "backup_id",
+        "status",
+        "created_at",
+        "change_count",
+        "restore_allowed",
+        "requires_confirmation",
+        "destructive_changes_applied",
+        "summary",
+    )
+    return {key: preview.get(key) for key in allowed if preview.get(key) is not None}
+
+
+def _compact_restore_summary(restore: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not isinstance(restore, dict):
+        return None
+    allowed = (
+        "restore_id",
+        "backup_id",
+        "preview_id",
+        "status",
+        "state",
+        "phase",
+        "created_at",
+        "updated_at",
+        "completed_at",
+        "restored_file_count",
+        "rollback_available",
+        "summary",
+    )
+    return {key: restore.get(key) for key in allowed if restore.get(key) is not None}
+
+
+def recovery_summary() -> dict[str, Any]:
+    readiness = repository_readiness()
+    latest_manifest = lite_backup_manifest.latest_manifest()
+    latest = lite_backup_manifest.api_manifest(latest_manifest) if latest_manifest else None
+    pending = pending_backup()
+    current = _compact_backup_summary(latest)
+    current_operation = _compact_backup_summary(_api_pending_backup(pending)) if pending else None
+    state = _read_backup_state()
+    latest_preview = _compact_restore_preview(state.get("latest_restore_preview"))
+    checkpoint = state.get("pre_restore_checkpoint") if isinstance(state.get("pre_restore_checkpoint"), dict) else None
+    last_restore = _compact_restore_summary(state.get("last_restore"))
+    latest_verified = str((current or {}).get("verification_status") or "") == "verified"
+    status = "healthy" if current and readiness.get("restic_available") else readiness.get("status", "degraded")
+    if pending:
+        status = str(current_operation.get("status") or "working")
+    recommended_action = (
+        "manage_recovery"
+        if pending
+        else "preview_restore"
+        if latest_verified and not latest_preview
+        else "verify_backup"
+        if current and not latest_verified
+        else "backup_now"
+        if not current
+        else "manage_recovery"
+    )
+    recent_activity = []
+    if current:
+        recent_activity.append({
+            "id": current.get("backup_id"),
+            "kind": "backup",
+            "status": current.get("verification_status") or current.get("status") or "saved",
+            "summary": "Backup verified" if latest_verified else current.get("summary") or "Backup saved",
+            "occurred_at": current.get("verified_at") or current.get("created_at"),
+        })
+    if last_restore:
+        recent_activity.append({
+            "id": last_restore.get("restore_id"),
+            "kind": "restore",
+            "status": last_restore.get("status") or last_restore.get("state") or "recorded",
+            "summary": last_restore.get("summary") or "Restore recorded",
+            "occurred_at": last_restore.get("completed_at") or last_restore.get("updated_at"),
+        })
+    return {
+        "view_model": "recovery-summary-r3-v1",
+        "status": status,
+        "summary": (current_operation or {}).get("summary") if pending else "Recovery Ready" if current else readiness.get("summary") or "Needs Attention",
+        "repository": {
+            "type": readiness.get("repository", {}).get("type"),
+            "engine": readiness.get("repository", {}).get("engine"),
+            "encrypted": bool(readiness.get("repository", {}).get("encrypted")),
+            "ready": bool(readiness.get("repository", {}).get("ready")),
+            "location": readiness.get("repository", {}).get("location"),
+        },
+        "last_backup": current,
+        "latest_backup": current,
+        "last_verification_result": (current or {}).get("verification_status") or "not_verified",
+        "latest_restore_preview": latest_preview,
+        "pre_restore_checkpoint": checkpoint,
+        "last_restore": last_restore,
+        "current_operation": current_operation,
+        "recommended_action": recommended_action,
+        "recent_activity": recent_activity[:3],
+        "live": bool(pending),
+        "updated_at": str(
+            state.get("updated_at")
+            or (last_restore or {}).get("updated_at")
+            or (last_restore or {}).get("completed_at")
+            or (latest_preview or {}).get("created_at")
+            or (current or {}).get("verified_at")
+            or (current or {}).get("created_at")
+            or ""
+        ),
+        "sanitized": True,
+    }
+
+
+def recovery_details() -> dict[str, Any]:
+    return recovery_status(history_limit=3)
 
 
 def _copy_sources_to_staging(backup_id: str, staging_root: Path) -> list[dict[str, Any]]:
@@ -1205,20 +1342,21 @@ def get_backup(backup_id: str) -> dict[str, Any] | None:
     return lite_backup_manifest.api_manifest(manifest) if manifest else None
 
 
-def list_backups(limit: int = 25) -> dict[str, Any]:
-    items = [
-        lite_backup_manifest.api_manifest(item)
-        for item in lite_backup_manifest.list_manifests(limit=limit)
-    ]
-    pending = pending_backup() if not items else None
+def list_backups(limit: int = 25, cursor: str = "") -> dict[str, Any]:
+    page = lite_backup_manifest.list_manifests_page(limit=limit, cursor=cursor)
+    items = [lite_backup_manifest.api_manifest(item) for item in page["items"]]
+    pending = pending_backup() if not items and not cursor else None
     readiness = repository_readiness()
     return {
         "status": "healthy" if items else ("queued" if pending else readiness.get("status", "degraded")),
         "count": len(items),
         "backups": items,
-        "latest_backup": items[0] if items else None,
+        "latest_backup": items[0] if items and not cursor else None,
         "pending_backup": _api_pending_backup(pending) if pending else None,
-        "summary": "Backup history is empty. Run Backup Now to initialize the encrypted repository and create the first backup." if not items and not pending else None,
+        "next_cursor": page.get("next_cursor"),
+        "has_more": bool(page.get("has_more")),
+        "cursor_found": bool(page.get("cursor_found")),
+        "summary": "Backup history is empty. Run Backup Now to initialize the encrypted repository and create the first backup." if not items and not pending and not cursor else None,
         "updated_at": _utc(),
     }
 

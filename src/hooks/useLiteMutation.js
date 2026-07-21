@@ -20,12 +20,12 @@ export const liteMutationInvalidations = {
   run_safety_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()],
   safety_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()],
   check_security_app: [liteQueryKeys.security(), liteQueryKeys.securityProfile('app'), liteQueryKeys.securityHistory()],
-  recovery_backup: [liteQueryKeys.recovery()],
-  backup_now: [liteQueryKeys.recovery()],
-  verify_backup: [liteQueryKeys.recovery()],
-  preview_restore_recovery: [liteQueryKeys.recovery()],
-  restore_latest: [liteQueryKeys.recovery()],
-  recovery_restore: [liteQueryKeys.recovery()],
+  recovery_backup: [liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
+  backup_now: [liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
+  verify_backup: [liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
+  preview_restore_recovery: [liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails()],
+  restore_latest: [liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
+  recovery_restore: [liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory()],
   restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   remove_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
@@ -81,7 +81,7 @@ export function getLiteAppActionInvalidations(appId = 'photoprism', actionId = '
     recoverySummaryChanged
     || ['backup_app', 'backup_to_storage', 'preview_restore'].includes(normalizedActionId)
   ) {
-    keys.push(liteQueryKeys.recovery());
+    keys.push(liteQueryKeys.recoverySummary(), liteQueryKeys.recoveryDetails(), liteQueryKeys.recoveryHistory());
   }
 
   return uniqueQueryKeys(keys);

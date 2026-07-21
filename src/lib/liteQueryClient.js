@@ -16,6 +16,10 @@ export const liteQueryKeys = {
   securityHistory: (limit = 20) => ['lite', 'security', 'history', Number(limit || 20)],
   securityHistoryPage: (limit = 20, cursor = '') => ['lite', 'security', 'history', Number(limit || 20), String(cursor || 'first')],
   recovery: () => ['lite', 'recovery'],
+  recoverySummary: () => ['lite', 'recovery', 'summary'],
+  recoveryDetails: () => ['lite', 'recovery', 'details'],
+  recoveryHistory: () => ['lite', 'recovery', 'history'],
+  recoveryHistoryPage: (limit = 10, cursor = '') => ['lite', 'recovery', 'history', Number(limit || 10), String(cursor || 'first')],
   resource: (path = 'unknown', ...parts) => ['lite', 'resource', String(path || 'unknown'), ...parts],
 };
 
@@ -34,6 +38,8 @@ export const liteQueryPaths = {
   securityRunDetails: (runId = 'latest') => `/api/lite/security/details/${encodeURIComponent(runId || 'latest')}`,
   securityEvidenceSummary: (runId = 'latest') => `/api/lite/security/evidence/${encodeURIComponent(runId || 'latest')}/summary`,
   recovery: '/api/lite/recovery',
+  recoverySummary: '/api/lite/recovery/summary',
+  recoveryDetails: '/api/lite/recovery/details',
 };
 
 export function liteQueryRetry(failureCount, error) {

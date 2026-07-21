@@ -30,7 +30,8 @@ describe('Pocket Lab Lite Recovery R1/R2 UI', () => {
   it('keeps details progressive and backend-owned', () => {
     expect(recoverySource).toContain('RecoveryActionDetailsLazy');
     expect(recoverySource).toContain('RecoveryDatabaseDetailsLazy');
-    expect(recoverySource).toContain('window.confirm');
+    expect(recoverySource).toContain('RecoveryConfirmSheetLazy');
+    expect(recoverySource).not.toContain('window.confirm');
     expect(detailsSource).toContain('The browser did not run recovery commands.');
     expect(detailsSource).toContain('lite-recovery-action-details-shell');
   });

@@ -21025,3 +21025,197 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Pocket Lab Lite Recovery R3/R4 — split reads and native mobile polish. */
+.theme-pocket-lite-daylight .lite-recovery-manage-sheet,
+.theme-pocket-lite-daylight .lite-recovery-action-details-sheet,
+.theme-pocket-lite-daylight .lite-recovery-database-manage-sheet,
+.theme-pocket-lite-daylight .lite-recovery-evidence-sheet,
+.theme-pocket-lite-daylight .lite-recovery-confirm-sheet {
+  max-height: min(
+    calc(var(--lite-visual-viewport-height, 100dvh) - max(0.5rem, env(safe-area-inset-top))),
+    56rem
+  );
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-scroll,
+.theme-pocket-lite-daylight .lite-recovery-action-details-scroll,
+.theme-pocket-lite-daylight .lite-recovery-database-manage-scroll,
+.theme-pocket-lite-daylight .lite-recovery-evidence-list,
+.theme-pocket-lite-daylight .lite-recovery-confirm-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  scroll-behavior: smooth;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-tabs button,
+.theme-pocket-lite-daylight .lite-recovery-manage-action-row button,
+.theme-pocket-lite-daylight .lite-recovery-native-confirm button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-tabs button:focus-visible,
+.theme-pocket-lite-daylight .lite-recovery-manage-section:focus-visible,
+.theme-pocket-lite-daylight .lite-recovery-native-confirm button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.38);
+  outline-offset: 2px;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-manage-section[role="tabpanel"] {
+  scroll-margin-top: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-announcer {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-icon {
+  align-items: center;
+  background: rgba(254, 243, 199, 0.9);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 1rem;
+  color: #b45309;
+  display: flex;
+  height: 3.25rem;
+  justify-content: center;
+  width: 3.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-head,
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-head > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-head {
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-head span {
+  color: #b45309;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-head h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 950;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-backup,
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-section {
+  background: rgba(248, 250, 252, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.85rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-backup strong,
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-section strong {
+  color: #0f172a;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-backup small,
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-section li {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 740;
+  line-height: 1.5;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-section > div {
+  align-items: center;
+  color: #16a34a;
+  display: flex;
+  gap: 0.55rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-section.is-muted > div {
+  color: #d97706;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-section ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-actions,
+.theme-pocket-lite-daylight .lite-recovery-history-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-native-confirm-actions .lite-button {
+  min-height: 3rem;
+  min-width: 9rem;
+}
+
+@media (max-width: 560px) {
+  .theme-pocket-lite-daylight .lite-recovery-manage-sheet,
+  .theme-pocket-lite-daylight .lite-recovery-action-details-sheet,
+  .theme-pocket-lite-daylight .lite-recovery-database-manage-sheet,
+  .theme-pocket-lite-daylight .lite-recovery-evidence-sheet,
+  .theme-pocket-lite-daylight .lite-recovery-confirm-sheet {
+    border-radius: 1.35rem 1.35rem 0 0;
+    max-height: calc(var(--lite-visual-viewport-height, 100dvh) - max(0.35rem, env(safe-area-inset-top)));
+    width: 100%;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-native-confirm-actions,
+  .theme-pocket-lite-daylight .lite-recovery-history-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-native-confirm-actions .lite-button,
+  .theme-pocket-lite-daylight .lite-recovery-history-actions .lite-button {
+    min-height: 3rem;
+    width: 100%;
+  }
+}
+
+@media (min-width: 760px) {
+  .theme-pocket-lite-daylight .lite-recovery-manage-sheet {
+    margin-left: auto;
+    min-height: 100%;
+    width: min(48rem, 72vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-recovery-manage-scroll,
+  .theme-pocket-lite-daylight .lite-recovery-action-details-scroll,
+  .theme-pocket-lite-daylight .lite-recovery-database-manage-scroll,
+  .theme-pocket-lite-daylight .lite-recovery-confirm-scroll {
+    scroll-behavior: auto;
+  }
+}

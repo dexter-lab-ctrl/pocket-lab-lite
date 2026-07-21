@@ -47,7 +47,8 @@ describe('Pocket Lab Lite Security S8 recovery UI', () => {
     expect(recoverySource).toContain('Manage Recovery');
     expect(recoverySource).toContain('variant="manage"');
     expect(recoverySource).toContain('variant="security"');
-    expect(recoverySource).toContain('window.confirm');
+    expect(recoverySource).toContain('RecoveryConfirmSheetLazy');
+    expect(recoverySource).not.toContain('window.confirm');
     expect(recoverySource).toContain('databaseWriteBlocked');
   });
 

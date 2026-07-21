@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
-import { LiteButton, StatusBadge } from '../LiteUi.jsx';
+import { LiteButton, LoadingCard, StateSurface, StatusBadge } from '../LiteUi.jsx';
 
 const RecoveryBackupHistory = React.lazy(() => import('./RecoveryBackupHistory.jsx'));
 
@@ -117,29 +117,61 @@ export default function RecoveryManageSheetLazy({
   onPreviewAppRestore,
   onOpenActionDetails,
   onOpenEvidence,
+  detailsLoading = false,
+  detailsError = '',
+  onRetryDetails,
 }) {
   const activeSection = RECOVERY_MANAGE_SECTIONS.some((item) => item.id === section) ? section : 'backup';
   const recentHistory = (Array.isArray(history) ? history : []).slice(0, 3);
+  const tabRefs = React.useRef([]);
+  const onTabKeyDown = (event, index) => {
+    const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const lastIndex = RECOVERY_MANAGE_SECTIONS.length - 1;
+    const nextIndex = event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? lastIndex
+        : event.key === 'ArrowRight'
+          ? (index + 1) % RECOVERY_MANAGE_SECTIONS.length
+          : (index - 1 + RECOVERY_MANAGE_SECTIONS.length) % RECOVERY_MANAGE_SECTIONS.length;
+    const next = RECOVERY_MANAGE_SECTIONS[nextIndex];
+    onSectionChange(next.id);
+    tabRefs.current[nextIndex]?.focus?.({ preventScroll: true });
+  };
 
   return (
     <div className="lite-recovery-manage-content" data-recovery-r1-r2-manage="true">
       <div className="lite-recovery-manage-tabs" role="tablist" aria-label="Recovery management sections">
-        {RECOVERY_MANAGE_SECTIONS.map((item) => (
+        {RECOVERY_MANAGE_SECTIONS.map((item, index) => (
           <button
             key={item.id}
+            ref={(node) => { tabRefs.current[index] = node; }}
+            id={`recovery-manage-tab-${item.id}`}
             type="button"
             role="tab"
             aria-selected={activeSection === item.id}
+            aria-controls={`recovery-manage-panel-${item.id}`}
+            tabIndex={activeSection === item.id ? 0 : -1}
             className={activeSection === item.id ? 'is-active' : ''}
             onClick={() => onSectionChange(item.id)}
+            onKeyDown={(event) => onTabKeyDown(event, index)}
           >
             {item.label}
           </button>
         ))}
       </div>
 
+      {detailsLoading ? <LoadingCard label="Loading Recovery details…" /> : null}
+      {detailsError ? (
+        <StateSurface tone="degraded" title="Recovery details need a moment" description={detailsError}>
+          {onRetryDetails ? <LiteButton tone="secondary" onClick={onRetryDetails}>Retry</LiteButton> : null}
+        </StateSurface>
+      ) : null}
+
       {activeSection === 'backup' ? (
-        <section className="lite-recovery-manage-section" aria-label="Backup actions">
+        <section id="recovery-manage-panel-backup" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-backup" tabIndex={0}>
           <SectionHeading eyebrow="Backup" title="Create a safe copy" description="Backup actions stay backend-owned and collapse after completion." />
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
@@ -212,7 +244,7 @@ export default function RecoveryManageSheetLazy({
       ) : null}
 
       {activeSection === 'restore' ? (
-        <section className="lite-recovery-manage-section" aria-label="Restore actions">
+        <section id="recovery-manage-panel-restore" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-restore" tabIndex={0}>
           <SectionHeading eyebrow="Restore" title="Restore safely" description="Verify, preview, and confirm before local state changes." />
           <div className="lite-recovery-manage-action-list">
             <RecoveryActionRow
@@ -271,7 +303,7 @@ export default function RecoveryManageSheetLazy({
       ) : null}
 
       {activeSection === 'protection' ? (
-        <section className="lite-recovery-manage-section" aria-label="Protection details">
+        <section id="recovery-manage-panel-protection" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-protection" tabIndex={0}>
           <SectionHeading eyebrow="Protection" title="What recovery protects" description="Technical details remain available without crowding the main screen." />
           <div className="lite-recovery-protection-grid">
             <article>
@@ -303,7 +335,7 @@ export default function RecoveryManageSheetLazy({
       ) : null}
 
       {activeSection === 'history' ? (
-        <section className="lite-recovery-manage-section" aria-label="Recovery history">
+        <section id="recovery-manage-panel-history" className="lite-recovery-manage-section" role="tabpanel" aria-labelledby="recovery-manage-tab-history" tabIndex={0}>
           <SectionHeading eyebrow="History" title="Recent recovery activity" description="Only recent summaries mount here; full history opens on demand." />
           <div className="lite-recovery-recent-list">
             {latestBackup ? (
@@ -318,7 +350,7 @@ export default function RecoveryManageSheetLazy({
             {!latestBackup && !lastRestore?.restore_id && !recentHistory.length ? <p>No recovery activity yet.</p> : null}
           </div>
           <React.Suspense fallback={<div className="lite-recovery-history-loading">Loading backup history…</div>}>
-            <RecoveryBackupHistory history={history} latestPreviewReady={latestPreviewReady} savedStateOnly={savedStateOnly} />
+            <RecoveryBackupHistory initialHistory={history} latestPreviewReady={latestPreviewReady} savedStateOnly={savedStateOnly} />
           </React.Suspense>
         </section>
       ) : null}

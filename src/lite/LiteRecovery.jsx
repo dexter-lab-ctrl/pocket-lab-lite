@@ -10,8 +10,9 @@ import {
 import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
-import { selectRecoveryScreenView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
+import { selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
   GlassCard,
   StatusBadge,
@@ -29,11 +30,16 @@ import {
 
 const RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1 = true;
 const RECOVERY_SHARED_MANAGE_SHELL_PHASE_R2 = true;
+const RECOVERY_SUMMARY_DETAILS_API_SPLIT_PHASE_R3 = true;
+const RECOVERY_NATIVE_POLISH_PHASE_R4 = true;
 const RecoveryManageSheetLazy = React.lazy(() => import('./recovery/RecoveryManageSheetLazy.jsx'));
 const RecoveryActionDetailsLazy = React.lazy(() => import('./recovery/RecoveryActionDetailsLazy.jsx'));
 const RecoveryDatabaseDetailsLazy = React.lazy(() => import('./recovery/RecoveryDatabaseDetailsLazy.jsx'));
+const RecoveryConfirmSheetLazy = React.lazy(() => import('./recovery/RecoveryConfirmSheetLazy.jsx'));
 void RECOVERY_LAYOUT_SIMPLIFICATION_PHASE_R1;
 void RECOVERY_SHARED_MANAGE_SHELL_PHASE_R2;
+void RECOVERY_SUMMARY_DETAILS_API_SPLIT_PHASE_R3;
+void RECOVERY_NATIVE_POLISH_PHASE_R4;
 
 export const RECOVERY_POLLING_POLICY_PHASE5 = 'RECOVERY_POLLING_POLICY_PHASE5';
 export const RECOVERY_S3_QUERY_SNAPSHOT_TUNING = 'RECOVERY_S3_QUERY_SNAPSHOT_TUNING';
@@ -47,6 +53,11 @@ function formatSize(bytes) {
   if (!value) return 'Size unavailable';
   if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(value >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
   return `${Math.max(1, Math.round(value / 1024))} KB`;
+}
+
+function mergeOptional(...values) {
+  const merged = Object.assign({}, ...values.filter((value) => value && typeof value === 'object'));
+  return Object.keys(merged).length ? merged : null;
 }
 
 export default function RecoveryScreen() {
@@ -63,32 +74,68 @@ export default function RecoveryScreen() {
   const [databaseDetailsOpen, setDatabaseDetailsOpen] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [copiedEvidence, setCopiedEvidence] = useState('');
+  const [restoreConfirmation, setRestoreConfirmation] = useState('');
 
   const recoveryPollingIsLive = useCallback((payload) => (
     Boolean(busy) || hasLiveRecoveryOperation(payload)
   ), [busy]);
-  const { data, loading, error, refresh, cacheStatus, refreshing, backendReachable, savedStateOnly } = useLiteResource(liteApi.recovery, [], {
+  const detailsNeeded = recoveryManageOpen || Boolean(activeActionPanel) || databaseDetailsOpen || evidenceOpen || Boolean(restoreConfirmation);
+  const {
+    data: summaryData,
+    loading,
+    error,
+    refresh: refreshSummary,
+    cacheStatus,
+    refreshing,
+    backendReachable,
+    savedStateOnly,
+  } = useLiteResource(liteApi.recoverySummary, [], {
     pollingMode: 'slow',
     isLive: recoveryPollingIsLive,
     staleTime: 30_000,
+    select: selectRecoverySummaryView,
+    snapshotSelect: selectRecoverySummaryView,
+  });
+  const {
+    data: detailsData,
+    loading: detailsLoading,
+    error: detailsError,
+    refresh: refreshDetails,
+    savedStateOnly: detailsSavedStateOnly,
+  } = useLiteResource(liteApi.recoveryDetails, [], {
+    enabled: detailsNeeded,
+    pollingMode: 'slow',
+    isLive: recoveryPollingIsLive,
+    staleTime: 45_000,
     select: selectRecoveryScreenView,
     snapshotSelect: selectRecoveryScreenView,
   });
 
-  const latestBackup = data?.last_backup || data?.latest_backup || null;
-  const history = data?.backup_history || data?.available_restore_points || [];
-  const repository = data?.repository || {};
+  const data = summaryData || {};
+  const details = detailsData || {};
+  const latestBackup = mergeOptional(
+    details?.last_backup || details?.latest_backup,
+    data?.last_backup || data?.latest_backup,
+  );
+  const history = details?.backup_history || details?.available_restore_points || [];
+  const repository = { ...(details?.repository || {}), ...(data?.repository || {}) };
   const latestBackupVerified = latestBackup?.verification_status === 'verified';
-  const latestPreview = data?.latest_restore_preview || null;
+  const latestPreview = mergeOptional(details?.latest_restore_preview, data?.latest_restore_preview);
   const latestPreviewReady = latestPreview?.status === 'ready';
-  const lastRestore = data?.last_restore || null;
-  const checkpoint = data?.pre_restore_checkpoint || null;
-  const serviceRestart = lastRestore?.service_restart || {};
-  const healthValidation = lastRestore?.health_validation || {};
+  const lastRestore = mergeOptional(details?.last_restore, data?.last_restore);
+  const checkpoint = mergeOptional(details?.pre_restore_checkpoint, data?.pre_restore_checkpoint);
+  const serviceRestart = details?.last_restore?.service_restart || {};
+  const healthValidation = details?.last_restore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
   const recoveryFlow = useLiteRecoveryFlow({ recovery: data, latestBackup, latestPreview, backendReachable, savedStateOnly });
 
-  const databaseProtection = data?.database_protection || {};
+  const databaseProtection = {
+    ...(details?.database_protection || {}),
+    ...(data?.database_protection || {}),
+    latest_backup: mergeOptional(details?.database_protection?.latest_backup, data?.database_protection?.latest_backup),
+    latest_restore_preview: mergeOptional(details?.database_protection?.latest_restore_preview, data?.database_protection?.latest_restore_preview),
+    last_restore: mergeOptional(details?.database_protection?.last_restore, data?.database_protection?.last_restore),
+  };
   const latestDatabaseBackup = databaseProtection?.latest_backup || null;
   const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
   const databaseMaintenance = databaseProtection?.maintenance || data?.maintenance || {};
@@ -101,16 +148,16 @@ export default function RecoveryScreen() {
     || databaseMaintenance?.active === true
     || databaseRestoreGuard?.unresolved === true;
 
-  const appBackups = Array.isArray(data?.app_backups)
-    ? data.app_backups
-    : Array.isArray(data?.app_backup_profiles?.apps)
-      ? data.app_backup_profiles.apps
+  const appBackups = Array.isArray(details?.app_backups)
+    ? details.app_backups
+    : Array.isArray(details?.app_backup_profiles?.apps)
+      ? details.app_backup_profiles.apps
       : [];
-  const lifecycleProfiles = Array.isArray(data?.app_lifecycle_profiles?.apps) ? data.app_lifecycle_profiles.apps : [];
+  const lifecycleProfiles = Array.isArray(details?.app_lifecycle_profiles?.apps) ? details.app_lifecycle_profiles.apps : [];
   const lifecycleByApp = new Map(lifecycleProfiles.map((item) => [item.app_id, item]));
-  const backupTargets = Array.isArray(data?.backup_targets) ? data.backup_targets : [];
-  const protectedItems = Array.isArray(data?.what_will_be_backed_up) ? data.what_will_be_backed_up : [];
-  const excludedItems = Array.isArray(data?.what_will_not_be_backed_up) ? data.what_will_not_be_backed_up : [];
+  const backupTargets = Array.isArray(details?.backup_targets) ? details.backup_targets : [];
+  const protectedItems = Array.isArray(details?.what_will_be_backed_up) ? details.what_will_be_backed_up : [];
+  const excludedItems = Array.isArray(details?.what_will_not_be_backed_up) ? details.what_will_not_be_backed_up : [];
 
   const shortId = (value) => {
     const text = String(value || '');
@@ -210,7 +257,11 @@ export default function RecoveryScreen() {
     setActiveActionPanel(action);
   }
 
-  const refreshRecovery = useCallback(() => refresh(), [refresh]);
+  const refreshRecovery = useCallback(async () => {
+    const refreshes = [refreshSummary()];
+    if (detailsNeeded) refreshes.push(refreshDetails());
+    await Promise.allSettled(refreshes);
+  }, [detailsNeeded, refreshDetails, refreshSummary]);
 
   async function copyEvidence(value, label) {
     const copied = await copyTextToClipboard(value);
@@ -231,6 +282,7 @@ export default function RecoveryScreen() {
       recoveryFlow.backupAccepted(payload);
       recoveryFlow.backupDone(payload);
       setBackupResult(payload);
+      triggerLiteHaptic('accepted');
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
@@ -247,6 +299,7 @@ export default function RecoveryScreen() {
     try {
       const payload = await liteApi.backupDatabase({ reason: 'manual Pocket Lab database backup' });
       setDatabaseResult(payload);
+      triggerLiteHaptic('accepted');
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
@@ -263,6 +316,7 @@ export default function RecoveryScreen() {
     try {
       const payload = await liteApi.verifyDatabaseBackup(latestDatabaseBackup.backup_id);
       setDatabaseResult(payload);
+      triggerLiteHaptic('success');
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
@@ -287,10 +341,15 @@ export default function RecoveryScreen() {
     }
   }
 
-  async function restoreDatabase() {
+  function requestDatabaseRestore() {
     if (!latestDatabaseBackup?.backup_id || !latestDatabasePreview?.preview_id || databaseWriteBlocked) return;
-    const confirmed = window.confirm('Restore Pocket Lab to this verified database backup? Pocket Lab will enter maintenance and keep a rollback copy.');
-    if (!confirmed) return;
+    setRestoreConfirmation('database');
+  }
+
+  async function confirmDatabaseRestore() {
+    if (!latestDatabaseBackup?.backup_id || !latestDatabasePreview?.preview_id || databaseWriteBlocked) return;
+    setRestoreConfirmation('');
+    triggerLiteHaptic('confirm');
     setBusy('database-restore');
     setDatabaseResult(null);
     setActionError(null);
@@ -301,9 +360,11 @@ export default function RecoveryScreen() {
         confirm: true,
       });
       setDatabaseResult(payload);
+      triggerLiteHaptic('success');
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
+      triggerLiteHaptic('warning');
     } finally {
       setBusy('');
     }
@@ -353,6 +414,7 @@ export default function RecoveryScreen() {
       recoveryFlow.verifyAccepted(payload);
       recoveryFlow.verified(payload);
       setVerifyResult(payload);
+      triggerLiteHaptic('success');
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
@@ -381,13 +443,18 @@ export default function RecoveryScreen() {
     }
   }
 
-  async function restoreLatestBackup() {
+  function restoreLatestBackup() {
     if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
     const flowCheck = recoveryFlow.requestRestore({ verified: latestBackupVerified, previewReady: latestPreviewReady, explicitBackup: Boolean(latestBackup?.backup_id && latestBackup.backup_id !== 'latest') });
     if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
-    const confirmed = window.confirm('Restore will change local Lite state. Pocket Lab will create a checkpoint first. Continue?');
-    if (!confirmed) { recoveryFlow.cancel(); return; }
+    setRestoreConfirmation('lite');
+  }
+
+  async function confirmRestoreLatestBackup() {
+    if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
+    setRestoreConfirmation('');
     recoveryFlow.confirmRestore();
+    triggerLiteHaptic('confirm');
     setBusy('restore');
     setRestoreResult(null);
     setActionError(null);
@@ -400,12 +467,19 @@ export default function RecoveryScreen() {
       recoveryFlow.restoreAccepted(payload);
       recoveryFlow.complete(payload);
       setRestoreResult(payload);
+      triggerLiteHaptic('success');
       refreshRecovery();
     } catch (err) {
       setActionError(err.message);
+      triggerLiteHaptic('warning');
     } finally {
       setBusy('');
     }
+  }
+
+  function cancelRestoreConfirmation() {
+    if (restoreConfirmation === 'lite') recoveryFlow.cancel();
+    setRestoreConfirmation('');
   }
 
   const resultNotice = databaseResult || restoreResult || previewResult || verifyResult || backupResult;
@@ -416,8 +490,12 @@ export default function RecoveryScreen() {
         eyebrow="Recovery"
         title="Backup & Restore"
         description="Keep a verified safety copy ready without exposing recovery internals on the main screen."
-        actions={<LiteRefreshButton scope="recovery" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="recovery" refresh={refreshSummary} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
+
+      <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">
+        {actionError || (busy ? `Recovery action in progress: ${busy.replace(/[-:]/g, ' ')}` : resultNotice?.summary || '')}
+      </div>
 
       <section className="lite-recovery-r1-hero" data-recovery-r1-summary="true">
         <div className="lite-recovery-r1-hero-copy">
@@ -518,7 +596,7 @@ export default function RecoveryScreen() {
             checkpoint={checkpoint}
             repository={repository}
             history={history}
-            savedStateOnly={savedStateOnly}
+            savedStateOnly={savedStateOnly || detailsSavedStateOnly}
             latestBackupVerified={latestBackupVerified}
             latestPreviewReady={latestPreviewReady}
             restoreSucceeded={restoreSucceeded}
@@ -544,6 +622,9 @@ export default function RecoveryScreen() {
             onPreviewAppRestore={previewAppRestore}
             onOpenActionDetails={openActionPanel}
             onOpenEvidence={() => setEvidenceOpen(true)}
+            detailsLoading={detailsLoading && !detailsData}
+            detailsError={detailsError}
+            onRetryDetails={refreshDetails}
           />
         </React.Suspense>
       </LiteSheet>
@@ -572,7 +653,7 @@ export default function RecoveryScreen() {
               serviceRestart={serviceRestart}
               healthValidation={healthValidation}
               history={history}
-              savedStateOnly={savedStateOnly}
+              savedStateOnly={savedStateOnly || detailsSavedStateOnly}
               evidenceItems={evidenceItems}
               onOpenEvidence={() => setEvidenceOpen(true)}
             />
@@ -604,7 +685,29 @@ export default function RecoveryScreen() {
             onBackup={backUpDatabase}
             onVerify={verifyDatabaseBackup}
             onPreview={previewDatabaseRestore}
-            onRestore={restoreDatabase}
+            onRestore={requestDatabaseRestore}
+          />
+        </React.Suspense>
+      </LiteSheet>
+
+      <LiteSheet
+        open={Boolean(restoreConfirmation)}
+        onClose={cancelRestoreConfirmation}
+        title={restoreConfirmation === 'database' ? 'Restore Pocket Lab database' : 'Restore backup'}
+        eyebrow="Confirm Restore"
+        description="Review the protected action before local state changes."
+        variant="security"
+        className="lite-recovery-confirm-sheet"
+        bodyClassName="lite-recovery-confirm-scroll"
+      >
+        <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading restore confirmation…</div>}>
+          <RecoveryConfirmSheetLazy
+            kind={restoreConfirmation || 'lite'}
+            backup={restoreConfirmation === 'database' ? latestDatabaseBackup : latestBackup}
+            preview={restoreConfirmation === 'database' ? latestDatabasePreview : latestPreview}
+            busy={busy === 'restore' || busy === 'database-restore'}
+            onCancel={cancelRestoreConfirmation}
+            onConfirm={restoreConfirmation === 'database' ? confirmDatabaseRestore : confirmRestoreLatestBackup}
           />
         </React.Suspense>
       </LiteSheet>

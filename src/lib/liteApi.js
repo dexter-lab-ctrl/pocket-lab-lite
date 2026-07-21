@@ -171,6 +171,8 @@ export const liteApi = {
   fleet: safeGet('/api/lite/fleet'),
   policy: () => readJson('/api/lite/policy'),
   recovery: safeGet('/api/lite/recovery'),
+  recoverySummary: conditionalGet('/api/lite/recovery/summary'),
+  recoveryDetails: safeGet('/api/lite/recovery/details'),
   databaseRecovery: safeGet('/api/lite/recovery/database'),
   recoveryMaintenance: safeGet('/api/lite/recovery/maintenance'),
   recoveryApps: () => readJson('/api/lite/recovery/apps'),
@@ -183,6 +185,11 @@ export const liteApi = {
   appRestorePreview: (appId = 'photoprism', previewId = 'latest') => readJson(`/api/lite/apps/${encodeURIComponent(appId)}/restore/previews/${encodeURIComponent(previewId || 'latest')}`),
   restoreApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/recovery/apps/${encodeURIComponent(appId)}/restore`, payload),
   recoveryBackups: () => readJson('/api/lite/recovery/backups'),
+  recoveryHistory: (limit = 10, cursor = '') => {
+    const query = new URLSearchParams({ limit: String(limit || 10) });
+    if (cursor) query.set('cursor', cursor);
+    return readJson(`/api/lite/recovery/backups?${query.toString()}`);
+  },
   recoveryBackup: (backupId = 'latest') => readJson(`/api/lite/recovery/backups/${encodeURIComponent(backupId)}`),
   recoveryReceipt: (backupId = 'latest') => readJson(`/api/lite/recovery/receipts/${encodeURIComponent(backupId)}`),
   installApp: (appId, options = {}) => postJson('/api/lite/catalog/install', { app_id: appId, ...options }),
