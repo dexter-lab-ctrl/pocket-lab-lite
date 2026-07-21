@@ -35,6 +35,7 @@ MAX_HISTORY_LIMIT = 100
 DEFAULT_RECENT_COMPLETION_SECONDS = 45
 MAX_RECENT_COMPLETION_SECONDS = 300
 IMPORT_VERSION = 1
+DERIVED_PROJECTION_FIELDS = frozenset({"latest_completed_at"})
 _INITIALIZED_DATABASES: set[Path] = set()
 _INITIALIZE_LOCK = threading.Lock()
 
@@ -2613,6 +2614,30 @@ class SecuritySQLiteRepository:
                 _set_metadata(tx, "shadow_compare:last", result)
         return result
 
+    def record_projection_drift_result(
+        self, result: Mapping[str, Any]
+    ) -> None:
+        safe = policy.redact_value(
+            {
+                "matched": bool(result.get("matched")),
+                "repaired": bool(result.get("repaired")),
+                "repair_attempted": bool(result.get("repair_attempted")),
+                "repairable_derived_only": bool(
+                    result.get("repairable_derived_only")
+                ),
+                "mismatch_fields": list(result.get("mismatch_fields") or [])[:20],
+                "source_root": str(result.get("source_root") or "security")[:120],
+                "runs_seen": max(0, int(result.get("runs_seen") or 0)),
+                "runs_normalized": max(
+                    0, int(result.get("runs_normalized") or 0)
+                ),
+                "compared_at": str(result.get("compared_at") or utc_now()),
+                "repaired_at": str(result.get("repaired_at") or ""),
+            }
+        )
+        with connection() as conn, begin_immediate(conn) as tx:
+            _set_metadata(tx, "projection_drift:last", safe)
+
     def compare_legacy_source(
         self,
         *,
@@ -2999,21 +3024,41 @@ def _projection_checksum(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(json.dumps(clean, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
 
 
+def _projection_timestamp_epoch(value: Any) -> int | None:
+    if value in {None, ""}:
+        return None
+    return _epoch_ms(_parse_timestamp(value))
+
+
+def _normalized_projection_for_compare(
+    projection: Mapping[str, Any],
+) -> dict[str, Any]:
+    normalized = dict(policy.redact_value(dict(projection)))
+    normalized["latest_completed_at"] = _projection_timestamp_epoch(
+        normalized.get("latest_completed_at")
+    )
+    return normalized
+
+
 def _compare_projections(
     canonical_projection: Mapping[str, Any],
     sqlite_projection: Mapping[str, Any],
 ) -> dict[str, Any]:
-    fields = sorted(set(canonical_projection) | set(sqlite_projection))
+    canonical = _normalized_projection_for_compare(canonical_projection)
+    sqlite_value = _normalized_projection_for_compare(sqlite_projection)
+    fields = sorted(set(canonical) | set(sqlite_value))
     mismatches = [
         field
         for field in fields
-        if canonical_projection.get(field) != sqlite_projection.get(field)
+        if canonical.get(field) != sqlite_value.get(field)
     ]
     return {
         "matched": not mismatches,
         "mismatch_fields": mismatches,
-        "json_checksum": _projection_checksum(canonical_projection),
-        "sqlite_checksum": _projection_checksum(sqlite_projection),
+        "repairable_derived_only": bool(mismatches)
+        and set(mismatches).issubset(DERIVED_PROJECTION_FIELDS),
+        "json_checksum": _projection_checksum(canonical),
+        "sqlite_checksum": _projection_checksum(sqlite_value),
         "compared_at": utc_now(),
     }
 
