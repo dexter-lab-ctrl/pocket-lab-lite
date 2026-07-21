@@ -153,6 +153,38 @@ _PROGRESS_RUN_SQL = f"""
     WHERE r.run_id = ?
     LIMIT 1
 """
+_RUN_HISTORY_COLUMNS = """
+    run_id,
+    profile,
+    app_id,
+    app_label,
+    status,
+    summary,
+    score,
+    partial_results,
+    requested_at,
+    accepted_at,
+    started_at,
+    completed_at,
+    updated_at,
+    requested_at_epoch_ms,
+    completed_at_epoch_ms,
+    updated_at_epoch_ms,
+    checks_reviewed,
+    items_to_review,
+    critical_count,
+    high_count,
+    medium_count,
+    low_count,
+    info_count,
+    timeout_reason,
+    failure_code,
+    failure_message,
+    revision,
+    evidence_saved
+"""
+
+
 _PROGRESS_EVENT_SELECT = """
     SELECT
         pe.event_id,
@@ -508,13 +540,17 @@ def _json_value(value: str | None, default: Any) -> Any:
         return default
 
 
-def _row(row: sqlite3.Row | None) -> dict[str, Any] | None:
+def _row(
+    row: sqlite3.Row | None, *, include_metadata: bool = True
+) -> dict[str, Any] | None:
     if row is None:
         return None
     payload = dict(row)
     payload["partial_results"] = bool(payload.get("partial_results"))
     payload["evidence_saved"] = bool(payload.get("evidence_saved"))
-    payload["metadata"] = _json_value(payload.pop("metadata_json", None), {})
+    metadata_json = payload.pop("metadata_json", None)
+    if include_metadata:
+        payload["metadata"] = _json_value(metadata_json, {})
     return policy.redact_value(payload)
 
 
@@ -1594,9 +1630,14 @@ class SecuritySQLiteRepository:
             "progress_event": event, "run": _row(row) or {},
         }
 
-    def _replace_findings(self, conn: sqlite3.Connection, run_id: str, findings: Sequence[Mapping[str, Any]]) -> int:
+    def _replace_findings(
+        self,
+        conn: sqlite3.Connection,
+        run_id: str,
+        findings: Sequence[Mapping[str, Any]],
+    ) -> int:
         conn.execute("DELETE FROM security_scan_findings WHERE run_id = ?", (run_id,))
-        count = 0
+        rows: list[tuple[Any, ...]] = []
         seen: set[str] = set()
         for finding in list(findings)[:500]:
             clean = policy.redact_value(dict(finding))
@@ -1605,15 +1646,10 @@ class SecuritySQLiteRepository:
                 continue
             seen.add(finding_key)
             severity = policy.normalize_severity(clean.get("severity"))
-            title = policy.redact_text(str(clean.get("title") or clean.get("summary") or "Security finding"))[:240]
-            conn.execute(
-                """
-                INSERT INTO security_scan_findings(
-                    run_id, finding_key, fingerprint, source, severity, title, summary,
-                    component, status, first_seen_at, last_seen_at, resolved_at,
-                    remediation_json, technical_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+            title = policy.redact_text(
+                str(clean.get("title") or clean.get("summary") or "Security finding")
+            )[:240]
+            rows.append(
                 (
                     run_id,
                     finding_key,
@@ -1624,29 +1660,72 @@ class SecuritySQLiteRepository:
                     policy.redact_text(str(clean.get("summary") or ""))[:500],
                     policy.redact_text(str(clean.get("component") or ""))[:160],
                     policy.redact_text(str(clean.get("status") or "present"))[:40],
-                    _parse_timestamp(clean.get("first_seen_at")) if clean.get("first_seen_at") else None,
-                    _parse_timestamp(clean.get("last_seen_at")) if clean.get("last_seen_at") else None,
-                    _parse_timestamp(clean.get("resolved_at")) if clean.get("resolved_at") else None,
+                    _parse_timestamp(clean.get("first_seen_at"))
+                    if clean.get("first_seen_at")
+                    else None,
+                    _parse_timestamp(clean.get("last_seen_at"))
+                    if clean.get("last_seen_at")
+                    else None,
+                    _parse_timestamp(clean.get("resolved_at"))
+                    if clean.get("resolved_at")
+                    else None,
                     _safe_json(clean.get("remediation") or clean.get("recommendation")),
-                    _safe_json({key: clean.get(key) for key in ("category", "file", "target", "redacted") if key in clean}),
-                ),
+                    _safe_json(
+                        {
+                            key: clean.get(key)
+                            for key in ("category", "file", "target", "redacted")
+                            if key in clean
+                        }
+                    ),
+                )
             )
-            count += 1
-        return count
+        if rows:
+            conn.executemany(
+                """
+                INSERT INTO security_scan_findings(
+                    run_id, finding_key, fingerprint, source, severity, title, summary,
+                    component, status, first_seen_at, last_seen_at, resolved_at,
+                    remediation_json, technical_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                rows,
+            )
+        return len(rows)
 
     def _replace_evidence_refs(
-        self, conn: sqlite3.Connection, run_id: str, refs: Sequence[Any], *, created_at: str
+        self,
+        conn: sqlite3.Connection,
+        run_id: str,
+        refs: Sequence[Any],
+        *,
+        created_at: str,
     ) -> int:
         conn.execute("DELETE FROM security_scan_evidence_refs WHERE run_id = ?", (run_id,))
-        count = 0
+        rows: list[tuple[Any, ...]] = []
         seen: set[str] = set()
         for item in list(refs)[:500]:
             if isinstance(item, Mapping):
-                relative = str(item.get("relative_path") or item.get("path") or item.get("evidence_ref") or "")
+                relative = str(
+                    item.get("relative_path")
+                    or item.get("path")
+                    or item.get("evidence_ref")
+                    or ""
+                )
                 kind = str(item.get("kind") or Path(relative).stem or "evidence")
                 sha256 = str(item.get("sha256") or "") or None
                 size_bytes = item.get("size_bytes")
-                metadata = {key: value for key, value in item.items() if key not in {"relative_path", "path", "evidence_ref", "sha256", "size_bytes"}}
+                metadata = {
+                    key: value
+                    for key, value in item.items()
+                    if key
+                    not in {
+                        "relative_path",
+                        "path",
+                        "evidence_ref",
+                        "sha256",
+                        "size_bytes",
+                    }
+                }
             else:
                 relative = str(item or "")
                 kind = Path(relative).stem or "evidence"
@@ -1657,12 +1736,7 @@ class SecuritySQLiteRepository:
             if not safe_relative or safe_relative in seen:
                 continue
             seen.add(safe_relative)
-            conn.execute(
-                """
-                INSERT INTO security_scan_evidence_refs(
-                    run_id, kind, relative_path, sha256, size_bytes, created_at, metadata_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
+            rows.append(
                 (
                     run_id,
                     policy.redact_text(kind)[:80],
@@ -1671,41 +1745,86 @@ class SecuritySQLiteRepository:
                     max(0, int(size_bytes)) if size_bytes is not None else None,
                     created_at,
                     _safe_json(metadata),
-                ),
+                )
             )
-            count += 1
-        return count
+        if rows:
+            conn.executemany(
+                """
+                INSERT INTO security_scan_evidence_refs(
+                    run_id, kind, relative_path, sha256, size_bytes, created_at, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                rows,
+            )
+        return len(rows)
 
-    def _replace_tool_runs(self, conn: sqlite3.Connection, run_id: str, tool_results: Mapping[str, Any]) -> int:
+    def _replace_tool_runs(
+        self,
+        conn: sqlite3.Connection,
+        run_id: str,
+        tool_results: Mapping[str, Any],
+    ) -> int:
         conn.execute("DELETE FROM security_scan_tool_runs WHERE run_id = ?", (run_id,))
-        count = 0
+        rows: list[tuple[Any, ...]] = []
         for tool_name, raw in list(tool_results.items())[:100]:
-            payload = policy.redact_value(raw if isinstance(raw, Mapping) else {"status": str(raw)})
-            conn.execute(
+            payload = policy.redact_value(
+                raw if isinstance(raw, Mapping) else {"status": str(raw)}
+            )
+            rows.append(
+                (
+                    run_id,
+                    policy.redact_text(str(tool_name))[:80],
+                    policy.redact_text(str(payload.get("status") or "unknown"))[:40],
+                    _parse_timestamp(payload.get("started_at"))
+                    if payload.get("started_at")
+                    else None,
+                    _parse_timestamp(payload.get("completed_at"))
+                    if payload.get("completed_at")
+                    else None,
+                    max(0, int(payload.get("duration_ms") or 0)) or None,
+                    max(0, int(payload.get("finding_count") or 0)),
+                    int(
+                        str(payload.get("status") or "").lower() == "timed_out"
+                        or bool(payload.get("timed_out"))
+                    ),
+                    policy.redact_text(str(payload.get("timeout_reason") or ""))[:240]
+                    or None,
+                    _safe_json(
+                        {
+                            key: value
+                            for key, value in payload.items()
+                            if key
+                            not in {
+                                "status",
+                                "started_at",
+                                "completed_at",
+                                "duration_ms",
+                                "finding_count",
+                                "timed_out",
+                                "timeout_reason",
+                            }
+                        }
+                    ),
+                )
+            )
+        if rows:
+            conn.executemany(
                 """
                 INSERT INTO security_scan_tool_runs(
                     run_id, tool_name, status, started_at, completed_at, duration_ms,
                     finding_count, timed_out, timeout_reason, metadata_json
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (
-                    run_id,
-                    policy.redact_text(str(tool_name))[:80],
-                    policy.redact_text(str(payload.get("status") or "unknown"))[:40],
-                    _parse_timestamp(payload.get("started_at")) if payload.get("started_at") else None,
-                    _parse_timestamp(payload.get("completed_at")) if payload.get("completed_at") else None,
-                    max(0, int(payload.get("duration_ms") or 0)) or None,
-                    max(0, int(payload.get("finding_count") or 0)),
-                    int(str(payload.get("status") or "").lower() == "timed_out" or bool(payload.get("timed_out"))),
-                    policy.redact_text(str(payload.get("timeout_reason") or ""))[:240] or None,
-                    _safe_json({key: value for key, value in payload.items() if key not in {"status", "started_at", "completed_at", "duration_ms", "finding_count", "timed_out", "timeout_reason"}}),
-                ),
+                rows,
             )
-            count += 1
-        return count
+        return len(rows)
 
-    def _upsert_profile_snapshot(self, conn: sqlite3.Connection, run_id: str, *, updated_at: str) -> None:
-        run = conn.execute("SELECT * FROM security_scan_runs WHERE run_id = ?", (run_id,)).fetchone()
+    def _upsert_profile_snapshot(
+        self, conn: sqlite3.Connection, run_id: str, *, updated_at: str
+    ) -> None:
+        run = conn.execute(
+            "SELECT * FROM security_scan_runs WHERE run_id = ?", (run_id,)
+        ).fetchone()
         if not run:
             return
         conn.execute(
@@ -1723,6 +1842,12 @@ class SecuritySQLiteRepository:
                 latest_evidence_at = excluded.latest_evidence_at,
                 updated_at = excluded.updated_at,
                 revision = security_profile_snapshots.revision + 1
+            WHERE security_profile_snapshots.latest_run_id IS NOT excluded.latest_run_id
+               OR security_profile_snapshots.latest_status IS NOT excluded.latest_status
+               OR security_profile_snapshots.latest_score IS NOT excluded.latest_score
+               OR security_profile_snapshots.latest_summary IS NOT excluded.latest_summary
+               OR security_profile_snapshots.latest_completed_at IS NOT excluded.latest_completed_at
+               OR security_profile_snapshots.latest_evidence_at IS NOT excluded.latest_evidence_at
             """,
             (
                 run["profile"],
@@ -2092,6 +2217,7 @@ class SecuritySQLiteRepository:
         cursor_run_id: str | None = None,
         profile: str | None = None,
         app_id: str | None = None,
+        compact: bool = False,
     ) -> dict[str, Any]:
         bounded = max(1, min(int(limit), MAX_HISTORY_LIMIT))
         clauses: list[str] = []
@@ -2108,9 +2234,10 @@ class SecuritySQLiteRepository:
             )
             parameters.extend([int(cursor_epoch_ms), int(cursor_epoch_ms), _normalize_run_id(cursor_run_id)])
         where = " WHERE " + " AND ".join(clauses) if clauses else ""
+        selected_columns = _RUN_HISTORY_COLUMNS if compact else "*"
         with read_connection() as conn:
             rows = conn.execute(
-                "SELECT * FROM security_scan_runs" + where +
+                f"SELECT {selected_columns} FROM security_scan_runs" + where +
                 " ORDER BY COALESCE(completed_at_epoch_ms, updated_at_epoch_ms, requested_at_epoch_ms) DESC, run_id DESC LIMIT ?",
                 (*parameters, bounded + 1),
             ).fetchall()
@@ -2124,7 +2251,9 @@ class SecuritySQLiteRepository:
                 "run_id": str(last["run_id"]),
             }
         return {
-            "runs": [_row(row) or {} for row in selected],
+            "runs": [
+                _row(row, include_metadata=not compact) or {} for row in selected
+            ],
             "has_more": has_more,
             "next_cursor": next_cursor,
             "limit": bounded,
@@ -2358,30 +2487,27 @@ class SecuritySQLiteRepository:
                 tx.execute("DELETE FROM security_profile_snapshots")
                 latest_rows = tx.execute(
                     """
-                    SELECT run_id
-                    FROM security_scan_runs
-                    ORDER BY
-                        profile, app_id,
-                        COALESCE(
-                            completed_at_epoch_ms,
-                            updated_at_epoch_ms,
-                            requested_at_epoch_ms
-                        ) DESC,
-                        run_id DESC
+                    SELECT run_id, updated_at
+                    FROM (
+                        SELECT
+                            run_id,
+                            updated_at,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY profile, app_id
+                                ORDER BY COALESCE(
+                                    completed_at_epoch_ms,
+                                    updated_at_epoch_ms,
+                                    requested_at_epoch_ms
+                                ) DESC, run_id DESC
+                            ) AS profile_rank
+                        FROM security_scan_runs
+                    )
+                    WHERE profile_rank = 1
                     """
                 ).fetchall()
-                seen_profiles: set[tuple[str, str]] = set()
                 for row in latest_rows:
-                    run = tx.execute(
-                        "SELECT profile, app_id, updated_at FROM security_scan_runs WHERE run_id = ?",
-                        (row["run_id"],),
-                    ).fetchone()
-                    key = (str(run["profile"]), str(run["app_id"]))
-                    if key in seen_profiles:
-                        continue
-                    seen_profiles.add(key)
                     self._upsert_profile_snapshot(
-                        tx, str(row["run_id"]), updated_at=str(run["updated_at"])
+                        tx, str(row["run_id"]), updated_at=str(row["updated_at"])
                     )
                 canonical_projection = _normalized_runs_shadow_projection(normalized)
                 parity = self._compare_projection_with_connection(

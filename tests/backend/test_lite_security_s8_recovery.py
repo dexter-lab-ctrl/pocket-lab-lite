@@ -53,8 +53,8 @@ def test_s8_migration_and_database_package_contract(tmp_path):
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
     from api_fastapi.services import lite_database_recovery
 
-    assert apply_migrations() == [1, 2, 3, 4]
-    assert current_schema_version() == 4
+    assert apply_migrations() == [1, 2, 3, 4, 5]
+    assert current_schema_version() == 5
     _terminal_run(_repository(), "security-s8-backup-a", completed_at=_iso_days_ago(2))
     result = lite_database_recovery.create_database_backup({"command_id": "db-backup-s8-a"})
 
