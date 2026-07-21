@@ -5789,7 +5789,12 @@ def test_lite_recovery_s3_uses_focused_invalidations():
     assert "catalog" not in recovery_slice
     assert "fleet" not in recovery_slice
     assert "security" not in recovery_slice
-    assert "refreshRecovery" in recovery
+    actions = Path("src/hooks/useLiteRecoveryActions.js").read_text()
+    assert "useLiteRecoveryActions" in recovery
+    assert "refreshRecovery" not in recovery
+    assert "useLiteMutation" in actions
+    assert "invalidateOnSuccess: true" in actions
+    assert "operationBusy" in actions
     assert "window.setTimeout(refresh" not in recovery
     assert "[700, 1800" not in recovery
 

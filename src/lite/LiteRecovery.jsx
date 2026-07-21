@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Activity,
   ArchiveRestore,
@@ -8,6 +8,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useLiteResource } from '../hooks/useLiteStatus.js';
+import { useLiteRecoveryActions } from '../hooks/useLiteRecoveryActions.js';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
@@ -23,7 +25,6 @@ import {
   PageHeader,
   LiteButton,
   LiteRefreshButton,
-  ResultNotice,
   LoadingCard,
   LiteFlowStatusPanel,
 } from './LiteUi.jsx';
@@ -61,24 +62,21 @@ function mergeOptional(...values) {
 }
 
 export default function RecoveryScreen() {
-  const [backupResult, setBackupResult] = useState(null);
-  const [verifyResult, setVerifyResult] = useState(null);
-  const [previewResult, setPreviewResult] = useState(null);
-  const [restoreResult, setRestoreResult] = useState(null);
-  const [databaseResult, setDatabaseResult] = useState(null);
-  const [actionError, setActionError] = useState(null);
-  const [busy, setBusy] = useState('');
-  const [recoveryManageOpen, setRecoveryManageOpen] = useState(false);
-  const [recoveryManageSection, setRecoveryManageSection] = useState('backup');
-  const [activeActionPanel, setActiveActionPanel] = useState('');
-  const [databaseDetailsOpen, setDatabaseDetailsOpen] = useState(false);
-  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [copiedEvidence, setCopiedEvidence] = useState('');
-  const [restoreConfirmation, setRestoreConfirmation] = useState('');
-
-  const recoveryPollingIsLive = useCallback((payload) => (
-    Boolean(busy) || hasLiveRecoveryOperation(payload)
-  ), [busy]);
+  const recoveryManageOpen = useLiteUiStore((state) => state.recoveryManageOpen);
+  const recoveryManageSection = useLiteUiStore((state) => state.activeRecoveryManageSection);
+  const activeActionPanel = useLiteUiStore((state) => state.activeRecoveryDetailsPanel || '');
+  const databaseDetailsOpen = useLiteUiStore((state) => state.recoveryDatabaseDetailsOpen);
+  const evidenceOpen = useLiteUiStore((state) => state.recoveryEvidenceOpen);
+  const restoreConfirmation = useLiteUiStore((state) => state.recoveryRestoreConfirmation || '');
+  const setRecoveryManageOpen = useLiteUiStore((state) => state.setRecoveryManageOpen);
+  const setRecoveryManageSection = useLiteUiStore((state) => state.setActiveRecoveryManageSection);
+  const setActiveActionPanel = useLiteUiStore((state) => state.setActiveRecoveryDetailsPanel);
+  const setDatabaseDetailsOpen = useLiteUiStore((state) => state.setRecoveryDatabaseDetailsOpen);
+  const setEvidenceOpen = useLiteUiStore((state) => state.setRecoveryEvidenceOpen);
+  const setRestoreConfirmation = useLiteUiStore((state) => state.setRecoveryRestoreConfirmation);
+  const resetRecoveryTransientUi = useLiteUiStore((state) => state.resetRecoveryTransientUi);
+  const recoveryPollingIsLive = useCallback((payload) => hasLiveRecoveryOperation(payload), []);
   const detailsNeeded = recoveryManageOpen || Boolean(activeActionPanel) || databaseDetailsOpen || evidenceOpen || Boolean(restoreConfirmation);
   const {
     data: summaryData,
@@ -127,7 +125,7 @@ export default function RecoveryScreen() {
   const serviceRestart = details?.last_restore?.service_restart || {};
   const healthValidation = details?.last_restore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
-  const recoveryFlow = useLiteRecoveryFlow({ recovery: data, latestBackup, latestPreview, backendReachable, savedStateOnly });
+  const recoveryFlow = useLiteRecoveryFlow({ recovery: data, latestBackup, latestPreview, lastRestore, backendReachable, savedStateOnly });
 
   const databaseProtection = {
     ...(details?.database_protection || {}),
@@ -147,6 +145,22 @@ export default function RecoveryScreen() {
   const databaseWriteBlocked = recoveryFlow.writeBlocked
     || databaseMaintenance?.active === true
     || databaseRestoreGuard?.unresolved === true;
+
+  const serverRecoveryLive = hasLiveRecoveryOperation(data);
+  const recoveryActions = useLiteRecoveryActions({
+    writeBlocked: recoveryFlow.writeBlocked,
+    blockedReason: recoveryFlow.blockedReason,
+    operationBusy: (recoveryFlow.isBusy && recoveryFlow.value !== 'restoreConfirmationRequired') || serverRecoveryLive,
+    operationBusyReason: 'Pocket Lab is already completing a Recovery action.',
+  });
+  const flowBusyKey = {
+    backup_now: 'backup',
+    verify_backup: 'verify',
+    preview_restore_recovery: 'preview',
+    recovery_restore: 'restore',
+  }[recoveryFlow.context.activeActionId] || '';
+  const busy = recoveryActions.busyKey || (recoveryFlow.isBusy ? flowBusyKey : '');
+  const actionError = recoveryActions.errorMessage || recoveryFlow.error || null;
 
   const appBackups = Array.isArray(details?.app_backups)
     ? details.app_backups
@@ -218,7 +232,7 @@ export default function RecoveryScreen() {
   };
   const activePanel = actionPanelMeta[activeActionPanel] || null;
 
-  const recoveryLive = Boolean(busy) || hasLiveRecoveryOperation(data);
+  const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
   const recoveryReady = !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
   const recoveryStatus = databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
   const recoveryTitle = databaseWriteBlocked
@@ -257,12 +271,6 @@ export default function RecoveryScreen() {
     setActiveActionPanel(action);
   }
 
-  const refreshRecovery = useCallback(async () => {
-    const refreshes = [refreshSummary()];
-    if (detailsNeeded) refreshes.push(refreshDetails());
-    await Promise.allSettled(refreshes);
-  }, [detailsNeeded, refreshDetails, refreshSummary]);
-
   async function copyEvidence(value, label) {
     const copied = await copyTextToClipboard(value);
     if (copied) {
@@ -273,72 +281,54 @@ export default function RecoveryScreen() {
 
   async function backup() {
     const flowCheck = recoveryFlow.requestBackup();
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
-    setBusy('backup');
-    setBackupResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.backupNow({ include_app_data: false, reason: 'manual backup' });
-      recoveryFlow.backupAccepted(payload);
-      recoveryFlow.backupDone(payload);
-      setBackupResult(payload);
-      triggerLiteHaptic('accepted');
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    if (!flowCheck.ok) return;
+    await recoveryActions.runAction({
+      actionId: 'backup_now',
+      busyKey: 'backup',
+      execute: () => liteApi.backupNow({ include_app_data: false, reason: 'manual backup' }),
+      onAccepted: recoveryFlow.backupAccepted,
+      onDone: recoveryFlow.backupDone,
+      onFailure: recoveryFlow.fail,
+      successHaptic: 'accepted',
+      failureHaptic: 'warning',
+    });
   }
 
   async function backUpDatabase() {
-    if (databaseWriteBlocked) return;
-    setBusy('database-backup');
-    setDatabaseResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.backupDatabase({ reason: 'manual Pocket Lab database backup' });
-      setDatabaseResult(payload);
-      triggerLiteHaptic('accepted');
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    await recoveryActions.runAction({
+      actionId: 'database_backup',
+      busyKey: 'database-backup',
+      blocked: databaseWriteBlocked,
+      blockedMessage: 'Database protection is temporarily blocking writes.',
+      execute: () => liteApi.backupDatabase({ reason: 'manual Pocket Lab database backup' }),
+      successHaptic: 'accepted',
+      failureHaptic: 'warning',
+    });
   }
 
   async function verifyDatabaseBackup() {
-    if (!latestDatabaseBackup?.backup_id || databaseWriteBlocked) return;
-    setBusy('database-verify');
-    setDatabaseResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.verifyDatabaseBackup(latestDatabaseBackup.backup_id);
-      setDatabaseResult(payload);
-      triggerLiteHaptic('success');
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    if (!latestDatabaseBackup?.backup_id) return;
+    await recoveryActions.runAction({
+      actionId: 'database_verify',
+      busyKey: 'database-verify',
+      blocked: databaseWriteBlocked,
+      blockedMessage: 'Database protection is temporarily blocking verification.',
+      execute: () => liteApi.verifyDatabaseBackup(latestDatabaseBackup.backup_id),
+      successHaptic: 'success',
+      failureHaptic: 'warning',
+    });
   }
 
   async function previewDatabaseRestore() {
-    if (!latestDatabaseBackup?.backup_id || databaseWriteBlocked) return;
-    setBusy('database-preview');
-    setDatabaseResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.previewDatabaseRestore(latestDatabaseBackup.backup_id);
-      setDatabaseResult(payload);
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    if (!latestDatabaseBackup?.backup_id) return;
+    await recoveryActions.runAction({
+      actionId: 'database_preview_restore',
+      busyKey: 'database-preview',
+      blocked: databaseWriteBlocked,
+      blockedMessage: 'Database protection is temporarily blocking restore preview.',
+      execute: () => liteApi.previewDatabaseRestore(latestDatabaseBackup.backup_id),
+      failureHaptic: 'warning',
+    });
   }
 
   function requestDatabaseRestore() {
@@ -350,103 +340,88 @@ export default function RecoveryScreen() {
     if (!latestDatabaseBackup?.backup_id || !latestDatabasePreview?.preview_id || databaseWriteBlocked) return;
     setRestoreConfirmation('');
     triggerLiteHaptic('confirm');
-    setBusy('database-restore');
-    setDatabaseResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.restoreDatabase(latestDatabaseBackup.backup_id, {
+    await recoveryActions.runAction({
+      actionId: 'database_restore',
+      busyKey: 'database-restore',
+      blocked: databaseWriteBlocked,
+      blockedMessage: 'Database protection is temporarily blocking restore.',
+      execute: () => liteApi.restoreDatabase(latestDatabaseBackup.backup_id, {
         backup_id: latestDatabaseBackup.backup_id,
         preview_id: latestDatabasePreview.preview_id,
         confirm: true,
-      });
-      setDatabaseResult(payload);
-      triggerLiteHaptic('success');
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-      triggerLiteHaptic('warning');
-    } finally {
-      setBusy('');
-    }
+      }),
+      successHaptic: 'success',
+      failureHaptic: 'warning',
+    });
   }
 
   async function backUpApp(app) {
     if (!app?.app_id) return;
-    setBusy(`app-backup:${app.app_id}`);
-    setBackupResult(null);
-    setActionError(null);
-    try {
-      setBackupResult(await liteApi.backupApp(app.app_id, { mode: app.default_mode || 'config_only', reason: 'manual app backup' }));
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    await recoveryActions.runAction({
+      actionId: 'app_backup',
+      busyKey: `app-backup:${app.app_id}`,
+      appId: app.app_id,
+      execute: () => liteApi.backupApp(app.app_id, {
+        mode: app.default_mode || 'config_only',
+        reason: 'manual app backup',
+      }),
+      failureHaptic: 'warning',
+    });
   }
 
   async function previewAppRestore(app) {
     if (!app?.app_id) return;
-    setBusy(`app-preview:${app.app_id}`);
-    setPreviewResult(null);
-    setActionError(null);
-    try {
-      setPreviewResult(await liteApi.previewAppRestore(app.app_id, { reason: 'manual app restore preview' }));
-      refreshRecovery();
-    } catch (err) {
-      const payload = err?.payload || {};
-      if (err.status === 501 && payload?.status === 'not_implemented') setPreviewResult(payload);
-      else setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    await recoveryActions.runAction({
+      actionId: 'app_restore_preview',
+      busyKey: `app-preview:${app.app_id}`,
+      appId: app.app_id,
+      execute: () => liteApi.previewAppRestore(app.app_id, { reason: 'manual app restore preview' }),
+      failureHaptic: 'warning',
+    });
   }
 
   async function verifyLatestBackup() {
     if (!latestBackup?.backup_id) return;
     const flowCheck = recoveryFlow.requestVerify();
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
-    setBusy('verify');
-    setVerifyResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' });
-      recoveryFlow.verifyAccepted(payload);
-      recoveryFlow.verified(payload);
-      setVerifyResult(payload);
-      triggerLiteHaptic('success');
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    if (!flowCheck.ok) return;
+    await recoveryActions.runAction({
+      actionId: 'verify_backup',
+      busyKey: 'verify',
+      execute: () => liteApi.verifyBackup(latestBackup.backup_id, { reason: 'manual verification' }),
+      onAccepted: recoveryFlow.verifyAccepted,
+      onDone: recoveryFlow.verified,
+      onFailure: recoveryFlow.fail,
+      successHaptic: 'success',
+      failureHaptic: 'warning',
+    });
   }
 
   async function previewLatestRestore() {
     if (!latestBackup?.backup_id) return;
     const flowCheck = recoveryFlow.requestPreview();
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
-    setBusy('preview');
-    setPreviewResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.previewRestore({ backup_id: latestBackup.backup_id, reason: 'manual restore preview' });
-      recoveryFlow.previewAccepted(payload);
-      recoveryFlow.previewReady(payload);
-      setPreviewResult(payload);
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setBusy('');
-    }
+    if (!flowCheck.ok) return;
+    await recoveryActions.runAction({
+      actionId: 'preview_restore_recovery',
+      busyKey: 'preview',
+      execute: () => liteApi.previewRestore({
+        backup_id: latestBackup.backup_id,
+        reason: 'manual restore preview',
+      }),
+      onAccepted: recoveryFlow.previewAccepted,
+      onDone: recoveryFlow.previewReady,
+      onFailure: recoveryFlow.fail,
+      failureHaptic: 'warning',
+    });
   }
 
   function restoreLatestBackup() {
     if (!latestBackup?.backup_id || !latestPreview?.preview_id) return;
-    const flowCheck = recoveryFlow.requestRestore({ verified: latestBackupVerified, previewReady: latestPreviewReady, explicitBackup: Boolean(latestBackup?.backup_id && latestBackup.backup_id !== 'latest') });
-    if (!flowCheck.ok) { setActionError(flowCheck.reason); return; }
+    const flowCheck = recoveryFlow.requestRestore({
+      verified: latestBackupVerified,
+      previewReady: latestPreviewReady,
+      explicitBackup: Boolean(latestBackup?.backup_id && latestBackup.backup_id !== 'latest'),
+    });
+    if (!flowCheck.ok) return;
     setRestoreConfirmation('lite');
   }
 
@@ -455,34 +430,70 @@ export default function RecoveryScreen() {
     setRestoreConfirmation('');
     recoveryFlow.confirmRestore();
     triggerLiteHaptic('confirm');
-    setBusy('restore');
-    setRestoreResult(null);
-    setActionError(null);
-    try {
-      const payload = await liteApi.restoreBackup({
+    await recoveryActions.runAction({
+      actionId: 'recovery_restore',
+      busyKey: 'restore',
+      execute: () => liteApi.restoreBackup({
         backup_id: latestBackup.backup_id,
         preview_id: latestPreview.preview_id,
         confirm: true,
-      });
-      recoveryFlow.restoreAccepted(payload);
-      recoveryFlow.complete(payload);
-      setRestoreResult(payload);
-      triggerLiteHaptic('success');
-      refreshRecovery();
-    } catch (err) {
-      setActionError(err.message);
-      triggerLiteHaptic('warning');
-    } finally {
-      setBusy('');
-    }
+      }),
+      onAccepted: recoveryFlow.restoreAccepted,
+      onDone: recoveryFlow.complete,
+      onFailure: recoveryFlow.fail,
+      successHaptic: 'success',
+      failureHaptic: 'warning',
+    });
   }
+
+  useEffect(() => () => {
+    resetRecoveryTransientUi();
+  }, [resetRecoveryTransientUi]);
+
+  useEffect(() => {
+    if (!restoreConfirmation) return;
+    const liteConfirmationInvalid = restoreConfirmation === 'lite' && (
+      recoveryFlow.writeBlocked
+      || recoveryFlow.value !== 'restoreConfirmationRequired'
+      || !latestBackupVerified
+      || !latestPreviewReady
+      || !latestBackup?.backup_id
+      || !latestPreview?.preview_id
+    );
+    const databaseConfirmationInvalid = restoreConfirmation === 'database' && (
+      databaseWriteBlocked
+      || !databaseBackupVerified
+      || !databasePreviewReady
+      || !latestDatabaseBackup?.backup_id
+      || !latestDatabasePreview?.preview_id
+    );
+    if (!liteConfirmationInvalid && !databaseConfirmationInvalid) return;
+    if (restoreConfirmation === 'lite') recoveryFlow.cancel();
+    setRestoreConfirmation('');
+  }, [
+    databaseBackupVerified,
+    databasePreviewReady,
+    databaseWriteBlocked,
+    latestBackup?.backup_id,
+    latestBackupVerified,
+    latestDatabaseBackup?.backup_id,
+    latestDatabasePreview?.preview_id,
+    latestPreview?.preview_id,
+    latestPreviewReady,
+    recoveryFlow,
+    restoreConfirmation,
+    setRestoreConfirmation,
+  ]);
 
   function cancelRestoreConfirmation() {
     if (restoreConfirmation === 'lite') recoveryFlow.cancel();
     setRestoreConfirmation('');
   }
 
-  const resultNotice = databaseResult || restoreResult || previewResult || verifyResult || backupResult;
+  const recoveryAnnouncement = actionError
+    || (busy ? `Recovery action in progress: ${busy.replace(/[-:]/g, ' ')}` : '')
+    || (recoveryFlow.context.lastCompletedAt ? latestActivity[0]?.title || 'Recovery state updated.' : '');
+
 
   return (
     <>
@@ -494,7 +505,7 @@ export default function RecoveryScreen() {
       />
 
       <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">
-        {actionError || (busy ? `Recovery action in progress: ${busy.replace(/[-:]/g, ' ')}` : resultNotice?.summary || '')}
+        {recoveryAnnouncement}
       </div>
 
       <section className="lite-recovery-r1-hero" data-recovery-r1-summary="true">
@@ -516,8 +527,8 @@ export default function RecoveryScreen() {
             <span className={databaseBackupVerified && !databaseWriteBlocked ? 'is-ready' : ''}><Database className="h-4 w-4" />{databaseWriteBlocked ? 'Database protected' : databaseBackupVerified ? 'Database healthy' : 'Database backup needed'}</span>
           </div>
           <div className="lite-recovery-r1-actions">
-            <LiteButton onClick={backup} disabled={busy === 'backup' || recoveryFlow.writeBlocked}>
-              {busy === 'backup' ? 'Starting backup…' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
+            <LiteButton onClick={backup} disabled={Boolean(busy) || recoveryFlow.writeBlocked}>
+              {busy ? 'Recovery is working…' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
             </LiteButton>
             <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage Recovery">
               Manage
@@ -734,7 +745,6 @@ export default function RecoveryScreen() {
         )) : <p>No recovery evidence is available yet.</p>}
       </LiteSheet>
 
-      <ResultNotice result={resultNotice} error={actionError} />
     </>
   );
 }

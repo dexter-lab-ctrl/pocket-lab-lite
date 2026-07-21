@@ -116,14 +116,14 @@ export async function invalidateLiteQueries(queryClient, invalidate = []) {
   await Promise.all(keys.filter(Boolean).map((queryKey) => queryClient.invalidateQueries({ queryKey })));
 }
 
-export function useLiteMutation({ mutationFn, invalidate = [], invalidateForAction, onSuccess, ...options } = {}) {
+export function useLiteMutation({ mutationFn, invalidate = [], invalidateForAction, invalidateOnSuccess = false, onSuccess, ...options } = {}) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn,
     retry: false,
     ...options,
     onSuccess: async (data, variables, context) => {
-      if (isAcceptedLiteMutationResponse(data)) {
+      if (invalidateOnSuccess || isAcceptedLiteMutationResponse(data)) {
         const dynamicInvalidations = typeof invalidateForAction === 'function'
           ? invalidateForAction(variables, data)
           : [];

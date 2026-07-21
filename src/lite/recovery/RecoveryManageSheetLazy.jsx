@@ -183,7 +183,7 @@ export default function RecoveryManageSheetLazy({
               actionLabel="Back Up Now"
               busyLabel="Starting backup…"
               busy={busy === 'backup'}
-              disabled={databaseWriteBlocked}
+              disabled={Boolean(busy) || databaseWriteBlocked}
               onAction={onBackup}
             />
             <RecoveryActionRow
@@ -195,7 +195,7 @@ export default function RecoveryManageSheetLazy({
               actionLabel="Back Up"
               busyLabel="Starting backup…"
               busy={busy === 'database-backup'}
-              disabled={databaseWriteBlocked}
+              disabled={Boolean(busy) || databaseWriteBlocked}
               onAction={onDatabaseBackup}
               onDetails={onOpenDatabaseDetails}
             />
@@ -256,7 +256,7 @@ export default function RecoveryManageSheetLazy({
               actionLabel="Verify"
               busyLabel="Checking…"
               busy={busy === 'verify'}
-              disabled={!latestBackup || databaseWriteBlocked}
+              disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked}
               onAction={onVerify}
               onDetails={() => onOpenActionDetails('verify')}
             />
@@ -269,7 +269,7 @@ export default function RecoveryManageSheetLazy({
               actionLabel="Preview"
               busyLabel="Preparing…"
               busy={busy === 'preview'}
-              disabled={!latestBackup || databaseWriteBlocked}
+              disabled={Boolean(busy) || !latestBackup || databaseWriteBlocked}
               onAction={onPreview}
               onDetails={() => onOpenActionDetails('preview')}
             />
@@ -282,7 +282,7 @@ export default function RecoveryManageSheetLazy({
               actionLabel="Restore"
               busyLabel="Restoring…"
               busy={busy === 'restore'}
-              disabled={!latestBackupVerified || !latestPreviewReady || databaseWriteBlocked}
+              disabled={Boolean(busy) || !latestBackupVerified || !latestPreviewReady || databaseWriteBlocked}
               tone="danger"
               onAction={onRestore}
               onDetails={() => onOpenActionDetails('restore')}
