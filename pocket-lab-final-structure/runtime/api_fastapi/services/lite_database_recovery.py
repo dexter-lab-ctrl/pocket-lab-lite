@@ -1583,20 +1583,31 @@ def get_database_restore_run(restore_id: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def database_recovery_status() -> dict[str, Any]:
-    backups = list_database_backups(limit=25)
-    latest_preview = None
-    previews = sorted((database_backup_root() / "restore-previews").glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
-    if previews:
-        latest_preview = _read_json(previews[0], None)
-    latest_restore = None
+def _latest_database_restore_preview() -> dict[str, Any] | None:
+    previews = sorted(
+        (database_backup_root() / "restore-previews").glob("*.json"),
+        key=lambda item: (item.stat().st_mtime_ns, item.name),
+        reverse=True,
+    )
+    return _read_json(previews[0], None) if previews else None
+
+
+def _latest_database_restore() -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
     journals = restore_txn.list_journals(include_terminal=True)
     if journals:
-        latest_restore = _restore_run_snapshot(journals[0], persist=False)
-    else:
-        restores = sorted((database_backup_root() / "restore-runs").glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
-        if restores:
-            latest_restore = _read_json(restores[0], None)
+        return _restore_run_snapshot(journals[0], persist=False), journals
+    restores = sorted(
+        (database_backup_root() / "restore-runs").glob("*.json"),
+        key=lambda item: (item.stat().st_mtime_ns, item.name),
+        reverse=True,
+    )
+    return (_read_json(restores[0], None) if restores else None), journals
+
+
+def _database_recovery_base(*, backup_limit: int) -> dict[str, Any]:
+    backups = list_database_backups(limit=backup_limit)
+    latest_preview = _latest_database_restore_preview()
+    latest_restore, journals = _latest_database_restore()
     guard = restore_txn.guard_status()
     maintenance_state = maintenance.maintenance_state()
     if guard.get("rollback_failed"):
@@ -1620,6 +1631,62 @@ def database_recovery_status() -> dict[str, Any]:
         "maintenance": maintenance_state,
         "wal": maintenance.wal_diagnostics(),
         "rollback_available": bool(latest_restore and latest_restore.get("rollback_available")),
-        "updated_at": _utc(),
+        "updated_at": str(
+            maintenance_state.get("updated_at")
+            or (latest_restore or {}).get("updated_at")
+            or (latest_restore or {}).get("completed_at")
+            or (latest_preview or {}).get("created_at")
+            or (backups.get("latest_backup") or {}).get("verified_at")
+            or (backups.get("latest_backup") or {}).get("created_at")
+            or ""
+        ),
         "sanitized": True,
     }
+
+
+def _compact_database_recovery_item(payload: Any, allowed: tuple[str, ...]) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    return {key: payload.get(key) for key in allowed if payload.get(key) is not None}
+
+
+def database_recovery_summary() -> dict[str, Any]:
+    payload = _database_recovery_base(backup_limit=1)
+    payload["view_model"] = "database-recovery-summary-r3-v1"
+    payload.pop("backup_history", None)
+    payload["latest_backup"] = _compact_database_recovery_item(payload.get("latest_backup"), (
+        "backup_id", "status", "created_at", "verified_at", "verification_status",
+        "size_bytes", "schema_version", "sqlite_version", "evidence_reference_count",
+        "summary", "rollback_available", "sanitized",
+    ))
+    payload["latest_restore_preview"] = _compact_database_recovery_item(payload.get("latest_restore_preview"), (
+        "preview_id", "backup_id", "status", "created_at", "restore_allowed",
+        "requires_confirmation", "destructive_changes_applied", "schema_version", "summary", "sanitized",
+    ))
+    payload["last_restore"] = _compact_database_recovery_item(payload.get("last_restore"), (
+        "restore_id", "backup_id", "preview_id", "status", "state", "phase",
+        "terminal_status", "completed_at", "updated_at", "rollback_available",
+        "rollback_status", "failure_category", "api_worker_restart_allowed", "summary", "sanitized",
+    ))
+    payload["active_restore"] = _compact_database_recovery_item(payload.get("active_restore"), (
+        "restore_id", "backup_id", "preview_id", "status", "state", "phase",
+        "created_at", "updated_at", "rollback_status", "failure_category",
+        "api_worker_restart_allowed", "summary", "sanitized",
+    ))
+    payload["restore_guard"] = _compact_database_recovery_item(payload.get("restore_guard"), (
+        "unresolved", "rollback_failed", "restore_id", "phase",
+        "api_worker_restart_allowed", "summary", "sanitized",
+    ))
+    payload["maintenance"] = _compact_database_recovery_item(payload.get("maintenance"), (
+        "active", "state", "kind", "started_at", "updated_at", "completed_at",
+        "writers_stopped", "summary", "sanitized",
+    ))
+    payload["wal"] = _compact_database_recovery_item(payload.get("wal"), (
+        "journal_mode", "wal_bytes", "shm_bytes", "wal_warning", "maintenance_active",
+        "writers_stopped", "sanitized",
+    ))
+    return payload
+
+
+def database_recovery_status() -> dict[str, Any]:
+    return _database_recovery_base(backup_limit=25)

@@ -622,3 +622,11 @@ def lite_policy() -> dict[str, Any]:
 
 def lite_recovery() -> dict[str, Any]:
     return lite_backup.recovery_status()
+
+
+def lite_recovery_summary() -> dict[str, Any]:
+    return lite_backup.recovery_summary()
+
+
+def lite_recovery_details() -> dict[str, Any]:
+    return lite_backup.recovery_details()

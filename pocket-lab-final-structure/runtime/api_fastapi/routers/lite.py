@@ -9,7 +9,7 @@ import uuid
 
 from typing import Any, Literal
 
-from fastapi import APIRouter, Body, HTTPException, Request, Response
+from fastapi import APIRouter, Body, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -115,6 +115,17 @@ def _security_compact_headers(payload: dict[str, Any]) -> dict[str, str]:
 
 def _security_compact_response(request: Request, payload: dict[str, Any]) -> Response:
     headers = _security_compact_headers(payload)
+    if lite_security.if_none_match_matches(request.headers.get("if-none-match"), headers["ETag"]):
+        return Response(status_code=304, headers=headers)
+    return JSONResponse(content=payload, headers=headers)
+
+
+def _recovery_compact_response(request: Request, payload: dict[str, Any]) -> Response:
+    headers = {
+        "ETag": lite_security.compact_response_etag(payload),
+        "Cache-Control": "no-cache",
+        "X-PocketLab-View-Model": str(payload.get("view_model") or "recovery-summary-r3-v1"),
+    }
     if lite_security.if_none_match_matches(request.headers.get("if-none-match"), headers["ETag"]):
         return Response(status_code=304, headers=headers)
     return JSONResponse(content=payload, headers=headers)
@@ -1631,13 +1642,12 @@ async def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -
     )
 
 
-@router.get("/recovery")
-def get_lite_recovery(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
-    state = lite_status.lite_recovery()
+def _lite_recovery_details_payload() -> dict[str, Any]:
+    state = lite_status.lite_recovery_details()
     profiles = lite_app_profiles.app_backup_profiles()
     lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
     targets = lite_app_backup_targets.backup_targets()
+    state["view_model"] = "recovery-details-r3-v1"
     state["app_backups"] = profiles.get("apps", [])
     state["app_backup_profiles"] = profiles
     state["app_lifecycle_profiles"] = lifecycle
@@ -1648,6 +1658,25 @@ def get_lite_recovery(request: Request) -> dict[str, Any]:
     return state
 
 
+@router.get("/recovery/summary")
+def get_lite_recovery_summary(request: Request) -> Response:
+    deps.require_auth(request)
+    state = lite_status.lite_recovery_summary()
+    state["database_protection"] = lite_database_recovery.database_recovery_summary()
+    state["maintenance"] = lite_security_maintenance.maintenance_state()
+    return _recovery_compact_response(request, state)
+
+
+@router.get("/recovery/details")
+def get_lite_recovery_details(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return _lite_recovery_details_payload()
+
+
+@router.get("/recovery")
+def get_lite_recovery(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return _lite_recovery_details_payload()
 
 
 @router.get("/recovery/database")
@@ -1979,9 +2008,23 @@ async def backup_lite(payload: LiteBackupRequest, request: Request) -> dict[str,
 
 
 @router.get("/recovery/backups")
-def list_lite_backups(request: Request) -> dict[str, Any]:
+def list_lite_backups(
+    request: Request,
+    limit: int = Query(default=10, ge=1, le=50),
+    cursor: str = Query(default="", max_length=120),
+) -> dict[str, Any]:
     deps.require_auth(request)
-    return lite_backup.list_backups()
+    payload = lite_backup.list_backups(limit=limit, cursor=cursor)
+    if cursor and payload.get("cursor_found") is False:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "invalid_cursor",
+                "summary": "Backup history changed. Refresh history and try again.",
+                "sanitized": True,
+            },
+        )
+    return payload
 
 
 @router.get("/recovery/backups/{backup_id}")

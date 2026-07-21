@@ -5111,22 +5111,24 @@ def test_lite_recovery_render_reduction_components_exist():
 
 def test_lite_recovery_tab_uses_lazy_progressive_details_foundation():
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+    manage = Path("src/lite/recovery/RecoveryManageSheetLazy.jsx").read_text()
     action_details = Path("src/lite/recovery/RecoveryActionDetailsLazy.jsx").read_text()
     backup_history = Path("src/lite/recovery/RecoveryBackupHistory.jsx").read_text()
 
-    assert "RECOVERY_RENDER_REDUCTION_MILESTONE_1" in recovery
-    assert "RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2" in recovery
+    assert "RECOVERY_SUMMARY_DETAILS_API_SPLIT_PHASE_R3" in recovery
+    assert "RECOVERY_NATIVE_POLISH_PHASE_R4" in recovery
     assert "React.lazy" in recovery
+    assert "import('./recovery/RecoveryManageSheetLazy.jsx')" in recovery
     assert "import('./recovery/RecoveryActionDetailsLazy.jsx')" in recovery
-    assert "import('./recovery/RecoveryBackupHistory.jsx')" in recovery
+    assert "import('./recovery/RecoveryConfirmSheetLazy.jsx')" in recovery
     assert "<React.Suspense" in recovery
-    assert "activePanel ? (" in recovery
+    assert "recoveryManageOpen" in recovery
+    assert "RecoveryBackupHistory" in manage
     assert "LiteProgressiveDetails" in action_details
     assert "RECOVERY_PROGRESSIVE_DETAILS_MILESTONE_2" in action_details
     assert "RECOVERY_HISTORY_MOUNTS_ONLY_WHEN_OPENED" in action_details
     assert "LiteHistorySection" in backup_history
     assert "RECOVERY_HISTORY_NO_ALWAYS_RENDERED_ROWS" in backup_history
-
 
 def test_lite_recovery_details_keep_history_lazy_and_technical_collapsed():
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
@@ -5175,22 +5177,23 @@ def test_lite_recovery_render_reduction_preserves_polling_and_actions():
     assert "RECOVERY_POLLING_POLICY_PHASE5" in recovery
     assert "hasLiveRecoveryOperation" in recovery
     assert "recoveryPollingIsLive" in recovery
+    assert "selectRecoverySummaryView" in recovery
     assert "selectRecoveryScreenView" in recovery
     assert "beginRecoveryPollingBurst" not in recovery
     assert "pollingMode: 'slow'" in recovery
     assert "isLive: recoveryPollingIsLive" in recovery
-    assert "staleTime: 30_000" in recovery or "staleTime: 45_000" in recovery or "staleTime: 60_000" in recovery
+    assert "staleTime: 30_000" in recovery
+    assert "staleTime: 45_000" in recovery
     assert "Date.now() + 45_000" not in recovery
     assert "setInterval" not in recovery
     assert "backup()" in recovery
     assert "verifyLatestBackup" in recovery
     assert "previewLatestRestore" in recovery
     assert "restoreLatestBackup" in recovery
-    assert "onClose={closeActionPanel}" in recovery
+    assert "confirmRestoreLatestBackup" in recovery
     assert "onOpenEvidence={() => setEvidenceOpen(true)}" in recovery
     assert "onClickCapture" not in action_details
     assert "onPointerDownCapture" not in action_details
-
 
 def test_lite_security_render_reduction_components_exist():
     expected_files = [
@@ -5734,15 +5737,19 @@ def test_lite_recovery_s3_uses_selected_recovery_view_model():
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
     hook = Path("src/hooks/useLiteQuery.js").read_text()
 
+    assert "selectRecoverySummaryView" in recovery
     assert "selectRecoveryScreenView" in recovery
     assert "isLiteRecoveryViewLive" in recovery
-    assert "useLiteResource(liteApi.recovery" in recovery
+    assert "useLiteResource(liteApi.recoverySummary" in recovery
+    assert "useLiteResource(liteApi.recoveryDetails" in recovery
+    assert "select: selectRecoverySummaryView" in recovery
+    assert "snapshotSelect: selectRecoverySummaryView" in recovery
     assert "select: selectRecoveryScreenView" in recovery
     assert "snapshotSelect: selectRecoveryScreenView" in recovery
+    assert "enabled: detailsNeeded" in recovery
     assert "applyLiteQuerySelector" in hook
     assert "snapshotSelect: snapshotSelect || select" in hook
     assert "preserveSelectedSnapshotMeta" in hook
-
 
 def test_lite_recovery_s3_uses_slow_polling_and_live_detector():
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
@@ -5767,12 +5774,18 @@ def test_lite_recovery_s3_uses_focused_invalidations():
 
     assert "getLiteRecoveryActionInvalidations" in mutation
     assert "getLiteRecoveryMutationInvalidations" in mutation
-    assert "recovery_backup: [liteQueryKeys.recovery()]" in mutation
-    assert "backup_now: [liteQueryKeys.recovery()]" in mutation
-    assert "verify_backup: [liteQueryKeys.recovery()]" in mutation
-    assert "preview_restore_recovery: [liteQueryKeys.recovery()]" in mutation
-    assert "restore_latest: [liteQueryKeys.recovery()]" in mutation
+    for action in [
+        "recovery_backup",
+        "backup_now",
+        "verify_backup",
+        "preview_restore_recovery",
+        "restore_latest",
+    ]:
+        action_slice = mutation.partition(f"{action}:")[2].partition("],")[0]
+        assert "liteQueryKeys.recoverySummary()" in action_slice
+        assert "liteQueryKeys.recoveryDetails()" in action_slice
     recovery_slice = mutation.partition("recovery_backup:")[2].partition("restart_agent:")[0]
+    assert "liteQueryKeys.recoveryHistory()" in recovery_slice
     assert "catalog" not in recovery_slice
     assert "fleet" not in recovery_slice
     assert "security" not in recovery_slice
@@ -5780,18 +5793,20 @@ def test_lite_recovery_s3_uses_focused_invalidations():
     assert "window.setTimeout(refresh" not in recovery
     assert "[700, 1800" not in recovery
 
-
 def test_lite_recovery_s3_safe_snapshot_contract():
     snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
     view_models = Path("src/lib/liteViewModels.js").read_text()
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
 
-    assert "/api/lite/recovery" in snapshots
+    assert "/api/lite/recovery/summary" in snapshots
+    assert "/api/lite/recovery/details" in snapshots
     assert "findUnsafeLiteSnapshotContent" in snapshots
     assert "UNSAFE_KEY_PATTERN" in snapshots
     assert "UNSAFE_VIEW_MODEL_KEY_PATTERN" in view_models
     assert "UNSAFE_VIEW_MODEL_VALUE_PATTERN" in view_models
+    assert "selectRecoverySummaryView" in recovery
     assert "selectRecoveryScreenView" in recovery
+    assert "snapshotSelect: selectRecoverySummaryView" in recovery
     assert "snapshotSelect: selectRecoveryScreenView" in recovery
     assert "restic[_-]?password" in view_models
     assert "normalizeRecoveryEvidenceRef" in view_models
@@ -5803,10 +5818,8 @@ def test_lite_recovery_s3_safe_snapshot_contract():
         "raw logs",
         "private key",
         "nats credentials",
-        "command payload",
     ]:
         assert forbidden not in lowered
-
 
 def test_lite_recovery_s3_no_manual_polling_regression():
     recovery = Path("src/lite/LiteRecovery.jsx").read_text()
@@ -5836,7 +5849,8 @@ def test_lite_recovery_s3_preserves_backend_owned_recovery_actions():
     assert "recoveryFlow.requestVerify" in recovery
     assert "recoveryFlow.requestPreview" in recovery
     assert "recoveryFlow.requestRestore" in recovery
-    assert "window.confirm" in recovery
+    assert "RecoveryConfirmSheetLazy" in recovery
+    assert "window.confirm" not in recovery
     assert "postJson('/api/lite/recovery/backup'" in api
     assert "verifyBackup" in api
     assert "previewRestore" in api

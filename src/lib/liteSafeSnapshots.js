@@ -33,6 +33,8 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/security/profiles/app/photoprism',
   '/api/lite/security/history/index',
   '/api/lite/recovery',
+  '/api/lite/recovery/summary',
+  '/api/lite/recovery/details',
 ]);
 
 export const LITE_SNAPSHOT_TTL_MS = {
@@ -48,6 +50,8 @@ export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/security/profiles/app/photoprism': 60 * 60 * 1000,
   '/api/lite/security/history/index': 60 * 60 * 1000,
   '/api/lite/recovery': 20 * 60 * 1000,
+  '/api/lite/recovery/summary': 20 * 60 * 1000,
+  '/api/lite/recovery/details': 20 * 60 * 1000,
 };
 
 const DEFAULT_TTL_MS = 10 * 60 * 1000;

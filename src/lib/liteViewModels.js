@@ -1971,7 +1971,11 @@ export function selectRecoverySummaryView(payload = {}) {
   const checkpoint = selectRecoveryCheckpointView(payload);
   const lastRestore = selectRecoveryLastRestoreView(payload);
   const repository = selectRecoveryRepositoryView(payload);
+  const recentActivity = (Array.isArray(payload?.recent_activity) ? payload.recent_activity : []).slice(0, 3).map((item) => copySafeKeys(item, [
+    'id', 'kind', 'status', 'summary', 'occurred_at',
+  ]));
   return withSnapshotMeta(payload, {
+    view_model: safeString(payload?.view_model || 'recovery-summary-r3-v1'),
     status: normalizeRecoveryStatus(payload?.status || latestBackup?.status || 'unknown'),
     summary: safeString(payload?.summary || 'Recovery status is available.'),
     updated_at: safeString(payload?.updated_at || payload?.checked_at || ''),
@@ -1986,6 +1990,12 @@ export function selectRecoverySummaryView(payload = {}) {
     action_progress: selectRecoveryActionStateView(payload),
     evidence_summary: selectRecoveryEvidenceSummaryView(payload),
     history: selectRecoveryHistorySummaryView(payload),
+    recent_activity: recentActivity,
+    recommended_action: safeString(payload?.recommended_action || ''),
+    database_protection: normalizeRecoveryDatabaseProtection(payload?.database_protection || {}),
+    maintenance: isObject(payload?.maintenance)
+      ? copySafeKeys(payload.maintenance, ['active', 'state', 'kind', 'started_at', 'updated_at', 'completed_at', 'writers_stopped', 'summary'])
+      : null,
     live: isLiteRecoveryViewLive(payload),
   });
 }
@@ -2213,6 +2223,10 @@ export function isLiteRecoveryViewLive(payload = {}) {
 
 export function getLiteRecoveryMutationInvalidations(actionId = '', result = {}) {
   const normalized = normalizeRecoveryStatus(actionId || result?.action_id || result?.action || result?.status || '');
+  const keys = [
+    ['lite', 'recovery', 'summary'],
+    ['lite', 'recovery', 'details'],
+  ];
   if ([
     'backup_now',
     'recovery_backup',
@@ -2226,7 +2240,7 @@ export function getLiteRecoveryMutationInvalidations(actionId = '', result = {})
     'recovery_restore',
     'restore_backup',
   ].includes(normalized)) {
-    return [['lite', 'recovery']];
+    keys.push(['lite', 'recovery', 'history']);
   }
-  return [['lite', 'recovery']];
+  return keys;
 }
