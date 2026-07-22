@@ -510,6 +510,136 @@ async def _security_events_generator(request: Request):
         await asyncio.sleep(active_poll_seconds if active_scan else idle_poll_seconds)
 
 
+def _lite_revision_sse_payload(event: dict[str, Any]) -> str:
+    event_id = int(event.get("event_id") or 0)
+    event_type = str(event.get("type") or "lite.revision.changed")[:80]
+    data = json.dumps(event, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    lines = []
+    if event_id > 0:
+        lines.append(f"id: {event_id}")
+    lines.append(f"event: {event_type}")
+    lines.append(f"data: {data}")
+    return "\n".join(lines) + "\n\n"
+
+
+def _lite_revision_reset(
+    reason: str, window: dict[str, Any], snapshot: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    snapshot = snapshot or CONTROL_PLANE.revisions()
+    return {
+        "type": "lite.revision.reset",
+        "event_id": int(window.get("latest_event_id") or 0),
+        "database_instance": str(snapshot.get("database_instance") or ""),
+        "reason": str(reason or "domain_state_changed")[:80],
+        "revisions": snapshot.get("revisions") or {},
+        "projection_version": int(snapshot.get("projection_version") or 1),
+        "occurred_at": deps.now_utc_iso(),
+        "sanitized": True,
+    }
+
+
+def _parse_lite_revision_cursor(value: Any) -> tuple[int, bool]:
+    text = str(value or "").strip()
+    if not text:
+        return 0, False
+    if len(text) > 32 or not text.isdigit():
+        return 0, True
+    try:
+        cursor = int(text)
+    except ValueError:
+        return 0, True
+    if cursor < 0 or cursor > 9_223_372_036_854_775_000:
+        return 0, True
+    return cursor, False
+
+
+async def _lite_revision_events_generator(request: Request):
+    poll_seconds = _bounded_stream_number(
+        "POCKETLAB_LITE_REVISION_SSE_POLL_SECONDS", 1.5, 0.5, 10.0
+    )
+    keepalive_seconds = _bounded_stream_number(
+        "POCKETLAB_LITE_REVISION_SSE_KEEPALIVE_SECONDS", 20.0, 15.0, 30.0
+    )
+    replay_limit = int(
+        _bounded_stream_number(
+            "POCKETLAB_LITE_REVISION_SSE_REPLAY_LIMIT", 100, 1, 100
+        )
+    )
+    cursor, malformed = _parse_lite_revision_cursor(
+        request.headers.get("last-event-id") or request.query_params.get("last_event_id")
+    )
+    window = await asyncio.to_thread(CONTROL_PLANE.revision_event_window)
+    instance = str(window.get("database_instance") or "")
+    oldest = int(window.get("oldest_event_id") or 0)
+    latest = int(window.get("latest_event_id") or 0)
+    reset_reason = ""
+    if malformed:
+        reset_reason = "malformed_cursor"
+    elif cursor > latest:
+        reset_reason = "cursor_ahead"
+    elif cursor > 0 and oldest > 0 and cursor < oldest - 1:
+        reset_reason = "cursor_too_old"
+    if reset_reason:
+        snapshot = await asyncio.to_thread(CONTROL_PLANE.revisions)
+        yield _lite_revision_sse_payload(
+            _lite_revision_reset(reset_reason, window, snapshot)
+        )
+        cursor = latest
+
+    last_keepalive = time.monotonic()
+    while True:
+        if await request.is_disconnected():
+            return
+        current_window = await asyncio.to_thread(CONTROL_PLANE.revision_event_window)
+        current_instance = str(current_window.get("database_instance") or "")
+        if current_instance != instance:
+            snapshot = await asyncio.to_thread(CONTROL_PLANE.revisions)
+            yield _lite_revision_sse_payload(
+                _lite_revision_reset(
+                    "database_instance_changed", current_window, snapshot
+                )
+            )
+            instance = current_instance
+            cursor = int(current_window.get("latest_event_id") or 0)
+            last_keepalive = time.monotonic()
+            continue
+        events = await asyncio.to_thread(
+            CONTROL_PLANE.revision_events_after, cursor, limit=replay_limit
+        )
+        if events:
+            for event in events:
+                if await request.is_disconnected():
+                    return
+                event_id = int(event.get("event_id") or 0)
+                if event_id <= cursor:
+                    continue
+                cursor = event_id
+                yield _lite_revision_sse_payload(event)
+            last_keepalive = time.monotonic()
+            continue
+        if time.monotonic() - last_keepalive >= keepalive_seconds:
+            yield ": keepalive\n\n"
+            last_keepalive = time.monotonic()
+        await asyncio.sleep(poll_seconds)
+
+
+def _lite_revisions_response(request: Request, payload: dict[str, Any]) -> Response:
+    etag = CONTROL_PLANE.revisions_etag(payload)
+    headers = {
+        "ETag": etag,
+        "Cache-Control": "no-cache",
+        "X-PocketLab-Database-Instance": str(payload.get("database_instance") or "")[:32],
+        "X-PocketLab-Projection-Version": str(int(payload.get("projection_version") or 1)),
+        "Server-Timing": (
+            f"connection;dur={max(0.0, float(payload.get('connection_wait_ms') or 0.0)):.2f}, "
+            f"sqlite;dur={max(0.0, float(payload.get('sqlite_query_ms') or 0.0)):.2f}"
+        ),
+    }
+    if lite_security.if_none_match_matches(request.headers.get("if-none-match"), etag):
+        return Response(status_code=304, headers=headers)
+    return JSONResponse(content=payload, headers=headers)
+
+
 class LiteCatalogInstallRequest(BaseModel):
     app_id: str = Field(default="", description="Catalog app id")
     target_node_id: str | None = Field(default=None, description="Target Lite device id. PhotoPrism is server-host only in this release.")
@@ -1769,9 +1899,24 @@ def get_lite_fleet(request: Request) -> Response:
 
 
 @router.get("/revisions")
-def get_lite_domain_revisions(request: Request) -> dict[str, Any]:
+def get_lite_domain_revisions(request: Request) -> Response:
     deps.require_auth(request)
-    return CONTROL_PLANE.revisions()
+    return _lite_revisions_response(request, CONTROL_PLANE.revisions())
+
+
+@router.get("/events")
+def get_lite_revision_events(request: Request) -> Response:
+    deps.require_auth(request)
+    return StreamingResponse(
+        _lite_revision_events_generator(request),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+            "X-PocketLab-Event-Schema": "lite-revision-v1",
+        },
+    )
 
 
 @router.get("/fleet/devices/{device_id}/recovery-history")

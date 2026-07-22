@@ -355,12 +355,36 @@ class EventSourcedWorkflowEngine:
 
     def _maybe_record_command(self, event: Dict[str, Any]) -> None:
         subject = str(event.get("subject") or "")
-        if not subject.startswith("pocketlab.commands."):
-            return
+        event_type = str(event.get("type") or "")
         data = event.get("data") if isinstance(event.get("data"), dict) else {}
+        command_subject = str(
+            data.get("command_subject")
+            or data.get("subject")
+            or (subject if subject.startswith("pocketlab.commands.") else "")
+        )
+        lifecycle_status = {
+            "command.queued": "accepted",
+            "command.published": "published",
+            "command.received": "delivered",
+            "command.worker_claimed": "worker_claimed",
+            "command.running": "running",
+            "command.succeeded": "succeeded",
+            "command.dead_lettered": "failed",
+            "worker.maintenance_deferred": "recovery_action",
+        }.get(event_type)
+        if event_type == "command.failed":
+            lifecycle_status = "failed" if bool(data.get("terminal")) else "recovery_action"
+        if event_type == "worker.ignored" and any(
+            marker in str(data.get("reason") or "").lower()
+            for marker in ("terminal", "redeliver")
+        ):
+            lifecycle_status = "ignored_redelivery"
+        if not command_subject and lifecycle_status is None:
+            return
         command_id = str(
             data.get("command_id")
             or data.get("job_id")
+            or data.get("run_id")
             or event.get("trace_id")
             or event.get("id")
         )
@@ -373,8 +397,8 @@ class EventSourcedWorkflowEngine:
             {
                 "command_id": command_id,
                 "workflow_id": event.get("workflow_id"),
-                "subject": subject,
-                "event_type": event.get("type"),
+                "subject": command_subject or subject,
+                "event_type": event_type,
                 "command": data,
                 "last_event_id": event.get("id"),
                 "updated_at": event.get("time") or deps.now_utc_iso(),
@@ -383,6 +407,48 @@ class EventSourcedWorkflowEngine:
         existing.setdefault("created_at", event.get("time") or deps.now_utc_iso())
         commands[command_id] = existing
         _write_json(self.command_file, journal)
+
+        if lifecycle_status is None:
+            return
+        entity_type = "control"
+        entity_id = "control-plane"
+        if data.get("app_id"):
+            entity_type, entity_id = "app", str(data.get("app_id"))
+        elif data.get("node_id") or data.get("device_id"):
+            entity_type = "device"
+            entity_id = str(data.get("node_id") or data.get("device_id"))
+        elif data.get("run_id") or ".security." in command_subject:
+            entity_type = "security"
+            entity_id = str(data.get("run_id") or "security")
+        summaries = {
+            "accepted": "Command accepted.",
+            "published": "Command published to the local event bus.",
+            "delivered": "Command delivered to a worker.",
+            "worker_claimed": "Worker claimed the command.",
+            "running": "Command is running.",
+            "succeeded": "Command completed.",
+            "failed": "Command reached a terminal failure.",
+            "ignored_redelivery": "Terminal command redelivery was ignored safely.",
+            "recovery_action": "Command recovery or retry is in progress.",
+        }
+        try:
+            from .lite_control_plane_store import CONTROL_PLANE
+
+            CONTROL_PLANE.record_command(
+                command_id=command_id,
+                subject=command_subject or subject or "pocketlab.commands.unknown",
+                status=lifecycle_status,
+                entity_type=entity_type,
+                entity_id=entity_id,
+                summary=summaries[lifecycle_status],
+                recovery_action=(
+                    event_type if lifecycle_status == "recovery_action" else ""
+                ),
+            )
+        except Exception:
+            # Workflow journaling remains available if the compact SQLite projection
+            # is temporarily unavailable; later domain reads can reconcile safely.
+            return
 
     def _apply_event(
         self, current: Dict[str, Any] | None, event: Dict[str, Any]

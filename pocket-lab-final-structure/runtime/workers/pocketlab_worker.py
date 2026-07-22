@@ -338,6 +338,12 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
         {"command_id": command_id, "command_subject": subject},
         trace_id=trace_id,
     )
+    await publish(
+        "pocketlab.events.command.running",
+        "command.running",
+        {"command_id": command_id, "command_subject": subject},
+        trace_id=trace_id,
+    )
     try:
         result = await run_domain_command(subject, command)
         await publish(
@@ -347,6 +353,7 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
                 "command_id": command_id,
                 "command_subject": subject,
                 "status": result.get("status", "success"),
+                "terminal": True,
             },
             trace_id=trace_id,
         )
@@ -354,16 +361,36 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
         await publish(
             "pocketlab.events.command.failed",
             "command.failed",
-            {"command_id": command_id, "command_subject": subject, "error": str(exc)},
+            {
+                "command_id": command_id,
+                "command_subject": subject,
+                "error_type": type(exc).__name__,
+                "terminal": False,
+            },
             trace_id=trace_id,
         )
         raise
+
+
+def _command_lifecycle_payload(
+    command: Dict[str, Any], subject: str, command_id: str, attempt: int
+) -> Dict[str, Any]:
+    return {
+        "command_id": command_id,
+        "command_subject": subject,
+        "attempt": max(1, int(attempt or 1)),
+        "run_id": str(command.get("run_id") or "")[:120],
+        "app_id": str(command.get("app_id") or "")[:120],
+        "node_id": str(command.get("node_id") or command.get("device_id") or "")[:120],
+        "sanitized": True,
+    }
 
 
 async def command_callback(msg: Any) -> None:
     subject = str(getattr(msg, "subject", "") or "")
     attempt = BUS.delivery_attempt(msg)
     command: Dict[str, Any] = {}
+    generic_lifecycle = False
     try:
         command = _decode_message(msg.data)
         subject = subject or _subject_from(command, msg)
@@ -450,6 +477,34 @@ async def command_callback(msg: Any) -> None:
             )
             await BUS.ack_message(msg)
             return
+        lifecycle_payload = _command_lifecycle_payload(
+            command, subject, command_id, attempt
+        )
+        await publish(
+            "pocketlab.events.command.received",
+            "command.received",
+            lifecycle_payload,
+            trace_id=command_id or None,
+        )
+        generic_lifecycle = subject in {
+            "pocketlab.commands.runbook.execute",
+            "pocketlab.commands.runbook.approve",
+            "pocketlab.commands.runbook.reject",
+            "pocketlab.commands.operation.execute",
+        }
+        if generic_lifecycle:
+            await publish(
+                "pocketlab.events.command.worker_claimed",
+                "command.worker_claimed",
+                lifecycle_payload,
+                trace_id=command_id or None,
+            )
+            await publish(
+                "pocketlab.events.command.running",
+                "command.running",
+                lifecycle_payload,
+                trace_id=command_id or None,
+            )
         if subject == "pocketlab.commands.runbook.execute":
             from api_fastapi.services.runbook_commands import execute_runbook_command  # type: ignore
 
@@ -473,6 +528,13 @@ async def command_callback(msg: Any) -> None:
             await execute_operation_command(command)
         else:
             await execute_domain_command(subject, command)
+        if generic_lifecycle:
+            await publish(
+                "pocketlab.events.command.succeeded",
+                "command.succeeded",
+                {**lifecycle_payload, "terminal": True},
+                trace_id=command_id or None,
+            )
         await BUS.ack_message(msg)
         _worker_log(
             "worker.command_acked",
@@ -490,7 +552,29 @@ async def command_callback(msg: Any) -> None:
         from api_fastapi.services import reliability  # type: ignore
 
         job_id = str(command.get("job_id") or "") if isinstance(command, dict) else ""
-        if attempt >= reliability.max_deliver():
+        terminal_failure = attempt >= reliability.max_deliver()
+        if generic_lifecycle:
+            await publish(
+                "pocketlab.events.command.failed",
+                "command.failed",
+                {
+                    **_command_lifecycle_payload(command, subject, str(
+                        command.get("command_id")
+                        or command.get("job_id")
+                        or command.get("run_id")
+                        or ""
+                    ), attempt),
+                    "terminal": terminal_failure,
+                    "error_type": type(exc).__name__,
+                },
+                trace_id=str(
+                    command.get("command_id")
+                    or command.get("job_id")
+                    or command.get("run_id")
+                    or ""
+                ) or None,
+            )
+        if terminal_failure:
             if job_id:
                 reliability.mark_operation_dead_letter(
                     job_id, attempt=attempt, error=error

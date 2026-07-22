@@ -39,6 +39,8 @@ IMPORT_VERSION = 1
 DERIVED_PROJECTION_FIELDS = frozenset({"latest_completed_at"})
 _INITIALIZED_DATABASES: set[Path] = set()
 _INITIALIZE_LOCK = threading.Lock()
+_REVISION_EVENT_RETENTION_COUNT = 2048
+_REVISION_EVENT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 
 
 @dataclass(frozen=True)
@@ -556,6 +558,39 @@ def _row(
     return policy.redact_value(payload)
 
 
+def _security_database_instance() -> str:
+    path = database_path()
+    try:
+        stat = path.stat()
+        material = f"{path}:{stat.st_dev}:{stat.st_ino}"
+    except OSError:
+        material = f"{path}:missing"
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
+
+
+def _record_security_revision_event(
+    conn: sqlite3.Connection, *, revision: int, updated_at: str
+) -> None:
+    conn.execute(
+        """
+        INSERT OR IGNORE INTO lite_revision_events(
+            database_instance, domain, revision, changed_ids_json, reason,
+            projection_version, occurred_at, occurred_at_epoch_ms, sanitized
+        ) VALUES (?, 'security', ?, '[]', 'security_state_changed', 1, ?, ?, 1)
+        """,
+        (_security_database_instance(), int(revision), updated_at, _epoch_ms(updated_at)),
+    )
+    conn.execute(
+        "DELETE FROM lite_revision_events WHERE occurred_at_epoch_ms < ?",
+        (_epoch_ms(utc_now()) - _REVISION_EVENT_RETENTION_MS,),
+    )
+    conn.execute(
+        "DELETE FROM lite_revision_events WHERE event_id NOT IN "
+        "(SELECT event_id FROM lite_revision_events ORDER BY event_id DESC LIMIT ?)",
+        (_REVISION_EVENT_RETENTION_COUNT,),
+    )
+
+
 def _bump_revision(conn: sqlite3.Connection, at: str | None = None) -> int:
     updated_at = _parse_timestamp(at)
     conn.execute(
@@ -571,7 +606,9 @@ def _bump_revision(conn: sqlite3.Connection, at: str | None = None) -> int:
     row = conn.execute(
         "SELECT revision FROM domain_revisions WHERE domain = ?", ("security",)
     ).fetchone()
-    return int(row["revision"])
+    revision = int(row["revision"])
+    _record_security_revision_event(conn, revision=revision, updated_at=updated_at)
+    return revision
 
 
 def _set_metadata(conn: sqlite3.Connection, key: str, value: Any, *, at: str | None = None) -> None:
