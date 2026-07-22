@@ -13,6 +13,7 @@ from fastapi import HTTPException
 
 from .. import deps
 from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_recovery_subprojections
+from .lite_control_plane_store import CONTROL_PLANE
 
 _LOGGER = logging.getLogger(__name__)
 SUPPORTED_APP_IDS = {"photoprism"}
@@ -668,20 +669,74 @@ def _evidence(security: dict[str, Any], backup: dict[str, Any], media: dict[str,
     }
 
 
+def _saved_projection_max_age_seconds() -> float:
+    configured = os.environ.get("POCKETLAB_LITE_APP_CURRENT_STATE_MAX_AGE_SECONDS", "900").strip()
+    try:
+        return max(30.0, min(3600.0, float(configured)))
+    except ValueError:
+        return 900.0
+
+
+def _persist_reconciled_stage(name: str, future: concurrent.futures.Future[Any]) -> None:
+    try:
+        value = future.result()
+        if not isinstance(value, dict):
+            return
+        payload = {"kind": "raw", "payload": value} if name == "backup" else value
+        CONTROL_PLANE.update_app_subprojection("photoprism", name, payload)
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.app_projection.reconcile_degraded key=%s error_type=%s",
+            name, type(exc).__name__,
+        )
+
+
+def _saved_stage_value(saved: dict[str, Any] | None, name: str) -> dict[str, Any] | None:
+    if not isinstance(saved, dict):
+        return None
+    value = saved.get(name)
+    if not isinstance(value, dict) or not value:
+        return None
+    if name == "backup":
+        if value.get("kind") == "raw" and isinstance(value.get("payload"), dict):
+            return dict(value["payload"])
+        if value.get("kind") == "profile" and isinstance(value.get("backup"), dict):
+            return {"__saved_profile__": True, **dict(value)}
+    return dict(value)
+
+
 def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
     callbacks: dict[str, tuple[Callable[[], Any], Any, float]] = {
         "catalog": (lambda: _catalog_app("photoprism"), {}, 2.5),
         "media": (_media_payload, {"status": "unknown", "summary": "Media status is refreshing."}, 2.5),
         "operations": (lambda: lite_app_operations.app_operation_status("photoprism"), {"status": "unknown", "actions": {}}, 2.0),
         "update": (lambda: lite_app_update.update_status("photoprism"), {"status": "unknown", "actions": {}, "readiness": {"status": "unknown", "summary": "Update readiness is refreshing."}}, 2.5),
+        "backup": (app_backup_subprojection, {"status": "unknown", "summary": "App backup status is refreshing."}, 1.5),
     }
+    try:
+        saved = CONTROL_PLANE.app_current_subprojections(
+            "photoprism", max_age_seconds=_saved_projection_max_age_seconds()
+        )
+    except Exception:
+        saved = None
     submitted_at: dict[str, float] = {}
     futures: dict[str, concurrent.futures.Future[Any]] = {}
+    results: dict[str, Any] = {}
     for name, (callback, _fallback, _timeout) in callbacks.items():
         submitted_at[name] = time.monotonic()
-        futures[name] = _STAGE_EXECUTOR.submit(callback)
-    results: dict[str, Any] = {}
+        saved_value = _saved_stage_value(saved, name)
+        future = _STAGE_EXECUTOR.submit(callback)
+        futures[name] = future
+        if saved_value is not None:
+            saved_value["projection_only"] = True
+            saved_value["projection_age_ms"] = int((saved or {}).get("projection_age_ms") or 0)
+            results[name] = saved_value
+            future.add_done_callback(lambda completed, key=name: _persist_reconciled_stage(key, completed))
+            if stage_timings is not None:
+                stage_timings[name] = round(max(0.0, (time.monotonic() - submitted_at[name]) * 1000.0), 3)
     for name, (_callback, fallback, timeout) in callbacks.items():
+        if name in results:
+            continue
         future = futures[name]
         try:
             value = future.result(timeout=timeout)
@@ -704,14 +759,20 @@ def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) 
     app = parallel["catalog"]
     storage_raw = _timed_stage(stage_timings, "storage", _storage_payload)
     security_raw = _timed_stage(stage_timings, "security", app_security_subprojection)
-    backup_raw = _timed_stage(stage_timings, "backup", app_backup_subprojection)
+    backup_raw = parallel["backup"]
+    if stage_timings is not None and "backup" not in stage_timings:
+        stage_timings["backup"] = 0.0
     media = parallel["media"]
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
 
     storage = _storage_profile(storage_raw)
     security = _security_profile(security_raw)
-    backup = _backup_profile(backup_raw)
-    recovery = _recovery_profile(backup_raw)
+    if backup_raw.get("__saved_profile__"):
+        backup = dict(backup_raw.get("backup") or {})
+        recovery = dict(backup_raw.get("recovery") or {})
+    else:
+        backup = _backup_profile(backup_raw)
+        recovery = _recovery_profile(backup_raw)
     operations = parallel["operations"]
     update = parallel["update"]
     if not isinstance(update.get("actions"), dict):

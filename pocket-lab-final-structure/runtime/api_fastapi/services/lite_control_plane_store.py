@@ -666,6 +666,92 @@ class ControlPlaneProjectionStore:
                 with self._cache_lock:
                     self._refreshing.discard(cache_key)
 
+    @staticmethod
+    def _decode_projection_json(value: Any) -> dict[str, Any]:
+        try:
+            decoded = json.loads(str(value or "{}"))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return {}
+        return decoded if isinstance(decoded, dict) else {}
+
+    def app_current_subprojections(
+        self, app_id: str, *, max_age_seconds: float = 900.0
+    ) -> dict[str, Any] | None:
+        """Return bounded, sanitized App current-state projections for cold reads."""
+        self.initialize()
+        normalized = _safe_text(app_id, 120)
+        if not normalized:
+            return None
+
+        def read(conn: sqlite3.Connection) -> dict[str, Any] | None:
+            row = conn.execute(
+                """
+                SELECT catalog_state_json, media_state_json, operation_state_json,
+                       update_state_json, backup_profile_json, projection_version,
+                       updated_at, updated_at_epoch_ms
+                FROM app_current_state WHERE app_id=?
+                """,
+                (normalized,),
+            ).fetchone()
+            return dict(row) if row else None
+
+        row, _, _ = self._read(read)
+        if not row:
+            return None
+        age_ms = max(0, _epoch_ms() - int(row.get("updated_at_epoch_ms") or 0))
+        if age_ms > max(1.0, float(max_age_seconds)) * 1000.0:
+            return None
+        payload = {
+            "catalog": self._decode_projection_json(row.get("catalog_state_json")),
+            "media": self._decode_projection_json(row.get("media_state_json")),
+            "operations": self._decode_projection_json(row.get("operation_state_json")),
+            "update": self._decode_projection_json(row.get("update_state_json")),
+            "backup": self._decode_projection_json(row.get("backup_profile_json")),
+            "projection_version": int(row.get("projection_version") or 1),
+            "projection_age_ms": age_ms,
+            "updated_at": row.get("updated_at"),
+            "projection_only": True,
+        }
+        return payload if any(payload.get(key) for key in ("catalog", "media", "operations", "update", "backup")) else None
+
+    def update_app_subprojection(
+        self, app_id: str, projection: str, payload: dict[str, Any]
+    ) -> int:
+        """Persist one sanitized App subprojection after background reconciliation."""
+        self.initialize()
+        columns = {
+            "catalog": "catalog_state_json",
+            "media": "media_state_json",
+            "operations": "operation_state_json",
+            "update": "update_state_json",
+            "backup": "backup_profile_json",
+        }
+        column = columns.get(str(projection or "").strip().lower())
+        normalized = _safe_text(app_id, 120)
+        if not column or not normalized or not isinstance(payload, dict):
+            return self.domain_revision("apps")
+        encoded = _safe_json(payload, max_bytes=16384)
+        now = _utc_now()
+        now_epoch = _epoch_ms(now)
+
+        def write(conn: sqlite3.Connection) -> int:
+            row = conn.execute(
+                f"SELECT {column} FROM app_current_state WHERE app_id=?",
+                (normalized,),
+            ).fetchone()
+            if not row or str(row[column] or "{}") == encoded:
+                return _domain_revision(conn, "apps")
+            conn.execute(
+                f"UPDATE app_current_state SET {column}=?, updated_at=?, updated_at_epoch_ms=? WHERE app_id=?",
+                (encoded, now, now_epoch, normalized),
+            )
+            return _bump_revision(conn, "apps", now) if _changes(conn) else _domain_revision(conn, "apps")
+
+        try:
+            return int(SQLITE_WRITER.submit("apps.subprojection", write, deadline_seconds=1.0))
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return self.domain_revision("apps")
+
     def app_projection_snapshot(self) -> dict[str, Any] | None:
         self.initialize()
         def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
@@ -1103,14 +1189,22 @@ class ControlPlaneProjectionStore:
                     INSERT INTO app_current_state(
                         app_id, app_name, status, installed, health_state,
                         latest_action_id, latest_action_status, latest_backup_id,
-                        source_revision, updated_at, updated_at_epoch_ms, summary
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        source_revision, updated_at, updated_at_epoch_ms, summary,
+                        catalog_state_json, media_state_json, operation_state_json,
+                        update_state_json, backup_profile_json, projection_version
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(app_id) DO UPDATE SET
                         app_name=excluded.app_name, status=excluded.status,
                         installed=excluded.installed, health_state=excluded.health_state,
                         latest_action_id=excluded.latest_action_id,
                         latest_action_status=excluded.latest_action_status,
                         latest_backup_id=excluded.latest_backup_id,
+                        catalog_state_json=excluded.catalog_state_json,
+                        media_state_json=excluded.media_state_json,
+                        operation_state_json=excluded.operation_state_json,
+                        update_state_json=excluded.update_state_json,
+                        backup_profile_json=excluded.backup_profile_json,
+                        projection_version=excluded.projection_version,
                         updated_at=excluded.updated_at,
                         updated_at_epoch_ms=excluded.updated_at_epoch_ms,
                         summary=excluded.summary
@@ -1121,12 +1215,29 @@ class ControlPlaneProjectionStore:
                        OR app_current_state.latest_action_id IS NOT excluded.latest_action_id
                        OR app_current_state.latest_action_status IS NOT excluded.latest_action_status
                        OR app_current_state.latest_backup_id IS NOT excluded.latest_backup_id
+                       OR app_current_state.catalog_state_json IS NOT excluded.catalog_state_json
+                       OR app_current_state.media_state_json IS NOT excluded.media_state_json
+                       OR app_current_state.operation_state_json IS NOT excluded.operation_state_json
+                       OR app_current_state.update_state_json IS NOT excluded.update_state_json
+                       OR app_current_state.backup_profile_json IS NOT excluded.backup_profile_json
                        OR app_current_state.summary IS NOT excluded.summary
                     """,
                     (app_id, _safe_text(app.get("name") or app_id, 120), _safe_text(app.get("status") or "unknown", 32),
                      int(bool(app.get("installed"))), _safe_text((app.get("security") or {}).get("status") if isinstance(app.get("security"), dict) else app.get("status"), 32),
                      latest_action_id, latest_action_status, latest_backup_id, int(app.get("revision") or 0),
-                     now, now_epoch, _safe_text(app.get("summary"))),
+                     now, now_epoch, _safe_text(app.get("summary")),
+                     _safe_json({
+                         "id": app_id, "name": app.get("name"), "status": app.get("status"),
+                         "installed": bool(app.get("installed")), "host_device": app.get("host_device"),
+                         "access": {"open_url": "/apps/photoprism/"} if bool((actions.get("open") or {}).get("enabled")) else {},
+                         "runtime": {"url": "/apps/photoprism/"} if bool((actions.get("open") or {}).get("enabled")) else {},
+                         "actions": {"open": bool((actions.get("open") or {}).get("enabled"))},
+                     }, max_bytes=8192),
+                     _safe_json(app.get("media") if isinstance(app.get("media"), dict) else {}, max_bytes=16384),
+                     _safe_json(app.get("operations") if isinstance(app.get("operations"), dict) else {}, max_bytes=16384),
+                     _safe_json(app.get("update") if isinstance(app.get("update"), dict) else {}, max_bytes=16384),
+                     _safe_json({"kind": "profile", "backup": app.get("backup"), "recovery": app.get("recovery")}, max_bytes=16384),
+                     1),
                 )
                 changed = _changes(conn) or changed
                 for action_id, action in list(actions.items())[:64]:
