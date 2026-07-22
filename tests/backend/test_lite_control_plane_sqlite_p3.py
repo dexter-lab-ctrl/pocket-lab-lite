@@ -74,8 +74,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6]
-    assert current_schema_version() == 6
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7]
+    assert current_schema_version() == 7
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -195,6 +195,66 @@ def test_app_and_recovery_projection_skip_noop_revision_bumps(tmp_path, monkeypa
     assert current["latest_preview_id"] == "preview-1"
     assert backup["verification_status"] == "verified"
 
+
+
+def test_app_current_subprojections_are_persisted_bounded_and_change_only(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.db.connection import read_connection
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    payload = {
+        "apps": [{
+            "app_id": "photoprism",
+            "name": "PhotoPrism",
+            "installed": True,
+            "status": "ready",
+            "summary": "PhotoPrism is ready.",
+            "host_device": {"id": "server", "name": "Server Phone"},
+            "security": {"status": "protected"},
+            "media": {"status": "ready", "mapping_count": 2, "summary": "Media connected"},
+            "operations": {"status": "idle", "actions": {"check_app": {"status": "succeeded"}}},
+            "update": {"status": "ready", "readiness": {"status": "ready", "summary": "Ready to check"}},
+            "backup": {"status": "ready", "latest_backup_id": "backup-1"},
+            "recovery": {"status": "ready", "preview_available": True},
+            "actions": {"open": {"enabled": True}},
+        }],
+        "updated_at": "2026-07-22T13:10:00Z",
+    }
+
+    assert store.project_apps(payload) == 1
+    saved = store.app_current_subprojections("photoprism", max_age_seconds=3600)
+    assert saved is not None
+    assert saved["catalog"]["installed"] is True
+    assert saved["catalog"]["access"]["open_url"] == "/apps/photoprism/"
+    assert saved["media"]["mapping_count"] == 2
+    assert saved["operations"]["status"] == "idle"
+    assert saved["update"]["readiness"]["status"] == "ready"
+    assert saved["backup"]["kind"] == "profile"
+    assert saved["backup"]["backup"]["latest_backup_id"] == "backup-1"
+
+    first_revision = store.domain_revision("apps")
+    assert store.update_app_subprojection("photoprism", "media", payload["apps"][0]["media"]) == first_revision
+    changed = {**payload["apps"][0]["media"], "mapping_count": 3}
+    assert store.update_app_subprojection("photoprism", "media", changed) == first_revision + 1
+    with read_connection() as conn:
+        row = conn.execute(
+            "SELECT media_state_json, projection_version FROM app_current_state WHERE app_id='photoprism'"
+        ).fetchone()
+    assert json.loads(row["media_state_json"])["mapping_count"] == 3
+    assert int(row["projection_version"]) == 1
+    assert "token" not in row["media_state_json"].lower()
+
+
+def test_app_lifecycle_reuses_sqlite_current_state_and_reconciles_in_background():
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py"
+    ).read_text(encoding="utf-8")
+    assert "CONTROL_PLANE.app_current_subprojections" in source
+    assert "CONTROL_PLANE.update_app_subprojection" in source
+    assert "future.add_done_callback" in source
+    assert "POCKETLAB_LITE_APP_CURRENT_STATE_MAX_AGE_SECONDS" in source
+    assert '"backup": (app_backup_subprojection' in source
 
 def test_command_lifecycle_and_audit_index_are_bounded_and_sanitized(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
