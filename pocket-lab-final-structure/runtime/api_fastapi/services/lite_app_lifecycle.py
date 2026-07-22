@@ -72,6 +72,21 @@ def _app_subprojection_workers() -> int:
 _SUBPROJECTION_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
     max_workers=_app_subprojection_workers(), thread_name_prefix="pocketlab-app-subprojection"
 )
+
+def _app_stage_workers() -> int:
+    configured = os.environ.get("POCKETLAB_LITE_APP_STAGE_WORKERS", "").strip()
+    if configured:
+        try:
+            return max(1, min(3, int(configured)))
+        except ValueError:
+            pass
+    prefix = os.environ.get("PREFIX", "").lower()
+    return 2 if "com.termux" in prefix or sys.platform == "android" else 3
+
+
+_STAGE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
+    max_workers=_app_stage_workers(), thread_name_prefix="pocketlab-app-stage"
+)
 _SUBPROJECTION_VALUES: dict[str, tuple[dict[str, Any], float]] = {}
 _SUBPROJECTION_FUTURES: dict[str, concurrent.futures.Future[Any]] = {}
 _SUBPROJECTION_FAILURES: dict[str, int] = {}
@@ -653,27 +668,54 @@ def _evidence(security: dict[str, Any], backup: dict[str, Any], media: dict[str,
     }
 
 
+def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
+    callbacks: dict[str, tuple[Callable[[], Any], Any, float]] = {
+        "catalog": (lambda: _catalog_app("photoprism"), {}, 2.5),
+        "media": (_media_payload, {"status": "unknown", "summary": "Media status is refreshing."}, 2.5),
+        "operations": (lambda: lite_app_operations.app_operation_status("photoprism"), {"status": "unknown", "actions": {}}, 2.0),
+        "update": (lambda: lite_app_update.update_status("photoprism"), {"status": "unknown", "actions": {}, "readiness": {"status": "unknown", "summary": "Update readiness is refreshing."}}, 2.5),
+    }
+    submitted_at: dict[str, float] = {}
+    futures: dict[str, concurrent.futures.Future[Any]] = {}
+    for name, (callback, _fallback, _timeout) in callbacks.items():
+        submitted_at[name] = time.monotonic()
+        futures[name] = _STAGE_EXECUTOR.submit(callback)
+    results: dict[str, Any] = {}
+    for name, (_callback, fallback, timeout) in callbacks.items():
+        future = futures[name]
+        try:
+            value = future.result(timeout=timeout)
+            results[name] = value if isinstance(value, dict) else dict(fallback)
+        except concurrent.futures.TimeoutError:
+            results[name] = {**dict(fallback), "read_degraded": True, "refresh_pending": True}
+            _LOGGER.warning("pocketlab.app_stage.timeout key=%s timeout_ms=%.0f", name, timeout * 1000.0)
+        except Exception as exc:
+            results[name] = {**dict(fallback), "read_degraded": True, "refresh_pending": False}
+            _LOGGER.warning("pocketlab.app_stage.degraded key=%s error_type=%s", name, type(exc).__name__)
+        finally:
+            if stage_timings is not None:
+                stage_timings[name] = round(max(0.0, (time.monotonic() - submitted_at[name]) * 1000.0), 3)
+    return results
+
+
 def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
     _prime_app_subprojections()
-    app = _timed_stage(stage_timings, "catalog", lambda: _catalog_app("photoprism"))
+    parallel = _collect_app_stages(stage_timings)
+    app = parallel["catalog"]
     storage_raw = _timed_stage(stage_timings, "storage", _storage_payload)
     security_raw = _timed_stage(stage_timings, "security", app_security_subprojection)
     backup_raw = _timed_stage(stage_timings, "backup", app_backup_subprojection)
-    media = _timed_stage(stage_timings, "media", _media_payload)
+    media = parallel["media"]
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
 
     storage = _storage_profile(storage_raw)
     security = _security_profile(security_raw)
     backup = _backup_profile(backup_raw)
     recovery = _recovery_profile(backup_raw)
-    try:
-        operations = _timed_stage(stage_timings, "operations", lambda: lite_app_operations.app_operation_status("photoprism"))
-    except Exception:
-        operations = {"status": "unknown", "actions": {}}
-    try:
-        update = _timed_stage(stage_timings, "update", lambda: lite_app_update.update_status("photoprism"))
-    except Exception:
-        update = {"status": "unknown", "actions": {"update_app": {"enabled": installed, "label": "Update"}}, "readiness": {"status": "unknown", "summary": "Update readiness is not available."}}
+    operations = parallel["operations"]
+    update = parallel["update"]
+    if not isinstance(update.get("actions"), dict):
+        update["actions"] = {"update_app": {"enabled": installed, "label": "Update"}}
     attention = _attention(installed, storage, security, backup, recovery, media)
     current_action = operations.get("current_action") if isinstance(operations, dict) else None
     if isinstance(current_action, dict) and current_action.get("action_id") in {"check_app", "repair_app"}:
