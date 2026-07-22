@@ -7,6 +7,7 @@ import {
 } from './liteViewModels.js';
 import {
   checkLiteOfflineDbAvailability,
+  clearOfflineSafeSnapshots,
   deleteOfflineSafeSnapshot,
   estimateLiteCacheHealth,
   getLiteOfflineCacheHealth,
@@ -26,6 +27,7 @@ import {
 } from './liteOfflineReadPolicy.js';
 
 const SNAPSHOT_PREFIX = 'pocketlab:lite:safe-snapshot:';
+const DATABASE_INSTANCE_META_KEY = 'pocketlab:lite:database-instance';
 export const RECOVERY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/recovery/backups/index';
 export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/status',
@@ -108,6 +110,38 @@ function canUseStorage() {
 function canUseBroadcastChannel() {
   return typeof window !== 'undefined' && typeof window.BroadcastChannel !== 'undefined';
 }
+function clearLocalSnapshotMirrors() {
+  inMemorySnapshots.clear();
+  snapshotFingerprints.clear();
+  if (!canUseStorage()) return;
+  try {
+    Object.keys(window.localStorage)
+      .filter((key) => key.startsWith(SNAPSHOT_PREFIX))
+      .forEach((key) => window.localStorage.removeItem(key));
+  } catch {
+    // Best effort only; IndexedDB cleanup still runs below.
+  }
+}
+
+export function applyLiteSnapshotDatabaseInstance(databaseInstance = '') {
+  const next = String(databaseInstance || '').replace(/[^a-zA-Z0-9_.-]+/g, '').slice(0, 64);
+  if (!next) return { changed: false, databaseInstance: '' };
+  let previous = '';
+  if (canUseStorage()) {
+    try { previous = String(window.localStorage.getItem(DATABASE_INSTANCE_META_KEY) || ''); } catch { previous = ''; }
+  }
+  const changed = Boolean(previous && previous !== next);
+  if (changed) {
+    clearLocalSnapshotMirrors();
+    clearOfflineSafeSnapshots();
+  }
+  if (canUseStorage()) {
+    try { window.localStorage.setItem(DATABASE_INSTANCE_META_KEY, next); } catch { /* best effort cache metadata */ }
+  }
+  setOfflineCacheMeta('databaseInstance', next);
+  return { changed, previousDatabaseInstance: previous, databaseInstance: next };
+}
+
 
 function getSecurityBroadcastChannel() {
   if (!canUseBroadcastChannel()) return null;

@@ -31,6 +31,7 @@ import {
 } from './liteNavigationRuntime.js';
 import LiteToastHost from './LiteToastHost.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
+import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
   GlassCard,
@@ -674,6 +675,7 @@ function LiteAppShell() {
 export default function LiteApp() {
   return (
     <QueryClientProvider client={liteQueryClient}>
+      <LiteRevisionSyncBridge />
       <LiteErrorBoundary>
         <LiteAppShell />
       </LiteErrorBoundary>

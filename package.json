@@ -27,7 +27,8 @@
     "test:n1n2": "vitest run src/lite/liteNavigationRuntime.test.js",
     "check:bundle": "node scripts/dev/check-lite-bundle-budgets.mjs",
     "build:budget": "npm run build && npm run check:bundle",
-    "test:n3n6a": "vitest run src/lib/liteVirtualization.test.js src/lib/liteOfflineReadPolicy.test.js src/lib/liteServiceWorkerRuntime.test.js"
+    "test:n3n6a": "vitest run src/lib/liteVirtualization.test.js src/lib/liteOfflineReadPolicy.test.js src/lib/liteServiceWorkerRuntime.test.js",
+    "test:n4n5": "vitest run src/lib/liteRevisionSync.test.js"
   },
   "keywords": [],
   "author": "",

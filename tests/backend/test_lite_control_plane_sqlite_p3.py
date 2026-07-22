@@ -74,8 +74,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8]
-    assert current_schema_version() == 8
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    assert current_schema_version() == 9
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -93,6 +93,7 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
         "app_current_state",
         "recovery_current_state",
         "command_lifecycle",
+        "lite_revision_events",
     }.issubset(tables)
 
 
@@ -223,7 +224,7 @@ def test_app_current_subprojections_are_persisted_bounded_and_change_only(tmp_pa
     }
 
     assert store.project_apps(payload) == 1
-    saved = store.app_current_subprojections("photoprism", max_age_seconds=3600)
+    saved = store.app_current_subprojections("photoprism", max_age_seconds=24 * 60 * 60)
     assert saved is not None
     assert saved["catalog"]["installed"] is True
     assert saved["catalog"]["access"]["open_url"] == "/apps/photoprism/"

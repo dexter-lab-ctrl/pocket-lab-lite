@@ -36,6 +36,32 @@ _SECRET_KEYS = re.compile(
     r"(?:token|password|secret|credential|api[_-]?key|private[_-]?key|auth|cookie|bootstrap|command_payload|raw_log|raw_evidence)",
     re.IGNORECASE,
 )
+_REVISION_DOMAINS = (
+    "security", "fleet", "apps", "recovery", "commands", "storage", "audit",
+)
+_REVISION_REASONS = frozenset({
+    "domain_state_changed",
+    "security_state_changed",
+    "fleet_state_changed",
+    "apps_state_changed",
+    "app_subprojection_changed",
+    "recovery_state_changed",
+    "command_state_changed",
+    "audit_state_changed",
+    "storage_state_changed",
+    "database_instance_changed",
+    "cursor_too_old",
+    "cursor_ahead",
+    "malformed_cursor",
+})
+_MAX_CHANGED_IDS = 32
+_REVISION_EVENT_PAGE_LIMIT = 100
+_REVISION_EVENT_RETENTION_COUNT = 2048
+_REVISION_EVENT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
+_COMMAND_LIFECYCLE_STAGES = frozenset({
+    "accepted", "published", "delivered", "worker_claimed", "running", "terminal",
+    "failed", "timed_out", "ignored_redelivery", "recovery_action",
+})
 
 
 def _utc_now() -> str:
@@ -258,6 +284,11 @@ def _normalize_status(value: Any) -> str:
         "timedout": "timed_out",
         "in_progress": "running",
         "working": "running",
+        "delivered": "received",
+        "worker_claimed": "accepted",
+        "terminal": "succeeded",
+        "ignored_redelivery": "cancelled",
+        "recovery_action": "accepted",
     }
     normalized = aliases.get(raw, raw)
     if normalized in _ACTIVE_STATUSES | _TERMINAL_STATUSES:
@@ -282,7 +313,109 @@ def _domain_revision(conn: sqlite3.Connection, domain: str) -> int:
     return int(row["revision"] if row else 0)
 
 
-def _bump_revision(conn: sqlite3.Connection, domain: str, at: str) -> int:
+def _normalize_changed_ids(values: Iterable[Any] | None) -> tuple[list[str], bool]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    overflow = False
+    for value in values or ():
+        item = _safe_text(value, 120)
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        if len(normalized) >= _MAX_CHANGED_IDS:
+            overflow = True
+            break
+        normalized.append(item)
+    return normalized, overflow
+
+
+def _revision_reason(value: Any, domain: str) -> str:
+    candidate = str(value or "").strip().lower().replace("-", "_")
+    if candidate in _REVISION_REASONS:
+        return candidate
+    default = f"{domain}_state_changed"
+    return default if default in _REVISION_REASONS else "domain_state_changed"
+
+
+def _lifecycle_stage(value: Any, normalized_status: str) -> str:
+    raw = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "queued": "accepted",
+        "received": "delivered",
+        "accepted": "worker_claimed",
+        "succeeded": "terminal",
+        "cancelled": "terminal",
+        "undeliverable": "failed",
+    }
+    stage = aliases.get(raw, raw)
+    if stage in _COMMAND_LIFECYCLE_STAGES:
+        return stage
+    if normalized_status == "failed":
+        return "failed"
+    if normalized_status == "timed_out":
+        return "timed_out"
+    if normalized_status in _TERMINAL_STATUSES:
+        return "terminal"
+    if normalized_status == "running":
+        return "running"
+    if normalized_status == "published":
+        return "published"
+    return "accepted"
+
+
+def _record_revision_event(
+    conn: sqlite3.Connection,
+    *,
+    domain: str,
+    revision: int,
+    at: str,
+    changed_ids: Iterable[Any] | None = None,
+    reason: str = "domain_state_changed",
+    projection_version: int = 1,
+) -> None:
+    if domain not in _REVISION_DOMAINS or revision < 0:
+        return
+    bounded_ids, overflow = _normalize_changed_ids(changed_ids)
+    payload_ids = [] if overflow else bounded_ids
+    conn.execute(
+        """
+        INSERT OR IGNORE INTO lite_revision_events(
+            database_instance, domain, revision, changed_ids_json, reason,
+            projection_version, occurred_at, occurred_at_epoch_ms, sanitized
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+        """,
+        (
+            _database_instance(),
+            domain,
+            int(revision),
+            json.dumps(payload_ids, sort_keys=True, separators=(",", ":")),
+            _revision_reason(reason, domain),
+            max(1, int(projection_version or 1)),
+            at,
+            _epoch_ms(at),
+        ),
+    )
+    cutoff = _epoch_ms() - _REVISION_EVENT_RETENTION_MS
+    conn.execute(
+        "DELETE FROM lite_revision_events WHERE occurred_at_epoch_ms < ?",
+        (cutoff,),
+    )
+    conn.execute(
+        "DELETE FROM lite_revision_events WHERE event_id NOT IN "
+        "(SELECT event_id FROM lite_revision_events ORDER BY event_id DESC LIMIT ?)",
+        (_REVISION_EVENT_RETENTION_COUNT,),
+    )
+
+
+def _bump_revision(
+    conn: sqlite3.Connection,
+    domain: str,
+    at: str,
+    *,
+    changed_ids: Iterable[Any] | None = None,
+    reason: str = "domain_state_changed",
+    projection_version: int = 1,
+) -> int:
     conn.execute(
         """
         INSERT INTO domain_revisions(domain, revision, updated_at)
@@ -293,7 +426,17 @@ def _bump_revision(conn: sqlite3.Connection, domain: str, at: str) -> int:
         """,
         (domain, at),
     )
-    return _domain_revision(conn, domain)
+    revision = _domain_revision(conn, domain)
+    _record_revision_event(
+        conn,
+        domain=domain,
+        revision=revision,
+        at=at,
+        changed_ids=changed_ids,
+        reason=reason,
+        projection_version=projection_version,
+    )
+    return revision
 
 
 def _changes(conn: sqlite3.Connection) -> bool:
@@ -439,27 +582,141 @@ class ControlPlaneProjectionStore:
         result, _, _ = self._read(lambda conn: _domain_revision(conn, domain))
         return int(result)
 
+    def database_instance(self) -> str:
+        self.initialize()
+        return _database_instance()
+
     def revisions(self) -> dict[str, Any]:
         self.initialize()
-        domains = ("security", "fleet", "apps", "recovery", "commands", "storage", "audit")
-        rows, wait_ms, query_ms = self._read(
-            lambda conn: {
-                str(row["domain"]): int(row["revision"])
+        domains = _REVISION_DOMAINS
+
+        def read(conn: sqlite3.Connection) -> dict[str, Any]:
+            revisions = {
+                str(row["domain"]): {
+                    "revision": int(row["revision"]),
+                    "updated_at": str(row["updated_at"] or ""),
+                }
                 for row in conn.execute(
-                    "SELECT domain, revision FROM domain_revisions WHERE domain IN (%s)"
+                    "SELECT domain, revision, updated_at FROM domain_revisions WHERE domain IN (%s)"
                     % ",".join("?" for _ in domains),
                     domains,
                 )
             }
-        )
+            event_row = conn.execute(
+                "SELECT COALESCE(MIN(event_id), 0) AS oldest_event_id, "
+                "COALESCE(MAX(event_id), 0) AS latest_event_id, COUNT(*) AS retained_events "
+                "FROM lite_revision_events WHERE database_instance=?",
+                (_database_instance(),),
+            ).fetchone()
+            return {
+                "revisions": revisions,
+                "oldest_event_id": int(event_row["oldest_event_id"] or 0),
+                "latest_event_id": int(event_row["latest_event_id"] or 0),
+                "retained_events": int(event_row["retained_events"] or 0),
+            }
+
+        state, wait_ms, query_ms = self._read(read)
+        compact_prepared = self.prepared_metrics()
         return {
             "database_instance": _database_instance(),
-            "revisions": {domain: int(rows.get(domain, 0)) for domain in domains},
+            "revisions": {
+                domain: int((state["revisions"].get(domain) or {}).get("revision", 0))
+                for domain in domains
+            },
+            "updated_at_by_domain": {
+                domain: str((state["revisions"].get(domain) or {}).get("updated_at", ""))
+                for domain in domains
+            },
+            "event_cursor": {
+                "oldest_event_id": state["oldest_event_id"],
+                "latest_event_id": state["latest_event_id"],
+                "retained_events": state["retained_events"],
+            },
             "connection_wait_ms": round(wait_ms, 3),
             "sqlite_query_ms": round(query_ms, 3),
             "updated_at": _utc_now(),
-            "prepared": self.prepared_metrics(),
+            "projection_version": 1,
+            "prepared": {
+                "prepared_keys": compact_prepared.get("prepared_keys", []),
+                "refreshing": sorted((compact_prepared.get("refreshing") or {}).keys()),
+                "cache_generation": int(compact_prepared.get("cache_generation") or 0),
+            },
+            "sanitized": True,
         }
+
+    def revisions_etag(self, payload: dict[str, Any] | None = None) -> str:
+        value = payload or self.revisions()
+        material = json.dumps(
+            {
+                "database_instance": value.get("database_instance"),
+                "revisions": value.get("revisions") or {},
+                "latest_event_id": (value.get("event_cursor") or {}).get("latest_event_id", 0),
+                "projection_version": value.get("projection_version", 1),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        digest = hashlib.sha256(material.encode("utf-8")).hexdigest()[:24]
+        return f'W/"pl-revisions-{digest}"'
+
+    def revision_event_window(self) -> dict[str, Any]:
+        self.initialize()
+        instance = _database_instance()
+
+        def read(conn: sqlite3.Connection) -> dict[str, Any]:
+            row = conn.execute(
+                "SELECT COALESCE(MIN(event_id), 0) AS oldest_event_id, "
+                "COALESCE(MAX(event_id), 0) AS latest_event_id, COUNT(*) AS retained_events "
+                "FROM lite_revision_events WHERE database_instance=?",
+                (instance,),
+            ).fetchone()
+            return {
+                "database_instance": instance,
+                "oldest_event_id": int(row["oldest_event_id"] or 0),
+                "latest_event_id": int(row["latest_event_id"] or 0),
+                "retained_events": int(row["retained_events"] or 0),
+            }
+
+        result, _, _ = self._read(read)
+        return result
+
+    def revision_events_after(self, event_id: int, *, limit: int = _REVISION_EVENT_PAGE_LIMIT) -> list[dict[str, Any]]:
+        self.initialize()
+        cursor = max(0, int(event_id or 0))
+        bounded_limit = max(1, min(int(limit or _REVISION_EVENT_PAGE_LIMIT), _REVISION_EVENT_PAGE_LIMIT))
+        instance = _database_instance()
+
+        def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+            rows = conn.execute(
+                "SELECT event_id, database_instance, domain, revision, changed_ids_json, reason, "
+                "projection_version, occurred_at FROM lite_revision_events "
+                "WHERE database_instance=? AND event_id>? ORDER BY event_id ASC LIMIT ?",
+                (instance, cursor, bounded_limit),
+            ).fetchall()
+            result: list[dict[str, Any]] = []
+            for row in rows:
+                try:
+                    changed_ids = json.loads(str(row["changed_ids_json"] or "[]"))
+                except json.JSONDecodeError:
+                    changed_ids = []
+                if not isinstance(changed_ids, list):
+                    changed_ids = []
+                result.append({
+                    "type": "lite.revision.changed",
+                    "event_id": int(row["event_id"]),
+                    "domain": str(row["domain"]),
+                    "revision": int(row["revision"]),
+                    "database_instance": str(row["database_instance"]),
+                    "changed_ids": [str(item)[:120] for item in changed_ids[:_MAX_CHANGED_IDS]],
+                    "reason": _revision_reason(row["reason"], str(row["domain"])),
+                    "projection_version": max(1, int(row["projection_version"] or 1)),
+                    "occurred_at": str(row["occurred_at"]),
+                    "sanitized": True,
+                })
+            return result
+
+        result, _, _ = self._read(read)
+        return result
 
     def _etag(self, domain: str, key: str, revision: int) -> str:
         return f'W/"pl-{_database_instance()}-{domain}-{key}-{int(revision)}"'
@@ -900,7 +1157,10 @@ class ControlPlaneProjectionStore:
                 f"UPDATE app_current_state SET {assignments}, projection_version=2, updated_at=?, updated_at_epoch_ms=? WHERE app_id=?",
                 (*changed.values(), now, now_epoch, normalized),
             )
-            return _bump_revision(conn, "apps", now) if _changes(conn) else _domain_revision(conn, "apps")
+            return _bump_revision(
+                conn, "apps", now, changed_ids=[normalized],
+                reason="app_subprojection_changed", projection_version=2,
+            ) if _changes(conn) else _domain_revision(conn, "apps")
 
         try:
             return int(SQLITE_WRITER.submit("apps.subprojections", write, deadline_seconds=1.0))
@@ -1214,7 +1474,10 @@ class ControlPlaneProjectionStore:
                 "(SELECT recovery_id FROM device_recovery_history ORDER BY created_at_epoch_ms DESC, recovery_id DESC LIMIT 1000)"
             )
             changed = _changes(conn) or changed
-            return _bump_revision(conn, "fleet", now) if changed else _domain_revision(conn, "fleet")
+            return _bump_revision(
+                conn, "fleet", now, changed_ids=device_ids,
+                reason="fleet_state_changed", projection_version=1,
+            ) if changed else _domain_revision(conn, "fleet")
 
         try:
             revision = SQLITE_WRITER.submit("fleet.projection", write, deadline_seconds=3.0)
@@ -1230,7 +1493,12 @@ class ControlPlaneProjectionStore:
             return False
         created_at = str(command.get("created_at") or command.get("queued_at") or _utc_now())
         updated_at = str(command.get("updated_at") or command.get("finished_at") or created_at)
-        status = _normalize_status(command.get("status"))
+        raw_status = command.get("status")
+        status = _normalize_status(raw_status)
+        lifecycle_stage = _lifecycle_stage(raw_status, status)
+        terminal_at = updated_at if status in _TERMINAL_STATUSES else None
+        ignored_redelivery = int(lifecycle_stage == "ignored_redelivery")
+        recovery_action = _safe_text(command.get("recovery_action"), 80) if lifecycle_stage == "recovery_action" else ""
         entity_id = _safe_text(command.get("node_id") or command.get("app_id") or command.get("entity_id") or "control-plane", 120)
         operation_type = _safe_text(command.get("command") or command.get("action_id") or command.get("operation_type"), 100)
         conn.execute(
@@ -1238,22 +1506,47 @@ class ControlPlaneProjectionStore:
             INSERT INTO command_lifecycle(
                 command_id, entity_type, entity_id, operation_type, status,
                 created_at, updated_at, updated_at_epoch_ms, deadline_at,
-                source_ref, summary, metadata_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                source_ref, summary, metadata_json, lifecycle_stage, terminal_at,
+                ignored_redelivery, recovery_action
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(command_id) DO UPDATE SET
-                status=excluded.status, updated_at=excluded.updated_at,
+                status=CASE
+                    WHEN excluded.lifecycle_stage IN ('ignored_redelivery','recovery_action')
+                    THEN command_lifecycle.status
+                    ELSE excluded.status
+                END,
+                updated_at=excluded.updated_at,
                 updated_at_epoch_ms=excluded.updated_at_epoch_ms,
                 deadline_at=excluded.deadline_at, summary=excluded.summary,
-                metadata_json=excluded.metadata_json
-            WHERE command_lifecycle.status IS NOT excluded.status
-               OR command_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
-               OR command_lifecycle.summary IS NOT excluded.summary
+                metadata_json=excluded.metadata_json,
+                lifecycle_stage=CASE
+                    WHEN excluded.lifecycle_stage = 'ignored_redelivery'
+                    THEN command_lifecycle.lifecycle_stage
+                    ELSE excluded.lifecycle_stage
+                END,
+                terminal_at=COALESCE(command_lifecycle.terminal_at, excluded.terminal_at),
+                ignored_redelivery=MAX(command_lifecycle.ignored_redelivery, excluded.ignored_redelivery),
+                recovery_action=CASE
+                    WHEN excluded.recovery_action != '' THEN excluded.recovery_action
+                    ELSE command_lifecycle.recovery_action
+                END
+            WHERE (excluded.lifecycle_stage IN ('ignored_redelivery','recovery_action')
+                   OR command_lifecycle.status NOT IN ('succeeded','failed','cancelled','undeliverable','timed_out')
+                   OR command_lifecycle.status = excluded.status)
+              AND (excluded.lifecycle_stage IN ('ignored_redelivery','recovery_action')
+                   OR command_lifecycle.status IS NOT excluded.status
+                   OR command_lifecycle.lifecycle_stage IS NOT excluded.lifecycle_stage
+                   OR command_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
+                   OR command_lifecycle.summary IS NOT excluded.summary
+                   OR command_lifecycle.ignored_redelivery < excluded.ignored_redelivery
+                   OR command_lifecycle.recovery_action IS NOT excluded.recovery_action)
             """,
             (command_id, entity_type, entity_id, operation_type, status, created_at,
              updated_at, _epoch_ms(updated_at), command.get("deadline_at"),
              _safe_text(command.get("source_ref") or "command-lifecycle", 160),
              _safe_text(command.get("summary") or command.get("error") or status),
-             _safe_json({"requested_by": command.get("requested_by"), "result_status": (command.get("result") or {}).get("status") if isinstance(command.get("result"), dict) else None})),
+             _safe_json({"requested_by": command.get("requested_by"), "result_status": (command.get("result") or {}).get("status") if isinstance(command.get("result"), dict) else None}),
+             lifecycle_stage, terminal_at, ignored_redelivery, recovery_action),
         )
         return _changes(conn)
 
@@ -1267,6 +1560,7 @@ class ControlPlaneProjectionStore:
         entity_id: str = "control-plane",
         summary: str = "",
         deadline_at: str | None = None,
+        recovery_action: str = "",
     ) -> None:
         self.initialize()
         now = _utc_now()
@@ -1280,6 +1574,7 @@ class ControlPlaneProjectionStore:
             "deadline_at": deadline_at,
             "summary": summary or status,
             "source_ref": "FastAPI/NATS",
+            "recovery_action": recovery_action,
         }
 
         def write(conn: sqlite3.Connection) -> int:
@@ -1312,9 +1607,15 @@ class ControlPlaneProjectionStore:
             )
             audit_changed = _changes(conn) or audit_changed
             if audit_changed:
-                _bump_revision(conn, "audit", now)
+                _bump_revision(
+                    conn, "audit", now, changed_ids=[command_id],
+                    reason="audit_state_changed", projection_version=1,
+                )
             return (
-                _bump_revision(conn, "commands", now)
+                _bump_revision(
+                    conn, "commands", now, changed_ids=[command_id],
+                    reason="command_state_changed", projection_version=1,
+                )
                 if changed
                 else _domain_revision(conn, "commands")
             )
@@ -1450,7 +1751,10 @@ class ControlPlaneProjectionStore:
                 "(SELECT operation_id FROM app_action_lifecycle ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 2000)"
             )
             changed = _changes(conn) or changed
-            return _bump_revision(conn, "apps", now) if changed else _domain_revision(conn, "apps")
+            return _bump_revision(
+                conn, "apps", now, changed_ids=app_ids,
+                reason="apps_state_changed", projection_version=2,
+            ) if changed else _domain_revision(conn, "apps")
 
         try:
             return int(SQLITE_WRITER.submit("apps.projection", write, deadline_seconds=3.0))
@@ -1571,7 +1875,11 @@ class ControlPlaneProjectionStore:
                 "(SELECT operation_id FROM recovery_operations ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 1000)"
             )
             changed = _changes(conn) or changed
-            return _bump_revision(conn, "recovery", now) if changed else _domain_revision(conn, "recovery")
+            return _bump_revision(
+                conn, "recovery", now,
+                changed_ids=[active_id, backup_id, _safe_text(preview.get("preview_id"), 120), _safe_text(restore.get("restore_id"), 120)],
+                reason="recovery_state_changed", projection_version=1,
+            ) if changed else _domain_revision(conn, "recovery")
 
         try:
             return int(SQLITE_WRITER.submit("recovery.projection", write, deadline_seconds=3.0))
@@ -1826,6 +2134,14 @@ class ControlPlaneProjectionStore:
             "backup_manifest_history": (
                 "SELECT backup_id FROM backup_manifest_index ORDER BY updated_at_epoch_ms DESC, backup_id DESC LIMIT 20",
                 (),
+            ),
+            "revision_event_replay": (
+                "SELECT event_id FROM lite_revision_events WHERE database_instance=? AND event_id>? ORDER BY event_id ASC LIMIT 100",
+                (_database_instance(), 0),
+            ),
+            "command_lifecycle_stage": (
+                "SELECT command_id FROM command_lifecycle WHERE lifecycle_stage=? ORDER BY updated_at_epoch_ms DESC, command_id DESC LIMIT 20",
+                ("running",),
             ),
         }
 
