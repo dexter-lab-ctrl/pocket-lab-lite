@@ -868,3 +868,79 @@ def test_database_replacement_fence_clears_prepared_refresh_state(tmp_path, monk
     metrics = store.prepared_metrics()
     assert metrics["refreshing"] == {}
     assert metrics["prepared_keys"] == []
+
+
+def test_dynamic_stale_budget_and_success_cooldown_prevent_refresh_storms(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    calls = 0
+
+    def builder():
+        nonlocal calls
+        calls += 1
+        time.sleep(0.02)
+        return {"status": "healthy", "apps": [], "updated_at": "2026-07-21T12:00:00Z"}
+
+    first = store.prepared_read(
+        domain="apps",
+        key="budgeted",
+        builder=builder,
+        projector=store.project_apps,
+        stale_after_ms=1,
+        max_stale_ms=2,
+        cold_start_async=False,
+    )
+    assert first.read_degraded is False
+    time.sleep(0.01)
+    second = store.prepared_read(
+        domain="apps",
+        key="budgeted",
+        builder=builder,
+        projector=store.project_apps,
+        stale_after_ms=1,
+        max_stale_ms=2,
+        cold_start_async=True,
+    )
+    assert second.payload == first.payload
+    assert second.refresh_pending is False
+    assert calls == 1
+    metrics = store.prepared_metrics()
+    assert metrics["build_duration_ms"]["apps:budgeted"] >= 1
+    assert metrics["refresh_backoff_seconds"]["apps:budgeted"] > 0
+
+
+def test_refresh_failure_backoff_blocks_immediate_reschedule(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    calls = 0
+
+    def fail_builder():
+        nonlocal calls
+        calls += 1
+        raise OSError("source unavailable")
+
+    store.warm_prepared_read(
+        domain="apps",
+        key="failing",
+        builder=fail_builder,
+        projector=store.project_apps,
+        deadline_seconds=0.1,
+    )
+    deadline = time.monotonic() + 2.0
+    while time.monotonic() < deadline and "apps:failing" not in store.prepared_metrics()["refresh_errors"]:
+        time.sleep(0.01)
+    assert store.prepared_metrics()["refresh_errors"]["apps:failing"] == "OSError"
+    assert store.prepared_metrics()["refresh_backoff_seconds"]["apps:failing"] > 0
+    assert store.warm_prepared_read(
+        domain="apps",
+        key="failing",
+        builder=fail_builder,
+        projector=store.project_apps,
+        deadline_seconds=0.1,
+    ) is True
+    time.sleep(0.05)
+    assert calls == 1

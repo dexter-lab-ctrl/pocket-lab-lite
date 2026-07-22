@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+import concurrent.futures
+import logging
+import threading
 import time
 
 from fastapi import HTTPException
@@ -9,6 +12,7 @@ from fastapi import HTTPException
 from .. import deps
 from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
 
+_LOGGER = logging.getLogger(__name__)
 SUPPORTED_APP_IDS = {"photoprism"}
 _SAFE_ROUTE = "/apps/photoprism/"
 _SECRET_MARKERS = (
@@ -48,6 +52,112 @@ def _timed_stage(
         if timings is not None:
             timings[name] = round(max(0.0, (time.monotonic() - started) * 1000.0), 3)
 
+
+
+_SUBPROJECTION_LOCK = threading.Lock()
+_SUBPROJECTION_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
+    max_workers=2, thread_name_prefix="pocketlab-app-subprojection"
+)
+_SUBPROJECTION_VALUES: dict[str, tuple[dict[str, Any], float]] = {}
+_SUBPROJECTION_FUTURES: dict[str, concurrent.futures.Future[Any]] = {}
+_SUBPROJECTION_FAILURES: dict[str, int] = {}
+_SUBPROJECTION_NEXT_ALLOWED: dict[str, float] = {}
+
+
+def _subprojection_done(name: str, future: concurrent.futures.Future[Any]) -> None:
+    try:
+        value = future.result()
+        if not isinstance(value, dict):
+            raise TypeError("Subprojection must return a mapping")
+    except Exception as exc:
+        with _SUBPROJECTION_LOCK:
+            failures = min(8, _SUBPROJECTION_FAILURES.get(name, 0) + 1)
+            _SUBPROJECTION_FAILURES[name] = failures
+            _SUBPROJECTION_NEXT_ALLOWED[name] = time.monotonic() + min(300.0, 2.0 ** failures)
+            _SUBPROJECTION_FUTURES.pop(name, None)
+        _LOGGER.warning(
+            "pocketlab.app_subprojection.refresh_degraded key=%s error_type=%s",
+            name, type(exc).__name__,
+        )
+        return
+    with _SUBPROJECTION_LOCK:
+        _SUBPROJECTION_VALUES[name] = (value, time.monotonic())
+        _SUBPROJECTION_FAILURES[name] = 0
+        _SUBPROJECTION_NEXT_ALLOWED[name] = time.monotonic() + 30.0
+        _SUBPROJECTION_FUTURES.pop(name, None)
+
+
+def _cached_subprojection(
+    name: str,
+    callback: Callable[[], dict[str, Any]],
+    fallback: dict[str, Any],
+    *,
+    wait_seconds: float,
+    ttl_seconds: float = 300.0,
+) -> dict[str, Any]:
+    now = time.monotonic()
+    with _SUBPROJECTION_LOCK:
+        cached = _SUBPROJECTION_VALUES.get(name)
+        future = _SUBPROJECTION_FUTURES.get(name)
+        allowed = now >= _SUBPROJECTION_NEXT_ALLOWED.get(name, 0.0)
+        if cached is not None and now - cached[1] <= ttl_seconds:
+            return dict(cached[0])
+        if future is None and allowed:
+            future = _SUBPROJECTION_EXECUTOR.submit(callback)
+            _SUBPROJECTION_FUTURES[name] = future
+            future.add_done_callback(lambda completed, key=name: _subprojection_done(key, completed))
+    if future is not None:
+        try:
+            value = future.result(timeout=max(0.01, wait_seconds))
+            return dict(value) if isinstance(value, dict) else dict(fallback)
+        except concurrent.futures.TimeoutError:
+            pass
+        except Exception:
+            pass
+    if cached is not None:
+        stale = dict(cached[0])
+        stale["read_degraded"] = True
+        stale["refresh_pending"] = future is not None
+        return stale
+    degraded = dict(fallback)
+    degraded["read_degraded"] = True
+    degraded["refresh_pending"] = future is not None
+    return degraded
+
+
+def app_security_subprojection() -> dict[str, Any]:
+    return _cached_subprojection(
+        "photoprism:security", _security_payload,
+        {"status": "unknown", "summary": "App safety status is refreshing.", "evidence": {"count": 0}},
+        wait_seconds=1.5, ttl_seconds=300.0,
+    )
+
+
+def app_backup_subprojection() -> dict[str, Any]:
+    return _cached_subprojection(
+        "photoprism:backup", _backup_payload,
+        {"status": "unknown", "summary": "App backup status is refreshing.", "evidence": {"count": 0}},
+        wait_seconds=1.5, ttl_seconds=300.0,
+    )
+
+
+def app_runtime_subprojection() -> dict[str, Any]:
+    return _cached_subprojection(
+        "photoprism:runtime", lite_photoprism_lifecycle.lifecycle_state,
+        {"status": "unknown", "summary": "App runtime status is refreshing."},
+        wait_seconds=1.0, ttl_seconds=120.0,
+    )
+
+
+def cached_app_backup_profiles() -> dict[str, Any]:
+    backup = app_backup_subprojection()
+    return {
+        "status": "healthy" if not backup.get("read_degraded") else "degraded",
+        "summary": "Saved app backup profiles are available.",
+        "apps": [{"app_id": "photoprism", "name": "PhotoPrism", **backup}],
+        "count": 1,
+        "updated_at": _now(),
+    }
 
 def _now() -> str:
     return deps.now_utc_iso()
@@ -519,8 +629,8 @@ def _evidence(security: dict[str, Any], backup: dict[str, Any], media: dict[str,
 def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
     app = _timed_stage(stage_timings, "catalog", lambda: _catalog_app("photoprism"))
     storage_raw = _timed_stage(stage_timings, "storage", _storage_payload)
-    security_raw = _timed_stage(stage_timings, "security", _security_payload)
-    backup_raw = _timed_stage(stage_timings, "backup", _backup_payload)
+    security_raw = _timed_stage(stage_timings, "security", app_security_subprojection)
+    backup_raw = _timed_stage(stage_timings, "backup", app_backup_subprojection)
     media = _timed_stage(stage_timings, "media", _media_payload)
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
 
@@ -574,7 +684,7 @@ def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) 
         "security": security,
         "backup": backup,
         "backup_targets": _timed_stage(stage_timings, "backup_targets", lambda: lite_app_backup_targets.app_backup_targets("photoprism")),
-        "app_lifecycle": _timed_stage(stage_timings, "runtime_lifecycle", lite_photoprism_lifecycle.lifecycle_state),
+        "app_lifecycle": _timed_stage(stage_timings, "runtime_lifecycle", app_runtime_subprojection),
         "recovery": recovery,
         "media": media,
         "operations": operations,

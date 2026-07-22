@@ -8,6 +8,7 @@ import logging
 import os
 import re
 import sqlite3
+import sys
 import threading
 import time
 from dataclasses import dataclass
@@ -225,9 +226,14 @@ class ControlPlaneProjectionStore:
         self._last_stage_timings: dict[str, dict[str, float]] = {}
         self._cache_generation = 0
         self._refresh_generation_by_key: dict[str, int] = {}
+        self._last_refresh_completed_at: dict[str, float] = {}
+        self._last_build_seconds: dict[str, float] = {}
+        self._consecutive_refresh_failures: dict[str, int] = {}
+        self._next_refresh_allowed_at: dict[str, float] = {}
         self._singleflight_locks: dict[str, threading.Lock] = {}
+        default_workers = "1" if ("com.termux" in os.environ.get("PREFIX", "") or sys.platform == "android") else "2"
         self._executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", "2")), 4)),
+            max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", default_workers)), 4)),
             thread_name_prefix="pocketlab-read-refresh",
         )
 
@@ -246,6 +252,10 @@ class ControlPlaneProjectionStore:
                 self._refresh_started_at.clear()
                 self._last_stage_timings.clear()
                 self._refresh_generation_by_key.clear()
+                self._last_refresh_completed_at.clear()
+                self._last_build_seconds.clear()
+                self._consecutive_refresh_failures.clear()
+                self._next_refresh_allowed_at.clear()
                 self._cache_generation += 1
             self._initialized = True
             self._initialized_path = current_path
@@ -264,6 +274,10 @@ class ControlPlaneProjectionStore:
             self._refresh_started_at.clear()
             self._last_stage_timings.clear()
             self._refresh_generation_by_key.clear()
+            self._last_refresh_completed_at.clear()
+            self._last_build_seconds.clear()
+            self._consecutive_refresh_failures.clear()
+            self._next_refresh_allowed_at.clear()
             self._cache_generation += 1
 
     def invalidate_domain(self, domain: str) -> None:
@@ -320,6 +334,36 @@ class ControlPlaneProjectionStore:
         effective_revision = self.domain_revision(domain) if revision is None else int(revision)
         safe_key = re.sub(r"[^a-zA-Z0-9_.-]+", "-", str(key or "read"))[:120]
         return self._etag(str(domain or "control")[:40], safe_key, effective_revision)
+
+    def prepared_payload(self, cache_key: str) -> dict[str, Any] | None:
+        """Return the last prepared payload without starting a refresh."""
+        instance = _database_instance()
+        with self._cache_lock:
+            item = self._prepared.get(str(cache_key))
+            if item is None or item.database_instance != instance:
+                return None
+            return dict(item.payload)
+
+    def wait_for_prepared(self, cache_key: str, timeout_seconds: float) -> bool:
+        deadline = time.monotonic() + max(0.0, float(timeout_seconds))
+        while time.monotonic() < deadline:
+            if self.prepared_payload(cache_key) is not None:
+                return True
+            time.sleep(0.05)
+        return self.prepared_payload(cache_key) is not None
+
+    def _effective_stale_after_ms(self, cache_key: str, configured_ms: int) -> int:
+        if int(configured_ms) <= 0:
+            return 0
+        with self._cache_lock:
+            build_seconds = float(self._last_build_seconds.get(cache_key, 0.0))
+        dynamic_ms = int(build_seconds * 5000.0)
+        return max(int(configured_ms), 120_000, min(dynamic_ms, 15 * 60 * 1000))
+
+    def _refresh_allowed(self, cache_key: str) -> bool:
+        now = time.monotonic()
+        with self._cache_lock:
+            return now >= float(self._next_refresh_allowed_at.get(cache_key, 0.0))
 
     def prepared_read(
         self,
@@ -380,7 +424,8 @@ class ControlPlaneProjectionStore:
                 cache_key, domain, key, builder, projector, deadline_seconds, True
             )
         age_ms = int(max(0.0, (now - item.prepared_at) * 1000.0))
-        if age_ms <= stale_after_ms:
+        effective_stale_after_ms = self._effective_stale_after_ms(cache_key, stale_after_ms)
+        if age_ms <= effective_stale_after_ms:
             return PreparedRead(
                 payload=item.payload,
                 etag=self._etag(domain, key, item.revision),
@@ -390,28 +435,33 @@ class ControlPlaneProjectionStore:
                 refresh_pending=False,
                 timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
             )
-        if age_ms <= max_stale_ms:
-            if not refreshing:
+        effective_max_stale_ms = max(int(max_stale_ms), effective_stale_after_ms * 3)
+        if age_ms <= effective_max_stale_ms:
+            scheduled = refreshing
+            if not refreshing and self._refresh_allowed(cache_key):
                 self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+                scheduled = True
             return PreparedRead(
                 payload=item.payload,
                 etag=self._etag(domain, key, item.revision),
                 source_revision=item.revision,
                 projection_age_ms=age_ms,
                 read_degraded=cache_key in self._refresh_errors,
-                refresh_pending=True,
+                refresh_pending=scheduled,
                 timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
             )
         if cold_start_async:
-            if not refreshing:
+            scheduled = refreshing
+            if not refreshing and self._refresh_allowed(cache_key):
                 self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+                scheduled = True
             return PreparedRead(
                 payload=item.payload,
                 etag=self._etag(domain, key, item.revision),
                 source_revision=item.revision,
                 projection_age_ms=age_ms,
                 read_degraded=True,
-                refresh_pending=True,
+                refresh_pending=scheduled,
                 timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
             )
         try:
@@ -457,7 +507,8 @@ class ControlPlaneProjectionStore:
         deadline_seconds: float,
     ) -> None:
         with self._cache_lock:
-            if cache_key in self._refreshing:
+            now = time.monotonic()
+            if cache_key in self._refreshing or now < float(self._next_refresh_allowed_at.get(cache_key, 0.0)):
                 return
             self._refreshing.add(cache_key)
             self._refresh_started_at[cache_key] = time.monotonic()
@@ -483,6 +534,10 @@ class ControlPlaneProjectionStore:
             with self._cache_lock:
                 if self._refresh_generation_by_key.get(cache_key) == generation:
                     self._refresh_errors[cache_key] = type(exc).__name__
+                    failures = min(8, self._consecutive_refresh_failures.get(cache_key, 0) + 1)
+                    self._consecutive_refresh_failures[cache_key] = failures
+                    backoff = min(300.0, 2.0 ** failures)
+                    self._next_refresh_allowed_at[cache_key] = time.monotonic() + backoff
             _LOGGER.warning(
                 "pocketlab.control_projection.refresh_degraded key=%s error_type=%s",
                 cache_key,
@@ -583,6 +638,11 @@ class ControlPlaneProjectionStore:
             with self._cache_lock:
                 self._prepared[cache_key] = item
                 self._refresh_errors.pop(cache_key, None)
+                self._last_build_seconds[cache_key] = max(build_seconds, self._last_build_seconds.get(cache_key, 0.0) * 0.75)
+                self._last_refresh_completed_at[cache_key] = time.monotonic()
+                self._consecutive_refresh_failures[cache_key] = 0
+                minimum_interval = max(15.0, min(300.0, build_seconds * 2.0))
+                self._next_refresh_allowed_at[cache_key] = time.monotonic() + minimum_interval
             serialization_started = time.monotonic()
             json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
             serialization_ms = max(0.0, (time.monotonic() - serialization_started) * 1000.0)
@@ -680,6 +740,9 @@ class ControlPlaneProjectionStore:
                 "refreshing": {key: round(max(0.0, now - started), 3) for key, started in self._refresh_started_at.items()},
                 "refresh_errors": dict(self._refresh_errors),
                 "stage_timings_ms": {key: dict(value) for key, value in self._last_stage_timings.items()},
+                "build_duration_ms": {key: round(value * 1000.0, 3) for key, value in self._last_build_seconds.items()},
+                "refresh_backoff_seconds": {key: round(max(0.0, at - now), 3) for key, at in self._next_refresh_allowed_at.items() if at > now},
+                "refresh_failures": dict(self._consecutive_refresh_failures),
                 "prepared_keys": sorted(self._prepared),
                 "generation": self._cache_generation,
                 "sanitized": True,

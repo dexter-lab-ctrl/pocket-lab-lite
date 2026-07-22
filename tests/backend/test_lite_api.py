@@ -7478,3 +7478,22 @@ def test_lite_focus_refetch_is_opt_in_and_status_stays_quiet():
     assert "refetchOnWindowFocus: false" in use_status
     assert "refetchOnReconnect: true" in query_client
     assert "refetchOnReconnect = true" in use_query
+
+
+def test_lite_control_plane_subprojection_and_staggered_warmup_source_contract():
+    lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
+    router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
+    store = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py").read_text()
+
+    assert "app_security_subprojection" in lifecycle
+    assert "app_backup_subprojection" in lifecycle
+    assert "app_runtime_subprojection" in lifecycle
+    assert "future.result(timeout=" in lifecycle
+    assert 'CONTROL_PLANE.prepared_payload("apps:lifecycle")' in router
+    assert "lite_app_profiles.app_backup_profiles" not in router[router.index("def _lite_recovery_details_payload"):router.index("def _build_lite_recovery_summary_projection")]
+    warmup = router[router.index("def _run_staggered_projection_warmup"):router.index('@router.get("/recovery/summary")')]
+    assert warmup.index('key="summary"') < warmup.index('key="lifecycle"') < warmup.index('key="details"')
+    assert "wait_for_prepared" in warmup
+    assert "_effective_stale_after_ms" in store
+    assert "_next_refresh_allowed_at" in store
+    assert "_consecutive_refresh_failures" in store
