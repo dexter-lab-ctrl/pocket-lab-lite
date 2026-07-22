@@ -74,8 +74,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7]
-    assert current_schema_version() == 7
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert current_schema_version() == 8
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -242,7 +242,7 @@ def test_app_current_subprojections_are_persisted_bounded_and_change_only(tmp_pa
             "SELECT media_state_json, projection_version FROM app_current_state WHERE app_id='photoprism'"
         ).fetchone()
     assert json.loads(row["media_state_json"])["mapping_count"] == 3
-    assert int(row["projection_version"]) == 1
+    assert int(row["projection_version"]) == 2
     assert "token" not in row["media_state_json"].lower()
 
 
@@ -1107,3 +1107,86 @@ def test_security_progress_idle_polling_is_quiet_but_dirty_signal_remains_immedi
     assert 'POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "30.0"' in security
     assert "_SQLITE_PROGRESS_DIRTY.wait(timeout=wait_interval)" in security
     assert "mark_security_progress_dirty()" in security
+
+
+def test_app_hot_subprojections_are_compact_and_batch_revision_once(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.db.connection import read_connection
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    store.project_apps({
+        "apps": [{
+            "app_id": "photoprism",
+            "name": "PhotoPrism",
+            "status": "ready",
+            "installed": True,
+            "security": {"status": "protected", "summary": "Protected app"},
+            "backup": {"status": "ready", "summary": "Backup ready"},
+            "recovery": {"status": "ready", "preview_available": True},
+            "media": {"status": "ready", "summary": "Media ready", "mapping_count": 2},
+            "operations": {
+                "status": "ready",
+                "actions": {
+                    "check_app": {
+                        "status": "succeeded",
+                        "summary": "Checked",
+                        "technical_details": {"large": "x" * 12000},
+                        "details": {"large": "x" * 12000},
+                    }
+                },
+            },
+            "update": {
+                "status": "ready",
+                "latest_check": {
+                    "status": "succeeded",
+                    "summary": "Ready",
+                    "details": {"large": "x" * 12000},
+                },
+                "actions": {"update_app": {"enabled": True, "label": "Update"}},
+            },
+            "backup_targets": {"status": "healthy", "ready": True, "count": 1},
+            "actions": {"open": {"enabled": True}},
+        }],
+        "updated_at": "2026-07-22T13:00:00Z",
+    })
+    before = store.domain_revision("apps")
+    after = store.update_app_subprojections("photoprism", {
+        "security": {"kind": "raw", "payload": {"status": "healthy", "summary": "Safe"}},
+        "backup_targets": {"status": "healthy", "ready": True, "count": 2},
+        "operations": {
+            "status": "ready",
+            "actions": {"check_app": {"status": "succeeded", "summary": "Checked", "details": {"large": "y" * 12000}}},
+        },
+    })
+    assert after == before + 1
+    assert store.update_app_subprojections("photoprism", {
+        "security": {"kind": "raw", "payload": {"status": "healthy", "summary": "Safe"}},
+        "backup_targets": {"status": "healthy", "ready": True, "count": 2},
+        "operations": {
+            "status": "ready",
+            "actions": {"check_app": {"status": "succeeded", "summary": "Checked", "details": {"large": "y" * 12000}}},
+        },
+    }) == after
+
+    with read_connection() as conn:
+        row = conn.execute(
+            "SELECT projection_version, length(operation_state_json), length(update_state_json), "
+            "length(security_profile_json), length(backup_targets_json) "
+            "FROM app_current_state WHERE app_id='photoprism'"
+        ).fetchone()
+    assert int(row["projection_version"]) == 2
+    assert int(row["length(operation_state_json)"]) < 4096
+    assert int(row["length(update_state_json)"]) < 4096
+    assert int(row["length(security_profile_json)"]) < 2048
+    assert int(row["length(backup_targets_json)"]) < 2048
+
+
+def test_saved_app_stages_defer_live_reconciliation_off_cold_builder():
+    source = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
+    assert "POCKETLAB_LITE_APP_RECONCILE_DELAY_SECONDS" in source
+    assert 'thread_name_prefix="pocketlab-app-reconcile"' in source
+    assert "_schedule_saved_stage_reconciliation(callbacks)" in source
+    assert '"security": (app_security_subprojection' in source
+    assert '"backup_targets": (lambda: lite_recovery_subprojections.app_backup_targets' in source
+    assert "CONTROL_PLANE.update_app_subprojections" in source

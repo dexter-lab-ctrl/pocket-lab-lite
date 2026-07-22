@@ -113,6 +113,140 @@ def _safe_json(value: Any, *, max_bytes: int = 4096) -> str:
     return encoded if len(encoded.encode("utf-8")) <= max_bytes else "{}"
 
 
+
+
+def _compact_event(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    keys = (
+        "operation_id", "command_id", "action_id", "status", "summary",
+        "progress", "queued_at", "started_at", "updated_at", "completed_at",
+        "evidence_ref", "preview_id", "backup_id",
+    )
+    result = {key: value.get(key) for key in keys if value.get(key) is not None}
+    if isinstance(value.get("checks"), list):
+        result["checks"] = [
+            {k: item.get(k) for k in ("id", "status", "summary") if item.get(k) is not None}
+            for item in value["checks"][:8] if isinstance(item, dict)
+        ]
+    if isinstance(value.get("repair_steps"), list):
+        result["repair_steps"] = [
+            {k: item.get(k) for k in ("id", "status", "summary") if item.get(k) is not None}
+            for item in value["repair_steps"][:8] if isinstance(item, dict)
+        ]
+    return result
+
+
+def _compact_app_subprojection(name: str, payload: Any) -> dict[str, Any]:
+    value = payload if isinstance(payload, dict) else {}
+    if name == "catalog":
+        access = value.get("access") if isinstance(value.get("access"), dict) else {}
+        runtime = value.get("runtime") if isinstance(value.get("runtime"), dict) else {}
+        actions = value.get("actions") if isinstance(value.get("actions"), dict) else {}
+        return {
+            key: value.get(key)
+            for key in ("id", "app_id", "name", "status", "installed", "install_state", "host_device_id", "host_device_name")
+            if value.get(key) is not None
+        } | {
+            "access": {"open_url": access.get("open_url")} if access.get("open_url") == "/apps/photoprism/" else {},
+            "runtime": {"url": runtime.get("url")} if runtime.get("url") == "/apps/photoprism/" else {},
+            "actions": {"open": bool(actions.get("open"))},
+        }
+    if name == "media":
+        result = {
+            key: value.get(key)
+            for key in ("status", "summary", "mapping_count", "operation_running", "updated_at")
+            if value.get(key) is not None
+        }
+        if isinstance(value.get("evidence"), dict):
+            result["evidence"] = {
+                key: value["evidence"].get(key)
+                for key in ("status", "count", "updated_at")
+                if value["evidence"].get(key) is not None
+            }
+        return result
+    if name == "operations":
+        actions = value.get("actions") if isinstance(value.get("actions"), dict) else {}
+        return {
+            "status": value.get("status"),
+            "summary": value.get("summary"),
+            "operation_running": bool(value.get("operation_running")),
+            "current_action": _compact_event(value.get("current_action")),
+            "last_safety_check": _compact_event(value.get("last_safety_check")),
+            "last_repair": _compact_event(value.get("last_repair")),
+            "actions": {
+                key: _compact_event(item)
+                for key, item in list(actions.items())[:8]
+                if isinstance(item, dict)
+            },
+        }
+    if name == "update":
+        actions = value.get("actions") if isinstance(value.get("actions"), dict) else {}
+        readiness = value.get("readiness") if isinstance(value.get("readiness"), dict) else {}
+        update_action = actions.get("update_app") if isinstance(actions.get("update_app"), dict) else {}
+        return {
+            "status": value.get("status"),
+            "summary": value.get("summary"),
+            "operation_running": bool(value.get("operation_running")),
+            "pending_check": _compact_event(value.get("pending_check")),
+            "latest_check": _compact_event(value.get("latest_check")),
+            "readiness": {
+                key: readiness.get(key)
+                for key in ("status", "summary", "ready", "reason")
+                if readiness.get(key) is not None
+            },
+            "actions": {
+                "update_app": {
+                    key: update_action.get(key)
+                    for key in ("enabled", "label", "status", "disabled_reason")
+                    if update_action.get(key) is not None
+                }
+            },
+        }
+    if name == "backup":
+        if value.get("kind") == "profile":
+            backup = value.get("backup") if isinstance(value.get("backup"), dict) else {}
+            recovery = value.get("recovery") if isinstance(value.get("recovery"), dict) else {}
+            return {"kind": "profile", "backup": backup, "recovery": recovery}
+        raw = value.get("payload") if value.get("kind") == "raw" and isinstance(value.get("payload"), dict) else value
+        return {
+            "kind": "raw",
+            "payload": {
+                key: raw.get(key)
+                for key in (
+                    "status", "summary", "default_mode", "media", "backup_target",
+                    "backup_target_summary", "latest_verified_backup_id", "backup_running",
+                    "restore_preview_disabled_reason", "last_checked_at",
+                )
+                if raw.get(key) is not None
+            } | {
+                "latest_backup": _compact_event(raw.get("latest_backup")),
+                "pending_backup": _compact_event(raw.get("pending_backup")),
+                "latest_restore_preview": _compact_event(raw.get("latest_restore_preview")),
+                "restore": raw.get("restore") if isinstance(raw.get("restore"), dict) else {},
+                "evidence": raw.get("evidence") if isinstance(raw.get("evidence"), dict) else {},
+            },
+        }
+    if name == "security":
+        if value.get("kind") == "profile":
+            return {"kind": "profile", "security": value.get("security") if isinstance(value.get("security"), dict) else {}}
+        raw = value.get("payload") if value.get("kind") == "raw" and isinstance(value.get("payload"), dict) else value
+        return {
+            "kind": "raw",
+            "payload": {
+                key: raw.get(key)
+                for key in ("status", "summary", "last_checked_at")
+                if raw.get(key) is not None
+            } | {"evidence": raw.get("evidence") if isinstance(raw.get("evidence"), dict) else {}},
+        }
+    if name == "backup_targets":
+        return {
+            key: value.get(key)
+            for key in ("status", "summary", "ready", "available", "count", "ready_count", "target_label", "updated_at")
+            if value.get(key) is not None
+        }
+    return value
+
 def _normalize_status(value: Any) -> str:
     raw = str(value or "unknown").strip().lower().replace("-", "_").replace(" ", "_")
     aliases = {
@@ -687,8 +821,8 @@ class ControlPlaneProjectionStore:
             row = conn.execute(
                 """
                 SELECT catalog_state_json, media_state_json, operation_state_json,
-                       update_state_json, backup_profile_json, projection_version,
-                       updated_at, updated_at_epoch_ms
+                       update_state_json, backup_profile_json, security_profile_json,
+                       backup_targets_json, projection_version, updated_at, updated_at_epoch_ms
                 FROM app_current_state WHERE app_id=?
                 """,
                 (normalized,),
@@ -707,50 +841,76 @@ class ControlPlaneProjectionStore:
             "operations": self._decode_projection_json(row.get("operation_state_json")),
             "update": self._decode_projection_json(row.get("update_state_json")),
             "backup": self._decode_projection_json(row.get("backup_profile_json")),
+            "security": self._decode_projection_json(row.get("security_profile_json")),
+            "backup_targets": self._decode_projection_json(row.get("backup_targets_json")),
             "projection_version": int(row.get("projection_version") or 1),
             "projection_age_ms": age_ms,
             "updated_at": row.get("updated_at"),
             "projection_only": True,
         }
-        return payload if any(payload.get(key) for key in ("catalog", "media", "operations", "update", "backup")) else None
+        return payload if any(payload.get(key) for key in ("catalog", "media", "operations", "update", "backup", "security", "backup_targets")) else None
 
-    def update_app_subprojection(
-        self, app_id: str, projection: str, payload: dict[str, Any]
+    def update_app_subprojections(
+        self, app_id: str, projections: dict[str, dict[str, Any]]
     ) -> int:
-        """Persist one sanitized App subprojection after background reconciliation."""
+        """Persist compact App subprojections in one change-only transaction."""
         self.initialize()
         columns = {
-            "catalog": "catalog_state_json",
-            "media": "media_state_json",
-            "operations": "operation_state_json",
-            "update": "update_state_json",
-            "backup": "backup_profile_json",
+            "catalog": ("catalog_state_json", 2048),
+            "media": ("media_state_json", 4096),
+            "operations": ("operation_state_json", 4096),
+            "update": ("update_state_json", 4096),
+            "backup": ("backup_profile_json", 4096),
+            "security": ("security_profile_json", 2048),
+            "backup_targets": ("backup_targets_json", 2048),
         }
-        column = columns.get(str(projection or "").strip().lower())
         normalized = _safe_text(app_id, 120)
-        if not column or not normalized or not isinstance(payload, dict):
+        if not normalized or not isinstance(projections, dict):
             return self.domain_revision("apps")
-        encoded = _safe_json(payload, max_bytes=16384)
+        encoded: dict[str, tuple[str, str]] = {}
+        for name, payload in projections.items():
+            column_budget = columns.get(str(name or "").strip().lower())
+            if column_budget is None or not isinstance(payload, dict):
+                continue
+            column, budget = column_budget
+            compact = _compact_app_subprojection(str(name), payload)
+            encoded[column] = (_safe_json(compact, max_bytes=budget), str(name))
+        if not encoded:
+            return self.domain_revision("apps")
         now = _utc_now()
         now_epoch = _epoch_ms(now)
 
         def write(conn: sqlite3.Connection) -> int:
+            selected = ", ".join(encoded)
             row = conn.execute(
-                f"SELECT {column} FROM app_current_state WHERE app_id=?",
+                f"SELECT {selected} FROM app_current_state WHERE app_id=?",
                 (normalized,),
             ).fetchone()
-            if not row or str(row[column] or "{}") == encoded:
+            if not row:
                 return _domain_revision(conn, "apps")
+            changed = {
+                column: value
+                for column, (value, _name) in encoded.items()
+                if str(row[column] or "{}") != value
+            }
+            if not changed:
+                return _domain_revision(conn, "apps")
+            assignments = ", ".join(f"{column}=?" for column in changed)
             conn.execute(
-                f"UPDATE app_current_state SET {column}=?, updated_at=?, updated_at_epoch_ms=? WHERE app_id=?",
-                (encoded, now, now_epoch, normalized),
+                f"UPDATE app_current_state SET {assignments}, projection_version=2, updated_at=?, updated_at_epoch_ms=? WHERE app_id=?",
+                (*changed.values(), now, now_epoch, normalized),
             )
             return _bump_revision(conn, "apps", now) if _changes(conn) else _domain_revision(conn, "apps")
 
         try:
-            return int(SQLITE_WRITER.submit("apps.subprojection", write, deadline_seconds=1.0))
+            return int(SQLITE_WRITER.submit("apps.subprojections", write, deadline_seconds=1.0))
         except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
             return self.domain_revision("apps")
+
+    def update_app_subprojection(
+        self, app_id: str, projection: str, payload: dict[str, Any]
+    ) -> int:
+        return self.update_app_subprojections(app_id, {projection: payload})
 
     def app_projection_snapshot(self) -> dict[str, Any] | None:
         self.initialize()
@@ -1191,8 +1351,9 @@ class ControlPlaneProjectionStore:
                         latest_action_id, latest_action_status, latest_backup_id,
                         source_revision, updated_at, updated_at_epoch_ms, summary,
                         catalog_state_json, media_state_json, operation_state_json,
-                        update_state_json, backup_profile_json, projection_version
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        update_state_json, backup_profile_json, security_profile_json,
+                        backup_targets_json, projection_version
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(app_id) DO UPDATE SET
                         app_name=excluded.app_name, status=excluded.status,
                         installed=excluded.installed, health_state=excluded.health_state,
@@ -1204,6 +1365,8 @@ class ControlPlaneProjectionStore:
                         operation_state_json=excluded.operation_state_json,
                         update_state_json=excluded.update_state_json,
                         backup_profile_json=excluded.backup_profile_json,
+                        security_profile_json=excluded.security_profile_json,
+                        backup_targets_json=excluded.backup_targets_json,
                         projection_version=excluded.projection_version,
                         updated_at=excluded.updated_at,
                         updated_at_epoch_ms=excluded.updated_at_epoch_ms,
@@ -1220,24 +1383,29 @@ class ControlPlaneProjectionStore:
                        OR app_current_state.operation_state_json IS NOT excluded.operation_state_json
                        OR app_current_state.update_state_json IS NOT excluded.update_state_json
                        OR app_current_state.backup_profile_json IS NOT excluded.backup_profile_json
+                       OR app_current_state.security_profile_json IS NOT excluded.security_profile_json
+                       OR app_current_state.backup_targets_json IS NOT excluded.backup_targets_json
                        OR app_current_state.summary IS NOT excluded.summary
                     """,
                     (app_id, _safe_text(app.get("name") or app_id, 120), _safe_text(app.get("status") or "unknown", 32),
                      int(bool(app.get("installed"))), _safe_text((app.get("security") or {}).get("status") if isinstance(app.get("security"), dict) else app.get("status"), 32),
                      latest_action_id, latest_action_status, latest_backup_id, int(app.get("revision") or 0),
                      now, now_epoch, _safe_text(app.get("summary")),
-                     _safe_json({
+                     _safe_json(_compact_app_subprojection("catalog", {
                          "id": app_id, "name": app.get("name"), "status": app.get("status"),
-                         "installed": bool(app.get("installed")), "host_device": app.get("host_device"),
+                         "installed": bool(app.get("installed")), "host_device_id": (app.get("host_device") or {}).get("id") if isinstance(app.get("host_device"), dict) else None,
+                         "host_device_name": (app.get("host_device") or {}).get("name") if isinstance(app.get("host_device"), dict) else None,
                          "access": {"open_url": "/apps/photoprism/"} if bool((actions.get("open") or {}).get("enabled")) else {},
                          "runtime": {"url": "/apps/photoprism/"} if bool((actions.get("open") or {}).get("enabled")) else {},
                          "actions": {"open": bool((actions.get("open") or {}).get("enabled"))},
-                     }, max_bytes=8192),
-                     _safe_json(app.get("media") if isinstance(app.get("media"), dict) else {}, max_bytes=16384),
-                     _safe_json(app.get("operations") if isinstance(app.get("operations"), dict) else {}, max_bytes=16384),
-                     _safe_json(app.get("update") if isinstance(app.get("update"), dict) else {}, max_bytes=16384),
-                     _safe_json({"kind": "profile", "backup": app.get("backup"), "recovery": app.get("recovery")}, max_bytes=16384),
-                     1),
+                     }), max_bytes=2048),
+                     _safe_json(_compact_app_subprojection("media", app.get("media")), max_bytes=4096),
+                     _safe_json(_compact_app_subprojection("operations", app.get("operations")), max_bytes=4096),
+                     _safe_json(_compact_app_subprojection("update", app.get("update")), max_bytes=4096),
+                     _safe_json(_compact_app_subprojection("backup", {"kind": "profile", "backup": app.get("backup"), "recovery": app.get("recovery")}), max_bytes=4096),
+                     _safe_json(_compact_app_subprojection("security", {"kind": "profile", "security": app.get("security")}), max_bytes=2048),
+                     _safe_json(_compact_app_subprojection("backup_targets", app.get("backup_targets")), max_bytes=2048),
+                     2),
                 )
                 changed = _changes(conn) or changed
                 for action_id, action in list(actions.items())[:64]:
