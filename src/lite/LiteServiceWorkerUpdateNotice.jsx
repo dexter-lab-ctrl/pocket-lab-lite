@@ -3,19 +3,47 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   applyLiteServiceWorkerUpdate,
   getLiteServiceWorkerUpdateState,
+  isLiteTextEntryElement,
   liteQueryCacheHasRiskyWorkflow,
   setLiteServiceWorkerUpdateBlocker,
   subscribeLiteServiceWorkerUpdates,
 } from '../lib/liteServiceWorkerRuntime.js';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { LiteButton } from './LiteUi.jsx';
 
 export default function LiteServiceWorkerUpdateNotice() {
   const queryClient = useQueryClient();
+  const activeOverlay = useLiteUiStore((store) => store.activeOverlay);
   const [state, setState] = useState(getLiteServiceWorkerUpdateState);
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => subscribeLiteServiceWorkerUpdates(setState), []);
+
+  useEffect(() => {
+    setLiteServiceWorkerUpdateBlocker('critical-overlay', Boolean(activeOverlay));
+    return () => setLiteServiceWorkerUpdateBlocker('critical-overlay', false);
+  }, [activeOverlay]);
+
+  useEffect(() => {
+    let timer = null;
+    const syncTextEntry = () => {
+      setLiteServiceWorkerUpdateBlocker('important-text-entry', isLiteTextEntryElement(document.activeElement));
+    };
+    const scheduleTextEntrySync = () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = window.setTimeout(syncTextEntry, 0);
+    };
+    syncTextEntry();
+    document.addEventListener('focusin', scheduleTextEntrySync);
+    document.addEventListener('focusout', scheduleTextEntrySync);
+    return () => {
+      if (timer !== null) window.clearTimeout(timer);
+      document.removeEventListener('focusin', scheduleTextEntrySync);
+      document.removeEventListener('focusout', scheduleTextEntrySync);
+      setLiteServiceWorkerUpdateBlocker('important-text-entry', false);
+    };
+  }, []);
 
   useEffect(() => {
     const queryCache = queryClient.getQueryCache();

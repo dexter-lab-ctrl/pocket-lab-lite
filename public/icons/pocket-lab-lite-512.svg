@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Pocket Lab Lite">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#312e81"/>
+      <stop offset="0.55" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e0f2fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="113" fill="url(#bg)"/>
+  <circle cx="256.0" cy="256.0" r="128.0" fill="#0f172a" fill-opacity="0.28" stroke="#ffffff" stroke-opacity="0.42" stroke-width="12"/>
+  <path d="M 153.60 256.00 H 225.28 M 286.72 256.00 H 358.40 M 256.00 153.60 V 225.28 M 256.00 286.72 V 358.40" stroke="#bae6fd" stroke-width="12" stroke-linecap="round"/>
+  <rect x="209.92" y="209.92" width="92.16" height="92.16" rx="23.04" fill="url(#core)" stroke="#ffffff" stroke-width="12"/>
+  <path d="M 239.36 230.40 V 281.60 M 239.36 230.40 H 264.96 A 25.60 25.60 0 0 1 264.96 258.56 H 239.36" fill="none" stroke="#3730a3" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="153.60" cy="256.00" r="28.16" fill="#ffffff"/>
+  <circle cx="358.40" cy="256.00" r="28.16" fill="#ffffff"/>
+  <circle cx="256.00" cy="153.60" r="28.16" fill="#ffffff"/>
+  <circle cx="256.00" cy="358.40" r="28.16" fill="#ffffff"/>
+</svg>

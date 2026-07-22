@@ -19,7 +19,11 @@ import {
   prefetchSecuritySummary,
 } from './security/securityPreload.js';
 import { LiteScreenErrorBoundary, LiteScreenLoading } from './LiteScreenBoundary.jsx';
-import { normalizeLiteScreenId } from './liteNavigationConfig.js';
+import {
+  normalizeLiteScreenId,
+  parseLiteScreenLaunch,
+  replaceLiteScreenLaunch,
+} from './liteNavigationConfig.js';
 import {
   getLiteScreenComponent,
   getLiteScreenEntry,
@@ -31,6 +35,7 @@ import {
 } from './liteNavigationRuntime.js';
 import LiteToastHost from './LiteToastHost.jsx';
 import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
+import LiteNativeInstallSurface from './LiteNativeInstallSurface.jsx';
 import LiteRevisionSyncBridge from './LiteRevisionSyncBridge.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
@@ -442,6 +447,24 @@ function LiteAppShell() {
   }, []);
 
   useEffect(() => {
+    const syncSafeLaunchScreen = () => {
+      if (currentWorkspaceFromLocation()) return;
+      const launch = parseLiteScreenLaunch(window.location);
+      if (!launch.requested_screen_id) return;
+      preloadLiteScreen(launch.screen_id).catch(() => null);
+      setActiveTab(launch.screen_id);
+      replaceLiteScreenLaunch(launch.screen_id);
+    };
+    syncSafeLaunchScreen();
+    window.addEventListener('popstate', syncSafeLaunchScreen);
+    window.addEventListener('pageshow', syncSafeLaunchScreen);
+    return () => {
+      window.removeEventListener('popstate', syncSafeLaunchScreen);
+      window.removeEventListener('pageshow', syncSafeLaunchScreen);
+    };
+  }, [setActiveTab]);
+
+  useEffect(() => {
     if (activeScreenId === 'security' || !backendHealthyForPrefetch) return undefined;
     const timer = window.setTimeout(() => {
       prefetchSecuritySummary(liteQueryClient, {
@@ -502,6 +525,7 @@ function LiteAppShell() {
         setMenuOpen(false);
       });
       if (workspaceApp) pushPocketLabPath('/');
+      replaceLiteScreenLaunch(nextScreenId);
     };
 
     const result = startLiteViewTransition(commit, {
@@ -613,7 +637,10 @@ function LiteAppShell() {
               <p className="text-sm text-slate-400">Self-hosted workspace</p>
             </div>
           </div>
-          <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
+          <div className="flex items-center gap-2">
+            <LiteNativeInstallSurface />
+            <button type="button" onClick={() => setMenuOpen(true)} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-slate-100 md:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
+          </div>
         </div>
       </header>
 

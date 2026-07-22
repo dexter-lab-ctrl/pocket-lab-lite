@@ -2,7 +2,7 @@ import { LITE_WORKBOX_CACHE_NAMES } from './liteOfflineReadPolicy.js';
 import { hasLiteLiveOperation } from './litePollingPolicy.js';
 
 export const LITE_SERVICE_WORKER_UPDATE_EVENT = 'pocketlab:lite-service-worker-update';
-export const LITE_SERVICE_WORKER_RUNTIME_VERSION = 'n6a-safe-read-v2';
+export const LITE_SERVICE_WORKER_RUNTIME_VERSION = 'n6b-native-install-v1';
 export const LITE_NAVIGATION_PRELOAD_POLICY = 'guarded-progressive-enhancement';
 
 let pendingUpdate = null;
@@ -112,6 +112,84 @@ export async function getLiteNavigationPreloadDiagnostics(navigatorObject = glob
   } catch {
     return base;
   }
+}
+
+
+export const LITE_SERVICE_WORKER_RELOAD_GUARD_KEY = 'pocketlab:lite-sw-controller-reload';
+export const LITE_SERVICE_WORKER_RELOAD_GUARD_MS = 2 * 60 * 1000;
+
+function safeBuildId(value = '') {
+  return String(value || 'development')
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .slice(0, 100) || 'development';
+}
+
+export function isLiteTextEntryElement(element) {
+  const tagName = String(element?.tagName || '').toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || element?.isContentEditable === true;
+}
+
+export function createLiteControlledServiceWorkerUpdate({
+  updateServiceWorker,
+  navigatorObject = globalThis.navigator,
+  locationObject = globalThis.location,
+  sessionStorageObject = globalThis.sessionStorage,
+  buildId = 'development',
+  timeoutMs = 15_000,
+  now = () => Date.now(),
+} = {}) {
+  const normalizedBuildId = safeBuildId(buildId);
+  return async function applyControlledUpdate() {
+    if (typeof updateServiceWorker !== 'function') throw new Error('service_worker_update_unavailable');
+    const serviceWorker = navigatorObject?.serviceWorker;
+    if (!serviceWorker?.addEventListener) throw new Error('service_worker_controller_unavailable');
+    try {
+      const stored = JSON.parse(sessionStorageObject?.getItem?.(LITE_SERVICE_WORKER_RELOAD_GUARD_KEY) || 'null');
+      const appliedAt = Number(stored?.applied_at || 0);
+      if (stored?.build_id === normalizedBuildId && appliedAt > 0 && Number(now()) - appliedAt < LITE_SERVICE_WORKER_RELOAD_GUARD_MS) {
+        return false;
+      }
+    } catch {
+      // Continue without persistence; the once-only listener still bounds reloads in this page.
+    }
+
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (callback) => {
+        if (settled) return;
+        settled = true;
+        globalThis.clearTimeout?.(timer);
+        serviceWorker.removeEventListener?.('controllerchange', onControllerChange);
+        callback();
+      };
+      const onControllerChange = () => finish(() => {
+        try {
+          sessionStorageObject?.setItem?.(LITE_SERVICE_WORKER_RELOAD_GUARD_KEY, JSON.stringify({
+            build_id: normalizedBuildId,
+            applied_at: Number(now()),
+          }));
+        } catch {
+          // Session storage is a best-effort reload-loop fence.
+        }
+        resolve(true);
+        try {
+          locationObject?.reload?.();
+        } catch {
+          // Controller activation succeeded; a manual refresh remains available.
+        }
+      });
+      const timer = globalThis.setTimeout?.(
+        () => finish(() => reject(new Error('service_worker_controller_timeout'))),
+        Math.max(1_000, Math.min(30_000, Number(timeoutMs) || 15_000)),
+      );
+
+      serviceWorker.addEventListener('controllerchange', onControllerChange, { once: true });
+      Promise.resolve(updateServiceWorker(false)).catch((error) => {
+        finish(() => reject(error instanceof Error ? error : new Error('service_worker_update_failed')));
+      });
+    });
+  };
 }
 
 

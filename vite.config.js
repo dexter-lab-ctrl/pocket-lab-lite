@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { readFileSync } from 'node:fs';
+import { LITE_INSTALL_MANIFEST } from './src/lib/liteInstallManifest.js';
 import {
   LITE_SAFE_RUNTIME_READ_MAX_AGE_SECONDS,
   LITE_SAFE_RUNTIME_READ_MAX_ENTRIES,
@@ -24,7 +25,14 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg'],
+      includeAssets: [
+        'icon.svg',
+        'icons/pocket-lab-lite-192.svg',
+        'icons/pocket-lab-lite-512.svg',
+        'icons/pocket-lab-lite-maskable-192.svg',
+        'icons/pocket-lab-lite-maskable-512.svg',
+        'icons/pocket-lab-lite-apple-touch.svg',
+      ],
       workbox: {
         cleanupOutdatedCaches: true,
         navigationPreload: true,
@@ -84,24 +92,7 @@ export default defineConfig({
           },
         ],
       },
-      manifest: {
-        id: '/pocketlab-admin/',
-        name: 'Pocket Lab Admin Console',
-        short_name: 'Lab Admin',
-        start_url: '/?app=admin_console',
-        scope: '/',
-        theme_color: '#020617',
-        background_color: '#020617',
-        display: 'standalone',
-        icons: [
-          {
-            src: 'icon.svg',
-            sizes: '192x192 512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
-          }
-        ]
-      }
+      manifest: LITE_INSTALL_MANIFEST,
     })
   ]
 });
