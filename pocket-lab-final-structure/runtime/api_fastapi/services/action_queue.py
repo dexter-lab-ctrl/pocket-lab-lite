@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import uuid
 import time
@@ -14,6 +15,44 @@ from ..services.workload_admission import WORKLOAD_ADMISSION
 
 OperationRequestLike = Any
 DomainFallback = Callable[[Dict[str, Any]], Dict[str, Any]]
+
+
+async def _record_command_projection(
+    *, command_id: str, subject: str, status: str, payload: Dict[str, Any]
+) -> None:
+    """Best-effort bounded metadata projection; NATS remains authoritative."""
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        entity_type = "device" if ".node." in subject or ".fleet." in subject else "app" if ".app" in subject or ".photoprism" in subject else "control"
+        entity_id = str(
+            payload.get("node_id")
+            or payload.get("app_id")
+            or payload.get("device_id")
+            or "control-plane"
+        )[:120]
+        await asyncio.to_thread(
+            CONTROL_PLANE.record_command,
+            command_id=command_id,
+            subject=subject,
+            status=status,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            summary=f"Command {status}.",
+            deadline_at=payload.get("deadline_at"),
+        )
+        normalized_subject = subject.casefold()
+        affected_domains: set[str] = {"commands", "audit"}
+        if any(token in normalized_subject for token in (".node.", ".fleet.", ".device.", ".invite.")):
+            affected_domains.add("fleet")
+        if any(token in normalized_subject for token in (".app", ".photoprism", ".catalog")):
+            affected_domains.add("apps")
+        if any(token in normalized_subject for token in (".backup", ".restore", ".recovery", ".maintenance")):
+            affected_domains.add("recovery")
+        for domain in affected_domains:
+            CONTROL_PLANE.invalidate_domain(domain)
+    except Exception:
+        return
 
 
 def worker_mode() -> str:
@@ -315,6 +354,9 @@ async def submit_domain_command(
         }
     prepare_done = time.monotonic()
     command_id = str(bundle["command_id"])
+    await _record_command_projection(
+        command_id=command_id, subject=subject, status="queued", payload=bundle["payload"]
+    )
 
     operation_started = time.monotonic()
     ready_started = time.monotonic()
@@ -380,6 +422,9 @@ async def submit_domain_command(
             if evidence_token:
                 RUNTIME_DIAGNOSTICS.end_operation(evidence_token)
 
+        await _record_command_projection(
+            command_id=command_id, subject=subject, status="published", payload=bundle["payload"]
+        )
         if timing_sink is not None:
             timing_sink.update({
                 "payload_prepare_ms": max(0.0, (prepare_done - prepare_started) * 1000.0),
@@ -396,6 +441,9 @@ async def submit_domain_command(
                 **publish_details,
             })
     except Exception as exc:
+        await _record_command_projection(
+            command_id=command_id, subject=subject, status="failed", payload=bundle["payload"]
+        )
         raise HTTPException(
             status_code=503,
             detail={

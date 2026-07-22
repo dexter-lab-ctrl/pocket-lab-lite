@@ -19,7 +19,7 @@ describe('Pocket Lab Lite Recovery R3/R4', () => {
     expect(recoverySource).toContain('enabled: detailsNeeded');
     expect(recoverySource).toContain('selectRecoverySummaryView');
     expect(apiSource).toContain("conditionalGet('/api/lite/recovery/summary')");
-    expect(apiSource).toContain("safeGet('/api/lite/recovery/details')");
+    expect(apiSource).toContain("conditionalGet('/api/lite/recovery/details')");
     expect(snapshotSource).toContain("'/api/lite/recovery/summary'");
   });
 

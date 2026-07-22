@@ -5,6 +5,11 @@ export const liteQueryKeys = {
   catalog: () => ['lite', 'catalog'],
   appActions: (appId = 'photoprism') => ['lite', 'app', String(appId || 'photoprism').toLowerCase(), 'actions'],
   fleet: () => ['lite', 'fleet'],
+  domainRevisions: () => ['lite', 'revisions'],
+  appLifecycle: () => ['lite', 'apps', 'lifecycle'],
+  appActionHistory: (appId = 'photoprism', limit = 20, cursor = '') => ['lite', 'apps', String(appId || 'photoprism'), 'action-history', Number(limit || 20), String(cursor || 'first')],
+  deviceRecoveryHistory: (deviceId = '', limit = 20, cursor = '') => ['lite', 'fleet', 'device-recovery-history', String(deviceId || ''), Number(limit || 20), String(cursor || 'first')],
+  commandHistory: (entityType = '', entityId = '', limit = 20, cursor = '') => ['lite', 'commands', 'history', String(entityType || ''), String(entityId || ''), Number(limit || 20), String(cursor || 'first')],
   security: () => ['lite', 'security'],
   securityDetails: () => ['lite', 'security', 'details'],
   securityRunDetails: (runId = 'latest') => ['lite', 'security', 'details', String(runId || 'latest')],
@@ -20,6 +25,7 @@ export const liteQueryKeys = {
   recoveryDetails: () => ['lite', 'recovery', 'details'],
   recoveryHistory: () => ['lite', 'recovery', 'history'],
   recoveryHistoryPage: (limit = 10, cursor = '') => ['lite', 'recovery', 'history', Number(limit || 10), String(cursor || 'first')],
+  recoveryOperations: (limit = 20, cursor = '') => ['lite', 'recovery', 'operations', Number(limit || 20), String(cursor || 'first')],
   resource: (path = 'unknown', ...parts) => ['lite', 'resource', String(path || 'unknown'), ...parts],
 };
 
@@ -28,6 +34,11 @@ export const liteQueryPaths = {
   catalog: '/api/lite/catalog',
   appActions: (appId = 'photoprism') => `/api/lite/apps/${encodeURIComponent(appId || 'photoprism')}/actions`,
   fleet: '/api/lite/fleet',
+  domainRevisions: '/api/lite/revisions',
+  appLifecycle: '/api/lite/apps/lifecycle',
+  appActionHistory: (appId = 'photoprism', limit = 20, cursor = '') => `/api/lite/apps/${encodeURIComponent(appId || 'photoprism')}/action-history?limit=${encodeURIComponent(limit || 20)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
+  deviceRecoveryHistory: (deviceId = '', limit = 20, cursor = '') => `/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/recovery-history?limit=${encodeURIComponent(limit || 20)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
+  commandHistory: (entityType = '', entityId = '', limit = 20, cursor = '') => `/api/lite/commands/history?limit=${encodeURIComponent(limit || 20)}${entityType ? `&entity_type=${encodeURIComponent(entityType)}` : ''}${entityId ? `&entity_id=${encodeURIComponent(entityId)}` : ''}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
   security: '/api/lite/security/summary',
   securityDetails: '/api/lite/security',
   securityFreshness: '/api/lite/security/freshness',
@@ -40,6 +51,7 @@ export const liteQueryPaths = {
   recovery: '/api/lite/recovery',
   recoverySummary: '/api/lite/recovery/summary',
   recoveryDetails: '/api/lite/recovery/details',
+  recoveryOperations: (limit = 20, cursor = '') => `/api/lite/recovery/operations?limit=${encodeURIComponent(limit || 20)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`,
 };
 
 export function liteQueryRetry(failureCount, error) {

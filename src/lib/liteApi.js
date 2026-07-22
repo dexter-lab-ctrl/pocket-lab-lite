@@ -132,8 +132,13 @@ export const liteApi = {
   lifecycleDiagnosticsChallenge: () => readJson('/api/lite/diagnostics/frontend-lifecycle/challenge'),
   recordLifecycleDiagnostics: (challengeId, report = {}) => postJson('/api/lite/diagnostics/frontend-lifecycle', { challenge_id: challengeId, report }),
   catalog: safeGet('/api/lite/catalog'),
-  appLifecycle: () => readJson('/api/lite/apps/lifecycle'),
+  appLifecycle: conditionalGet('/api/lite/apps/lifecycle'),
   appLifecycleProfile: (appId = 'photoprism') => readJson(`/api/lite/apps/lifecycle/${encodeURIComponent(appId)}`),
+  appActionHistory: (appId = 'photoprism', limit = 20, cursor = '') => {
+    const query = new URLSearchParams({ limit: String(limit || 20) });
+    if (cursor) query.set('cursor', cursor);
+    return conditionalRead(`/api/lite/apps/${encodeURIComponent(appId)}/action-history?${query.toString()}`);
+  },
   appActions: Object.assign((appId = 'photoprism') => {
     const path = `/api/lite/apps/${encodeURIComponent(appId)}/actions`;
     return readJson(path);
@@ -168,11 +173,29 @@ export const liteApi = {
   securityApps: () => readJson('/api/lite/security/apps'),
   securityApp: (appId = 'photoprism') => readJson(`/api/lite/security/apps/${encodeURIComponent(appId)}`),
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
-  fleet: safeGet('/api/lite/fleet'),
+  fleet: conditionalGet('/api/lite/fleet'),
+  domainRevisions: conditionalGet('/api/lite/revisions'),
+  deviceRecoveryHistory: (deviceId, limit = 20, cursor = '') => {
+    const query = new URLSearchParams({ limit: String(limit || 20) });
+    if (cursor) query.set('cursor', cursor);
+    return conditionalRead(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/recovery-history?${query.toString()}`);
+  },
+  commandHistory: ({ entityType = '', entityId = '', limit = 20, cursor = '' } = {}) => {
+    const query = new URLSearchParams({ limit: String(limit || 20) });
+    if (entityType) query.set('entity_type', entityType);
+    if (entityId) query.set('entity_id', entityId);
+    if (cursor) query.set('cursor', cursor);
+    return conditionalRead(`/api/lite/commands/history?${query.toString()}`);
+  },
   policy: () => readJson('/api/lite/policy'),
   recovery: safeGet('/api/lite/recovery'),
   recoverySummary: conditionalGet('/api/lite/recovery/summary'),
-  recoveryDetails: safeGet('/api/lite/recovery/details'),
+  recoveryDetails: conditionalGet('/api/lite/recovery/details'),
+  recoveryOperations: (limit = 20, cursor = '') => {
+    const query = new URLSearchParams({ limit: String(limit || 20) });
+    if (cursor) query.set('cursor', cursor);
+    return conditionalRead(`/api/lite/recovery/operations?${query.toString()}`);
+  },
   databaseRecovery: safeGet('/api/lite/recovery/database'),
   recoveryMaintenance: safeGet('/api/lite/recovery/maintenance'),
   recoveryApps: () => readJson('/api/lite/recovery/apps'),

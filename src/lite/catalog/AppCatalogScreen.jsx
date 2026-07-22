@@ -105,6 +105,26 @@ function stopGestureEvent(event) {
 
 const KNOWN_APP_NAMES = ['PhotoPrism'];
 
+function appHostLabel(app, lifecycle, fallbackName = 'Server Host') {
+  if (lifecycle?.host_device?.label) return lifecycle.host_device.label;
+  if (app?.host_device_name) return `Runs on ${app.host_device_name}`;
+  if (fallbackName && fallbackName !== 'Server Host') return `Runs on ${fallbackName}`;
+  return 'Runs on Server Phone';
+}
+
+function verifiedStorageBackupLabel(action = {}) {
+  const result = action?.result || action?.last_result || {};
+  const status = String(result?.status || action?.status || '').toLowerCase();
+  const transferVerified = Boolean(
+    result?.transfer_verified
+    || result?.verification_status === 'verified'
+    || result?.checksum_verified === true
+  );
+  if (!transferVerified || !['succeeded', 'completed', 'verified'].includes(status)) return '';
+  const targetLabel = result?.target_label || result?.target_device_name || 'Storage Phone';
+  return targetLabel === 'Storage Phone' ? 'Saved to Storage Phone' : `Saved to ${targetLabel}`;
+}
+
 const PHOTO_PRISM_ACTION_COPY = {
   connect_photos: {
     eyebrow: 'Photo source',
@@ -730,7 +750,7 @@ function AppActionResultCard({ actionId, action, result, onViewDetails, detailsE
 function AppActionGroup({ group, children, actionIds = [] }) {
   const flipKeys = actionIds.length ? actionIds : React.Children.toArray(children).map((_, index) => `${group.id}:${index}`);
   return (
-    <section className={`lite-app-action-group is-${group.id}`} aria-label={`${group.label} actions`}>
+    <section className={`lite-app-action-group is-${group.id}`} aria-label={group.id === 'recovery' ? 'App backups and recovery actions' : `${group.label} actions`}>
       <div className="lite-app-action-group-head">
         <div>
           <span>{group.label}</span>
@@ -2454,6 +2474,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const repairAppAction = actionState('repair_app');
     const removeAppAction = actionState('remove_app');
     const mediaSummary = lifecycleMediaSummary(lifecycle);
+    const hostLabel = appHostLabel(app, lifecycle, targetName);
+    const storageBackupLabel = verifiedStorageBackupLabel(backupToStorageAction);
     const isPhotosImported = photosAlreadyImported(lifecycle, actionSnapshot, app, importPhotosAction);
     const appActionEntries = [
       {
@@ -2627,6 +2649,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         {installed ? (
           <div className="lite-catalog-profile-markers" aria-label="App protection and backup readiness">
             <span><ShieldCheck className="h-4 w-4" />{app?.security_profile?.label || 'Protected app'}</span>
+            <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.config || 'Config protected'}</span>
             <span><FileCheck className="h-4 w-4" />{app?.backup_profile?.media || 'Media excluded'}</span>
           </div>
         ) : null}
@@ -2832,8 +2855,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
                 <FolderOpen className="h-5 w-5" />
               </div>
               <div className="lite-catalog-storage-facts">
-                <span><Server className="h-4 w-4" /> Runs on {app?.host_device_name || targetName}</span>
+                <span><Server className="h-4 w-4" /> {hostLabel}</span>
                 <span><FolderPlus className="h-4 w-4" /> Media from: {storageMappings(app).length ? app?.storage?.summary || storageMediaSummary(app) : 'Not connected'}</span>
+                {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
                 <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
               </div>
               {storageMappings(app).length ? (

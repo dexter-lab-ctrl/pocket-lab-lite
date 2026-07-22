@@ -19,6 +19,8 @@ function queryKeyForLoader(loader, dependencies = []) {
   if (path === liteQueryPaths.catalog) return liteQueryKeys.catalog();
   if (path === liteQueryPaths.appActions('photoprism')) return liteQueryKeys.appActions('photoprism');
   if (path === liteQueryPaths.fleet) return liteQueryKeys.fleet();
+  if (path === liteQueryPaths.domainRevisions) return liteQueryKeys.domainRevisions();
+  if (path === liteQueryPaths.appLifecycle) return liteQueryKeys.appLifecycle();
   if (path === liteQueryPaths.security) return liteQueryKeys.security();
   if (path === liteQueryPaths.securityDetails) return liteQueryKeys.securityDetails();
   if (path === liteQueryPaths.securityFreshness) return liteQueryKeys.securityFreshness();

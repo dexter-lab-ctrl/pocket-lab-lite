@@ -37,10 +37,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         migration_rows,
     )
 
-    assert apply_migrations() == [1, 2, 3, 4, 5]
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6]
     assert apply_migrations() == []
-    assert current_schema_version() == 5
-    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5]
+    assert current_schema_version() == 6
+    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5, 6]
     with read_connection() as conn:
         tables = {
             row[0]
@@ -67,6 +67,18 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "security_maintenance_runs",
         "security_database_backups",
         "security_database_restores",
+        "device_heartbeats",
+        "device_invite_lifecycle",
+        "device_identity_guards",
+        "command_lifecycle",
+        "device_recovery_history",
+        "device_current_state",
+        "app_action_lifecycle",
+        "app_current_state",
+        "recovery_operations",
+        "backup_manifest_index",
+        "recovery_current_state",
+        "audit_evidence_index",
     }.issubset(tables)
     assert {
         "idx_security_runs_profile_completed",
@@ -86,6 +98,20 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "idx_security_runs_profile_history_cursor",
         "idx_security_runs_profile_updated_latest",
         "idx_security_runs_app_updated_latest",
+        "idx_device_heartbeats_latest",
+        "idx_device_current_fleet_order",
+        "idx_device_current_stale",
+        "idx_device_current_stale_order",
+        "idx_device_invites_identity",
+        "idx_device_invites_active_latest",
+        "idx_commands_entity_active",
+        "idx_commands_entity_active_latest",
+        "idx_device_recovery_history",
+        "idx_app_actions_history",
+        "idx_recovery_operations_history",
+        "idx_recovery_operations_updated",
+        "idx_backup_manifest_created",
+        "idx_audit_entity_created",
     }.issubset(indexes)
     assert "operation_leases" not in tables
 
@@ -168,8 +194,8 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 5 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 5]
+    assert all(result[2] == 6 for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, 6]
 
 
 def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
@@ -209,8 +235,8 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
             """
         )
 
-    assert apply_migrations() == [5]
-    assert current_schema_version() == 5
+    assert apply_migrations() == [5, 6]
+    assert current_schema_version() == 6
     with connection() as conn:
         assert conn.execute(
             "SELECT summary FROM security_scan_runs WHERE run_id = ?",

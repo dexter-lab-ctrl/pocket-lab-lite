@@ -1170,6 +1170,16 @@ def _promote_database(source: Path, live_db: Path) -> dict[str, Any]:
         _remove_sqlite_sidecars(live_db)
         os.replace(temporary, live_db)
         _fsync_directory(live_db.parent)
+        try:
+            from .lite_control_plane_store import (
+                invalidate_control_plane_after_database_replacement,
+            )
+
+            invalidate_control_plane_after_database_replacement()
+        except Exception:
+            # Restore validation must not fail because a process-local read cache
+            # was already absent or shutting down. The next read reopens safely.
+            pass
         active_hash = _sha256(live_db)
         if active_hash != staged_hash:
             raise RuntimeError("Promoted database checksum does not match staged database")

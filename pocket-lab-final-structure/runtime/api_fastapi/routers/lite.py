@@ -17,6 +17,7 @@ from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance
+from ..services.lite_control_plane_store import CONTROL_PLANE, PreparedRead
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from ..services.request_limits import request_limit_snapshot
 from ..services.workload_admission import (
@@ -127,6 +128,63 @@ def _recovery_compact_response(request: Request, payload: dict[str, Any]) -> Res
         "X-PocketLab-View-Model": str(payload.get("view_model") or "recovery-summary-r3-v1"),
     }
     if lite_security.if_none_match_matches(request.headers.get("if-none-match"), headers["ETag"]):
+        return Response(status_code=304, headers=headers)
+    return JSONResponse(content=payload, headers=headers)
+
+
+def _control_plane_prepared_response(
+    request: Request, prepared: PreparedRead, *, view_model: str
+) -> Response:
+    payload = dict(prepared.payload)
+    payload.update({
+        "projection_age_ms": int(prepared.projection_age_ms),
+        "read_degraded": bool(prepared.read_degraded),
+        "refresh_pending": bool(prepared.refresh_pending),
+        "source_revision": int(prepared.source_revision),
+    })
+    timing = prepared.timing
+    headers = {
+        "ETag": prepared.etag,
+        "Cache-Control": "no-cache",
+        "X-PocketLab-View-Model": view_model,
+        "Server-Timing": ", ".join(
+            f"{name};dur={max(0.0, float(duration)):.2f}"
+            for name, duration in (
+                ("connection", timing.get("connection_acquisition_ms", 0.0)),
+                ("sqlite", timing.get("sqlite_query_ms", 0.0)),
+                ("projection", timing.get("projection_build_ms", 0.0)),
+                ("serialization", timing.get("serialization_ms", 0.0)),
+            )
+        ),
+        "X-PocketLab-Projection-Age-Ms": str(int(prepared.projection_age_ms)),
+        "X-PocketLab-Source-Revision": str(int(prepared.source_revision)),
+        "X-PocketLab-Read-Degraded": "true" if prepared.read_degraded else "false",
+        "X-PocketLab-Refresh-Pending": "true" if prepared.refresh_pending else "false",
+    }
+    if lite_security.if_none_match_matches(
+        request.headers.get("if-none-match"), prepared.etag
+    ):
+        return Response(status_code=304, headers=headers)
+    return JSONResponse(content=payload, headers=headers)
+
+
+def _control_plane_history_response(
+    request: Request, payload: dict[str, Any], *, domain: str, key: str
+) -> Response:
+    revision = int(payload.get("source_revision") or 0)
+    etag = CONTROL_PLANE.revision_etag(domain, key, revision)
+    headers = {
+        "ETag": etag,
+        "Cache-Control": "no-cache",
+        "X-PocketLab-Source-Revision": str(revision),
+        "Server-Timing": ", ".join(
+            (
+                f"connection;dur={max(0.0, float(payload.get('connection_wait_ms') or 0.0)):.2f}",
+                f"sqlite;dur={max(0.0, float(payload.get('sqlite_query_ms') or 0.0)):.2f}",
+            )
+        ),
+    }
+    if lite_security.if_none_match_matches(request.headers.get("if-none-match"), etag):
         return Response(status_code=304, headers=headers)
     return JSONResponse(content=payload, headers=headers)
 
@@ -558,9 +616,37 @@ def get_lite_catalog(request: Request) -> dict[str, Any]:
 
 
 @router.get("/apps/lifecycle")
-def get_lite_app_lifecycle_profiles(request: Request) -> dict[str, Any]:
+def get_lite_app_lifecycle_profiles(request: Request) -> Response:
     deps.require_auth(request)
-    return lite_app_lifecycle.app_lifecycle_profiles()
+    prepared = CONTROL_PLANE.prepared_read(
+        domain="apps",
+        key="lifecycle",
+        builder=lite_app_lifecycle.app_lifecycle_profiles,
+        projector=CONTROL_PLANE.project_apps,
+        stale_after_ms=15_000,
+        max_stale_ms=90_000,
+        deadline_seconds=4.0,
+    )
+    return _control_plane_prepared_response(
+        request, prepared, view_model="apps-lifecycle-sqlite-p3-v1"
+    )
+
+
+@router.get("/apps/{app_id}/action-history")
+def get_lite_app_action_history(
+    app_id: str,
+    request: Request,
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str = Query("", max_length=512),
+) -> Response:
+    deps.require_auth(request)
+    try:
+        payload = CONTROL_PLANE.app_action_history(app_id, limit=limit, cursor=cursor)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _control_plane_history_response(
+        request, payload, domain="apps", key=f"action-history:{app_id}:{limit}:{cursor}"
+    )
 
 
 @router.get("/apps/lifecycle/{app_id}")
@@ -1553,9 +1639,67 @@ async def check_lite_security_app(
 
 
 @router.get("/fleet")
-def get_lite_fleet(request: Request) -> dict[str, Any]:
+def get_lite_fleet(request: Request) -> Response:
     deps.require_auth(request)
-    return lite_status.lite_fleet()
+    prepared = CONTROL_PLANE.prepared_read(
+        domain="fleet",
+        key="summary",
+        builder=lite_status.lite_fleet,
+        projector=CONTROL_PLANE.project_fleet,
+        stale_after_ms=5_000,
+        max_stale_ms=30_000,
+        deadline_seconds=4.0,
+    )
+    return _control_plane_prepared_response(
+        request, prepared, view_model="fleet-sqlite-p3-v1"
+    )
+
+
+@router.get("/revisions")
+def get_lite_domain_revisions(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return CONTROL_PLANE.revisions()
+
+
+@router.get("/fleet/devices/{device_id}/recovery-history")
+def get_lite_device_recovery_history(
+    device_id: str,
+    request: Request,
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str = Query("", max_length=512),
+) -> Response:
+    deps.require_auth(request)
+    try:
+        payload = CONTROL_PLANE.device_recovery_history(
+            device_id, limit=limit, cursor=cursor
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _control_plane_history_response(
+        request, payload, domain="fleet",
+        key=f"recovery-history:{device_id}:{limit}:{cursor}",
+    )
+
+
+@router.get("/commands/history")
+def get_lite_command_history(
+    request: Request,
+    entity_type: str = Query("", max_length=40),
+    entity_id: str = Query("", max_length=120),
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str = Query("", max_length=512),
+) -> Response:
+    deps.require_auth(request)
+    try:
+        payload = CONTROL_PLANE.command_history(
+            entity_type=entity_type, entity_id=entity_id, limit=limit, cursor=cursor
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _control_plane_history_response(
+        request, payload, domain="commands",
+        key=f"history:{entity_type}:{entity_id}:{limit}:{cursor}",
+    )
 
 
 @router.get("/fleet/invites/latest")
@@ -1589,6 +1733,7 @@ async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> di
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     await lite_invites.publish_invite_evidence(result)
+    CONTROL_PLANE.invalidate_domain("fleet")
     return {key: value for key, value in result.items() if key != "event"}
 
 
@@ -1616,6 +1761,7 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         requested_by=requested_by,
     )
     await fleet_registry.publish_device_removed_evidence(evidence)
+    CONTROL_PLANE.invalidate_domain("fleet")
 
     return {
         **removal,
@@ -1661,16 +1807,58 @@ def _lite_recovery_details_payload() -> dict[str, Any]:
 @router.get("/recovery/summary")
 def get_lite_recovery_summary(request: Request) -> Response:
     deps.require_auth(request)
-    state = lite_status.lite_recovery_summary()
-    state["database_protection"] = lite_database_recovery.database_recovery_summary()
-    state["maintenance"] = lite_security_maintenance.maintenance_state()
-    return _recovery_compact_response(request, state)
+
+    def build_summary() -> dict[str, Any]:
+        state = lite_status.lite_recovery_summary()
+        state["database_protection"] = lite_database_recovery.database_recovery_summary()
+        state["maintenance"] = lite_security_maintenance.maintenance_state()
+        return state
+
+    prepared = CONTROL_PLANE.prepared_read(
+        domain="recovery",
+        key="summary",
+        builder=build_summary,
+        projector=CONTROL_PLANE.project_recovery,
+        stale_after_ms=10_000,
+        max_stale_ms=60_000,
+        deadline_seconds=4.0,
+    )
+    return _control_plane_prepared_response(
+        request, prepared, view_model="recovery-summary-sqlite-p3-v1"
+    )
 
 
 @router.get("/recovery/details")
-def get_lite_recovery_details(request: Request) -> dict[str, Any]:
+def get_lite_recovery_details(request: Request) -> Response:
     deps.require_auth(request)
-    return _lite_recovery_details_payload()
+    prepared = CONTROL_PLANE.prepared_read(
+        domain="recovery",
+        key="details",
+        builder=_lite_recovery_details_payload,
+        projector=CONTROL_PLANE.project_recovery,
+        stale_after_ms=15_000,
+        max_stale_ms=90_000,
+        deadline_seconds=5.0,
+    )
+    return _control_plane_prepared_response(
+        request, prepared, view_model="recovery-details-sqlite-p3-v1"
+    )
+
+
+@router.get("/recovery/operations")
+def get_lite_recovery_operation_history(
+    request: Request,
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str = Query("", max_length=512),
+) -> Response:
+    deps.require_auth(request)
+    try:
+        payload = CONTROL_PLANE.recovery_operation_history(limit=limit, cursor=cursor)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _control_plane_history_response(
+        request, payload, domain="recovery", key=f"operations:{limit}:{cursor}"
+    )
 
 
 @router.get("/recovery")
