@@ -17,7 +17,11 @@ from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance
-from ..services.lite_control_plane_store import CONTROL_PLANE, PreparedRead
+from ..services.lite_control_plane_store import (
+    CONTROL_PLANE,
+    PreparedProjectionUnavailable,
+    PreparedRead,
+)
 from ..services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from ..services.request_limits import request_limit_snapshot
 from ..services.workload_admission import (
@@ -166,6 +170,38 @@ def _control_plane_prepared_response(
     ):
         return Response(status_code=304, headers=headers)
     return JSONResponse(content=payload, headers=headers)
+
+
+def _projection_warming_response(*, domain: str, view_model: str) -> JSONResponse:
+    retry_after = "2"
+    return JSONResponse(
+        status_code=503,
+        content={
+            "status": "warming",
+            "summary": "Pocket Lab is refreshing this saved view. Try again shortly.",
+            "domain": domain,
+            "retryable": True,
+            "read_degraded": True,
+            "refresh_pending": True,
+        },
+        headers={
+            "Retry-After": retry_after,
+            "Cache-Control": "no-store",
+            "X-PocketLab-View-Model": view_model,
+            "X-PocketLab-Read-Degraded": "true",
+            "X-PocketLab-Refresh-Pending": "true",
+        },
+    )
+
+
+def _timed_projection_stage(
+    timings: dict[str, float], name: str, callback: Any
+) -> Any:
+    started = time.monotonic()
+    try:
+        return callback()
+    finally:
+        timings[name] = round(max(0.0, (time.monotonic() - started) * 1000.0), 3)
 
 
 def _control_plane_history_response(
@@ -618,18 +654,22 @@ def get_lite_catalog(request: Request) -> dict[str, Any]:
 @router.get("/apps/lifecycle")
 def get_lite_app_lifecycle_profiles(request: Request) -> Response:
     deps.require_auth(request)
-    prepared = CONTROL_PLANE.prepared_read(
-        domain="apps",
-        key="lifecycle",
-        builder=lite_app_lifecycle.app_lifecycle_profiles,
-        projector=CONTROL_PLANE.project_apps,
-        stale_after_ms=15_000,
-        max_stale_ms=90_000,
-        deadline_seconds=4.0,
-    )
-    return _control_plane_prepared_response(
-        request, prepared, view_model="apps-lifecycle-sqlite-p3-v1"
-    )
+    view_model = "apps-lifecycle-sqlite-p3-v2"
+    try:
+        prepared = CONTROL_PLANE.prepared_read(
+            domain="apps",
+            key="lifecycle",
+            builder=lite_app_lifecycle.app_lifecycle_profiles,
+            projector=CONTROL_PLANE.project_apps,
+            stale_after_ms=15_000,
+            max_stale_ms=90_000,
+            deadline_seconds=4.0,
+            cold_start_async=True,
+            fallback_builder=CONTROL_PLANE.app_projection_snapshot,
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 @router.get("/apps/{app_id}/action-history")
@@ -1789,60 +1829,102 @@ async def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -
 
 
 def _lite_recovery_details_payload() -> dict[str, Any]:
-    state = lite_status.lite_recovery_details()
-    profiles = lite_app_profiles.app_backup_profiles()
-    lifecycle = lite_app_lifecycle.app_lifecycle_profiles()
-    targets = lite_app_backup_targets.backup_targets()
+    timings: dict[str, float] = {}
+    state = _timed_projection_stage(timings, "recovery_base", lite_status.lite_recovery_details)
+    profiles = _timed_projection_stage(timings, "app_backup_profiles", lite_app_profiles.app_backup_profiles)
+    lifecycle = _timed_projection_stage(timings, "app_lifecycle_profiles", lite_app_lifecycle.app_lifecycle_profiles)
+    targets = _timed_projection_stage(timings, "backup_targets", lite_app_backup_targets.backup_targets)
     state["view_model"] = "recovery-details-r3-v1"
     state["app_backups"] = profiles.get("apps", [])
     state["app_backup_profiles"] = profiles
     state["app_lifecycle_profiles"] = lifecycle
     state["backup_targets"] = targets.get("targets", [])
     state["backup_target_profiles"] = targets
-    state["database_protection"] = lite_database_recovery.database_recovery_status()
-    state["maintenance"] = lite_security_maintenance.maintenance_state()
+    state["database_protection"] = _timed_projection_stage(
+        timings, "database_protection", lite_database_recovery.database_recovery_status
+    )
+    state["maintenance"] = _timed_projection_stage(
+        timings, "maintenance", lite_security_maintenance.maintenance_state
+    )
+    state["__projection_stage_timing_ms"] = timings
     return state
+
+
+def _build_lite_recovery_summary_projection() -> dict[str, Any]:
+    timings: dict[str, float] = {}
+    state = _timed_projection_stage(timings, "recovery_summary", lite_status.lite_recovery_summary)
+    state["database_protection"] = _timed_projection_stage(
+        timings, "database_protection_summary", lite_database_recovery.database_recovery_summary
+    )
+    state["maintenance"] = _timed_projection_stage(
+        timings, "maintenance", lite_security_maintenance.maintenance_state
+    )
+    state["__projection_stage_timing_ms"] = timings
+    return state
+
+
+def schedule_control_plane_projection_warmup() -> dict[str, bool]:
+    if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
+        return {"apps": False, "recovery_summary": False, "recovery_details": False}
+    return {
+        "apps": CONTROL_PLANE.warm_prepared_read(
+            domain="apps", key="lifecycle",
+            builder=lite_app_lifecycle.app_lifecycle_profiles,
+            projector=CONTROL_PLANE.project_apps, deadline_seconds=4.0,
+        ),
+        "recovery_summary": CONTROL_PLANE.warm_prepared_read(
+            domain="recovery", key="summary",
+            builder=_build_lite_recovery_summary_projection,
+            projector=CONTROL_PLANE.project_recovery, deadline_seconds=4.0,
+        ),
+        "recovery_details": CONTROL_PLANE.warm_prepared_read(
+            domain="recovery", key="details",
+            builder=_lite_recovery_details_payload,
+            projector=CONTROL_PLANE.project_recovery, deadline_seconds=5.0,
+        ),
+    }
 
 
 @router.get("/recovery/summary")
 def get_lite_recovery_summary(request: Request) -> Response:
     deps.require_auth(request)
-
-    def build_summary() -> dict[str, Any]:
-        state = lite_status.lite_recovery_summary()
-        state["database_protection"] = lite_database_recovery.database_recovery_summary()
-        state["maintenance"] = lite_security_maintenance.maintenance_state()
-        return state
-
-    prepared = CONTROL_PLANE.prepared_read(
-        domain="recovery",
-        key="summary",
-        builder=build_summary,
-        projector=CONTROL_PLANE.project_recovery,
-        stale_after_ms=10_000,
-        max_stale_ms=60_000,
-        deadline_seconds=4.0,
-    )
-    return _control_plane_prepared_response(
-        request, prepared, view_model="recovery-summary-sqlite-p3-v1"
-    )
+    view_model = "recovery-summary-sqlite-p3-v2"
+    try:
+        prepared = CONTROL_PLANE.prepared_read(
+            domain="recovery",
+            key="summary",
+            builder=_build_lite_recovery_summary_projection,
+            projector=CONTROL_PLANE.project_recovery,
+            stale_after_ms=10_000,
+            max_stale_ms=60_000,
+            deadline_seconds=4.0,
+            cold_start_async=True,
+            fallback_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=False),
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="recovery", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 @router.get("/recovery/details")
 def get_lite_recovery_details(request: Request) -> Response:
     deps.require_auth(request)
-    prepared = CONTROL_PLANE.prepared_read(
-        domain="recovery",
-        key="details",
-        builder=_lite_recovery_details_payload,
-        projector=CONTROL_PLANE.project_recovery,
-        stale_after_ms=15_000,
-        max_stale_ms=90_000,
-        deadline_seconds=5.0,
-    )
-    return _control_plane_prepared_response(
-        request, prepared, view_model="recovery-details-sqlite-p3-v1"
-    )
+    view_model = "recovery-details-sqlite-p3-v2"
+    try:
+        prepared = CONTROL_PLANE.prepared_read(
+            domain="recovery",
+            key="details",
+            builder=_lite_recovery_details_payload,
+            projector=CONTROL_PLANE.project_recovery,
+            stale_after_ms=15_000,
+            max_stale_ms=90_000,
+            deadline_seconds=5.0,
+            cold_start_async=True,
+            fallback_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True),
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="recovery", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 @router.get("/recovery/operations")

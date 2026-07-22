@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
+
+import time
 
 from fastapi import HTTPException
 
@@ -31,6 +33,20 @@ _STATUS_ORDER = {
     "unavailable": 5,
     "unknown": 6,
 }
+
+
+
+def _timed_stage(
+    timings: dict[str, float] | None,
+    name: str,
+    callback: Callable[[], Any],
+) -> Any:
+    started = time.monotonic()
+    try:
+        return callback()
+    finally:
+        if timings is not None:
+            timings[name] = round(max(0.0, (time.monotonic() - started) * 1000.0), 3)
 
 
 def _now() -> str:
@@ -500,12 +516,12 @@ def _evidence(security: dict[str, Any], backup: dict[str, Any], media: dict[str,
     }
 
 
-def photoprism_lifecycle_profile() -> dict[str, Any]:
-    app = _catalog_app("photoprism")
-    storage_raw = _storage_payload()
-    security_raw = _security_payload()
-    backup_raw = _backup_payload()
-    media = _media_payload()
+def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
+    app = _timed_stage(stage_timings, "catalog", lambda: _catalog_app("photoprism"))
+    storage_raw = _timed_stage(stage_timings, "storage", _storage_payload)
+    security_raw = _timed_stage(stage_timings, "security", _security_payload)
+    backup_raw = _timed_stage(stage_timings, "backup", _backup_payload)
+    media = _timed_stage(stage_timings, "media", _media_payload)
     installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
 
     storage = _storage_profile(storage_raw)
@@ -513,11 +529,11 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
     backup = _backup_profile(backup_raw)
     recovery = _recovery_profile(backup_raw)
     try:
-        operations = lite_app_operations.app_operation_status("photoprism")
+        operations = _timed_stage(stage_timings, "operations", lambda: lite_app_operations.app_operation_status("photoprism"))
     except Exception:
         operations = {"status": "unknown", "actions": {}}
     try:
-        update = lite_app_update.update_status("photoprism")
+        update = _timed_stage(stage_timings, "update", lambda: lite_app_update.update_status("photoprism"))
     except Exception:
         update = {"status": "unknown", "actions": {"update_app": {"enabled": installed, "label": "Update"}}, "readiness": {"status": "unknown", "summary": "Update readiness is not available."}}
     attention = _attention(installed, storage, security, backup, recovery, media)
@@ -557,8 +573,8 @@ def photoprism_lifecycle_profile() -> dict[str, Any]:
         "storage": storage,
         "security": security,
         "backup": backup,
-        "backup_targets": lite_app_backup_targets.app_backup_targets("photoprism"),
-        "app_lifecycle": lite_photoprism_lifecycle.lifecycle_state(),
+        "backup_targets": _timed_stage(stage_timings, "backup_targets", lambda: lite_app_backup_targets.app_backup_targets("photoprism")),
+        "app_lifecycle": _timed_stage(stage_timings, "runtime_lifecycle", lite_photoprism_lifecycle.lifecycle_state),
         "recovery": recovery,
         "media": media,
         "operations": operations,
@@ -579,7 +595,8 @@ def app_lifecycle_profile(app_id: str) -> dict[str, Any]:
 
 
 def app_lifecycle_profiles() -> dict[str, Any]:
-    profiles = [photoprism_lifecycle_profile()]
+    stage_timings: dict[str, float] = {}
+    profiles = [photoprism_lifecycle_profile(stage_timings)]
     ready = sum(1 for item in profiles if item.get("status") == "ready")
     attention = sum(1 for item in profiles if item.get("attention"))
     return {
@@ -591,6 +608,7 @@ def app_lifecycle_profiles() -> dict[str, Any]:
         "ready_count": ready,
         "attention_count": attention,
         "updated_at": _now(),
+        "__projection_stage_timing_ms": stage_timings,
     }
 
 

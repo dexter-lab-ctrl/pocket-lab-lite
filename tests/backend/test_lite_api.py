@@ -1,6 +1,7 @@
 import asyncio
 import json
 from pathlib import Path
+import time
 
 import pytest
 
@@ -1956,6 +1957,12 @@ def test_lite_app_security_and_backup_ui_source_is_present():
 
 def test_lite_unified_app_lifecycle_profile_is_sanitized_and_complete():
     response = client().get("/api/lite/apps/lifecycle")
+    deadline = time.monotonic() + 3.0
+    while response.status_code == 503 and time.monotonic() < deadline:
+        assert response.json()["status"] == "warming"
+        assert response.headers.get("retry-after")
+        time.sleep(0.05)
+        response = client().get("/api/lite/apps/lifecycle")
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "healthy"

@@ -777,3 +777,94 @@ def test_expired_stale_refresh_returns_truthful_degraded_snapshot(tmp_path, monk
     assert degraded.etag == first.etag
     assert degraded.read_degraded is True
     assert degraded.refresh_pending is False
+
+
+def test_cold_prepared_read_returns_sqlite_fallback_and_refreshes_in_background(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    payload = {
+        "apps": [{
+            "app_id": "photoprism", "name": "PhotoPrism", "installed": True,
+            "status": "ready", "summary": "Saved app state",
+        }],
+        "updated_at": "2026-07-21T12:00:00Z",
+    }
+    assert store.project_apps(payload) == 1
+
+    def slow_builder():
+        time.sleep(0.15)
+        return {
+            "apps": [{
+                "app_id": "photoprism", "name": "PhotoPrism", "installed": True,
+                "status": "ready", "summary": "Fresh app state",
+            }],
+            "updated_at": "2026-07-21T12:01:00Z",
+            "__projection_stage_timing_ms": {"catalog": 120.0, "storage": 20.0},
+        }
+
+    started = time.monotonic()
+    first = store.prepared_read(
+        domain="apps", key="lifecycle", builder=slow_builder,
+        projector=store.project_apps, stale_after_ms=10_000, max_stale_ms=60_000,
+        deadline_seconds=0.05, cold_start_async=True,
+        fallback_builder=store.app_projection_snapshot,
+    )
+    elapsed = time.monotonic() - started
+    assert elapsed < 0.10
+    assert first.read_degraded is True
+    assert first.refresh_pending is True
+    assert first.payload["projection_only"] is True
+
+    deadline = time.monotonic() + 2.0
+    while time.monotonic() < deadline:
+        second = store.prepared_read(
+            domain="apps", key="lifecycle", builder=slow_builder,
+            projector=store.project_apps, stale_after_ms=10_000, max_stale_ms=60_000,
+            deadline_seconds=0.05, cold_start_async=True,
+            fallback_builder=store.app_projection_snapshot,
+        )
+        if not second.read_degraded and not second.refresh_pending:
+            break
+        time.sleep(0.02)
+    assert second.payload["apps"][0]["summary"] == "Fresh app state"
+    metrics = store.prepared_metrics()
+    assert metrics["stage_timings_ms"]["apps:lifecycle"]["catalog"] == 120.0
+    assert metrics["sanitized"] is True
+
+
+def test_cold_prepared_read_without_snapshot_fails_fast_with_controlled_signal(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import (
+        ControlPlaneProjectionStore, PreparedProjectionUnavailable,
+    )
+
+    store = ControlPlaneProjectionStore()
+    started = time.monotonic()
+    with pytest.raises(PreparedProjectionUnavailable):
+        store.prepared_read(
+            domain="recovery", key="summary",
+            builder=lambda: (time.sleep(0.2) or {"status": "healthy"}),
+            projector=store.project_recovery, stale_after_ms=10_000, max_stale_ms=60_000,
+            deadline_seconds=0.05, cold_start_async=True,
+            fallback_builder=lambda: None,
+        )
+    assert time.monotonic() - started < 0.10
+
+
+def test_database_replacement_fence_clears_prepared_refresh_state(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    store.warm_prepared_read(
+        domain="apps", key="lifecycle",
+        builder=lambda: (time.sleep(0.1) or {"apps": [], "updated_at": "2026-07-21T12:00:00Z"}),
+        projector=store.project_apps, deadline_seconds=0.05,
+    )
+    assert "apps:lifecycle" in store.prepared_metrics()["refreshing"]
+    store.invalidate_after_database_replacement()
+    metrics = store.prepared_metrics()
+    assert metrics["refreshing"] == {}
+    assert metrics["prepared_keys"] == []

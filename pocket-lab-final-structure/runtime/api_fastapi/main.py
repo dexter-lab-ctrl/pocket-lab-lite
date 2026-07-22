@@ -82,6 +82,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             {"service": deps.settings().server_name},
         )
         await LIVE_STATUS.start()
+        try:
+            warmup = lite.schedule_control_plane_projection_warmup()
+            logging.getLogger(__name__).info(
+                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s",
+                warmup.get("apps"),
+                warmup.get("recovery_summary"),
+                warmup.get("recovery_details"),
+            )
+        except Exception as exc:
+            logging.getLogger(__name__).warning(
+                "pocketlab.control_projection.warmup_degraded error_type=%s",
+                type(exc).__name__,
+            )
         if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
             "1",
             "true",
