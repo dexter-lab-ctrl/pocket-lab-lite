@@ -1028,3 +1028,22 @@ def test_app_subprojection_executor_is_bounded_for_termux():
     lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
     assert 'return 3 if "com.termux" in prefix or sys.platform == "android" else 4' in lifecycle
     assert "max(1, min(4, int(configured)))" in lifecycle
+
+
+def test_app_lifecycle_parallelizes_state_sensitive_read_stages_with_bounded_workers():
+    lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
+    assert "POCKETLAB_LITE_APP_STAGE_WORKERS" in lifecycle
+    assert 'thread_name_prefix="pocketlab-app-stage"' in lifecycle
+    assert '"catalog": (lambda: _catalog_app("photoprism")' in lifecycle
+    assert '"media": (_media_payload' in lifecycle
+    assert '"operations": (lambda: lite_app_operations.app_operation_status("photoprism")' in lifecycle
+    assert '"update": (lambda: lite_app_update.update_status("photoprism")' in lifecycle
+    assert "future.result(timeout=timeout)" in lifecycle
+    assert "pocketlab.app_stage.timeout" in lifecycle
+
+
+def test_security_progress_idle_polling_is_quiet_but_dirty_signal_remains_immediate():
+    security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
+    assert 'POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "30.0"' in security
+    assert "_SQLITE_PROGRESS_DIRTY.wait(timeout=wait_interval)" in security
+    assert "mark_security_progress_dirty()" in security
