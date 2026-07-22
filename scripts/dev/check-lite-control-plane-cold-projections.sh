@@ -6,6 +6,31 @@ PROXY_BASE="${POCKETLAB_PROXY_BASE:-http://127.0.0.1:8443}"
 RUN_DIR="${1:-$STATE_DIR/.pocketlab-dev/sqlite-p3-subprojection-check}"
 mkdir -p "$RUN_DIR"
 
+
+READY_ATTEMPTS="${POCKETLAB_READY_ATTEMPTS:-60}"
+READY_CONNECT_TIMEOUT="${POCKETLAB_READY_CONNECT_TIMEOUT:-2}"
+READY_MAX_TIME="${POCKETLAB_READY_MAX_TIME:-3}"
+API_READY=0
+
+for attempt in $(seq 1 "$READY_ATTEMPTS"); do
+  if curl -fsS \
+    --connect-timeout "$READY_CONNECT_TIMEOUT" \
+    --max-time "$READY_MAX_TIME" \
+    "$PROXY_BASE/health" \
+    > "$RUN_DIR/health.json"
+  then
+    API_READY=1
+    printf 'Pocket API ready after attempt %s\n' "$attempt"
+    break
+  fi
+  sleep 1
+done
+
+if [[ "$API_READY" -ne 1 ]]; then
+  printf 'Pocket API did not become ready after %s attempts.\n' "$READY_ATTEMPTS" >&2
+  exit 1
+fi
+
 paths=(
   /api/lite/apps/lifecycle
   /api/lite/recovery/summary
@@ -42,3 +67,9 @@ done
 curl -fsS "$PROXY_BASE/api/lite/revisions" \
   | tee "$RUN_DIR/revisions.json" \
   | python3 -m json.tool
+
+if [[ ! -s "$RUN_DIR/revisions.json" ]]; then
+  printf 'Missing or empty revisions response: %s\n' "$RUN_DIR/revisions.json" >&2
+  exit 1
+fi
+python3 -m json.tool "$RUN_DIR/revisions.json" >/dev/null
