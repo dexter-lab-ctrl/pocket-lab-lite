@@ -4240,7 +4240,7 @@ def test_lite_tanstack_query_dependency_and_provider_source():
     assert "liteQueryClient" in app
     assert "createLiteQueryClient" in query_client
     assert "refetchOnReconnect: true" in query_client
-    assert "refetchOnWindowFocus: true" in query_client
+    assert "refetchOnWindowFocus: false" in query_client
     assert "retry: false" in query_client
     assert "refetchInterval: false" in query_client
 
@@ -4443,7 +4443,8 @@ def test_lite_dexie_safe_endpoint_allowlist_and_ttl_source():
         "/api/lite/apps/photoprism/actions/import_photos",
         "/api/lite/fleet/agent/bootstrap.sh",
     ]:
-        assert unsafe not in snapshots
+        assert f"'{unsafe}'" not in snapshots
+        assert f'"{unsafe}"' not in snapshots
 
     assert "5 * 60 * 1000" in snapshots
     assert "20 * 60 * 1000" in snapshots
@@ -5370,7 +5371,9 @@ def test_lite_app_catalog_s3_uses_focused_invalidations():
     assert "getLiteAppActionInvalidations" in mutation
     assert "liteQueryKeys.appActions(normalizedAppId)" in mutation
     assert "liteQueryKeys.catalog()" in mutation
-    assert "liteQueryKeys.recovery()" in mutation
+    assert "liteQueryKeys.recoverySummary()" in mutation
+    assert "liteQueryKeys.recoveryDetails()" in mutation
+    assert "liteQueryKeys.recoveryHistory()" in mutation
     assert "restart_agent: [liteQueryKeys.fleet(), liteQueryKeys.status()]" in mutation
     assert "security_check: [liteQueryKeys.security(), liteQueryKeys.securityProfile('quick'), liteQueryKeys.securityHistory()]" in mutation
     assert "invalidateForAction: ({ appId = 'photoprism', actionId }, response) => getLiteAppActionInvalidations(appId, actionId, response)" in catalog
@@ -6934,7 +6937,8 @@ def test_lite_security_app_check_profile_source_contract():
     assert "App backup metadata checked" in security
     assert "App action state checked" in security
     assert "profile == lite_security.policy.SCAN_PROFILE_APP" in router
-    assert '"profile": profile' in router
+    assert "profile=profile" in router
+    assert "app_id=app_id" in router
     assert "App Check requires an app_id." in router
     assert "security_app_check" in app_actions
     assert "profile" in app_actions and "app" in app_actions

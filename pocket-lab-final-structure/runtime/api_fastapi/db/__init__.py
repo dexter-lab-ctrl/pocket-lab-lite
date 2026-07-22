@@ -14,6 +14,7 @@ from .connection import (
     sqlite_settings,
 )
 from .migrations import apply_migrations, current_schema_version
+from .runtime import SQLITE_READS, SQLITE_WRITER, SQLiteReadConnectionManager, SQLiteWriteService
 
 __all__ = [
     "SQLiteConfigurationError",
@@ -25,4 +26,8 @@ __all__ = [
     "online_backup",
     "read_connection",
     "sqlite_settings",
+    "SQLITE_READS",
+    "SQLITE_WRITER",
+    "SQLiteReadConnectionManager",
+    "SQLiteWriteService",
 ]

@@ -1,0 +1,1311 @@
+from __future__ import annotations
+
+import base64
+import concurrent.futures
+import hashlib
+import json
+import logging
+import os
+import re
+import sqlite3
+import threading
+import time
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Callable, Iterable
+
+from .. import deps
+from ..db.connection import database_path
+from ..db.migrations import apply_migrations
+from ..db.runtime import (
+    SQLITE_READS,
+    SQLITE_WRITER,
+    SQLiteWriteDeadlineExceeded,
+    SQLiteWriteRejected,
+)
+
+
+_LOGGER = logging.getLogger(__name__)
+_ACTIVE_STATUSES = frozenset({"queued", "published", "received", "accepted", "running"})
+_TERMINAL_STATUSES = frozenset(
+    {"succeeded", "failed", "cancelled", "undeliverable", "timed_out"}
+)
+_SECRET_KEYS = re.compile(
+    r"(?:token|password|secret|credential|api[_-]?key|private[_-]?key|auth|cookie|bootstrap|command_payload|raw_log|raw_evidence)",
+    re.IGNORECASE,
+)
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _epoch_ms(value: Any = None) -> int:
+    if value is None or value == "":
+        return int(time.time() * 1000)
+    if isinstance(value, (int, float)):
+        number = float(value)
+        return int(number if number > 10_000_000_000 else number * 1000)
+    text = str(value).strip()
+    if not text:
+        return int(time.time() * 1000)
+    try:
+        return int(datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp() * 1000)
+    except (TypeError, ValueError):
+        return int(time.time() * 1000)
+
+
+def _encode_cursor(epoch_ms: int, row_id: str) -> str:
+    raw = json.dumps([int(epoch_ms), str(row_id)], separators=(",", ":")).encode("utf-8")
+    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+
+
+def _decode_cursor(value: str | None) -> tuple[int, str] | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if len(text) > 512:
+        raise ValueError("History cursor is too long")
+    try:
+        padded = text + "=" * (-len(text) % 4)
+        decoded = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8"))
+        if not isinstance(decoded, list) or len(decoded) != 2:
+            raise ValueError
+        epoch_ms = int(decoded[0])
+        row_id = str(decoded[1])[:160]
+        if epoch_ms < 0 or not row_id:
+            raise ValueError
+        return epoch_ms, row_id
+    except (ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError, base64.binascii.Error) as exc:
+        raise ValueError("Invalid history cursor") from exc
+
+
+def _safe_text(value: Any, limit: int = 240) -> str:
+    text = str(value or "").replace("\x00", " ").strip()
+    if not text:
+        return ""
+    if _SECRET_KEYS.search(text):
+        return "Protected metadata"
+    return text[:limit]
+
+
+def _safe_json(value: Any, *, max_bytes: int = 4096) -> str:
+    def sanitize(item: Any, depth: int = 0) -> Any:
+        if depth > 4:
+            return None
+        if isinstance(item, dict):
+            result: dict[str, Any] = {}
+            for key, child in list(item.items())[:32]:
+                name = str(key)[:80]
+                if _SECRET_KEYS.search(name):
+                    continue
+                result[name] = sanitize(child, depth + 1)
+            return result
+        if isinstance(item, list):
+            return [sanitize(child, depth + 1) for child in item[:32]]
+        if isinstance(item, (str, int, float, bool)) or item is None:
+            return _safe_text(item, 256) if isinstance(item, str) else item
+        return _safe_text(item, 128)
+
+    encoded = json.dumps(sanitize(value), sort_keys=True, separators=(",", ":"))
+    return encoded if len(encoded.encode("utf-8")) <= max_bytes else "{}"
+
+
+def _normalize_status(value: Any) -> str:
+    raw = str(value or "unknown").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "complete": "succeeded",
+        "completed": "succeeded",
+        "success": "succeeded",
+        "error": "failed",
+        "timeout": "timed_out",
+        "timedout": "timed_out",
+        "in_progress": "running",
+        "working": "running",
+    }
+    normalized = aliases.get(raw, raw)
+    if normalized in _ACTIVE_STATUSES | _TERMINAL_STATUSES:
+        return normalized
+    return "unknown"
+
+
+def _database_instance() -> str:
+    path = database_path()
+    try:
+        stat = path.stat()
+        material = f"{path}:{stat.st_dev}:{stat.st_ino}"
+    except OSError:
+        material = f"{path}:missing"
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
+
+
+def _domain_revision(conn: sqlite3.Connection, domain: str) -> int:
+    row = conn.execute(
+        "SELECT revision FROM domain_revisions WHERE domain = ?", (domain,)
+    ).fetchone()
+    return int(row["revision"] if row else 0)
+
+
+def _bump_revision(conn: sqlite3.Connection, domain: str, at: str) -> int:
+    conn.execute(
+        """
+        INSERT INTO domain_revisions(domain, revision, updated_at)
+        VALUES (?, 1, ?)
+        ON CONFLICT(domain) DO UPDATE SET
+            revision = domain_revisions.revision + 1,
+            updated_at = excluded.updated_at
+        """,
+        (domain, at),
+    )
+    return _domain_revision(conn, domain)
+
+
+def _changes(conn: sqlite3.Connection) -> bool:
+    row = conn.execute("SELECT changes()").fetchone()
+    return bool(row and int(row[0]) > 0)
+
+
+def _ui_state(device: dict[str, Any], remote_ready: bool) -> str:
+    role = str(device.get("role") or "").lower()
+    status = str(device.get("status") or device.get("connection") or "unknown").lower()
+    agent = str(device.get("agent_status") or "").lower()
+    process = str(device.get("agent_process_status") or "").lower()
+    supervisor = str(device.get("supervisor_status") or "").lower()
+    if role == "server_host" or device.get("is_current"):
+        return "Protected server host"
+    if status in {"repairing", "supervisor_repairing"} or supervisor in {"repairing", "restarting"}:
+        return "Repairing"
+    if status in {"agent_stopped", "stopped"} or process in {"stopped", "errored", "missing"}:
+        return "Agent stopped"
+    if status in {"joining", "accepted"}:
+        return "Joining"
+    if status in {"waiting", "pending", "invited", "invite_sent"}:
+        return "Waiting"
+    if status in {"online", "active", "healthy"}:
+        return "Online" if remote_ready else "Remote access not ready"
+    return "Offline" if status in {"offline", "stale", "unhealthy"} else "Waiting"
+
+
+@dataclass(frozen=True)
+class PreparedRead:
+    payload: dict[str, Any]
+    etag: str
+    source_revision: int
+    projection_age_ms: int
+    read_degraded: bool
+    refresh_pending: bool
+    timing: dict[str, float]
+
+
+@dataclass
+class _PreparedItem:
+    payload: dict[str, Any]
+    revision: int
+    prepared_at: float
+    database_instance: str
+
+
+class ControlPlaneProjectionStore:
+    """Bounded SQLite projections and single-flight prepared read snapshots."""
+
+    def __init__(self) -> None:
+        self._initialized = False
+        self._initialized_path = ""
+        self._initialize_lock = threading.Lock()
+        self._cache_lock = threading.Lock()
+        self._prepared: dict[str, _PreparedItem] = {}
+        self._refreshing: set[str] = set()
+        self._refresh_errors: dict[str, str] = {}
+        self._singleflight_locks: dict[str, threading.Lock] = {}
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", "2")), 4)),
+            thread_name_prefix="pocketlab-read-refresh",
+        )
+
+    def initialize(self) -> None:
+        current_path = str(database_path())
+        with self._initialize_lock:
+            if self._initialized and self._initialized_path == current_path:
+                return
+            apply_migrations()
+            SQLITE_READS.invalidate()
+            SQLITE_WRITER.start()
+            with self._cache_lock:
+                self._prepared.clear()
+                self._refreshing.clear()
+                self._refresh_errors.clear()
+            self._initialized = True
+            self._initialized_path = current_path
+
+    def shutdown(self) -> None:
+        self._executor.shutdown(wait=False, cancel_futures=True)
+        SQLITE_READS.close()
+        SQLITE_WRITER.shutdown()
+
+    def invalidate_after_database_replacement(self) -> None:
+        SQLITE_READS.invalidate()
+        with self._cache_lock:
+            self._prepared.clear()
+            self._refreshing.clear()
+            self._refresh_errors.clear()
+
+    def invalidate_domain(self, domain: str) -> None:
+        prefix = f"{str(domain or '').strip()}:"
+        with self._cache_lock:
+            for key in [key for key in self._prepared if key.startswith(prefix)]:
+                self._prepared.pop(key, None)
+                self._refresh_errors.pop(key, None)
+
+    def _read(self, callback: Callable[[sqlite3.Connection], Any]) -> tuple[Any, float, float]:
+        entry, wait_ms = SQLITE_READS.acquire(timeout_seconds=1.0)
+        started = time.monotonic()
+        discard = False
+        try:
+            result = callback(entry.connection)
+            return result, wait_ms, max(0.0, (time.monotonic() - started) * 1000.0)
+        except sqlite3.Error:
+            discard = True
+            raise
+        finally:
+            SQLITE_READS.release(entry, discard=discard)
+
+    def domain_revision(self, domain: str) -> int:
+        self.initialize()
+        result, _, _ = self._read(lambda conn: _domain_revision(conn, domain))
+        return int(result)
+
+    def revisions(self) -> dict[str, Any]:
+        self.initialize()
+        domains = ("security", "fleet", "apps", "recovery", "commands", "storage", "audit")
+        rows, wait_ms, query_ms = self._read(
+            lambda conn: {
+                str(row["domain"]): int(row["revision"])
+                for row in conn.execute(
+                    "SELECT domain, revision FROM domain_revisions WHERE domain IN (%s)"
+                    % ",".join("?" for _ in domains),
+                    domains,
+                )
+            }
+        )
+        return {
+            "database_instance": _database_instance(),
+            "revisions": {domain: int(rows.get(domain, 0)) for domain in domains},
+            "connection_wait_ms": round(wait_ms, 3),
+            "sqlite_query_ms": round(query_ms, 3),
+            "updated_at": _utc_now(),
+        }
+
+    def _etag(self, domain: str, key: str, revision: int) -> str:
+        return f'W/"pl-{_database_instance()}-{domain}-{key}-{int(revision)}"'
+
+    def revision_etag(self, domain: str, key: str, revision: int | None = None) -> str:
+        effective_revision = self.domain_revision(domain) if revision is None else int(revision)
+        safe_key = re.sub(r"[^a-zA-Z0-9_.-]+", "-", str(key or "read"))[:120]
+        return self._etag(str(domain or "control")[:40], safe_key, effective_revision)
+
+    def prepared_read(
+        self,
+        *,
+        domain: str,
+        key: str,
+        builder: Callable[[], dict[str, Any]],
+        projector: Callable[[dict[str, Any]], int],
+        stale_after_ms: int,
+        max_stale_ms: int,
+        deadline_seconds: float = 3.0,
+    ) -> PreparedRead:
+        self.initialize()
+        cache_key = f"{domain}:{key}"
+        instance = _database_instance()
+        now = time.monotonic()
+        with self._cache_lock:
+            item = self._prepared.get(cache_key)
+            if item is not None and item.database_instance != instance:
+                self._prepared.pop(cache_key, None)
+                item = None
+            refreshing = cache_key in self._refreshing
+        if item is None:
+            return self._refresh_now(
+                cache_key, domain, key, builder, projector, deadline_seconds
+            )
+        age_ms = int(max(0.0, (now - item.prepared_at) * 1000.0))
+        if age_ms <= stale_after_ms:
+            return PreparedRead(
+                payload=item.payload,
+                etag=self._etag(domain, key, item.revision),
+                source_revision=item.revision,
+                projection_age_ms=age_ms,
+                read_degraded=False,
+                refresh_pending=False,
+                timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
+            )
+        if age_ms <= max_stale_ms:
+            if not refreshing:
+                self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+            return PreparedRead(
+                payload=item.payload,
+                etag=self._etag(domain, key, item.revision),
+                source_revision=item.revision,
+                projection_age_ms=age_ms,
+                read_degraded=cache_key in self._refresh_errors,
+                refresh_pending=True,
+                timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
+            )
+        try:
+            return self._refresh_now(
+                cache_key, domain, key, builder, projector, deadline_seconds
+            )
+        except Exception:
+            return PreparedRead(
+                payload=item.payload,
+                etag=self._etag(domain, key, item.revision),
+                source_revision=item.revision,
+                projection_age_ms=age_ms,
+                read_degraded=True,
+                refresh_pending=False,
+                timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
+            )
+
+    def _start_refresh(
+        self,
+        cache_key: str,
+        domain: str,
+        key: str,
+        builder: Callable[[], dict[str, Any]],
+        projector: Callable[[dict[str, Any]], int],
+        deadline_seconds: float,
+    ) -> None:
+        with self._cache_lock:
+            if cache_key in self._refreshing:
+                return
+            self._refreshing.add(cache_key)
+        self._executor.submit(
+            self._background_refresh,
+            cache_key,
+            domain,
+            key,
+            builder,
+            projector,
+            deadline_seconds,
+        )
+
+    def _background_refresh(self, *args: Any) -> None:
+        cache_key = str(args[0])
+        try:
+            self._refresh_now(*args)
+        except Exception as exc:
+            with self._cache_lock:
+                self._refresh_errors[cache_key] = type(exc).__name__
+            _LOGGER.warning(
+                "pocketlab.control_projection.refresh_degraded key=%s error_type=%s",
+                cache_key,
+                type(exc).__name__,
+            )
+        finally:
+            with self._cache_lock:
+                self._refreshing.discard(cache_key)
+
+    def _refresh_now(
+        self,
+        cache_key: str,
+        domain: str,
+        key: str,
+        builder: Callable[[], dict[str, Any]],
+        projector: Callable[[dict[str, Any]], int],
+        deadline_seconds: float,
+    ) -> PreparedRead:
+        request_started = time.monotonic()
+        with self._cache_lock:
+            lock = self._singleflight_locks.setdefault(cache_key, threading.Lock())
+        acquired = lock.acquire(timeout=max(0.05, min(deadline_seconds, 10.0)))
+        if not acquired:
+            with self._cache_lock:
+                cached = self._prepared.get(cache_key)
+            if cached is not None:
+                return PreparedRead(
+                    payload=cached.payload,
+                    etag=self._etag(domain, key, cached.revision),
+                    source_revision=cached.revision,
+                    projection_age_ms=int(max(0.0, (time.monotonic() - cached.prepared_at) * 1000.0)),
+                    read_degraded=True,
+                    refresh_pending=True,
+                    timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
+                )
+            raise TimeoutError("Prepared read refresh deadline expired")
+        try:
+            with self._cache_lock:
+                cached = self._prepared.get(cache_key)
+            # A concurrent caller may have completed the same cold refresh while
+            # this caller waited for the single-flight lock. Share that result.
+            if cached is not None and cached.prepared_at >= request_started:
+                return PreparedRead(
+                    payload=cached.payload,
+                    etag=self._etag(domain, key, cached.revision),
+                    source_revision=cached.revision,
+                    projection_age_ms=int(max(0.0, (time.monotonic() - cached.prepared_at) * 1000.0)),
+                    read_degraded=False,
+                    refresh_pending=False,
+                    timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
+                )
+            started = time.monotonic()
+            payload = builder()
+            built = time.monotonic()
+            if built - request_started > max(0.05, deadline_seconds):
+                raise TimeoutError("Prepared projection build deadline expired")
+            revision = projector(payload)
+            projected = time.monotonic()
+            item = _PreparedItem(
+                payload=payload,
+                revision=revision,
+                prepared_at=time.monotonic(),
+                database_instance=_database_instance(),
+            )
+            with self._cache_lock:
+                self._prepared[cache_key] = item
+                self._refresh_errors.pop(cache_key, None)
+            serialization_started = time.monotonic()
+            json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
+            serialization_ms = max(0.0, (time.monotonic() - serialization_started) * 1000.0)
+            return PreparedRead(
+                payload=payload,
+                etag=self._etag(domain, key, revision),
+                source_revision=revision,
+                projection_age_ms=0,
+                read_degraded=False,
+                refresh_pending=False,
+                timing={
+                    "connection_acquisition_ms": 0.0,
+                    "sqlite_query_ms": max(0.0, (projected - built) * 1000.0),
+                    "projection_build_ms": max(0.0, (built - started) * 1000.0),
+                    "serialization_ms": serialization_ms,
+                },
+            )
+        finally:
+            lock.release()
+            with self._cache_lock:
+                self._refreshing.discard(cache_key)
+
+    def project_fleet(self, payload: dict[str, Any]) -> int:
+        self.initialize()
+        devices = [item for item in payload.get("devices", []) if isinstance(item, dict)]
+        remote = payload.get("remote_access") if isinstance(payload.get("remote_access"), dict) else {}
+        latest_invite = payload.get("latest_invite") if isinstance(payload.get("latest_invite"), dict) else None
+        now = str(payload.get("updated_at") or _utc_now())
+        now_epoch = _epoch_ms(now)
+        commands: list[dict[str, Any]] = []
+        recovery_events: list[dict[str, Any]] = []
+        try:
+            from . import fleet_registry
+
+            commands = fleet_registry.list_commands(limit=500)
+            events_payload = deps.core.read_json_file(
+                deps.settings().state_dir / "fleet_device_events.json",
+                {"events": []},
+            )
+            recovery_events = [
+                item for item in (events_payload.get("events") or [])[:500]
+                if isinstance(item, dict)
+            ]
+        except Exception:
+            pass
+
+        def write(conn: sqlite3.Connection) -> int:
+            changed = False
+            device_ids: list[str] = []
+            for item in devices:
+                device_id = _safe_text(item.get("id") or item.get("node_id"), 120)
+                if not device_id:
+                    continue
+                device_ids.append(device_id)
+                protected = bool(item.get("role") == "server_host" or item.get("is_current"))
+                last_seen = str(item.get("last_seen_at") or item.get("last_seen") or now)
+                last_seen_epoch = _epoch_ms(last_seen)
+                heartbeat_id = hashlib.sha256(
+                    f"{device_id}:{last_seen}:{item.get('status')}".encode("utf-8")
+                ).hexdigest()[:24]
+                connection_state = _safe_text(item.get("connection") or item.get("status") or "unknown", 32).lower()
+                agent_status = _safe_text(item.get("agent_status") or item.get("status") or "unknown", 32).lower()
+                supervisor_status = _safe_text(item.get("supervisor_status") or "unknown", 32).lower()
+                pm2_status = _safe_text(item.get("agent_process_status") or "unknown", 32).lower()
+                remote_ready = bool(
+                    remote.get("ready")
+                    and (
+                        protected
+                        or item.get("remote_access")
+                        or str(item.get("connection") or item.get("status") or "").lower()
+                        in {"online", "active", "healthy"}
+                    )
+                )
+                summary = _safe_text(item.get("summary") or item.get("status") or "Device state recorded")
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO device_heartbeats(
+                        device_id, heartbeat_id, source_revision, connection_state,
+                        agent_status, supervisor_status, pm2_status,
+                        remote_access_ready, protected_server_host, observed_at,
+                        observed_at_epoch_ms, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (device_id, heartbeat_id, int(item.get("revision") or 0), connection_state,
+                     agent_status, supervisor_status, pm2_status, int(remote_ready), int(protected),
+                     last_seen, last_seen_epoch, summary),
+                )
+                changed = _changes(conn) or changed
+                conn.execute(
+                    """
+                    INSERT INTO device_identity_guards(
+                        identity_key, device_id, normalized_name, protected_server_host,
+                        source, updated_at
+                    ) VALUES (?, ?, ?, ?, 'fleet-projection', ?)
+                    ON CONFLICT(identity_key) DO UPDATE SET
+                        device_id=excluded.device_id,
+                        normalized_name=excluded.normalized_name,
+                        protected_server_host=excluded.protected_server_host,
+                        updated_at=excluded.updated_at
+                    WHERE device_identity_guards.device_id IS NOT excluded.device_id
+                       OR device_identity_guards.normalized_name IS NOT excluded.normalized_name
+                       OR device_identity_guards.protected_server_host IS NOT excluded.protected_server_host
+                    """,
+                    (device_id.lower(), device_id, _safe_text(item.get("name"), 120).lower(), int(protected), now),
+                )
+                changed = _changes(conn) or changed
+                latest_command = next((c for c in commands if str(c.get("node_id") or "") == device_id), None)
+                latest_command_id = _safe_text((latest_command or {}).get("command_id"), 120) or None
+                latest_invite_id = None
+                if latest_invite and _safe_text(latest_invite.get("hostname") or latest_invite.get("node_id"), 120).lower() in {
+                    device_id.lower(), _safe_text(item.get("name"), 120).lower()
+                }:
+                    latest_invite_id = _safe_text(latest_invite.get("invite_id"), 120) or None
+                latest_recovery = next((event for event in recovery_events if str(event.get("device_id") or "") == device_id), None)
+                latest_recovery_id = None
+                if latest_recovery:
+                    latest_recovery_id = hashlib.sha256(
+                        json.dumps(latest_recovery, sort_keys=True).encode("utf-8")
+                    ).hexdigest()[:24]
+                ui_state = _ui_state(item, remote_ready)
+                conn.execute(
+                    """
+                    INSERT INTO device_current_state(
+                        device_id, device_name, role, ui_state, connection_state,
+                        agent_status, supervisor_status, pm2_status, remote_access_ready,
+                        protected_server_host, source_heartbeat_id, latest_command_id,
+                        latest_invite_id, latest_recovery_id, source_revision,
+                        last_seen_at, last_seen_epoch_ms, updated_at, updated_at_epoch_ms, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(device_id) DO UPDATE SET
+                        device_name=excluded.device_name, role=excluded.role,
+                        ui_state=excluded.ui_state, connection_state=excluded.connection_state,
+                        agent_status=excluded.agent_status, supervisor_status=excluded.supervisor_status,
+                        pm2_status=excluded.pm2_status, remote_access_ready=excluded.remote_access_ready,
+                        protected_server_host=excluded.protected_server_host,
+                        source_heartbeat_id=excluded.source_heartbeat_id,
+                        latest_command_id=excluded.latest_command_id,
+                        latest_invite_id=excluded.latest_invite_id,
+                        latest_recovery_id=excluded.latest_recovery_id,
+                        source_revision=excluded.source_revision,
+                        last_seen_at=excluded.last_seen_at,
+                        last_seen_epoch_ms=excluded.last_seen_epoch_ms,
+                        updated_at=excluded.updated_at,
+                        updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                        summary=excluded.summary
+                    WHERE device_current_state.device_name IS NOT excluded.device_name
+                       OR device_current_state.role IS NOT excluded.role
+                       OR device_current_state.ui_state IS NOT excluded.ui_state
+                       OR device_current_state.connection_state IS NOT excluded.connection_state
+                       OR device_current_state.agent_status IS NOT excluded.agent_status
+                       OR device_current_state.supervisor_status IS NOT excluded.supervisor_status
+                       OR device_current_state.pm2_status IS NOT excluded.pm2_status
+                       OR device_current_state.remote_access_ready IS NOT excluded.remote_access_ready
+                       OR device_current_state.protected_server_host IS NOT excluded.protected_server_host
+                       OR device_current_state.source_heartbeat_id IS NOT excluded.source_heartbeat_id
+                       OR device_current_state.latest_command_id IS NOT excluded.latest_command_id
+                       OR device_current_state.latest_invite_id IS NOT excluded.latest_invite_id
+                       OR device_current_state.latest_recovery_id IS NOT excluded.latest_recovery_id
+                       OR device_current_state.last_seen_epoch_ms IS NOT excluded.last_seen_epoch_ms
+                       OR device_current_state.summary IS NOT excluded.summary
+                    """,
+                    (device_id, _safe_text(item.get("name") or device_id, 120), _safe_text(item.get("role") or "compute", 40),
+                     ui_state, connection_state, agent_status, supervisor_status, pm2_status,
+                     int(remote_ready), int(protected), heartbeat_id, latest_command_id,
+                     latest_invite_id, latest_recovery_id, int(item.get("revision") or 0),
+                     last_seen, last_seen_epoch, now, now_epoch, summary),
+                )
+                changed = _changes(conn) or changed
+
+            if device_ids:
+                placeholders = ",".join("?" for _ in device_ids)
+                conn.execute(
+                    f"DELETE FROM device_current_state WHERE device_id NOT IN ({placeholders})",
+                    tuple(device_ids),
+                )
+                changed = _changes(conn) or changed
+            else:
+                conn.execute("DELETE FROM device_current_state")
+                changed = _changes(conn) or changed
+
+            if latest_invite:
+                invite_id = _safe_text(latest_invite.get("invite_id"), 120)
+                if invite_id:
+                    invite_updated = str(latest_invite.get("updated_at") or latest_invite.get("created_at") or now)
+                    conn.execute(
+                        """
+                        INSERT INTO device_invite_lifecycle(
+                            invite_id, device_id, device_name, role, status, created_at,
+                            expires_at, updated_at, updated_at_epoch_ms, source_revision, summary
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+                        ON CONFLICT(invite_id) DO UPDATE SET
+                            device_id=excluded.device_id, device_name=excluded.device_name,
+                            role=excluded.role, status=excluded.status,
+                            expires_at=excluded.expires_at, updated_at=excluded.updated_at,
+                            updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                            summary=excluded.summary
+                        WHERE device_invite_lifecycle.status IS NOT excluded.status
+                           OR device_invite_lifecycle.device_id IS NOT excluded.device_id
+                           OR device_invite_lifecycle.expires_at IS NOT excluded.expires_at
+                        """,
+                        (invite_id, _safe_text(latest_invite.get("node_id") or latest_invite.get("hostname"), 120),
+                         _safe_text(latest_invite.get("hostname") or latest_invite.get("node_id"), 120),
+                         _safe_text(latest_invite.get("role"), 40), _safe_text(latest_invite.get("status") or "pending", 32),
+                         latest_invite.get("created_at"), latest_invite.get("expires_at"), invite_updated,
+                         _epoch_ms(invite_updated), "Invite lifecycle recorded"),
+                    )
+                    changed = _changes(conn) or changed
+
+            for command in commands[:500]:
+                changed = self._upsert_command_row(conn, command, entity_type="device") or changed
+
+            for event in recovery_events[:500]:
+                device_id = _safe_text(event.get("device_id"), 120)
+                if not device_id:
+                    continue
+                created_at = str(event.get("created_at") or event.get("timestamp") or now)
+                recovery_id = hashlib.sha256(
+                    json.dumps(event, sort_keys=True).encode("utf-8")
+                ).hexdigest()[:24]
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO device_recovery_history(
+                        recovery_id, device_id, action, status, command_id,
+                        created_at, created_at_epoch_ms, source_ref, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (recovery_id, device_id, _safe_text(event.get("event_type") or "device_recovery", 80),
+                     _safe_text(event.get("status") or "unknown", 32), _safe_text(event.get("command_id"), 120) or None,
+                     created_at, _epoch_ms(created_at), "fleet_device_events.json", _safe_text(event.get("summary") or event.get("reason"))),
+                )
+                changed = _changes(conn) or changed
+
+            conn.execute(
+                "DELETE FROM device_heartbeats WHERE heartbeat_row_id NOT IN "
+                "(SELECT heartbeat_row_id FROM device_heartbeats ORDER BY observed_at_epoch_ms DESC, heartbeat_row_id DESC LIMIT 4096)"
+            )
+            changed = _changes(conn) or changed
+            conn.execute(
+                "DELETE FROM device_recovery_history WHERE recovery_id NOT IN "
+                "(SELECT recovery_id FROM device_recovery_history ORDER BY created_at_epoch_ms DESC, recovery_id DESC LIMIT 1000)"
+            )
+            changed = _changes(conn) or changed
+            return _bump_revision(conn, "fleet", now) if changed else _domain_revision(conn, "fleet")
+
+        try:
+            revision = SQLITE_WRITER.submit("fleet.projection", write, deadline_seconds=3.0)
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return self.domain_revision("fleet")
+        return int(revision)
+
+    def _upsert_command_row(
+        self, conn: sqlite3.Connection, command: dict[str, Any], *, entity_type: str
+    ) -> bool:
+        command_id = _safe_text(command.get("command_id") or command.get("job_id"), 120)
+        if not command_id:
+            return False
+        created_at = str(command.get("created_at") or command.get("queued_at") or _utc_now())
+        updated_at = str(command.get("updated_at") or command.get("finished_at") or created_at)
+        status = _normalize_status(command.get("status"))
+        entity_id = _safe_text(command.get("node_id") or command.get("app_id") or command.get("entity_id") or "control-plane", 120)
+        operation_type = _safe_text(command.get("command") or command.get("action_id") or command.get("operation_type"), 100)
+        conn.execute(
+            """
+            INSERT INTO command_lifecycle(
+                command_id, entity_type, entity_id, operation_type, status,
+                created_at, updated_at, updated_at_epoch_ms, deadline_at,
+                source_ref, summary, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(command_id) DO UPDATE SET
+                status=excluded.status, updated_at=excluded.updated_at,
+                updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                deadline_at=excluded.deadline_at, summary=excluded.summary,
+                metadata_json=excluded.metadata_json
+            WHERE command_lifecycle.status IS NOT excluded.status
+               OR command_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
+               OR command_lifecycle.summary IS NOT excluded.summary
+            """,
+            (command_id, entity_type, entity_id, operation_type, status, created_at,
+             updated_at, _epoch_ms(updated_at), command.get("deadline_at"),
+             _safe_text(command.get("source_ref") or "command-lifecycle", 160),
+             _safe_text(command.get("summary") or command.get("error") or status),
+             _safe_json({"requested_by": command.get("requested_by"), "result_status": (command.get("result") or {}).get("status") if isinstance(command.get("result"), dict) else None})),
+        )
+        return _changes(conn)
+
+    def record_command(
+        self,
+        *,
+        command_id: str,
+        subject: str,
+        status: str,
+        entity_type: str = "control",
+        entity_id: str = "control-plane",
+        summary: str = "",
+        deadline_at: str | None = None,
+    ) -> None:
+        self.initialize()
+        now = _utc_now()
+        command = {
+            "command_id": command_id,
+            "entity_id": entity_id,
+            "operation_type": subject,
+            "status": status,
+            "created_at": now,
+            "updated_at": now,
+            "deadline_at": deadline_at,
+            "summary": summary or status,
+            "source_ref": "FastAPI/NATS",
+        }
+
+        def write(conn: sqlite3.Connection) -> int:
+            changed = self._upsert_command_row(conn, command, entity_type=entity_type)
+            normalized_status = _normalize_status(status)
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO audit_evidence_index(
+                    event_type, entity_type, entity_id, operation_id, status,
+                    evidence_ref, created_at, created_at_epoch_ms, summary
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"command.{normalized_status}",
+                    _safe_text(entity_type, 40),
+                    _safe_text(entity_id, 120),
+                    _safe_text(command_id, 120),
+                    normalized_status,
+                    "FastAPI/NATS",
+                    now,
+                    _epoch_ms(now),
+                    _safe_text(summary or f"Command {normalized_status}."),
+                ),
+            )
+            audit_changed = _changes(conn)
+            conn.execute(
+                "DELETE FROM audit_evidence_index WHERE evidence_index_id NOT IN "
+                "(SELECT evidence_index_id FROM audit_evidence_index "
+                "ORDER BY created_at_epoch_ms DESC, evidence_index_id DESC LIMIT 5000)"
+            )
+            audit_changed = _changes(conn) or audit_changed
+            if audit_changed:
+                _bump_revision(conn, "audit", now)
+            return (
+                _bump_revision(conn, "commands", now)
+                if changed
+                else _domain_revision(conn, "commands")
+            )
+
+        try:
+            SQLITE_WRITER.submit("commands.lifecycle", write, deadline_seconds=0.5)
+        except Exception:
+            return
+
+    def project_apps(self, payload: dict[str, Any]) -> int:
+        self.initialize()
+        apps = [item for item in (payload.get("apps") or payload.get("items") or []) if isinstance(item, dict)]
+        now = str(payload.get("updated_at") or _utc_now())
+        now_epoch = _epoch_ms(now)
+
+        def write(conn: sqlite3.Connection) -> int:
+            changed = False
+            app_ids: list[str] = []
+            for app in apps:
+                app_id = _safe_text(app.get("app_id") or app.get("id"), 120)
+                if not app_id:
+                    continue
+                app_ids.append(app_id)
+                actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
+                current = app.get("current_action") if isinstance(app.get("current_action"), dict) else {}
+                latest_action_id = _safe_text(current.get("action_id"), 120) or None
+                latest_action_status = _normalize_status(current.get("status")) if current else None
+                backup = app.get("backup") if isinstance(app.get("backup"), dict) else {}
+                latest_backup_id = _safe_text(backup.get("latest_backup_id"), 120) or None
+                conn.execute(
+                    """
+                    INSERT INTO app_current_state(
+                        app_id, app_name, status, installed, health_state,
+                        latest_action_id, latest_action_status, latest_backup_id,
+                        source_revision, updated_at, updated_at_epoch_ms, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(app_id) DO UPDATE SET
+                        app_name=excluded.app_name, status=excluded.status,
+                        installed=excluded.installed, health_state=excluded.health_state,
+                        latest_action_id=excluded.latest_action_id,
+                        latest_action_status=excluded.latest_action_status,
+                        latest_backup_id=excluded.latest_backup_id,
+                        updated_at=excluded.updated_at,
+                        updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                        summary=excluded.summary
+                    WHERE app_current_state.app_name IS NOT excluded.app_name
+                       OR app_current_state.status IS NOT excluded.status
+                       OR app_current_state.installed IS NOT excluded.installed
+                       OR app_current_state.health_state IS NOT excluded.health_state
+                       OR app_current_state.latest_action_id IS NOT excluded.latest_action_id
+                       OR app_current_state.latest_action_status IS NOT excluded.latest_action_status
+                       OR app_current_state.latest_backup_id IS NOT excluded.latest_backup_id
+                       OR app_current_state.summary IS NOT excluded.summary
+                    """,
+                    (app_id, _safe_text(app.get("name") or app_id, 120), _safe_text(app.get("status") or "unknown", 32),
+                     int(bool(app.get("installed"))), _safe_text((app.get("security") or {}).get("status") if isinstance(app.get("security"), dict) else app.get("status"), 32),
+                     latest_action_id, latest_action_status, latest_backup_id, int(app.get("revision") or 0),
+                     now, now_epoch, _safe_text(app.get("summary"))),
+                )
+                changed = _changes(conn) or changed
+                for action_id, action in list(actions.items())[:64]:
+                    if not isinstance(action, dict):
+                        continue
+                    action_updated = str(action.get("last_ran_at") or action.get("updated_at") or now)
+                    operation_id = _safe_text(action.get("operation_id") or action.get("receipt_id"), 120)
+                    if not operation_id:
+                        operation_id = hashlib.sha256(
+                            f"{app_id}:{action_id}:{action_updated}:{action.get('status')}".encode("utf-8")
+                        ).hexdigest()[:24]
+                    conn.execute(
+                        """
+                        INSERT INTO app_action_lifecycle(
+                            operation_id, app_id, action_id, status, created_at,
+                            updated_at, updated_at_epoch_ms, source_ref, summary, metadata_json
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(operation_id) DO UPDATE SET
+                            status=excluded.status, updated_at=excluded.updated_at,
+                            updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                            summary=excluded.summary, metadata_json=excluded.metadata_json
+                        WHERE app_action_lifecycle.status IS NOT excluded.status
+                           OR app_action_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
+                           OR app_action_lifecycle.summary IS NOT excluded.summary
+                        """,
+                        (operation_id, app_id, _safe_text(action_id, 100), _normalize_status(action.get("status")),
+                         str(action.get("first_ran_at") or action_updated), action_updated, _epoch_ms(action_updated),
+                         _safe_text(action.get("evidence_ref") or "app-lifecycle", 160),
+                         _safe_text(action.get("last_result") or action.get("summary") or action.get("disabled_reason")),
+                         _safe_json({"enabled": bool(action.get("enabled")), "category": action.get("category"), "risk": action.get("risk")})),
+                    )
+                    changed = _changes(conn) or changed
+            if app_ids:
+                placeholders = ",".join("?" for _ in app_ids)
+                conn.execute(
+                    f"DELETE FROM app_current_state WHERE app_id NOT IN ({placeholders})",
+                    tuple(app_ids),
+                )
+                changed = _changes(conn) or changed
+            conn.execute(
+                "DELETE FROM app_action_lifecycle WHERE operation_id NOT IN "
+                "(SELECT operation_id FROM app_action_lifecycle ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 2000)"
+            )
+            changed = _changes(conn) or changed
+            return _bump_revision(conn, "apps", now) if changed else _domain_revision(conn, "apps")
+
+        try:
+            return int(SQLITE_WRITER.submit("apps.projection", write, deadline_seconds=3.0))
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return self.domain_revision("apps")
+
+    def project_recovery(self, payload: dict[str, Any]) -> int:
+        self.initialize()
+        now = str(payload.get("updated_at") or payload.get("last_checked_at") or _utc_now())
+        now_epoch = _epoch_ms(now)
+        latest_backup = payload.get("last_backup") if isinstance(payload.get("last_backup"), dict) else payload.get("latest_backup") if isinstance(payload.get("latest_backup"), dict) else {}
+        preview = payload.get("latest_restore_preview") if isinstance(payload.get("latest_restore_preview"), dict) else {}
+        restore = payload.get("last_restore") if isinstance(payload.get("last_restore"), dict) else {}
+        maintenance = payload.get("maintenance") if isinstance(payload.get("maintenance"), dict) else {}
+        db_protection = payload.get("database_protection") if isinstance(payload.get("database_protection"), dict) else {}
+        active = payload.get("active_operation") if isinstance(payload.get("active_operation"), dict) else db_protection.get("active_restore") if isinstance(db_protection.get("active_restore"), dict) else {}
+
+        def write(conn: sqlite3.Connection) -> int:
+            changed = False
+            backup_id = _safe_text(latest_backup.get("backup_id") or latest_backup.get("id"), 120)
+            if backup_id:
+                backup_updated = str(latest_backup.get("verified_at") or latest_backup.get("created_at") or now)
+                conn.execute(
+                    """
+                    INSERT INTO backup_manifest_index(
+                        backup_id, backup_type, status, verification_status,
+                        created_at, verified_at, size_bytes, source_ref,
+                        updated_at, updated_at_epoch_ms, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(backup_id) DO UPDATE SET
+                        status=excluded.status,
+                        verification_status=excluded.verification_status,
+                        verified_at=excluded.verified_at,
+                        size_bytes=excluded.size_bytes,
+                        updated_at=excluded.updated_at,
+                        updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                        summary=excluded.summary
+                    WHERE backup_manifest_index.status IS NOT excluded.status
+                       OR backup_manifest_index.verification_status IS NOT excluded.verification_status
+                       OR backup_manifest_index.verified_at IS NOT excluded.verified_at
+                       OR backup_manifest_index.size_bytes IS NOT excluded.size_bytes
+                       OR backup_manifest_index.summary IS NOT excluded.summary
+                    """,
+                    (backup_id, _safe_text(latest_backup.get("backup_type") or "lite", 40),
+                     _safe_text(latest_backup.get("status") or "unknown", 32),
+                     _safe_text(latest_backup.get("verification_status") or "unknown", 32),
+                     latest_backup.get("created_at"), latest_backup.get("verified_at"), int(latest_backup.get("size_bytes") or 0),
+                     _safe_text(latest_backup.get("manifest") or "backup-manifest", 160), backup_updated,
+                     _epoch_ms(backup_updated), _safe_text(latest_backup.get("summary"))),
+                )
+                changed = _changes(conn) or changed
+
+            operations: list[tuple[str, str, dict[str, Any]]] = []
+            for operation_type, item in (("active", active), ("restore_preview", preview), ("restore", restore)):
+                if item:
+                    operation_id = _safe_text(item.get("operation_id") or item.get("restore_id") or item.get("preview_id") or item.get("command_id"), 120)
+                    if operation_id:
+                        operations.append((operation_type, operation_id, item))
+            for operation_type, operation_id, item in operations:
+                operation_updated = str(item.get("updated_at") or item.get("completed_at") or item.get("created_at") or now)
+                conn.execute(
+                    """
+                    INSERT INTO recovery_operations(
+                        operation_id, operation_type, status, backup_id, preview_id,
+                        created_at, updated_at, updated_at_epoch_ms, source_ref,
+                        summary, metadata_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(operation_id) DO UPDATE SET
+                        status=excluded.status, updated_at=excluded.updated_at,
+                        updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                        summary=excluded.summary, metadata_json=excluded.metadata_json
+                    WHERE recovery_operations.status IS NOT excluded.status
+                       OR recovery_operations.updated_at_epoch_ms < excluded.updated_at_epoch_ms
+                       OR recovery_operations.summary IS NOT excluded.summary
+                    """,
+                    (operation_id, operation_type, _normalize_status(item.get("status") or item.get("state") or item.get("phase")),
+                     _safe_text(item.get("backup_id"), 120) or None, _safe_text(item.get("preview_id"), 120) or None,
+                     str(item.get("created_at") or operation_updated), operation_updated, _epoch_ms(operation_updated),
+                     "recovery-projection", _safe_text(item.get("summary")),
+                     _safe_json({"phase": item.get("phase"), "rollback_available": item.get("rollback_available"), "verification_status": item.get("verification_status")})),
+                )
+                changed = _changes(conn) or changed
+
+            active_id = operations[0][1] if operations and operations[0][0] == "active" else None
+            maintenance_status = _safe_text(maintenance.get("status") or ("active" if maintenance.get("active") else "idle"), 32)
+            conn.execute(
+                """
+                INSERT INTO recovery_current_state(
+                    singleton_id, status, active_operation_id, latest_backup_id,
+                    latest_preview_id, latest_restore_id, maintenance_status,
+                    source_revision, updated_at, updated_at_epoch_ms, summary
+                ) VALUES (1, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
+                ON CONFLICT(singleton_id) DO UPDATE SET
+                    status=excluded.status,
+                    active_operation_id=excluded.active_operation_id,
+                    latest_backup_id=excluded.latest_backup_id,
+                    latest_preview_id=excluded.latest_preview_id,
+                    latest_restore_id=excluded.latest_restore_id,
+                    maintenance_status=excluded.maintenance_status,
+                    updated_at=excluded.updated_at,
+                    updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                    summary=excluded.summary
+                WHERE recovery_current_state.status IS NOT excluded.status
+                   OR recovery_current_state.active_operation_id IS NOT excluded.active_operation_id
+                   OR recovery_current_state.latest_backup_id IS NOT excluded.latest_backup_id
+                   OR recovery_current_state.latest_preview_id IS NOT excluded.latest_preview_id
+                   OR recovery_current_state.latest_restore_id IS NOT excluded.latest_restore_id
+                   OR recovery_current_state.maintenance_status IS NOT excluded.maintenance_status
+                   OR recovery_current_state.summary IS NOT excluded.summary
+                """,
+                (_safe_text(payload.get("status") or "unknown", 32), active_id, backup_id or None,
+                 _safe_text(preview.get("preview_id"), 120) or None, _safe_text(restore.get("restore_id"), 120) or None,
+                 maintenance_status, now, now_epoch, _safe_text(payload.get("summary"))),
+            )
+            changed = _changes(conn) or changed
+            conn.execute(
+                "DELETE FROM recovery_operations WHERE operation_id NOT IN "
+                "(SELECT operation_id FROM recovery_operations ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 1000)"
+            )
+            changed = _changes(conn) or changed
+            return _bump_revision(conn, "recovery", now) if changed else _domain_revision(conn, "recovery")
+
+        try:
+            return int(SQLITE_WRITER.submit("recovery.projection", write, deadline_seconds=3.0))
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return self.domain_revision("recovery")
+
+    @staticmethod
+    def _history_result(
+        rows: list[sqlite3.Row],
+        *,
+        limit: int,
+        epoch_key: str,
+        id_key: str,
+        revision: int,
+        wait_ms: float,
+        query_ms: float,
+    ) -> dict[str, Any]:
+        bounded_limit = max(1, min(int(limit), 100))
+        has_more = len(rows) > bounded_limit
+        visible = rows[:bounded_limit]
+        items = [dict(row) for row in visible]
+        next_cursor = (
+            _encode_cursor(int(visible[-1][epoch_key]), str(visible[-1][id_key]))
+            if has_more and visible
+            else None
+        )
+        for item in items:
+            metadata_json = item.pop("metadata_json", None)
+            if metadata_json:
+                try:
+                    item["metadata"] = json.loads(str(metadata_json))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    item["metadata"] = {}
+        return {
+            "items": items,
+            "count": len(items),
+            "has_more": has_more,
+            "next_cursor": next_cursor,
+            "source_revision": int(revision),
+            "connection_wait_ms": round(wait_ms, 3),
+            "sqlite_query_ms": round(query_ms, 3),
+        }
+
+    def app_action_history(
+        self, app_id: str, *, limit: int = 20, cursor: str = ""
+    ) -> dict[str, Any]:
+        self.initialize()
+        normalized_app = _safe_text(app_id, 120)
+        if not normalized_app:
+            raise ValueError("app_id is required")
+        bounded_limit = max(1, min(int(limit), 100))
+        decoded = _decode_cursor(cursor)
+
+        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+            params: list[Any] = [normalized_app]
+            cursor_clause = ""
+            if decoded is not None:
+                cursor_clause = (
+                    " AND (updated_at_epoch_ms < ? OR "
+                    "(updated_at_epoch_ms = ? AND operation_id < ?))"
+                )
+                params.extend([decoded[0], decoded[0], decoded[1]])
+            params.append(bounded_limit + 1)
+            return list(
+                conn.execute(
+                    "SELECT operation_id,app_id,action_id,status,created_at,updated_at,"
+                    "updated_at_epoch_ms,source_ref,summary,metadata_json "
+                    "FROM app_action_lifecycle WHERE app_id=?"
+                    + cursor_clause
+                    + " ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT ?",
+                    tuple(params),
+                )
+            )
+
+        rows, wait_ms, query_ms = self._read(read)
+        return self._history_result(
+            rows, limit=bounded_limit, epoch_key="updated_at_epoch_ms",
+            id_key="operation_id", revision=self.domain_revision("apps"),
+            wait_ms=wait_ms, query_ms=query_ms,
+        )
+
+    def device_recovery_history(
+        self, device_id: str, *, limit: int = 20, cursor: str = ""
+    ) -> dict[str, Any]:
+        self.initialize()
+        normalized_device = _safe_text(device_id, 120)
+        if not normalized_device:
+            raise ValueError("device_id is required")
+        bounded_limit = max(1, min(int(limit), 100))
+        decoded = _decode_cursor(cursor)
+
+        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+            params: list[Any] = [normalized_device]
+            cursor_clause = ""
+            if decoded is not None:
+                cursor_clause = (
+                    " AND (created_at_epoch_ms < ? OR "
+                    "(created_at_epoch_ms = ? AND recovery_id < ?))"
+                )
+                params.extend([decoded[0], decoded[0], decoded[1]])
+            params.append(bounded_limit + 1)
+            return list(
+                conn.execute(
+                    "SELECT recovery_id,device_id,action,status,command_id,created_at,"
+                    "created_at_epoch_ms,source_ref,summary "
+                    "FROM device_recovery_history WHERE device_id=?"
+                    + cursor_clause
+                    + " ORDER BY created_at_epoch_ms DESC, recovery_id DESC LIMIT ?",
+                    tuple(params),
+                )
+            )
+
+        rows, wait_ms, query_ms = self._read(read)
+        return self._history_result(
+            rows, limit=bounded_limit, epoch_key="created_at_epoch_ms",
+            id_key="recovery_id", revision=self.domain_revision("fleet"),
+            wait_ms=wait_ms, query_ms=query_ms,
+        )
+
+    def command_history(
+        self, *, entity_type: str = "", entity_id: str = "", limit: int = 20, cursor: str = ""
+    ) -> dict[str, Any]:
+        self.initialize()
+        bounded_limit = max(1, min(int(limit), 100))
+        decoded = _decode_cursor(cursor)
+        safe_type = _safe_text(entity_type, 40)
+        safe_id = _safe_text(entity_id, 120)
+
+        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+            clauses: list[str] = []
+            params: list[Any] = []
+            if safe_type:
+                clauses.append("entity_type=?")
+                params.append(safe_type)
+            if safe_id:
+                clauses.append("entity_id=?")
+                params.append(safe_id)
+            if decoded is not None:
+                clauses.append(
+                    "(updated_at_epoch_ms < ? OR "
+                    "(updated_at_epoch_ms = ? AND command_id < ?))"
+                )
+                params.extend([decoded[0], decoded[0], decoded[1]])
+            where = " WHERE " + " AND ".join(clauses) if clauses else ""
+            params.append(bounded_limit + 1)
+            return list(
+                conn.execute(
+                    "SELECT command_id,entity_type,entity_id,operation_type,status,"
+                    "created_at,updated_at,updated_at_epoch_ms,deadline_at,source_ref,"
+                    "summary,metadata_json FROM command_lifecycle"
+                    + where
+                    + " ORDER BY updated_at_epoch_ms DESC, command_id DESC LIMIT ?",
+                    tuple(params),
+                )
+            )
+
+        rows, wait_ms, query_ms = self._read(read)
+        return self._history_result(
+            rows, limit=bounded_limit, epoch_key="updated_at_epoch_ms",
+            id_key="command_id", revision=self.domain_revision("commands"),
+            wait_ms=wait_ms, query_ms=query_ms,
+        )
+
+    def recovery_operation_history(
+        self, *, limit: int = 20, cursor: str = ""
+    ) -> dict[str, Any]:
+        self.initialize()
+        bounded_limit = max(1, min(int(limit), 100))
+        decoded = _decode_cursor(cursor)
+
+        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+            params: list[Any] = []
+            cursor_clause = ""
+            if decoded is not None:
+                cursor_clause = (
+                    " WHERE (updated_at_epoch_ms < ? OR "
+                    "(updated_at_epoch_ms = ? AND operation_id < ?))"
+                )
+                params.extend([decoded[0], decoded[0], decoded[1]])
+            params.append(bounded_limit + 1)
+            return list(
+                conn.execute(
+                    "SELECT operation_id,operation_type,status,backup_id,preview_id,"
+                    "created_at,updated_at,updated_at_epoch_ms,source_ref,summary,metadata_json "
+                    "FROM recovery_operations"
+                    + cursor_clause
+                    + " ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT ?",
+                    tuple(params),
+                )
+            )
+
+        rows, wait_ms, query_ms = self._read(read)
+        return self._history_result(
+            rows, limit=bounded_limit, epoch_key="updated_at_epoch_ms",
+            id_key="operation_id", revision=self.domain_revision("recovery"),
+            wait_ms=wait_ms, query_ms=query_ms,
+        )
+
+    def fleet_rows(self) -> list[dict[str, Any]]:
+        self.initialize()
+        rows, _, _ = self._read(
+            lambda conn: [dict(row) for row in conn.execute(
+                "SELECT * FROM device_current_state "
+                "ORDER BY protected_server_host DESC, device_name, device_id"
+            )]
+        )
+        return rows
+
+    def query_plan_evidence(self) -> dict[str, list[str]]:
+        self.initialize()
+        queries: dict[str, tuple[str, tuple[Any, ...]]] = {
+            "latest_heartbeat": (
+                "SELECT heartbeat_id FROM device_heartbeats WHERE device_id=? ORDER BY observed_at_epoch_ms DESC, heartbeat_row_id DESC LIMIT 1",
+                ("device-1",),
+            ),
+            "fleet_summary_order": (
+                "SELECT device_id FROM device_current_state ORDER BY protected_server_host DESC, device_name, device_id LIMIT 100",
+                (),
+            ),
+            "active_command": (
+                "SELECT command_id FROM command_lifecycle INDEXED BY idx_commands_entity_active_latest WHERE entity_type=? AND entity_id=? AND status IN ('queued','published','received','accepted','running') ORDER BY updated_at_epoch_ms DESC, command_id DESC LIMIT 1",
+                ("device", "device-1"),
+            ),
+            "latest_supervisor": (
+                "SELECT supervisor_status FROM device_heartbeats WHERE device_id=? ORDER BY observed_at_epoch_ms DESC, heartbeat_row_id DESC LIMIT 1",
+                ("device-1",),
+            ),
+            "stale_devices": (
+                "SELECT device_id FROM device_current_state INDEXED BY idx_device_current_stale_order WHERE connection_state IN ('offline','stale') AND last_seen_epoch_ms < ? ORDER BY last_seen_epoch_ms, device_id LIMIT 100",
+                (_epoch_ms() - 120000,),
+            ),
+            "invite_lookup": (
+                "SELECT invite_id FROM device_invite_lifecycle WHERE device_id=? AND status IN ('pending','accepted','joining') ORDER BY updated_at_epoch_ms DESC LIMIT 1",
+                ("device-1",),
+            ),
+            "device_recovery_history": (
+                "SELECT recovery_id FROM device_recovery_history WHERE device_id=? ORDER BY created_at_epoch_ms DESC, recovery_id DESC LIMIT 20",
+                ("device-1",),
+            ),
+            "app_action_history": (
+                "SELECT operation_id FROM app_action_lifecycle WHERE app_id=? ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 20",
+                ("photoprism",),
+            ),
+            "command_history": (
+                "SELECT command_id FROM command_lifecycle WHERE entity_type=? AND entity_id=? ORDER BY updated_at_epoch_ms DESC, command_id DESC LIMIT 20",
+                ("device", "device-1"),
+            ),
+            "recovery_operation_history": (
+                "SELECT operation_id FROM recovery_operations ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 20",
+                (),
+            ),
+            "backup_manifest_history": (
+                "SELECT backup_id FROM backup_manifest_index ORDER BY updated_at_epoch_ms DESC, backup_id DESC LIMIT 20",
+                (),
+            ),
+        }
+
+        def collect(conn: sqlite3.Connection) -> dict[str, list[str]]:
+            return {
+                name: [
+                    str(row[3])
+                    for row in conn.execute("EXPLAIN QUERY PLAN " + sql, params)
+                ]
+                for name, (sql, params) in queries.items()
+            }
+
+        plans, _, _ = self._read(collect)
+        return plans
+
+    def metrics(self) -> dict[str, Any]:
+        return {"writer": SQLITE_WRITER.snapshot(), "reads": SQLITE_READS.snapshot()}
+
+
+CONTROL_PLANE = ControlPlaneProjectionStore()
+
+
+def invalidate_control_plane_after_database_replacement() -> None:
+    CONTROL_PLANE.invalidate_after_database_replacement()
