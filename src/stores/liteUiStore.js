@@ -1,7 +1,7 @@
-import { normalizeLiteScreenId } from '../lite/liteNavigationConfig.js';
+import { initialLiteScreenIdFromLocation, normalizeLiteScreenId } from '../lite/liteNavigationConfig.js';
 import { create } from 'zustand';
 
-const DEFAULT_TAB = 'home';
+const DEFAULT_TAB = initialLiteScreenIdFromLocation();
 const DEFAULT_MANAGE_SECTION = 'media';
 const DEFAULT_SECURITY_PROFILE = 'quick';
 const DEFAULT_SECURITY_MANAGE_SECTION = 'overview';

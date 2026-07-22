@@ -5,7 +5,11 @@ import App from './App.jsx';
 import { ToastProvider } from './components/ToastProvider.jsx';
 import { ExperienceModeProvider } from './context/ExperienceModeContext.jsx';
 import { GovernanceModeProvider } from './context/GovernanceModeContext.jsx';
-import { announceLiteServiceWorkerUpdate, pruneLiteRuntimeCaches } from './lib/liteServiceWorkerRuntime.js';
+import {
+  announceLiteServiceWorkerUpdate,
+  createLiteControlledServiceWorkerUpdate,
+  pruneLiteRuntimeCaches,
+} from './lib/liteServiceWorkerRuntime.js';
 import './index.css';
 
 let updateSW = () => {};
@@ -16,7 +20,10 @@ if (typeof window !== 'undefined') {
       pruneLiteRuntimeCaches();
     },
     onNeedRefresh() {
-      announceLiteServiceWorkerUpdate(() => updateSW(true));
+      announceLiteServiceWorkerUpdate(createLiteControlledServiceWorkerUpdate({
+        updateServiceWorker: (reloadPage = false) => updateSW(reloadPage),
+        buildId: import.meta.env.VITE_POCKETLAB_BUILD_ID || 'development',
+      }));
     },
     onOfflineReady() {
       // no-op: the release workflow keeps the app ready for offline use

@@ -21618,3 +21618,110 @@ textarea {
     transition: none !important;
   }
 }
+
+/* Align the pre-React document surface with the verified Lite daylight shell. */
+html.lite-install-light-shell {
+  color-scheme: light;
+  background: #f8fafc;
+}
+
+html.lite-install-light-shell body {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* Phase 4 N6B — native install, share, and desktop overlay surface. */
+.lite-native-install-surface {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.lite-native-surface-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  min-height: 2.5rem;
+  padding: 0.58rem 0.72rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+
+.lite-native-surface-button:hover {
+  border-color: rgba(129, 140, 248, 0.45);
+  background: rgba(99, 102, 241, 0.14);
+}
+
+.lite-native-surface-button:active {
+  transform: translateY(1px);
+}
+
+.lite-native-surface-button:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.34);
+  outline-offset: 2px;
+}
+
+.lite-native-surface-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.lite-native-surface-button--install {
+  border-color: rgba(79, 70, 229, 0.34);
+  background: #4f46e5;
+  color: #fff;
+}
+
+.theme-pocket-lite-daylight .lite-native-surface-button {
+  border-color: rgba(100, 116, 139, 0.24);
+  background: rgba(255, 255, 255, 0.82);
+  color: #334155;
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.07);
+}
+
+.theme-pocket-lite-daylight .lite-native-surface-button--install {
+  border-color: #4338ca;
+  background: #4f46e5;
+  color: #fff;
+}
+
+@media (display-mode: window-controls-overlay) {
+  .pocket-app-shell > header {
+    padding-top: max(env(safe-area-inset-top, 0px), env(titlebar-area-height, 0px));
+  }
+
+  .pocket-app-shell > header > div {
+    padding-left: max(1rem, env(titlebar-area-x, 0px));
+    padding-right: max(1rem, calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw)));
+  }
+}
+
+@media (max-width: 430px) {
+  .lite-native-surface-button {
+    min-width: 2.5rem;
+    padding-inline: 0.62rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .lite-native-install-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-native-surface-button {
+    transition: none !important;
+  }
+}

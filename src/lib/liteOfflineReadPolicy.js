@@ -6,7 +6,7 @@ export const LITE_WORKBOX_CACHE_NAMES = Object.freeze({
   appShell: `pocketlab-lite-app-shell-v${LITE_SAFE_READ_CACHE_VERSION}`,
   safeReads: `pocketlab-lite-safe-read-api-v${LITE_SAFE_READ_CACHE_VERSION}`,
   staticAssets: 'pocketlab-lite-static-assets-v3',
-  images: 'pocketlab-lite-icons-images-v2',
+  images: 'pocketlab-lite-icons-images-v3',
 });
 
 export const LITE_SAFE_RUNTIME_READ_MAX_AGE_SECONDS = 5 * 60;

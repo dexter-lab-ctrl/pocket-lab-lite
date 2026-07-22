@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   announceLiteServiceWorkerUpdate,
+  createLiteControlledServiceWorkerUpdate,
   applyLiteServiceWorkerUpdate,
   getLiteNavigationPreloadDiagnostics,
   getLiteServiceWorkerUpdateState,
+  isLiteTextEntryElement,
   liteQueryCacheHasRiskyWorkflow,
   pruneLiteRuntimeCaches,
   resetLiteServiceWorkerRuntimeForTests,
@@ -36,6 +38,53 @@ describe('Lite service-worker runtime guards', () => {
     expect(liteQueryCacheHasRiskyWorkflow([
       { queryKey: ['lite', 'apps', 'lifecycle'], state: { data: { __liteSnapshot: { expired: true }, status: 'running' } } },
     ])).toBe(false);
+  });
+
+
+  it('activates a waiting worker with one confirmed controller-change reload', async () => {
+    const listeners = new Map();
+    const serviceWorker = {
+      addEventListener: (name, listener) => listeners.set(name, listener),
+      removeEventListener: (name, listener) => {
+        if (listeners.get(name) === listener) listeners.delete(name);
+      },
+    };
+    const values = new Map();
+    const storage = {
+      getItem: (key) => values.get(key) || null,
+      setItem: (key, value) => values.set(key, String(value)),
+    };
+    const update = vi.fn(async () => true);
+    const reload = vi.fn();
+    const apply = createLiteControlledServiceWorkerUpdate({
+      updateServiceWorker: update,
+      navigatorObject: { serviceWorker },
+      locationObject: { reload },
+      sessionStorageObject: storage,
+      buildId: 'build-42',
+      timeoutMs: 2_000,
+      now: () => 50_000,
+    });
+
+    const applying = apply();
+    await Promise.resolve();
+    expect(update).toHaveBeenCalledWith(false);
+    listeners.get('controllerchange')?.();
+    await expect(applying).resolves.toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
+    await expect(apply()).resolves.toBe(false);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(values.get('pocketlab:lite-sw-controller-reload'))).toEqual({
+      build_id: 'build-42',
+      applied_at: 50_000,
+    });
+  });
+
+  it('recognizes important text-entry targets for update deferral', () => {
+    expect(isLiteTextEntryElement({ tagName: 'INPUT' })).toBe(true);
+    expect(isLiteTextEntryElement({ tagName: 'TEXTAREA' })).toBe(true);
+    expect(isLiteTextEntryElement({ tagName: 'DIV', isContentEditable: true })).toBe(true);
+    expect(isLiteTextEntryElement({ tagName: 'BUTTON' })).toBe(false);
   });
 
   it('deletes only stale Pocket Lab runtime cache versions', async () => {

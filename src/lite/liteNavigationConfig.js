@@ -7,27 +7,37 @@ import {
   Network,
   ShieldCheck,
 } from 'lucide-react';
+import {
+  DEFAULT_LITE_SCREEN_ID,
+  LITE_SCREEN_METADATA,
+} from './liteNavigationMetadata.js';
 
-export const DEFAULT_LITE_SCREEN_ID = 'home';
+const LITE_SCREEN_ICONS = Object.freeze({
+  home: Activity,
+  catalog: LayoutGrid,
+  identity: Fingerprint,
+  security: ShieldCheck,
+  devices: Network,
+  rules: FileCheck,
+  recovery: Database,
+});
 
-export const NAV_ITEMS = Object.freeze([
-  Object.freeze({ id: 'home', label: 'Home', icon: Activity }),
-  Object.freeze({ id: 'catalog', label: 'App Catalog', icon: LayoutGrid }),
-  Object.freeze({ id: 'identity', label: 'Identity & Access', icon: Fingerprint }),
-  Object.freeze({ id: 'security', label: 'Security', icon: ShieldCheck }),
-  Object.freeze({ id: 'devices', label: 'Devices', icon: Network }),
-  Object.freeze({ id: 'rules', label: 'Rules', icon: FileCheck }),
-  Object.freeze({ id: 'recovery', label: 'Recovery', icon: Database }),
-]);
+export { DEFAULT_LITE_SCREEN_ID } from './liteNavigationMetadata.js';
+export {
+  createLiteScreenLaunchUrl,
+  getLiteManifestShortcutDefinitions,
+  initialLiteScreenIdFromLocation,
+  isLiteScreenId,
+  isLiteShortcutScreenId,
+  normalizeLiteScreenId,
+  parseLiteScreenLaunch,
+  replaceLiteScreenLaunch,
+} from './liteNavigationMetadata.js';
 
-const LITE_SCREEN_IDS = new Set(NAV_ITEMS.map((item) => item.id));
-
-export function isLiteScreenId(value) {
-  return LITE_SCREEN_IDS.has(String(value || '').trim().toLowerCase());
-}
-
-export function normalizeLiteScreenId(value, fallback = DEFAULT_LITE_SCREEN_ID) {
-  const normalized = String(value || '').trim().toLowerCase();
-  if (LITE_SCREEN_IDS.has(normalized)) return normalized;
-  return LITE_SCREEN_IDS.has(fallback) ? fallback : DEFAULT_LITE_SCREEN_ID;
-}
+export const NAV_ITEMS = Object.freeze(
+  LITE_SCREEN_METADATA.map((item) => Object.freeze({
+    id: item.id,
+    label: item.label,
+    icon: LITE_SCREEN_ICONS[item.id],
+  })),
+);
