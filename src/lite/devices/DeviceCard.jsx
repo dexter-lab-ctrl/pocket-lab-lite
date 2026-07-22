@@ -29,6 +29,7 @@ function DeviceCard({
   onRestartAgent,
   onRemoveDevice,
   onOpenDetails,
+  detailsButtonRef = null,
 }) {
   const online = normalizeBackendState(device?.status) === 'ready';
   const linkState = deviceLinkState(device);
@@ -103,7 +104,7 @@ function DeviceCard({
       ) : null}
 
       <div className="lite-device-actions">
-        <LiteButton tone="secondary" onClick={onOpenDetails} aria-expanded={detailsOpen}>
+        <LiteButton tone="secondary" onClick={onOpenDetails} aria-expanded={detailsOpen} buttonRef={detailsButtonRef}>
           {detailsOpen ? 'Hide Details' : 'Details'}
         </LiteButton>
         {canRestart ? (

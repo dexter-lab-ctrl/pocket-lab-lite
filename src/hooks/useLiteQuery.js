@@ -64,7 +64,7 @@ async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET', sn
   try {
     const data = await queryFn();
     if (isLiteNotModified(data)) return data;
-    if (safePath && data && typeof data === 'object' && !isSavedSnapshot(data)) {
+    if (safePath && data && typeof data === 'object' && !data.__liteSnapshot && !isSavedSnapshot(data)) {
       const snapshotPayload = typeof snapshotSelect === 'function' ? applyLiteQuerySelector(snapshotSelect, data) : data;
       writeLiteSnapshot(path, snapshotPayload);
       return data.__liteSnapshot ? data : attachFreshSnapshotMeta(path, data);

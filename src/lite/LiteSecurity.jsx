@@ -38,6 +38,7 @@ import {
   securitySummaryStaleTime,
 } from './security/securityPreload.js';
 import { subscribeLiteSecurityScanCompleted } from '../lib/liteSafeSnapshots.js';
+import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import {
   isLiteSecurityViewLive,
   selectSecurityPollingPolicyView,
@@ -2223,6 +2224,11 @@ export default function SecurityScreen() {
   const activeSecurityRunId = activeSecurityProgressRunId || data?.scan_progress?.run_id || '';
   const scanProgress = activeProfileIsLatest ? selectLiveSecurityProgress(result?.scan_progress, liveSecurityProgressData, data?.scan_progress, activeSecurityRunId) : null;
   const scanInProgress = activeProfileIsLatest && (busy || hasOptimisticSecurityProgress(result) || ['queued', 'accepted', 'running', 'working', 'in_progress'].includes(currentRunStatus));
+  useLiteServiceWorkerUpdateBlocker('security-workflow', Boolean(
+    scanInProgress
+    || liveSecurityProgressData?.active_scan
+    || localSecurityProgressActive
+  ));
   const effectiveBackendReachable = backendReachable !== false || scanInProgress || Boolean(liveSecurityProgressData?.active_scan) || localSecurityProgressActive;
   const liveProgress = liveSecurityProgress(scanProgress, runStatus, busy, progressNow);
   const scanProgressPercent = liveProgress.percent;

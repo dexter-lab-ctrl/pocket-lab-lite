@@ -11,6 +11,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { useLiteRecoveryActions } from '../hooks/useLiteRecoveryActions.js';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import { useLiteRecoveryFlow } from '../hooks/useLiteRecoveryFlow.js';
+import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
@@ -233,6 +234,7 @@ export default function RecoveryScreen() {
   const activePanel = actionPanelMeta[activeActionPanel] || null;
 
   const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
+  useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
   const recoveryReady = !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
   const recoveryStatus = databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
   const recoveryTitle = databaseWriteBlocked

@@ -26,13 +26,16 @@ echo "Pocket Lab Lite validation passed"
 # Pocket Lab Lite network listener regression checks
 START_DASHBOARD_SCRIPT="pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
 
-if ! grep -Fq ':${DASH_PORT} {' "$START_DASHBOARD_SCRIPT"; then
-  echo "ERROR: Lite Caddy generator must emit a host-agnostic :${DASH_PORT} listener"
+# The generator delegates the opening site label to write_caddy_site(),
+# which emits the trailing "{" at runtime. Validate the generator call
+# rather than requiring a literal generated Caddy block in this source.
+if ! grep -Fq 'write_caddy_site ":${DASH_PORT}"' "$START_DASHBOARD_SCRIPT"; then
+  echo 'ERROR: Lite Caddy generator must call write_caddy_site with host-agnostic :${DASH_PORT}'
   exit 1
 fi
 
-if grep -Fq 'http://127.0.0.1:${DASH_PORT} {' "$START_DASHBOARD_SCRIPT"; then
-  echo "ERROR: Lite Caddy generator must not bind dashboard only to 127.0.0.1"
+if grep -Eq 'write_caddy_site[[:space:]]+"?(https?://)?127\.0\.0\.1:\$\{DASH_PORT\}"?' "$START_DASHBOARD_SCRIPT"; then
+  echo 'ERROR: Lite Caddy generator must not bind dashboard only to 127.0.0.1'
   exit 1
 fi
 

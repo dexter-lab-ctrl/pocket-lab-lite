@@ -30,6 +30,7 @@ import {
   startLiteViewTransition,
 } from './liteNavigationRuntime.js';
 import LiteToastHost from './LiteToastHost.jsx';
+import LiteServiceWorkerUpdateNotice from './LiteServiceWorkerUpdateNotice.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
   GlassCard,
@@ -588,6 +589,7 @@ function LiteAppShell() {
       <a href="#pocket-lite-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-indigo-500 focus:px-4 focus:py-2 focus:text-sm focus:font-black focus:text-white">Skip to Pocket Lab Lite content</a>
       <div className="pocket-app-backdrop" aria-hidden="true" />
       <LiteToastHost />
+      <LiteServiceWorkerUpdateNotice />
 
       {!online && (
         <div className="fixed left-1/2 top-4 z-[90] w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2 rounded-3xl border border-slate-300/20 bg-slate-950/95 px-4 py-3 text-slate-100 shadow-2xl shadow-black/40 backdrop-blur-xl" role="status">

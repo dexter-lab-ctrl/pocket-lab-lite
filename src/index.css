@@ -21411,3 +21411,210 @@ textarea {
     animation: none;
   }
 }
+
+/* Pocket Lab Lite N3/N6A: bounded virtual histories, fleets, and safe update delivery. */
+.lite-virtual-list-error {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--lite-surface, #0f172a) 92%, transparent);
+}
+
+.lite-virtual-list-error p {
+  margin: 0;
+}
+
+.lite-virtual-list-error button {
+  min-block-size: 44px;
+  justify-self: start;
+}
+
+.lite-virtual-list-shell {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.lite-virtual-list__normal,
+.lite-virtual-list__measurement-fallback {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lite-virtual-list__viewport {
+  position: relative;
+  inline-size: 100%;
+  block-size: min(var(--lite-virtual-viewport-height, 35rem), 68dvh);
+  min-block-size: 12rem;
+  overflow-y: auto;
+  overflow-x: clip;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  border-radius: 1rem;
+  outline: none;
+  contain: layout paint style;
+  content-visibility: visible !important;
+}
+
+.lite-virtual-list__viewport:focus-visible,
+.lite-virtual-list__load-more:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.72);
+  outline-offset: 0.2rem;
+}
+
+.lite-virtual-list__spacer {
+  position: relative;
+  inline-size: 100%;
+  min-block-size: 1px;
+}
+
+.lite-virtual-list__item {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  min-width: 0;
+  padding-block-end: 0.55rem;
+  content-visibility: visible !important;
+  contain: layout style;
+}
+
+.lite-virtual-list__measurement-fallback {
+  display: grid;
+  gap: 0.55rem;
+  min-height: 12rem;
+}
+
+.lite-virtual-list__load-more {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(37, 99, 235, 0.24);
+  border-radius: 0.85rem;
+  background: rgba(239, 246, 255, 0.92);
+  color: #1d4ed8;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.lite-virtual-list__load-more:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.lite-virtual-list__end {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.theme-pocket-lite-daylight .lite-devices-grid > li {
+  min-width: 0;
+  list-style: none;
+}
+
+.theme-pocket-lite-daylight .lite-devices-grid > li > .lite-device-card {
+  height: 100%;
+}
+
+.theme-pocket-lite-daylight .lite-virtual-list__viewport.lite-devices-virtual-list {
+  display: block;
+  padding-inline: 0.1rem;
+}
+
+.theme-pocket-lite-daylight .lite-virtual-list__viewport.lite-devices-virtual-list .lite-device-card {
+  inline-size: 100%;
+}
+
+.theme-pocket-lite-daylight .lite-history-section-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.42fr) 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  min-width: 0;
+  padding: 0.58rem 0.65rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.theme-pocket-lite-daylight .lite-history-section-list.is-virtualized,
+[data-lite-manage-portal="true"] .lite-history-section-list.is-virtualized {
+  display: block;
+}
+
+.lite-service-worker-update-notice {
+  position: fixed;
+  inset-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  inset-block-end: max(1rem, env(safe-area-inset-bottom));
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(42rem, calc(100vw - 2rem));
+  margin-inline: auto;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.97);
+  color: #0f172a;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.2);
+}
+
+.lite-service-worker-update-notice p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.lite-service-worker-update-notice button {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-weight: 850;
+}
+
+.lite-service-worker-update-notice button:disabled {
+  background: #94a3b8;
+}
+
+@media (max-width: 680px) {
+  .theme-pocket-lite-daylight .lite-history-section-row {
+    grid-template-columns: 1fr;
+  }
+
+  .lite-virtual-list__viewport {
+    block-size: min(var(--lite-virtual-viewport-height, 35rem), 64dvh);
+    scrollbar-gutter: auto;
+  }
+
+  .lite-service-worker-update-notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lite-service-worker-update-notice button {
+    inline-size: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-virtual-list__viewport,
+  .lite-virtual-list__item,
+  .lite-service-worker-update-notice {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -139,6 +139,8 @@ export default function RecoveryActionDetailsLazy({
         technicalDetails={technicalRows({ actionKey, latestBackup, latestPreview, checkpoint, lastRestore, repository, serviceRestart, healthValidation })}
         history={{
           title: 'Recovery history',
+          domain: 'recoveryHistory',
+          datasetKey: `recovery-action:${actionKey || 'unknown'}`,
           summary: historyItems.length ? `${historyItems.length} safe recovery record${historyItems.length === 1 ? '' : 's'} available.` : 'Recovery history is loaded only when opened.',
           items: historyItems,
           enabled: true,

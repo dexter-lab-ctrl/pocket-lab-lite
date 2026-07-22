@@ -4386,7 +4386,7 @@ def test_lite_tanstack_phase_preserves_app_catalog_safety_markers():
     assert "return null;" in ui
     assert "lite-refresh-status-popover" in ui
     assert "navigateFallbackDenylist" in vite
-    assert "safeLiteReadApiPattern" in vite
+    assert "LITE_WORKBOX_CACHE_NAMES.safeReads" in vite
     assert "apps" in vite
     assert "bootstrap" not in vite.lower()
 
@@ -4521,7 +4521,7 @@ def test_lite_dexie_phase_preserves_no_browser_action_queue_and_pwa_denylist_sou
     assert "return null;" in ui
     assert "lite-refresh-status-popover" in ui
     assert "navigateFallbackDenylist" in vite
-    assert "safeLiteReadApiPattern" in vite
+    assert "LITE_WORKBOX_CACHE_NAMES.safeReads" in vite
     assert "apps" in vite
 
 
@@ -4636,7 +4636,7 @@ def test_lite_zustand_preserves_safe_snapshot_and_pwa_boundaries_source():
     assert "/api/lite/apps/photoprism/actions" in snapshots
     assert "lite-saved-state-banner" not in snapshots
     assert "navigateFallbackDenylist" in vite
-    assert "safeLiteReadApiPattern" in vite
+    assert "LITE_WORKBOX_CACHE_NAMES.safeReads" in vite
     assert "apps" in vite
 
 
@@ -4732,7 +4732,7 @@ def test_lite_xstate_preserves_query_snapshot_zustand_boundaries_source():
     assert "retry: false" in mutation
     assert "SAFE_LITE_GET_ENDPOINTS" in snapshots
     assert "LITE_UI_STORE_IS_UI_ONLY" in store
-    assert "navigateFallbackDenylist" in vite and "safeLiteReadApiPattern" in vite and "apps" in vite
+    assert "navigateFallbackDenylist" in vite and "LITE_WORKBOX_CACHE_NAMES.safeReads" in vite and "apps" in vite
     assert "lite-saved-state-banner" not in snapshots
 
 
@@ -7370,8 +7370,10 @@ def test_lite_caddy_generator_serves_versioned_assets_before_spa_fallback():
 
 def test_lite_pwa_static_asset_cache_version_bumped_after_asset_fallback_fix():
     config = Path("vite.config.js").read_text()
+    policy = Path("src/lib/liteOfflineReadPolicy.js").read_text()
 
-    assert "pocketlab-lite-static-assets-v2" in config
+    assert "LITE_WORKBOX_CACHE_NAMES.staticAssets" in config
+    assert "pocketlab-lite-static-assets-v3" in policy
     assert "pocketlab-lite-static-assets-v1" not in config
     assert "cleanupOutdatedCaches: true" in config
 
@@ -7679,3 +7681,178 @@ def test_lite_n1_pwa_apps_route_and_build_manifest_remain_guarded():
     assert "VITE_POCKETLAB_BUILD_ID" in config
     assert package["scripts"]["check:bundle"] == "node scripts/dev/check-lite-bundle-budgets.mjs"
     assert package["scripts"]["test:n1n2"] == "vitest run src/lite/liteNavigationRuntime.test.js"
+
+
+
+def test_lite_n3_virtualization_runtime_behaviour():
+    script = r"""
+import {
+  createLiteCursorRequestGuard,
+  liteStableRowKey,
+  mergeLiteCursorPages,
+  selectLiteVirtualMode,
+} from './src/lib/liteVirtualization.js';
+if (selectLiteVirtualMode({ count: 39, domain: 'default' })) throw new Error('small list virtualized');
+if (!selectLiteVirtualMode({ count: 40, domain: 'default' })) throw new Error('threshold did not virtualize');
+if (!selectLiteVirtualMode({ count: 33, domain: 'default', previousMode: true })) throw new Error('hysteresis did not hold');
+if (selectLiteVirtualMode({ count: 32, domain: 'default', previousMode: true })) throw new Error('hysteresis did not exit');
+const key = liteStableRowKey({ run_id: 'run-1' }, { domain: 'securityHistory' });
+if (!key.includes('run-1')) throw new Error('stable id was not used');
+const merged = mergeLiteCursorPages([
+  { history: [{ run_id: 'run-2' }, { run_id: 'run-1' }] },
+  { history: [{ run_id: 'run-1' }, { run_id: 'run-0' }] },
+], { domain: 'securityHistory' });
+if (merged.rows.length !== 3 || merged.duplicateCount !== 1) throw new Error('cursor rows were not deduplicated');
+const guard = createLiteCursorRequestGuard();
+if (!guard.begin('next') || guard.begin('next')) throw new Error('duplicate cursor request allowed');
+guard.finish('next');
+if (!guard.begin('next')) throw new Error('cursor retry remained blocked');
+"""
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=Path.cwd(), capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_lite_n3_virtual_list_is_bounded_accessible_and_domain_scoped():
+    component = Path("src/lite/components/LiteVirtualList.jsx").read_text()
+    runtime = Path("src/lib/liteVirtualization.js").read_text()
+    security = Path("src/lite/security/SecurityHistoryLazy.jsx").read_text()
+    recovery = Path("src/lite/recovery/RecoveryBackupHistory.jsx").read_text()
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    css = Path("src/index.css").read_text()
+
+    assert "useVirtualizer" in component
+    assert "defaultRangeExtractor" in component
+    assert "selectLiteVirtualMode" in component
+    assert "role=\"list\"" in component
+    assert "role=\"listitem\"" in component
+    assert "Load more" in component
+    assert "saved list may be incomplete" in component
+    assert "ResizeObserver" in component and "observer.disconnect()" in component
+    assert "cancelAnimationFrame" in component
+    assert "focusedIndex" in component and "pinnedItemKeys" in component
+    assert "data-duplicate-row-count" in component
+    assert "data-fallback-collision-count" in component
+    assert "LiteVirtualListErrorBoundary" in component
+    assert "Retry this list without reloading the app" in component
+    assert "lanes: laneCount" in component
+    assert "LITE_VIRTUALIZATION_THRESHOLDS" in runtime
+    assert "previousMode" in runtime
+    assert "duplicateCount" in runtime
+    assert 'domain="securityHistory"' in security
+    assert 'domain="recoveryHistory"' in recovery
+    assert 'domain="devices"' in devices
+    assert "lanes={2}" in devices and "compactLanes={1}" in devices
+    assert "lite-render-containment lite-render-containment--devices" in devices
+    assert "content-visibility: visible !important" in css
+    assert ".lite-virtual-list__viewport" in css
+
+
+def test_lite_n3_virtual_dependency_is_direct_and_lockfile_is_intentional():
+    package = json.loads(Path("package.json").read_text())
+    lock = json.loads(Path("package-lock.json").read_text())
+
+    assert package["dependencies"]["@tanstack/react-virtual"] == "^3.14.2"
+    assert package["scripts"]["test:n3n6a"].startswith("vitest run")
+    assert lock["packages"][""]["dependencies"]["@tanstack/react-virtual"] == "^3.14.2"
+    assert lock["packages"]["node_modules/@tanstack/react-virtual"].get("dev") is not True
+    assert lock["packages"]["node_modules/@tanstack/virtual-core"].get("dev") is not True
+
+
+def test_lite_n6a_safe_read_and_navigation_policy_behaviour():
+    script = r"""
+import {
+  LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION,
+  isLitePwaNavigationPath,
+  isLiteSafeRuntimeRead,
+  liteSafeHistorySchemaCompatible,
+} from './src/lib/liteOfflineReadPolicy.js';
+if (!isLiteSafeRuntimeRead({ method: 'GET', path: '/api/lite/security/history?limit=20' })) throw new Error('safe history rejected');
+for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) {
+  if (isLiteSafeRuntimeRead({ method, path: '/api/lite/security/history' })) throw new Error('write method cached');
+}
+for (const path of ['/api/lite/devices/invites', '/api/lite/evidence/raw', '/api/lite/apps/photoprism/receipt', '/api/lite/fleet', '/api/lite/recovery/details']) {
+  if (isLiteSafeRuntimeRead({ method: 'GET', path })) throw new Error('unsafe read cached');
+}
+if (isLitePwaNavigationPath('/apps/photoprism/')) throw new Error('/apps route captured');
+if (!isLitePwaNavigationPath('/')) throw new Error('Lite navigation rejected');
+if (!liteSafeHistorySchemaCompatible({ cache_schema_version: LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION })) throw new Error('current schema rejected');
+if (liteSafeHistorySchemaCompatible({ cache_schema_version: 1 })) throw new Error('old schema accepted');
+"""
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=Path.cwd(), capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_lite_n6a_workbox_snapshot_and_update_guards_source_contract():
+    config = Path("vite.config.js").read_text()
+    main = Path("src/main.jsx").read_text()
+    runtime = Path("src/lib/liteServiceWorkerRuntime.js").read_text()
+    snapshots = Path("src/lib/liteSafeSnapshots.js").read_text()
+    offline_db = Path("src/lib/liteOfflineDb.js").read_text()
+    view_models = Path("src/lib/liteViewModels.js").read_text()
+
+    assert "registerType: 'prompt'" in config
+    assert "navigationPreload: true" in config
+    assert "precacheFallback: { fallbackURL: '/index.html' }" in config
+    assert "request.method === 'GET'" in config
+    assert "request.mode === 'navigate'" in config
+    assert config.count("apps|gitea|docs") >= 3
+    assert "cacheableResponse: { statuses: [200] }" in config
+    assert "announceLiteServiceWorkerUpdate" in main
+    assert "onNeedRefresh()" in main
+    assert "updateBlockers" in runtime
+    assert "liteQueryCacheHasRiskyWorkflow" in runtime
+    assert "backend-live-operation" in Path("src/lite/LiteServiceWorkerUpdateNotice.jsx").read_text()
+    assert "if (!pendingUpdate || updateBlockers.size) return false" in runtime
+    assert "navigation_preload_supported" in runtime
+    assert "pruneLiteRuntimeCaches" in runtime
+    assert "slice(0, 8)" in runtime
+    assert "currentVersions.get(match[1]) - 1" in runtime
+    assert "safe_history_schema_mismatch" in snapshots
+    assert "snapshotFingerprints" in snapshots
+    assert "UNCHANGED_SNAPSHOT_WRITE_THROTTLE_MS" in snapshots
+    assert "quotaFailureType" in offline_db
+    assert "recovery_history_snapshot_row_limit" in offline_db
+    assert "security_history_snapshot_row_limit" in offline_db
+    assert "window.localStorage.removeItem(key)" in snapshots
+    assert "pruningStatus" in offline_db
+    assert "cache_schema_version" in view_models
+    assert "security-history-snapshot-v2" in view_models
+    assert "recovery-history-snapshot-v2" in view_models
+    assert "LITE_SAFE_READ_NONCE_HEADER" in Path("src/lib/liteApi.js").read_text()
+    assert "classifyLiteSafeReadResponse" in Path("src/lib/liteApi.js").read_text()
+    assert "LiteSafeReadNonceMiddleware" in Path("pocket-lab-final-structure/runtime/api_fastapi/main.py").read_text()
+
+
+def test_lite_n6a_preserves_phase1_lazy_screen_and_apps_route_guards():
+    registry = Path("src/lite/liteScreenRegistry.js").read_text()
+    boundary = Path("src/lite/LiteScreenBoundary.jsx").read_text()
+    config = Path("vite.config.js").read_text()
+
+    assert "LITE_SCREEN_REGISTRY" in registry
+    assert "createLiteScreenPreloader" in registry
+    assert "createLiteChunkRecoveryController" in boundary
+    assert "navigateFallbackDenylist: [noPwaFallbackPattern]" in config
+    assert "(?:api|terminal|apps|gitea|docs)" in config
+
+
+def test_lite_n6a_safe_read_nonce_echo_marks_live_backend_responses():
+    nonce = "plr-test-read-12345678"
+    response = client().get(
+        "/api/lite/status",
+        headers={"X-PocketLab-Read-Nonce": nonce},
+    )
+    assert response.status_code == 200
+    assert response.headers.get("X-PocketLab-Read-Nonce") == nonce
+
+    invalid = client().get(
+        "/api/lite/status",
+        headers={"X-PocketLab-Read-Nonce": "not valid whitespace"},
+    )
+    assert invalid.status_code == 200
+    assert "X-PocketLab-Read-Nonce" not in invalid.headers

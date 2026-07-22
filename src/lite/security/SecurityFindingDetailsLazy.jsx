@@ -198,6 +198,8 @@ export default function SecurityFindingDetailsLazy({ finding, context = {}, onCl
         technicalDetails={technicalRows(finding, context)}
         history={{
           title: 'Finding history',
+          domain: 'securityHistory',
+          datasetKey: `finding:${finding?.finding_id || finding?.id || 'unknown'}`,
           summary: history.length ? `${history.length} safe finding record${history.length === 1 ? '' : 's'} available.` : 'History will appear here after more safety checks.',
           items: history,
           enabled: true,
