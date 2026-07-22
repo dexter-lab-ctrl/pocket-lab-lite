@@ -206,6 +206,10 @@ class _PreparedItem:
     database_instance: str
 
 
+class PreparedProjectionUnavailable(RuntimeError):
+    """A bounded prepared read has no safe snapshot available yet."""
+
+
 class ControlPlaneProjectionStore:
     """Bounded SQLite projections and single-flight prepared read snapshots."""
 
@@ -217,6 +221,10 @@ class ControlPlaneProjectionStore:
         self._prepared: dict[str, _PreparedItem] = {}
         self._refreshing: set[str] = set()
         self._refresh_errors: dict[str, str] = {}
+        self._refresh_started_at: dict[str, float] = {}
+        self._last_stage_timings: dict[str, dict[str, float]] = {}
+        self._cache_generation = 0
+        self._refresh_generation_by_key: dict[str, int] = {}
         self._singleflight_locks: dict[str, threading.Lock] = {}
         self._executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", "2")), 4)),
@@ -235,6 +243,10 @@ class ControlPlaneProjectionStore:
                 self._prepared.clear()
                 self._refreshing.clear()
                 self._refresh_errors.clear()
+                self._refresh_started_at.clear()
+                self._last_stage_timings.clear()
+                self._refresh_generation_by_key.clear()
+                self._cache_generation += 1
             self._initialized = True
             self._initialized_path = current_path
 
@@ -249,6 +261,10 @@ class ControlPlaneProjectionStore:
             self._prepared.clear()
             self._refreshing.clear()
             self._refresh_errors.clear()
+            self._refresh_started_at.clear()
+            self._last_stage_timings.clear()
+            self._refresh_generation_by_key.clear()
+            self._cache_generation += 1
 
     def invalidate_domain(self, domain: str) -> None:
         prefix = f"{str(domain or '').strip()}:"
@@ -294,6 +310,7 @@ class ControlPlaneProjectionStore:
             "connection_wait_ms": round(wait_ms, 3),
             "sqlite_query_ms": round(query_ms, 3),
             "updated_at": _utc_now(),
+            "prepared": self.prepared_metrics(),
         }
 
     def _etag(self, domain: str, key: str, revision: int) -> str:
@@ -314,6 +331,8 @@ class ControlPlaneProjectionStore:
         stale_after_ms: int,
         max_stale_ms: int,
         deadline_seconds: float = 3.0,
+        cold_start_async: bool = False,
+        fallback_builder: Callable[[], dict[str, Any] | None] | None = None,
     ) -> PreparedRead:
         self.initialize()
         cache_key = f"{domain}:{key}"
@@ -326,8 +345,39 @@ class ControlPlaneProjectionStore:
                 item = None
             refreshing = cache_key in self._refreshing
         if item is None:
+            if cold_start_async:
+                fallback: dict[str, Any] | None = None
+                if fallback_builder is not None:
+                    try:
+                        fallback = fallback_builder()
+                    except Exception as exc:
+                        _LOGGER.warning(
+                            "pocketlab.control_projection.fallback_degraded key=%s error_type=%s",
+                            cache_key,
+                            type(exc).__name__,
+                        )
+                self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+                if fallback:
+                    revision = self.domain_revision(domain)
+                    return PreparedRead(
+                        payload=fallback,
+                        etag=self._etag(domain, key, revision),
+                        source_revision=revision,
+                        projection_age_ms=max_stale_ms + 1,
+                        read_degraded=True,
+                        refresh_pending=True,
+                        timing={
+                            "connection_acquisition_ms": 0.0,
+                            "sqlite_query_ms": 0.0,
+                            "projection_build_ms": 0.0,
+                            "serialization_ms": 0.0,
+                        },
+                    )
+                raise PreparedProjectionUnavailable(
+                    "Prepared projection is warming and no safe snapshot is available yet"
+                )
             return self._refresh_now(
-                cache_key, domain, key, builder, projector, deadline_seconds
+                cache_key, domain, key, builder, projector, deadline_seconds, True
             )
         age_ms = int(max(0.0, (now - item.prepared_at) * 1000.0))
         if age_ms <= stale_after_ms:
@@ -352,9 +402,21 @@ class ControlPlaneProjectionStore:
                 refresh_pending=True,
                 timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
             )
+        if cold_start_async:
+            if not refreshing:
+                self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+            return PreparedRead(
+                payload=item.payload,
+                etag=self._etag(domain, key, item.revision),
+                source_revision=item.revision,
+                projection_age_ms=age_ms,
+                read_degraded=True,
+                refresh_pending=True,
+                timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
+            )
         try:
             return self._refresh_now(
-                cache_key, domain, key, builder, projector, deadline_seconds
+                cache_key, domain, key, builder, projector, deadline_seconds, True
             )
         except Exception:
             return PreparedRead(
@@ -366,6 +428,24 @@ class ControlPlaneProjectionStore:
                 refresh_pending=False,
                 timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
             )
+
+    def warm_prepared_read(
+        self,
+        *,
+        domain: str,
+        key: str,
+        builder: Callable[[], dict[str, Any]],
+        projector: Callable[[dict[str, Any]], int],
+        deadline_seconds: float = 3.0,
+    ) -> bool:
+        self.initialize()
+        cache_key = f"{domain}:{key}"
+        with self._cache_lock:
+            item = self._prepared.get(cache_key)
+            if item is not None and item.database_instance == _database_instance():
+                return False
+        self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+        return True
 
     def _start_refresh(
         self,
@@ -380,6 +460,9 @@ class ControlPlaneProjectionStore:
             if cache_key in self._refreshing:
                 return
             self._refreshing.add(cache_key)
+            self._refresh_started_at[cache_key] = time.monotonic()
+            generation = self._cache_generation
+            self._refresh_generation_by_key[cache_key] = generation
         self._executor.submit(
             self._background_refresh,
             cache_key,
@@ -388,15 +471,18 @@ class ControlPlaneProjectionStore:
             builder,
             projector,
             deadline_seconds,
+            generation,
         )
 
     def _background_refresh(self, *args: Any) -> None:
         cache_key = str(args[0])
+        generation = int(args[-1])
         try:
-            self._refresh_now(*args)
+            self._refresh_now(*args[:-1], False, generation)
         except Exception as exc:
             with self._cache_lock:
-                self._refresh_errors[cache_key] = type(exc).__name__
+                if self._refresh_generation_by_key.get(cache_key) == generation:
+                    self._refresh_errors[cache_key] = type(exc).__name__
             _LOGGER.warning(
                 "pocketlab.control_projection.refresh_degraded key=%s error_type=%s",
                 cache_key,
@@ -404,7 +490,10 @@ class ControlPlaneProjectionStore:
             )
         finally:
             with self._cache_lock:
-                self._refreshing.discard(cache_key)
+                if self._refresh_generation_by_key.get(cache_key) == generation:
+                    self._refreshing.discard(cache_key)
+                    self._refresh_started_at.pop(cache_key, None)
+                    self._refresh_generation_by_key.pop(cache_key, None)
 
     def _refresh_now(
         self,
@@ -414,6 +503,8 @@ class ControlPlaneProjectionStore:
         builder: Callable[[], dict[str, Any]],
         projector: Callable[[dict[str, Any]], int],
         deadline_seconds: float,
+        enforce_deadline: bool,
+        expected_generation: int | None = None,
     ) -> PreparedRead:
         request_started = time.monotonic()
         with self._cache_lock:
@@ -448,13 +539,41 @@ class ControlPlaneProjectionStore:
                     refresh_pending=False,
                     timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
                 )
+            with self._cache_lock:
+                effective_generation = self._cache_generation
+            if expected_generation is not None and expected_generation != effective_generation:
+                raise PreparedProjectionUnavailable("Projection generation changed before build")
             started = time.monotonic()
             payload = builder()
             built = time.monotonic()
-            if built - request_started > max(0.05, deadline_seconds):
+            with self._cache_lock:
+                generation_after_build = self._cache_generation
+            if expected_generation is not None and expected_generation != generation_after_build:
+                raise PreparedProjectionUnavailable("Projection generation changed during build")
+            stage_timings = payload.pop("__projection_stage_timing_ms", {}) if isinstance(payload, dict) else {}
+            if not isinstance(stage_timings, dict):
+                stage_timings = {}
+            with self._cache_lock:
+                self._last_stage_timings[cache_key] = {
+                    str(name)[:80]: round(max(0.0, float(value)), 3)
+                    for name, value in list(stage_timings.items())[:24]
+                    if isinstance(value, (int, float))
+                }
+            build_seconds = built - started
+            if build_seconds > max(0.05, deadline_seconds):
+                _LOGGER.warning(
+                    "pocketlab.control_projection.slow_build key=%s duration_ms=%.3f deadline_ms=%.3f stages=%s",
+                    cache_key, build_seconds * 1000.0, deadline_seconds * 1000.0,
+                    self._last_stage_timings.get(cache_key, {}),
+                )
+            if enforce_deadline and built - request_started > max(0.05, deadline_seconds):
                 raise TimeoutError("Prepared projection build deadline expired")
             revision = projector(payload)
             projected = time.monotonic()
+            with self._cache_lock:
+                generation_after_projection = self._cache_generation
+            if expected_generation is not None and expected_generation != generation_after_projection:
+                raise PreparedProjectionUnavailable("Projection generation changed during projection")
             item = _PreparedItem(
                 payload=payload,
                 revision=revision,
@@ -483,8 +602,88 @@ class ControlPlaneProjectionStore:
             )
         finally:
             lock.release()
-            with self._cache_lock:
-                self._refreshing.discard(cache_key)
+            if expected_generation is None:
+                with self._cache_lock:
+                    self._refreshing.discard(cache_key)
+
+    def app_projection_snapshot(self) -> dict[str, Any] | None:
+        self.initialize()
+        def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+            return [dict(row) for row in conn.execute(
+                "SELECT app_id, app_name, status, installed, health_state, latest_action_id, "
+                "latest_action_status, latest_backup_id, updated_at, summary "
+                "FROM app_current_state ORDER BY app_name COLLATE NOCASE, app_id"
+            )]
+        rows, _, _ = self._read(read)
+        if not rows:
+            return None
+        apps = [{
+            "app_id": row["app_id"], "id": row["app_id"], "name": row["app_name"],
+            "status": row["status"], "installed": bool(row["installed"]),
+            "summary": row["summary"] or "Showing the latest saved app state.",
+            "security": {"status": row["health_state"] or "unknown"},
+            "current_action": ({"action_id": row["latest_action_id"], "status": row["latest_action_status"]}
+                               if row["latest_action_id"] else None),
+            "backup": {"latest_backup_id": row["latest_backup_id"]},
+            "updated_at": row["updated_at"], "projection_only": True,
+        } for row in rows]
+        return {
+            "status": "degraded", "summary": "Showing the latest saved app state while Pocket Lab refreshes details.",
+            "apps": apps, "items": apps, "count": len(apps),
+            "ready_count": sum(1 for item in apps if item.get("status") == "ready"),
+            "attention_count": sum(1 for item in apps if item.get("status") not in {"ready", "healthy"}),
+            "updated_at": max(str(item.get("updated_at") or "") for item in apps),
+            "projection_only": True,
+        }
+
+    def recovery_projection_snapshot(self, *, details: bool = False) -> dict[str, Any] | None:
+        self.initialize()
+        def read(conn: sqlite3.Connection) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+            state = conn.execute(
+                "SELECT status, active_operation_id, latest_backup_id, latest_preview_id, "
+                "latest_restore_id, maintenance_status, updated_at, summary "
+                "FROM recovery_current_state WHERE singleton_id = 1"
+            ).fetchone()
+            backup = conn.execute(
+                "SELECT backup_id, status, verification_status, created_at, verified_at, size_bytes, summary "
+                "FROM backup_manifest_index ORDER BY updated_at_epoch_ms DESC, backup_id DESC LIMIT 1"
+            ).fetchone()
+            return (dict(state) if state else None, dict(backup) if backup else None)
+        state, backup = self._read(read)[0]
+        if not state:
+            return None
+        payload: dict[str, Any] = {
+            "status": state.get("status") or "degraded",
+            "summary": state.get("summary") or "Showing the latest saved recovery state while Pocket Lab refreshes details.",
+            "active_operation": ({"operation_id": state.get("active_operation_id")} if state.get("active_operation_id") else None),
+            "latest_restore_preview": ({"preview_id": state.get("latest_preview_id")} if state.get("latest_preview_id") else None),
+            "last_restore": ({"restore_id": state.get("latest_restore_id")} if state.get("latest_restore_id") else None),
+            "maintenance": {"status": state.get("maintenance_status") or "unknown"},
+            "updated_at": state.get("updated_at"),
+            "projection_only": True,
+        }
+        if backup:
+            payload["last_backup"] = backup
+            payload["latest_backup"] = backup
+        if details:
+            payload.update({
+                "view_model": "recovery-details-r3-v1", "app_backups": [],
+                "app_backup_profiles": {"apps": []}, "app_lifecycle_profiles": {"apps": []},
+                "backup_targets": [], "backup_target_profiles": {"targets": []},
+            })
+        return payload
+
+    def prepared_metrics(self) -> dict[str, Any]:
+        now = time.monotonic()
+        with self._cache_lock:
+            return {
+                "refreshing": {key: round(max(0.0, now - started), 3) for key, started in self._refresh_started_at.items()},
+                "refresh_errors": dict(self._refresh_errors),
+                "stage_timings_ms": {key: dict(value) for key, value in self._last_stage_timings.items()},
+                "prepared_keys": sorted(self._prepared),
+                "generation": self._cache_generation,
+                "sanitized": True,
+            }
 
     def project_fleet(self, payload: dict[str, Any]) -> int:
         self.initialize()
@@ -1301,7 +1500,7 @@ class ControlPlaneProjectionStore:
         return plans
 
     def metrics(self) -> dict[str, Any]:
-        return {"writer": SQLITE_WRITER.snapshot(), "reads": SQLITE_READS.snapshot()}
+        return {"writer": SQLITE_WRITER.snapshot(), "reads": SQLITE_READS.snapshot(), "prepared": self.prepared_metrics()}
 
 
 CONTROL_PLANE = ControlPlaneProjectionStore()
