@@ -1943,6 +1943,9 @@ def _build_lite_recovery_summary_projection() -> dict[str, Any]:
 
 def _run_staggered_projection_warmup() -> None:
     try:
+        startup_delay = max(0.0, min(10.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS", "2.0"))))
+        if startup_delay:
+            threading.Event().wait(startup_delay)
         lite_recovery_subprojections.warm_startup_dependencies()
         CONTROL_PLANE.warm_prepared_read(
             domain="recovery", key="summary",
@@ -1950,6 +1953,7 @@ def _run_staggered_projection_warmup() -> None:
             projector=CONTROL_PLANE.project_recovery, deadline_seconds=4.0,
         )
         CONTROL_PLANE.wait_for_prepared("recovery:summary", 30.0)
+        threading.Event().wait(max(0.0, min(5.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS", "1.0")))))
         CONTROL_PLANE.warm_prepared_read(
             domain="apps", key="lifecycle",
             builder=lite_app_lifecycle.app_lifecycle_profiles,
@@ -1958,6 +1962,7 @@ def _run_staggered_projection_warmup() -> None:
         apps_ready = CONTROL_PLANE.wait_for_prepared("apps:lifecycle", 90.0)
         recovery_ready = CONTROL_PLANE.prepared_payload("recovery:summary") is not None
         if apps_ready and recovery_ready:
+            threading.Event().wait(max(0.0, min(5.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS", "1.0")))))
             CONTROL_PLANE.warm_prepared_read(
                 domain="recovery", key="details",
                 builder=_lite_recovery_details_payload,
