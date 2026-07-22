@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -17,13 +18,17 @@ import {
   SECURITY_PREFETCH_SETTLE_MS,
   prefetchSecuritySummary,
 } from './security/securityPreload.js';
-import HomeScreen from './LiteHome.jsx';
-import CatalogScreen from './LiteCatalog.jsx';
-import IdentityScreen from './LiteIdentity.jsx';
-import SecurityScreen from './LiteSecurity.jsx';
-import DevicesScreen from './LiteDevices.jsx';
-import RulesScreen from './LiteRules.jsx';
-import RecoveryScreen from './LiteRecovery.jsx';
+import { LiteScreenErrorBoundary, LiteScreenLoading } from './LiteScreenBoundary.jsx';
+import { normalizeLiteScreenId } from './liteNavigationConfig.js';
+import {
+  getLiteScreenComponent,
+  getLiteScreenEntry,
+  preloadLiteScreen,
+} from './liteScreenRegistry.js';
+import {
+  prefersLiteReducedMotion,
+  startLiteViewTransition,
+} from './liteNavigationRuntime.js';
 import LiteToastHost from './LiteToastHost.jsx';
 import { useLiteUiStore } from '../stores/liteUiStore.js';
 import {
@@ -414,10 +419,17 @@ function LiteAppShell() {
   const menuOpen = useLiteUiStore((state) => state.mobileMenuOpen);
   const setMenuOpen = useLiteUiStore((state) => state.setMobileMenuOpen);
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
+  const [screenRetryGeneration, setScreenRetryGeneration] = useState({});
   const online = useOnlineStatus();
   const { status, loading, error, refresh, cacheStatus, refreshing } = useLiteStatus();
+  const transitionRef = useRef(null);
+  const focusScreenAfterNavigationRef = useRef(false);
+  const screenStageRef = useRef(null);
   const backendHealthyForPrefetch = online && !error && !loading && !workspaceApp && String(status?.overall || '').toLowerCase() !== 'unavailable';
-
+  const activeScreenId = normalizeLiteScreenId(active);
+  const activeScreenEntry = getLiteScreenEntry(activeScreenId);
+  const activeRetryGeneration = screenRetryGeneration[activeScreenId] || 0;
+  const ActiveScreen = getLiteScreenComponent(activeScreenId, activeRetryGeneration);
 
   useEffect(() => {
     const syncWorkspaceFromHistory = () => {
@@ -428,7 +440,7 @@ function LiteAppShell() {
   }, []);
 
   useEffect(() => {
-    if (active === 'security' || !backendHealthyForPrefetch) return undefined;
+    if (activeScreenId === 'security' || !backendHealthyForPrefetch) return undefined;
     const timer = window.setTimeout(() => {
       prefetchSecuritySummary(liteQueryClient, {
         backendHealthy: backendHealthyForPrefetch,
@@ -436,14 +448,73 @@ function LiteAppShell() {
       });
     }, SECURITY_PREFETCH_SETTLE_MS);
     return () => window.clearTimeout(timer);
-  }, [active, backendHealthyForPrefetch]);
+  }, [activeScreenId, backendHealthyForPrefetch]);
 
-  const warmSecurityOnNavIntent = (tabId) => {
-    if (tabId !== 'security') return;
+  useEffect(() => {
+    if (workspaceApp || !activeScreenEntry?.idlePreload) return undefined;
+    let idleId = null;
+    let timeoutId = null;
+    const preloadNextScreen = () => {
+      preloadLiteScreen(activeScreenEntry.idlePreload).catch(() => null);
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(preloadNextScreen, { timeout: 2_800 });
+    } else {
+      timeoutId = window.setTimeout(preloadNextScreen, 1_800);
+    }
+
+    return () => {
+      if (idleId !== null && typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idleId);
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+    };
+  }, [activeScreenEntry?.idlePreload, workspaceApp]);
+
+  useEffect(() => {
+    if (!focusScreenAfterNavigationRef.current || workspaceApp) return undefined;
+    focusScreenAfterNavigationRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      screenStageRef.current?.focus?.({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeScreenId, activeRetryGeneration, workspaceApp]);
+
+  const warmScreenOnNavIntent = (tabId) => {
+    const normalizedId = normalizeLiteScreenId(tabId);
+    preloadLiteScreen(normalizedId).catch(() => null);
+    if (normalizedId !== 'security') return;
     prefetchSecuritySummary(liteQueryClient, {
       backendHealthy: backendHealthyForPrefetch,
       activeScan: false,
     });
+  };
+
+  const commitScreenNavigation = (tabId, event = null) => {
+    const nextScreenId = normalizeLiteScreenId(tabId);
+    focusScreenAfterNavigationRef.current = Boolean(event && event.detail === 0);
+
+    const commit = () => {
+      flushSync(() => {
+        if (workspaceApp) setWorkspaceApp(null);
+        setActiveTab(nextScreenId);
+        setMenuOpen(false);
+      });
+      if (workspaceApp) pushPocketLabPath('/');
+    };
+
+    const result = startLiteViewTransition(commit, {
+      documentObject: document,
+      reducedMotion: prefersLiteReducedMotion(window),
+      previousTransition: transitionRef.current,
+    });
+    transitionRef.current = result.transition;
+    if (result.transition?.finished?.then) {
+      result.transition.finished
+        .finally(() => {
+          if (transitionRef.current === result.transition) transitionRef.current = null;
+        })
+        .catch(() => null);
+    }
   };
 
   const openWorkspace = (app, openUrl) => {
@@ -455,18 +526,11 @@ function LiteAppShell() {
       openUrl: resolveSafeAppOpenPath(openUrl || app),
       status: app?.status || 'ready',
       embedAllowed: appWorkspaceEmbedAllowed(app),
-      fromTab: active || 'catalog',
+      fromTab: activeScreenId || 'catalog',
     });
     setActiveTab('catalog');
     setMenuOpen(false);
     pushPocketLabPath(workspacePathForApp(appId));
-  };
-
-  const closeWorkspaceToTab = (tabId = 'catalog') => {
-    setWorkspaceApp(null);
-    setActiveTab(tabId);
-    setMenuOpen(false);
-    pushPocketLabPath('/');
   };
 
   const openFullScreen = (openUrl) => {
@@ -475,26 +539,47 @@ function LiteAppShell() {
     window.location.assign(target);
   };
 
-  const navigateToTab = (tabId) => {
-    closeWorkspaceToTab(tabId);
+  const retryActiveScreen = () => {
+    setScreenRetryGeneration((current) => ({
+      ...current,
+      [activeScreenId]: (current[activeScreenId] || 0) + 1,
+    }));
   };
+
+  const activeScreenProps = activeScreenId === 'home'
+    ? { status, loading, error, refresh, cacheStatus, refreshing, onNavigate: commitScreenNavigation }
+    : activeScreenId === 'catalog'
+      ? { onOpenWorkspace: openWorkspace }
+      : {};
 
   const content = workspaceApp ? (
     <LiteAppWorkspace
       workspace={workspaceApp}
-      onBackToApps={() => closeWorkspaceToTab('catalog')}
-      onNavigate={navigateToTab}
+      onBackToApps={() => commitScreenNavigation('catalog')}
+      onNavigate={commitScreenNavigation}
       onOpenFullScreen={openFullScreen}
     />
-  ) : ({
-    home: <HomeScreen status={status} loading={loading} error={error} refresh={refresh} cacheStatus={cacheStatus} refreshing={refreshing} onNavigate={setActiveTab} />,
-    catalog: <CatalogScreen onOpenWorkspace={openWorkspace} />,
-    identity: <IdentityScreen />,
-    security: <SecurityScreen />,
-    devices: <DevicesScreen />,
-    rules: <RulesScreen />,
-    recovery: <RecoveryScreen />,
-  }[active]);
+  ) : (
+    <section
+      ref={screenStageRef}
+      className={`lite-screen-stage lite-screen-stage-${activeScreenId}`}
+      data-lite-screen-id={activeScreenId}
+      style={{ '--lite-screen-intrinsic-size': activeScreenEntry.intrinsicSize }}
+      tabIndex={-1}
+      aria-label={`${activeScreenEntry.label} screen`}
+    >
+      <LiteScreenErrorBoundary
+        key={`${activeScreenId}:${activeRetryGeneration}`}
+        screenId={activeScreenId}
+        label={activeScreenEntry.label}
+        onRetry={retryActiveScreen}
+      >
+        <Suspense fallback={<LiteScreenLoading label={activeScreenEntry.label} intrinsicSize={activeScreenEntry.intrinsicSize} />}>
+          <ActiveScreen {...activeScreenProps} />
+        </Suspense>
+      </LiteScreenErrorBoundary>
+    </section>
+  );
 
   const shellClassName = `pocket-app-shell theme-pocket-lite-daylight lite-motion-system ${workspaceApp ? 'is-app-workspace' : ''}`;
 
@@ -532,9 +617,9 @@ function LiteAppShell() {
       <nav className="pocket-nav-dock scrollbar-none" aria-label="Pocket Lab Lite sections">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = active === item.id;
+          const isActive = activeScreenId === item.id;
           return (
-            <button key={item.id} type="button" onPointerEnter={() => warmSecurityOnNavIntent(item.id)} onFocus={() => warmSecurityOnNavIntent(item.id)} onTouchStart={() => warmSecurityOnNavIntent(item.id)} onClick={() => setActiveTab(item.id)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
+            <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} aria-current={isActive ? 'page' : undefined} className={`pocket-nav-button nav-active-rail-item ${isActive ? 'pocket-nav-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon relative z-10 h-5 w-5" />
               <span className="relative z-10 mt-1 text-[0.68rem] font-bold tracking-wide">{item.label.split(' ')[0]}</span>
             </button>
@@ -545,9 +630,9 @@ function LiteAppShell() {
       <nav className="pocket-side-rail" aria-label="Pocket Lab Lite primary sections">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = active === item.id;
+          const isActive = activeScreenId === item.id;
           return (
-            <button key={item.id} type="button" onPointerEnter={() => warmSecurityOnNavIntent(item.id)} onFocus={() => warmSecurityOnNavIntent(item.id)} onTouchStart={() => warmSecurityOnNavIntent(item.id)} onClick={() => workspaceApp ? navigateToTab(item.id) : setActiveTab(item.id)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
+            <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} title={item.label} aria-label={item.label} aria-current={isActive ? 'page' : undefined} className={`pocket-side-button nav-active-rail-item ${isActive ? 'pocket-side-button-active' : ''}`}>
               <Icon className="nav-active-rail-icon h-5 w-5" />
             </button>
           );
@@ -566,8 +651,9 @@ function LiteAppShell() {
         <div className="grid gap-2 p-4">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
+            const isActive = activeScreenId === item.id;
             return (
-              <button key={item.id} type="button" onPointerEnter={() => warmSecurityOnNavIntent(item.id)} onFocus={() => warmSecurityOnNavIntent(item.id)} onTouchStart={() => warmSecurityOnNavIntent(item.id)} onClick={() => workspaceApp ? navigateToTab(item.id) : (setActiveTab(item.id), setMenuOpen(false))} className="mobile-more-item nav-active-rail-item">
+              <button key={item.id} type="button" onPointerEnter={() => warmScreenOnNavIntent(item.id)} onFocus={() => warmScreenOnNavIntent(item.id)} onTouchStart={() => warmScreenOnNavIntent(item.id)} onClick={(event) => commitScreenNavigation(item.id, event)} aria-current={isActive ? 'page' : undefined} className="mobile-more-item nav-active-rail-item">
                 <Icon className="nav-active-rail-icon h-5 w-5" />
                 <span>{item.label}</span>
               </button>
@@ -576,7 +662,7 @@ function LiteAppShell() {
         </div>
       </aside>
 
-      <main id="pocket-lite-main" key={workspaceApp ? `workspace-${workspaceApp.appId}` : active} className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
+      <main id="pocket-lite-main" className="pocket-main nav-page-fade lg:pl-24 xl:pl-28">
         {content}
       </main>
     </div>

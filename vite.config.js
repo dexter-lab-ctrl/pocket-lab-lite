@@ -1,11 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { readFileSync } from 'node:fs';
+
+const packageMetadata = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+const pocketLabBuildId = process.env.POCKETLAB_BUILD_ID || process.env.GITHUB_SHA || packageMetadata.version || 'development';
 
 const safeLiteReadApiPattern = /^\/api\/lite\/(?:status|catalog|fleet|security|recovery|apps\/photoprism\/actions)$/;
 const noPwaFallbackPattern = /^\/(?:api|terminal|apps|gitea|docs)(?:\/|$)|^\/openapi\.json$/;
 
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_POCKETLAB_BUILD_ID': JSON.stringify(pocketLabBuildId),
+  },
+  build: {
+    manifest: true,
+  },
   plugins: [
     react(),
     VitePWA({

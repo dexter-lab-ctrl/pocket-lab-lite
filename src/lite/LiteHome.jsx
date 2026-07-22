@@ -202,7 +202,7 @@ export default function HomeScreen({ status, loading, error, refresh, cacheStatu
         </GlassCard>
       </div>
 
-      <section className="mt-4">
+      <section className="mt-4 lite-render-containment lite-render-containment--home">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Key areas</p>
