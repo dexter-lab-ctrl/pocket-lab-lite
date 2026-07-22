@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from .. import deps
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     PreparedProjectionUnavailable,
@@ -1911,7 +1911,7 @@ def _lite_recovery_details_payload() -> dict[str, Any]:
         lambda: CONTROL_PLANE.prepared_payload("apps:lifecycle")
         or lite_app_lifecycle.app_lifecycle_profiles(),
     )
-    targets = _timed_projection_stage(timings, "backup_targets", lite_app_backup_targets.backup_targets)
+    targets = _timed_projection_stage(timings, "backup_targets", lite_recovery_subprojections.backup_targets)
     state["view_model"] = "recovery-details-r3-v1"
     state["app_backups"] = profiles.get("apps", [])
     state["app_backup_profiles"] = profiles
@@ -1919,10 +1919,10 @@ def _lite_recovery_details_payload() -> dict[str, Any]:
     state["backup_targets"] = targets.get("targets", [])
     state["backup_target_profiles"] = targets
     state["database_protection"] = _timed_projection_stage(
-        timings, "database_protection", lite_database_recovery.database_recovery_status
+        timings, "database_protection", lite_recovery_subprojections.database_protection_details
     )
     state["maintenance"] = _timed_projection_stage(
-        timings, "maintenance", lite_security_maintenance.maintenance_state
+        timings, "maintenance", lite_recovery_subprojections.maintenance_state
     )
     state["__projection_stage_timing_ms"] = timings
     return state
@@ -1930,12 +1930,12 @@ def _lite_recovery_details_payload() -> dict[str, Any]:
 
 def _build_lite_recovery_summary_projection() -> dict[str, Any]:
     timings: dict[str, float] = {}
-    state = _timed_projection_stage(timings, "recovery_summary", lite_status.lite_recovery_summary)
+    state = _timed_projection_stage(timings, "recovery_summary", lite_recovery_subprojections.recovery_summary)
     state["database_protection"] = _timed_projection_stage(
-        timings, "database_protection_summary", lite_database_recovery.database_recovery_summary
+        timings, "database_protection_summary", lite_recovery_subprojections.database_protection_summary
     )
     state["maintenance"] = _timed_projection_stage(
-        timings, "maintenance", lite_security_maintenance.maintenance_state
+        timings, "maintenance", lite_recovery_subprojections.maintenance_state
     )
     state["__projection_stage_timing_ms"] = timings
     return state
@@ -1943,6 +1943,7 @@ def _build_lite_recovery_summary_projection() -> dict[str, Any]:
 
 def _run_staggered_projection_warmup() -> None:
     try:
+        lite_recovery_subprojections.warm_startup_dependencies()
         CONTROL_PLANE.warm_prepared_read(
             domain="recovery", key="summary",
             builder=_build_lite_recovery_summary_projection,

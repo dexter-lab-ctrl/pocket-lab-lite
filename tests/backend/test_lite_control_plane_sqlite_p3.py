@@ -944,3 +944,69 @@ def test_refresh_failure_backoff_blocks_immediate_reschedule(tmp_path, monkeypat
     ) is True
     time.sleep(0.05)
     assert calls == 1
+
+
+def test_recovery_subprojections_cache_slow_sources_and_serve_stale(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_recovery_subprojections as sub
+
+    with sub._LOCK:
+        sub._VALUES.clear()
+        sub._FUTURES.clear()
+        sub._FAILURES.clear()
+        sub._NEXT_ALLOWED.clear()
+        sub._DURATIONS.clear()
+
+    calls = 0
+
+    def source():
+        nonlocal calls
+        calls += 1
+        return {"status": "healthy", "targets": [{"id": "storage-1"}], "count": 1}
+
+    monkeypatch.setattr(sub.lite_app_backup_targets, "backup_targets", source)
+    first = sub.backup_targets()
+    second = sub.backup_targets()
+    assert first["status"] == "healthy"
+    assert second["targets"][0]["id"] == "storage-1"
+    assert calls == 1
+
+
+def test_recovery_subprojection_failure_backoff_prevents_duplicate_work(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_recovery_subprojections as sub
+
+    with sub._LOCK:
+        sub._VALUES.clear()
+        sub._FUTURES.clear()
+        sub._FAILURES.clear()
+        sub._NEXT_ALLOWED.clear()
+        sub._DURATIONS.clear()
+
+    calls = 0
+
+    def failing():
+        nonlocal calls
+        calls += 1
+        raise OSError("unavailable")
+
+    monkeypatch.setattr(sub.lite_security_maintenance, "maintenance_state", failing)
+    first = sub.maintenance_state()
+    deadline = time.monotonic() + 1.0
+    while time.monotonic() < deadline and not sub._FAILURES.get("recovery:maintenance"):
+        time.sleep(0.01)
+    second = sub.maintenance_state()
+    assert first["read_degraded"] is True
+    assert second["read_degraded"] is True
+    assert calls == 1
+    assert sub._NEXT_ALLOWED["recovery:maintenance"] > time.monotonic()
+
+
+def test_cold_projection_validation_script_has_bounded_proxy_readiness_gate():
+    source = Path("scripts/dev/check-lite-control-plane-cold-projections.sh").read_text()
+    assert '"$PROXY_BASE/health"' in source
+    assert 'POCKETLAB_READY_ATTEMPTS' in source
+    assert '--connect-timeout "$READY_CONNECT_TIMEOUT"' in source
+    assert '--max-time "$READY_MAX_TIME"' in source
+    assert 'Pocket API did not become ready' in source
+    assert 'Missing or empty revisions response' in source

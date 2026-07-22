@@ -10,7 +10,7 @@ import time
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media
+from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_recovery_subprojections
 
 _LOGGER = logging.getLogger(__name__)
 SUPPORTED_APP_IDS = {"photoprism"}
@@ -373,7 +373,7 @@ def _media_action_ready(installed: bool, route_enabled: bool, media: dict[str, A
 
 def _backup_to_storage_action(backup: dict[str, Any]) -> dict[str, Any]:
     try:
-        summary = lite_app_backup_targets.backup_target_summary("photoprism")
+        summary = lite_recovery_subprojections.app_backup_targets("photoprism")
     except Exception:
         summary = {"ready": False, "summary": "Join a storage device to save app backups elsewhere.", "target_label": None}
     ready = bool(summary.get("ready"))
@@ -683,7 +683,7 @@ def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) 
         "storage": storage,
         "security": security,
         "backup": backup,
-        "backup_targets": _timed_stage(stage_timings, "backup_targets", lambda: lite_app_backup_targets.app_backup_targets("photoprism")),
+        "backup_targets": _timed_stage(stage_timings, "backup_targets", lambda: lite_recovery_subprojections.app_backup_targets("photoprism")),
         "app_lifecycle": _timed_stage(stage_timings, "runtime_lifecycle", app_runtime_subprojection),
         "recovery": recovery,
         "media": media,
