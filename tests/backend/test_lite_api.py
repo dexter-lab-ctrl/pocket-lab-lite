@@ -1,6 +1,8 @@
 import asyncio
 import json
+import os
 from pathlib import Path
+import subprocess
 import time
 
 import pytest
@@ -7497,3 +7499,183 @@ def test_lite_control_plane_subprojection_and_staggered_warmup_source_contract()
     assert "_effective_stale_after_ms" in store
     assert "_next_refresh_allowed_at" in store
     assert "_consecutive_refresh_failures" in store
+
+
+
+def test_lite_n1_navigation_runtime_behaviour():
+    script = r"""
+import {
+  createLiteChunkRecoveryController,
+  createLiteScreenPreloader,
+  litePreloadBlockReason,
+  startLiteViewTransition,
+} from './src/lite/liteNavigationRuntime.js';
+
+let loads = 0;
+let release;
+const loader = () => {
+  loads += 1;
+  return new Promise((resolve) => { release = resolve; });
+};
+const preloader = createLiteScreenPreloader({
+  loaders: { security: loader },
+  navigatorObject: { onLine: true, connection: { saveData: false, effectiveType: '4g' } },
+  documentObject: { visibilityState: 'visible' },
+});
+const first = preloader.preload('security');
+const second = preloader.preload('security');
+if (first !== second) throw new Error('preload was not deduplicated');
+await Promise.resolve();
+release({ default: () => null });
+const result = await first;
+if (!result.preloaded || loads !== 1) throw new Error('preload did not complete once');
+if (litePreloadBlockReason({ navigatorObject: { onLine: false }, documentObject: { visibilityState: 'visible' } }) !== 'offline') throw new Error('offline guard failed');
+if (litePreloadBlockReason({ navigatorObject: { onLine: true, connection: { saveData: true } }, documentObject: { visibilityState: 'visible' } }) !== 'data_saver') throw new Error('data saver guard failed');
+let commits = 0;
+const transition = startLiteViewTransition(() => { commits += 1; }, { documentObject: {}, reducedMotion: false });
+if (transition.started || commits !== 1) throw new Error('view transition fallback failed');
+const values = new Map();
+let reloads = 0;
+const recovery = createLiteChunkRecoveryController({
+  buildId: 'test-build',
+  storage: { getItem: (key) => values.get(key) || null, setItem: (key, value) => values.set(key, value) },
+  locationObject: { reload: () => { reloads += 1; } },
+});
+const chunkError = new Error('Failed to fetch dynamically imported module');
+if (!recovery.attempt(chunkError) || recovery.attempt(chunkError) || reloads !== 1) throw new Error('chunk recovery guard failed');
+"""
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", script],
+        cwd=Path.cwd(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_lite_n1_stable_screen_registry_and_lazy_boundaries_source_contract():
+    app = Path("src/lite/LiteApp.jsx").read_text()
+    registry = Path("src/lite/liteScreenRegistry.js").read_text()
+    config = Path("src/lite/liteNavigationConfig.js").read_text()
+    boundary = Path("src/lite/LiteScreenBoundary.jsx").read_text()
+    store = Path("src/stores/liteUiStore.js").read_text()
+
+    assert "import HomeScreen from './LiteHome.jsx'" in registry
+    for screen in ["LiteCatalog", "LiteIdentity", "LiteSecurity", "LiteDevices", "LiteRules", "LiteRecovery"]:
+        assert f"import('./{screen}.jsx')" in registry
+        assert f"import {screen}" not in app
+    assert "LITE_SCREEN_REGISTRY" in registry
+    assert "modulePromises" in registry
+    assert "lazyComponents" in registry
+    assert "normalizeLiteScreenId" in config
+    assert "normalizeLiteScreenId(tabId, DEFAULT_TAB)" in store
+    assert "LiteScreenErrorBoundary" in app
+    assert "Suspense fallback={<LiteScreenLoading" in app
+    assert "Retry section" in boundary
+    assert "aria-current={isActive ? 'page' : undefined}" in app
+
+
+def test_lite_n1_preload_transition_and_chunk_recovery_guards_source_contract():
+    app = Path("src/lite/LiteApp.jsx").read_text()
+    runtime = Path("src/lite/liteNavigationRuntime.js").read_text()
+    boundary = Path("src/lite/LiteScreenBoundary.jsx").read_text()
+
+    for guard in ["offline", "hidden_document", "data_saver", "slow_connection", "low_battery"]:
+        assert guard in runtime
+    assert "inFlight" in runtime
+    assert "loaded" in runtime
+    assert "requestIdleCallback" in app
+    assert "activeScreenEntry.idlePreload" in app
+    assert "startLiteViewTransition" in app
+    assert "prefersLiteReducedMotion" in app
+    assert "skipTransition" in runtime
+    assert "LITE_CHUNK_RECOVERY_PREFIX" in runtime
+    assert "storage.getItem(guardKey) === '1'" in runtime
+    assert "failureType: chunkFailure ? 'chunk_load' : 'screen_render'" in boundary
+    assert "error.stack" not in boundary
+    assert "createLiteChunkRecoveryController" not in app
+
+
+def test_lite_n2_render_containment_is_targeted_and_overlay_safe():
+    css = Path("src/index.css").read_text()
+    devices = Path("src/lite/LiteDevices.jsx").read_text()
+    catalog = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text()
+    security = Path("src/lite/LiteSecurity.jsx").read_text()
+    recovery = Path("src/lite/LiteRecovery.jsx").read_text()
+
+    assert "content-visibility: auto" in css
+    assert "contain-intrinsic-size: auto" in css
+    assert "contain: layout style" in css
+    assert ".lite-render-containment:focus-within" in css
+    assert "lite-devices-grid lite-devices-linked-grid lite-render-containment" in devices
+    assert "lite-catalog-grid lite-render-containment" in catalog
+    assert "lite-security-s7-profile-cards lite-render-containment" in security
+    assert "lite-recovery-r1-summary-grid lite-render-containment" in recovery
+    for unsafe_class in [
+        "lite-catalog-manage-sheet lite-render-containment",
+        "lite-security-manage-shell lite-render-containment",
+        "lite-recovery-manage-sheet lite-render-containment",
+        "pocket-nav-dock lite-render-containment",
+        "mobile-more-sheet lite-render-containment",
+    ]:
+        assert unsafe_class not in _lite_ui_source()
+
+
+def test_lite_n1_bundle_budget_script_passes_and_fails_actionably(tmp_path):
+    dist = tmp_path / "dist"
+    assets = dist / "assets"
+    manifest_dir = dist / ".vite"
+    assets.mkdir(parents=True)
+    manifest_dir.mkdir(parents=True)
+
+    manifest = {
+        "src/main.jsx": {"file": "assets/index.js", "isEntry": True, "imports": ["vendor"], "css": ["assets/index.css"]},
+        "vendor": {"file": "assets/vendor.js"},
+    }
+    screen_sources = [
+        "src/lite/LiteCatalog.jsx",
+        "src/lite/LiteIdentity.jsx",
+        "src/lite/LiteSecurity.jsx",
+        "src/lite/LiteDevices.jsx",
+        "src/lite/LiteRules.jsx",
+        "src/lite/LiteRecovery.jsx",
+    ]
+    for index, source in enumerate(screen_sources):
+        manifest[source] = {"file": f"assets/screen-{index}.js", "isDynamicEntry": True}
+        (assets / f"screen-{index}.js").write_text("export default {};\n")
+    (assets / "index.js").write_text("export {};\n")
+    (assets / "vendor.js").write_text("export {};\n")
+    (assets / "index.css").write_text("body{}\n")
+    (manifest_dir / "manifest.json").write_text(json.dumps(manifest))
+
+    environment = {"POCKETLAB_DIST_DIR": str(dist)}
+    passing = subprocess.run(
+        ["node", "scripts/dev/check-lite-bundle-budgets.mjs"],
+        cwd=Path.cwd(), env={**os.environ, **environment},
+        capture_output=True, text=True, check=False,
+    )
+    assert passing.returncode == 0, passing.stderr or passing.stdout
+    assert "PASS summary" in passing.stdout
+
+    (assets / "index.js").write_bytes(b"x" * 1_300_000)
+    failing = subprocess.run(
+        ["node", "scripts/dev/check-lite-bundle-budgets.mjs"],
+        cwd=Path.cwd(), env={**os.environ, **environment},
+        capture_output=True, text=True, check=False,
+    )
+    assert failing.returncode != 0
+    assert "Initial JavaScript" in failing.stderr
+    assert "hard limit" in failing.stderr
+
+
+def test_lite_n1_pwa_apps_route_and_build_manifest_remain_guarded():
+    config = Path("vite.config.js").read_text()
+    package = json.loads(Path("package.json").read_text())
+
+    assert "^\\/(?:api|terminal|apps|gitea|docs)" in config
+    assert "navigateFallbackDenylist: [noPwaFallbackPattern]" in config
+    assert "manifest: true" in config
+    assert "VITE_POCKETLAB_BUILD_ID" in config
+    assert package["scripts"]["check:bundle"] == "node scripts/dev/check-lite-bundle-budgets.mjs"
+    assert package["scripts"]["test:n1n2"] == "vitest run src/lite/liteNavigationRuntime.test.js"

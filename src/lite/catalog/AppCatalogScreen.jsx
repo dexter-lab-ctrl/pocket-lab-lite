@@ -2972,7 +2972,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       {loading ? <CatalogSkeletons /> : null}
       {loading ? <LoadingCard label="Loading apps..." /> : null}
 
-      <div className="lite-catalog-grid">
+      <div className="lite-catalog-grid lite-render-containment lite-render-containment--catalog">
         {displayedApps.filter((app) => app.id !== featuredApp?.id).map((app) => renderAppCard(app))}
       </div>
 

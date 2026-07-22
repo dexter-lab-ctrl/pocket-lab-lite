@@ -185,7 +185,26 @@ def app_runtime_subprojection() -> dict[str, Any]:
     )
 
 
+def invalidate_app_subprojections(*areas: str) -> None:
+    """Drop bounded app read projections after backend-owned state changes."""
+    aliases = {
+        "backup": "photoprism:backup",
+        "security": "photoprism:security",
+        "runtime": "photoprism:runtime",
+    }
+    names = {
+        aliases.get(
+            str(area or "").strip().lower(),
+            str(area or "").strip(),
+        )
+        for area in areas
+    }
+    names.discard("")
 
+    with _SUBPROJECTION_LOCK:
+        for name in names:
+            _SUBPROJECTION_VALUES.pop(name, None)
+            _SUBPROJECTION_NEXT_ALLOWED[name] = 0.0
 
 
 def _prime_app_subprojections() -> None:

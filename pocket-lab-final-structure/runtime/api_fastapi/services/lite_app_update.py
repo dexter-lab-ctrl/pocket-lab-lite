@@ -539,6 +539,17 @@ def update_status(app_id: str = "photoprism") -> dict[str, Any]:
 
 def create_update_readiness(command: dict[str, Any]) -> dict[str, Any]:
     app = _validate_app_id(command.get("app_id") or "photoprism")
+
+    # Update readiness consumes current backup and restore-preview proof.
+    # Clear the bounded lifecycle projection before evaluating and
+    # publishing that combined state so later action reads cannot reuse
+    # stale backup evidence.
+    try:
+        from . import lite_app_lifecycle
+
+        lite_app_lifecycle.invalidate_app_subprojections("backup")
+    except Exception:
+        pass
     operation_id = str(command.get("operation_id") or command.get("command_id") or f"app-update-check-{app}-{uuid.uuid4().hex[:12]}")
     now = _now()
     _write_state({

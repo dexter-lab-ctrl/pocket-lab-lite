@@ -23,7 +23,10 @@
     "test:golden": "playwright test tests/e2e/golden-path.spec.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "lighthouse": "lhci autorun"
+    "lighthouse": "lhci autorun",
+    "test:n1n2": "vitest run src/lite/liteNavigationRuntime.test.js",
+    "check:bundle": "node scripts/dev/check-lite-bundle-budgets.mjs",
+    "build:budget": "npm run build && npm run check:bundle"
   },
   "keywords": [],
   "author": "",

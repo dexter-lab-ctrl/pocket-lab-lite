@@ -629,7 +629,7 @@ export default function DevicesScreen() {
             </Suspense>
           ) : null}
 
-          <div className="lite-devices-grid lite-devices-linked-grid">
+          <div className="lite-devices-grid lite-devices-linked-grid lite-render-containment lite-render-containment--devices">
             {devices.map((device) => {
               const key = String(device.id || device.name);
               return (

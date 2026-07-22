@@ -558,7 +558,7 @@ export default function RecoveryScreen() {
       {error ? <StateSurface tone="degraded" title="Recovery information is temporarily unavailable" description={error} className="mb-5" /> : null}
       {actionError ? <StateSurface tone="degraded" title="Recovery action needs attention" description={actionError} className="mb-5" /> : null}
 
-      <div className="lite-recovery-r1-summary-grid">
+      <div className="lite-recovery-r1-summary-grid lite-render-containment lite-render-containment--recovery">
         <GlassCard className="lite-recovery-r1-summary-card">
           <div className="lite-recovery-r1-card-head">
             <div><ShieldCheck className="h-5 w-5" /><span><strong>Protection</strong><small>Recovery readiness at a glance</small></span></div>

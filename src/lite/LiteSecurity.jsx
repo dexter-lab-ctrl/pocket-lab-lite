@@ -2980,7 +2980,7 @@ export default function SecurityScreen() {
             </animated.div>
           ) : null}
         </GlassCard>
-        <div className="lite-security-s7-profile-cards" aria-label="Saved Security profile results" data-security-s7-profile-cards="true">
+        <div className="lite-security-s7-profile-cards lite-render-containment lite-render-containment--security" aria-label="Saved Security profile results" data-security-s7-profile-cards="true">
           {securityProfileCards.map((card) => (
             <button
               key={`${card.id}:${card.snapshot.app_id || ''}`}

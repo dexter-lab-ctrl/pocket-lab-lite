@@ -104,6 +104,18 @@ def _write_state(update: dict[str, Any]) -> dict[str, Any]:
     state.update(update)
     state["updated_at"] = _now()
     deps.core.write_json_file(_state_path(), state)
+    # App Catalog lifecycle reads use a bounded projection cache.
+    # Any backup state transition must invalidate it so action readiness
+    # and troubleshooting links are truthful on the next API read.
+    try:
+        from . import lite_app_lifecycle
+
+        lite_app_lifecycle.invalidate_app_subprojections("backup")
+    except Exception:
+        # State persistence must not fail only because cache invalidation
+        # could not be completed. The cache remains bounded and recoverable.
+        pass
+
     return state
 
 

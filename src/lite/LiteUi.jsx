@@ -1,14 +1,6 @@
 import React from 'react';
-import {
-  Activity,
-  Database,
-  FileCheck,
-  Fingerprint,
-  LayoutGrid,
-  Network,
-  RefreshCw,
-  ShieldCheck,
-} from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { NAV_ITEMS } from './liteNavigationConfig.js';
 import { GlassCard, StatusBadge, StateSurface } from '../components/ui.jsx';
 import { actionReference } from '../lib/liteApi.js';
 import { useLiteUiStore, useLiteRefreshFeedback } from '../stores/liteUiStore.js';
@@ -119,15 +111,7 @@ export const DEVICE_ROLE_OPTIONS = [
   },
 ];
 
-export const NAV_ITEMS = [
-  { id: 'home', label: 'Home', icon: Activity },
-  { id: 'catalog', label: 'App Catalog', icon: LayoutGrid },
-  { id: 'identity', label: 'Identity & Access', icon: Fingerprint },
-  { id: 'security', label: 'Security', icon: ShieldCheck },
-  { id: 'devices', label: 'Devices', icon: Network },
-  { id: 'rules', label: 'Rules', icon: FileCheck },
-  { id: 'recovery', label: 'Recovery', icon: Database },
-];
+export { NAV_ITEMS };
 
 
 

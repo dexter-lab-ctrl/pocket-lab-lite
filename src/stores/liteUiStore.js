@@ -1,3 +1,4 @@
+import { normalizeLiteScreenId } from '../lite/liteNavigationConfig.js';
 import { create } from 'zustand';
 
 const DEFAULT_TAB = 'home';
@@ -130,7 +131,7 @@ function buildRefreshFeedback(scope, result, extra = {}) {
 
 export const useLiteUiStore = create((set, get) => ({
   activeTab: DEFAULT_TAB,
-  setActiveTab: (tabId) => set({ activeTab: normalizeId(tabId, DEFAULT_TAB), mobileMenuOpen: false, moreSheetOpen: false }),
+  setActiveTab: (tabId) => set({ activeTab: normalizeLiteScreenId(tabId, DEFAULT_TAB), mobileMenuOpen: false, moreSheetOpen: false }),
 
   mobileMenuOpen: false,
   setMobileMenuOpen: (open) => set({ mobileMenuOpen: Boolean(open) }),
