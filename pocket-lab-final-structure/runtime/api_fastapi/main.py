@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .services.runtime_diagnostics import RuntimeTimingMiddleware
 from .services.request_limits import LiteRequestSizeLimitMiddleware
 from .services.lite_security_maintenance import LiteMaintenanceModeMiddleware
+from .services.lite_safe_read_headers import LiteSafeReadNonceMiddleware
 from .services.workload_admission import WorkloadAdmissionError
 
 from . import deps
@@ -164,10 +165,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["ETag", "X-PocketLab-Read-Nonce"],
 )
 app.add_middleware(LiteRequestSizeLimitMiddleware)
 app.add_middleware(LiteMaintenanceModeMiddleware)
 app.add_middleware(RuntimeTimingMiddleware)
+app.add_middleware(LiteSafeReadNonceMiddleware)
 
 for router in (
     health.router,

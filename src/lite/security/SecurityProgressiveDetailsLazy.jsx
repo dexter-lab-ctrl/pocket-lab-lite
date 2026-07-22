@@ -496,6 +496,7 @@ export default function SecurityProgressiveDetailsLazy({ type = 'evidence', mode
                   trendLabel={model?.scoreTrendView?.label || ''}
                   trendDetail={model?.scoreTrendView?.detail || ''}
                   savedStateOnly={Boolean(model?.savedStateOnly)}
+                  profile={model?.scanProfile || 'quick'}
                 />
               </React.Suspense>
             ),

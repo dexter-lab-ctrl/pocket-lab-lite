@@ -7,6 +7,7 @@ import {
 } from './liteViewModels.js';
 import {
   checkLiteOfflineDbAvailability,
+  deleteOfflineSafeSnapshot,
   estimateLiteCacheHealth,
   getLiteOfflineCacheHealth,
   markLiteBackendReachable,
@@ -19,6 +20,10 @@ import {
   setOfflineCacheMeta,
   writeOfflineSafeSnapshot,
 } from './liteOfflineDb.js';
+import {
+  LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION,
+  liteSafeHistorySchemaCompatible,
+} from './liteOfflineReadPolicy.js';
 
 const SNAPSHOT_PREFIX = 'pocketlab:lite:safe-snapshot:';
 export const RECOVERY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/recovery/backups/index';
@@ -71,6 +76,8 @@ const MAX_ARRAY_ITEMS = 80;
 const MAX_STRING_LENGTH = 1200;
 const MAX_SCAN_DEPTH = 8;
 const inMemorySnapshots = new Map();
+const snapshotFingerprints = new Map();
+const UNCHANGED_SNAPSHOT_WRITE_THROTTLE_MS = 60_000;
 const SECURITY_SNAPSHOT_ENDPOINT = '/api/lite/security';
 const SECURITY_SUMMARY_SNAPSHOT_ENDPOINT = '/api/lite/security/summary';
 const SECURITY_SNAPSHOT_ENDPOINTS = new Set([SECURITY_SNAPSHOT_ENDPOINT, SECURITY_SUMMARY_SNAPSHOT_ENDPOINT]);
@@ -196,6 +203,30 @@ function isExpiredAt(value) {
   if (!value) return false;
   const timestamp = new Date(value).getTime();
   return Number.isFinite(timestamp) && timestamp < Date.now();
+}
+
+function isSafeHistorySnapshotEndpoint(path = '') {
+  const normalized = normalizeLiteSnapshotPath(path);
+  return normalized === SECURITY_HISTORY_SNAPSHOT_ENDPOINT
+    || normalized === RECOVERY_HISTORY_SNAPSHOT_ENDPOINT;
+}
+
+function safeHistoryPayloadCompatible(path = '', payload = {}) {
+  return !isSafeHistorySnapshotEndpoint(path) || liteSafeHistorySchemaCompatible(payload);
+}
+
+function snapshotFingerprint(payload) {
+  try {
+    const serialized = JSON.stringify(payload ?? null);
+    let hash = 2166136261;
+    for (let index = 0; index < serialized.length; index += 1) {
+      hash ^= serialized.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${serialized.length}:${(hash >>> 0).toString(36)}`;
+  } catch {
+    return '';
+  }
 }
 
 function storageKey(path = '') {
@@ -326,7 +357,7 @@ function parseStoredSnapshot(path = '', raw) {
   try {
     const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
     const payload = parsed?.payload || parsed?.data;
-    if (!payload) return null;
+    if (!payload || !safeHistoryPayloadCompatible(path, payload)) return null;
     const record = {
       endpoint: parsed.endpoint || parsed.path || path,
       payload,
@@ -349,7 +380,13 @@ function parseStoredSnapshot(path = '', raw) {
 function readLocalStorageSnapshot(path = '') {
   if (!canUseStorage()) return null;
   try {
-    return parseStoredSnapshot(path, window.localStorage.getItem(storageKey(path)));
+    const key = storageKey(path);
+    const raw = window.localStorage.getItem(key);
+    const snapshot = parseStoredSnapshot(path, raw);
+    if (!snapshot && raw && isSafeHistorySnapshotEndpoint(path)) {
+      window.localStorage.removeItem(key);
+    }
+    return snapshot;
   } catch {
     return null;
   }
@@ -405,6 +442,7 @@ function writeLocalStorageSnapshot(path = '', record) {
 function commitLiteSnapshotRecord(path = '', record) {
   const normalizedPath = normalizeLiteSnapshotPath(path);
   inMemorySnapshots.set(normalizedPath, record);
+  snapshotFingerprints.set(normalizedPath, snapshotFingerprint(record.payload));
   writeLocalStorageSnapshot(normalizedPath, record);
   writeOfflineSafeSnapshot({
     endpoint: normalizedPath,
@@ -546,19 +584,26 @@ function readSecurityCompositeSnapshot(requestPath = SECURITY_SUMMARY_SNAPSHOT_E
 
 function rememberSnapshot(path = '', record) {
   const normalizedPath = normalizeLiteSnapshotPath(path);
+  if (!safeHistoryPayloadCompatible(normalizedPath, record?.payload)) return null;
   inMemorySnapshots.set(normalizedPath, record);
+  snapshotFingerprints.set(normalizedPath, snapshotFingerprint(record.payload));
   return withMeta(record.payload, { ...record, path: normalizedPath, source: 'cache' });
 }
 
 function rememberDexieRecord(record) {
   if (!record?.endpoint || !record?.payload) return null;
   const normalizedPath = normalizeLiteSnapshotPath(record.endpoint);
+  if (!safeHistoryPayloadCompatible(normalizedPath, record.payload)) {
+    deleteOfflineSafeSnapshot(normalizedPath);
+    return null;
+  }
   const normalized = {
     ...record,
     endpoint: normalizedPath,
     source: 'cache',
   };
   inMemorySnapshots.set(normalizedPath, normalized);
+  snapshotFingerprints.set(normalizedPath, snapshotFingerprint(normalized.payload));
   writeLocalStorageSnapshot(normalizedPath, normalized);
   return withMeta(normalized.payload, { ...normalized, path: normalizedPath, source: 'cache' });
 }
@@ -588,7 +633,13 @@ export function readLiteSnapshot(path = '') {
   const normalizedPath = normalizeLiteSnapshotPath(path);
   if (!isSafeLiteSnapshotPath(normalizedPath)) return null;
   const memory = inMemorySnapshots.get(normalizedPath);
-  if (memory) return withMeta(memory.payload, { ...memory, path: normalizedPath, source: 'cache' });
+  if (memory && safeHistoryPayloadCompatible(normalizedPath, memory.payload)) {
+    return withMeta(memory.payload, { ...memory, path: normalizedPath, source: 'cache' });
+  }
+  if (memory) {
+    inMemorySnapshots.delete(normalizedPath);
+    snapshotFingerprints.delete(normalizedPath);
+  }
   const local = readLocalStorageSnapshot(normalizedPath);
   if (local) return local;
   if (SECURITY_SNAPSHOT_ENDPOINTS.has(normalizedPath)) {
@@ -621,6 +672,10 @@ export function writeLiteSnapshot(path = '', data) {
   const normalizedPath = normalizeLiteSnapshotPath(path);
   if (!isSafeLiteSnapshotPath(normalizedPath) || !data || typeof data !== 'object') return { stored: false, reason: 'unsafe_path_or_payload' };
   const payload = stripSnapshotMeta(data);
+  if (isSafeHistorySnapshotEndpoint(normalizedPath) && !safeHistoryPayloadCompatible(normalizedPath, payload)) {
+    markLiteSnapshotRejected(normalizedPath, `safe history schema ${LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION} required`);
+    return { stored: false, rejected: true, reason: 'safe_history_schema_mismatch' };
+  }
   if (normalizedPath === RECOVERY_HISTORY_SNAPSHOT_ENDPOINT
     && safeApproximateSize(payload) > LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes) {
     markLiteSnapshotRejected(normalizedPath, 'Recovery history snapshot too large');
@@ -632,6 +687,15 @@ export function writeLiteSnapshot(path = '', data) {
     return { stored: false, rejected: true, reason: unsafeReason };
   }
   const record = toSnapshotRecord(normalizedPath, payload);
+  const fingerprint = snapshotFingerprint(record.payload);
+  const previous = inMemorySnapshots.get(normalizedPath);
+  const previousSavedAt = new Date(previous?.saved_at || 0).getTime();
+  const unchangedWriteFresh = Number.isFinite(previousSavedAt)
+    && Date.now() - previousSavedAt < UNCHANGED_SNAPSHOT_WRITE_THROTTLE_MS;
+  if (fingerprint && snapshotFingerprints.get(normalizedPath) === fingerprint && unchangedWriteFresh) {
+    inMemorySnapshots.set(normalizedPath, record);
+    return { stored: false, unchanged: true, savedAt: record.saved_at, expiresAt: record.expires_at };
+  }
   commitLiteSnapshotRecord(normalizedPath, record);
   writeSecurityProfileSnapshots(normalizedPath, record.payload, record);
   setOfflineCacheMeta('lastCacheWriteAt', record.saved_at);
@@ -655,6 +719,20 @@ export function attachFreshSnapshotMeta(path = '', data) {
     checkedAt: timestamp,
     expiresAt: addMsIso(timestamp, ttlForLiteSnapshotPath(path)),
     status: 'fresh',
+  });
+}
+
+export function attachSavedHttpCacheMeta(path = '', data, { checkedAt = '', savedAt = '' } = {}) {
+  const timestamp = checkedAt || savedAt || nowIso();
+  markLiteBackendUnreachable();
+  return withMeta(data, {
+    source: 'http-cache',
+    path,
+    stale: true,
+    savedAt: savedAt || timestamp,
+    checkedAt: timestamp,
+    expiresAt: addMsIso(timestamp, ttlForLiteSnapshotPath(path)),
+    status: 'saved',
   });
 }
 

@@ -141,6 +141,8 @@ export default function DeviceDetailsLazy({ device, onClose }) {
         technicalDetails={technicalRows(device)}
         history={{
           title: 'Device history',
+          domain: 'default',
+          datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
           summary: historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'History will appear here after the device reports more events.',
           items: historyItems,
           enabled: true,

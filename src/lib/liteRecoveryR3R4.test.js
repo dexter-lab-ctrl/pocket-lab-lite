@@ -5,6 +5,7 @@ import { selectRecoverySummaryView } from './liteViewModels.js';
 const recoverySource = readFileSync(new URL('../lite/LiteRecovery.jsx', import.meta.url), 'utf8');
 const manageSource = readFileSync(new URL('../lite/recovery/RecoveryManageSheetLazy.jsx', import.meta.url), 'utf8');
 const historySource = readFileSync(new URL('../lite/recovery/RecoveryBackupHistory.jsx', import.meta.url), 'utf8');
+const virtualListSource = readFileSync(new URL('../lite/components/LiteVirtualList.jsx', import.meta.url), 'utf8');
 const confirmSource = readFileSync(new URL('../lite/recovery/RecoveryConfirmSheetLazy.jsx', import.meta.url), 'utf8');
 const overlaySource = readFileSync(new URL('../lite/LiteOverlay.jsx', import.meta.url), 'utf8');
 const apiSource = readFileSync(new URL('./liteApi.js', import.meta.url), 'utf8');
@@ -27,7 +28,10 @@ describe('Pocket Lab Lite Recovery R3/R4', () => {
     expect(manageSource).toContain("activeSection === 'history'");
     expect(historySource).toContain('liteApi.recoveryHistory(10, cursor)');
     expect(historySource).toContain('recoveryHistoryPage');
-    expect(historySource).toContain('Load more');
+    expect(historySource).toContain('onLoadMore={loadMore}');
+    expect(historySource).toContain('hasMore={hasMore}');
+    expect(virtualListSource).toContain("loadMoreLabel = 'Load more'");
+    expect(virtualListSource).toContain('{loadMoreLabel}');
     expect(apiSource).toContain('cursor');
   });
 

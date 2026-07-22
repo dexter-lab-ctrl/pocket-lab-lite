@@ -1,4 +1,5 @@
 import Dexie from 'dexie';
+import { liteSafeHistorySchemaCompatible } from './liteOfflineReadPolicy.js';
 
 export const LITE_OFFLINE_DB_NAME = 'pocketlab_lite_safe_snapshots';
 export const LITE_OFFLINE_DB_VERSION = 1;
@@ -23,6 +24,7 @@ export const LITE_SECURITY_SNAPSHOT_RETENTION_POLICY = {
 
 let liteOfflineDb = null;
 let liteOfflineDbAvailability = null;
+let lastQuotaRecoveryAt = 0;
 let liteOfflineCacheHealth = {
   cacheAvailable: false,
   cacheError: '',
@@ -31,6 +33,9 @@ let liteOfflineCacheHealth = {
   lastCacheRejectedAt: null,
   lastBackendReachableAt: null,
   lastBackendUnreachableAt: null,
+  lastPrunedAt: null,
+  pruningStatus: 'idle',
+  quotaFailureType: '',
 };
 
 function nowIso() {
@@ -48,6 +53,24 @@ function safeDetail(detail = '') {
 function updateHealth(next = {}) {
   liteOfflineCacheHealth = { ...liteOfflineCacheHealth, ...next };
   return { ...liteOfflineCacheHealth };
+}
+
+function quotaFailureType(error) {
+  const name = String(error?.name || '');
+  if (/quota/i.test(name)) return 'quota_exceeded';
+  return '';
+}
+
+function scheduleQuotaRecovery(error) {
+  const failureType = quotaFailureType(error);
+  if (!failureType) return;
+  const now = Date.now();
+  if (now - lastQuotaRecoveryAt < 60_000) return;
+  lastQuotaRecoveryAt = now;
+  updateHealth({ quotaFailureType: failureType, pruningStatus: 'scheduled' });
+  Promise.resolve().then(() => pruneExpiredOfflineSnapshots({
+    maxSnapshots: Math.max(8, Math.floor(LITE_OFFLINE_SNAPSHOT_LIMIT / 2)),
+  }));
 }
 
 export function getLiteOfflineCacheHealth() {
@@ -158,6 +181,27 @@ export async function writeOfflineSafeSnapshot({
     const db = getLiteOfflineDb();
     const normalizedEndpoint = normalizeOfflineEndpoint(endpoint);
     const approximateSizeBytes = estimateSnapshotSizeBytes(payload);
+    const safeHistoryEndpoint = normalizedEndpoint === '/api/lite/recovery/backups/index'
+      || normalizedEndpoint === '/api/lite/security/history/index';
+    if (safeHistoryEndpoint && !liteSafeHistorySchemaCompatible(payload)) {
+      updateHealth({ cacheError: 'safe_history_schema_mismatch', lastCacheRejectedAt: nowIso() });
+      await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_rejected', detail: 'incompatible safe history schema' });
+      return false;
+    }
+    if (normalizedEndpoint === '/api/lite/recovery/backups/index'
+      && Array.isArray(payload?.backups)
+      && payload.backups.length > LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY.historyPageLimit) {
+      updateHealth({ cacheError: 'recovery_history_snapshot_row_limit' });
+      await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_rejected', detail: 'Recovery history snapshot row limit exceeded' });
+      return false;
+    }
+    if (normalizedEndpoint === '/api/lite/security/history/index'
+      && Array.isArray(payload?.history)
+      && payload.history.length > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.profileHistoryLimit) {
+      updateHealth({ cacheError: 'security_history_snapshot_row_limit' });
+      await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_rejected', detail: 'Security history snapshot row limit exceeded' });
+      return false;
+    }
     if (normalizedEndpoint === '/api/lite/recovery/backups/index' && approximateSizeBytes > LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes) {
       updateHealth({ cacheError: 'recovery_history_snapshot_too_large' });
       await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_rejected', detail: 'Recovery history snapshot too large' });
@@ -188,12 +232,17 @@ export async function writeOfflineSafeSnapshot({
       approximate_size_bytes: approximateSizeBytes,
     };
     await db.safe_snapshots.put(snapshot);
-    updateHealth({ cacheAvailable: true, cacheError: '', lastCacheWriteAt: nowIso() });
+    updateHealth({ cacheAvailable: true, cacheError: '', quotaFailureType: '', lastCacheWriteAt: nowIso() });
     await recordOfflineSnapshotEvent({ endpoint: normalizedEndpoint, eventType: 'snapshot_saved', detail: status });
     await pruneExpiredOfflineSnapshots();
     return true;
   } catch (error) {
-    updateHealth({ cacheError: error?.name || 'snapshot_write_failed' });
+    const failureType = quotaFailureType(error);
+    updateHealth({
+      cacheError: error?.name || 'snapshot_write_failed',
+      quotaFailureType: failureType || liteOfflineCacheHealth.quotaFailureType,
+    });
+    scheduleQuotaRecovery(error);
     return false;
   }
 }
@@ -276,7 +325,8 @@ async function pruneRecoveryHistorySnapshots(db) {
     > LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes;
   const tooManyRows = Array.isArray(snapshot.payload?.backups)
     && snapshot.payload.backups.length > LITE_RECOVERY_SNAPSHOT_RETENTION_POLICY.historyPageLimit;
-  if (!expiredByPolicy && !oversized && !tooManyRows) return;
+  const incompatibleSchema = !liteSafeHistorySchemaCompatible(snapshot.payload);
+  if (!expiredByPolicy && !oversized && !tooManyRows && !incompatibleSchema) return;
   await db.safe_snapshots.delete(snapshot.key);
   await recordOfflineSnapshotEvent({
     endpoint,
@@ -294,7 +344,13 @@ async function pruneSecurityProfileSnapshots(db) {
   const oversized = securitySnapshots.filter((snapshot) => {
     const size = Number(snapshot.approximate_size_bytes || 0);
     if (String(snapshot.endpoint || '').includes('/profiles/')) return size > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxProfileSnapshotBytes;
-    if (snapshot.endpoint === '/api/lite/security/history/index') return size > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes;
+    if (snapshot.endpoint === '/api/lite/security/history/index') {
+      const tooManyRows = Array.isArray(snapshot.payload?.history)
+        && snapshot.payload.history.length > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.profileHistoryLimit;
+      return size > LITE_SECURITY_SNAPSHOT_RETENTION_POLICY.maxHistorySnapshotBytes
+        || tooManyRows
+        || !liteSafeHistorySchemaCompatible(snapshot.payload);
+    }
     return false;
   });
   const profileGroups = profileSnapshots.reduce((groups, snapshot) => {
@@ -323,6 +379,7 @@ export async function pruneExpiredOfflineSnapshots({
   maxSnapshots = LITE_OFFLINE_SNAPSHOT_LIMIT,
 } = {}) {
   if (!(await checkLiteOfflineDbAvailability())) return false;
+  updateHealth({ pruningStatus: 'running' });
   try {
     const db = getLiteOfflineDb();
     await pruneRecoveryHistorySnapshots(db);
@@ -350,9 +407,10 @@ export async function pruneExpiredOfflineSnapshots({
       await db.safe_snapshots.bulkDelete(oldest.map((snapshot) => snapshot.key));
     }
     await pruneOfflineSnapshotEvents();
+    updateHealth({ pruningStatus: 'idle', lastPrunedAt: nowIso(), cacheError: '', quotaFailureType: '' });
     return true;
   } catch (error) {
-    updateHealth({ cacheError: error?.name || 'snapshot_prune_failed' });
+    updateHealth({ pruningStatus: 'failed', cacheError: error?.name || 'snapshot_prune_failed' });
     return false;
   }
 }

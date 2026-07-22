@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteQueryKeys } from '../../lib/liteQueryClient.js';
 import { selectRecoveryHistorySnapshotView } from '../../lib/liteViewModels.js';
@@ -34,6 +34,7 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
   const [cursor, setCursor] = useState('');
   const [pageOrder, setPageOrder] = useState(['first']);
   const [pageItems, setPageItems] = useState({ first: Array.isArray(initialHistory) ? initialHistory : [] });
+  const requestedCursorsRef = useRef(new Set());
   const path = `/api/lite/recovery/backups?limit=10${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`;
   const query = useLiteQuery({
     queryKey: liteQueryKeys.recoveryHistoryPage(10, cursor),
@@ -67,6 +68,15 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
   const nextCursor = String(query.data?.next_cursor || '');
   const hasMore = Boolean(!query.savedStateOnly && query.data?.has_more && nextCursor);
   const historySavedStateOnly = Boolean(savedStateOnly || query.savedStateOnly);
+  const loadMore = useCallback(() => {
+    if (!nextCursor || historySavedStateOnly || query.refreshing || requestedCursorsRef.current.has(nextCursor)) return;
+    requestedCursorsRef.current.add(nextCursor);
+    setCursor(nextCursor);
+  }, [historySavedStateOnly, nextCursor, query.refreshing]);
+
+  useEffect(() => {
+    if (query.error && cursor) requestedCursorsRef.current.delete(cursor);
+  }, [cursor, query.error]);
 
   return (
     <GlassCard className="lite-recovery-card mt-4 lite-recovery-history-card" data-recovery-history-lazy="true" data-recovery-history-r3="cursor">
@@ -84,15 +94,17 @@ const RecoveryBackupHistory = memo(function RecoveryBackupHistory({ initialHisto
         enabled
         savedState={historySavedStateOnly}
         emptyMessage={query.error ? 'Backup history could not be loaded. Retry when Pocket Lab is reachable.' : 'Use Backup Now to create your first encrypted local backup.'}
+        domain="recoveryHistory"
+        datasetKey="recovery:backups"
+        hasMore={hasMore}
+        loadingMore={query.refreshing && Boolean(cursor)}
+        onLoadMore={loadMore}
       />
-      <div className="lite-recovery-history-actions">
-        {query.error ? <LiteButton tone="secondary" onClick={query.refresh}>Retry</LiteButton> : null}
-        {hasMore ? (
-          <LiteButton tone="secondary" onClick={() => setCursor(nextCursor)} disabled={query.refreshing}>
-            {query.refreshing ? 'Loading…' : 'Load more'}
-          </LiteButton>
-        ) : null}
-      </div>
+      {query.error ? (
+        <div className="lite-recovery-history-actions">
+          <LiteButton tone="secondary" onClick={query.refresh}>Retry</LiteButton>
+        </div>
+      ) : null}
     </GlassCard>
   );
 });

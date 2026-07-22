@@ -182,6 +182,8 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
         technicalDetails={compactTechnicalRows(actionId, details, saved, technical)}
         history={{
           title: runLabels.title,
+          domain: 'appActionHistory',
+          datasetKey: `app-action:${actionId || 'unknown'}`,
           summary: historySummary(details, runLabels, saved),
           items: compactHistoryItems(details, runLabels, saved),
           enabled: true,

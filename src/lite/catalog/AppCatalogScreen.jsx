@@ -29,6 +29,7 @@ import {
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import { getLiteAppActionInvalidations, useLiteMutation } from '../../hooks/useLiteMutation.js';
 import { useLiteAppActionFlow } from '../../hooks/useLiteAppActionFlow.js';
+import { useLiteServiceWorkerUpdateBlocker } from '../../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { isLiteAppActionsViewLive, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
@@ -1959,6 +1960,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     mutationFn: ({ appId, targetNodeId }) => liteApi.installApp(appId, { target_node_id: targetNodeId }),
     invalidate: [liteQueryKeys.catalog(), liteQueryKeys.appActions('photoprism')],
   });
+  useLiteServiceWorkerUpdateBlocker('app-catalog-workflow', Boolean(
+    busyId
+    || storageBusy
+    || actionBusyKey
+    || removeConfirmApp
+    || hasLivePhotoPrismAppActionsPayload(appActionsData)
+  ));
 
   const displayedApps = apps;
   const availableManageSections = useMemo(() => MANAGE_SECTION_ORDER, []);

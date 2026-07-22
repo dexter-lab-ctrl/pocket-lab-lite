@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { Suspense, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -22,6 +22,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { isLiteDevicesViewLive, selectDevicesScreenView } from '../lib/liteViewModels.js';
 import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
+import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
   GlassCard,
@@ -84,6 +85,7 @@ import {
   safeRestartSteps
 } from './LiteUi.jsx';
 import DeviceCard from './devices/DeviceCard.jsx';
+import LiteVirtualList from './components/LiteVirtualList.jsx';
 
 const DeviceDetailsLazy = React.lazy(() => import('./devices/DeviceDetailsLazy.jsx'));
 
@@ -148,6 +150,7 @@ export default function DevicesScreen() {
   const [removeBusy, setRemoveBusy] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
   const [detailsDeviceId, setDetailsDeviceId] = useState('');
+  const detailsButtonRefs = useRef(new Map());
   const fleetPollingIsLive = useMemo(() => (fleetPayload) => (
     busy
     || Boolean(restartBusy)
@@ -169,6 +172,15 @@ export default function DevicesScreen() {
   const remoteAccess = data?.remote_access || {};
   const remoteAccessReady = remoteAccess?.status === 'healthy' || remoteAccess?.ready;
   const latestInvite = invite || data?.latest_invite || null;
+  useLiteServiceWorkerUpdateBlocker('devices-workflow', Boolean(
+    hostname.trim()
+    || busy
+    || restartBusy
+    || removeBusy
+    || removeCandidate
+    || deviceInviteIsLive(latestInvite)
+    || deviceRestartProgressIsLive(restartProgress)
+  ));
   const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
   const selectedRoleLabel = roleLabel(selectedRole);
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
@@ -176,6 +188,12 @@ export default function DevicesScreen() {
   const activeNameConflict = localNameConflict || serverConflict;
   const addDeviceFlow = useLiteAddDeviceFlow({ devices, latestInvite, backendReachable, savedStateOnly, remoteAccessReady });
   const addDeviceDisabled = busy || addDeviceFlow.writeBlocked || Boolean(activeNameConflict);
+  const closeDeviceDetails = () => {
+    const trigger = detailsButtonRefs.current.get(detailsDeviceId);
+    trigger?.focus?.({ preventScroll: true });
+    setDetailsDeviceId('');
+  };
+
 
   async function addDevice() {
     const validation = addDeviceFlow.validateName(candidateDeviceName, selectedRole);
@@ -624,28 +642,49 @@ export default function DevicesScreen() {
             <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
               <DeviceDetailsLazy
                 device={activeDetailsDevice}
-                onClose={() => setDetailsDeviceId('')}
+                onClose={closeDeviceDetails}
               />
             </Suspense>
           ) : null}
 
-          <div className="lite-devices-grid lite-devices-linked-grid lite-render-containment lite-render-containment--devices">
-            {devices.map((device) => {
+          <LiteVirtualList
+            items={devices}
+            domain="devices"
+            datasetKey="fleet:all"
+            getItemKey={(device) => device?.id || device?.name}
+            estimateSize={312}
+            overscan={4}
+            viewportHeight={720}
+            lanes={2}
+            compactLanes={1}
+            laneGap={16}
+            ariaLabel="Pocket Lab devices"
+            className="lite-devices-list-shell"
+            normalClassName="lite-devices-grid lite-devices-linked-grid lite-render-containment lite-render-containment--devices"
+            virtualClassName="lite-devices-virtual-list"
+            savedState={savedStateOnly}
+            pinnedItemKeys={[detailsDeviceId, restartBusy].filter(Boolean)}
+            emptyState={null}
+            testId="devices-fleet-list"
+            renderItem={(device) => {
               const key = String(device.id || device.name);
               return (
                 <DeviceCard
-                  key={key}
                   device={device}
                   restartBusy={restartBusy}
                   removeBusy={removeBusy}
                   detailsOpen={detailsDeviceId === key}
                   onOpenDetails={() => setDetailsDeviceId((current) => (current === key ? '' : key))}
+                  detailsButtonRef={(node) => {
+                    if (node) detailsButtonRefs.current.set(key, node);
+                    else detailsButtonRefs.current.delete(key);
+                  }}
                   onRestartAgent={() => restartAgent(device)}
                   onRemoveDevice={() => setRemoveCandidate(device)}
                 />
               );
-            })}
-          </div>
+            }}
+          />
 
           {!loading && devices.length === 0 ? (
             <StateSurface

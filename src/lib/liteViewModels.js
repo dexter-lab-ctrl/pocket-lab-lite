@@ -1,3 +1,4 @@
+import { LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION } from './liteOfflineReadPolicy.js';
 const UNSAFE_VIEW_MODEL_KEY_PATTERN = /token|secret|password|credential|api[_-]?key|apikey|hash|private[_-]?key|invite[_-]?token|bootstrap|command[_-]?payload|raw[_-]?(log|logs|path|evidence)|evidence[_-]?path|private[_-]?path|restic[_-]?password|vault|unseal|bearer|authorization|nats/i;
 const UNSAFE_VIEW_MODEL_VALUE_PATTERN = /(bearer\s+[^\s]+|token=|password=|api[_-]?key=|secret=|authorization:\s*bearer|nats:\/\/[^\s/]+:[^\s@]+@|-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----|\/data\/data\/|\/storage\/emulated\/|\/home\/[^\s/]+\/|\/mnt\/[a-z]\/)/i;
 const MAX_DETAIL_ITEMS = 6;
@@ -6,7 +7,7 @@ const MAX_TECHNICAL_ITEMS = 8;
 export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-s3-v1';
 export const LITE_SECURITY_PROFILE_IDS = ['quick', 'full', 'app'];
 export const LITE_SECURITY_PROFILE_SNAPSHOT_VERSION = 'security-profile-snapshot-v2';
-export const LITE_SECURITY_HISTORY_SNAPSHOT_VERSION = 'lite-security-history-snapshot-v1';
+export const LITE_SECURITY_HISTORY_SNAPSHOT_VERSION = 'lite-security-history-snapshot-v2';
 export const LITE_SECURITY_PROFILE_FRESHNESS_VERSION = 'lite-security-profile-freshness-v1';
 export const LITE_SECURITY_PROFILE_RETENTION_POLICY = {
   profileHistoryLimit: 20,
@@ -1512,6 +1513,7 @@ export function selectSecurityHistorySnapshotView(payload = {}) {
   }));
   return {
     view_model: LITE_SECURITY_HISTORY_SNAPSHOT_VERSION,
+    cache_schema_version: LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION,
     history,
     history_by_profile: LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
       items[profile] = history.filter((run) => normalizeSecurityProfileId(run.scan_profile) === profile).slice(0, LITE_SECURITY_PROFILE_RETENTION_POLICY.snapshotHistoryLimit);
@@ -2054,7 +2056,7 @@ export function selectRecoveryHistorySummaryView(payload = {}) {
   return history.slice(0, 10).map(normalizeRecoveryBackup).filter(Boolean);
 }
 
-export const LITE_RECOVERY_HISTORY_SNAPSHOT_VERSION = 'recovery-history-snapshot-v1';
+export const LITE_RECOVERY_HISTORY_SNAPSHOT_VERSION = 'recovery-history-snapshot-v2';
 export const LITE_RECOVERY_HISTORY_SNAPSHOT_LIMIT = 10;
 
 function normalizeRecoveryHistorySnapshotBackup(backup = {}) {
@@ -2085,6 +2087,7 @@ export function selectRecoveryHistorySnapshotView(payload = {}) {
     .filter(Boolean);
   return {
     view_model: LITE_RECOVERY_HISTORY_SNAPSHOT_VERSION,
+    cache_schema_version: LITE_SAFE_HISTORY_CACHE_SCHEMA_VERSION,
     backups,
     next_cursor: '',
     has_more: false,

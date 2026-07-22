@@ -1,4 +1,9 @@
-import { attachFreshSnapshotMeta, isSafeLiteSnapshotPath, markLiteSnapshotBackendUnreachable, readLiteSnapshotAsync, writeLiteSnapshot } from './liteSafeSnapshots.js';
+import { attachFreshSnapshotMeta, attachSavedHttpCacheMeta, isSafeLiteSnapshotPath, markLiteSnapshotBackendUnreachable, readLiteSnapshotAsync, writeLiteSnapshot } from './liteSafeSnapshots.js';
+import {
+  classifyLiteSafeReadResponse,
+  createLiteSafeReadNonce,
+  LITE_SAFE_READ_NONCE_HEADER,
+} from './liteOfflineReadPolicy.js';
 
 const API_BASE = (import.meta.env.VITE_POCKETLAB_API_BASE || '').replace(/\/$/, '');
 const LITE_NOT_MODIFIED = '__liteNotModified';
@@ -27,6 +32,16 @@ function endpoint(path) {
   return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+function serviceWorkerControlsSameOriginRequest(path = '') {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  if (!navigator.serviceWorker?.controller) return false;
+  try {
+    return new URL(endpoint(path), window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 async function readJson(path, options = {}) {
   const method = String(options.method || 'GET').toUpperCase();
   const safeSnapshot = method === 'GET' && isSafeLiteSnapshotPath(path);
@@ -38,10 +53,23 @@ async function readJson(path, options = {}) {
     throw error;
   }
 
+  if (method === 'GET' && safeSnapshot && typeof navigator !== 'undefined' && navigator.onLine === false) {
+    markLiteSnapshotBackendUnreachable();
+    const cached = await readLiteSnapshotAsync(path);
+    if (cached) return cached;
+    const error = new Error('Pocket Lab is not reachable. No saved state is available yet.');
+    error.status = 0;
+    error.payload = { status: 'offline', summary: 'Pocket Lab is not reachable. No saved state is available yet.' };
+    throw error;
+  }
+
   const conditionalEtagKey = options.conditionalEtagKey || path;
+  const verifySafeReadSource = Boolean(safeSnapshot && serviceWorkerControlsSameOriginRequest(path));
+  const safeReadNonce = verifySafeReadSource ? createLiteSafeReadNonce() : '';
   const requestHeaders = {
     Accept: 'application/json',
     ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(safeReadNonce ? { [LITE_SAFE_READ_NONCE_HEADER]: safeReadNonce } : {}),
     ...(options.headers || {}),
   };
   const knownEtag = normalizeEtag(options.ifNoneMatch || (options.conditional ? getLiteEtag(conditionalEtagKey) : ''));
@@ -100,6 +128,19 @@ async function readJson(path, options = {}) {
   }
 
   if (safeSnapshot) {
+    const responseSource = classifyLiteSafeReadResponse({
+      requestNonce: safeReadNonce,
+      responseNonce: response.headers?.get?.(LITE_SAFE_READ_NONCE_HEADER) || '',
+      serviceWorkerControlled: verifySafeReadSource,
+    });
+    if (responseSource === 'http-cache') {
+      markLiteSnapshotBackendUnreachable();
+      const durable = await readLiteSnapshotAsync(path);
+      if (durable) return durable;
+      return attachSavedHttpCacheMeta(path, data, {
+        checkedAt: response.headers?.get?.('Date') || '',
+      });
+    }
     writeLiteSnapshot(path, data);
     return attachFreshSnapshotMeta(path, data);
   }
