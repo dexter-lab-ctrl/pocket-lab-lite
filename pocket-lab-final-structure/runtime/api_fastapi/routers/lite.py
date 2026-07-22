@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import json
 import logging
 import os
+import threading
 import time
 import uuid
 
@@ -37,6 +39,77 @@ from ..services.workload_admission import (
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 _LOGGER = logging.getLogger(__name__)
+_RECOVERY_BASE_LOCK = threading.Lock()
+_RECOVERY_BASE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
+    max_workers=1, thread_name_prefix="pocketlab-recovery-base"
+)
+_RECOVERY_BASE_VALUE: tuple[dict[str, Any], float] | None = None
+_RECOVERY_BASE_FUTURE: concurrent.futures.Future[Any] | None = None
+_RECOVERY_BASE_FAILURES = 0
+_RECOVERY_BASE_NEXT_ALLOWED = 0.0
+_WARMUP_LOCK = threading.Lock()
+_WARMUP_THREAD: threading.Thread | None = None
+
+
+def _recovery_base_done(future: concurrent.futures.Future[Any]) -> None:
+    global _RECOVERY_BASE_VALUE, _RECOVERY_BASE_FUTURE
+    global _RECOVERY_BASE_FAILURES, _RECOVERY_BASE_NEXT_ALLOWED
+    try:
+        value = future.result()
+        if not isinstance(value, dict):
+            raise TypeError("Recovery base must return a mapping")
+    except Exception as exc:
+        with _RECOVERY_BASE_LOCK:
+            _RECOVERY_BASE_FAILURES = min(8, _RECOVERY_BASE_FAILURES + 1)
+            _RECOVERY_BASE_NEXT_ALLOWED = time.monotonic() + min(300.0, 2.0 ** _RECOVERY_BASE_FAILURES)
+            _RECOVERY_BASE_FUTURE = None
+        _LOGGER.warning(
+            "pocketlab.recovery_base.refresh_degraded error_type=%s", type(exc).__name__
+        )
+        return
+    with _RECOVERY_BASE_LOCK:
+        _RECOVERY_BASE_VALUE = (value, time.monotonic())
+        _RECOVERY_BASE_FAILURES = 0
+        _RECOVERY_BASE_NEXT_ALLOWED = time.monotonic() + 60.0
+        _RECOVERY_BASE_FUTURE = None
+
+
+def _recovery_base_subprojection() -> dict[str, Any]:
+    global _RECOVERY_BASE_FUTURE
+    prepared_summary = CONTROL_PLANE.prepared_payload("recovery:summary")
+    if prepared_summary is not None:
+        return prepared_summary
+    now = time.monotonic()
+    with _RECOVERY_BASE_LOCK:
+        cached = _RECOVERY_BASE_VALUE
+        future = _RECOVERY_BASE_FUTURE
+        if cached is not None and now - cached[1] <= 300.0:
+            return dict(cached[0])
+        if future is None and now >= _RECOVERY_BASE_NEXT_ALLOWED:
+            future = _RECOVERY_BASE_EXECUTOR.submit(lite_status.lite_recovery_details)
+            _RECOVERY_BASE_FUTURE = future
+            future.add_done_callback(_recovery_base_done)
+    if future is not None:
+        try:
+            result = future.result(timeout=1.5)
+            if isinstance(result, dict):
+                return dict(result)
+        except concurrent.futures.TimeoutError:
+            pass
+        except Exception:
+            pass
+    if cached is not None:
+        result = dict(cached[0])
+        result["read_degraded"] = True
+        result["refresh_pending"] = future is not None
+        return result
+    return {
+        "status": "degraded",
+        "summary": "Recovery details are refreshing.",
+        "read_degraded": True,
+        "refresh_pending": future is not None,
+    }
+
 
 
 
@@ -1830,9 +1903,14 @@ async def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -
 
 def _lite_recovery_details_payload() -> dict[str, Any]:
     timings: dict[str, float] = {}
-    state = _timed_projection_stage(timings, "recovery_base", lite_status.lite_recovery_details)
-    profiles = _timed_projection_stage(timings, "app_backup_profiles", lite_app_profiles.app_backup_profiles)
-    lifecycle = _timed_projection_stage(timings, "app_lifecycle_profiles", lite_app_lifecycle.app_lifecycle_profiles)
+    state = _timed_projection_stage(timings, "recovery_base", _recovery_base_subprojection)
+    profiles = _timed_projection_stage(timings, "app_backup_profiles", lite_app_lifecycle.cached_app_backup_profiles)
+    lifecycle = _timed_projection_stage(
+        timings,
+        "app_lifecycle_profiles",
+        lambda: CONTROL_PLANE.prepared_payload("apps:lifecycle")
+        or lite_app_lifecycle.app_lifecycle_profiles(),
+    )
     targets = _timed_projection_stage(timings, "backup_targets", lite_app_backup_targets.backup_targets)
     state["view_model"] = "recovery-details-r3-v1"
     state["app_backups"] = profiles.get("apps", [])
@@ -1863,26 +1941,52 @@ def _build_lite_recovery_summary_projection() -> dict[str, Any]:
     return state
 
 
-def schedule_control_plane_projection_warmup() -> dict[str, bool]:
-    if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
-        return {"apps": False, "recovery_summary": False, "recovery_details": False}
-    return {
-        "apps": CONTROL_PLANE.warm_prepared_read(
-            domain="apps", key="lifecycle",
-            builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=CONTROL_PLANE.project_apps, deadline_seconds=4.0,
-        ),
-        "recovery_summary": CONTROL_PLANE.warm_prepared_read(
+def _run_staggered_projection_warmup() -> None:
+    try:
+        CONTROL_PLANE.warm_prepared_read(
             domain="recovery", key="summary",
             builder=_build_lite_recovery_summary_projection,
             projector=CONTROL_PLANE.project_recovery, deadline_seconds=4.0,
-        ),
-        "recovery_details": CONTROL_PLANE.warm_prepared_read(
-            domain="recovery", key="details",
-            builder=_lite_recovery_details_payload,
-            projector=CONTROL_PLANE.project_recovery, deadline_seconds=5.0,
-        ),
-    }
+        )
+        CONTROL_PLANE.wait_for_prepared("recovery:summary", 30.0)
+        CONTROL_PLANE.warm_prepared_read(
+            domain="apps", key="lifecycle",
+            builder=lite_app_lifecycle.app_lifecycle_profiles,
+            projector=CONTROL_PLANE.project_apps, deadline_seconds=4.0,
+        )
+        apps_ready = CONTROL_PLANE.wait_for_prepared("apps:lifecycle", 90.0)
+        recovery_ready = CONTROL_PLANE.prepared_payload("recovery:summary") is not None
+        if apps_ready and recovery_ready:
+            CONTROL_PLANE.warm_prepared_read(
+                domain="recovery", key="details",
+                builder=_lite_recovery_details_payload,
+                projector=CONTROL_PLANE.project_recovery, deadline_seconds=5.0,
+            )
+        else:
+            _LOGGER.warning(
+                "pocketlab.control_projection.warmup_dependency_degraded apps_ready=%s recovery_ready=%s",
+                apps_ready, recovery_ready,
+            )
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.control_projection.warmup_degraded error_type=%s", type(exc).__name__
+        )
+
+
+def schedule_control_plane_projection_warmup() -> dict[str, bool]:
+    global _WARMUP_THREAD
+    if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
+        return {"apps": False, "recovery_summary": False, "recovery_details": False}
+    with _WARMUP_LOCK:
+        if _WARMUP_THREAD is not None and _WARMUP_THREAD.is_alive():
+            return {"apps": False, "recovery_summary": False, "recovery_details": False}
+        _WARMUP_THREAD = threading.Thread(
+            target=_run_staggered_projection_warmup,
+            name="pocketlab-staggered-projection-warmup",
+            daemon=True,
+        )
+        _WARMUP_THREAD.start()
+    return {"apps": True, "recovery_summary": True, "recovery_details": True}
 
 
 @router.get("/recovery/summary")
