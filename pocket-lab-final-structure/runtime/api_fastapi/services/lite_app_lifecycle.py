@@ -4,6 +4,8 @@ from typing import Any, Callable
 
 import concurrent.futures
 import logging
+import os
+import sys
 import threading
 import time
 
@@ -54,9 +56,21 @@ def _timed_stage(
 
 
 
-_SUBPROJECTION_LOCK = threading.Lock()
+_SUBPROJECTION_LOCK = threading.RLock()
+
+def _app_subprojection_workers() -> int:
+    configured = os.environ.get("POCKETLAB_LITE_APP_SUBPROJECTION_WORKERS", "").strip()
+    if configured:
+        try:
+            return max(1, min(4, int(configured)))
+        except ValueError:
+            pass
+    prefix = os.environ.get("PREFIX", "").lower()
+    return 3 if "com.termux" in prefix or sys.platform == "android" else 4
+
+
 _SUBPROJECTION_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
-    max_workers=2, thread_name_prefix="pocketlab-app-subprojection"
+    max_workers=_app_subprojection_workers(), thread_name_prefix="pocketlab-app-subprojection"
 )
 _SUBPROJECTION_VALUES: dict[str, tuple[dict[str, Any], float]] = {}
 _SUBPROJECTION_FUTURES: dict[str, concurrent.futures.Future[Any]] = {}
@@ -147,6 +161,19 @@ def app_runtime_subprojection() -> dict[str, Any]:
         {"status": "unknown", "summary": "App runtime status is refreshing."},
         wait_seconds=1.0, ttl_seconds=120.0,
     )
+
+
+
+
+
+def _prime_app_subprojections() -> None:
+    starters = (
+        ("photoprism:security", _security_payload, {"status": "unknown"}),
+        ("photoprism:backup", _backup_payload, {"status": "unknown"}),
+        ("photoprism:runtime", lite_photoprism_lifecycle.lifecycle_state, {"status": "unknown"}),
+    )
+    for name, callback, fallback in starters:
+        _cached_subprojection(name, callback, fallback, wait_seconds=0.01, ttl_seconds=120.0)
 
 
 def cached_app_backup_profiles() -> dict[str, Any]:
@@ -627,6 +654,7 @@ def _evidence(security: dict[str, Any], backup: dict[str, Any], media: dict[str,
 
 
 def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) -> dict[str, Any]:
+    _prime_app_subprojections()
     app = _timed_stage(stage_timings, "catalog", lambda: _catalog_app("photoprism"))
     storage_raw = _timed_stage(stage_timings, "storage", _storage_payload)
     security_raw = _timed_stage(stage_timings, "security", app_security_subprojection)

@@ -1010,3 +1010,21 @@ def test_cold_projection_validation_script_has_bounded_proxy_readiness_gate():
     assert '--max-time "$READY_MAX_TIME"' in source
     assert 'Pocket API did not become ready' in source
     assert 'Missing or empty revisions response' in source
+
+
+def test_app_lifecycle_primes_parallel_subprojections_and_staggers_warmup():
+    lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
+    router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
+    assert "_prime_app_subprojections()" in lifecycle
+    assert "POCKETLAB_LITE_APP_SUBPROJECTION_WORKERS" in lifecycle
+    assert '("photoprism:security", _security_payload' in lifecycle
+    assert '("photoprism:backup", _backup_payload' in lifecycle
+    assert '("photoprism:runtime", lite_photoprism_lifecycle.lifecycle_state' in lifecycle
+    assert "POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS" in router
+    assert "POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS" in router
+
+
+def test_app_subprojection_executor_is_bounded_for_termux():
+    lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
+    assert 'return 3 if "com.termux" in prefix or sys.platform == "android" else 4' in lifecycle
+    assert "max(1, min(4, int(configured)))" in lifecycle
