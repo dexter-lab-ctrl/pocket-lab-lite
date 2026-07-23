@@ -1,5 +1,5 @@
 import React from 'react';
-import { Network, RefreshCw, Trash2 } from 'lucide-react';
+import { Clock3, Cpu, Network, RefreshCw, Server, Trash2 } from 'lucide-react';
 import {
   GlassCard,
   StatusBadge,
@@ -20,6 +20,23 @@ const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
 const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
 void DEVICES_CARD_RENDER_REDUCTION_M1;
 void DEVICES_CARD_ACTIONS_OWN_CLICKS;
+
+function hasMeaningfulStorage(device) {
+  const storage = device?.storage;
+  if (!storage || typeof storage !== 'object') return false;
+  return storage.ready === true
+    || Number.isFinite(Number(storage.available_gb))
+    || Boolean(String(storage.summary || '').trim())
+    || (Array.isArray(storage.media_roots) && storage.media_roots.length > 0)
+    || ['storage', 'backup_target'].includes(String(device?.role || '').toLowerCase());
+}
+
+function storageSummary(device) {
+  const storage = device?.storage || {};
+  if (Number.isFinite(Number(storage.available_gb))) return `${Number(storage.available_gb)} GB available`;
+  if (String(storage.summary || '').trim()) return String(storage.summary).trim();
+  return storage.ready ? 'Ready for app data and backups.' : 'Storage telemetry needs attention.';
+}
 
 function DeviceCard({
   device,
@@ -43,6 +60,7 @@ function DeviceCard({
   const capabilities = deviceCapabilityLabels(device);
   const canRestart = canRestartDeviceAgent(device);
   const canRemove = canRemoveDevice(device);
+  const showStorage = hasMeaningfulStorage(device);
 
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
@@ -56,69 +74,51 @@ function DeviceCard({
         </StatusBadge>
       </div>
 
-      <h2>{deviceName}</h2>
-      {device?.system_profile?.display_model ? (
-        <div className="lite-device-model-summary">
-          <strong>{device.system_profile.display_model}</strong>
-          <span>{[[device.system_profile.os_name, device.system_profile.os_version].filter(Boolean).join(' '), runtimeLabel].filter(Boolean).join(' · ')}</span>
-        </div>
-      ) : null}
-
-      <div className="lite-device-connection-copy">
-        {isServerCard
-          ? 'Connection anchor for this Pocket Lab.'
-          : linkState === 'joined'
-            ? 'Connected to the Pocket Lab Lite server.'
-            : linkState === 'repairing'
-              ? 'Connection is being repaired.'
-              : 'Disconnected from the Pocket Lab Lite server.'}
+      <div className="lite-device-card-heading">
+        <span className="lite-device-card-kicker">
+          {isServerCard ? <Server className="h-3.5 w-3.5" /> : <Network className="h-3.5 w-3.5" />}
+          {isServerCard ? 'Pocket Lab server' : device?.role_label || roleLabel(device?.role)}
+        </span>
+        <h2>{deviceName}</h2>
+        <p>
+          {isServerCard
+            ? 'Protected control device for this self-hosted workspace.'
+            : linkState === 'joined'
+              ? 'Connected and reporting through the private device channel.'
+              : linkState === 'repairing'
+                ? 'Pocket Lab is repairing this device connection.'
+                : 'This device is not currently reporting.'}
+        </p>
       </div>
 
-      <div className="lite-device-details">
+      <div className="lite-device-system-strip" aria-label="Device system summary">
         <div>
-          <span>Role</span>
-          <strong>{device?.role_label || roleLabel(device?.role)}</strong>
+          <span>System</span>
+          <strong>{device?.system_profile?.display_model || device?.system_profile?.technical_model || 'Not reported'}</strong>
+          <small>{[[device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' '), runtimeLabel].filter(Boolean).join(' · ') || 'System profile pending'}</small>
         </div>
         <div>
-          <span>Last seen</span>
-          <strong>{formatLiteTime(device?.last_seen)}</strong>
+          <Cpu className="h-4 w-4" />
+          <span>Architecture</span>
+          <strong>{device?.system_profile?.android_abi || device?.system_profile?.architecture || 'Pending'}</strong>
         </div>
         <div>
-          <span>Connection</span>
-          <strong>{deviceConnectionLabel(device)}</strong>
+          <Clock3 className="h-4 w-4" />
+          <span>Uptime</span>
+          <strong>{device?.system_health?.uptime_label || 'Pending'}</strong>
         </div>
-        {device?.system_profile?.android_abi || device?.system_profile?.architecture ? (
-          <div>
-            <span>Architecture</span>
-            <strong>{device.system_profile.android_abi || device.system_profile.architecture}</strong>
-          </div>
-        ) : null}
-        {device?.system_health?.uptime_label ? (
-          <div>
-            <span>Uptime</span>
-            <strong>{device.system_health.uptime_label}</strong>
-          </div>
-        ) : null}
-        {device?.tailnet_ip ? (
-          <div>
-            <span>Tailscale IP</span>
-            <strong>{device.tailnet_ip}</strong>
-          </div>
-        ) : null}
       </div>
 
-      {capabilities.length ? (
-        <div className="lite-device-capability-chips" aria-label="Device capabilities">
-          {capabilities.map((label) => (
-            <span key={label}>{label}</span>
-          ))}
-        </div>
-      ) : null}
+      <div className="lite-device-card-meta">
+        <span><strong>{deviceConnectionLabel(device)}</strong> connection</span>
+        <span>Last seen <strong>{formatLiteTime(device?.last_seen)}</strong></span>
+        {capabilities.length ? <span><strong>{capabilities.length}</strong> capabilities</span> : null}
+      </div>
 
-      {device?.storage ? (
-        <div className="lite-device-storage-summary">
-          <strong>{device.storage.ready ? 'Storage ready' : 'Storage not ready'}</strong>
-          <span>{device.storage.available_gb ? `${device.storage.available_gb} GB available` : device.storage.summary || 'Storage status will appear after the device reports it.'}</span>
+      {showStorage ? (
+        <div className={`lite-device-storage-summary ${device.storage.ready ? 'is-ready' : 'is-review'}`}>
+          <strong>{device.storage.ready ? 'Storage ready' : 'Storage needs attention'}</strong>
+          <span>{storageSummary(device)}</span>
         </div>
       ) : null}
 

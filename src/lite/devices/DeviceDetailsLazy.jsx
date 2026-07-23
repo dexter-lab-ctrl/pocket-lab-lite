@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, X } from 'lucide-react';
+import { LockKeyhole, Smartphone, X } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import {
@@ -132,6 +132,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   const title = device?.name || device?.hostname || 'Device details';
   const status = normalizeBackendState(device?.status) === 'ready' ? 'ready' : deviceAttention(device).length ? 'review' : 'neutral';
   const historyItems = deviceHistoryItems(device);
+  const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
 
   return (
     <section className={`lite-device-details-panel is-${status}`} role="region" aria-label={`${title} details`}>
@@ -157,7 +158,15 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           <span>{device?.system_profile?.android_abi || device?.system_profile?.architecture || 'Architecture unavailable'}</span>
           <span>{device?.system_health?.uptime_label || 'Uptime unavailable'}</span>
         </div>
-        {onChooseModel ? (
+        {isProtectedServer ? (
+          <div className="lite-device-protected-model" role="note">
+            <LockKeyhole className="h-4 w-4" />
+            <div>
+              <strong>Server model detected automatically</strong>
+              <span>The protected server identity comes from the local agent and cannot be renamed here.</span>
+            </div>
+          </div>
+        ) : onChooseModel ? (
           <LiteButton tone="secondary" onClick={onChooseModel}>
             <Smartphone className="h-4 w-4" />
             Choose model
@@ -165,32 +174,38 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         ) : null}
       </section>
 
-      <LiteProgressiveDetails
-        title={title}
-        status={status}
-        statusLabel={deviceStatusLabel(device?.status)}
-        summary={deviceSummary(device)}
-        what_happened={deviceWhatHappened(device)}
-        what_changed={deviceWhatChanged(device)}
-        what_needs_attention={deviceAttention(device)}
-        what_did_not_happen={deviceWhatDidNotHappen()}
-        saved_for_troubleshooting={{
-          saved: Boolean(device?.last_seen || device?.id),
-          backend_only: true,
-          summary: 'Device events and troubleshooting records stay backend-owned and protected.',
-        }}
-        next_step={deviceAttention(device).length ? 'Use Restart agent only when Pocket Lab shows it is safe, or check the device locally.' : 'No action is needed right now.'}
-        technicalDetails={technicalRows(device)}
-        history={{
-          title: 'Device history',
-          domain: 'default',
-          datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
-          summary: historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'History will appear here after the device reports more events.',
-          items: historyItems,
-          enabled: true,
-          emptyMessage: 'History will appear here after the device reports more events.',
-        }}
-      />
+      <details className="lite-device-advanced-details">
+        <summary>
+          <span>Diagnostics and history</span>
+          <small>Technical details, safe activity summary, and troubleshooting records</small>
+        </summary>
+        <LiteProgressiveDetails
+          title={title}
+          status={status}
+          statusLabel={deviceStatusLabel(device?.status)}
+          summary={deviceSummary(device)}
+          what_happened={deviceWhatHappened(device)}
+          what_changed={deviceWhatChanged(device)}
+          what_needs_attention={deviceAttention(device)}
+          what_did_not_happen={deviceWhatDidNotHappen()}
+          saved_for_troubleshooting={{
+            saved: Boolean(device?.last_seen || device?.id),
+            backend_only: true,
+            summary: 'Device events and troubleshooting records stay backend-owned and protected.',
+          }}
+          next_step={deviceAttention(device).length ? 'Use Restart agent only when Pocket Lab shows it is safe, or check the device locally.' : 'No action is needed right now.'}
+          technicalDetails={technicalRows(device)}
+          history={{
+            title: 'Device history',
+            domain: 'default',
+            datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
+            summary: historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
+            items: historyItems,
+            enabled: true,
+            emptyMessage: 'No device history has been reported yet.',
+          }}
+        />
+      </details>
     </section>
   );
 }

@@ -384,7 +384,13 @@ export default function DevicesScreen() {
       </section>
 
       <div className="lite-devices-layout">
-        <GlassCard className="lite-devices-add-card">
+        <details className="lite-devices-add-disclosure">
+          <summary>
+            <span>Expand your workspace</span>
+            <strong>Add a device</strong>
+            <small>Create a protected invite only when you need one.</small>
+          </summary>
+          <GlassCard className="lite-devices-add-card">
           <div className="lite-devices-card-head">
             <div className="lite-devices-mini-icon">
               <Network className="h-5 w-5" />
@@ -532,15 +538,20 @@ export default function DevicesScreen() {
               )}
             </div>
           ) : null}
-        </GlassCard>
+          </GlassCard>
+        </details>
 
         <section className="lite-devices-list-area">
           <div className="lite-devices-section-title">
             <div>
-              <p>Device list</p>
-              <h2>Available devices</h2>
+              <p>Fleet</p>
+              <h2>Devices</h2>
+              <small>Current connection, system identity, and health at a glance.</small>
             </div>
-            <span>{devices.length} shown</span>
+            <div className="lite-devices-section-metrics" aria-label="Device totals">
+              <span><strong>{onlineDevices}</strong> online</span>
+              <span><strong>{devices.length}</strong> total</span>
+            </div>
           </div>
 
           {error ? (
