@@ -22,6 +22,7 @@ from ..services.action_queue import ensure_worker_execution_ready, submit_domain
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
+    DeviceAwarenessError,
     DeviceProfileUpdateError,
     PreparedProjectionUnavailable,
     PreparedRead,
@@ -750,6 +751,12 @@ class LiteRemoveDeviceRequest(BaseModel):
     confirm: bool = False
     reason: str | None = None
     requested_by: str | None = None
+    assessment_revision: str = Field(default="", max_length=80)
+    expected_awareness_revision: int | None = Field(default=None, ge=0)
+
+
+class LiteInviteRevokeRequest(BaseModel):
+    reason: str | None = Field(default=None, max_length=220)
 
 
 class LitePolicyApplyRequest(BaseModel):
@@ -1918,6 +1925,81 @@ def get_lite_fleet(request: Request) -> Response:
     )
 
 
+def _ensure_fleet_awareness_projection() -> None:
+    CONTROL_PLANE.prepared_read(
+        domain="fleet",
+        key="summary",
+        builder=lite_status.lite_fleet,
+        projector=CONTROL_PLANE.project_fleet,
+        stale_after_ms=5_000,
+        max_stale_ms=30_000,
+        deadline_seconds=4.0,
+    )
+
+
+def _recompute_device_removal_assessment(device_id: str) -> dict[str, Any]:
+    # Removal authorization must never rely on Dexie, a stale browser response,
+    # or a cached prepared assessment. Rebuild the safe backend projection and
+    # then read the fenced assessment from SQLite.
+    try:
+        fleet_payload = lite_status.lite_fleet()
+        CONTROL_PLANE.project_fleet(fleet_payload)
+        return CONTROL_PLANE.device_removal_assessment(device_id)
+    except DeviceAwarenessError:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Pocket Lab could not verify device responsibilities. Try again shortly.",
+        ) from exc
+
+
+@router.get("/devices/{device_id}")
+def get_lite_device_details(device_id: str, request: Request) -> Response:
+    deps.require_auth(request)
+    try:
+        _ensure_fleet_awareness_projection()
+        payload = CONTROL_PLANE.device_details(device_id)
+    except DeviceAwarenessError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    return _control_plane_history_response(
+        request, payload, domain="fleet", key=f"device:{device_id}"
+    )
+
+
+@router.get("/devices/{device_id}/history")
+def get_lite_device_lifecycle_history(
+    device_id: str,
+    request: Request,
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str = Query("", max_length=512),
+) -> Response:
+    deps.require_auth(request)
+    try:
+        _ensure_fleet_awareness_projection()
+        payload = CONTROL_PLANE.device_lifecycle_history(
+            device_id, limit=limit, cursor=cursor
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _control_plane_history_response(
+        request, payload, domain="fleet",
+        key=f"device-history:{device_id}:{limit}:{cursor}",
+    )
+
+
+@router.get("/devices/{device_id}/removal-assessment")
+def get_lite_device_removal_assessment(device_id: str, request: Request) -> Response:
+    deps.require_auth(request)
+    try:
+        payload = _recompute_device_removal_assessment(device_id)
+    except DeviceAwarenessError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    return _control_plane_history_response(
+        request, payload, domain="fleet", key=f"removal-assessment:{device_id}"
+    )
+
+
 @router.put("/fleet/devices/{device_id}/display-model")
 def update_lite_device_display_model(
     device_id: str,
@@ -2025,6 +2107,26 @@ def get_latest_lite_fleet_invite(request: Request) -> dict[str, Any]:
     }
 
 
+@router.post("/fleet/invites/{invite_id}/revoke")
+def revoke_lite_fleet_invite(
+    invite_id: str, payload: LiteInviteRevokeRequest, request: Request
+) -> dict[str, Any]:
+    deps.require_auth(request, write=True)
+    revoked = lite_invites.revoke_invite(invite_id, reason=payload.reason or "")
+    if not revoked:
+        raise HTTPException(
+            status_code=409,
+            detail="This invite is no longer pending and cannot be revoked.",
+        )
+    CONTROL_PLANE.invalidate_domain("fleet")
+    return {
+        "status": "revoked",
+        "invite": revoked,
+        "summary": "Pending device invite revoked.",
+        "updated_at": deps.now_utc_iso(),
+    }
+
+
 @router.post("/fleet/add-device", status_code=202)
 async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> dict[str, Any]:
     deps.require_auth(request, write=True)
@@ -2034,7 +2136,16 @@ async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> di
         invite_conflict = lite_invites.find_invite_identity_conflict(device_name)
         conflict = device_conflict or invite_conflict
         if conflict:
-            raise HTTPException(status_code=409, detail=_duplicate_device_detail(conflict))
+            source = str(conflict.get("source") or "device_record") if isinstance(conflict, dict) else "device_record"
+            protected = bool(isinstance(conflict, dict) and (conflict.get("protected_server_host") or conflict.get("role") == "server_host"))
+            fleet_registry.append_device_lifecycle_event(
+                device_name,
+                "protected_host_blocked" if protected else "duplicate_name_blocked",
+                reason_code="protected_server_host" if protected else "device_name_in_use",
+                summary="Protected server host name cannot be reused." if protected else "Device name is already in use.",
+                status="blocked",
+            )
+            raise HTTPException(status_code=409, detail=_duplicate_device_detail({**conflict, "conflict_source": source}))
 
         result = lite_invites.create_lite_invite(
             role=payload.role,
@@ -2058,6 +2169,31 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
     if not payload.confirm:
         raise HTTPException(status_code=400, detail="Confirm removal before removing a saved device record.")
 
+    conflict = fleet_registry.find_device_identity_conflict(device_id)
+    if isinstance(conflict, dict) and (
+        conflict.get("is_current")
+        or str(conflict.get("role") or "").lower() in {"server_host", "server", "control_plane", "control_plane_host"}
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail={"status": "removal_blocked", "summary": "Current protected server host cannot be removed."},
+        )
+
+    try:
+        current_assessment = _recompute_device_removal_assessment(device_id)
+        CONTROL_PLANE.validate_device_removal_assessment(
+            device_id,
+            assessment_revision=payload.assessment_revision,
+            expected_awareness_revision=payload.expected_awareness_revision,
+        )
+    except DeviceAwarenessError as exc:
+        detail: dict[str, Any] = {
+            "status": "removal_blocked",
+            "summary": exc.detail,
+            "assessment": exc.assessment or locals().get("current_assessment", {}),
+        }
+        raise HTTPException(status_code=exc.status_code, detail=detail) from exc
+
     try:
         removal = fleet_registry.remove_device_records(device_id)
     except fleet_registry.DeviceRemovalError as exc:
@@ -2073,6 +2209,14 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         requested_by=requested_by,
     )
     await fleet_registry.publish_device_removed_evidence(evidence)
+    fleet_registry.append_device_lifecycle_event(
+        device_id,
+        "device_removed",
+        reason_code="saved_record_removed",
+        summary="Saved device record removed after dependency review.",
+        status="completed",
+        occurred_at=deps.now_utc_iso(),
+    )
     CONTROL_PLANE.invalidate_domain("fleet")
 
     return {

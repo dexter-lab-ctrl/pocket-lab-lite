@@ -49,6 +49,14 @@ _REVISION_REASONS = frozenset({
     "command_state_changed",
     "audit_state_changed",
     "storage_state_changed",
+    "device_enrollment_changed",
+    "device_identity_changed",
+    "device_staleness_changed",
+    "device_capabilities_changed",
+    "device_dependencies_changed",
+    "device_command_delivery_changed",
+    "device_recovery_changed",
+    "device_removal_assessment_changed",
     "database_instance_changed",
     "cursor_too_old",
     "cursor_ahead",
@@ -81,6 +89,14 @@ class DeviceProfileUpdateError(RuntimeError):
         super().__init__(detail)
         self.status_code = status_code
         self.detail = detail
+
+
+class DeviceAwarenessError(RuntimeError):
+    def __init__(self, status_code: int, detail: str, *, assessment: dict[str, Any] | None = None):
+        super().__init__(detail)
+        self.status_code = status_code
+        self.detail = detail
+        self.assessment = assessment or {}
 
 
 def _utc_now() -> str:
@@ -1495,6 +1511,154 @@ class ControlPlaneProjectionStore:
             },
         }
 
+    @staticmethod
+    def _json_value(value: Any, fallback: Any) -> Any:
+        if isinstance(value, (dict, list)):
+            return value
+        try:
+            decoded = json.loads(str(value or ""))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return fallback
+        if isinstance(fallback, list):
+            return decoded if isinstance(decoded, list) else fallback
+        return decoded if isinstance(decoded, dict) else fallback
+
+    @staticmethod
+    def _public_awareness(row: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "enrollment": ControlPlaneProjectionStore._json_value(row.get("enrollment_json"), {}),
+            "identity": ControlPlaneProjectionStore._json_value(row.get("trust_json"), {}),
+            "last_seen_state": ControlPlaneProjectionStore._json_value(row.get("last_seen_json"), {}),
+            "capability_states": ControlPlaneProjectionStore._json_value(row.get("capabilities_json"), []),
+            "capabilities": ControlPlaneProjectionStore._json_value(row.get("capabilities_json"), []),
+            "dependencies": ControlPlaneProjectionStore._json_value(row.get("dependencies_json"), {}),
+            "removal_assessment": ControlPlaneProjectionStore._json_value(row.get("removal_assessment_json"), {}),
+            "enrollment_status": _safe_text(row.get("enrollment_status"), 40),
+            "identity_status": _safe_text(row.get("identity_status"), 40),
+            "staleness_state": _safe_text(row.get("staleness_state"), 40),
+            "command_delivery_status": _safe_text(row.get("command_delivery_status"), 40),
+            "awareness_revision": int(row.get("revision") or 0),
+            "updated_at": _safe_text(row.get("updated_at"), 64),
+        }
+
+    def _upsert_device_awareness_row(
+        self,
+        conn: sqlite3.Connection,
+        *,
+        device_id: str,
+        item: dict[str, Any],
+        updated_at: str,
+        updated_at_epoch_ms: int,
+    ) -> tuple[bool, set[str]]:
+        enrollment = item.get("enrollment") if isinstance(item.get("enrollment"), dict) else {}
+        identity = item.get("identity") if isinstance(item.get("identity"), dict) else {}
+        last_seen = item.get("last_seen_state") if isinstance(item.get("last_seen_state"), dict) else {}
+        capabilities = item.get("capability_states") if isinstance(item.get("capability_states"), list) else item.get("capabilities") if isinstance(item.get("capabilities"), list) else []
+        dependencies = item.get("dependencies") if isinstance(item.get("dependencies"), dict) else {}
+        removal = item.get("removal_assessment") if isinstance(item.get("removal_assessment"), dict) else {}
+        identity_verified_at = identity.get("verified_at")
+        last_identity_mismatch_at = identity.get("last_mismatch_at")
+        last_blocked_join_at = identity.get("last_blocked_join_at")
+        last_seen_at = last_seen.get("last_seen_at")
+        capability_json = _safe_json(capabilities, max_bytes=32768)
+        dependency_json = _safe_json(dependencies, max_bytes=32768)
+        removal_json = _safe_json(removal, max_bytes=16384)
+        trust_json = _safe_json(identity, max_bytes=16384)
+        enrollment_json = _safe_json(enrollment, max_bytes=16384)
+        # Persist only stable source timestamps and lifecycle state. Derived age
+        # counters change every second and must not advance the device-scoped
+        # awareness revision between removal assessment and confirmation.
+        stable_last_seen = {
+            key: value
+            for key, value in last_seen.items()
+            if key not in {
+                "heartbeat_age_seconds",
+                "supervisor_age_seconds",
+                "connection_age_seconds",
+            }
+        }
+        last_seen_json = _safe_json(stable_last_seen, max_bytes=16384)
+        capability_revision = hashlib.sha256(capability_json.encode("utf-8")).hexdigest()[:20]
+        assessment_revision = _safe_text(removal.get("assessment_revision"), 80)
+        recovery_status = "repairing" if dependencies.get("recovery_in_progress") else _safe_text(dependencies.get("last_recovery_result") or "idle", 40)
+        values = {
+            "enrollment_status": _safe_text(enrollment.get("status") or item.get("enrollment_status") or "not_enrolled", 40),
+            "identity_status": _safe_text(identity.get("status") or item.get("identity_status") or "pending", 40),
+            "identity_verified_at": identity_verified_at,
+            "identity_verified_at_epoch_ms": _epoch_ms(identity_verified_at) if identity_verified_at else 0,
+            "identity_mismatch_count": max(0, int(identity.get("mismatch_count") or 0)),
+            "last_identity_mismatch_at": last_identity_mismatch_at,
+            "last_identity_mismatch_at_epoch_ms": _epoch_ms(last_identity_mismatch_at) if last_identity_mismatch_at else 0,
+            "blocked_join_count": max(0, int(identity.get("blocked_join_count") or 0)),
+            "last_blocked_join_at": last_blocked_join_at,
+            "repair_required": int(bool(identity.get("repair_required"))),
+            "last_seen_at": last_seen_at,
+            "last_seen_at_epoch_ms": _epoch_ms(last_seen_at) if last_seen_at else 0,
+            "last_seen_source": _safe_text(last_seen.get("last_seen_source") or "unknown", 40),
+            "staleness_state": _safe_text(last_seen.get("staleness_state") or item.get("staleness_state") or "unknown", 40),
+            "command_delivery_status": _safe_text(dependencies.get("command_delivery_status") or "unknown", 40),
+            "supervisor_status": _safe_text(dependencies.get("supervisor_status") or item.get("supervisor_status") or "unknown", 40),
+            "recovery_status": recovery_status,
+            "hosted_app_count": max(0, int(dependencies.get("hosted_app_count") or 0)),
+            "backup_dependency_count": max(0, int(dependencies.get("backup_set_count") or 0)),
+            "storage_dependency_count": max(0, int(dependencies.get("storage_dependency_count") or 0)),
+            "capability_revision": capability_revision,
+            "capabilities_json": capability_json,
+            "dependencies_json": dependency_json,
+            "removal_safe": int(bool(removal.get("safe_to_remove"))),
+            "removal_assessment_revision": assessment_revision,
+            "removal_assessment_json": removal_json,
+            "trust_json": trust_json,
+            "enrollment_json": enrollment_json,
+            "last_seen_json": last_seen_json,
+        }
+        existing_row = conn.execute(
+            "SELECT * FROM device_awareness_state WHERE device_id=?", (device_id,)
+        ).fetchone()
+        existing = dict(existing_row) if existing_row else {}
+        compared = tuple(values.keys())
+        if existing and all(existing.get(key) == values[key] for key in compared):
+            return False, set()
+        reasons: set[str] = set()
+        if not existing or existing.get("enrollment_status") != values["enrollment_status"]:
+            reasons.add("device_enrollment_changed")
+        if not existing or any(existing.get(key) != values[key] for key in (
+            "identity_status", "identity_verified_at", "identity_mismatch_count",
+            "last_identity_mismatch_at", "blocked_join_count", "last_blocked_join_at",
+            "repair_required",
+        )):
+            reasons.add("device_identity_changed")
+        if not existing or any(existing.get(key) != values[key] for key in (
+            "last_seen_source", "staleness_state",
+        )):
+            reasons.add("device_staleness_changed")
+        if not existing or existing.get("capability_revision") != capability_revision:
+            reasons.add("device_capabilities_changed")
+        if not existing or existing.get("dependencies_json") != dependency_json:
+            reasons.add("device_dependencies_changed")
+        if not existing or existing.get("command_delivery_status") != values["command_delivery_status"]:
+            reasons.add("device_command_delivery_changed")
+        if not existing or existing.get("recovery_status") != recovery_status:
+            reasons.add("device_recovery_changed")
+        if not existing or existing.get("removal_assessment_revision") != assessment_revision:
+            reasons.add("device_removal_assessment_changed")
+        revision = int(existing.get("revision") or 0) + 1
+        columns = list(values.keys())
+        conn.execute(
+            f"""
+            INSERT INTO device_awareness_state(
+                device_id, {', '.join(columns)}, updated_at, updated_at_epoch_ms, revision
+            ) VALUES ({', '.join('?' for _ in range(len(columns) + 4))})
+            ON CONFLICT(device_id) DO UPDATE SET
+                {', '.join(f'{column}=excluded.{column}' for column in columns)},
+                updated_at=excluded.updated_at,
+                updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                revision=excluded.revision
+            """,
+            (device_id, *(values[column] for column in columns), updated_at, updated_at_epoch_ms, revision),
+        )
+        return bool(_changes(conn)), reasons
+
     def device_profile_map(self) -> dict[str, dict[str, Any]]:
         self.initialize()
         rows, _, _ = self._read(
@@ -1503,6 +1667,141 @@ class ControlPlaneProjectionStore:
             )]
         )
         return {str(row["node_id"]): self._public_device_profile(row) for row in rows}
+
+    def device_details(self, device_id: str) -> dict[str, Any]:
+        self.initialize()
+        normalized = _safe_text(device_id, 120)
+        if not normalized:
+            raise DeviceAwarenessError(404, "Device was not found.")
+
+        def read(conn: sqlite3.Connection) -> tuple[sqlite3.Row | None, sqlite3.Row | None, sqlite3.Row | None]:
+            current = conn.execute(
+                "SELECT * FROM device_current_state WHERE device_id=?", (normalized,)
+            ).fetchone()
+            profile = conn.execute(
+                "SELECT * FROM device_system_profiles WHERE node_id=?", (normalized,)
+            ).fetchone()
+            awareness = conn.execute(
+                "SELECT * FROM device_awareness_state WHERE device_id=?", (normalized,)
+            ).fetchone()
+            return current, profile, awareness
+
+        (current_row, profile_row, awareness_row), wait_ms, query_ms = self._read(read)
+        if not current_row:
+            raise DeviceAwarenessError(404, "Device was not found.")
+        current = dict(current_row)
+        payload: dict[str, Any] = {
+            "id": current["device_id"],
+            "node_id": current["device_id"],
+            "name": current.get("device_name") or current["device_id"],
+            "role": current.get("role") or "compute",
+            "status": current.get("ui_state") or current.get("connection_state") or "unknown",
+            "connection": current.get("connection_state") or "unknown",
+            "agent_status": current.get("agent_status") or "unknown",
+            "supervisor_status": current.get("supervisor_status") or "unknown",
+            "agent_process_status": current.get("pm2_status") or "unknown",
+            "remote_access": bool(current.get("remote_access_ready")),
+            "is_current": bool(current.get("protected_server_host")),
+            "protected_server_host": bool(current.get("protected_server_host")),
+            "last_seen_at": current.get("last_seen_at"),
+            "summary": current.get("summary") or "Device state recorded.",
+        }
+        if profile_row:
+            payload.update(self._public_device_profile(dict(profile_row)))
+        if awareness_row:
+            payload.update(self._public_awareness(dict(awareness_row)))
+        revision = self.domain_revision("fleet")
+        return {
+            "status": "ready",
+            "device": payload,
+            "source_revision": revision,
+            "connection_wait_ms": round(wait_ms, 3),
+            "sqlite_query_ms": round(query_ms, 3),
+            "updated_at": payload.get("updated_at") or current.get("updated_at"),
+        }
+
+    def device_lifecycle_history(
+        self, device_id: str, *, limit: int = 20, cursor: str = ""
+    ) -> dict[str, Any]:
+        self.initialize()
+        normalized = _safe_text(device_id, 120)
+        if not normalized:
+            raise ValueError("device_id is required")
+        bounded_limit = max(1, min(int(limit), 100))
+        decoded = _decode_cursor(cursor)
+
+        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+            params: list[Any] = [normalized]
+            cursor_clause = ""
+            if decoded is not None:
+                cursor_clause = (
+                    " AND (occurred_at_epoch_ms < ? OR "
+                    "(occurred_at_epoch_ms = ? AND event_id < ?))"
+                )
+                params.extend([decoded[0], decoded[0], decoded[1]])
+            params.append(bounded_limit + 1)
+            return list(conn.execute(
+                "SELECT event_id,device_id AS node_id,event_type,reason_code,status,"
+                "occurred_at,occurred_at_epoch_ms,summary,sanitized "
+                "FROM device_lifecycle_events WHERE device_id=?"
+                + cursor_clause
+                + " ORDER BY occurred_at_epoch_ms DESC,event_id DESC LIMIT ?",
+                tuple(params),
+            ))
+
+        rows, wait_ms, query_ms = self._read(read)
+        return self._history_result(
+            rows, limit=bounded_limit, epoch_key="occurred_at_epoch_ms",
+            id_key="event_id", revision=self.domain_revision("fleet"),
+            wait_ms=wait_ms, query_ms=query_ms,
+        )
+
+    def device_removal_assessment(self, device_id: str) -> dict[str, Any]:
+        details = self.device_details(device_id)
+        device = details.get("device") if isinstance(details.get("device"), dict) else {}
+        assessment = device.get("removal_assessment") if isinstance(device.get("removal_assessment"), dict) else {}
+        if not assessment:
+            raise DeviceAwarenessError(409, "Removal impact is still being prepared.")
+        return {
+            **assessment,
+            "node_id": device.get("id") or device_id,
+            "source_revision": int(details.get("source_revision") or 0),
+            "awareness_revision": int(device.get("awareness_revision") or 0),
+            "offline_authorization": False,
+            "summary": (
+                "Safe to remove after confirmation."
+                if assessment.get("safe_to_remove")
+                else "Review dependencies before removing this device."
+            ),
+        }
+
+    def validate_device_removal_assessment(
+        self,
+        device_id: str,
+        *,
+        assessment_revision: str,
+        expected_awareness_revision: int | None,
+    ) -> dict[str, Any]:
+        current = self.device_removal_assessment(device_id)
+        if not bool(current.get("safe_to_remove")):
+            blockers = current.get("blockers") if isinstance(current.get("blockers"), list) else []
+            first = blockers[0].get("summary") if blockers and isinstance(blockers[0], dict) else "This device is not safe to remove."
+            raise DeviceAwarenessError(409, str(first), assessment=current)
+        supplied = _safe_text(assessment_revision, 80)
+        current_revision = _safe_text(current.get("assessment_revision"), 80)
+        if not supplied or supplied != current_revision:
+            raise DeviceAwarenessError(
+                409,
+                "Device responsibilities changed. Review removal impact again.",
+                assessment=current,
+            )
+        if expected_awareness_revision is None or int(expected_awareness_revision) != int(current.get("awareness_revision") or 0):
+            raise DeviceAwarenessError(
+                409,
+                "Device responsibilities changed. Review removal impact again.",
+                assessment=current,
+            )
+        return current
 
     def update_device_consumer_model(
         self,
@@ -1638,6 +1937,7 @@ class ControlPlaneProjectionStore:
 
         def write(conn: sqlite3.Connection) -> int:
             changed = False
+            awareness_reasons: set[str] = set()
             device_ids: list[str] = []
             for item in devices:
                 device_id = _safe_text(item.get("id") or item.get("node_id"), 120)
@@ -1765,6 +2065,40 @@ class ControlPlaneProjectionStore:
                     updated_at=now,
                     updated_at_epoch_ms=now_epoch,
                 ) or changed
+                awareness_changed, device_reasons = self._upsert_device_awareness_row(
+                    conn,
+                    device_id=device_id,
+                    item=item,
+                    updated_at=now,
+                    updated_at_epoch_ms=now_epoch,
+                )
+                changed = awareness_changed or changed
+                awareness_reasons.update(device_reasons)
+                for event in (item.get("recent_lifecycle") or [])[:50]:
+                    if not isinstance(event, dict):
+                        continue
+                    event_id = _safe_text(event.get("event_id"), 120)
+                    event_type = _safe_text(event.get("event_type") or "device_activity", 80)
+                    occurred_at = _safe_text(event.get("occurred_at") or now, 64)
+                    if not event_id or not event_type or not occurred_at:
+                        continue
+                    conn.execute(
+                        """
+                        INSERT OR IGNORE INTO device_lifecycle_events(
+                            event_id, device_id, event_type, reason_code, status,
+                            occurred_at, occurred_at_epoch_ms, summary, sanitized, source_revision
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+                        """,
+                        (
+                            event_id, device_id, event_type,
+                            _safe_text(event.get("reason_code"), 80),
+                            _safe_text(event.get("status") or "recorded", 32),
+                            occurred_at, _epoch_ms(occurred_at),
+                            _safe_text(event.get("summary") or "Device activity recorded.", 240),
+                            int(item.get("revision") or 0),
+                        ),
+                    )
+                    changed = _changes(conn) or changed
 
             if device_ids:
                 placeholders = ",".join("?" for _ in device_ids)
@@ -1839,9 +2173,21 @@ class ControlPlaneProjectionStore:
                 "(SELECT recovery_id FROM device_recovery_history ORDER BY created_at_epoch_ms DESC, recovery_id DESC LIMIT 1000)"
             )
             changed = _changes(conn) or changed
+            conn.execute(
+                "DELETE FROM device_lifecycle_events WHERE event_row_id NOT IN "
+                "(SELECT event_row_id FROM device_lifecycle_events ORDER BY occurred_at_epoch_ms DESC, event_row_id DESC LIMIT 4096)"
+            )
+            changed = _changes(conn) or changed
+            reason_priority = (
+                "device_identity_changed", "device_enrollment_changed",
+                "device_dependencies_changed", "device_capabilities_changed",
+                "device_removal_assessment_changed", "device_command_delivery_changed",
+                "device_recovery_changed", "device_staleness_changed",
+            )
+            focused_reason = next((reason for reason in reason_priority if reason in awareness_reasons), "fleet_state_changed")
             return _bump_revision(
                 conn, "fleet", now, changed_ids=device_ids,
-                reason="fleet_state_changed", projection_version=1,
+                reason=focused_reason, projection_version=3,
             ) if changed else _domain_revision(conn, "fleet")
 
         try:

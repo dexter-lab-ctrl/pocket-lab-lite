@@ -7,10 +7,10 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .. import deps
-from .fleet_registry import fleet_health_snapshot, merged_fleet_nodes, normalize_node_id
+from .fleet_registry import fleet_health_snapshot, list_commands, merged_fleet_nodes, normalize_node_id
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
-from . import lite_backup, lite_catalog as lite_catalog_service, lite_device_capabilities, lite_invites, lite_security as lite_security_service
+from . import lite_backup, lite_catalog as lite_catalog_service, lite_device_awareness, lite_device_capabilities, lite_invites, lite_security as lite_security_service
 
 LITE_MODE = "lite"
 
@@ -453,12 +453,30 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "remote_access": ready,
         "remote_access_status": remote_access.get("status"),
         "remote_access_summary": remote_access.get("summary"),
+        "tailscale_installed": bool(_first_available_command("tailscale-cli", "tailscale")),
+        "tailscaled_running": bool(remote_access.get("running")),
+        "tailnet_ip_ready": bool(remote_access.get("ip")),
+        "nats_tailnet_reachable": bool(remote_access.get("nats_reachable")),
         "tailnet_ip": remote_access.get("ip") if ready else None,
         "connection": "online",
         "role": role_info["role"],
         "role_label": role_info["role_label"],
         "capabilities": lite_device_capabilities.capability_ids_for_role("server_host"),
+        "advertised_capabilities": [
+            "host_apps", "run_safety_checks", "receive_commands",
+            "supervisor_recovery", "remote_access", "serve_control_plane",
+            "access_phone_media",
+        ],
         "capability_labels": lite_device_capabilities.labels_for_capabilities(lite_device_capabilities.capability_ids_for_role("server_host")),
+        "identity_status": "protected_server_host",
+        "enrollment_status": "ready",
+        "identity_verified_at": now,
+        "enrolled_at": now,
+        "first_ready_at": now,
+        "last_heartbeat_at": now,
+        "last_system_profile_at": now,
+        "last_nats_connected_at": now,
+        "last_tailnet_ready_at": now if ready else None,
         "is_current": True,
         "source": "lite-server",
     }
@@ -590,19 +608,23 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         or item.get("accepted_at")
         or item.get("created_at")
     )
-
-    return {
+    result = {
         "id": item.get("id") or item.get("node_id") or _device_identity(item),
         "name": item.get("name") or item.get("hostname") or item.get("node_id") or "Device",
         "status": status,
+        "agent_status": item.get("agent_status") or raw_status,
         "last_seen": last_seen,
         "last_seen_at": last_seen,
         "remote_access": bool(item.get("tailnet_ip") or item.get("tailscale_ip") or item.get("ip")),
+        "tailnet_ip": item.get("tailnet_ip") or item.get("tailscale_ip") or None,
         "connection": _connection_label(status),
         "role": role_info["role"],
         "role_label": role_info["role_label"],
-        "capabilities": lite_device_capabilities.capability_ids_for_role(role_info["role"]),
-        "capability_labels": lite_device_capabilities.labels_for_capabilities(lite_device_capabilities.capability_ids_for_role(role_info["role"])),
+        "capabilities": item.get("capabilities") if isinstance(item.get("capabilities"), list) else lite_device_capabilities.capability_ids_for_role(role_info["role"]),
+        "capability_labels": item.get("capability_labels") if isinstance(item.get("capability_labels"), list) else lite_device_capabilities.labels_for_capabilities(
+            item.get("capabilities") if isinstance(item.get("capabilities"), list) else lite_device_capabilities.capability_ids_for_role(role_info["role"])
+        ),
+        "advertised_capabilities": item.get("advertised_capabilities") if isinstance(item.get("advertised_capabilities"), list) else item.get("capabilities") if isinstance(item.get("capabilities"), list) else [],
         "source": item.get("source") or "fleet",
         "agent_process_status": item.get("agent_process_status"),
         "supervisor_status": item.get("supervisor_status"),
@@ -616,7 +638,25 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "system_health": _public_system_health(item.get("system_health")),
         "supervisor_version": item.get("supervisor_version"),
     }
-
+    passthrough = (
+        "invite_created_at", "invite_accepted_at", "enrolled_at",
+        "first_heartbeat_at", "first_supervisor_heartbeat_at", "first_ready_at",
+        "last_join_attempt_at", "last_successful_join_at", "enrollment_status",
+        "identity_status", "identity_verified_at", "identity_mismatch_count",
+        "last_identity_mismatch_at", "last_identity_reason_code",
+        "blocked_join_count", "last_blocked_join_at", "repair_required",
+        "repair_reason_code", "last_heartbeat_at", "last_telemetry_at",
+        "last_system_profile_at", "last_supervisor_heartbeat_at",
+        "last_command_received_at", "last_command_completed_at",
+        "last_nats_connected_at", "last_nats_disconnected_at",
+        "last_tailnet_ready_at", "last_recovery_at", "last_recovery_result",
+        "tailscale_installed", "tailscaled_running", "tailnet_ip_ready",
+        "nats_tailnet_reachable", "remote_access_status",
+    )
+    for field in passthrough:
+        if item.get(field) not in (None, ""):
+            result[field] = item.get(field)
+    return result
 
 def _lite_device_merge_key(device: dict[str, Any]) -> str:
     role = str(device.get("role") or "")
@@ -735,7 +775,15 @@ def lite_fleet() -> dict[str, Any]:
                 "system_profile": merged_profile,
                 "system_health": _public_system_health({**projected_health, **live_health}),
             }
-        merged_devices.append(lite_device_capabilities.apply_device_capabilities(item))
+        merged_devices.append(item)
+
+    try:
+        commands = list_commands(limit=500)
+    except Exception:
+        commands = []
+    merged_devices = lite_device_awareness.enrich_devices(
+        merged_devices, remote_access=remote_access, commands=commands
+    )
 
     devices = sorted(
         merged_devices,
@@ -752,6 +800,11 @@ def lite_fleet() -> dict[str, Any]:
         "remote_access": remote_access,
         "latest_invite": lite_invites.latest_invite(),
         "capability_summary": lite_device_capabilities.catalog_device_summary(devices),
+        "staleness_policy": {
+            "recently_offline_seconds": lite_device_awareness.RECENTLY_OFFLINE_SECONDS,
+            "stale_seconds": lite_device_awareness.STALE_SECONDS,
+            "review_seconds": lite_device_awareness.REVIEW_SECONDS,
+        },
         "updated_at": deps.now_utc_iso(),
     }
 

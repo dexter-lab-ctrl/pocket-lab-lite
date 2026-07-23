@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock3, Cpu, Network, RefreshCw, Server, Trash2 } from 'lucide-react';
+import { Clock3, Cpu, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   GlassCard,
   StatusBadge,
@@ -36,6 +36,32 @@ function storageSummary(device) {
   if (Number.isFinite(Number(storage.available_gb))) return `${Number(storage.available_gb)} GB available`;
   if (String(storage.summary || '').trim()) return String(storage.summary).trim();
   return storage.ready ? 'Ready for app data and backups.' : 'Storage telemetry needs attention.';
+}
+
+function identityLabel(device) {
+  const status = String(device?.identity?.status || device?.identity_status || '').toLowerCase();
+  if (status === 'protected_server_host') return 'Protected server host';
+  if (status === 'verified') return 'Identity verified';
+  if (status === 'join_blocked') return 'Join blocked';
+  if (device?.identity?.repair_required) return 'Repair required';
+  return 'Identity check pending';
+}
+
+function stalenessLabel(device) {
+  const state = String(device?.staleness_state || device?.last_seen_state?.staleness_state || '').toLowerCase();
+  if (state === 'review_recommended') return 'Review recommended';
+  if (state === 'stale') return 'Stale';
+  if (state === 'recently_offline') return 'Recently offline';
+  return deviceConnectionLabel(device);
+}
+
+function responsibilitySummary(device) {
+  const dependencies = device?.dependencies || {};
+  const parts = [];
+  if (Number(dependencies.hosted_app_count || 0) > 0) parts.push(`${dependencies.hosted_app_count} hosted app${Number(dependencies.hosted_app_count) === 1 ? '' : 's'}`);
+  if (Number(dependencies.backup_set_count || 0) > 0) parts.push(`${dependencies.backup_set_count} backup set${Number(dependencies.backup_set_count) === 1 ? '' : 's'}`);
+  if (dependencies.command_delivery_status === 'deliverable') parts.push('Receives recovery commands');
+  return parts.slice(0, 2).join(' · ');
 }
 
 function DeviceCard({
@@ -110,9 +136,19 @@ function DeviceCard({
       </div>
 
       <div className="lite-device-card-meta">
-        <span><strong>{deviceConnectionLabel(device)}</strong> connection</span>
-        <span>Last seen <strong>{formatLiteTime(device?.last_seen)}</strong></span>
-        {capabilities.length ? <span><strong>{capabilities.length}</strong> capabilities</span> : null}
+        <span><strong>{stalenessLabel(device)}</strong></span>
+        <span>Last seen <strong>{formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}</strong></span>
+        {capabilities.length ? <span><strong>{capabilities.length}</strong> verified capabilities</span> : null}
+      </div>
+
+      <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
+        <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
+        {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
+        {device?.removal_assessment ? (
+          <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
+            {device.removal_assessment.safe_to_remove ? 'Safe to remove after confirmation' : 'Not safe to remove'}
+          </small>
+        ) : null}
       </div>
 
       {showStorage ? (
@@ -143,7 +179,7 @@ function DeviceCard({
             disabled={removeBusy}
           >
             <Trash2 className="h-4 w-4" />
-            Remove old device
+            {device?.removal_assessment?.safe_to_remove ? 'Remove old device' : 'Review'}
           </LiteButton>
         ) : null}
       </div>

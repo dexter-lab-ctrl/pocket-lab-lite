@@ -75,8 +75,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    assert current_schema_version() == 10
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert current_schema_version() == 11
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -95,6 +95,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
         "recovery_current_state",
         "command_lifecycle",
         "lite_revision_events",
+        "device_awareness_state",
+        "device_lifecycle_events",
     }.issubset(tables)
 
 

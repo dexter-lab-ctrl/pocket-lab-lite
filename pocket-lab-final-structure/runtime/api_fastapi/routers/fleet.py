@@ -302,7 +302,13 @@ async def send_fleet_agent_command(
         "accepted": True,
         "status": "queued",
         "node_id": node_id,
-        "command": item,
+        "command": {
+            "command_id": item["command_id"],
+            "node_id": node_id,
+            "command": command,
+            "status": item.get("status") or "queued",
+            "created_at": item.get("created_at"),
+        },
         "command_subject": subject,
         "bus": BUS.status(),
     }
@@ -356,6 +362,14 @@ async def restart_lite_fleet_agent(
         requested_by="lite-api",
     )
     subject = f"pocketlab.commands.node.{normalized_node_id}.agent.restart"
+    fleet_registry.append_device_lifecycle_event(
+        normalized_node_id,
+        "restart_requested",
+        reason_code="user_requested",
+        summary="Device agent restart requested.",
+        status="queued",
+        command_id=item["command_id"],
+    )
 
     await BUS.publish_json(
         subject,
@@ -399,7 +413,13 @@ async def restart_lite_fleet_agent(
         "summary": summary,
         "node_id": normalized_node_id,
         "command_id": item["command_id"],
-        "command": item,
+        "command": {
+            "command_id": item["command_id"],
+            "node_id": normalized_node_id,
+            "command": "agent.restart",
+            "status": item.get("status") or "queued",
+            "created_at": item.get("created_at"),
+        },
         "command_subject": subject,
         "progress": progress,
         "poll_url": f"/api/lite/fleet/devices/{normalized_node_id}/restart-agent/status?command_id={item['command_id']}",

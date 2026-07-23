@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
@@ -25,7 +26,7 @@ try:
 except Exception:  # pragma: no cover
     nats = None  # type: ignore
 
-AGENT_VERSION = "2.4.0-lite-reconnect-watchdog"
+AGENT_VERSION = "2.5.0-lite-trust-capability-awareness"
 SYSTEM_PROFILE_REFRESH_SECONDS = 12 * 60 * 60
 SYSTEM_HEALTH_REFRESH_SECONDS = 5 * 60
 
@@ -104,6 +105,38 @@ def telemetry_snapshot() -> Dict[str, Any]:
     }
 
 
+
+
+def advertised_capabilities(role: str, *, is_control_plane: bool, supervisor_available: bool) -> list[str]:
+    normalized = str(role or "compute").strip().lower().replace("-", "_").replace(" ", "_")
+    capabilities = {
+        "heartbeat",
+        "telemetry",
+        "health",
+        "node-command",
+        "receive_commands",
+        "agent-restart",
+        "reconnect-watchdog",
+    }
+    if supervisor_available:
+        capabilities.update({"agent-supervisor", "agent-repair", "supervisor_recovery"})
+    if normalized in {"storage", "storage_node", "backup_target"}:
+        capabilities.update({"provide_storage", "store_backups", "backup_target", "restore_target"})
+    else:
+        capabilities.update({"host_apps", "compute"})
+    if is_control_plane:
+        capabilities.update(
+            {
+                "serve_control_plane",
+                "host_apps",
+                "run_safety_checks",
+                "remote_access",
+                "access_phone_media",
+            }
+        )
+    return sorted(capabilities)
+
+
 def health_snapshot() -> Dict[str, Any]:
     checks = {
         "python": "healthy" if sys.version_info >= (3, 10) else "degraded",
@@ -153,7 +186,12 @@ class PocketLabNodeAgent:
         self.last_disconnect_epoch = 0.0
         self.reconnect_count = 0
         self.self_heal_seconds = int(env("POCKETLAB_AGENT_SELF_HEAL_SECONDS", "180"))
-        self.capabilities = ["heartbeat", "telemetry", "health", "node-command", "agent-restart", "reconnect-watchdog"]
+        self.capabilities = advertised_capabilities(
+            self.role,
+            is_control_plane=self.is_control_plane,
+            supervisor_available=bool(shutil.which("pm2")),
+        )
+        self.connected_at = now_iso()
         self.system_profile_refresh_seconds = max(
             3600,
             int(env("POCKETLAB_AGENT_SYSTEM_PROFILE_SECONDS", str(SYSTEM_PROFILE_REFRESH_SECONDS))),
@@ -224,6 +262,8 @@ class PocketLabNodeAgent:
             "status": "online",
             "auth_token_hash": token_hash(self.token),
             "capabilities": self.capabilities,
+            "advertised_capabilities": self.capabilities,
+            "nats_connected_at": self.connected_at,
         }
 
     async def safe_publish(
@@ -275,6 +315,7 @@ class PocketLabNodeAgent:
 
     async def on_reconnected(self) -> None:
         self.reconnect_count += 1
+        self.connected_at = now_iso()
         print("Pocket Lab node agent reconnected to NATS; publishing fresh heartbeat.", file=sys.stderr)
         self.refresh_system_profile(force=True)
         await self.safe_publish(
@@ -285,6 +326,7 @@ class PocketLabNodeAgent:
                 "reconnected_at": now_iso(),
                 "reconnect_count": self.reconnect_count,
                 "last_disconnect_epoch": self.last_disconnect_epoch,
+                "last_nats_disconnected_at": datetime.fromtimestamp(self.last_disconnect_epoch, tz=timezone.utc).isoformat().replace("+00:00", "Z") if self.last_disconnect_epoch else None,
             },
         )
         await self.register()

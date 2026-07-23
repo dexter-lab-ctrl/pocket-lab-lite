@@ -620,18 +620,20 @@ def _use_isolated_runtime_state(tmp_path):
     return state, deps
 
 
-def test_lite_remove_joining_device_succeeds_and_fleet_no_longer_includes_it(tmp_path):
-    from api_fastapi.services import fleet_registry
+def test_lite_remove_stale_device_uses_current_assessment_and_fleet_no_longer_includes_it(tmp_path):
+    from api_fastapi import deps
 
     _use_isolated_runtime_state(tmp_path)
-    fleet_registry.upsert_agent(
-        {
-            "node_id": "old-phone",
-            "hostname": "Old Phone",
+    deps.core.write_json_file(
+        deps.settings().state_dir / "fleet.json",
+        [{
+            "id": "old-phone",
+            "name": "Old Phone",
             "role": "compute",
-            "status": "joining",
-        },
-        event_type="fleet.agent_join_started",
+            "status": "offline",
+            "connection": "offline",
+            "last_seen_at": "2025-01-01T00:00:00Z",
+        }],
     )
 
     api = client()
@@ -639,9 +641,20 @@ def test_lite_remove_joining_device_succeeds_and_fleet_no_longer_includes_it(tmp
     assert before.status_code == 200
     assert any(item["id"] == "old-phone" for item in before.json()["devices"])
 
+    assessment_response = api.get("/api/lite/devices/old-phone/removal-assessment")
+    assert assessment_response.status_code == 200
+    assessment = assessment_response.json()
+    assert assessment["safe_to_remove"] is True
+
     response = api.post(
         "/api/lite/fleet/remove-device",
-        json={"device_id": "old-phone", "confirm": True, "reason": "Old test device cleanup"},
+        json={
+            "device_id": "old-phone",
+            "confirm": True,
+            "reason": "Old test device cleanup",
+            "assessment_revision": assessment["assessment_revision"],
+            "expected_awareness_revision": assessment["awareness_revision"],
+        },
     )
 
     assert response.status_code == 200
@@ -655,8 +668,7 @@ def test_lite_remove_joining_device_succeeds_and_fleet_no_longer_includes_it(tmp
     assert after.status_code == 200
     assert all(item["id"] != "old-phone" for item in after.json()["devices"])
 
-
-def test_lite_remove_device_cleans_matching_latest_invite(tmp_path, monkeypatch):
+def test_lite_pending_invite_is_revoked_instead_of_removed_as_a_device(tmp_path, monkeypatch):
     monkeypatch.setenv("POCKETLAB_LITE_INVITE_BASE_URL", "http://100.64.0.70:8443")
     _use_isolated_runtime_state(tmp_path)
 
@@ -666,19 +678,18 @@ def test_lite_remove_device_cleans_matching_latest_invite(tmp_path, monkeypatch)
         json={"role": "compute", "hostname": "Test Phone 5"},
     )
     assert created.status_code == 202
-    assert created.json()["status"] == "invite_ready"
+    payload = created.json()
+    assert payload["status"] == "invite_ready"
     assert api.get("/api/lite/fleet").json().get("latest_invite") is not None
 
     response = api.post(
-        "/api/lite/fleet/remove-device",
-        json={"device_id": "test-phone-5", "confirm": True, "reason": "Old test device cleanup"},
+        f"/api/lite/fleet/invites/{payload['invite']['invite_id']}/revoke",
+        json={"reason": "Invite no longer needed"},
     )
 
     assert response.status_code == 200
-    payload = response.json()
-    assert payload["removed_invite_records"] == 1
+    assert response.json()["status"] == "revoked"
     assert api.get("/api/lite/fleet").json().get("latest_invite") is None
-
 
 def test_lite_remove_device_requires_confirm_true(tmp_path):
     from api_fastapi.services import fleet_registry
@@ -772,17 +783,31 @@ def test_lite_remove_online_healthy_device_is_protected(tmp_path):
 
 def test_lite_remove_device_writes_audit_evidence(tmp_path):
     from api_fastapi import deps
-    from api_fastapi.services import fleet_registry
 
     _use_isolated_runtime_state(tmp_path)
-    fleet_registry.upsert_agent(
-        {"node_id": "audit-phone", "hostname": "Audit Phone", "role": "compute", "status": "joining"},
-        event_type="fleet.agent_join_started",
+    deps.core.write_json_file(
+        deps.settings().state_dir / "fleet.json",
+        [{
+            "id": "audit-phone",
+            "name": "Audit Phone",
+            "role": "compute",
+            "status": "offline",
+            "connection": "offline",
+            "last_seen_at": "2025-01-01T00:00:00Z",
+        }],
     )
+    api = client()
+    assessment = api.get("/api/lite/devices/audit-phone/removal-assessment").json()
 
-    response = client().post(
+    response = api.post(
         "/api/lite/fleet/remove-device",
-        json={"device_id": "audit-phone", "confirm": True, "reason": "Old test device cleanup"},
+        json={
+            "device_id": "audit-phone",
+            "confirm": True,
+            "reason": "Old test device cleanup",
+            "assessment_revision": assessment["assessment_revision"],
+            "expected_awareness_revision": assessment["awareness_revision"],
+        },
     )
 
     assert response.status_code == 200
@@ -790,7 +815,6 @@ def test_lite_remove_device_writes_audit_evidence(tmp_path):
     assert audit["events"][0]["event_type"] == "lite.audit.fleet.device_removed"
     assert audit["events"][0]["device_id"] == "audit-phone"
     assert audit["events"][0]["reason"] == "Old test device cleanup"
-
 
 def test_lite_add_device_rejects_duplicate_existing_device_name(tmp_path):
     from api_fastapi.services import fleet_registry

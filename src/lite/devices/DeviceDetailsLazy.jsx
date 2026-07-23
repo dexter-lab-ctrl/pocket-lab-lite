@@ -1,6 +1,8 @@
 import React from 'react';
 import { Smartphone, X } from 'lucide-react';
-import { formatLiteTime } from '../../lib/liteApi.js';
+import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
+import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
+import { useLiteQuery } from '../../hooks/useLiteQuery.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import {
   LiteButton,
@@ -127,11 +129,60 @@ function technicalRows(device) {
   ].filter((row) => row && row.value);
 }
 
+function titleCase(value, fallback = 'Unknown') {
+  const text = String(value || '').replace(/_/g, ' ').trim();
+  return text ? text.replace(/\b\w/g, (letter) => letter.toUpperCase()) : fallback;
+}
+
+function capabilityRows(device) {
+  const source = Array.isArray(device?.capability_states) ? device.capability_states : device?.capabilities;
+  return (Array.isArray(source) ? source : []).slice(0, 16).map((item) => {
+    if (item && typeof item === 'object') return item;
+    return { id: String(item || ''), label: titleCase(item), status: 'unknown' };
+  }).filter((item) => item.id);
+}
+
+function trustSummary(device) {
+  const identity = device?.identity || {};
+  const enrollment = device?.enrollment || {};
+  return [
+    { label: 'Identity', value: titleCase(identity.status || device?.identity_status, 'Identity check pending') },
+    { label: 'Joined', value: formatLiteTime(enrollment.enrolled_at || enrollment.first_heartbeat_at) },
+    { label: 'Invite accepted', value: formatLiteTime(enrollment.invite_accepted_at) },
+    { label: 'Blocked joins', value: String(identity.blocked_join_count || 0) },
+  ];
+}
+
 export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   if (!device) return null;
+  const initialDeviceId = device?.id || '';
+  const detailsQuery = useLiteQuery({
+    queryKey: liteQueryKeys.device(initialDeviceId),
+    path: liteQueryPaths.device(initialDeviceId),
+    queryFn: () => liteApi.device(initialDeviceId),
+    enabled: Boolean(initialDeviceId),
+    staleTime: 30_000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  });
+  device = detailsQuery.data?.device || device;
   const title = device?.name || device?.hostname || 'Device details';
   const status = normalizeBackendState(device?.status) === 'ready' ? 'ready' : deviceAttention(device).length ? 'review' : 'neutral';
-  const historyItems = deviceHistoryItems(device);
+  const historyQuery = useLiteQuery({
+    queryKey: liteQueryKeys.deviceHistory(device?.id || '', 20, ''),
+    path: liteQueryPaths.deviceHistory(device?.id || '', 20, ''),
+    queryFn: () => liteApi.deviceHistory(device?.id || '', 20, ''),
+    enabled: Boolean(device?.id),
+    staleTime: 60_000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  });
+  const historyItems = Array.isArray(historyQuery.data?.items) && historyQuery.data.items.length
+    ? historyQuery.data.items
+    : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
+  const capabilities = capabilityRows(device);
+  const dependencies = device?.dependencies || {};
+  const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
 
   return (
@@ -171,6 +222,59 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         ) : null}
       </section>
 
+      <div className="lite-device-awareness-grid">
+        <section className="lite-device-awareness-section" aria-label="Connection lifecycle">
+          <span>Connection</span>
+          <strong>{titleCase(device?.last_seen_state?.staleness_state || device?.staleness_state || device?.connection)}</strong>
+          <p>Last seen {formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)} from {titleCase(device?.last_seen_state?.last_seen_source, 'device activity')}.</p>
+          <dl>
+            <div><dt>Heartbeat</dt><dd>{formatLiteTime(device?.last_seen_state?.last_heartbeat_at)}</dd></div>
+            <div><dt>Supervisor</dt><dd>{formatLiteTime(device?.last_seen_state?.last_supervisor_heartbeat_at)}</dd></div>
+            <div><dt>Private connection</dt><dd>{formatLiteTime(device?.last_seen_state?.last_nats_connected_at)}</dd></div>
+          </dl>
+        </section>
+
+        <section className="lite-device-awareness-section" aria-label="Device trust">
+          <span>Trust</span>
+          <strong>{titleCase(device?.identity?.status || device?.identity_status, 'Identity check pending')}</strong>
+          <dl>
+            {trustSummary(device).map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value || 'Not reported'}</dd></div>)}
+          </dl>
+          {device?.identity?.repair_required ? <p className="is-review">Repair or rejoin must be started explicitly.</p> : null}
+        </section>
+
+        <section className="lite-device-awareness-section" aria-label="Device capabilities">
+          <span>Capabilities</span>
+          <strong>{capabilities.filter((item) => ['ready', 'available'].includes(String(item.status).toLowerCase())).length} available</strong>
+          <ul className="lite-device-capability-list">
+            {capabilities.map((item) => (
+              <li key={item.id}>
+                <span>{item.label || titleCase(item.id)}</span>
+                <strong className={`is-${String(item.status || 'unknown').toLowerCase()}`}>{titleCase(item.status)}</strong>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="lite-device-awareness-section" aria-label="Device dependencies">
+          <span>Dependencies</span>
+          <strong>{Number(dependencies.hosted_app_count || 0) + Number(dependencies.backup_set_count || 0)} responsibilities</strong>
+          {Array.isArray(dependencies.hosted_apps) && dependencies.hosted_apps.length ? (
+            <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
+          ) : <p>No hosted apps reported.</p>}
+          {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
+          <p>Command delivery: {titleCase(dependencies.command_delivery_status)}</p>
+        </section>
+
+        <section className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
+          <span>Removal</span>
+          <strong>{removal.safe_to_remove ? 'Safe to remove after confirmation' : 'Not safe to remove'}</strong>
+          {Array.isArray(removal.blockers) && removal.blockers.length ? (
+            <ul>{removal.blockers.map((item) => <li key={item.code}>{item.summary}</li>)}</ul>
+          ) : <p>No dependency blockers are currently reported.</p>}
+        </section>
+      </div>
+
       <details className="lite-device-advanced-details">
         <summary>
           <span>Diagnostics and history</span>
@@ -196,7 +300,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             title: 'Device history',
             domain: 'default',
             datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
-            summary: historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
+            summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
             items: historyItems,
             enabled: true,
             emptyMessage: 'No device history has been reported yet.',

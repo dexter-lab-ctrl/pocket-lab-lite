@@ -178,8 +178,16 @@ export const DEVICE_CAPABILITY_LABELS = {
 
 export function deviceCapabilityLabels(device) {
   const explicit = Array.isArray(device?.capability_labels) ? device.capability_labels : [];
-  const fromIds = Array.isArray(device?.capabilities)
-    ? device.capabilities.map((item) => DEVICE_CAPABILITY_LABELS[item] || String(item || '').replace(/_/g, ' ')).filter(Boolean)
+  const capabilitySource = Array.isArray(device?.capability_states) ? device.capability_states : device?.capabilities;
+  const fromIds = Array.isArray(capabilitySource)
+    ? capabilitySource.map((item) => {
+      if (item && typeof item === 'object') {
+        const status = String(item.status || 'unknown').toLowerCase();
+        if (!['ready', 'available'].includes(status)) return '';
+        return item.label || DEVICE_CAPABILITY_LABELS[item.id] || String(item.id || '').replace(/_/g, ' ');
+      }
+      return DEVICE_CAPABILITY_LABELS[item] || String(item || '').replace(/_/g, ' ');
+    }).filter(Boolean)
     : [];
   const labels = [...explicit, ...fromIds]
     .map((item) => String(item || '').trim())
@@ -220,8 +228,12 @@ export function canRemoveDevice(device) {
   if (!device?.id || device?.is_current || device?.isCurrent) return false;
   if (role === 'server_host') return false;
 
+  const assessment = device?.removal_assessment;
+  const staleness = String(device?.staleness_state || device?.last_seen_state?.staleness_state || '').toLowerCase();
+  if (assessment && typeof assessment === 'object' && assessment.safe_to_remove) return true;
   return ['joining', 'waiting', 'offline', 'stale'].includes(connection)
-    || ['joining', 'pending', 'invited', 'offline', 'stale'].includes(status);
+    || ['joining', 'pending', 'invited', 'offline', 'stale', 'agent_stopped'].includes(status)
+    || ['stale', 'review_recommended'].includes(staleness);
 }
 
 export function normalizeDeviceName(value) {
