@@ -15,6 +15,7 @@ import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorker
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import { triggerLiteHaptic } from '../lib/liteNativeFeedback.js';
 import { LiteSheet } from './LiteOverlay.jsx';
+import { LiteElevationSurface, LiteMotionReveal } from './LiteMotion.jsx';
 import { selectRecoveryScreenView, selectRecoverySummaryView, isLiteRecoveryViewLive } from '../lib/liteViewModels.js';
 import {
   GlassCard,
@@ -238,17 +239,17 @@ export default function RecoveryScreen() {
   const recoveryReady = !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
   const recoveryStatus = databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
   const recoveryTitle = databaseWriteBlocked
-    ? 'Recovery needs attention'
+    ? 'Backup protection needs attention'
     : latestBackupVerified
-      ? 'Recovery ready'
+      ? 'Backup protection is ready'
       : latestBackup
         ? 'Verify your latest backup'
-        : 'Create your first safe copy';
+        : 'Create your first protected backup';
   const recoverySummary = databaseWriteBlocked
-    ? recoveryFlow.blockedReason || 'Recovery actions are temporarily protected.'
+    ? recoveryFlow.blockedReason || 'Backup and restore actions are temporarily protected.'
     : latestBackupVerified
-      ? 'Your latest backup is verified and ready for a restore preview.'
-      : data?.summary || 'Create a safety copy before making important changes.';
+      ? 'Your latest backup is verified. Preview a restore before anything changes.'
+      : data?.summary || 'Create a protected backup before making important changes.';
   const latestActivity = [
     latestBackup ? {
       key: 'backup',
@@ -265,11 +266,13 @@ export default function RecoveryScreen() {
   ].filter(Boolean);
 
   function openRecoveryManage(section = 'backup') {
+    triggerLiteHaptic('accepted');
     setRecoveryManageSection(section);
     setRecoveryManageOpen(true);
   }
 
   function openActionPanel(action) {
+    triggerLiteHaptic('accepted');
     setActiveActionPanel(action);
   }
 
@@ -493,8 +496,8 @@ export default function RecoveryScreen() {
   }
 
   const recoveryAnnouncement = actionError
-    || (busy ? `Recovery action in progress: ${busy.replace(/[-:]/g, ' ')}` : '')
-    || (recoveryFlow.context.lastCompletedAt ? latestActivity[0]?.title || 'Recovery state updated.' : '');
+    || (busy ? `Backup or restore in progress: ${busy.replace(/[-:]/g, ' ')}` : '')
+    || (recoveryFlow.context.lastCompletedAt ? latestActivity[0]?.title || 'Backup and restore status updated.' : '');
 
 
   return (
@@ -502,7 +505,7 @@ export default function RecoveryScreen() {
       <PageHeader
         eyebrow="Recovery"
         title="Backup & Restore"
-        description="Keep a verified safety copy ready without exposing recovery internals on the main screen."
+        description="Keep verified backups ready, review restore safety, and protect Pocket Lab data before anything changes."
         actions={<LiteRefreshButton scope="recovery" refresh={refreshSummary} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
@@ -510,71 +513,73 @@ export default function RecoveryScreen() {
         {recoveryAnnouncement}
       </div>
 
-      <section className="lite-recovery-r1-hero" data-recovery-r1-summary="true">
+      <LiteElevationSurface as="section" settle active={recoveryLive} className="lite-recovery-r1-hero lite-recovery-premium-hero" data-recovery-r1-summary="true" data-recovery-native-polish="true">
         <div className="lite-recovery-r1-hero-copy">
           <div className="lite-home-pill">
             <span className="lite-ready-dot" />
             {backendLabel(data?.status, {
-              ready: 'Recovery Ready',
-              review: 'Needs Attention',
-              danger: 'Needs Attention',
-              checking: 'Checking recovery',
+              ready: 'Protection ready',
+              review: 'Review recommended',
+              danger: 'Needs attention',
+              checking: 'Checking protection',
             })}
           </div>
           <h2>{recoveryTitle}</h2>
           <p>{recoverySummary}</p>
           <div className="lite-recovery-r1-status-strip" aria-label="Recovery status">
             <span className={latestBackupVerified ? 'is-ready' : ''}><ArchiveRestore className="h-4 w-4" />{latestBackupVerified ? 'Backup verified' : latestBackup ? 'Backup saved' : 'Backup needed'}</span>
-            <span className={latestPreviewReady ? 'is-ready' : ''}><RotateCcw className="h-4 w-4" />{latestPreviewReady ? 'Restore ready' : 'Preview needed'}</span>
-            <span className={databaseBackupVerified && !databaseWriteBlocked ? 'is-ready' : ''}><Database className="h-4 w-4" />{databaseWriteBlocked ? 'Database protected' : databaseBackupVerified ? 'Database healthy' : 'Database backup needed'}</span>
+            <span className={latestPreviewReady ? 'is-ready' : ''}><RotateCcw className="h-4 w-4" />{latestPreviewReady ? 'Restore preview ready' : 'Restore preview needed'}</span>
+            <span className={databaseBackupVerified && !databaseWriteBlocked ? 'is-ready' : ''}><Database className="h-4 w-4" />{databaseWriteBlocked ? 'Pocket Lab data protected' : databaseBackupVerified ? 'Pocket Lab data backed up' : 'Data backup recommended'}</span>
           </div>
           <div className="lite-recovery-r1-actions">
-            <LiteButton onClick={backup} disabled={Boolean(busy) || recoveryFlow.writeBlocked}>
-              {busy ? 'Recovery is working…' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
+            <LiteButton onClick={backup} disabled={Boolean(busy) || recoveryFlow.writeBlocked} haptic>
+              {busy ? 'Backup protection is working…' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
             </LiteButton>
-            <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage Recovery">
+            <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage backups and recovery">
               Manage
             </LiteButton>
           </div>
         </div>
 
-        <div className="lite-recovery-r1-latest-card">
+        <LiteElevationSurface as="div" settle className="lite-recovery-r1-latest-card lite-recovery-premium-latest">
           <div><Database className="h-6 w-6" /><StatusBadge status={recoveryStatus}>{recoveryReady ? 'Protected' : 'Review'}</StatusBadge></div>
-          <span>Latest backup</span>
+          <span>Latest protected backup</span>
           <strong>{latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'No backup yet'}</strong>
           <small>{latestBackup ? `${latestBackupVerified ? 'Verified' : 'Needs verification'} · ${formatSize(latestBackup.size_bytes)}` : 'Create a safe restore point to get started.'}</small>
-        </div>
-      </section>
+        </LiteElevationSurface>
+      </LiteElevationSurface>
 
       {recoveryLive ? (
+        <LiteMotionReveal motionKey={busy || recoveryFlow.value} ariaLive="polite">
         <LiteFlowStatusPanel
-          title="Recovery activity"
+          title="Backup and restore activity"
           label={recoveryFlow.label}
           steps={recoveryFlow.steps}
-          note={recoveryFlow.writeBlocked ? recoveryFlow.blockedReason : 'Pocket Lab is completing the active recovery action.'}
+          note={recoveryFlow.writeBlocked ? recoveryFlow.blockedReason : 'Pocket Lab is completing the selected backup or restore task.'}
           className="mt-4"
         />
+        </LiteMotionReveal>
       ) : null}
 
       {loading ? <LoadingCard label="Loading recovery…" /> : null}
-      {error ? <StateSurface tone="degraded" title="Recovery information is temporarily unavailable" description={error} className="mb-5" /> : null}
-      {actionError ? <StateSurface tone="degraded" title="Recovery action needs attention" description={actionError} className="mb-5" /> : null}
+      {error ? <StateSurface tone="degraded" title="Backup information is temporarily unavailable" description={error} className="mb-5" /> : null}
+      {actionError ? <StateSurface tone="degraded" title="Backup or restore needs attention" description={actionError} className="mb-5" /> : null}
 
-      <div className="lite-recovery-r1-summary-grid lite-render-containment lite-render-containment--recovery">
-        <GlassCard className="lite-recovery-r1-summary-card">
+      <LiteMotionReveal className="lite-recovery-r1-summary-grid lite-render-containment lite-render-containment--recovery lite-recovery-premium-summary-grid" motionKey={`${latestBackup?.backup_id || 'none'}:${lastRestore?.restore_id || 'none'}`}>
+        <GlassCard as={LiteElevationSurface} settle className="lite-recovery-r1-summary-card lite-recovery-premium-summary-card">
           <div className="lite-recovery-r1-card-head">
-            <div><ShieldCheck className="h-5 w-5" /><span><strong>Protection</strong><small>Recovery readiness at a glance</small></span></div>
+            <div><ShieldCheck className="h-5 w-5" /><span><strong>Protection overview</strong><small>Backups, restore readiness, and Pocket Lab data</small></span></div>
             <StatusBadge status={recoveryStatus}>{recoveryReady ? 'Ready' : 'Review'}</StatusBadge>
           </div>
           <div className="lite-recovery-r1-summary-rows">
             <div><span>Backup</span><strong>{latestBackupVerified ? 'Verified' : latestBackup ? 'Needs verification' : 'Not created'}</strong></div>
             <div><span>Restore</span><strong>{latestPreviewReady ? 'Ready for confirmation' : 'Preview required'}</strong></div>
-            <div><span>Database</span><strong>{databaseWriteBlocked ? 'Protected for safety' : databaseBackupVerified ? 'Healthy' : 'Backup recommended'}</strong></div>
+            <div><span>Pocket Lab data</span><strong>{databaseWriteBlocked ? 'Protected for safety' : databaseBackupVerified ? 'Backed up' : 'Backup recommended'}</strong></div>
           </div>
           <LiteButton tone="secondary" onClick={() => openRecoveryManage('protection')}>View protection</LiteButton>
         </GlassCard>
 
-        <GlassCard className="lite-recovery-r1-summary-card">
+        <GlassCard as={LiteElevationSurface} settle className="lite-recovery-r1-summary-card lite-recovery-premium-summary-card">
           <div className="lite-recovery-r1-card-head">
             <div><Activity className="h-5 w-5" /><span><strong>Recent activity</strong><small>Latest backup and restore events</small></span></div>
             <StatusBadge status={latestActivity.length ? 'healthy' : 'unknown'}>{latestActivity.length ? 'Updated' : 'Quiet'}</StatusBadge>
@@ -587,19 +592,19 @@ export default function RecoveryScreen() {
           </div>
           <LiteButton tone="secondary" onClick={() => openRecoveryManage('history')}>View activity</LiteButton>
         </GlassCard>
-      </div>
+      </LiteMotionReveal>
 
       <LiteSheet
         open={recoveryManageOpen}
         onClose={() => setRecoveryManageOpen(false)}
-        title="Manage Recovery"
+        title="Manage backups and recovery"
         eyebrow="Manage"
-        description="Backup, restore, protection, and history in one focused workspace."
+        description="Create and verify backups, preview restores, and review protection history in one focused workspace."
         variant="manage"
         className="lite-recovery-manage-sheet"
         bodyClassName="lite-recovery-manage-scroll"
       >
-        <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading Recovery Manage…</div>}>
+        <React.Suspense fallback={<div className="lite-recovery-details-loading">Loading backup and restore tools…</div>}>
           <RecoveryManageSheetLazy
             section={recoveryManageSection}
             onSectionChange={setRecoveryManageSection}
@@ -646,8 +651,8 @@ export default function RecoveryScreen() {
         open={Boolean(activePanel)}
         onClose={() => setActiveActionPanel('')}
         title={activePanel?.title || 'Recovery details'}
-        eyebrow="Action Details"
-        description={activePanel?.subtitle || 'Verified recovery details and recorded outcomes.'}
+        eyebrow="Details"
+        description={activePanel?.subtitle || 'Verified backup and restore details with recorded outcomes.'}
         variant="security"
         className="lite-recovery-action-details-sheet"
         bodyClassName="lite-recovery-action-details-scroll"
@@ -677,9 +682,9 @@ export default function RecoveryScreen() {
       <LiteSheet
         open={databaseDetailsOpen}
         onClose={() => setDatabaseDetailsOpen(false)}
-        title="Database protection"
+        title="Pocket Lab data protection"
         eyebrow="Recovery Details"
-        description="Verified backup, preview, restore guard, and sanitized diagnostics."
+        description="Verified backup, restore preview, safety guard, and protected diagnostics."
         variant="security"
         className="lite-recovery-database-manage-sheet"
         bodyClassName="lite-recovery-database-manage-scroll"
@@ -728,9 +733,9 @@ export default function RecoveryScreen() {
       <LiteSheet
         open={evidenceOpen}
         onClose={() => setEvidenceOpen(false)}
-        title="Recovery details"
-        eyebrow="Evidence"
-        description="Safe reference values for troubleshooting."
+        title="Recovery record"
+        eyebrow="Troubleshooting record"
+        description="Protected reference values for support and recovery review."
         variant="security"
         className="lite-recovery-evidence-sheet"
         bodyClassName="lite-recovery-evidence-list"

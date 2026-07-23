@@ -21725,3 +21725,607 @@ html.lite-install-light-shell body {
     transition: none !important;
   }
 }
+
+/* Pocket Lab Lite premium workspace tab polish — Home, Apps, Safety, Recovery */
+.theme-pocket-lite-daylight .lite-home-premium-shell,
+.theme-pocket-lite-daylight .lite-catalog-native-polish,
+.theme-pocket-lite-daylight .lite-security-native-polish,
+.theme-pocket-lite-daylight [data-recovery-native-polish="true"] {
+  --lite-native-ease: cubic-bezier(0.2, 0.86, 0.22, 1);
+  --lite-native-shadow: 0 18px 50px rgba(15, 23, 42, 0.09);
+  --lite-native-shadow-raised: 0 24px 64px rgba(15, 23, 42, 0.13);
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-shell {
+  min-width: 0;
+  isolation: isolate;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-hero {
+  min-height: 22rem;
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(37, 99, 235, 0.16), transparent 25rem),
+    radial-gradient(circle at 92% 10%, rgba(14, 165, 233, 0.12), transparent 22rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 255, 0.95));
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-hero::after {
+  animation: none;
+  opacity: 0.7;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform 560ms var(--lite-native-ease), opacity 360ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-hero .lite-home-pill.is-review {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(255, 251, 235, 0.9);
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-hero .lite-home-pill.is-danger {
+  border-color: rgba(244, 63, 94, 0.26);
+  background: rgba(255, 241, 242, 0.92);
+  color: #9f1239;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.35rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-native-action,
+.theme-pocket-lite-daylight .lite-home-priority-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  padding: 0.72rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  color: #1e293b;
+  font-size: 0.86rem;
+  font-weight: 850;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(14px);
+  transition: border-color 180ms ease, box-shadow 220ms var(--lite-native-ease), background 180ms ease;
+  touch-action: manipulation;
+}
+
+.theme-pocket-lite-daylight .lite-home-native-action.is-primary,
+.theme-pocket-lite-daylight .lite-home-priority-action {
+  border-color: rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.24);
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-priority {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.7rem;
+  min-height: 100%;
+  padding: 1.35rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--lite-native-shadow);
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-priority::after {
+  content: "";
+  position: absolute;
+  right: -4rem;
+  bottom: -5rem;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%);
+  pointer-events: none;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-priority.is-review {
+  border-color: rgba(245, 158, 11, 0.22);
+  background: linear-gradient(150deg, rgba(255,255,255,0.96), rgba(255,251,235,0.94));
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-priority-icon {
+  display: grid;
+  place-items: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0.95rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-priority > strong {
+  max-width: 20rem;
+  color: #0f172a;
+  font-size: clamp(1.25rem, 2.7vw, 1.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-priority > p:not(.lite-home-card-label) {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.theme-pocket-lite-daylight .lite-home-priority-action {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.065);
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat > button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  min-height: 7.25rem;
+  padding: 1rem;
+  text-align: left;
+  color: #334155;
+  touch-action: manipulation;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat-icon,
+.theme-pocket-lite-daylight .lite-home-premium-service-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0.95rem;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat-copy,
+.theme-pocket-lite-daylight .lite-home-premium-service-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat-copy small,
+.theme-pocket-lite-daylight .lite-home-premium-section-head > div > span,
+.theme-pocket-lite-daylight .lite-home-premium-resource small {
+  color: #2563eb;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat-copy strong {
+  color: #0f172a;
+  font-size: 1.55rem;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-stat-copy em,
+.theme-pocket-lite-daylight .lite-home-premium-resource em {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  font-style: normal;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+  content-visibility: auto;
+  contain-intrinsic-size: 30rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-capacity,
+.theme-pocket-lite-daylight .lite-home-premium-readiness,
+.theme-pocket-lite-daylight .lite-home-premium-services {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1.65rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--lite-native-shadow);
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-services {
+  padding: 1.1rem;
+  content-visibility: auto;
+  contain-intrinsic-size: 36rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-section-head h2 {
+  margin-top: 0.3rem;
+  color: #0f172a;
+  font-size: clamp(1.2rem, 2.4vw, 1.65rem);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-section-head p {
+  max-width: 42rem;
+  margin-top: 0.4rem;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.1rem;
+  background: rgba(248, 250, 252, 0.84);
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource > span {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  border-radius: 0.8rem;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource.is-review > span {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource.is-danger > span {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-resource strong {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-freshness {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-readiness-ring {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 5rem;
+  height: 5rem;
+  border: 0.5rem solid #bfdbfe;
+  border-radius: 999px;
+  background: #fff;
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-readiness-ring.is-ready {
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-readiness-ring.is-danger {
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-readiness-ring strong {
+  font-size: 1.35rem;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-readiness-ring small {
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-trust-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 1.1rem;
+  background: rgba(236, 253, 245, 0.76);
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-trust-note strong {
+  display: block;
+  color: #065f46;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-trust-note p {
+  margin-top: 0.25rem;
+  color: #477365;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.2rem;
+  background: rgba(248, 250, 252, 0.82);
+  overflow: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service > button,
+.theme-pocket-lite-daylight .lite-home-premium-service > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 5.75rem;
+  padding: 0.85rem;
+  text-align: left;
+  color: #334155;
+  touch-action: manipulation;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-icon.is-ready {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-icon.is-review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-icon.is-danger {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-copy strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-service-copy small {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+.theme-pocket-lite-daylight .lite-home-premium-checking {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* Native-feel refinements reuse existing React Spring and do not add polling. */
+.theme-pocket-lite-daylight .lite-recovery-premium-hero,
+.theme-pocket-lite-daylight .lite-recovery-premium-summary-card,
+.theme-pocket-lite-daylight .lite-recovery-premium-latest,
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-s7-profile-card,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card {
+  transform-origin: center;
+  backface-visibility: hidden;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-premium-hero {
+  box-shadow: var(--lite-native-shadow);
+}
+
+.theme-pocket-lite-daylight .lite-recovery-premium-latest {
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: linear-gradient(155deg, rgba(255,255,255,0.98), rgba(239,246,255,0.92));
+}
+
+.theme-pocket-lite-daylight .lite-recovery-premium-summary-grid {
+  gap: 1rem;
+}
+
+.theme-pocket-lite-daylight .lite-recovery-premium-summary-card,
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-s7-profile-card,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card {
+  transition: border-color 180ms ease, box-shadow 240ms var(--lite-native-ease), background 180ms ease;
+}
+
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-s7-profile-card:active,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card:active,
+.theme-pocket-lite-daylight .lite-recovery-premium-summary-card:active {
+  transform: scale(0.995);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-toolbar--simple {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-hero-pill.is-secure {
+  border-color: rgba(16, 185, 129, 0.24);
+  background: rgba(236, 253, 245, 0.9);
+}
+
+.theme-pocket-lite-daylight .lite-security-native-polish .lite-security-safety-center-card,
+.theme-pocket-lite-daylight .lite-recovery-premium-hero,
+.theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-featured {
+  contain: layout paint;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-pocket-lite-daylight .lite-home-premium-hero:hover::after {
+    opacity: 0.95;
+    transform: translate3d(-0.6rem, -0.35rem, 0) scale(1.035);
+  }
+
+  .theme-pocket-lite-daylight .lite-home-native-action:hover,
+  .theme-pocket-lite-daylight .lite-home-priority-action:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+    box-shadow: 0 16px 36px rgba(37, 99, 235, 0.18);
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-stat:hover,
+  .theme-pocket-lite-daylight .lite-home-premium-service:hover,
+  .theme-pocket-lite-daylight .lite-recovery-premium-summary-card:hover,
+  .theme-pocket-lite-daylight .lite-security-native-polish .lite-security-s7-profile-card:hover,
+  .theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card:hover {
+    border-color: rgba(37, 99, 235, 0.28);
+    box-shadow: var(--lite-native-shadow-raised);
+  }
+}
+
+@media (max-width: 1080px) {
+  .theme-pocket-lite-daylight .lite-home-premium-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .theme-pocket-lite-daylight .lite-home-premium-hero {
+    min-height: auto;
+    padding: 1rem;
+    border-radius: 1.5rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-pocket-lite-daylight .lite-home-native-action {
+    width: 100%;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-overview,
+  .theme-pocket-lite-daylight .lite-home-premium-service-grid,
+  .theme-pocket-lite-daylight .lite-home-premium-resource-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-stat > button {
+    min-height: 5.75rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-service > button,
+  .theme-pocket-lite-daylight .lite-home-premium-service > div {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-service > button > svg:last-child {
+    display: none;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-section-head {
+    align-items: flex-start;
+  }
+
+  .theme-pocket-lite-daylight .lite-home-premium-readiness-ring {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .theme-pocket-lite-daylight .lite-recovery-premium-hero,
+  .theme-pocket-lite-daylight .lite-recovery-premium-summary-card {
+    border-radius: 1.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-home-premium-hero::after,
+  .theme-pocket-lite-daylight .lite-home-native-action,
+  .theme-pocket-lite-daylight .lite-home-priority-action,
+  .theme-pocket-lite-daylight .lite-home-premium-stat,
+  .theme-pocket-lite-daylight .lite-home-premium-service,
+  .theme-pocket-lite-daylight .lite-recovery-premium-summary-card,
+  .theme-pocket-lite-daylight .lite-security-native-polish .lite-security-s7-profile-card,
+  .theme-pocket-lite-daylight .lite-catalog-native-polish .lite-catalog-app-card {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
