@@ -734,3 +734,19 @@ def test_frontend_sends_display_label_precondition():
     assert "expectedConsumerModelName: current" in picker
     assert "expected_consumer_model_name" in api
     assert "revision: Number.isFinite(Number(profile.revision))" in view_models
+
+
+def test_devices_model_picker_mobile_layout_contract():
+    root = Path(__file__).resolve().parents[2]
+    picker = (root / "src/lite/devices/DeviceModelPickerLazy.jsx").read_text(encoding="utf-8")
+    styles = (root / "src/index.css").read_text(encoding="utf-8")
+    assert 'layerClassName="lite-device-model-layer"' in picker
+    assert 'headerClassName="lite-device-model-sheet-head"' in picker
+    assert 'className="lite-device-model-browser"' in picker
+    assert 'lite-device-model-option-meta' in picker
+    assert '.lite-device-model-sheet-body' in styles
+    assert 'grid-template-rows: auto minmax(8rem, 1fr) auto;' in styles
+    assert 'height: calc(var(--lite-visual-viewport-height' in styles
+    assert 'env(safe-area-inset-bottom)' in styles
+    assert '-webkit-overflow-scrolling: touch;' in styles
+    assert '@media (max-height: 620px) and (max-width: 640px)' in styles
