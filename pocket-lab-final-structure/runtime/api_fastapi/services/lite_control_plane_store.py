@@ -1463,6 +1463,13 @@ class ControlPlaneProjectionStore:
                 "device_codename": codename,
                 "consumer_model_name": consumer,
                 "display_model": display_model,
+                "model_label_source": (
+                    "user_selected" if consumer else
+                    "technical_fallback" if technical else
+                    "codename_fallback" if codename else
+                    "generic_fallback"
+                ),
+                "technical_identity_source": "agent",
                 "architecture": _safe_text(row.get("architecture"), 80),
                 "android_abi": _safe_text(row.get("android_abi"), 80),
                 "kernel": _safe_text(row.get("kernel"), 160),
@@ -1519,8 +1526,7 @@ class ControlPlaneProjectionStore:
             ).fetchone()
             if not device:
                 raise DeviceProfileUpdateError(404, "Device was not found.")
-            if bool(device["protected_server_host"]):
-                raise DeviceProfileUpdateError(409, "The Pocket Lab server host is protected and its model label cannot be changed here.")
+            protected_server_host = bool(device["protected_server_host"])
             existing_row = conn.execute(
                 "SELECT * FROM device_system_profiles WHERE node_id=?",
                 (device_id,),
@@ -1569,7 +1575,15 @@ class ControlPlaneProjectionStore:
                     f"device-display-model-{device_id}-{profile_revision}",
                     now,
                     now_epoch,
-                    "Device display model updated." if consumer_model_name else "Device display model cleared.",
+                    (
+                        "Protected server display model updated."
+                        if protected_server_host and consumer_model_name
+                        else "Protected server display model cleared."
+                        if protected_server_host
+                        else "Device display model updated."
+                        if consumer_model_name
+                        else "Device display model cleared."
+                    ),
                 ),
             )
             _bump_revision(conn, "audit", now, changed_ids=[device_id], reason="audit_state_changed", projection_version=1)

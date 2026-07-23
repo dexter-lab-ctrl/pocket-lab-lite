@@ -371,7 +371,8 @@ def test_phase_d1_frontend_contract_is_display_only():
     assert "getprop" not in joined
     assert "navigator?.vibrate" in sources["src/lite/devices/DeviceModelPickerLazy.jsx"]
     assert "battery" not in joined
-    assert "protected_server_host || activeDetailsDevice?.role === 'server_host'" in sources["src/lite/LiteDevices.jsx"]
+    assert "onChooseModel={() =>" in sources["src/lite/LiteDevices.jsx"]
+    assert "internal codename" in sources["src/lite/devices/DeviceModelPickerLazy.jsx"].lower()
     assert "profile_fingerprint" not in sources["src/lib/liteViewModels.js"]
     assert "snapshotSelect: selectDevicesScreenView" in sources["src/lite/LiteDevices.jsx"]
 
@@ -388,17 +389,19 @@ def test_phase_d1_sources_do_not_collect_battery_or_unrestricted_getprop():
     assert "12 * 60 * 60" in (root / "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py").read_text(encoding="utf-8")
 
 
-def test_protected_server_host_model_update_is_rejected_and_identity_preserved(tmp_path, monkeypatch):
+def test_protected_server_host_display_model_update_preserves_identity(tmp_path, monkeypatch):
     store = _configure_store(tmp_path, monkeypatch)
     payload = _profile_payload()
     payload["devices"][0].update({"role": "server_host", "is_current": True, "name": "Pocket Lab Server"})
     store.project_fleet(payload)
 
-    from api_fastapi.services.lite_control_plane_store import DeviceProfileUpdateError
-
-    with pytest.raises(DeviceProfileUpdateError) as exc_info:
-        store.update_device_consumer_model("phone-two", "Samsung Galaxy S23")
-    assert exc_info.value.status_code == 409
+    before = store.device_profile_map()["phone-two"]["system_profile"]
+    result = store.update_device_consumer_model(
+        "phone-two",
+        "Samsung Galaxy S23",
+        expected_profile_revision=before["revision"],
+    )
+    assert result["system_profile"]["consumer_model_name"] == "Samsung Galaxy S23"
 
     current, _, _ = store._read(
         lambda conn: dict(conn.execute(
@@ -414,8 +417,10 @@ def test_protected_server_host_model_update_is_rejected_and_identity_preserved(t
     }
     profile = store.device_profile_map()["phone-two"]["system_profile"]
     assert profile["technical_model"] == "SM-S911B"
-    assert profile["consumer_model_name"] == ""
-
+    assert profile["device_codename"] == "dm1q"
+    assert profile["consumer_model_name"] == "Samsung Galaxy S23"
+    assert profile["model_label_source"] == "user_selected"
+    assert profile["technical_identity_source"] == "agent"
 
 def test_display_model_audit_metadata_is_sanitized(tmp_path, monkeypatch):
     store = _configure_store(tmp_path, monkeypatch)
@@ -567,10 +572,58 @@ def test_devices_ui_polish_preserves_server_protection_and_hides_empty_storage()
     assert "function hasMeaningfulStorage(device)" in card
     assert "Storage status will appear after the device reports it." not in card
     assert "lite-device-system-strip" in card
-    assert "Server model detected automatically" in details
-    assert "The protected server identity comes from the local agent" in details
+    assert "Choosing a friendly model changes display metadata only" in details
+    assert "Internal codename" in details
+    assert "onChooseModel={() =>" in screen
+    assert "scrollIntoView" in screen
+    assert "detailsPanelRef" in screen
     assert "<details className=\"lite-device-advanced-details\">" in details
     assert "<details className=\"lite-devices-add-disclosure\">" in screen
     assert "Current connection, system identity, and health at a glance." in screen
-    assert ".lite-device-protected-model" in styles
+    assert ".lite-device-model-boundary" in styles
+    assert ".lite-device-details-focus-anchor" in styles
     assert ".lite-device-advanced-details" in styles
+
+
+def test_protected_server_display_model_update_preserves_technical_identity(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    store.project_fleet({
+        "devices": [{
+            "id": "pocket-lab-lite-server",
+            "name": "Pocket Lab Lite Server",
+            "role": "server_host",
+            "protected_server_host": True,
+            "system_profile": {
+                "manufacturer": "samsung",
+                "technical_model": "SM-S911B",
+                "device_codename": "dm1q",
+                "architecture": "aarch64",
+                "collection_status": "current",
+                "collected_at": "2026-07-23T12:00:00Z",
+            },
+        }]
+    })
+    before = store.device_profile_map()["pocket-lab-lite-server"]["system_profile"]
+    result = store.update_device_consumer_model(
+        "pocket-lab-lite-server",
+        "Samsung Galaxy S23",
+        expected_profile_revision=before["revision"],
+    )
+    profile = result["system_profile"]
+    assert profile["consumer_model_name"] == "Samsung Galaxy S23"
+    assert profile["display_model"] == "Samsung Galaxy S23"
+    assert profile["model_label_source"] == "user_selected"
+    assert profile["technical_identity_source"] == "agent"
+    assert profile["technical_model"] == "SM-S911B"
+    assert profile["device_codename"] == "dm1q"
+
+    cleared = store.update_device_consumer_model(
+        "pocket-lab-lite-server",
+        "",
+        expected_profile_revision=result["profile_revision"],
+    )
+    assert cleared["system_profile"]["consumer_model_name"] == ""
+    assert cleared["system_profile"]["display_model"] == "SM-S911B"
+    assert cleared["system_profile"]["model_label_source"] == "technical_fallback"
+    assert cleared["system_profile"]["technical_model"] == "SM-S911B"
+    assert cleared["system_profile"]["device_codename"] == "dm1q"
