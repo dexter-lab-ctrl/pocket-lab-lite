@@ -56,7 +56,9 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
       title={isProtectedServer ? "Choose server model" : "Choose phone model"}
       eyebrow={isProtectedServer ? "Pocket Lab server" : "Device details"}
       description="This label is display-only. Enrollment identity, technical model, internal codename, and server protection stay unchanged."
+      layerClassName="lite-device-model-layer"
       className="lite-device-model-sheet"
+      headerClassName="lite-device-model-sheet-head"
       bodyClassName="lite-device-model-sheet-body"
       variant="manage"
       motion="safe-grip"
@@ -88,7 +90,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
           </div>
         </div>
       ) : (
-        <>
+        <div className="lite-device-model-browser">
           <label className="lite-device-model-search">
             <Search className="h-4 w-4" />
             <input
@@ -109,7 +111,10 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
               >
                 <span>{entry.manufacturer}</span>
                 <strong>{entry.consumerModelName}</strong>
-                {entry.score >= 80 ? <small>Suggested from technical details</small> : null}
+                <small className="lite-device-model-option-meta">
+                  {[entry.technicalModels?.[0], entry.codenames?.[0]].filter(Boolean).join(' · ')}
+                </small>
+                {entry.score >= 80 ? <small className="lite-device-model-option-match">Suggested from technical details</small> : null}
               </button>
             ))}
           </div>
@@ -124,7 +129,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
               <LiteButton tone="secondary" onClick={flow.clear} disabled={!current || flow.writeBlocked}>Use detected technical model</LiteButton>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {flow.writeBlocked ? <p className="lite-device-model-warning">Reconnect to change this device model. Saved state stays read-only.</p> : null}
