@@ -1,8 +1,9 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { Smartphone, X } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import {
+  LiteButton,
   backendBadgeStatus,
   deviceCapabilityLabels,
   deviceConnectionLabel,
@@ -100,11 +101,33 @@ function technicalRows(device) {
     { label: 'Last seen', value: formatLiteTime(device?.last_seen) },
     { label: 'Supervisor', value: device?.supervisor?.status || device?.supervisor_status },
     { label: 'Capabilities', value: deviceCapabilityLabels(device).join(', ') },
+    { label: 'OS family', value: device?.system_profile?.os_family },
+    { label: 'Operating system', value: [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' ') },
+    { label: 'Android API', value: device?.system_profile?.android_api_level },
+    { label: 'Security patch', value: device?.system_profile?.security_patch },
+    { label: 'Manufacturer', value: device?.system_profile?.manufacturer },
+    { label: 'Technical model', value: device?.system_profile?.technical_model },
+    { label: 'Consumer name', value: device?.system_profile?.consumer_model_name || 'Not selected' },
+    { label: 'Device codename', value: device?.system_profile?.device_codename },
+    { label: 'Architecture', value: device?.system_profile?.architecture },
+    { label: 'Android ABI', value: device?.system_profile?.android_abi },
+    { label: 'Kernel', value: device?.system_profile?.kernel },
+    { label: 'Runtime', value: device?.system_profile?.runtime_type },
+    { label: 'Termux', value: device?.system_profile?.termux_version },
+    { label: 'Python', value: device?.system_profile?.python_version },
+    { label: 'Agent', value: device?.system_profile?.agent_version },
+    { label: 'Supervisor version', value: device?.system_profile?.supervisor_version },
+    { label: 'Uptime', value: device?.system_health?.uptime_label },
+    { label: 'System load', value: device?.system_health?.load_status ? device.system_health.load_status.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) : '' },
+    { label: 'Load average', value: Array.isArray(device?.system_health?.load_average) ? device.system_health.load_average.filter((value) => value !== null).join(' / ') : '' },
+    { label: 'Profile status', value: device?.system_profile?.collection_status },
+    { label: 'Profile freshness', value: device?.system_profile?.freshness },
+    { label: 'Profile checked', value: formatLiteTime(device?.system_profile?.collected_at) },
     device?.storage ? { label: 'Storage', value: device.storage.ready ? 'Ready' : 'Not ready' } : null,
   ].filter((row) => row && row.value);
 }
 
-export default function DeviceDetailsLazy({ device, onClose }) {
+export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   if (!device) return null;
   const title = device?.name || device?.hostname || 'Device details';
   const status = normalizeBackendState(device?.status) === 'ready' ? 'ready' : deviceAttention(device).length ? 'review' : 'neutral';
@@ -122,6 +145,25 @@ export default function DeviceDetailsLazy({ device, onClose }) {
           <X className="h-4 w-4" />
         </button>
       </div>
+
+      <section className="lite-device-system-summary" aria-label="System identity and health">
+        <div>
+          <span>System</span>
+          <strong>{device?.system_profile?.display_model || device?.system_profile?.technical_model || 'System details unavailable'}</strong>
+          <p>{[device?.system_profile?.manufacturer, device?.system_profile?.technical_model, device?.system_profile?.device_codename].filter(Boolean).join(' · ')}</p>
+        </div>
+        <div className="lite-device-system-facts">
+          <span>{[device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' ') || 'OS unavailable'}</span>
+          <span>{device?.system_profile?.android_abi || device?.system_profile?.architecture || 'Architecture unavailable'}</span>
+          <span>{device?.system_health?.uptime_label || 'Uptime unavailable'}</span>
+        </div>
+        {onChooseModel ? (
+          <LiteButton tone="secondary" onClick={onChooseModel}>
+            <Smartphone className="h-4 w-4" />
+            Choose model
+          </LiteButton>
+        ) : null}
+      </section>
 
       <LiteProgressiveDetails
         title={title}

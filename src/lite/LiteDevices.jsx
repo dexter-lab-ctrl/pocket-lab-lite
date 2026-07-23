@@ -86,8 +86,10 @@ import {
 } from './LiteUi.jsx';
 import DeviceCard from './devices/DeviceCard.jsx';
 import LiteVirtualList from './components/LiteVirtualList.jsx';
+import { useLiteDeviceDetailsState, useLiteUiStore } from '../stores/liteUiStore.js';
 
 const DeviceDetailsLazy = React.lazy(() => import('./devices/DeviceDetailsLazy.jsx'));
+const DeviceModelPickerLazy = React.lazy(() => import('./devices/DeviceModelPickerLazy.jsx'));
 
 const DEVICES_PROGRESSIVE_DETAILS_MILESTONE_2 = true;
 const DEVICES_DETAILS_ARE_LAZY = true;
@@ -149,7 +151,9 @@ export default function DevicesScreen() {
   const [removeCandidate, setRemoveCandidate] = useState(null);
   const [removeBusy, setRemoveBusy] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
-  const [detailsDeviceId, setDetailsDeviceId] = useState('');
+  const { activeDeviceDetailsId: detailsDeviceId, deviceModelPickerId } = useLiteDeviceDetailsState();
+  const setDetailsDeviceId = useLiteUiStore((state) => state.setActiveDeviceDetailsId);
+  const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsButtonRefs = useRef(new Map());
   const fleetPollingIsLive = useMemo(() => (fleetPayload) => (
     busy
@@ -169,6 +173,7 @@ export default function DevicesScreen() {
   });
   const devices = data?.devices || [];
   const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
+  const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
   const remoteAccess = data?.remote_access || {};
   const remoteAccessReady = remoteAccess?.status === 'healthy' || remoteAccess?.ready;
   const latestInvite = invite || data?.latest_invite || null;
@@ -643,6 +648,21 @@ export default function DevicesScreen() {
               <DeviceDetailsLazy
                 device={activeDetailsDevice}
                 onClose={closeDeviceDetails}
+                onChooseModel={activeDetailsDevice?.protected_server_host || activeDetailsDevice?.role === 'server_host' || activeDetailsDevice?.is_current
+                  ? null
+                  : () => { triggerHapticFeedback(12); setDeviceModelPickerId(activeDetailsDevice?.id); }}
+              />
+            </Suspense>
+          ) : null}
+
+          {modelPickerDevice ? (
+            <Suspense fallback={null}>
+              <DeviceModelPickerLazy
+                device={modelPickerDevice}
+                open={Boolean(modelPickerDevice)}
+                onClose={() => setDeviceModelPickerId('')}
+                backendReachable={backendReachable}
+                savedStateOnly={savedStateOnly}
               />
             </Suspense>
           ) : null}
@@ -674,7 +694,7 @@ export default function DevicesScreen() {
                   restartBusy={restartBusy}
                   removeBusy={removeBusy}
                   detailsOpen={detailsDeviceId === key}
-                  onOpenDetails={() => setDetailsDeviceId((current) => (current === key ? '' : key))}
+                  onOpenDetails={() => { triggerHapticFeedback(10); setDetailsDeviceId(detailsDeviceId === key ? '' : key); }}
                   detailsButtonRef={(node) => {
                     if (node) detailsButtonRefs.current.set(key, node);
                     else detailsButtonRefs.current.delete(key);

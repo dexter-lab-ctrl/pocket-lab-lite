@@ -30,6 +30,7 @@ export const liteMutationInvalidations = {
   add_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   remove_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   refresh_remote_access: [liteQueryKeys.fleet()],
+  update_device_model: [liteQueryKeys.fleet()],
 };
 
 function normalizeActionId(actionId = '') {

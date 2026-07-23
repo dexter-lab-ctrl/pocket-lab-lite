@@ -47,8 +47,8 @@ def test_n4_n5_migration_revision_events_and_change_only_bump(tmp_path, monkeypa
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    assert current_schema_version() == 9
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    assert current_schema_version() == 10
     store = ControlPlaneProjectionStore()
     first = store.project_fleet(_fleet_payload())
     second = store.project_fleet(_fleet_payload())

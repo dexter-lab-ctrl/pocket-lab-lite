@@ -18,12 +18,16 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict
 
+from lite_system_profile import collect_system_health, collect_system_profile
+
 try:
     import nats  # type: ignore
 except Exception:  # pragma: no cover
     nats = None  # type: ignore
 
 AGENT_VERSION = "2.4.0-lite-reconnect-watchdog"
+SYSTEM_PROFILE_REFRESH_SECONDS = 12 * 60 * 60
+SYSTEM_HEALTH_REFRESH_SECONDS = 5 * 60
 
 
 def env(name: str, default: str = "") -> str:
@@ -147,6 +151,62 @@ class PocketLabNodeAgent:
         self.reconnect_count = 0
         self.self_heal_seconds = int(env("POCKETLAB_AGENT_SELF_HEAL_SECONDS", "180"))
         self.capabilities = ["heartbeat", "telemetry", "health", "node-command", "agent-restart", "reconnect-watchdog"]
+        self.system_profile_refresh_seconds = max(
+            3600,
+            int(env("POCKETLAB_AGENT_SYSTEM_PROFILE_SECONDS", str(SYSTEM_PROFILE_REFRESH_SECONDS))),
+        )
+        self.system_health_refresh_seconds = max(
+            60,
+            int(env("POCKETLAB_AGENT_SYSTEM_HEALTH_SECONDS", str(SYSTEM_HEALTH_REFRESH_SECONDS))),
+        )
+        self.system_profile: Dict[str, Any] = {}
+        self.system_health: Dict[str, Any] = {}
+        self.system_profile_collected_epoch = 0.0
+        self.system_health_collected_epoch = 0.0
+        self.last_published_profile_fingerprint = ""
+
+    def refresh_system_profile(self, *, force: bool = False) -> Dict[str, Any]:
+        now = time.time()
+        due = force or not self.system_profile or (
+            now - self.system_profile_collected_epoch >= self.system_profile_refresh_seconds
+        )
+        if due:
+            try:
+                self.system_profile = collect_system_profile(agent_version=AGENT_VERSION)
+            except Exception:
+                if not self.system_profile:
+                    self.system_profile = {}
+            self.system_profile_collected_epoch = now
+        return self.system_profile
+
+    def refresh_system_health(self, *, force: bool = False) -> Dict[str, Any]:
+        now = time.time()
+        due = force or not self.system_health or (
+            now - self.system_health_collected_epoch >= self.system_health_refresh_seconds
+        )
+        if due:
+            try:
+                self.system_health = collect_system_health()
+            except Exception:
+                self.system_health = {
+                    "uptime_status": "unavailable",
+                    "failure_code": "health_collection_failed",
+                    "collected_at": now_iso(),
+                }
+            self.system_health_collected_epoch = now
+        return self.system_health
+
+    def system_profile_update(self, *, force_publish: bool = False) -> Dict[str, Any]:
+        previous_collected_epoch = self.system_profile_collected_epoch
+        profile = self.refresh_system_profile(force=False)
+        fingerprint = str(profile.get("profile_fingerprint") or "")
+        if not fingerprint:
+            return {}
+        refreshed = self.system_profile_collected_epoch != previous_collected_epoch
+        if not force_publish and fingerprint == self.last_published_profile_fingerprint and not refreshed:
+            return {}
+        self.last_published_profile_fingerprint = fingerprint
+        return {"system_profile": profile}
 
     def base_payload(self) -> Dict[str, Any]:
         return {
@@ -212,6 +272,7 @@ class PocketLabNodeAgent:
     async def on_reconnected(self) -> None:
         self.reconnect_count += 1
         print("Pocket Lab node agent reconnected to NATS; publishing fresh heartbeat.", file=sys.stderr)
+        self.refresh_system_profile(force=True)
         await self.safe_publish(
             "pocketlab.events.fleet.node_reconnected",
             "fleet.node_reconnected",
@@ -226,7 +287,12 @@ class PocketLabNodeAgent:
         await self.safe_publish(
             "pocketlab.events.fleet.node_heartbeat",
             "fleet.node_heartbeat",
-            {**self.base_payload(), "heartbeat_at": now_iso(), "reason": "nats-reconnected"},
+            {
+                **self.base_payload(),
+                "system_health": self.refresh_system_health(force=True),
+                "heartbeat_at": now_iso(),
+                "reason": "nats-reconnected",
+            },
         )
 
     async def on_closed(self) -> None:
@@ -257,7 +323,12 @@ class PocketLabNodeAgent:
         await self.publish(
             "pocketlab.events.fleet.node_seen",
             "fleet.node_seen",
-            {**self.base_payload(), "seen_at": now_iso()},
+            {
+                **self.base_payload(),
+                **self.system_profile_update(force_publish=True),
+                "system_health": self.refresh_system_health(force=True),
+                "seen_at": now_iso(),
+            },
         )
 
     async def heartbeat_loop(self) -> None:
@@ -265,7 +336,11 @@ class PocketLabNodeAgent:
             await self.safe_publish(
                 "pocketlab.events.fleet.node_heartbeat",
                 "fleet.node_heartbeat",
-                {**self.base_payload(), "heartbeat_at": now_iso()},
+                {
+                    **self.base_payload(),
+                    **self.system_profile_update(),
+                    "heartbeat_at": now_iso(),
+                },
             )
             try:
                 await asyncio.wait_for(
@@ -291,6 +366,7 @@ class PocketLabNodeAgent:
                 {
                     **self.base_payload(),
                     "health": health_snapshot(),
+                    "system_health": self.refresh_system_health(),
                     "sampled_at": now_iso(),
                 },
             )
@@ -390,6 +466,8 @@ class PocketLabNodeAgent:
             if self.nats_tls_cert and self.nats_tls_key:
                 context.load_cert_chain(self.nats_tls_cert, self.nats_tls_key)
             connect_kwargs["tls"] = context
+        self.refresh_system_profile(force=True)
+        self.refresh_system_health(force=True)
         self.nc = await nats.connect(**connect_kwargs)
         await self.register()
         subjects = [

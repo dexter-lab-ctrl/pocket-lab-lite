@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import socket
 import subprocess
+from datetime import datetime, timezone
 from typing import Any
 
 from .. import deps
@@ -18,6 +19,117 @@ def _text(value: Any, default: str = "") -> str:
     if value is None:
         return default
     return str(value)
+
+
+_PUBLIC_PROFILE_TEXT_FIELDS = (
+    "os_family", "os_name", "os_version", "security_patch", "manufacturer",
+    "technical_model", "device_codename", "architecture", "android_abi", "kernel",
+    "runtime_type", "termux_version", "python_version", "agent_version",
+    "supervisor_version", "collection_status", "profile_status", "collected_at",
+    "profile_updated_at", "freshness",
+)
+
+
+def _public_text(value: Any, limit: int = 160) -> str:
+    text = " ".join(str(value or "").strip().split())
+    return "".join(character for character in text if ord(character) >= 32 and ord(character) != 127)[:limit]
+
+
+def _public_system_profile(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    profile = {
+        field: _public_text(value.get(field), 160)
+        for field in _PUBLIC_PROFILE_TEXT_FIELDS
+        if value.get(field) not in (None, "")
+    }
+    try:
+        schema_version = int(value.get("schema_version") or 0)
+    except (TypeError, ValueError):
+        schema_version = 0
+    if 1 <= schema_version <= 100:
+        profile["schema_version"] = schema_version
+    try:
+        revision = int(value.get("revision") or 0)
+    except (TypeError, ValueError):
+        revision = 0
+    if revision > 0:
+        profile["revision"] = revision
+    try:
+        api_level = int(value.get("android_api_level"))
+    except (TypeError, ValueError):
+        api_level = 0
+    if 1 <= api_level <= 999:
+        profile["android_api_level"] = api_level
+    consumer = _public_text(value.get("consumer_model_name"), 80)
+    technical = _public_text(value.get("technical_model"), 160)
+    codename = _public_text(value.get("device_codename"), 160)
+    collected_at = _public_text(value.get("collected_at") or value.get("profile_updated_at"), 64)
+    if collected_at:
+        try:
+            age_seconds = max(0.0, (
+                datetime.now(timezone.utc)
+                - datetime.fromisoformat(collected_at.replace("Z", "+00:00"))
+            ).total_seconds())
+            profile["freshness"] = "current" if age_seconds <= 24 * 60 * 60 else "stale"
+        except (TypeError, ValueError):
+            profile["freshness"] = "stale"
+    else:
+        profile["freshness"] = "unavailable"
+    profile["consumer_model_name"] = consumer
+    profile["display_model"] = consumer or technical or codename or "Device"
+    return profile
+
+
+def _uptime_label(value: Any) -> str:
+    try:
+        seconds = int(value)
+    except (TypeError, ValueError):
+        return "Unavailable"
+    if seconds < 0 or seconds > 20 * 365 * 86400:
+        return "Unavailable"
+    days, remainder = divmod(seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes = remainder // 60
+    parts = []
+    if days:
+        parts.append(f"{days} day{'s' if days != 1 else ''}")
+    if hours:
+        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+    if minutes or not parts:
+        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+    return ", ".join(parts[:2])
+
+
+def _public_system_health(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    health = {
+        "collection_status": _public_text(value.get("collection_status") or value.get("uptime_status") or "unavailable", 32),
+        "load_status": _public_text(value.get("load_status") or "unavailable", 32),
+        "collected_at": _public_text(value.get("collected_at") or value.get("health_updated_at"), 64) or None,
+        "health_updated_at": _public_text(value.get("health_updated_at") or value.get("collected_at"), 64) or None,
+    }
+    try:
+        uptime_seconds = int(value.get("uptime_seconds"))
+    except (TypeError, ValueError):
+        uptime_seconds = None
+    if uptime_seconds is not None and 0 <= uptime_seconds <= 20 * 365 * 86400:
+        health["uptime_seconds"] = uptime_seconds
+        health["uptime_label"] = _uptime_label(uptime_seconds)
+    loads = value.get("load_average") if isinstance(value.get("load_average"), list) else [
+        value.get("load_average_1m"), value.get("load_average_5m"), value.get("load_average_15m")
+    ]
+    normalized_loads = []
+    for candidate in list(loads)[:3]:
+        try:
+            number = float(candidate)
+        except (TypeError, ValueError):
+            normalized_loads.append(None)
+            continue
+        normalized_loads.append(round(number, 3) if 0 <= number <= 100_000 else None)
+    health["load_average"] = normalized_loads
+    return health
 
 
 def _status(value: Any, *, default: str = "unknown") -> str:
@@ -498,6 +610,9 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "storage": item.get("storage") if isinstance(item.get("storage"), dict) else None,
         "available_gb": item.get("available_gb") or item.get("free_storage_gb") or item.get("storage_available_gb"),
         "media_roots": item.get("media_roots") if isinstance(item.get("media_roots"), list) else [],
+        "system_profile": _public_system_profile(item.get("system_profile")),
+        "system_health": _public_system_health(item.get("system_health")),
+        "supervisor_version": item.get("supervisor_version"),
     }
 
 
@@ -589,8 +704,39 @@ def lite_fleet() -> dict[str, Any]:
         existing = devices_by_id.get(key)
         devices_by_id[key] = _merge_lite_device(existing, device) if existing else device
 
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        profile_map = CONTROL_PLANE.device_profile_map()
+    except Exception:
+        profile_map = {}
+
+    merged_devices = []
+    for item in devices_by_id.values():
+        profile = profile_map.get(str(item.get("id") or ""))
+        if profile:
+            live_profile = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
+            projected_profile = profile.get("system_profile") if isinstance(profile.get("system_profile"), dict) else {}
+            consumer_model_name = _public_text(projected_profile.get("consumer_model_name"), 80)
+            merged_profile = _public_system_profile({**projected_profile, **live_profile})
+            merged_profile["consumer_model_name"] = consumer_model_name
+            merged_profile["display_model"] = (
+                consumer_model_name
+                or _public_text(merged_profile.get("technical_model"), 160)
+                or _public_text(merged_profile.get("device_codename"), 160)
+                or "Device"
+            )
+            live_health = item.get("system_health") if isinstance(item.get("system_health"), dict) else {}
+            projected_health = profile.get("system_health") if isinstance(profile.get("system_health"), dict) else {}
+            item = {
+                **item,
+                "system_profile": merged_profile,
+                "system_health": _public_system_health({**projected_health, **live_health}),
+            }
+        merged_devices.append(lite_device_capabilities.apply_device_capabilities(item))
+
     devices = sorted(
-        (lite_device_capabilities.apply_device_capabilities(item) for item in devices_by_id.values()),
+        merged_devices,
         key=lambda item: (0 if item.get("role") == "server_host" else 1, str(item.get("name") or "")),
     )
 

@@ -39,6 +39,7 @@ function DeviceCard({
     ? 'lite-device-card-server'
     : `lite-device-card-linked lite-device-card-linked-${linkState}`;
   const deviceName = device?.name || 'Unnamed device';
+  const runtimeLabel = String(device?.system_profile?.runtime_type || '').replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
   const capabilities = deviceCapabilityLabels(device);
   const canRestart = canRestartDeviceAgent(device);
   const canRemove = canRemoveDevice(device);
@@ -56,6 +57,12 @@ function DeviceCard({
       </div>
 
       <h2>{deviceName}</h2>
+      {device?.system_profile?.display_model ? (
+        <div className="lite-device-model-summary">
+          <strong>{device.system_profile.display_model}</strong>
+          <span>{[[device.system_profile.os_name, device.system_profile.os_version].filter(Boolean).join(' '), runtimeLabel].filter(Boolean).join(' · ')}</span>
+        </div>
+      ) : null}
 
       <div className="lite-device-connection-copy">
         {isServerCard
@@ -80,6 +87,18 @@ function DeviceCard({
           <span>Connection</span>
           <strong>{deviceConnectionLabel(device)}</strong>
         </div>
+        {device?.system_profile?.android_abi || device?.system_profile?.architecture ? (
+          <div>
+            <span>Architecture</span>
+            <strong>{device.system_profile.android_abi || device.system_profile.architecture}</strong>
+          </div>
+        ) : null}
+        {device?.system_health?.uptime_label ? (
+          <div>
+            <span>Uptime</span>
+            <strong>{device.system_health.uptime_label}</strong>
+          </div>
+        ) : null}
         {device?.tailnet_ip ? (
           <div>
             <span>Tailscale IP</span>

@@ -22329,3 +22329,175 @@ html.lite-install-light-shell body {
     transform: none !important;
   }
 }
+
+/* Phase D1 — bounded device system identity and health surfaces. */
+.lite-device-model-summary {
+  display: grid;
+  gap: 0.2rem;
+  margin: -0.15rem 0 0.85rem;
+}
+
+.lite-device-model-summary strong,
+.lite-device-system-summary strong {
+  font-size: 1rem;
+  color: var(--lite-ink-strong, #142238);
+}
+
+.lite-device-model-summary span,
+.lite-device-system-summary p,
+.lite-device-system-facts span,
+.lite-device-model-identity span,
+.lite-device-model-option span,
+.lite-device-model-option small {
+  color: var(--lite-ink-muted, #617087);
+  font-size: 0.82rem;
+}
+
+.lite-device-system-summary {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(72, 96, 129, 0.16);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.lite-device-system-summary > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.lite-device-system-summary > div:first-child > span,
+.lite-device-model-confirmation > span,
+.lite-device-model-custom > span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lite-ink-muted, #617087);
+}
+
+.lite-device-system-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.lite-device-system-facts span {
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(51, 97, 156, 0.08);
+}
+
+.lite-device-model-sheet {
+  max-width: 36rem;
+}
+
+.lite-device-model-sheet-body,
+.lite-device-model-list,
+.lite-device-model-confirmation,
+.lite-device-model-custom {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.lite-device-model-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background: rgba(51, 97, 156, 0.07);
+}
+
+.lite-device-model-identity > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.lite-device-model-search {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(72, 96, 129, 0.2);
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+.lite-device-model-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+}
+
+.lite-device-model-list {
+  max-height: min(48vh, 26rem);
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.lite-device-model-option {
+  display: grid;
+  gap: 0.12rem;
+  width: 100%;
+  padding: 0.8rem;
+  text-align: left;
+  border: 1px solid rgba(72, 96, 129, 0.15);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+}
+
+.lite-device-model-option:hover,
+.lite-device-model-option:focus-visible {
+  border-color: rgba(38, 103, 187, 0.45);
+  box-shadow: 0 0 0 3px rgba(38, 103, 187, 0.08);
+}
+
+.lite-device-model-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.lite-device-model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.lite-device-model-warning,
+.lite-device-model-error,
+.lite-device-model-success {
+  margin: 0;
+  padding: 0.75rem;
+  border-radius: 0.8rem;
+  font-size: 0.86rem;
+}
+
+.lite-device-model-warning { background: rgba(191, 125, 22, 0.1); }
+.lite-device-model-error { background: rgba(184, 45, 45, 0.1); color: #8d2424; }
+.lite-device-model-success { background: rgba(29, 138, 83, 0.1); color: #12673d; }
+
+@media (max-width: 640px) {
+  .lite-device-model-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .lite-device-model-actions .lite-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lite-device-model-option,
+  .lite-device-model-sheet {
+    transition: none !important;
+    animation: none !important;
+  }
+}

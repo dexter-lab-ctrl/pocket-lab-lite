@@ -776,6 +776,61 @@ export function isLiteDeviceWorkflowLive(device = {}) {
   return Boolean(live && !terminal);
 }
 
+export function selectDeviceSystemProfileView(device = {}) {
+  const profile = isObject(device?.system_profile) ? device.system_profile : {};
+  const technicalModel = safeString(profile.technical_model || device.technical_model || '');
+  const consumerModel = safeString(profile.consumer_model_name || device.consumer_model_name || '');
+  return {
+    os_family: safeString(profile.os_family || ''),
+    os_name: safeString(profile.os_name || ''),
+    os_version: safeString(profile.os_version || ''),
+    android_api_level: Number.isFinite(Number(profile.android_api_level)) ? Number(profile.android_api_level) : null,
+    security_patch: safeString(profile.security_patch || ''),
+    manufacturer: safeString(profile.manufacturer || ''),
+    technical_model: technicalModel,
+    device_codename: safeString(profile.device_codename || ''),
+    consumer_model_name: consumerModel,
+    display_model: safeString(profile.display_model || consumerModel || technicalModel || 'Unknown model'),
+    architecture: safeString(profile.architecture || ''),
+    android_abi: safeString(profile.android_abi || ''),
+    kernel: safeString(profile.kernel || ''),
+    runtime_type: safeString(profile.runtime_type || ''),
+    termux_version: safeString(profile.termux_version || ''),
+    python_version: safeString(profile.python_version || ''),
+    agent_version: safeString(profile.agent_version || ''),
+    supervisor_version: safeString(profile.supervisor_version || device.supervisor_version || ''),
+    collection_status: normalizeDeviceStatus(profile.collection_status || profile.profile_status || 'unavailable'),
+    freshness: normalizeDeviceStatus(profile.freshness || ''),
+    collected_at: safeIso(profile.collected_at),
+  };
+}
+
+export function selectDeviceSystemHealthView(device = {}) {
+  const health = isObject(device?.system_health) ? device.system_health : {};
+  const rawLoad = Array.isArray(health.load_average) ? health.load_average : [health.load_average_1m, health.load_average_5m, health.load_average_15m];
+  return {
+    uptime_seconds: Number.isFinite(Number(health.uptime_seconds)) ? Number(health.uptime_seconds) : null,
+    uptime_label: safeString(health.uptime_label || ''),
+    load_average: rawLoad.slice(0, 3).map((value) => Number.isFinite(Number(value)) ? Number(value) : null),
+    load_status: normalizeDeviceStatus(health.load_status || ''),
+    collection_status: normalizeDeviceStatus(health.collection_status || health.uptime_status || 'unavailable'),
+    collected_at: safeIso(health.collected_at || health.health_updated_at),
+  };
+}
+
+export function selectDeviceIdentitySummaryView(device = {}) {
+  const systemProfile = selectDeviceSystemProfileView(device);
+  const systemHealth = selectDeviceSystemHealthView(device);
+  return {
+    display_model: systemProfile.display_model,
+    platform_label: [systemProfile.os_name, systemProfile.os_version].filter(Boolean).join(' ') || systemProfile.runtime_type || 'System details unavailable',
+    architecture_label: systemProfile.android_abi || systemProfile.architecture || 'Architecture unavailable',
+    uptime_label: systemHealth.uptime_label || 'Uptime unavailable',
+    system_profile: systemProfile,
+    system_health: systemHealth,
+  };
+}
+
 export function selectLiteDeviceCard(device = {}) {
   if (!isObject(device)) return null;
   const id = safeString(device.id || device.node_id || device.name || device.hostname);
@@ -785,6 +840,7 @@ export function selectLiteDeviceCard(device = {}) {
   const commandProgress = normalizeDeviceProgress(device.command_progress || device.commandProgress || device.latest_command || null);
   const remoteAccess = normalizeDeviceRemoteAccess(device.remote_access, device);
   const status = normalizeDeviceStatus(device.status || device.state || device.connection || 'unknown');
+  const identitySummary = selectDeviceIdentitySummaryView(device);
   const output = {
     id,
     node_id: id,
@@ -816,6 +872,10 @@ export function selectLiteDeviceCard(device = {}) {
     can_restart_agent: Boolean(device.can_restart_agent || device.restart_available || (!protectedHost && ['offline', 'agent_stopped', 'repairing', 'ready', 'healthy', 'online'].includes(status))),
     disabled_reason: safeString(device.disabled_reason || device.action_disabled_reason || (protectedHost ? 'Protected server host.' : '')),
     events_summary: selectDeviceEventsSummaryView(device),
+    system_profile: identitySummary.system_profile,
+    system_health: identitySummary.system_health,
+    identity_summary: identitySummary,
+    display_model: identitySummary.display_model,
     live: false,
     updated_at: safeIso(device.updated_at || device.checked_at || device.last_seen),
     checked_at: safeIso(device.checked_at || device.updated_at || device.last_seen),
@@ -973,7 +1033,7 @@ export function getLiteDeviceMutationInvalidations(actionId = '', result = {}) {
     result?.status_summary_changed
     || result?.device_count_changed
     || result?.fleet_summary_changed
-    || ['add_device', 'remove_device', 'restart_agent'].includes(normalized)
+    || ['add_device', 'remove_device', 'restart_agent', 'update_device_model'].includes(normalized)
   );
   if (statusChanged) keys.push(['lite', 'status']);
   return keys;
