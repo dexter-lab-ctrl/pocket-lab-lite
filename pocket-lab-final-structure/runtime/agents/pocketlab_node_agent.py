@@ -127,6 +127,9 @@ class PocketLabNodeAgent:
         self.node_id = normalize_node_id(env("POCKETLAB_NODE_ID", host))
         self.hostname = env("POCKETLAB_NODE_NAME", host)
         self.role = env("POCKETLAB_NODE_ROLE", "compute")
+        self.is_control_plane = env("POCKETLAB_IS_CONTROL_PLANE", "0").strip().lower() in {
+            "1", "true", "yes", "on"
+        }
         self.nats_url = env("POCKETLAB_NATS_URL", "nats://127.0.0.1:4222")
         self.token = env("POCKETLAB_AGENT_TOKEN", "")
         self.nats_user = env("POCKETLAB_NATS_USER", "")
@@ -214,6 +217,7 @@ class PocketLabNodeAgent:
             "name": self.hostname,
             "hostname": self.hostname,
             "role": self.role,
+            "is_control_plane": self.is_control_plane,
             "agent_version": AGENT_VERSION,
             "platform": platform.platform(),
             "python": platform.python_version(),

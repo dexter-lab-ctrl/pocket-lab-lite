@@ -641,7 +641,7 @@ start_pm2_daemons(){
     die "POCKETLAB_DISABLE_WORKER=1 is not allowed in production NATS mode"
   fi
   if [[ -f "$AGENT_SERVER" && "${POCKETLAB_DISABLE_FLEET_AGENT:-0}" != "1" ]]; then
-    POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-node-agent pm2_start_or_restart pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
+    POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}" POCKETLAB_NODE_NAME="${POCKETLAB_DEVICE_NAME:-Pocket Lab Lite Server}" POCKETLAB_NODE_ROLE=server_host POCKETLAB_IS_CONTROL_PLANE=1 POCKETLAB_NATS_USER="$POCKETLAB_NATS_AGENT_USER" POCKETLAB_NATS_PASSWORD="$POCKETLAB_NATS_AGENT_PASSWORD" POCKETLAB_NATS_NAME=pocketlab-node-agent pm2_start_or_restart pocket-node-agent "$AGENT_SERVER" --interpreter python3 --update-env
   else
     log WARN "Pocket Lab node agent not started; this control plane will not publish NATS fleet heartbeats"
   fi

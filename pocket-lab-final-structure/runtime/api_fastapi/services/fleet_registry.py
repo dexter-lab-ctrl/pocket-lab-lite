@@ -204,6 +204,37 @@ def _identity_variants(value: str | None) -> set[str]:
     return {item for item in variants if item and item != "unknown-node"}
 
 
+
+
+def _canonical_server_node_id() -> str:
+    return normalize_node_id(
+        os.environ.get("POCKETLAB_SERVER_NODE_ID")
+        or os.environ.get("POCKETLAB_NODE_ID")
+        or "pocket-lab-lite-server"
+    )
+
+
+def _safe_local_control_plane_claim(data: Dict[str, Any], node_id: str) -> bool:
+    if not bool(data.get("is_control_plane")):
+        return False
+    role = _role_value(data)
+    if role not in {"server_host", "server", "control_plane", "control_plane_host"}:
+        return False
+    local_aliases = {
+        _canonical_server_node_id(),
+        "localhost",
+        "127-0-0-1",
+        normalize_node_id(os.environ.get("HOSTNAME") or ""),
+        normalize_node_id(os.environ.get("POCKETLAB_DEVICE_NAME") or ""),
+    }
+    try:
+        import socket
+        local_aliases.add(normalize_node_id(socket.gethostname()))
+    except Exception:
+        pass
+    return node_id in {item for item in local_aliases if item and item != "unknown-node"}
+
+
 def _hash_token(value: str | None) -> str:
     if not value:
         return ""
@@ -332,6 +363,9 @@ def upsert_agent(
             or ""
         )
     )
+    control_plane_claim = _safe_local_control_plane_claim(data, node_id)
+    if control_plane_claim:
+        node_id = _canonical_server_node_id()
     payload = _agents_payload()
     agents = payload["agents"]
     existing = dict(agents.get(node_id) or {})
@@ -340,7 +374,8 @@ def upsert_agent(
         **existing,
         "id": node_id,
         "node_id": node_id,
-        "name": data.get("name")
+        "name": (os.environ.get("POCKETLAB_DEVICE_NAME") if control_plane_claim else None)
+        or data.get("name")
         or data.get("hostname")
         or existing.get("name")
         or node_id,
@@ -348,7 +383,7 @@ def upsert_agent(
         or data.get("name")
         or existing.get("hostname")
         or node_id,
-        "role": data.get("role") or existing.get("role") or "compute",
+        "role": "server_host" if control_plane_claim else (data.get("role") or existing.get("role") or "compute"),
         "ip": data.get("ip") or data.get("tailnet_ip") or existing.get("ip") or "",
         "tailnet_ip": data.get("tailnet_ip")
         or data.get("ip")
@@ -369,7 +404,7 @@ def upsert_agent(
         or now,
         "last_seen_epoch": _epoch(),
         "updated_at": now,
-        "isCurrent": bool(data.get("is_control_plane", False)),
+        "isCurrent": control_plane_claim,
         "source": "nats-agent",
     }
 
@@ -441,6 +476,15 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
     if not subject.endswith(agent_event_suffixes):
         return
     upsert_agent(data, event_type=event_type or subject)
+    # Agent events are the source of truth for fleet freshness. Drop only the
+    # prepared fleet snapshot so the next read rebuilds from the sanitized
+    # registry; do not execute commands or write through the frontend.
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        CONTROL_PLANE.invalidate_domain("fleet")
+    except Exception:
+        pass
 
 
 def list_agents(include_stale: bool = True) -> List[Dict[str, Any]]:

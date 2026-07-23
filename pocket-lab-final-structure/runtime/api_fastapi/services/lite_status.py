@@ -104,8 +104,10 @@ def _uptime_label(value: Any) -> str:
 def _public_system_health(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
         return {}
+    uptime_status = _public_text(value.get("uptime_status") or value.get("collection_status") or "unavailable", 32)
     health = {
-        "collection_status": _public_text(value.get("collection_status") or value.get("uptime_status") or "unavailable", 32),
+        "collection_status": _public_text(value.get("collection_status") or uptime_status, 32),
+        "uptime_status": uptime_status,
         "load_status": _public_text(value.get("load_status") or "unavailable", 32),
         "collected_at": _public_text(value.get("collected_at") or value.get("health_updated_at"), 64) or None,
         "health_updated_at": _public_text(value.get("health_updated_at") or value.get("collected_at"), 64) or None,
