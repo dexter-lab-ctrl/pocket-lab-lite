@@ -555,3 +555,22 @@ def test_server_startup_sets_stable_protected_agent_identity():
     assert 'POCKETLAB_NODE_ROLE=server_host' in script
     assert 'POCKETLAB_IS_CONTROL_PLANE=1' in script
     assert '"is_control_plane": self.is_control_plane' in agent
+
+
+def test_devices_ui_polish_preserves_server_protection_and_hides_empty_storage():
+    root = Path(__file__).resolve().parents[2]
+    card = (root / "src/lite/devices/DeviceCard.jsx").read_text(encoding="utf-8")
+    details = (root / "src/lite/devices/DeviceDetailsLazy.jsx").read_text(encoding="utf-8")
+    screen = (root / "src/lite/LiteDevices.jsx").read_text(encoding="utf-8")
+    styles = (root / "src/index.css").read_text(encoding="utf-8")
+
+    assert "function hasMeaningfulStorage(device)" in card
+    assert "Storage status will appear after the device reports it." not in card
+    assert "lite-device-system-strip" in card
+    assert "Server model detected automatically" in details
+    assert "The protected server identity comes from the local agent" in details
+    assert "<details className=\"lite-device-advanced-details\">" in details
+    assert "<details className=\"lite-devices-add-disclosure\">" in screen
+    assert "Current connection, system identity, and health at a glance." in screen
+    assert ".lite-device-protected-model" in styles
+    assert ".lite-device-advanced-details" in styles
