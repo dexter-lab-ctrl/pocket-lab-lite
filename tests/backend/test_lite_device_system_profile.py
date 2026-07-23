@@ -627,3 +627,110 @@ def test_protected_server_display_model_update_preserves_technical_identity(tmp_
     assert cleared["system_profile"]["model_label_source"] == "technical_fallback"
     assert cleared["system_profile"]["technical_model"] == "SM-S911B"
     assert cleared["system_profile"]["device_codename"] == "dm1q"
+
+
+def test_display_model_concurrency_ignores_unrelated_profile_revision_changes(tmp_path, monkeypatch):
+    _configure_store(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    store.project_fleet({
+        "devices": [{
+            "id": "pocket-lab-lite-server",
+            "name": "Pocket Lab Lite Server",
+            "role": "server_host",
+            "is_current": True,
+            "system_profile": {
+                "technical_model": "SM-S911B",
+                "device_codename": "dm1q",
+                "collection_status": "current",
+                "collected_at": "2026-07-23T12:00:00Z",
+            },
+            "system_health": {
+                "uptime_seconds": 100,
+                "uptime_status": "available",
+                "collected_at": "2026-07-23T12:00:00Z",
+            },
+        }],
+        "updated_at": "2026-07-23T12:00:00Z",
+    })
+    opened = store.device_profile_map()["pocket-lab-lite-server"]["system_profile"]
+
+    store.project_fleet({
+        "devices": [{
+            "id": "pocket-lab-lite-server",
+            "name": "Pocket Lab Lite Server",
+            "role": "server_host",
+            "is_current": True,
+            "system_profile": {
+                "technical_model": "SM-S911B",
+                "device_codename": "dm1q",
+                "collection_status": "current",
+                "collected_at": "2026-07-23T12:00:00Z",
+            },
+            "system_health": {
+                "uptime_seconds": 200,
+                "uptime_status": "available",
+                "collected_at": "2026-07-23T12:05:00Z",
+            },
+        }],
+        "updated_at": "2026-07-23T12:05:00Z",
+    })
+
+    result = store.update_device_consumer_model(
+        "pocket-lab-lite-server",
+        "Samsung Galaxy S23",
+        expected_profile_revision=opened["revision"],
+        expected_consumer_model_name=opened["consumer_model_name"],
+    )
+    assert result["changed"] is True
+    assert result["system_profile"]["consumer_model_name"] == "Samsung Galaxy S23"
+
+
+def test_display_model_concurrency_rejects_only_changed_display_label(tmp_path, monkeypatch):
+    _configure_store(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import (
+        ControlPlaneProjectionStore,
+        DeviceProfileUpdateError,
+    )
+
+    store = ControlPlaneProjectionStore()
+    store.project_fleet({
+        "devices": [{
+            "id": "pocket-lab-lite-server",
+            "name": "Pocket Lab Lite Server",
+            "role": "server_host",
+            "is_current": True,
+            "system_profile": {
+                "technical_model": "SM-S911B",
+                "collection_status": "current",
+                "collected_at": "2026-07-23T12:00:00Z",
+            },
+        }],
+        "updated_at": "2026-07-23T12:00:00Z",
+    })
+    opened = store.device_profile_map()["pocket-lab-lite-server"]["system_profile"]
+    store.update_device_consumer_model(
+        "pocket-lab-lite-server",
+        "Samsung Galaxy S23",
+        expected_consumer_model_name=opened["consumer_model_name"],
+    )
+
+    with pytest.raises(DeviceProfileUpdateError) as exc:
+        store.update_device_consumer_model(
+            "pocket-lab-lite-server",
+            "Samsung Galaxy S23 Ultra",
+            expected_consumer_model_name=opened["consumer_model_name"],
+        )
+    assert exc.value.status_code == 409
+    assert "display model changed" in exc.value.detail.lower()
+
+
+def test_frontend_sends_display_label_precondition():
+    root = Path(__file__).resolve().parents[2]
+    picker = (root / "src/lite/devices/DeviceModelPickerLazy.jsx").read_text(encoding="utf-8")
+    api = (root / "src/lib/liteApi.js").read_text(encoding="utf-8")
+    view_models = (root / "src/lib/liteViewModels.js").read_text(encoding="utf-8")
+    assert "expectedConsumerModelName: current" in picker
+    assert "expected_consumer_model_name" in api
+    assert "revision: Number.isFinite(Number(profile.revision))" in view_models

@@ -781,6 +781,7 @@ export function selectDeviceSystemProfileView(device = {}) {
   const technicalModel = safeString(profile.technical_model || device.technical_model || '');
   const consumerModel = safeString(profile.consumer_model_name || device.consumer_model_name || '');
   return {
+    revision: Number.isFinite(Number(profile.revision)) ? Number(profile.revision) : 0,
     os_family: safeString(profile.os_family || ''),
     os_name: safeString(profile.os_name || ''),
     os_version: safeString(profile.os_version || ''),
