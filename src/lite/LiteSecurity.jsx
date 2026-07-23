@@ -2917,24 +2917,24 @@ export default function SecurityScreen() {
     <>
       <PageHeader
         eyebrow="Safety Center"
-        title="Security"
-        description={securityPrecedence.active ? `${securityProfileMeta(securityPrecedence.profile).label} is active. Live backend progress takes priority over saved results.` : "A calm safety overview. Pick Quick, Full, or App Scan, then review the selected profile details."}
+        title="Safety Center"
+        description={securityPrecedence.active ? `${securityProfileMeta(securityPrecedence.profile).label} is active. Live progress is shown while your latest saved result remains available.` : "Review current safety, run the right level of check, and open deeper details only when you need them."}
       />
 
-      <animated.section className="lite-security-phase5-shell lite-security-phase4-motion" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
+      <animated.section className="lite-security-phase5-shell lite-security-phase4-motion lite-security-native-polish" data-security-native-polish="true" style={safetyShellSpring} aria-label="Safety Center" data-security-phase5-summary-first="true" data-security-phase4-motion="shell" data-security-react-spring="summary-shell">
         <GlassCard as={animated.section} style={safetyCardSpring} className={`lite-security-safety-center-card lite-security-phase1-hero lite-security-phase1-hero-${safetyState} lite-security-phase4-score-settle`} data-security-phase4-motion="score-settle" data-security-react-spring="safety-card">
           <div className="lite-security-safety-center-copy">
             <div className="lite-home-pill">
               <span className="lite-ready-dot" />
               {safetyCenterSummary}
             </div>
-            <h2>Safety Center</h2>
+            <h2>Safety overview</h2>
             <button type="button" className="lite-security-quick-profile-chip lite-security-profile-rollup-trigger" onClick={cycleSecurityProfile} aria-label="Switch Security profile summary" data-security-profile-view="profile-linked">{activeProfileMeta.label}</button>
             <p>{scanInProgress ? 'Pocket Lab is checking safety and saving evidence.' : `${activeProfileMeta.summary} ${safetyScoreSummary}`}</p>
             <div className="lite-security-safety-center-meta" aria-label="Safety state">
               <span>{lastCheckedLabel}</span>
               <span>{evidenceStatusLabel}</span>
-              <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">Profile: {activeProfileMeta.chip}</button>
+              <button type="button" className="lite-security-profile-rollup-link" onClick={cycleSecurityProfile} aria-label="Switch visible Security profile">View: {activeProfileMeta.chip}</button>
               {activeProfileFreshness?.label && savedSecurityDetails ? <span>{activeProfileFreshness.label}</span> : null}
               {securityRefreshStatusLabel ? <span className="lite-security-refresh-status-chip" data-security-refresh-status="true">{securityRefreshStatusLabel}</span> : null}
               {effectiveBackendReachable === false ? <span>Pocket Lab is not reachable</span> : null}
@@ -3034,7 +3034,7 @@ export default function SecurityScreen() {
         onClose={closeSecurityManage}
         eyebrow="Safety Center"
         title="Manage Security"
-        description="Review deeper safety sections without crowding the main page."
+        description="Review changes, coverage, activity, and protected check records in one focused workspace."
         layerClassName="lite-security-manage-layer"
         className="lite-security-manage-shell lite-security-manage-panel lite-security-phase4-panel-motion"
         bodyClassName="lite-security-manage-scroll"
@@ -3206,9 +3206,9 @@ export default function SecurityScreen() {
               </div>
               <div className="lite-security-manage-stat-grid" aria-label="Security check path summary">
                 <div className="lite-security-manage-stat"><span>Steps</span><strong>{executionSteps.length}</strong></div>
-                <div className="lite-security-manage-stat"><span>Owner</span><strong>Backend</strong></div>
+                <div className="lite-security-manage-stat"><span>Run by</span><strong>Pocket Lab</strong></div>
                 <div className="lite-security-manage-stat"><span>Tools</span><strong>{toolNames.join(' + ')}</strong></div>
-                <div className="lite-security-manage-stat"><span>Evidence</span><strong>{evidenceStatusLabel}</strong></div>
+                <div className="lite-security-manage-stat"><span>Check record</span><strong>{evidenceStatusLabel}</strong></div>
               </div>
               <div className="lite-security-safe-panel"><FileCheck className="h-4 w-4" /><span>Timeline rows load inside details so the main Security view stays snappy.</span></div>
             </div>
@@ -3218,16 +3218,16 @@ export default function SecurityScreen() {
             <div className="lite-security-manage-card-list">
               <div className="lite-security-manage-row lite-security-phase4-evidence-stamp" data-security-phase4-motion="evidence-stamp">
                 <div>
-                  <strong>{latestEvidenceReceipt?.title || 'Evidence summary'}</strong>
-                  <p>{latestEvidenceReceipt?.summary || 'Evidence appears after a completed safety check.'}</p>
+                  <strong>{latestEvidenceReceipt?.title || 'Protected check record'}</strong>
+                  <p>{latestEvidenceReceipt?.summary || 'A protected check record appears after a completed safety check.'}</p>
                 </div>
                 <LiteButton tone="secondary" onClick={showEvidence} ariaLabel="View safe Security evidence summary">{evidenceLoading ? 'Opening evidence…' : 'View safe summary'}</LiteButton>
               </div>
               <div className="lite-security-phase1-meta-grid">
                 <span>{evidenceStatusLabel}</span>
-                <span>Secrets hidden</span>
-                <span>Raw logs hidden</span>
-                <span>Private paths hidden</span>
+                <span>Sensitive values hidden</span>
+                <span>Detailed logs hidden</span>
+                <span>Private locations hidden</span>
               </div>
             </div>
           ) : null}

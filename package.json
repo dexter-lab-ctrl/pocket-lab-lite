@@ -29,7 +29,8 @@
     "build:budget": "npm run build && npm run check:bundle",
     "test:n3n6a": "vitest run src/lib/liteVirtualization.test.js src/lib/liteOfflineReadPolicy.test.js src/lib/liteServiceWorkerRuntime.test.js",
     "test:n4n5": "vitest run src/lib/liteRevisionSync.test.js",
-    "test:n6b": "vitest run src/lib/liteNativeInstall.test.js src/lib/liteServiceWorkerRuntime.test.js src/lite/liteNavigationRuntime.test.js src/lib/liteOfflineReadPolicy.test.js"
+    "test:n6b": "vitest run src/lib/liteNativeInstall.test.js src/lib/liteServiceWorkerRuntime.test.js src/lite/liteNavigationRuntime.test.js src/lib/liteOfflineReadPolicy.test.js",
+    "test:premium-tabs": "vitest run src/lib/liteHomePresentation.test.js src/lib/liteRecoveryR3R4.test.js"
   },
   "keywords": [],
   "author": "",

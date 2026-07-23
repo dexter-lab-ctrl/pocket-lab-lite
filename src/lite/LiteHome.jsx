@@ -1,230 +1,284 @@
-import React, { useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import {
   Activity,
-  Copy,
+  ChevronRight,
+  Cpu,
   Database,
-  Download,
-  EyeOff,
-  FileCheck,
-  Fingerprint,
+  HardDrive,
   LayoutGrid,
-  Lock,
-  Menu,
+  MemoryStick,
   Network,
-  RefreshCw,
   Server,
   ShieldCheck,
-  Trash2,
+  Smartphone,
+  Sparkles,
+  Thermometer,
+  Wifi,
   WifiOff,
-  X,
 } from 'lucide-react';
-import { useLiteResource } from '../hooks/useLiteStatus.js';
-import { formatLiteTime, liteApi } from '../lib/liteApi.js';
+import { formatLiteTime } from '../lib/liteApi.js';
+import { buildLiteHomeOverview } from '../lib/liteHomePresentation.js';
 import {
   GlassCard,
   StatusBadge,
   StateSurface,
-  DEVICE_ROLE_OPTIONS,
-  NAV_ITEMS,
-  roleLabel,
-  deviceConnectionLabel,
-  canRestartDeviceAgent,
-  canRemoveDevice,
-  normalizeDeviceName,
-  findDeviceNameConflict,
-  deviceDuplicateMessage,
-  deviceStatusLabel,
-  copyTextToClipboard,
-  serviceTone,
-  normalizeBackendState,
-  backendBadgeStatus,
-  backendLabel,
-  backendHeroTitle,
-  securityFindingTone,
-  securityFindingLabel,
-  clampSecurityProgress,
-  parseSecurityTimestamp,
-  formatSecurityRemainingSeconds,
-  liveSecurityProgress,
-  securityProgressStage,
-  scanInProgressValue,
-  triggerHapticFeedback,
-  shortRunId,
-  formatSecurityDuration,
-  securityTrendLabel,
-  securityTrendView,
-  securityDeltaTone,
-  isSecurityTimeoutFinding,
-  securityDeltaBadge,
-  securityDeltaTitle,
-  securityDeltaDescription,
-  securityDeltaAction,
-  securityDeltaSummary,
-  securityExecutionStateTone,
-  securityExecutionStepGlyph,
-  securityToolStatusLabel,
-  securityExecutionStateFromBackend,
-  securityExecutionStepLabel,
-  normalizeSecurityExecutionSteps,
-  securityExecutionTimeline,
   PageHeader,
-  LiteButton,
   LiteRefreshButton,
-  ResultNotice,
   LoadingCard,
-  friendlyOverallLabel,
-  deviceLinkState,
-  restartProgressTitle,
-  restartStepStateLabel,
-  safeRestartSteps
 } from './LiteUi.jsx';
+import {
+  LiteElevationSurface,
+  LiteMotionReveal,
+  LitePressableButton,
+  triggerLiteTactileFeedback,
+} from './LiteMotion.jsx';
 
-export default function HomeScreen({ status, loading, error, refresh, cacheStatus, refreshing, onNavigate }) {
-  const primaryServices = useMemo(() => status.services?.slice(0, 6) || [], [status.services]);
-  const stats = status.summary || {};
-  const readyServices = primaryServices.filter((service) => serviceTone(service.status) === 'healthy').length;
-  const totalServices = primaryServices.length || 0;
+const HOME_STAT_ICONS = Object.freeze({
+  apps: LayoutGrid,
+  devices: Smartphone,
+  safety: ShieldCheck,
+  access: Network,
+});
+
+const HOME_RESOURCE_ICONS = Object.freeze({
+  processor: Cpu,
+  temperature: Thermometer,
+  storage: HardDrive,
+  memory: MemoryStick,
+});
+
+const HOME_SERVICE_ICONS = Object.freeze({
+  app_catalog: LayoutGrid,
+  device_fleet: Smartphone,
+  security: ShieldCheck,
+  recovery: Database,
+  remote_access: Network,
+  identity_access: ShieldCheck,
+  control_api: Server,
+  worker_execution: Activity,
+  command_bus: Sparkles,
+  policy_compliance: ShieldCheck,
+  database: Database,
+  local_source_store: HardDrive,
+});
+
+function badgeStatus(tone) {
+  if (tone === 'ready') return 'healthy';
+  if (tone === 'danger') return 'failed';
+  return 'degraded';
+}
+
+const HomeStatCard = memo(function HomeStatCard({ item, onNavigate }) {
+  const Icon = HOME_STAT_ICONS[item.key] || Activity;
+  return (
+    <LiteElevationSurface as="article" settle className={`lite-home-premium-stat is-${item.key}`}>
+      <button type="button" onClick={() => { triggerLiteTactileFeedback('selection'); onNavigate(item.screen); }} aria-label={`Open ${item.label}`}>
+        <span className="lite-home-premium-stat-icon"><Icon className="h-5 w-5" /></span>
+        <span className="lite-home-premium-stat-copy">
+          <small>{item.label}</small>
+          <strong>{item.value}</strong>
+          <em>{item.note}</em>
+        </span>
+        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </LiteElevationSurface>
+  );
+});
+
+const HomeResourceCard = memo(function HomeResourceCard({ item }) {
+  const Icon = HOME_RESOURCE_ICONS[item.key] || Activity;
+  return (
+    <div className={`lite-home-premium-resource is-${item.tone}`}>
+      <span><Icon className="h-4 w-4" /></span>
+      <div>
+        <small>{item.label}</small>
+        <strong>{item.value}</strong>
+        <em>{item.note}</em>
+      </div>
+    </div>
+  );
+});
+
+const HomeServiceCard = memo(function HomeServiceCard({ item, onNavigate }) {
+  const Icon = HOME_SERVICE_ICONS[item.key] || Activity;
+  const interactive = item.screen && item.screen !== 'home';
+  const content = (
+    <>
+      <span className={`lite-home-premium-service-icon is-${item.tone}`}><Icon className="h-5 w-5" /></span>
+      <span className="lite-home-premium-service-copy">
+        <strong>{item.label}</strong>
+        <small>{item.summary}</small>
+      </span>
+      <StatusBadge status={badgeStatus(item.tone)}>{item.statusLabel}</StatusBadge>
+      {interactive ? <ChevronRight className="h-4 w-4" aria-hidden="true" /> : null}
+    </>
+  );
 
   return (
-    <>
+    <LiteElevationSurface as="article" settle className={`lite-home-premium-service is-${item.tone}`}>
+      {interactive ? (
+        <button type="button" onClick={() => { triggerLiteTactileFeedback('selection'); onNavigate(item.screen); }} aria-label={`Open ${item.label}`}>
+          {content}
+        </button>
+      ) : (
+        <div>{content}</div>
+      )}
+    </LiteElevationSurface>
+  );
+});
+
+export default function HomeScreen({
+  status,
+  loading,
+  error,
+  refresh,
+  cacheStatus,
+  refreshing,
+  savedStateOnly = false,
+  backendReachable = true,
+  lastUpdatedLabel = '',
+  onNavigate,
+}) {
+  const overview = useMemo(
+    () => buildLiteHomeOverview(status, { savedStateOnly, backendReachable }),
+    [backendReachable, savedStateOnly, status],
+  );
+  const checkedLabel = lastUpdatedLabel || (status.checked_at ? formatLiteTime(status.checked_at) : 'Not checked yet');
+
+  const goTo = useCallback((screen) => {
+    if (screen === 'home') {
+      refresh?.();
+      return;
+    }
+    onNavigate?.(screen);
+  }, [onNavigate, refresh]);
+
+  return (
+    <div className="lite-home-premium-shell" data-lite-home-premium="true" data-home-state-source="tanstack-dexie-fastapi">
       <PageHeader
-        eyebrow="Home"
-        title={backendHeroTitle(status.overall, { ready: 'Your Pocket Lab is ready', review: 'Your Pocket Lab needs review', danger: 'Your Pocket Lab needs attention', checking: 'Checking your Pocket Lab' })}
-        description="A calm overview of your apps, devices, safety, and backups. Start common tasks from here without digging through settings."
+        eyebrow="Workspace"
+        title="Home"
+        description="A focused view of your apps, devices, safety, backups, and the next useful action."
         actions={<LiteRefreshButton scope="home" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       {error ? (
         <StateSurface
           tone="degraded"
-          title="Pocket Lab needs a moment"
+          title="Current information is temporarily unavailable"
           description={error}
           className="mb-5"
         />
       ) : null}
 
-      <section className="lite-home-hero">
+      <LiteMotionReveal as="section" className="lite-home-hero lite-home-premium-hero" motionKey={overview.heroTitle}>
         <div className="lite-home-hero-copy">
-          <div className="lite-home-pill">
+          <div className={`lite-home-pill is-${overview.overallTone}`}>
             <span className="lite-ready-dot" />
-            {friendlyOverallLabel(status.overall)}
+            {savedStateOnly ? 'Showing saved information' : overview.overallTone === 'ready' ? 'Workspace ready' : 'Review recommended'}
           </div>
-          <h2>Manage your private apps and devices from one simple place.</h2>
-          <p>
-            Pocket Lab Lite keeps the essentials close: apps, access, safety checks,
-            devices, rules, and recovery.
-          </p>
-          <div className="lite-home-actions">
-            <LiteButton onClick={() => onNavigate('catalog')}>Browse Apps</LiteButton>
-            <LiteButton onClick={() => onNavigate('devices')} tone="secondary">Add Device</LiteButton>
-            <LiteButton onClick={() => onNavigate('security')} tone="secondary">Safety Check</LiteButton>
-            <LiteButton onClick={() => onNavigate('recovery')} tone="secondary">Backup</LiteButton>
+          <h2>{overview.heroTitle}</h2>
+          <p>{overview.heroSummary}</p>
+
+          <div className="lite-home-premium-actions" aria-label="Workspace shortcuts">
+            <LitePressableButton className="lite-home-native-action is-primary" haptic="accepted" onClick={() => goTo(overview.nextAction.screen)}>
+              <Sparkles className="h-4 w-4" />
+              <span>{overview.nextAction.label}</span>
+            </LitePressableButton>
+            <LitePressableButton className="lite-home-native-action" haptic="selection" onClick={() => goTo('catalog')}>
+              <LayoutGrid className="h-4 w-4" />
+              <span>Apps</span>
+            </LitePressableButton>
+            <LitePressableButton className="lite-home-native-action" haptic="selection" onClick={() => goTo('devices')}>
+              <Smartphone className="h-4 w-4" />
+              <span>Devices</span>
+            </LitePressableButton>
+            <LitePressableButton className="lite-home-native-action" haptic="selection" onClick={() => goTo('recovery')}>
+              <Database className="h-4 w-4" />
+              <span>Backups</span>
+            </LitePressableButton>
           </div>
         </div>
 
-        <div className="lite-home-readiness-card">
-          <p className="lite-home-card-label">Today’s status</p>
-          <strong>{readyServices}/{totalServices || '—'}</strong>
-          <span>key areas ready</span>
-          <StatusBadge status={status.overall}>
-            {status.overall === 'healthy' ? 'Ready' : 'Needs attention'}
-          </StatusBadge>
-        </div>
+        <LiteElevationSurface as="aside" settle active={overview.overallTone !== 'ready'} className={`lite-home-readiness-card lite-home-premium-priority is-${overview.nextAction.tone}`}>
+          <span className="lite-home-premium-priority-icon"><Sparkles className="h-5 w-5" /></span>
+          <p className="lite-home-card-label">Recommended next step</p>
+          <strong>{overview.nextAction.title}</strong>
+          <p>{overview.nextAction.detail}</p>
+          <LitePressableButton className="lite-home-priority-action" haptic="accepted" onClick={() => goTo(overview.nextAction.screen)}>
+            <span>{overview.nextAction.label}</span>
+            <ChevronRight className="h-4 w-4" />
+          </LitePressableButton>
+        </LiteElevationSurface>
+      </LiteMotionReveal>
+
+      <section className="lite-home-premium-overview" aria-label="Workspace overview">
+        {overview.stats.map((item) => (
+          <HomeStatCard key={item.key} item={item} onNavigate={goTo} />
+        ))}
       </section>
 
-      <div className="lite-home-stats">
-        <div className="lite-home-stat-card">
-          <span>Apps</span>
-          <strong>{stats.apps_available ?? 0}</strong>
-          <p>available to install or manage</p>
-        </div>
-        <div className="lite-home-stat-card">
-          <span>Devices</span>
-          <strong>{stats.devices_known ?? 0}</strong>
-          <p>known to this Pocket Lab</p>
-        </div>
-        <div className="lite-home-stat-card">
-          <span>Safety</span>
-          <strong>{stats.security_findings ?? 0}</strong>
-          <p>items that need review</p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <GlassCard>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <section className="lite-home-premium-detail-grid lite-render-containment lite-render-containment--home">
+        <GlassCard as={LiteElevationSurface} settle className="lite-home-premium-capacity">
+          <div className="lite-home-premium-section-head">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">This device</p>
-              <h2 className="mt-2 text-2xl font-black text-white">{status.device?.name || 'Pocket Lab'}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-300">
-                Set up for a small, private environment with the essentials enabled.
-              </p>
+              <span>Workspace device</span>
+              <h2>{status.device?.name || 'Pocket Lab Lite'}</h2>
+              <p>Current capacity for apps, backups, and private services.</p>
             </div>
-            <StatusBadge status={status.overall}>
-              {status.overall === 'healthy' ? 'Ready' : 'Needs attention'}
+            <StatusBadge status={badgeStatus(overview.overallTone)}>
+              {savedStateOnly ? 'Saved state' : overview.overallTone === 'ready' ? 'Available' : 'Review'}
             </StatusBadge>
           </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <div className="lite-home-device-metric">
-              <span>Device load</span>
-              <strong>{status.telemetry?.cpu_usage_percent ?? '—'}%</strong>
-            </div>
-            <div className="lite-home-device-metric">
-              <span>Device warmth</span>
-              <strong>{status.telemetry?.cpu_temp_c ?? '—'}°C</strong>
-            </div>
-            <div className="lite-home-device-metric">
-              <span>Storage available</span>
-              <strong>{status.telemetry?.free_space_mb ?? '—'} MB</strong>
-            </div>
-            <div className="lite-home-device-metric">
-              <span>Memory in use</span>
-              <strong>{status.telemetry?.memory_usage_mb ?? '—'} MB</strong>
-            </div>
+          <div className="lite-home-premium-resource-grid">
+            {overview.resources.map((item) => <HomeResourceCard key={item.key} item={item} />)}
           </div>
-
-          <p className="mt-4 text-xs text-slate-500">Last checked: {formatLiteTime(status.checked_at)}</p>
-        </GlassCard>
-
-        <GlassCard>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-200">Needs attention</p>
-          <h2 className="mt-2 text-2xl font-black text-white">
-            {(stats.security_findings ?? 0) === 0 ? 'Nothing urgent right now' : 'Review recommended'}
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-300">
-            Pocket Lab will highlight problems here when apps, devices, safety checks,
-            or backups need your attention.
-          </p>
-          <div className="mt-5">
-            <LiteButton onClick={() => onNavigate('security')} tone="secondary">Review Safety</LiteButton>
+          <div className="lite-home-premium-freshness">
+            {backendReachable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+            <span>{savedStateOnly ? 'Saved information' : 'Current information'} · {checkedLabel}</span>
           </div>
         </GlassCard>
-      </div>
 
-      <section className="mt-4 lite-render-containment lite-render-containment--home">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-200">Key areas</p>
-            <h2 className="text-xl font-black text-white">What is ready</h2>
+        <GlassCard as={LiteElevationSurface} settle className="lite-home-premium-readiness">
+          <div className="lite-home-premium-section-head">
+            <div>
+              <span>Workspace readiness</span>
+              <h2>{overview.readyCount} of {overview.totalCount || '—'} areas ready</h2>
+              <p>{overview.attentionCount ? `${overview.attentionCount} ${overview.attentionCount === 1 ? 'area is' : 'areas are'} worth reviewing.` : 'No immediate follow-up is required.'}</p>
+            </div>
+            <span className={`lite-home-premium-readiness-ring is-${overview.overallTone}`} aria-label={`${overview.readyCount} of ${overview.totalCount} areas ready`}>
+              <strong>{overview.readyCount}</strong>
+              <small>ready</small>
+            </span>
           </div>
-          {loading ? <span className="text-sm text-slate-400">Checking...</span> : null}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {loading ? <LoadingCard /> : primaryServices.map((service) => (
-            <GlassCard key={service.name} className="lite-home-service-card">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-base font-black text-white">{service.name}</h3>
-                <StatusBadge status={serviceTone(service.status)}>
-                  {serviceTone(service.status) === 'healthy' ? 'Ready' : 'Check'}
-                </StatusBadge>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-slate-300">{service.summary}</p>
-            </GlassCard>
-          ))}
-        </div>
+          <div className="lite-home-premium-trust-note">
+            <ShieldCheck className="h-5 w-5" />
+            <div>
+              <strong>Private by design</strong>
+              <p>Apps and device operations stay inside your Pocket Lab control plane.</p>
+            </div>
+          </div>
+        </GlassCard>
       </section>
-    </>
+
+      <section className="lite-home-premium-services lite-render-containment lite-render-containment--home" aria-labelledby="lite-home-key-areas">
+        <div className="lite-home-premium-section-head">
+          <div>
+            <span>Key areas</span>
+            <h2 id="lite-home-key-areas">Workspace status</h2>
+            <p>Friendly summaries of the areas that keep Pocket Lab Lite useful and protected.</p>
+          </div>
+          {loading ? <span className="lite-home-premium-checking">Checking…</span> : null}
+        </div>
+
+        {loading && !overview.services.length ? <LoadingCard label="Loading workspace status…" /> : (
+          <div className="lite-home-premium-service-grid">
+            {overview.services.map((item) => (
+              <HomeServiceCard key={item.key} item={item} onNavigate={goTo} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

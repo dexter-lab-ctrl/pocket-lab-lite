@@ -428,7 +428,17 @@ function LiteAppShell() {
   const [workspaceApp, setWorkspaceApp] = useState(() => currentWorkspaceFromLocation());
   const [screenRetryGeneration, setScreenRetryGeneration] = useState({});
   const online = useOnlineStatus();
-  const { status, loading, error, refresh, cacheStatus, refreshing } = useLiteStatus();
+  const {
+    status,
+    loading,
+    error,
+    refresh,
+    cacheStatus,
+    refreshing,
+    savedStateOnly,
+    backendReachable,
+    lastUpdatedLabel,
+  } = useLiteStatus();
   const transitionRef = useRef(null);
   const focusScreenAfterNavigationRef = useRef(false);
   const screenStageRef = useRef(null);
@@ -573,7 +583,18 @@ function LiteAppShell() {
   };
 
   const activeScreenProps = activeScreenId === 'home'
-    ? { status, loading, error, refresh, cacheStatus, refreshing, onNavigate: commitScreenNavigation }
+    ? {
+      status,
+      loading,
+      error,
+      refresh,
+      cacheStatus,
+      refreshing,
+      savedStateOnly,
+      backendReachable,
+      lastUpdatedLabel,
+      onNavigate: commitScreenNavigation,
+    }
     : activeScreenId === 'catalog'
       ? { onOpenWorkspace: openWorkspace }
       : {};

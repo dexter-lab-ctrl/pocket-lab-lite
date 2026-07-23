@@ -1933,6 +1933,12 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   const [{ manageSheetY }, manageSheetSpring] = useSpring(() => ({ manageSheetY: 0, config: config.gentle }));
   const [{ manageSectionX }, manageSectionSpring] = useSpring(() => ({ manageSectionX: 0, config: config.stiff }));
   const [{ catalogPullY }, catalogPullSpring] = useSpring(() => ({ catalogPullY: 0, config: config.gentle }));
+  const catalogEntranceSpring = useSpring({
+    from: reduceMotion ? { opacity: 1, transform: 'none' } : { opacity: 0.01, transform: 'translate3d(0, 8px, 0)' },
+    to: { opacity: 1, transform: 'translate3d(0, 0, 0)' },
+    immediate: reduceMotion,
+    config: { tension: 320, friction: 34, clamp: true },
+  });
 
   const apps = data?.apps || data?.items || [];
   const access = data?.access || {};
@@ -2010,6 +2016,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }, [clearManageApp, manageAppId]);
 
   const openManageSheet = useCallback((appOrId, section = '') => {
+    triggerLiteTactileFeedback('selection');
     const appKey = catalogAppKey(appOrId);
     const nextSection = MANAGE_SECTION_ORDER.includes(section) ? section : undefined;
     setManageDrag({ dragging: false, offsetY: 0 });
@@ -2234,6 +2241,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   async function install(app, event) {
     event?.stopPropagation?.();
     if (!app) return;
+    triggerLiteTactileFeedback('accepted');
     setBusyId(app.id);
     setResult({ status: 'queued', message: `Sending ${app.name || 'app'} install request to Pocket Lab...` });
     setActionError(null);
@@ -2251,6 +2259,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   function openApp(app, event) {
     event?.stopPropagation?.();
+    triggerLiteTactileFeedback('selection');
     const target = resolveAppOpenUrl(app);
     if (!target) return;
     setOpeningId(app.id);
@@ -2893,7 +2902,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {canOpen ? 'Ready' : app?.access?.message || 'Available after install'}</span>
-          <span><HeartPulse className="h-4 w-4" /> {app?.runtime?.health ? `Health: ${app.runtime.health}` : 'Health: not installed'}</span>
+          <span><HeartPulse className="h-4 w-4" /> {app?.runtime?.health ? `App status: ${app.runtime.health}` : 'App status: not installed'}</span>
         </div>
         {reason ? (
           <div className="lite-catalog-attention-reason">
@@ -2940,8 +2949,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
   return (
     <animated.div
-      className={`lite-catalog-screen lite-catalog-gesture-layer ${pullRefresh.pulling ? 'is-pulling' : ''}`}
-      style={{ '--lite-catalog-pull-offset': catalogPullY.to((value) => `${value}px`) }}
+      className={`lite-catalog-screen lite-catalog-gesture-layer lite-catalog-native-polish ${pullRefresh.pulling ? 'is-pulling' : ''}`}
+      data-catalog-native-polish="true"
+      style={{ ...catalogEntranceSpring, '--lite-catalog-pull-offset': catalogPullY.to((value) => `${value}px`) }}
     >
       <div className={`lite-catalog-pull-refresh ${pullRefresh.ready ? 'is-ready' : ''}`} aria-live="polite">
         <RefreshCw className="h-4 w-4" />
@@ -2949,13 +2959,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       </div>
       <PageHeader
         eyebrow="Apps"
-        title="App Catalog"
-        description="Install and open local apps from your Pocket Lab. App setup is handled by the Server Host."
+        title="Your Apps"
+        description="Install, open, and manage self-hosted apps. Pocket Lab handles setup and protection in the background."
         actions={(
           <div className="lite-catalog-hero-actions">
             <div className={isCatalogSecure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
               {isCatalogSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-              {isCatalogSecure ? 'Secure Access' : 'Not Secure'}
+              {isCatalogSecure ? 'Protected access' : 'Access needs attention'}
             </div>
             <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
@@ -2963,7 +2973,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       />
 
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
-        <p>{displayedApps.length} apps shown</p>
+        <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
       </div>
 
       {featuredApp ? (
@@ -2999,7 +3009,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           <div>
             <span>Confirm remove</span>
             <h2>Remove PhotoPrism?</h2>
-            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Backend records preserved.</p>
+            <p>This removes the app runtime and Pocket Lab route when removal support is enabled. Your photo files and backups will not be deleted by default. Troubleshooting records are kept.</p>
           </div>
           <div className="lite-catalog-remove-confirm-grid">
             <span><strong>What will happen</strong>Remove app runtime and route after backend support is enabled.</span>
