@@ -443,3 +443,115 @@ def test_model_catalog_duplicate_matches_remain_explicit_suggestions():
     assert ".sort((a, b) => b.score - a.score" in catalog
     assert "flow.review(entry.consumerModelName)" in picker
     assert "flow.succeeded" in picker
+
+
+def test_server_agent_identity_is_canonical_and_remote_claims_fail_closed(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    state = {"agents": {}, "updated_at": None}
+    monkeypatch.setenv("POCKETLAB_SERVER_NODE_ID", "pocket-lab-lite-server")
+    monkeypatch.setenv("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
+    monkeypatch.setattr(fleet_registry, "_agents_payload", lambda: state)
+    monkeypatch.setattr(fleet_registry, "_write", lambda _path, _payload: None)
+    monkeypatch.setattr(fleet_registry, "_now", lambda: "2026-07-23T12:00:00Z")
+    monkeypatch.setattr(fleet_registry, "_epoch", lambda: 100.0)
+
+    local = fleet_registry.upsert_agent({
+        "node_id": "localhost",
+        "name": "localhost",
+        "role": "server_host",
+        "is_control_plane": True,
+        "system_profile": {"architecture": "aarch64", "collection_status": "current"},
+        "system_health": {"uptime_seconds": 123, "uptime_status": "available"},
+    })
+    assert local["node_id"] == "pocket-lab-lite-server"
+    assert local["name"] == "Pocket Lab Lite Server"
+    assert local["role"] == "server_host"
+    assert local["isCurrent"] is True
+    assert local["system_profile"]["architecture"] == "aarch64"
+
+    remote = fleet_registry.upsert_agent({
+        "node_id": "remote-phone",
+        "name": "Remote Phone",
+        "role": "server_host",
+        "is_control_plane": True,
+    })
+    assert remote["node_id"] == "remote-phone"
+    assert remote["isCurrent"] is False
+    assert "remote-phone" in state["agents"]
+
+
+def test_agent_event_invalidates_only_fleet_prepared_snapshot(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+
+    calls = []
+    monkeypatch.setattr(fleet_registry, "upsert_agent", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(CONTROL_PLANE, "invalidate_domain", lambda domain: calls.append(domain))
+
+    fleet_registry.handle_agent_event({
+        "subject": "pocketlab.events.fleet.node_heartbeat",
+        "type": "fleet.node_heartbeat",
+        "data": {"node_id": "pocket-lab-lite-server"},
+    })
+    assert calls == ["fleet"]
+
+
+def test_canonical_server_profile_and_health_merge_into_lite_fleet(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_status
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+
+    monkeypatch.setenv("POCKETLAB_NODE_ID", "pocket-lab-lite-server")
+    monkeypatch.setenv("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
+    monkeypatch.setattr(lite_status, "lite_remote_access_status", lambda: {
+        "status": "healthy", "ready": True, "ip": "100.64.0.1",
+        "summary": "Ready", "checked_at": "2026-07-23T12:00:00Z",
+    })
+    monkeypatch.setattr(lite_status, "merged_fleet_nodes", lambda: [{
+        "id": "pocket-lab-lite-server",
+        "node_id": "pocket-lab-lite-server",
+        "name": "Pocket Lab Lite Server",
+        "role": "server_host",
+        "status": "active",
+        "isCurrent": True,
+        "source": "nats-agent",
+        "last_seen_at": "2026-07-23T12:00:00Z",
+        "system_profile": {
+            "architecture": "aarch64",
+            "os_name": "Android",
+            "technical_model": "SM-S911B",
+            "runtime_type": "termux",
+            "collection_status": "current",
+            "collected_at": "2026-07-23T12:00:00Z",
+        },
+        "system_health": {
+            "uptime_seconds": 183480,
+            "uptime_status": "available",
+            "load_status": "normal",
+            "collected_at": "2026-07-23T12:00:00Z",
+        },
+    }])
+    monkeypatch.setattr(CONTROL_PLANE, "device_profile_map", lambda: {})
+
+    payload = lite_status.lite_fleet()
+    server = payload["devices"][0]
+    assert payload["count"] == 1
+    assert server["id"] == "pocket-lab-lite-server"
+    assert server["system_profile"]["architecture"] == "aarch64"
+    assert server["system_profile"]["technical_model"] == "SM-S911B"
+    assert server["system_health"]["uptime_seconds"] == 183480
+    assert server["system_health"]["uptime_status"] == "available"
+
+
+def test_server_startup_sets_stable_protected_agent_identity():
+    root = Path(__file__).resolve().parents[2]
+    script = (root / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh").read_text(encoding="utf-8")
+    agent = (root / "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py").read_text(encoding="utf-8")
+
+    assert 'POCKETLAB_NODE_ID="${POCKETLAB_SERVER_NODE_ID:-pocket-lab-lite-server}"' in script
+    assert 'POCKETLAB_NODE_ROLE=server_host' in script
+    assert 'POCKETLAB_IS_CONTROL_PLANE=1' in script
+    assert '"is_control_plane": self.is_control_plane' in agent
