@@ -1,5 +1,5 @@
 import React from 'react';
-import { LockKeyhole, Smartphone, X } from 'lucide-react';
+import { Smartphone, X } from 'lucide-react';
 import { formatLiteTime } from '../../lib/liteApi.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
 import {
@@ -107,8 +107,8 @@ function technicalRows(device) {
     { label: 'Security patch', value: device?.system_profile?.security_patch },
     { label: 'Manufacturer', value: device?.system_profile?.manufacturer },
     { label: 'Technical model', value: device?.system_profile?.technical_model },
-    { label: 'Consumer name', value: device?.system_profile?.consumer_model_name || 'Not selected' },
-    { label: 'Device codename', value: device?.system_profile?.device_codename },
+    { label: 'Friendly model', value: device?.system_profile?.consumer_model_name || 'Using detected technical model' },
+    { label: 'Internal codename', value: device?.system_profile?.device_codename },
     { label: 'Architecture', value: device?.system_profile?.architecture },
     { label: 'Android ABI', value: device?.system_profile?.android_abi },
     { label: 'Kernel', value: device?.system_profile?.kernel },
@@ -159,14 +159,11 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           <span>{device?.system_health?.uptime_label || 'Uptime unavailable'}</span>
         </div>
         {isProtectedServer ? (
-          <div className="lite-device-protected-model" role="note">
-            <LockKeyhole className="h-4 w-4" />
-            <div>
-              <strong>Server model detected automatically</strong>
-              <span>The protected server identity comes from the local agent and cannot be renamed here.</span>
-            </div>
-          </div>
-        ) : onChooseModel ? (
+          <p className="lite-device-model-boundary" role="note">
+            Choosing a friendly model changes display metadata only. Server identity, technical model, and internal codename remain agent-owned.
+          </p>
+        ) : null}
+        {onChooseModel ? (
           <LiteButton tone="secondary" onClick={onChooseModel}>
             <Smartphone className="h-4 w-4" />
             Choose model

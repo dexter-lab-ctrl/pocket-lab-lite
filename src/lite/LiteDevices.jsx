@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   Copy,
@@ -155,6 +155,7 @@ export default function DevicesScreen() {
   const setDetailsDeviceId = useLiteUiStore((state) => state.setActiveDeviceDetailsId);
   const setDeviceModelPickerId = useLiteUiStore((state) => state.setDeviceModelPickerId);
   const detailsButtonRefs = useRef(new Map());
+  const detailsPanelRef = useRef(null);
   const fleetPollingIsLive = useMemo(() => (fleetPayload) => (
     busy
     || Boolean(restartBusy)
@@ -193,6 +194,16 @@ export default function DevicesScreen() {
   const activeNameConflict = localNameConflict || serverConflict;
   const addDeviceFlow = useLiteAddDeviceFlow({ devices, latestInvite, backendReachable, savedStateOnly, remoteAccessReady });
   const addDeviceDisabled = busy || addDeviceFlow.writeBlocked || Boolean(activeNameConflict);
+  useEffect(() => {
+    if (!activeDetailsDevice || !detailsPanelRef.current) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      const panel = detailsPanelRef.current;
+      const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      panel?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+      panel?.focus?.({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeDetailsDevice?.id]);
   const closeDeviceDetails = () => {
     const trigger = detailsButtonRefs.current.get(detailsDeviceId);
     trigger?.focus?.({ preventScroll: true });
@@ -655,15 +666,15 @@ export default function DevicesScreen() {
           {loading ? <LoadingCard label="Loading devices..." /> : null}
 
           {activeDetailsDevice ? (
-            <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
-              <DeviceDetailsLazy
-                device={activeDetailsDevice}
-                onClose={closeDeviceDetails}
-                onChooseModel={activeDetailsDevice?.protected_server_host || activeDetailsDevice?.role === 'server_host' || activeDetailsDevice?.is_current
-                  ? null
-                  : () => { triggerHapticFeedback(12); setDeviceModelPickerId(activeDetailsDevice?.id); }}
-              />
-            </Suspense>
+            <div ref={detailsPanelRef} tabIndex={-1} className="lite-device-details-focus-anchor">
+              <Suspense fallback={<GlassCard className="lite-device-details-panel"><p>Loading device details…</p></GlassCard>}>
+                <DeviceDetailsLazy
+                  device={activeDetailsDevice}
+                  onClose={closeDeviceDetails}
+                  onChooseModel={() => { triggerHapticFeedback(12); setDeviceModelPickerId(activeDetailsDevice?.id); }}
+                />
+              </Suspense>
+            </div>
           ) : null}
 
           {modelPickerDevice ? (

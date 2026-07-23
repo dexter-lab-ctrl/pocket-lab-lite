@@ -17,6 +17,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
   const setSearch = useLiteUiStore((state) => state.setDeviceModelSearch);
   const profile = device?.system_profile || {};
   const current = profile.consumer_model_name || '';
+  const isProtectedServer = Boolean(device?.protected_server_host || device?.role === 'server_host' || device?.is_current || device?.isCurrent);
   const flow = useLiteDeviceModelFlow({ open, deviceId: device?.id, current, backendReachable, savedStateOnly });
   const suggestions = useMemo(() => suggestedAndroidDeviceModels(profile, search), [profile, search]);
   const mutation = useLiteMutation({
@@ -46,9 +47,9 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
     <LiteSheet
       open={open}
       onClose={onClose}
-      title="Choose phone model"
-      eyebrow="Device details"
-      description="This label is display-only. Enrollment identity and technical model stay unchanged."
+      title={isProtectedServer ? "Choose server model" : "Choose phone model"}
+      eyebrow={isProtectedServer ? "Pocket Lab server" : "Device details"}
+      description="This label is display-only. Enrollment identity, technical model, internal codename, and server protection stay unchanged."
       className="lite-device-model-sheet"
       bodyClassName="lite-device-model-sheet-body"
       variant="manage"
@@ -66,7 +67,12 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
         <div className="lite-device-model-confirmation">
           <span>Confirm display model</span>
           <strong>{flow.confirmed || 'Use technical model'}</strong>
-          <p>This changes only the friendly model shown in Pocket Lab Lite.</p>
+          <p>
+            This changes only the friendly model shown in Pocket Lab Lite.
+            {isProtectedServer && profile.technical_model ? ` Technical model ${profile.technical_model}` : ''}
+            {isProtectedServer && profile.device_codename ? ` and internal codename ${profile.device_codename}` : ''}
+            {isProtectedServer ? ' remain unchanged.' : ''}
+          </p>
           <div className="lite-device-model-actions">
             <LiteButton onClick={save} disabled={mutation.isPending || flow.writeBlocked}>
               <Check className="h-4 w-4" />
@@ -109,7 +115,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
                 onClick={() => flow.review(search)}
                 disabled={!search.trim() || flow.writeBlocked}
               >Use “{search.trim() || 'custom name'}”</LiteButton>
-              <LiteButton tone="secondary" onClick={flow.clear} disabled={!current || flow.writeBlocked}>Clear friendly model</LiteButton>
+              <LiteButton tone="secondary" onClick={flow.clear} disabled={!current || flow.writeBlocked}>Use detected technical model</LiteButton>
             </div>
           </div>
         </>

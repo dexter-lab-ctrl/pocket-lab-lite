@@ -791,6 +791,8 @@ export function selectDeviceSystemProfileView(device = {}) {
     device_codename: safeString(profile.device_codename || ''),
     consumer_model_name: consumerModel,
     display_model: safeString(profile.display_model || consumerModel || technicalModel || 'Unknown model'),
+    model_label_source: safeString(profile.model_label_source || (consumerModel ? 'user_selected' : technicalModel ? 'technical_fallback' : 'generic_fallback')),
+    technical_identity_source: safeString(profile.technical_identity_source || 'agent'),
     architecture: safeString(profile.architecture || ''),
     android_abi: safeString(profile.android_abi || ''),
     kernel: safeString(profile.kernel || ''),

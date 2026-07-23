@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import threading
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -220,7 +221,9 @@ def test_app_current_subprojections_are_persisted_bounded_and_change_only(tmp_pa
             "recovery": {"status": "ready", "preview_available": True},
             "actions": {"open": {"enabled": True}},
         }],
-        "updated_at": "2026-07-22T13:10:00Z",
+        "updated_at": datetime.now(timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z"),
     }
 
     assert store.project_apps(payload) == 1

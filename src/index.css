@@ -22857,3 +22857,22 @@ html.lite-install-light-shell body {
     animation: none !important;
   }
 }
+
+/* D1 follow-up: safe server display model selection and details focus */
+.lite-device-details-focus-anchor {
+  scroll-margin-block: calc(var(--lite-header-height, 72px) + 16px);
+  outline: none;
+}
+.lite-device-details-focus-anchor:focus-visible .lite-device-details-panel {
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent), var(--lite-card-shadow, 0 18px 42px rgba(0,0,0,.14));
+}
+.lite-device-model-boundary {
+  margin: 0;
+  max-width: 62ch;
+  font-size: .84rem;
+  line-height: 1.5;
+  color: var(--lite-text-muted, #64748b);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lite-device-details-focus-anchor { scroll-behavior: auto; }
+}
