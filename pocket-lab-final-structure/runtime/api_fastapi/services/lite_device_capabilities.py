@@ -41,11 +41,35 @@ def capability_ids_for_role(role: Any) -> list[str]:
     return list(_CAPABILITIES_BY_ROLE.get(normalize_role(role), _CAPABILITIES_BY_ROLE["compute"]))
 
 
-def labels_for_capabilities(capabilities: list[str] | tuple[str, ...] | None) -> list[str]:
+
+def normalized_capability_ids(value: Any, *, ready_only: bool = False) -> list[str]:
+    result: list[str] = []
+    for item in value if isinstance(value, (list, tuple)) else []:
+        if isinstance(item, dict):
+            status = str(item.get("status") or "unknown").lower()
+            if ready_only and status not in {"ready", "available"}:
+                continue
+            capability_id = str(item.get("id") or "").strip()
+        else:
+            capability_id = str(item or "").strip()
+        if capability_id and capability_id not in result:
+            result.append(capability_id)
+    return result
+
+
+def labels_for_capabilities(capabilities: list[Any] | tuple[Any, ...] | None) -> list[str]:
     labels: list[str] = []
     for capability in capabilities or []:
-        label = CAPABILITY_LABELS.get(str(capability), str(capability).replace("_", " ").title())
-        if label not in labels:
+        if isinstance(capability, dict):
+            if str(capability.get("status") or "unknown").lower() not in {"ready", "available"}:
+                continue
+            capability_id = str(capability.get("id") or "")
+            label = str(capability.get("label") or "")
+        else:
+            capability_id = str(capability)
+            label = ""
+        label = label or CAPABILITY_LABELS.get(capability_id, capability_id.replace("_", " ").title())
+        if label and label not in labels:
             labels.append(label)
     return labels
 
@@ -114,7 +138,15 @@ def capability_counts(devices: list[dict[str, Any]], *, ready_only: bool = False
         ready = connection == "online" or status in {"healthy", "active", "online", "ready"}
         if ready_only and not ready:
             continue
-        for capability in device.get("capabilities") or []:
+        semantic = normalized_capability_ids(device.get("capabilities"), ready_only=True)
+        legacy = set()
+        if "host_apps" in semantic:
+            legacy.update({"app_host", "compute"})
+        if "provide_storage" in semantic or "store_backups" in semantic or "backup_target" in semantic:
+            legacy.update({"media_storage", "backup_target"})
+        if "run_safety_checks" in semantic:
+            legacy.add("security_scanner")
+        for capability in set(semantic).union(legacy):
             if capability in counts:
                 counts[capability] += 1
     return counts
@@ -135,7 +167,7 @@ def catalog_device_summary(devices: list[dict[str, Any]]) -> dict[str, Any]:
             "storage": item.get("storage") if isinstance(item.get("storage"), dict) else None,
         }
         for item in devices
-        if "media_storage" in (item.get("capabilities") or [])
+        if any(capability in normalized_capability_ids(item.get("capabilities"), ready_only=True) for capability in ("provide_storage", "store_backups", "backup_target", "media_storage"))
     ]
     return {
         "host_device_id": (server or {}).get("id") or "pocket-lab-lite-server",

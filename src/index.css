@@ -23124,3 +23124,156 @@ html.lite-install-light-shell body {
     scroll-behavior: auto;
   }
 }
+
+/* Phase D2/D3 — Devices trust, lifecycle, capabilities, and dependency awareness */
+.theme-pocket-lite-daylight .lite-device-trust-strip {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  padding: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--lite-border, #dbe4ea) 78%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--lite-card, #fff) 84%, #eef7f3);
+}
+
+.theme-pocket-lite-daylight .lite-device-trust-strip > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-trust-strip small {
+  color: var(--lite-muted, #65737e);
+  line-height: 1.35;
+}
+
+.theme-pocket-lite-daylight .lite-device-trust-strip small.is-ready {
+  color: #176b4a;
+}
+
+.theme-pocket-lite-daylight .lite-device-trust-strip small.is-review {
+  color: #9a5b13;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section {
+  min-width: 0;
+  padding: 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--lite-border, #dbe4ea) 80%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--lite-card, #fff) 92%, #f3f7f8);
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section > span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--lite-muted, #65737e);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section > strong {
+  display: block;
+  margin-bottom: 0.55rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section p,
+.theme-pocket-lite-daylight .lite-device-awareness-section li,
+.theme-pocket-lite-daylight .lite-device-awareness-section dd {
+  overflow-wrap: anywhere;
+  color: var(--lite-muted, #65737e);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section dl,
+.theme-pocket-lite-daylight .lite-device-awareness-section ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section dl > div,
+.theme-pocket-lite-daylight .lite-device-capability-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section dt {
+  color: var(--lite-muted, #65737e);
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-section dd {
+  margin: 0;
+  text-align: right;
+}
+
+.theme-pocket-lite-daylight .lite-device-capability-list {
+  list-style: none;
+}
+
+.theme-pocket-lite-daylight .lite-device-capability-list strong.is-ready,
+.theme-pocket-lite-daylight .lite-device-capability-list strong.is-available {
+  color: #176b4a;
+}
+
+.theme-pocket-lite-daylight .lite-device-capability-list strong.is-not_ready,
+.theme-pocket-lite-daylight .lite-device-capability-list strong.is-unavailable {
+  color: #9a5b13;
+}
+
+.theme-pocket-lite-daylight .lite-device-awareness-removal {
+  grid-column: 1 / -1;
+}
+
+.theme-pocket-lite-daylight .lite-device-removal-impact,
+.theme-pocket-lite-daylight .lite-device-remove-final-warning,
+.theme-pocket-lite-daylight .lite-device-remove-assessment-state {
+  margin: 0.85rem 0;
+  padding: 0.85rem;
+  border-radius: 0.9rem;
+  line-height: 1.45;
+}
+
+.theme-pocket-lite-daylight .lite-device-removal-impact ul {
+  margin: 0.45rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-removal-impact.is-blocked,
+.theme-pocket-lite-daylight .lite-device-remove-final-warning {
+  border: 1px solid color-mix(in srgb, #c33 35%, transparent);
+  background: color-mix(in srgb, #fff 90%, #f9dddd);
+}
+
+.theme-pocket-lite-daylight .lite-device-removal-impact.is-warning,
+.theme-pocket-lite-daylight .lite-device-remove-assessment-state {
+  border: 1px solid color-mix(in srgb, #b56f16 30%, transparent);
+  background: color-mix(in srgb, #fff 90%, #fff0d8);
+}
+
+@media (max-width: 760px) {
+  .theme-pocket-lite-daylight .lite-device-awareness-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .theme-pocket-lite-daylight .lite-device-awareness-removal {
+    grid-column: auto;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-awareness-section dl > div,
+  .theme-pocket-lite-daylight .lite-device-capability-list li {
+    align-items: flex-start;
+  }
+}

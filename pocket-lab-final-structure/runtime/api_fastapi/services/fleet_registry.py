@@ -351,6 +351,77 @@ def _derive_status(agent: Dict[str, Any]) -> str:
     return "unknown"
 
 
+
+def append_device_lifecycle_event(
+    device_id: str,
+    event_type: str,
+    *,
+    reason_code: str = "",
+    summary: str = "",
+    status: str = "recorded",
+    occurred_at: str | None = None,
+    invite_id: str | None = None,
+    command_id: str | None = None,
+) -> Dict[str, Any]:
+    """Append a bounded, sanitized lifecycle event without storing raw payloads."""
+    safe_device_id = normalize_node_id(device_id)
+    safe_type = re.sub(r"[^a-z0-9_.-]+", "_", str(event_type or "device_activity").lower())[:80]
+    safe_reason = re.sub(r"[^a-z0-9_.-]+", "_", str(reason_code or "").lower())[:80]
+    safe_summary = _safe_profile_text(summary or "Device activity recorded.", 220)
+    at = occurred_at or _now()
+    material = json.dumps(
+        [safe_device_id, safe_type, at, safe_reason, invite_id or "", command_id or ""],
+        separators=(",", ":"),
+    )
+    event = {
+        "event_id": hashlib.sha256(material.encode("utf-8")).hexdigest()[:24],
+        "device_id": safe_device_id,
+        "node_id": safe_device_id,
+        "event_type": safe_type,
+        "reason_code": safe_reason,
+        "summary": safe_summary,
+        "occurred_at": at,
+        "created_at": at,
+        "status": _safe_profile_text(status, 32) or "recorded",
+        "invite_id": _safe_profile_text(invite_id, 120) if invite_id else None,
+        "command_id": _safe_profile_text(command_id, 120) if command_id else None,
+        "sanitized": True,
+    }
+    payload = _read(_state_path("fleet_device_events.json"), {"events": [], "updated_at": None})
+    if not isinstance(payload, dict):
+        payload = {"events": [], "updated_at": None}
+    events = payload.get("events") if isinstance(payload.get("events"), list) else []
+    events = [
+        item for item in events
+        if not (isinstance(item, dict) and str(item.get("event_id") or "") == event["event_id"])
+    ]
+    events.insert(0, event)
+    payload["events"] = events[:500]
+    payload["updated_at"] = at
+    _write(_state_path("fleet_device_events.json"), payload)
+    return event
+
+
+def _event_timestamp_fields(event_type: str, data: Dict[str, Any], now: str) -> Dict[str, Any]:
+    normalized = str(event_type or "").lower()
+    result: Dict[str, Any] = {}
+    if normalized.endswith("node_heartbeat") or normalized.endswith("node_seen"):
+        result["last_heartbeat_at"] = data.get("heartbeat_at") or data.get("seen_at") or now
+    if normalized.endswith("node_telemetry"):
+        result["last_telemetry_at"] = data.get("sampled_at") or now
+    if normalized.endswith("node_health"):
+        result["last_health_at"] = data.get("sampled_at") or data.get("checked_at") or now
+    if normalized.endswith("node_supervisor"):
+        result["last_supervisor_heartbeat_at"] = data.get("checked_at") or data.get("seen_at") or now
+    if normalized.endswith("node_reconnected") or data.get("nats_connected_at"):
+        result["last_nats_connected_at"] = data.get("nats_connected_at") or data.get("reconnected_at") or now
+    if normalized.endswith("node_left") or data.get("last_nats_disconnected_at"):
+        result["last_nats_disconnected_at"] = data.get("last_nats_disconnected_at") or data.get("left_at") or now
+    if isinstance(data.get("system_profile"), dict):
+        result["last_system_profile_at"] = data["system_profile"].get("collected_at") or now
+    return result
+
+
 def upsert_agent(
     data: Dict[str, Any], *, event_type: str = "fleet.node_seen"
 ) -> Dict[str, Any]:
@@ -370,8 +441,57 @@ def upsert_agent(
     agents = payload["agents"]
     existing = dict(agents.get(node_id) or {})
     now = _now()
+    incoming_hash = str(data.get("auth_token_hash") or "").strip()
+    existing_hash = str(existing.get("auth_token_hash") or "").strip()
+
+    # A display label or consumer model never participates in identity. When a
+    # different enrolled credential reports for an existing node, keep the
+    # previously trusted record and fail closed. This path never writes env
+    # files or restarts PM2; it only records bounded sanitized evidence.
+    if (
+        not control_plane_claim
+        and existing_hash
+        and incoming_hash
+        and existing_hash != incoming_hash
+    ):
+        trusted = str(existing.get("identity_status") or "").lower() == "verified"
+        existing.update({
+            "identity_status": "verified" if trusted else "join_blocked",
+            "enrollment_status": existing.get("enrollment_status") or ("ready" if trusted else "join_blocked"),
+            "identity_mismatch_count": int(existing.get("identity_mismatch_count") or 0) + 1,
+            "blocked_join_count": int(existing.get("blocked_join_count") or 0) + 1,
+            "last_identity_mismatch_at": now,
+            "last_identity_reason_code": "invite_identity_mismatch",
+            "last_blocked_join_at": now,
+            "repair_required": bool(existing.get("repair_required") or not trusted),
+            "repair_reason_code": existing.get("repair_reason_code") or ("invite_identity_mismatch" if not trusted else ""),
+            "updated_at": now,
+        })
+        agents[node_id] = existing
+        payload["updated_at"] = now
+        _write(_state_path("fleet_agents.json"), payload)
+        append_device_lifecycle_event(
+            node_id,
+            "identity_mismatch_blocked",
+            reason_code="invite_identity_mismatch",
+            summary="A mismatched device join was blocked without changing the enrolled identity.",
+            status="blocked",
+            occurred_at=now,
+        )
+        return existing
+
+    event_fields = _event_timestamp_fields(event_type, data, now)
+    normalized_event = str(event_type or "").lower()
+    is_heartbeat = normalized_event.endswith("node_heartbeat") or normalized_event.endswith("node_seen")
+    is_join_start = normalized_event.endswith("agent_join_started")
+    is_invited = normalized_event.endswith("agent_invited")
+    is_supervisor = normalized_event.endswith("node_supervisor")
+    previous_status = str(existing.get("agent_status") or "").lower()
+    previous_identity = str(existing.get("identity_status") or "").lower()
+
     merged = {
         **existing,
+        **event_fields,
         "id": node_id,
         "node_id": node_id,
         "name": (os.environ.get("POCKETLAB_DEVICE_NAME") if control_plane_claim else None)
@@ -408,10 +528,45 @@ def upsert_agent(
         "source": "nats-agent",
     }
 
+    if control_plane_claim:
+        merged.update({
+            "identity_status": "protected_server_host",
+            "enrollment_status": "ready",
+            "identity_verified_at": existing.get("identity_verified_at") or now,
+            "enrolled_at": existing.get("enrolled_at") or now,
+            "first_ready_at": existing.get("first_ready_at") or now,
+            "last_successful_join_at": now,
+        })
+    elif is_invited:
+        merged.update({
+            "identity_status": existing.get("identity_status") or "pending",
+            "enrollment_status": "invite_pending",
+            "last_join_attempt_at": now,
+        })
+    elif is_join_start:
+        merged.update({
+            "identity_status": existing.get("identity_status") or "pending",
+            "enrollment_status": "waiting_for_heartbeat",
+            "last_join_attempt_at": now,
+        })
+    elif is_heartbeat:
+        first_heartbeat = existing.get("first_heartbeat_at") or event_fields.get("last_heartbeat_at") or now
+        merged.update({
+            "first_heartbeat_at": first_heartbeat,
+            "identity_status": "verified",
+            "identity_verified_at": existing.get("identity_verified_at") or first_heartbeat,
+            "enrollment_status": "ready",
+            "enrolled_at": existing.get("enrolled_at") or first_heartbeat,
+            "first_ready_at": existing.get("first_ready_at") or first_heartbeat,
+            "last_successful_join_at": event_fields.get("last_heartbeat_at") or now,
+            "repair_required": False,
+            "repair_reason_code": "",
+        })
+
     supervisor_seen = bool(
         data.get("supervisor_status")
         or data.get("agent_process_status")
-        or str(event_type or "").endswith("node_supervisor")
+        or is_supervisor
     )
     if supervisor_seen:
         merged["supervisor_status"] = data.get("supervisor_status") or existing.get("supervisor_status") or "unknown"
@@ -421,9 +576,13 @@ def upsert_agent(
         merged["supervisor_version"] = data.get("supervisor_version") or existing.get("supervisor_version")
         merged["last_supervisor_at"] = data.get("checked_at") or data.get("seen_at") or now
         merged["last_supervisor_epoch"] = _epoch()
+        merged["first_supervisor_heartbeat_at"] = existing.get("first_supervisor_heartbeat_at") or merged["last_supervisor_at"]
         merged["supervisor_repair_count"] = int(data.get("repair_count") or existing.get("supervisor_repair_count") or 0)
         merged["last_supervisor_repair_at"] = data.get("last_repair_at") or existing.get("last_supervisor_repair_at") or ""
         merged["supervisor_nats_reachable"] = bool(data.get("nats_reachable"))
+        if data.get("last_repair_at"):
+            merged["last_recovery_at"] = data.get("last_repair_at")
+            merged["last_recovery_result"] = "recovered"
 
     if isinstance(data.get("telemetry"), dict):
         merged["telemetry"] = data["telemetry"]
@@ -435,8 +594,12 @@ def upsert_agent(
     system_health = _normalize_system_health(data.get("system_health"))
     if system_health:
         merged["system_health"] = system_health
-    if isinstance(data.get("capabilities"), list):
-        merged["capabilities"] = data["capabilities"]
+    advertised = data.get("advertised_capabilities") if isinstance(data.get("advertised_capabilities"), list) else data.get("capabilities")
+    if isinstance(advertised, list):
+        merged["advertised_capabilities"] = [
+            _safe_profile_text(item, 80) for item in advertised[:32] if _safe_profile_text(item, 80)
+        ]
+        merged["capabilities"] = list(merged["advertised_capabilities"])
     if isinstance(data.get("storage"), dict):
         merged["storage"] = data["storage"]
     if isinstance(data.get("media_roots"), list):
@@ -444,11 +607,29 @@ def upsert_agent(
     for storage_key in ("available_gb", "free_storage_gb", "storage_available_gb"):
         if data.get(storage_key) is not None:
             merged[storage_key] = data.get(storage_key)
-    if data.get("auth_token_hash"):
-        merged["auth_token_hash"] = data.get("auth_token_hash")
+    if incoming_hash:
+        merged["auth_token_hash"] = incoming_hash
+    if merged.get("tailnet_ip"):
+        merged["last_tailnet_ready_at"] = data.get("seen_at") or data.get("heartbeat_at") or now
+
     agents[node_id] = merged
     payload["updated_at"] = now
     _write(_state_path("fleet_agents.json"), payload)
+
+    if is_invited and previous_status not in {"invited", "pending"}:
+        append_device_lifecycle_event(node_id, "invite_created", summary="Device invite created.", occurred_at=now)
+    if is_join_start and previous_status not in {"joining", "accepted"}:
+        append_device_lifecycle_event(node_id, "join_started", summary="Device join started.", occurred_at=now)
+    if is_heartbeat and not existing.get("first_heartbeat_at"):
+        append_device_lifecycle_event(node_id, "first_heartbeat_received", summary="First valid device heartbeat received.", occurred_at=merged.get("first_heartbeat_at"))
+    if is_heartbeat and previous_identity != "verified":
+        append_device_lifecycle_event(node_id, "identity_verified", summary="Device identity verified from the enrolled agent heartbeat.", occurred_at=merged.get("identity_verified_at"))
+    if is_heartbeat and previous_status in {"offline", "failed", "unhealthy", "agent_stopped"}:
+        append_device_lifecycle_event(node_id, "device_returned_online", summary="Device returned online.", occurred_at=now)
+    if is_supervisor and not existing.get("first_supervisor_heartbeat_at"):
+        append_device_lifecycle_event(node_id, "first_supervisor_heartbeat", summary="Device supervisor reported for the first time.", occurred_at=merged.get("first_supervisor_heartbeat_at"))
+    if is_supervisor and data.get("last_repair_at") and data.get("last_repair_at") != existing.get("last_supervisor_repair_at"):
+        append_device_lifecycle_event(node_id, "repair_completed", summary="Device supervisor completed a recovery action.", occurred_at=str(data.get("last_repair_at")), status="completed")
     return merged
 
 
@@ -472,6 +653,7 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
         "node_health",
         "node_left",
         "node_supervisor",
+        "node_reconnected",
     )
     if not subject.endswith(agent_event_suffixes):
         return
@@ -545,6 +727,36 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "supervisor_repair_count": agent.get("supervisor_repair_count"),
                 "last_supervisor_repair_at": agent.get("last_supervisor_repair_at"),
                 "supervisor_nats_reachable": agent.get("supervisor_nats_reachable"),
+                "advertised_capabilities": agent.get("advertised_capabilities") or agent.get("capabilities") or [],
+                "last_heartbeat_at": agent.get("last_heartbeat_at"),
+                "last_telemetry_at": agent.get("last_telemetry_at"),
+                "last_system_profile_at": agent.get("last_system_profile_at"),
+                "last_supervisor_heartbeat_at": agent.get("last_supervisor_heartbeat_at"),
+                "last_command_received_at": agent.get("last_command_received_at"),
+                "last_command_completed_at": agent.get("last_command_completed_at"),
+                "last_nats_connected_at": agent.get("last_nats_connected_at"),
+                "last_nats_disconnected_at": agent.get("last_nats_disconnected_at"),
+                "last_tailnet_ready_at": agent.get("last_tailnet_ready_at"),
+                "last_recovery_at": agent.get("last_recovery_at"),
+                "last_recovery_result": agent.get("last_recovery_result"),
+                "invite_created_at": agent.get("invite_created_at"),
+                "invite_accepted_at": agent.get("invite_accepted_at"),
+                "enrolled_at": agent.get("enrolled_at"),
+                "first_heartbeat_at": agent.get("first_heartbeat_at"),
+                "first_supervisor_heartbeat_at": agent.get("first_supervisor_heartbeat_at"),
+                "first_ready_at": agent.get("first_ready_at"),
+                "last_join_attempt_at": agent.get("last_join_attempt_at"),
+                "last_successful_join_at": agent.get("last_successful_join_at"),
+                "enrollment_status": agent.get("enrollment_status"),
+                "identity_status": agent.get("identity_status"),
+                "identity_verified_at": agent.get("identity_verified_at"),
+                "identity_mismatch_count": agent.get("identity_mismatch_count"),
+                "last_identity_mismatch_at": agent.get("last_identity_mismatch_at"),
+                "last_identity_reason_code": agent.get("last_identity_reason_code"),
+                "blocked_join_count": agent.get("blocked_join_count"),
+                "last_blocked_join_at": agent.get("last_blocked_join_at"),
+                "repair_required": agent.get("repair_required"),
+                "repair_reason_code": agent.get("repair_reason_code"),
             }
         )
     return nodes
@@ -790,6 +1002,34 @@ def record_command_result(data: Dict[str, Any]) -> Dict[str, Any]:
     )
     state["updated_at"] = _now()
     _write(_state_path("fleet_agent_commands.json"), state)
+    agents_payload = _agents_payload()
+    agent = agents_payload.get("agents", {}).get(node_id) if node_id else None
+    if isinstance(agent, dict):
+        completed_at = found.get("finished_at") or found.get("updated_at") or _now()
+        agent["last_command_received_at"] = data.get("received_at") or completed_at
+        agent["last_command_completed_at"] = completed_at
+        agent["updated_at"] = completed_at
+        agents_payload["updated_at"] = completed_at
+        _write(_state_path("fleet_agents.json"), agents_payload)
+        status = str(found.get("status") or "completed").lower()
+        append_device_lifecycle_event(
+            node_id,
+            "restart_delivered",
+            reason_code="agent_received_command",
+            summary="Device agent received the restart request.",
+            status="delivered",
+            occurred_at=data.get("received_at") or completed_at,
+            command_id=found.get("command_id"),
+        )
+        append_device_lifecycle_event(
+            node_id,
+            "restart_completed" if status in {"completed", "succeeded", "acknowledged"} else "restart_failed",
+            reason_code="command_completed" if status in {"completed", "succeeded", "acknowledged"} else "command_failed",
+            summary="Device restart completed." if status in {"completed", "succeeded", "acknowledged"} else "Device restart did not complete.",
+            status=status,
+            occurred_at=completed_at,
+            command_id=found.get("command_id"),
+        )
     return found
 
 

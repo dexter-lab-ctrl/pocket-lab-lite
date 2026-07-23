@@ -47,8 +47,8 @@ def test_n4_n5_migration_revision_events_and_change_only_bump(tmp_path, monkeypa
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    assert current_schema_version() == 10
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert current_schema_version() == 11
     store = ControlPlaneProjectionStore()
     first = store.project_fleet(_fleet_payload())
     second = store.project_fleet(_fleet_payload())
@@ -68,7 +68,7 @@ def test_n4_n5_migration_revision_events_and_change_only_bump(tmp_path, monkeypa
         "domain": "fleet",
         "revision": 1,
         "changed_ids_json": '["device-0","device-1"]',
-        "reason": "fleet_state_changed",
+        "reason": "device_identity_changed",
         "sanitized": 1,
     }]
     assert {"lifecycle_stage", "terminal_at", "ignored_redelivery", "recovery_action"}.issubset(columns)

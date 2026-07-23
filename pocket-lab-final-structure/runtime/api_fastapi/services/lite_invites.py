@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 from fastapi import Request
 
 from .. import deps
-from .fleet_registry import normalize_node_id, upsert_agent
+from .fleet_registry import append_device_lifecycle_event, normalize_node_id, upsert_agent
 from .nats_bus import BUS
 
 LITE_INVITE_TTL_SECONDS = int(os.environ.get("POCKETLAB_LITE_INVITE_TTL_SECONDS", "1800"))
@@ -361,7 +361,12 @@ def _public_invite(
         "role": record.get("role"),
         "role_label": record.get("role_label"),
         "capabilities": record.get("capabilities") or [],
+        "created_at": record.get("created_at"),
+        "updated_at": record.get("updated_at"),
         "expires_at": record.get("expires_at"),
+        "accepted_at": record.get("accepted_at"),
+        "revoked_at": record.get("revoked_at"),
+        "expired_at": record.get("expired_at"),
         "status": record.get("status", "pending"),
         "instructions": (
             "Run this in Termux on the new phone. Pocket Lab will set up "
@@ -386,17 +391,60 @@ def _invites_payload() -> dict[str, Any]:
     return payload
 
 
+def _refresh_invite_states(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    payload = payload or _invites_payload()
+    changed = False
+    now_epoch = _now_epoch()
+    now = _now_iso()
+    normalized: list[dict[str, Any]] = []
+    for item in payload.get("invites", []):
+        if not isinstance(item, dict):
+            continue
+        record = dict(item)
+        status = str(record.get("status") or "pending").lower()
+        if (
+            float(record.get("expires_at_epoch") or 0) <= now_epoch
+            and status not in {"accepted", "used", "joined", "revoked", "expired", "removed"}
+        ):
+            record["status"] = "expired"
+            record["expired_at"] = record.get("expired_at") or now
+            record["updated_at"] = now
+            changed = True
+            append_device_lifecycle_event(
+                str(record.get("node_id") or record.get("hostname") or ""),
+                "invite_expired",
+                reason_code="invite_expired",
+                summary="Device invite expired before enrollment completed.",
+                status="expired",
+                occurred_at=record["expired_at"],
+                invite_id=record.get("invite_id"),
+            )
+        normalized.append(record)
+    normalized.sort(key=lambda item: str(item.get("updated_at") or item.get("created_at") or ""), reverse=True)
+    payload["invites"] = normalized[:500]
+    if changed:
+        payload["updated_at"] = now
+        _write_state("fleet_invites.json", payload)
+    return payload
+
+
 def _safe_event_payload(record: dict[str, Any]) -> dict[str, Any]:
     return {
         "invite_id": record.get("invite_id"),
+        "node_id": record.get("node_id"),
         "hostname": record.get("hostname"),
         "role": record.get("role"),
         "role_label": record.get("role_label"),
         "capabilities": record.get("capabilities") or [],
+        "created_at": record.get("created_at"),
+        "updated_at": record.get("updated_at"),
         "expires_at": record.get("expires_at"),
-        "token_hint": record.get("token_hint"),
+        "accepted_at": record.get("accepted_at"),
+        "revoked_at": record.get("revoked_at"),
+        "expired_at": record.get("expired_at"),
         "status": record.get("status", "pending"),
         "uses_remaining": record.get("uses_remaining", 1),
+        "sanitized": True,
     }
 
 
@@ -454,13 +502,9 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
         "updated_at": _now_iso(),
     }
 
-    payload = _invites_payload()
-    payload["invites"] = [
-        item
-        for item in payload["invites"]
-        if isinstance(item, dict) and float(item.get("expires_at_epoch") or 0) > _now_epoch()
-    ]
+    payload = _refresh_invite_states(_invites_payload())
     payload["invites"].insert(0, record)
+    payload["invites"] = payload["invites"][:500]
     payload["updated_at"] = _now_iso()
     _write_state("fleet_invites.json", payload)
 
@@ -476,6 +520,13 @@ def create_lite_invite(*, role: str, hostname: str | None, request: Request | No
         event_type="fleet.agent_invited",
     )
     _append_local_evidence(record)
+    append_device_lifecycle_event(
+        node_id,
+        "invite_created",
+        summary="Device invite created.",
+        occurred_at=record["created_at"],
+        invite_id=invite_id,
+    )
 
     public_invite = _public_invite(record, url=invite_url, bootstrap_url=bootstrap_url)
     return {
@@ -518,6 +569,46 @@ def _invite_device_keys(record: dict[str, Any]) -> set[str]:
             if key and key != "unknown-node":
                 keys.add(key)
     return keys
+
+
+def revoke_invite(invite_id: str, *, reason: str = "") -> dict[str, Any] | None:
+    wanted = str(invite_id or "").strip()
+    if not wanted:
+        return None
+    payload = _refresh_invite_states(_invites_payload())
+    updated: dict[str, Any] | None = None
+    now = _now_iso()
+    for item in payload.get("invites", []):
+        if not isinstance(item, dict) or str(item.get("invite_id") or "") != wanted:
+            continue
+        status = str(item.get("status") or "pending").lower()
+        if status in {"accepted", "used", "joined", "expired", "removed"}:
+            return None
+        item["status"] = "revoked"
+        item["uses_remaining"] = 0
+        item["revoked_at"] = item.get("revoked_at") or now
+        item["updated_at"] = now
+        updated = dict(item)
+        break
+    if not updated:
+        return None
+    payload["updated_at"] = now
+    _write_state("fleet_invites.json", payload)
+    _append_local_evidence(
+        updated,
+        event_type="pocketlab.events.fleet.invite_revoked",
+        audit_type="pocketlab.audit.fleet.invite_revoked",
+    )
+    append_device_lifecycle_event(
+        str(updated.get("node_id") or updated.get("hostname") or ""),
+        "invite_revoked",
+        reason_code="invite_revoked",
+        summary="Pending device invite revoked.",
+        status="revoked",
+        occurred_at=updated.get("revoked_at"),
+        invite_id=updated.get("invite_id"),
+    )
+    return _safe_event_payload(updated)
 
 
 def remove_invites_for_device(device_id: str, device: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -606,16 +697,17 @@ def append_bootstrap_blocked_evidence(
         "event_type": "pocketlab.events.fleet.bootstrap_blocked",
         "created_at": _now_iso(),
         "invite_id": safe_invite.get("invite_id"),
-        "token_hint": safe_invite.get("token_hint"),
         "role": safe_invite.get("role"),
         "role_label": safe_invite.get("role_label"),
         "existing_node_id": normalize_node_id(existing_node_id or ""),
         "existing_node_name": existing_node_name or existing_node_id or "Unknown device",
         "intended_node_id": normalize_node_id(intended_node_id or safe_invite.get("hostname") or ""),
         "intended_node_name": intended_node_name or safe_invite.get("hostname") or "Invited device",
-        "reason": reason or "Device already has a different Pocket Lab Lite identity.",
+        "reason_code": "invite_identity_mismatch",
+        "summary": "A mismatched device join was blocked without changing the enrolled identity.",
         "requested_by": requested_by,
         "status": "blocked",
+        "sanitized": True,
     }
     for name, item_type in (
         ("fleet_invite_events.json", "pocketlab.events.fleet.bootstrap_blocked"),
@@ -629,24 +721,31 @@ def append_bootstrap_blocked_evidence(
         payload["events"] = events[:200]
         payload["updated_at"] = _now_iso()
         _write_state(name, payload)
+    append_device_lifecycle_event(
+        str(intended_node_id or safe_invite.get("hostname") or existing_node_id or ""),
+        "identity_mismatch_blocked",
+        reason_code="invite_identity_mismatch",
+        summary="A mismatched device join was blocked without changing the enrolled identity.",
+        status="blocked",
+        occurred_at=event["created_at"],
+        invite_id=safe_invite.get("invite_id"),
+    )
     return event
 
 
 def latest_invite() -> dict[str, Any] | None:
-    payload = _invites_payload()
+    payload = _refresh_invite_states(_invites_payload())
     valid = [
         item
         for item in payload["invites"]
-        if isinstance(item, dict) and float(item.get("expires_at_epoch") or 0) > _now_epoch()
+        if isinstance(item, dict)
+        and float(item.get("expires_at_epoch") or 0) > _now_epoch()
+        and int(item.get("uses_remaining") or 0) > 0
+        and str(item.get("status") or "pending").lower() == "pending"
     ]
-    if len(valid) != len(payload["invites"]):
-        payload["invites"] = valid
-        payload["updated_at"] = _now_iso()
-        _write_state("fleet_invites.json", payload)
     if not valid:
         return None
     return _public_invite(valid[0])
-
 
 def invite_token_status(token: str, role: str | None = None) -> tuple[str, dict[str, Any] | None]:
     if not token:
@@ -658,7 +757,7 @@ def invite_token_status(token: str, role: str | None = None) -> tuple[str, dict[
         return "invalid_role", None
 
     token_hash = _hash_token(token)
-    payload = _invites_payload()
+    payload = _refresh_invite_states(_invites_payload())
 
     for item in payload["invites"]:
         if not isinstance(item, dict):
@@ -720,6 +819,9 @@ def consume_invite_token(token: str, role: str | None = None) -> dict[str, Any] 
             "status": "joining",
             "auth_token_hash": str(updated.get("token_hash") or "")[:16],
             "capabilities": updated.get("capabilities") or [],
+            "invite_created_at": updated.get("created_at"),
+            "invite_accepted_at": updated.get("accepted_at"),
+            "last_join_attempt_at": updated.get("accepted_at"),
         },
         event_type="fleet.agent_join_started",
     )
@@ -728,6 +830,13 @@ def consume_invite_token(token: str, role: str | None = None) -> dict[str, Any] 
         updated,
         event_type="pocketlab.events.fleet.invite_accepted",
         audit_type="pocketlab.audit.fleet.invite_accepted",
+    )
+    append_device_lifecycle_event(
+        str(updated.get("node_id") or updated.get("hostname") or ""),
+        "invite_accepted",
+        summary="Device invite accepted. Pocket Lab is waiting for a valid heartbeat.",
+        occurred_at=updated.get("accepted_at"),
+        invite_id=updated.get("invite_id"),
     )
 
     return updated

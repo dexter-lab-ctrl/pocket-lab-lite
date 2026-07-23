@@ -22,6 +22,7 @@ import { useLiteResource } from '../hooks/useLiteStatus.js';
 import { hasLiteLiveOperation, isLiteLiveStatus } from '../lib/litePollingPolicy.js';
 import { isLiteDevicesViewLive, selectDevicesScreenView } from '../lib/liteViewModels.js';
 import { useLiteAddDeviceFlow } from '../hooks/useLiteAddDeviceFlow.js';
+import { useLiteDeviceRemovalFlow } from '../hooks/useLiteDeviceRemovalFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../lib/liteApi.js';
 import {
@@ -149,7 +150,9 @@ export default function DevicesScreen() {
   const [restartBusy, setRestartBusy] = useState('');
   const [restartProgress, setRestartProgress] = useState(null);
   const [removeCandidate, setRemoveCandidate] = useState(null);
+  const [removeAssessment, setRemoveAssessment] = useState(null);
   const [removeBusy, setRemoveBusy] = useState(false);
+  const [removeAssessmentLoading, setRemoveAssessmentLoading] = useState(false);
   const [serverConflict, setServerConflict] = useState(null);
   const { activeDeviceDetailsId: detailsDeviceId, deviceModelPickerId } = useLiteDeviceDetailsState();
   const setDetailsDeviceId = useLiteUiStore((state) => state.setActiveDeviceDetailsId);
@@ -172,6 +175,7 @@ export default function DevicesScreen() {
     select: selectDevicesScreenView,
     snapshotSelect: selectDevicesScreenView,
   });
+  const removalFlow = useLiteDeviceRemovalFlow({ backendReachable, savedStateOnly });
   const devices = data?.devices || [];
   const activeDetailsDevice = devices.find((device) => String(device?.id || device?.name || '') === detailsDeviceId) || null;
   const modelPickerDevice = devices.find((device) => String(device?.id || device?.name || '') === deviceModelPickerId) || null;
@@ -325,21 +329,63 @@ export default function DevicesScreen() {
     }
   }
 
+  async function loadRemovalAssessment(device) {
+    const nodeId = device?.id;
+    if (!nodeId) return;
+    setRemoveCandidate(device);
+    setRemoveAssessment(device?.removal_assessment || null);
+    setRemoveAssessmentLoading(true);
+    setActionError(null);
+    removalFlow.review(nodeId);
+    try {
+      const response = await liteApi.deviceRemovalAssessment(nodeId);
+      setRemoveAssessment(response);
+      removalFlow.assessmentReady(response);
+    } catch (err) {
+      removalFlow.fail(err);
+      setActionError(err.message);
+    } finally {
+      setRemoveAssessmentLoading(false);
+    }
+  }
+
+  function closeRemovalReview() {
+    if (removeBusy) return;
+    removalFlow.cancel();
+    setRemoveCandidate(null);
+    setRemoveAssessment(null);
+  }
+
   async function removeOldDevice() {
     const nodeId = removeCandidate?.id;
-    if (!nodeId) return;
+    if (!nodeId || !removeAssessment?.safe_to_remove) return;
+    removalFlow.submit();
     setRemoveBusy(true);
     setActionError(null);
     setResult(null);
     try {
       const response = await liteApi.removeDevice(nodeId, {
         reason: 'Old device cleanup from Lite Devices tab',
+        assessment_revision: removeAssessment.assessment_revision || '',
+        expected_awareness_revision: Number(removeAssessment.awareness_revision || 0),
       });
+      removalFlow.accepted();
+      removalFlow.verify();
+      removalFlow.complete();
       setResult(response);
       setRemoveCandidate(null);
+      setRemoveAssessment(null);
       setInvite(null);
       refresh();
     } catch (err) {
+      const currentAssessment = err?.payload?.detail?.assessment;
+      if (err?.status === 409 && currentAssessment) {
+        setRemoveAssessment(currentAssessment);
+        removalFlow.stale(err.message);
+        removalFlow.assessmentReady(currentAssessment);
+      } else {
+        removalFlow.fail(err);
+      }
       setActionError(err.message);
     } finally {
       setRemoveBusy(false);
@@ -627,15 +673,15 @@ export default function DevicesScreen() {
                 <button
                   type="button"
                   className="lite-device-remove-close"
-                  onClick={() => setRemoveCandidate(null)}
-                  aria-label="Close remove old device confirmation"
+                  onClick={closeRemovalReview}
+                  aria-label="Close remove old device review"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               <p className="lite-device-remove-copy">
-                This only removes the saved device record. It does not wipe the phone or uninstall Pocket Lab from that device.
+                Pocket Lab checks hosted apps, backups, command delivery, recovery, and protected server responsibilities before removal.
               </p>
 
               <div className="lite-device-remove-facts">
@@ -652,11 +698,43 @@ export default function DevicesScreen() {
                 <li>It does not stop a running agent on that device.</li>
               </ul>
 
+              {removeAssessmentLoading ? <p className="lite-device-remove-assessment-state">Checking device responsibilities…</p> : null}
+
+              {Array.isArray(removeAssessment?.blockers) && removeAssessment.blockers.length ? (
+                <div className="lite-device-removal-impact is-blocked">
+                  <strong>Removal blocked</strong>
+                  <ul>{removeAssessment.blockers.map((item) => <li key={item.code || item.summary}>{item.summary}</li>)}</ul>
+                </div>
+              ) : null}
+
+              {Array.isArray(removeAssessment?.warnings) && removeAssessment.warnings.length ? (
+                <div className="lite-device-removal-impact is-warning">
+                  <strong>Review before removal</strong>
+                  <ul>{removeAssessment.warnings.map((item) => <li key={item.code || item.summary}>{item.summary}</li>)}</ul>
+                </div>
+              ) : null}
+
+              {removalFlow.isConfirming ? (
+                <p className="lite-device-remove-final-warning" role="alert">
+                  Confirm that you want to remove this saved device record. The remote agent is not stopped or uninstalled.
+                </p>
+              ) : null}
+
               <div className="lite-device-remove-actions">
-                <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy}>
-                  {removeBusy ? 'Removing...' : 'Confirm removal'}
-                </LiteButton>
-                <LiteButton tone="secondary" onClick={() => setRemoveCandidate(null)} disabled={removeBusy}>
+                {removalFlow.isConfirming ? (
+                  <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !removeAssessment?.safe_to_remove}>
+                    {removeBusy ? 'Removing...' : 'Confirm removal'}
+                  </LiteButton>
+                ) : (
+                  <LiteButton
+                    tone="danger"
+                    onClick={removalFlow.confirm}
+                    disabled={removeAssessmentLoading || !removeAssessment?.safe_to_remove || removeBusy || savedStateOnly || backendReachable === false}
+                  >
+                    Continue to confirmation
+                  </LiteButton>
+                )}
+                <LiteButton tone="secondary" onClick={closeRemovalReview} disabled={removeBusy}>
                   Keep device
                 </LiteButton>
               </div>
@@ -722,7 +800,7 @@ export default function DevicesScreen() {
                     else detailsButtonRefs.current.delete(key);
                   }}
                   onRestartAgent={() => restartAgent(device)}
-                  onRemoveDevice={() => setRemoveCandidate(device)}
+                  onRemoveDevice={() => loadRemovalAssessment(device)}
                 />
               );
             }}

@@ -834,6 +834,58 @@ export function selectDeviceIdentitySummaryView(device = {}) {
   };
 }
 
+function normalizeDeviceCapabilityState(value) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 16).map((item) => {
+    if (!isObject(item)) {
+      const id = safeString(item);
+      return id ? { id, label: id.replace(/_/g, ' '), status: 'unknown', source: 'legacy' } : null;
+    }
+    return copySafeKeys(item, ['id', 'label', 'status', 'source', 'verified_at', 'reason_code']);
+  }).filter((item) => item?.id);
+}
+
+function normalizeDeviceLifecycle(value) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 20).map((item) => isObject(item)
+    ? copySafeKeys(item, ['event_id', 'node_id', 'event_type', 'reason_code', 'summary', 'occurred_at', 'status', 'sanitized'])
+    : null).filter(Boolean);
+}
+
+function normalizeDeviceDependencies(value) {
+  if (!isObject(value)) return {};
+  const output = copySafeKeys(value, [
+    'hosted_app_count', 'hosted_service_count', 'control_plane_role',
+    'backup_target_status', 'backup_repository_count', 'backup_set_count',
+    'latest_backup_at', 'latest_verified_backup_at', 'stores_only_verified_copy',
+    'restore_target_status', 'storage_dependency_count', 'storage_available_bytes', 'storage_pressure_state',
+    'tailscale_installed', 'tailscaled_running', 'tailnet_ip_ready', 'nats_tailnet_reachable',
+    'remote_access_status', 'remote_access_last_verified_at',
+    'command_delivery_status', 'last_command_ack_at', 'pending_command_count',
+    'active_command_count', 'supervisor_status', 'agent_process_status',
+    'recovery_available', 'recovery_in_progress', 'last_recovery_result',
+  ]);
+  output.hosted_apps = Array.isArray(value.hosted_apps)
+    ? value.hosted_apps.slice(0, 16).map((item) => isObject(item)
+      ? copySafeKeys(item, ['app_id', 'label', 'status', 'dependency_level', 'route_ready'])
+      : null).filter(Boolean)
+    : [];
+  return output;
+}
+
+function normalizeDeviceRemovalAssessment(value) {
+  if (!isObject(value)) return null;
+  return {
+    ...copySafeKeys(value, [
+      'node_id', 'safe_to_remove', 'confirmation_required', 'assessment_revision',
+      'assessed_at', 'staleness_state', 'source_revision', 'awareness_revision', 'summary',
+    ]),
+    blockers: Array.isArray(value.blockers) ? value.blockers.slice(0, 16).map((item) => isObject(item) ? copySafeKeys(item, ['code', 'summary']) : null).filter(Boolean) : [],
+    warnings: Array.isArray(value.warnings) ? value.warnings.slice(0, 16).map((item) => isObject(item) ? copySafeKeys(item, ['code', 'summary']) : null).filter(Boolean) : [],
+    recommended_actions: Array.isArray(value.recommended_actions) ? value.recommended_actions.slice(0, 8).map(safeString).filter(Boolean) : [],
+  };
+}
+
 export function selectLiteDeviceCard(device = {}) {
   if (!isObject(device)) return null;
   const id = safeString(device.id || device.node_id || device.name || device.hostname);
@@ -867,7 +919,37 @@ export function selectLiteDeviceCard(device = {}) {
     tailnet_ip: remoteAccess?.ready || remoteAccess?.status === 'healthy' || device.tailnet_ip_ready ? safeString(device.tailnet_ip || remoteAccess?.tailnet_ip || '') : '',
     tailscale: isObject(device.tailscale) ? copySafeKeys(device.tailscale, ['ready', 'status', 'summary', 'ip', 'updated_at']) : null,
     storage: normalizeDeviceStorage(device.storage),
-    capabilities: Array.isArray(device.capabilities) ? device.capabilities.slice(0, 8).map((item) => safeString(item)).filter(Boolean) : [],
+    capabilities: normalizeDeviceCapabilityState(device.capability_states || device.capabilities),
+    capability_ids: Array.isArray(device.capabilities) ? device.capabilities.filter((item) => typeof item === 'string').slice(0, 32).map(safeString).filter(Boolean) : [],
+    capability_labels: Array.isArray(device.capability_labels) ? device.capability_labels.slice(0, 12).map(safeString).filter(Boolean) : [],
+    advertised_capabilities: Array.isArray(device.advertised_capabilities) ? device.advertised_capabilities.slice(0, 32).map(safeString).filter(Boolean) : [],
+    enrollment: isObject(device.enrollment) ? copySafeKeys(device.enrollment, [
+      'status', 'invite_id', 'invite_created_at', 'invite_expires_at', 'invite_accepted_at',
+      'invite_revoked_at', 'invite_expired_at', 'enrolled_at', 'first_heartbeat_at',
+      'first_supervisor_heartbeat_at', 'first_ready_at', 'last_join_attempt_at', 'last_successful_join_at',
+    ]) : {},
+    enrollment_status: normalizeDeviceStatus(device.enrollment_status || device.enrollment?.status || ''),
+    identity: isObject(device.identity) ? copySafeKeys(device.identity, [
+      'status', 'verified_at', 'source', 'mismatch_count', 'last_mismatch_at',
+      'last_blocked_reason', 'blocked_join_count', 'last_blocked_join_at',
+      'repair_required', 'repair_reason_code',
+    ]) : {},
+    identity_status: normalizeDeviceStatus(device.identity_status || device.identity?.status || ''),
+    last_seen_state: isObject(device.last_seen_state) ? copySafeKeys(device.last_seen_state, [
+      'last_seen_at', 'last_seen_source', 'last_heartbeat_at', 'last_telemetry_at',
+      'last_system_profile_at', 'last_supervisor_heartbeat_at', 'last_command_received_at',
+      'last_command_completed_at', 'last_nats_connected_at', 'last_nats_disconnected_at',
+      'last_tailnet_ready_at', 'last_recovery_at', 'heartbeat_age_seconds',
+      'supervisor_age_seconds', 'connection_age_seconds', 'staleness_state',
+      'stale_since', 'review_recommended',
+    ]) : {},
+    staleness_state: normalizeDeviceStatus(device.staleness_state || device.last_seen_state?.staleness_state || ''),
+    review_recommended: Boolean(device.review_recommended || device.last_seen_state?.review_recommended),
+    dependencies: normalizeDeviceDependencies(device.dependencies),
+    removal_assessment: normalizeDeviceRemovalAssessment(device.removal_assessment),
+    recent_lifecycle: normalizeDeviceLifecycle(device.recent_lifecycle),
+    trust_revision: safeString(device.trust_revision || ''),
+    awareness_revision: Number.isFinite(Number(device.awareness_revision)) ? Number(device.awareness_revision) : 0,
     is_current: Boolean(device.is_current || device.isCurrent),
     isCurrent: Boolean(device.is_current || device.isCurrent),
     protected_server_host: protectedHost,
