@@ -16,11 +16,13 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .. import deps
+from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
 from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
+    DeviceProfileUpdateError,
     PreparedProjectionUnavailable,
     PreparedRead,
 )
@@ -723,6 +725,19 @@ class LiteAddDeviceRequest(BaseModel):
         description="Lite device role: compute for App Host or storage for Storage Node",
     )
     hostname: str | None = None
+
+
+class LiteDeviceDisplayModelRequest(BaseModel):
+    consumer_model_name: str | None = Field(
+        default=None,
+        description="Optional display-only consumer device model; clear with null or an empty value.",
+        max_length=80,
+    )
+    expected_profile_revision: int | None = Field(
+        default=None,
+        ge=0,
+        description="Optional optimistic-concurrency revision from the current safe device profile.",
+    )
 
 
 class LiteRemoveDeviceRequest(BaseModel):
@@ -1898,6 +1913,39 @@ def get_lite_fleet(request: Request) -> Response:
     )
 
 
+@router.put("/fleet/devices/{device_id}/display-model")
+def update_lite_device_display_model(
+    device_id: str,
+    payload: LiteDeviceDisplayModelRequest,
+    request: Request,
+) -> dict[str, Any]:
+    deps.require_auth(request)
+    try:
+        result = CONTROL_PLANE.update_device_consumer_model(
+            device_id,
+            payload.consumer_model_name,
+            expected_profile_revision=payload.expected_profile_revision,
+        )
+    except DeviceProfileUpdateError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    profile = result.get("system_profile") if isinstance(result.get("system_profile"), dict) else {}
+    changed = bool(result.get("changed"))
+    return {
+        "status": "updated" if changed else "unchanged",
+        "node_id": device_id,
+        "device_id": device_id,
+        "changed": changed,
+        "revision": int(result.get("revision") or 0),
+        "profile_revision": int(result.get("profile_revision") or profile.get("revision") or 0),
+        "technical_model": profile.get("technical_model") or "",
+        "consumer_model_name": profile.get("consumer_model_name") or "",
+        "display_model": profile.get("display_model") or "Device",
+        "system_profile": profile,
+        "system_health": result.get("system_health") or {},
+        "summary": "Device model updated." if changed else "Device model is already up to date.",
+    }
+
+
 @router.get("/revisions")
 def get_lite_domain_revisions(request: Request) -> Response:
     deps.require_auth(request)
@@ -2086,23 +2134,42 @@ def _build_lite_recovery_summary_projection() -> dict[str, Any]:
     return state
 
 
-def _run_staggered_projection_warmup() -> None:
+def _project_warmup_payload(
+    expected_database_path: str,
+    projector: Callable[[dict[str, Any]], int],
+    payload: dict[str, Any],
+) -> int:
+    """Prevent delayed warm-ups from projecting into a replaced database."""
+    if str(database_path()) != expected_database_path:
+        raise PreparedProjectionUnavailable(
+            "Projection warm-up database changed before commit"
+        )
+    return projector(payload)
+
+
+def _run_staggered_projection_warmup(expected_database_path: str) -> None:
     try:
         startup_delay = max(0.0, min(10.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS", "2.0"))))
         if startup_delay:
             threading.Event().wait(startup_delay)
+        # A delayed warm-up must never follow a test, restore, or runtime
+        # database-path switch into a different SQLite database.
+        if str(database_path()) != expected_database_path:
+            return
         lite_recovery_subprojections.warm_startup_dependencies()
+        if str(database_path()) != expected_database_path:
+            return
         CONTROL_PLANE.warm_prepared_read(
             domain="recovery", key="summary",
             builder=_build_lite_recovery_summary_projection,
-            projector=CONTROL_PLANE.project_recovery, deadline_seconds=4.0,
+            projector=lambda payload: _project_warmup_payload(expected_database_path, CONTROL_PLANE.project_recovery, payload), deadline_seconds=4.0,
         )
         CONTROL_PLANE.wait_for_prepared("recovery:summary", 30.0)
         threading.Event().wait(max(0.0, min(5.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS", "1.0")))))
         CONTROL_PLANE.warm_prepared_read(
             domain="apps", key="lifecycle",
             builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=CONTROL_PLANE.project_apps, deadline_seconds=4.0,
+            projector=lambda payload: _project_warmup_payload(expected_database_path, CONTROL_PLANE.project_apps, payload), deadline_seconds=4.0,
         )
         apps_ready = CONTROL_PLANE.wait_for_prepared("apps:lifecycle", 90.0)
         recovery_ready = CONTROL_PLANE.prepared_payload("recovery:summary") is not None
@@ -2111,7 +2178,7 @@ def _run_staggered_projection_warmup() -> None:
             CONTROL_PLANE.warm_prepared_read(
                 domain="recovery", key="details",
                 builder=_lite_recovery_details_payload,
-                projector=CONTROL_PLANE.project_recovery, deadline_seconds=5.0,
+                projector=lambda payload: _project_warmup_payload(expected_database_path, CONTROL_PLANE.project_recovery, payload), deadline_seconds=5.0,
             )
         else:
             _LOGGER.warning(
@@ -2131,8 +2198,10 @@ def schedule_control_plane_projection_warmup() -> dict[str, bool]:
     with _WARMUP_LOCK:
         if _WARMUP_THREAD is not None and _WARMUP_THREAD.is_alive():
             return {"apps": False, "recovery_summary": False, "recovery_details": False}
+        expected_database_path = str(database_path())
         _WARMUP_THREAD = threading.Thread(
             target=_run_staggered_projection_warmup,
+            args=(expected_database_path,),
             name="pocketlab-staggered-projection-warmup",
             daemon=True,
         )

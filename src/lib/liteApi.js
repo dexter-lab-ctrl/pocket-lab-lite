@@ -152,6 +152,10 @@ function postJson(path, body = {}) {
   return readJson(path, { method: 'POST', body: JSON.stringify(body) });
 }
 
+function putJson(path, body = {}) {
+  return readJson(path, { method: 'PUT', body: JSON.stringify(body) });
+}
+
 function safeGet(path) {
   const loader = () => readJson(path);
   loader.safeSnapshotPath = path;
@@ -215,6 +219,10 @@ export const liteApi = {
   securityApp: (appId = 'photoprism') => readJson(`/api/lite/security/apps/${encodeURIComponent(appId)}`),
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
   fleet: conditionalGet('/api/lite/fleet'),
+  updateDeviceDisplayModel: (deviceId, consumerModelName = '', expectedProfileRevision = null) => putJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/display-model`, {
+    consumer_model_name: consumerModelName || null,
+    expected_profile_revision: Number.isFinite(Number(expectedProfileRevision)) ? Number(expectedProfileRevision) : null,
+  }),
   domainRevisions: conditionalGet('/api/lite/revisions'),
   deviceRecoveryHistory: (deviceId, limit = 20, cursor = '') => {
     const query = new URLSearchParams({ limit: String(limit || 20) });

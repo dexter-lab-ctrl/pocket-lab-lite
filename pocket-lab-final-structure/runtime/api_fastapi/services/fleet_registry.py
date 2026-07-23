@@ -13,6 +13,14 @@ from .. import deps
 AGENT_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_AGENT_TTL_SECONDS", "90"))
 COMMAND_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_COMMAND_TTL_SECONDS", "3600"))
 SUPERVISOR_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_SUPERVISOR_TTL_SECONDS", "180"))
+_PROFILE_TEXT_FIELDS = (
+    "os_family", "os_name", "os_version", "security_patch", "manufacturer",
+    "technical_model", "device_codename", "architecture", "android_abi", "kernel",
+    "runtime_type", "termux_version", "python_version", "agent_version",
+    "profile_fingerprint", "collection_status", "collected_at",
+)
+_HEALTH_FLOAT_FIELDS = ("load_average_1m", "load_average_5m", "load_average_15m")
+_CONTROL_TEXT_RE = re.compile(r"[\x00-\x1f\x7f]")
 
 
 class DeviceRemovalError(Exception):
@@ -202,6 +210,65 @@ def _hash_token(value: str | None) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
 
 
+def _safe_profile_text(value: Any, limit: int = 160) -> str:
+    text = _CONTROL_TEXT_RE.sub(" ", str(value or ""))
+    return " ".join(text.strip().split())[:limit]
+
+
+def _normalize_system_profile(value: Any) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    profile: Dict[str, Any] = {
+        field: _safe_profile_text(value.get(field), 160)
+        for field in _PROFILE_TEXT_FIELDS
+        if value.get(field) not in (None, "")
+    }
+    try:
+        schema_version = int(value.get("schema_version") or 0)
+    except (TypeError, ValueError):
+        schema_version = 0
+    if 1 <= schema_version <= 100:
+        profile["schema_version"] = schema_version
+    try:
+        api_level = int(value.get("android_api_level"))
+    except (TypeError, ValueError):
+        api_level = 0
+    if 1 <= api_level <= 999:
+        profile["android_api_level"] = api_level
+    unavailable = value.get("unavailable_fields")
+    if isinstance(unavailable, list):
+        profile["unavailable_fields"] = [
+            _safe_profile_text(item, 64) for item in unavailable[:16]
+            if _safe_profile_text(item, 64)
+        ]
+    return profile
+
+
+def _normalize_system_health(value: Any) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    health: Dict[str, Any] = {
+        "uptime_status": _safe_profile_text(value.get("uptime_status"), 32) or "unavailable",
+        "failure_code": _safe_profile_text(value.get("failure_code"), 64),
+        "load_status": _safe_profile_text(value.get("load_status"), 32),
+        "collected_at": _safe_profile_text(value.get("collected_at"), 64),
+    }
+    try:
+        uptime_seconds = int(value.get("uptime_seconds"))
+    except (TypeError, ValueError):
+        uptime_seconds = -1
+    if 0 <= uptime_seconds <= 20 * 365 * 24 * 60 * 60:
+        health["uptime_seconds"] = uptime_seconds
+    for field in _HEALTH_FLOAT_FIELDS:
+        try:
+            number = float(value.get(field))
+        except (TypeError, ValueError):
+            continue
+        if 0 <= number <= 100_000:
+            health[field] = round(number, 3)
+    return health
+
+
 def _agents_payload() -> Dict[str, Any]:
     payload = _read(
         _state_path("fleet_agents.json"), {"agents": {}, "updated_at": None}
@@ -327,6 +394,12 @@ def upsert_agent(
         merged["telemetry"] = data["telemetry"]
     if isinstance(data.get("health"), dict):
         merged["health"] = data["health"]
+    system_profile = _normalize_system_profile(data.get("system_profile"))
+    if system_profile:
+        merged["system_profile"] = system_profile
+    system_health = _normalize_system_health(data.get("system_health"))
+    if system_health:
+        merged["system_health"] = system_health
     if isinstance(data.get("capabilities"), list):
         merged["capabilities"] = data["capabilities"]
     if isinstance(data.get("storage"), dict):
@@ -413,12 +486,15 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "agent_version": agent.get("agent_version"),
                 "telemetry": agent.get("telemetry") or {},
                 "health": agent.get("health") or {},
+                "system_profile": agent.get("system_profile") or {},
+                "system_health": agent.get("system_health") or {},
                 "storage": agent.get("storage") or {},
                 "media_roots": agent.get("media_roots") or [],
                 "available_gb": agent.get("available_gb"),
                 "free_storage_gb": agent.get("free_storage_gb"),
                 "storage_available_gb": agent.get("storage_available_gb"),
                 "supervisor_status": agent.get("supervisor_status"),
+                "supervisor_version": agent.get("supervisor_version"),
                 "agent_process": agent.get("agent_process"),
                 "agent_process_status": agent.get("agent_process_status"),
                 "last_supervisor_at": agent.get("last_supervisor_at"),

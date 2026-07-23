@@ -62,6 +62,25 @@ _COMMAND_LIFECYCLE_STAGES = frozenset({
     "accepted", "published", "delivered", "worker_claimed", "running", "terminal",
     "failed", "timed_out", "ignored_redelivery", "recovery_action",
 })
+_DEVICE_PROFILE_FIELDS = (
+    "os_family", "os_name", "os_version", "security_patch", "manufacturer",
+    "technical_model", "device_codename", "architecture", "android_abi", "kernel",
+    "runtime_type", "termux_version", "python_version", "agent_version",
+    "profile_fingerprint", "profile_status",
+)
+_DISPLAY_MODEL_MAX_LENGTH = 80
+_DISPLAY_MODEL_UNSAFE = re.compile(
+    r"(?:https?://|www\.|javascript:|data:text/html|[/\\]|<|>|\.\.|"
+    r"\b(?:script|token|password|secret|api[_-]?key|bearer)\b)",
+    re.IGNORECASE,
+)
+
+
+class DeviceProfileUpdateError(RuntimeError):
+    def __init__(self, status_code: int, detail: str):
+        super().__init__(detail)
+        self.status_code = status_code
+        self.detail = detail
 
 
 def _utc_now() -> str:
@@ -137,6 +156,63 @@ def _safe_json(value: Any, *, max_bytes: int = 4096) -> str:
 
     encoded = json.dumps(sanitize(value), sort_keys=True, separators=(",", ":"))
     return encoded if len(encoded.encode("utf-8")) <= max_bytes else "{}"
+
+
+def _optional_int(value: Any, *, minimum: int = 0, maximum: int = 2_000_000_000) -> int | None:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if minimum <= parsed <= maximum else None
+
+
+def _optional_float(value: Any, *, minimum: float = 0.0, maximum: float = 100_000.0) -> float | None:
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return round(parsed, 3) if minimum <= parsed <= maximum else None
+
+
+def validate_consumer_model_name(value: Any) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    if len(text) > _DISPLAY_MODEL_MAX_LENGTH:
+        raise DeviceProfileUpdateError(422, "Consumer model name must be 80 characters or fewer.")
+    if any(ord(character) < 32 or ord(character) == 127 for character in text):
+        raise DeviceProfileUpdateError(422, "Consumer model name contains unsupported characters.")
+    normalized = " ".join(text.split())
+    if _DISPLAY_MODEL_UNSAFE.search(normalized):
+        raise DeviceProfileUpdateError(422, "Consumer model name must be a plain device label.")
+    return normalized
+
+
+def _normalized_device_profile(item: dict[str, Any]) -> dict[str, Any]:
+    profile = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
+    health = item.get("system_health") if isinstance(item.get("system_health"), dict) else {}
+    profile_collected_at = _safe_text(profile.get("collected_at") or profile.get("profile_updated_at"), 64)
+    health_collected_at = _safe_text(health.get("collected_at") or health.get("health_updated_at"), 64)
+    load_average = health.get("load_average") if isinstance(health.get("load_average"), list) else []
+    result = {
+        "profile_schema_version": _optional_int(profile.get("schema_version"), minimum=1, maximum=100) or 1,
+        **{field: _safe_text(profile.get(field), 160) for field in _DEVICE_PROFILE_FIELDS},
+        "android_api_level": _optional_int(profile.get("android_api_level"), minimum=1, maximum=999),
+        "supervisor_version": _safe_text(item.get("supervisor_version"), 80),
+        "uptime_seconds": _optional_int(health.get("uptime_seconds"), minimum=0, maximum=20 * 365 * 86400),
+        "load_average_1m": _optional_float(health.get("load_average_1m") if health.get("load_average_1m") is not None else (load_average[0] if len(load_average) > 0 else None)),
+        "load_average_5m": _optional_float(health.get("load_average_5m") if health.get("load_average_5m") is not None else (load_average[1] if len(load_average) > 1 else None)),
+        "load_average_15m": _optional_float(health.get("load_average_15m") if health.get("load_average_15m") is not None else (load_average[2] if len(load_average) > 2 else None)),
+        "load_status": _safe_text(health.get("load_status") or "unavailable", 32).lower(),
+        "uptime_status": _safe_text(health.get("uptime_status") or health.get("collection_status") or "unavailable", 32).lower(),
+        "profile_collected_at": profile_collected_at or None,
+        "profile_collected_at_epoch_ms": _epoch_ms(profile_collected_at) if profile_collected_at else 0,
+        "health_collected_at": health_collected_at or None,
+        "health_collected_at_epoch_ms": _epoch_ms(health_collected_at) if health_collected_at else 0,
+    }
+    if not result["profile_status"]:
+        result["profile_status"] = _safe_text(profile.get("collection_status") or "unavailable", 32).lower()
+    return result
 
 
 
@@ -904,6 +980,7 @@ class ControlPlaneProjectionStore:
             self._refreshing.add(cache_key)
             self._refresh_started_at[cache_key] = time.monotonic()
             generation = self._cache_generation
+            scheduled_database_path = str(database_path())
             self._refresh_generation_by_key[cache_key] = generation
         self._executor.submit(
             self._background_refresh,
@@ -914,13 +991,20 @@ class ControlPlaneProjectionStore:
             projector,
             deadline_seconds,
             generation,
+            scheduled_database_path,
         )
 
     def _background_refresh(self, *args: Any) -> None:
         cache_key = str(args[0])
-        generation = int(args[-1])
+        generation = int(args[-2])
+        scheduled_database_path = str(args[-1])
         try:
-            self._refresh_now(*args[:-1], False, generation)
+            self._refresh_now(
+                *args[:-2],
+                False,
+                generation,
+                scheduled_database_path,
+            )
         except Exception as exc:
             with self._cache_lock:
                 if self._refresh_generation_by_key.get(cache_key) == generation:
@@ -951,8 +1035,14 @@ class ControlPlaneProjectionStore:
         deadline_seconds: float,
         enforce_deadline: bool,
         expected_generation: int | None = None,
+        expected_database_path: str | None = None,
     ) -> PreparedRead:
         request_started = time.monotonic()
+        scheduled_database_path = expected_database_path or str(database_path())
+        if str(database_path()) != scheduled_database_path:
+            raise PreparedProjectionUnavailable(
+                "Projection database changed before refresh"
+            )
         with self._cache_lock:
             lock = self._singleflight_locks.setdefault(cache_key, threading.Lock())
         acquired = lock.acquire(timeout=max(0.05, min(deadline_seconds, 10.0)))
@@ -989,6 +1079,10 @@ class ControlPlaneProjectionStore:
                 effective_generation = self._cache_generation
             if expected_generation is not None and expected_generation != effective_generation:
                 raise PreparedProjectionUnavailable("Projection generation changed before build")
+            if str(database_path()) != scheduled_database_path:
+                raise PreparedProjectionUnavailable(
+                    "Projection database changed before build"
+                )
             started = time.monotonic()
             payload = builder()
             built = time.monotonic()
@@ -1014,6 +1108,10 @@ class ControlPlaneProjectionStore:
                 )
             if enforce_deadline and built - request_started > max(0.05, deadline_seconds):
                 raise TimeoutError("Prepared projection build deadline expired")
+            if str(database_path()) != scheduled_database_path:
+                raise PreparedProjectionUnavailable(
+                    "Projection database changed before commit"
+                )
             revision = projector(payload)
             projected = time.monotonic()
             with self._cache_lock:
@@ -1254,6 +1352,240 @@ class ControlPlaneProjectionStore:
                 "sanitized": True,
             }
 
+    def _upsert_device_profile_row(
+        self,
+        conn: sqlite3.Connection,
+        *,
+        device_id: str,
+        item: dict[str, Any],
+        updated_at: str,
+        updated_at_epoch_ms: int,
+    ) -> bool:
+        incoming = _normalized_device_profile(item)
+        has_profile = bool(
+            incoming.get("profile_fingerprint")
+            or incoming.get("technical_model")
+            or incoming.get("os_name")
+            or incoming.get("uptime_seconds") is not None
+        )
+        existing_row = conn.execute(
+            "SELECT * FROM device_system_profiles WHERE node_id=?",
+            (device_id,),
+        ).fetchone()
+        if not has_profile and existing_row is None:
+            return False
+        existing = dict(existing_row) if existing_row else {}
+        if existing and (
+            not incoming.get("profile_fingerprint")
+            or incoming["profile_collected_at_epoch_ms"] < int(existing.get("profile_collected_at_epoch_ms") or 0)
+        ):
+            for field in ("profile_schema_version", *_DEVICE_PROFILE_FIELDS, "android_api_level", "profile_collected_at", "profile_collected_at_epoch_ms"):
+                incoming[field] = existing.get(field)
+        if existing and incoming["health_collected_at_epoch_ms"] < int(existing.get("health_collected_at_epoch_ms") or 0):
+            for field in ("uptime_seconds", "load_average_1m", "load_average_5m", "load_average_15m", "load_status", "uptime_status", "health_collected_at", "health_collected_at_epoch_ms"):
+                incoming[field] = existing.get(field)
+        consumer_model_name = str(existing.get("consumer_model_name") or "")
+        columns = (
+            "profile_schema_version", "os_family", "os_name", "os_version",
+            "android_api_level", "security_patch", "manufacturer", "technical_model",
+            "device_codename", "architecture", "android_abi", "kernel", "runtime_type",
+            "termux_version", "python_version", "agent_version", "supervisor_version",
+            "profile_fingerprint", "profile_status", "uptime_seconds", "load_average_1m",
+            "load_average_5m", "load_average_15m", "load_status", "uptime_status", "profile_collected_at",
+            "profile_collected_at_epoch_ms", "health_collected_at", "health_collected_at_epoch_ms",
+        )
+        next_values = tuple(incoming.get(column) for column in columns)
+        prior_values = tuple(existing.get(column) for column in columns) if existing else None
+        if prior_values == next_values:
+            return False
+        revision = int(existing.get("revision") or 0) + 1
+        conn.execute(
+            f"""
+            INSERT INTO device_system_profiles(
+                node_id, {', '.join(columns)}, consumer_model_name,
+                updated_at, updated_at_epoch_ms, revision
+            ) VALUES ({', '.join('?' for _ in range(len(columns) + 5))})
+            ON CONFLICT(node_id) DO UPDATE SET
+                {', '.join(f'{column}=excluded.{column}' for column in columns)},
+                consumer_model_name=device_system_profiles.consumer_model_name,
+                updated_at=excluded.updated_at,
+                updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                revision=excluded.revision
+            """,
+            (device_id, *next_values, consumer_model_name, updated_at, updated_at_epoch_ms, revision),
+        )
+        return _changes(conn)
+
+    @staticmethod
+    def _public_device_profile(row: dict[str, Any]) -> dict[str, Any]:
+        consumer = _safe_text(row.get("consumer_model_name"), _DISPLAY_MODEL_MAX_LENGTH)
+        technical = _safe_text(row.get("technical_model"), 160)
+        codename = _safe_text(row.get("device_codename"), 160)
+        display_model = consumer or technical or codename or "Device"
+        uptime_seconds = _optional_int(row.get("uptime_seconds"), maximum=20 * 365 * 86400)
+        uptime_label = "Unavailable"
+        if uptime_seconds is not None:
+            days, remainder = divmod(uptime_seconds, 86400)
+            hours, remainder = divmod(remainder, 3600)
+            minutes = remainder // 60
+            parts = []
+            if days:
+                parts.append(f"{days} day{'s' if days != 1 else ''}")
+            if hours:
+                parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+            if minutes or not parts:
+                parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+            uptime_label = ", ".join(parts[:2])
+        loads = [
+            _optional_float(row.get("load_average_1m")),
+            _optional_float(row.get("load_average_5m")),
+            _optional_float(row.get("load_average_15m")),
+        ]
+        profile_collected = _safe_text(row.get("profile_collected_at"), 64)
+        health_collected = _safe_text(row.get("health_collected_at"), 64)
+        profile_age_ms = max(0, _epoch_ms() - int(row.get("profile_collected_at_epoch_ms") or 0)) if profile_collected else None
+        profile_freshness = "current" if profile_age_ms is not None and profile_age_ms <= 24 * 60 * 60 * 1000 else "stale" if profile_collected else "unavailable"
+        load_1m = loads[0]
+        load_status = _safe_text(row.get("load_status"), 32).lower()
+        if not load_status:
+            load_status = "unavailable" if load_1m is None else "reported"
+        return {
+            "system_profile": {
+                "schema_version": int(row.get("profile_schema_version") or 1),
+                "revision": int(row.get("revision") or 0),
+                "os_family": _safe_text(row.get("os_family"), 80),
+                "os_name": _safe_text(row.get("os_name"), 120),
+                "os_version": _safe_text(row.get("os_version"), 80),
+                "android_api_level": _optional_int(row.get("android_api_level"), maximum=999),
+                "security_patch": _safe_text(row.get("security_patch"), 32),
+                "manufacturer": _safe_text(row.get("manufacturer"), 120),
+                "technical_model": technical,
+                "device_codename": codename,
+                "consumer_model_name": consumer,
+                "display_model": display_model,
+                "architecture": _safe_text(row.get("architecture"), 80),
+                "android_abi": _safe_text(row.get("android_abi"), 80),
+                "kernel": _safe_text(row.get("kernel"), 160),
+                "runtime_type": _safe_text(row.get("runtime_type") or "unknown", 40),
+                "termux_version": _safe_text(row.get("termux_version"), 80),
+                "python_version": _safe_text(row.get("python_version"), 80),
+                "agent_version": _safe_text(row.get("agent_version"), 80),
+                "supervisor_version": _safe_text(row.get("supervisor_version"), 80),
+                "collection_status": _safe_text(row.get("profile_status") or "unavailable", 32),
+                "profile_status": _safe_text(row.get("profile_status") or "unavailable", 32),
+                "collected_at": profile_collected or None,
+                "profile_updated_at": profile_collected or None,
+                "freshness": profile_freshness,
+            },
+            "system_health": {
+                "uptime_seconds": uptime_seconds,
+                "uptime_label": uptime_label,
+                "load_average": loads,
+                "load_status": load_status,
+                "collection_status": _safe_text(row.get("uptime_status") or "unavailable", 32),
+                "collected_at": health_collected or None,
+                "health_updated_at": health_collected or None,
+            },
+        }
+
+    def device_profile_map(self) -> dict[str, dict[str, Any]]:
+        self.initialize()
+        rows, _, _ = self._read(
+            lambda conn: [dict(row) for row in conn.execute(
+                "SELECT * FROM device_system_profiles ORDER BY node_id"
+            )]
+        )
+        return {str(row["node_id"]): self._public_device_profile(row) for row in rows}
+
+    def update_device_consumer_model(
+        self,
+        node_id: str,
+        value: Any,
+        *,
+        expected_profile_revision: int | None = None,
+    ) -> dict[str, Any]:
+        self.initialize()
+        device_id = _safe_text(node_id, 120)
+        if not device_id:
+            raise DeviceProfileUpdateError(404, "Device was not found.")
+        consumer_model_name = validate_consumer_model_name(value)
+        now = _utc_now()
+        now_epoch = _epoch_ms(now)
+
+        def write(conn: sqlite3.Connection) -> dict[str, Any]:
+            device = conn.execute(
+                "SELECT device_id, protected_server_host FROM device_current_state WHERE device_id=?",
+                (device_id,),
+            ).fetchone()
+            if not device:
+                raise DeviceProfileUpdateError(404, "Device was not found.")
+            if bool(device["protected_server_host"]):
+                raise DeviceProfileUpdateError(409, "The Pocket Lab server host is protected and its model label cannot be changed here.")
+            existing_row = conn.execute(
+                "SELECT * FROM device_system_profiles WHERE node_id=?",
+                (device_id,),
+            ).fetchone()
+            existing = dict(existing_row) if existing_row else {}
+            existing_profile_revision = int(existing.get("revision") or 0)
+            if str(existing.get("consumer_model_name") or "") == consumer_model_name:
+                public = self._public_device_profile(existing) if existing else {
+                    "system_profile": {"consumer_model_name": consumer_model_name, "display_model": consumer_model_name or "Unknown model"},
+                    "system_health": {},
+                }
+                return {
+                    "changed": False,
+                    "revision": _domain_revision(conn, "fleet"),
+                    "profile_revision": existing_profile_revision,
+                    **public,
+                }
+            if expected_profile_revision is not None and int(expected_profile_revision) != existing_profile_revision:
+                raise DeviceProfileUpdateError(409, "Device details changed in another tab. Refresh and try again.")
+            if existing:
+                conn.execute(
+                    "UPDATE device_system_profiles SET consumer_model_name=?, updated_at=?, updated_at_epoch_ms=?, revision=revision+1 WHERE node_id=?",
+                    (consumer_model_name, now, now_epoch, device_id),
+                )
+            else:
+                conn.execute(
+                    "INSERT INTO device_system_profiles(node_id, consumer_model_name, updated_at, updated_at_epoch_ms, revision) VALUES (?, ?, ?, ?, 1)",
+                    (device_id, consumer_model_name, now, now_epoch),
+                )
+            profile_revision = int(
+                conn.execute(
+                    "SELECT revision FROM device_system_profiles WHERE node_id=?",
+                    (device_id,),
+                ).fetchone()[0]
+            )
+            conn.execute(
+                """
+                INSERT INTO audit_evidence_index(
+                    event_type, entity_type, entity_id, operation_id, status, evidence_ref,
+                    created_at, created_at_epoch_ms, summary
+                ) VALUES ('device.display_model.updated', 'device', ?, ?, 'succeeded',
+                          'sqlite:device_system_profiles', ?, ?, ?)
+                """,
+                (
+                    device_id,
+                    f"device-display-model-{device_id}-{profile_revision}",
+                    now,
+                    now_epoch,
+                    "Device display model updated." if consumer_model_name else "Device display model cleared.",
+                ),
+            )
+            _bump_revision(conn, "audit", now, changed_ids=[device_id], reason="audit_state_changed", projection_version=1)
+            revision = _bump_revision(conn, "fleet", now, changed_ids=[device_id], reason="fleet_state_changed", projection_version=2)
+            updated = dict(conn.execute("SELECT * FROM device_system_profiles WHERE node_id=?", (device_id,)).fetchone())
+            return {
+                "changed": True,
+                "revision": revision,
+                "profile_revision": profile_revision,
+                **self._public_device_profile(updated),
+            }
+
+        result = SQLITE_WRITER.submit("fleet.display_model", write, deadline_seconds=1.0)
+        self.invalidate_domain("fleet")
+        return dict(result)
+
     def project_fleet(self, payload: dict[str, Any]) -> int:
         self.initialize()
         devices = [item for item in payload.get("devices", []) if isinstance(item, dict)]
@@ -1400,6 +1732,13 @@ class ControlPlaneProjectionStore:
                      last_seen, last_seen_epoch, now, now_epoch, summary),
                 )
                 changed = _changes(conn) or changed
+                changed = self._upsert_device_profile_row(
+                    conn,
+                    device_id=device_id,
+                    item=item,
+                    updated_at=now,
+                    updated_at_epoch_ms=now_epoch,
+                ) or changed
 
             if device_ids:
                 placeholders = ",".join("?" for _ in device_ids)
@@ -2105,6 +2444,10 @@ class ControlPlaneProjectionStore:
             ),
             "latest_supervisor": (
                 "SELECT supervisor_status FROM device_heartbeats WHERE device_id=? ORDER BY observed_at_epoch_ms DESC, heartbeat_row_id DESC LIMIT 1",
+                ("device-1",),
+            ),
+            "device_system_profile": (
+                "SELECT node_id, technical_model, consumer_model_name, uptime_seconds FROM device_system_profiles WHERE node_id=?",
                 ("device-1",),
             ),
             "stale_devices": (

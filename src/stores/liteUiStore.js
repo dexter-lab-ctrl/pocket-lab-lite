@@ -143,6 +143,22 @@ export const useLiteUiStore = create((set, get) => ({
   activeOverlay: null,
   openOverlay: (overlay) => set({ activeOverlay: normalizeOverlay(overlay) }),
 
+  activeDeviceDetailsId: '',
+  deviceModelPickerId: '',
+  deviceModelSearch: '',
+  setActiveDeviceDetailsId: (deviceId) => set({ activeDeviceDetailsId: String(deviceId || '').trim() }),
+  setDeviceModelPickerId: (deviceId) => set((state) => {
+    const nextId = String(deviceId || '').trim();
+    return {
+      deviceModelPickerId: nextId,
+      deviceModelSearch: nextId ? state.deviceModelSearch : '',
+      activeOverlay: nextId
+        ? normalizeOverlay({ type: 'details', id: `device-model-${nextId}`, source: 'devices' })
+        : state.activeOverlay?.source === 'devices' ? null : state.activeOverlay,
+    };
+  }),
+  setDeviceModelSearch: (value) => set({ deviceModelSearch: String(value || '').slice(0, 80) }),
+
   securityManageOpen: false,
   activeSecurityProfile: DEFAULT_SECURITY_PROFILE,
   activeSecurityManageSection: DEFAULT_SECURITY_MANAGE_SECTION,
@@ -397,6 +413,15 @@ export function useLiteSecurityManageState() {
 }
 
 
+export function useLiteDeviceDetailsState() {
+  return useLiteUiStore((state) => ({
+    activeDeviceDetailsId: state.activeDeviceDetailsId,
+    deviceModelPickerId: state.deviceModelPickerId,
+    deviceModelSearch: state.deviceModelSearch,
+  }));
+}
+
+
 export function useLiteRecoveryManageState() {
   return useLiteUiStore((state) => ({
     recoveryManageOpen: state.recoveryManageOpen,
@@ -414,3 +439,5 @@ export const LITE_UI_STORE_SECURITY_UI_ONLY = true;
 export const LITE_UI_STORE_DOES_NOT_STORE_SECURITY_PAYLOADS = true;
 export const LITE_UI_STORE_IS_UI_ONLY = true;
 export const LITE_UI_STORE_UI_COORDINATION_ONLY = true;
+
+export const LITE_UI_STORE_DEVICE_DETAILS_UI_ONLY = true;
