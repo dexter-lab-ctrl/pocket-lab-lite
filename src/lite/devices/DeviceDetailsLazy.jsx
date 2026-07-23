@@ -28,6 +28,68 @@ function normalizeStatus(value) {
   return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
 }
 
+function effectiveDeviceStatus(device) {
+  const status = normalizeStatus(device?.status);
+  const connection = normalizeStatus(device?.connection);
+  const role = normalizeStatus(device?.role);
+
+  if (['ready', 'healthy', 'active', 'online'].includes(status)) return 'online';
+  if (
+    ['repairing', 'supervisor_repairing'].includes(status)
+    || connection === 'repairing'
+  ) return 'repairing';
+  if (
+    ['agent_stopped', 'stopped'].includes(status)
+    || connection === 'stopped'
+  ) return 'agent_stopped';
+  if (
+    ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)
+    || connection === 'offline'
+  ) return 'offline';
+
+  if (
+    connection === 'online'
+    || role === 'server_host'
+    || device?.is_current
+    || device?.isCurrent
+  ) return 'online';
+
+  if (connection === 'joining') return 'joining';
+  if (connection === 'waiting') return 'waiting';
+
+  return status || connection || 'status_pending';
+}
+
+function formatDeviceTime(value, fallback = 'No report received') {
+  return value ? formatLiteTime(value) : fallback;
+}
+
+function supervisorStatusLabel(device) {
+  const status = normalizeStatus(
+    device?.supervisor?.status
+      || device?.supervisor_status
+      || device?.dependencies?.supervisor_status,
+  );
+
+  if (['healthy', 'ready', 'online', 'running'].includes(status)) {
+    return 'Running normally';
+  }
+  if (status === 'repairing') return 'Recovery in progress';
+  if (['stopped', 'missing', 'errored', 'error', 'failed'].includes(status)) {
+    return 'Needs attention';
+  }
+
+  return 'No supervisor status reported';
+}
+
+function capabilityStatusLabel(value) {
+  const status = normalizeStatus(value);
+  if (status === 'ready') return 'Ready';
+  if (status === 'available') return 'Advertised';
+  if (status === 'not_ready') return 'Not ready';
+  return 'Verification pending';
+}
+
 function safeList(items) {
   return (Array.isArray(items) ? items : [])
     .filter(Boolean)
@@ -50,20 +112,34 @@ function deviceHistoryItems(device) {
 function deviceSummary(device) {
   const name = device?.name || device?.hostname || 'This device';
   const connection = deviceConnectionLabel(device);
-  if (normalizeBackendState(device?.status) === 'ready') return `${name} is online and reporting to Pocket Lab.`;
+  if (effectiveDeviceStatus(device) === 'online') return `${name} is online and reporting normally.`;
   if (normalizeStatus(device?.status) === 'repairing' || deviceLinkState(device) === 'repairing') return `${name} is being checked or repaired.`;
   if (normalizeStatus(device?.status) === 'agent_stopped') return `${name} has an agent that needs attention.`;
-  if (connection) return `${name} is shown as ${connection}.`;
+  if (connection === 'Online') return `${name} is currently online.`;
+  if (connection) return `${name} is currently ${connection.toLowerCase()}.`;
   return `${name} details are available.`;
 }
 
 function deviceWhatHappened(device) {
   const happened = [
     'Pocket Lab read the latest safe device summary from the Lite API.',
-    `Connection is shown as ${deviceConnectionLabel(device)}.`,
+    deviceConnectionLabel(device) === 'Online'
+      ? 'The device is currently online and reporting through Pocket Lab.'
+      : `The device connection is currently ${deviceConnectionLabel(device).toLowerCase()}.`,
   ];
-  if (device?.last_seen) happened.push(`Last seen ${formatLiteTime(device.last_seen)}.`);
-  if (device?.supervisor?.status) happened.push(`Supervisor status is ${device.supervisor.status}.`);
+  const lastSeenAt = (
+    device?.last_seen_state?.last_seen_at
+    || device?.last_seen_at
+    || device?.last_seen
+  );
+  if (lastSeenAt) {
+    happened.push(`The latest device activity was received ${formatLiteTime(lastSeenAt)}.`);
+  }
+
+  const supervisorStatus = supervisorStatusLabel(device);
+  if (supervisorStatus !== 'No supervisor status reported') {
+    happened.push(`Supervisor: ${supervisorStatus}.`);
+  }
   return happened;
 }
 
@@ -97,11 +173,24 @@ function technicalRows(device) {
   return [
     { label: 'Device id', value: device?.id },
     { label: 'Role', value: device?.role_label || roleLabel(device?.role) },
-    { label: 'Status', value: deviceStatusLabel(device?.status) },
+    { label: 'Status', value: deviceStatusLabel(effectiveDeviceStatus(device)) },
     { label: 'Connection', value: deviceConnectionLabel(device) },
-    { label: 'Badge state', value: backendBadgeStatus(device?.status) },
-    { label: 'Last seen', value: formatLiteTime(device?.last_seen) },
-    { label: 'Supervisor', value: device?.supervisor?.status || device?.supervisor_status },
+    {
+      label: 'Badge state',
+      value: titleCase(
+        backendBadgeStatus(effectiveDeviceStatus(device)),
+        'Status pending',
+      ),
+    },
+    {
+      label: 'Last seen',
+      value: formatDeviceTime(
+        device?.last_seen_state?.last_seen_at
+          || device?.last_seen_at
+          || device?.last_seen,
+      ),
+    },
+    { label: 'Supervisor', value: supervisorStatusLabel(device) },
     { label: 'Capabilities', value: deviceCapabilityLabels(device).join(', ') },
     { label: 'OS family', value: device?.system_profile?.os_family },
     { label: 'Operating system', value: [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' ') },
@@ -167,7 +256,12 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   });
   device = detailsQuery.data?.device || device;
   const title = device?.name || device?.hostname || 'Device details';
-  const status = normalizeBackendState(device?.status) === 'ready' ? 'ready' : deviceAttention(device).length ? 'review' : 'neutral';
+  const effectiveStatus = effectiveDeviceStatus(device);
+  const status = effectiveStatus === 'online'
+    ? 'ready'
+    : deviceAttention(device).length
+      ? 'review'
+      : 'neutral';
   const historyQuery = useLiteQuery({
     queryKey: liteQueryKeys.deviceHistory(device?.id || '', 20, ''),
     path: liteQueryPaths.deviceHistory(device?.id || '', 20, ''),
@@ -225,12 +319,40 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
       <div className="lite-device-awareness-grid">
         <section className="lite-device-awareness-section" aria-label="Connection lifecycle">
           <span>Connection</span>
-          <strong>{titleCase(device?.last_seen_state?.staleness_state || device?.staleness_state || device?.connection)}</strong>
-          <p>Last seen {formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)} from {titleCase(device?.last_seen_state?.last_seen_source, 'device activity')}.</p>
+          <strong>{deviceConnectionLabel(device)}</strong>
+          <p>
+            Latest activity {formatDeviceTime(
+              device?.last_seen_state?.last_seen_at
+                || device?.last_seen_at
+                || device?.last_seen,
+            )} from {titleCase(
+              device?.last_seen_state?.last_seen_source,
+              'device activity',
+            )}.
+          </p>
           <dl>
-            <div><dt>Heartbeat</dt><dd>{formatLiteTime(device?.last_seen_state?.last_heartbeat_at)}</dd></div>
-            <div><dt>Supervisor</dt><dd>{formatLiteTime(device?.last_seen_state?.last_supervisor_heartbeat_at)}</dd></div>
-            <div><dt>Private connection</dt><dd>{formatLiteTime(device?.last_seen_state?.last_nats_connected_at)}</dd></div>
+            <div>
+              <dt>Heartbeat</dt>
+              <dd>{formatDeviceTime(
+                device?.last_seen_state?.last_heartbeat_at,
+                'No heartbeat reported',
+              )}</dd>
+            </div>
+            <div>
+              <dt>Supervisor</dt>
+              <dd>{formatDeviceTime(
+                device?.last_seen_state?.last_supervisor_heartbeat_at
+                  || device?.last_supervisor_at,
+                'No supervisor heartbeat reported',
+              )}</dd>
+            </div>
+            <div>
+              <dt>Private connection</dt>
+              <dd>{formatDeviceTime(
+                device?.last_seen_state?.last_nats_connected_at,
+                'No private connection report',
+              )}</dd>
+            </div>
           </dl>
         </section>
 
@@ -250,7 +372,9 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             {capabilities.map((item) => (
               <li key={item.id}>
                 <span>{item.label || titleCase(item.id)}</span>
-                <strong className={`is-${String(item.status || 'unknown').toLowerCase()}`}>{titleCase(item.status)}</strong>
+                <strong className={`is-${String(item.status || 'unknown').toLowerCase()}`}>
+                  {capabilityStatusLabel(item.status)}
+                </strong>
               </li>
             ))}
           </ul>
@@ -283,7 +407,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
         <LiteProgressiveDetails
           title={title}
           status={status}
-          statusLabel={deviceStatusLabel(device?.status)}
+          statusLabel={deviceStatusLabel(effectiveStatus)}
           summary={deviceSummary(device)}
           what_happened={deviceWhatHappened(device)}
           what_changed={deviceWhatChanged(device)}
