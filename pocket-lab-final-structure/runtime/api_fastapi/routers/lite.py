@@ -736,7 +736,12 @@ class LiteDeviceDisplayModelRequest(BaseModel):
     expected_profile_revision: int | None = Field(
         default=None,
         ge=0,
-        description="Optional optimistic-concurrency revision from the current safe device profile.",
+        description="Deprecated compatibility revision; display-label concurrency uses the expected label when provided.",
+    )
+    expected_consumer_model_name: str | None = Field(
+        default=None,
+        description="Optional display-label value originally shown to the user; empty string means no friendly label.",
+        max_length=80,
     )
 
 
@@ -1925,6 +1930,7 @@ def update_lite_device_display_model(
             device_id,
             payload.consumer_model_name,
             expected_profile_revision=payload.expected_profile_revision,
+            expected_consumer_model_name=payload.expected_consumer_model_name,
         )
     except DeviceProfileUpdateError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc

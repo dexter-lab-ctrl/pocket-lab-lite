@@ -219,9 +219,10 @@ export const liteApi = {
   securityApp: (appId = 'photoprism') => readJson(`/api/lite/security/apps/${encodeURIComponent(appId)}`),
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
   fleet: conditionalGet('/api/lite/fleet'),
-  updateDeviceDisplayModel: (deviceId, consumerModelName = '', expectedProfileRevision = null) => putJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/display-model`, {
+  updateDeviceDisplayModel: (deviceId, consumerModelName = '', expectedProfileRevision = null, expectedConsumerModelName = null) => putJson(`/api/lite/fleet/devices/${encodeURIComponent(deviceId || '')}/display-model`, {
     consumer_model_name: consumerModelName || null,
     expected_profile_revision: Number.isFinite(Number(expectedProfileRevision)) ? Number(expectedProfileRevision) : null,
+    expected_consumer_model_name: expectedConsumerModelName == null ? null : String(expectedConsumerModelName || ''),
   }),
   domainRevisions: conditionalGet('/api/lite/revisions'),
   deviceRecoveryHistory: (deviceId, limit = 20, cursor = '') => {

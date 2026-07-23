@@ -21,7 +21,12 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
   const flow = useLiteDeviceModelFlow({ open, deviceId: device?.id, current, backendReachable, savedStateOnly });
   const suggestions = useMemo(() => suggestedAndroidDeviceModels(profile, search), [profile, search]);
   const mutation = useLiteMutation({
-    mutationFn: ({ deviceId, consumerModelName, expectedProfileRevision }) => liteApi.updateDeviceDisplayModel(deviceId, consumerModelName, expectedProfileRevision),
+    mutationFn: ({ deviceId, consumerModelName, expectedProfileRevision, expectedConsumerModelName }) => liteApi.updateDeviceDisplayModel(
+      deviceId,
+      consumerModelName,
+      expectedProfileRevision,
+      expectedConsumerModelName,
+    ),
     invalidateOnSuccess: true,
     invalidateForAction: (_variables, result) => getLiteDeviceActionInvalidations('update_device_model', result),
   });
@@ -33,6 +38,7 @@ export default function DeviceModelPickerLazy({ device, open, onClose, backendRe
         deviceId: device?.id,
         consumerModelName: flow.confirmed,
         expectedProfileRevision: Number(profile.revision || 0),
+        expectedConsumerModelName: current,
       });
       flow.succeeded(result?.system_profile?.consumer_model_name || '');
       vibrate([12, 35, 12]);

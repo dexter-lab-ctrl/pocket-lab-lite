@@ -1510,6 +1510,7 @@ class ControlPlaneProjectionStore:
         value: Any,
         *,
         expected_profile_revision: int | None = None,
+        expected_consumer_model_name: str | None = None,
     ) -> dict[str, Any]:
         self.initialize()
         device_id = _safe_text(node_id, 120)
@@ -1544,7 +1545,18 @@ class ControlPlaneProjectionStore:
                     "profile_revision": existing_profile_revision,
                     **public,
                 }
-            if expected_profile_revision is not None and int(expected_profile_revision) != existing_profile_revision:
+            existing_consumer_model_name = str(existing.get("consumer_model_name") or "")
+            if expected_consumer_model_name is not None:
+                expected_consumer = validate_consumer_model_name(expected_consumer_model_name)
+                if expected_consumer != existing_consumer_model_name:
+                    raise DeviceProfileUpdateError(
+                        409,
+                        "The display model changed in another tab. Review the latest value and try again.",
+                    )
+            elif expected_profile_revision is not None and int(expected_profile_revision) != existing_profile_revision:
+                # Compatibility fence for older clients. New clients compare the
+                # display-only field so routine health/profile telemetry cannot
+                # create false conflicts while the model sheet is open.
                 raise DeviceProfileUpdateError(409, "Device details changed in another tab. Refresh and try again.")
             if existing:
                 conn.execute(
