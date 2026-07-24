@@ -47,6 +47,7 @@ class PreparedSecurityProgress:
     headers: Mapping[str, str]
     identity: tuple[Any, ...]
     database_identity: str
+    domain_revision: int
     projection_epoch: int
     active_scan: bool
     encoded_at_monotonic: float
@@ -2032,6 +2033,10 @@ def _prepare_security_progress(
         headers=headers,
         identity=identity,
         database_identity=database_identity,
+        domain_revision=max(
+            0,
+            int(payload.get("domain_revision") or payload.get("sqlite_revision") or 0),
+        ),
         projection_epoch=int(payload.get("projection_epoch") or 0),
         active_scan=bool(payload.get("active_scan")),
         encoded_at_monotonic=encoded_at_monotonic,
@@ -2076,6 +2081,7 @@ def security_progress_runtime_diagnostics() -> dict[str, Any]:
             "prepared_snapshot": prepared is not None,
             "prepared_static_bytes": int(prepared.static_content_length if prepared else 0),
             "projection_epoch": int(prepared.projection_epoch if prepared else 0),
+            "domain_revision": int(prepared.domain_revision if prepared else 0),
             "active_scan": bool(prepared.active_scan if prepared else False),
             "projection_age_ms": round(age_ms, 2) if age_ms is not None else None,
             "read_failure_count": int(failures),

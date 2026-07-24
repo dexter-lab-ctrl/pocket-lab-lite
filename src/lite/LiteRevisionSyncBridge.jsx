@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useMachine } from '@xstate/react';
 import { useLiteQuery } from '../hooks/useLiteQuery.js';
 import { liteApi } from '../lib/liteApi.js';
+import { getOfflineCacheMeta, setOfflineCacheMeta } from '../lib/liteOfflineDb.js';
 import { liteQueryKeys, liteQueryPaths } from '../lib/liteQueryClient.js';
 import {
   LITE_REVISION_CHANGED_EVENT,
@@ -15,6 +17,13 @@ import {
   LITE_REVISION_LEADER_KEY,
   releaseLiteRevisionLeadership,
 } from '../lib/liteRevisionSync.js';
+import {
+  liteRevisionSyncMachine,
+  revisionFallbackInterval,
+} from '../machines/liteRevisionSyncMachine.js';
+import { useLiteUiStore } from '../stores/liteUiStore.js';
+
+const REVISION_SYNC_META_KEY = 'lite_revision_sync_state_v1';
 
 function browserOnline() {
   return typeof navigator === 'undefined' || navigator.onLine !== false;
@@ -31,6 +40,16 @@ function revisionEventsUrl(lastEventId = 0) {
   return url.toString();
 }
 
+function persistedRevisionState(state, snapshot) {
+  return {
+    databaseInstance: String(state.databaseInstance || '').slice(0, 64),
+    lastEventId: Math.max(0, Number(state.lastEventId) || 0),
+    revisions: { ...(state.revisions || {}) },
+    failureCount: Math.max(0, Math.min(8, Number(snapshot.context.failureCount) || 0)),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export default function LiteRevisionSyncBridge() {
   const queryClient = useQueryClient();
   const revisionState = useRef(createLiteRevisionState());
@@ -39,17 +58,64 @@ export default function LiteRevisionSyncBridge() {
   const wasOnline = useRef(browserOnline());
   const [online, setOnline] = useState(browserOnline);
   const [visible, setVisible] = useState(documentVisible);
-  const [streamStatus, setStreamStatus] = useState('idle');
   const [broadcastSupported, setBroadcastSupported] = useState(
     () => typeof window !== 'undefined' && typeof window.BroadcastChannel !== 'undefined',
   );
   const [isLeader, setIsLeader] = useState(() => !broadcastSupported);
+  const [syncSnapshot, sendSync] = useMachine(liteRevisionSyncMachine);
+  const setRevisionSyncState = useLiteUiStore((state) => state.setRevisionSyncState);
+  const streamStatus = String(syncSnapshot.value || 'idle');
+
+  const persistState = useCallback(() => {
+    void setOfflineCacheMeta(
+      REVISION_SYNC_META_KEY,
+      persistedRevisionState(revisionState.current, syncSnapshot),
+    );
+  }, [syncSnapshot]);
 
   const processEnvelope = useCallback((envelope, { relay = false } = {}) => {
     const result = applyLiteRevisionEnvelope(queryClient, revisionState.current, envelope);
+    if (result.event) {
+      sendSync({ type: 'EVENT', lastEventId: revisionState.current.lastEventId });
+      void setOfflineCacheMeta(REVISION_SYNC_META_KEY, {
+        databaseInstance: revisionState.current.databaseInstance,
+        lastEventId: revisionState.current.lastEventId,
+        revisions: { ...revisionState.current.revisions },
+        failureCount: 0,
+        updatedAt: new Date().toISOString(),
+      });
+    }
     if (result.accepted && relay) broadcastRef.current?.post(result.event);
     return result;
-  }, [queryClient]);
+  }, [queryClient, sendSync]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getOfflineCacheMeta(REVISION_SYNC_META_KEY).then((saved) => {
+      if (cancelled || !saved || typeof saved !== 'object') return;
+      revisionState.current = createLiteRevisionState({
+        databaseInstance: saved.databaseInstance,
+        lastEventId: saved.lastEventId,
+        revisions: saved.revisions,
+      });
+      sendSync({
+        type: 'RESTORE',
+        failureCount: saved.failureCount,
+        lastEventId: saved.lastEventId,
+      });
+    });
+    return () => { cancelled = true; };
+  }, [sendSync]);
+
+  useEffect(() => {
+    setRevisionSyncState({
+      status: streamStatus,
+      failureCount: syncSnapshot.context.failureCount,
+      lastEventId: Math.max(syncSnapshot.context.lastEventId, revisionState.current.lastEventId),
+      retryAfterMs: syncSnapshot.context.retryAfterMs,
+    });
+    persistState();
+  }, [persistState, setRevisionSyncState, streamStatus, syncSnapshot.context.failureCount, syncSnapshot.context.lastEventId, syncSnapshot.context.retryAfterMs]);
 
   useEffect(() => {
     const broadcast = createLiteRevisionBroadcast({
@@ -78,7 +144,6 @@ export default function LiteRevisionSyncBridge() {
     };
   }, []);
 
-
   useEffect(() => {
     if (!online || !visible) {
       if (typeof window !== 'undefined') {
@@ -94,9 +159,7 @@ export default function LiteRevisionSyncBridge() {
     let stopped = false;
     const refreshLeadership = () => {
       if (stopped) return;
-      const acquired = acquireLiteRevisionLeadership(window.localStorage, senderId.current);
-      setIsLeader(acquired);
-      if (!acquired) setStreamStatus('follower');
+      setIsLeader(acquireLiteRevisionLeadership(window.localStorage, senderId.current));
     };
     const storageChanged = (event) => {
       if (event.key === LITE_REVISION_LEADER_KEY) refreshLeadership();
@@ -112,20 +175,42 @@ export default function LiteRevisionSyncBridge() {
     };
   }, [broadcastSupported, online, visible]);
 
-  const fallbackInterval = useMemo(() => {
-    if (!online) return false;
-    if (streamStatus === 'open') return false;
-    if (!visible) return 120_000;
-    if (!isLeader) return 60_000 + Math.floor(Math.random() * 7_500);
-    return 30_000 + Math.floor(Math.random() * 7_500);
-  }, [isLeader, online, streamStatus, visible]);
+  useEffect(() => {
+    if (!online) {
+      sendSync({ type: 'OFFLINE' });
+      return;
+    }
+    if (!visible || !isLeader) {
+      sendSync({ type: 'FOLLOWER' });
+      return;
+    }
+    if (['idle', 'offline', 'follower'].includes(streamStatus)) {
+      sendSync({ type: 'CONNECT' });
+    }
+  }, [isLeader, online, sendSync, streamStatus, visible]);
+
+  useEffect(() => {
+    if (streamStatus !== 'fallback' || !online || !visible || !isLeader || typeof window === 'undefined') {
+      return undefined;
+    }
+    const delay = Math.max(30_000, Number(syncSnapshot.context.retryAfterMs) || 30_000);
+    const timer = window.setTimeout(() => sendSync({ type: 'RETRY' }), delay);
+    return () => window.clearTimeout(timer);
+  }, [isLeader, online, sendSync, streamStatus, syncSnapshot.context.retryAfterMs, visible]);
+
+  const fallbackInterval = useMemo(() => revisionFallbackInterval({
+    value: streamStatus,
+    context: syncSnapshot.context,
+    visible,
+    isLeader,
+  }), [isLeader, streamStatus, syncSnapshot.context, visible]);
 
   const revisions = useLiteQuery({
     queryKey: liteQueryKeys.domainRevisions(),
     path: liteQueryPaths.domainRevisions,
     queryFn: liteApi.domainRevisions,
     enabled: online,
-    staleTime: streamStatus === 'open' ? 120_000 : 10_000,
+    staleTime: streamStatus === 'open' ? 5 * 60_000 : 30_000,
     gcTime: 30 * 60_000,
     refetchInterval: fallbackInterval,
     enabledWhenHidden: false,
@@ -136,8 +221,11 @@ export default function LiteRevisionSyncBridge() {
 
   useEffect(() => {
     if (!revisions.data || revisions.data.__liteNotModified) return;
-    applyLiteRevisionSnapshot(queryClient, revisionState.current, revisions.data);
-  }, [queryClient, revisions.data]);
+    const result = applyLiteRevisionSnapshot(queryClient, revisionState.current, revisions.data);
+    if (!result.accepted) return;
+    sendSync({ type: 'EVENT', lastEventId: revisionState.current.lastEventId });
+    persistState();
+  }, [persistState, queryClient, revisions.data, sendSync]);
 
   useEffect(() => {
     if (online && !wasOnline.current) {
@@ -151,8 +239,8 @@ export default function LiteRevisionSyncBridge() {
   }, [online, queryClient]);
 
   useEffect(() => {
-    if (!online || !visible || !isLeader || typeof window === 'undefined' || typeof window.EventSource === 'undefined') {
-      setStreamStatus(!online ? 'offline' : isLeader ? 'fallback' : 'follower');
+    if (streamStatus !== 'connecting' || !online || !visible || !isLeader
+      || typeof window === 'undefined' || typeof window.EventSource === 'undefined') {
       return undefined;
     }
     const source = new window.EventSource(revisionEventsUrl(revisionState.current.lastEventId));
@@ -162,16 +250,20 @@ export default function LiteRevisionSyncBridge() {
       try {
         processEnvelope(JSON.parse(message.data || '{}'), { relay: true });
       } catch {
-        // Invalid event data is ignored; revisions polling remains the recovery path.
+        // Invalid event data is ignored; TanStack fallback reads remain available.
       }
     };
-    const opened = () => setStreamStatus('open');
-    const failed = () => setStreamStatus('fallback');
+    const opened = () => sendSync({ type: 'OPEN' });
+    const failed = () => {
+      if (closed) return;
+      closed = true;
+      source.close();
+      sendSync({ type: 'ERROR' });
+    };
     source.addEventListener('open', opened);
     source.addEventListener(LITE_REVISION_CHANGED_EVENT, consume);
     source.addEventListener(LITE_REVISION_RESET_EVENT, consume);
     source.addEventListener('error', failed);
-    setStreamStatus('connecting');
     return () => {
       closed = true;
       source.removeEventListener('open', opened);
@@ -180,7 +272,7 @@ export default function LiteRevisionSyncBridge() {
       source.removeEventListener('error', failed);
       source.close();
     };
-  }, [isLeader, online, processEnvelope, visible]);
+  }, [isLeader, online, processEnvelope, sendSync, streamStatus, visible]);
 
   return null;
 }
