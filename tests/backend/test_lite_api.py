@@ -7516,7 +7516,8 @@ def test_lite_control_plane_subprojection_and_staggered_warmup_source_contract()
     assert "app_security_subprojection" in lifecycle
     assert "app_backup_subprojection" in lifecycle
     assert "app_runtime_subprojection" in lifecycle
-    assert "future.result(timeout=" in lifecycle
+    assert "concurrent.futures.wait(" in lifecycle
+    assert "POCKETLAB_LITE_APP_STAGE_DEADLINE_SECONDS" in lifecycle
     assert 'CONTROL_PLANE.prepared_payload("apps:lifecycle")' in router
     assert "lite_app_profiles.app_backup_profiles" not in router[router.index("def _lite_recovery_details_payload"):router.index("def _build_lite_recovery_summary_projection")]
     warmup = router[router.index("def _run_staggered_projection_warmup"):router.index('@router.get("/recovery/summary")')]

@@ -1104,8 +1104,9 @@ def test_app_lifecycle_parallelizes_state_sensitive_read_stages_with_bounded_wor
     assert '"media": (_media_payload' in lifecycle
     assert '"operations": (lambda: lite_app_operations.app_operation_status("photoprism")' in lifecycle
     assert '"update": (lambda: lite_app_update.update_status("photoprism")' in lifecycle
-    assert "future.result(timeout=timeout)" in lifecycle
-    assert "pocketlab.app_stage.timeout" in lifecycle
+    assert "concurrent.futures.wait(" in lifecycle
+    assert "deadline_at = started_at + deadline_seconds" in lifecycle
+    assert "pocketlab.app_stage.deadline_exhausted" in lifecycle
 
 
 def test_security_progress_idle_polling_is_quiet_but_dirty_signal_remains_immediate():
