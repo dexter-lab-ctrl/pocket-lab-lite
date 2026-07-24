@@ -607,6 +607,10 @@ class ControlPlaneProjectionStore:
         self._consecutive_refresh_failures: dict[str, int] = {}
         self._next_refresh_allowed_at: dict[str, float] = {}
         self._singleflight_locks: dict[str, threading.Lock] = {}
+        self._build_futures_by_key: dict[str, concurrent.futures.Future[Any]] = {}
+        self._workload_admission_lock = threading.Lock()
+        self._workload_admission: dict[str, tuple[str, int, float]] = {}
+        self._workload_admission_generation = 0
         default_workers = "1" if ("com.termux" in os.environ.get("PREFIX", "") or sys.platform == "android") else "2"
         self._executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", default_workers)), 4)),
@@ -641,7 +645,11 @@ class ControlPlaneProjectionStore:
                 self._last_build_seconds.clear()
                 self._consecutive_refresh_failures.clear()
                 self._next_refresh_allowed_at.clear()
+                self._build_futures_by_key.clear()
                 self._cache_generation += 1
+            with self._workload_admission_lock:
+                self._workload_admission.clear()
+                self._workload_admission_generation += 1
             self._initialized = True
             self._initialized_path = current_path
 
@@ -664,7 +672,11 @@ class ControlPlaneProjectionStore:
             self._last_build_seconds.clear()
             self._consecutive_refresh_failures.clear()
             self._next_refresh_allowed_at.clear()
+            self._build_futures_by_key.clear()
             self._cache_generation += 1
+        with self._workload_admission_lock:
+            self._workload_admission.clear()
+            self._workload_admission_generation += 1
 
     def invalidate_domain(self, domain: str) -> None:
         prefix = f"{str(domain or '').strip()}:"
@@ -852,6 +864,43 @@ class ControlPlaneProjectionStore:
             time.sleep(0.05)
         return self.prepared_payload(cache_key) is not None
 
+
+    def try_acquire_workload(self, domain: str, owner: str) -> tuple[str, int] | None:
+        """Acquire one process-local workload lease for a projection domain."""
+        safe_domain = re.sub(r"[^a-z0-9_.-]+", "-", str(domain or "").strip().lower())[:80]
+        safe_owner = re.sub(r"[^a-zA-Z0-9_.:-]+", "-", str(owner or "").strip())[:120]
+        if not safe_domain or not safe_owner:
+            return None
+        with self._workload_admission_lock:
+            current = self._workload_admission.get(safe_domain)
+            if current is not None:
+                return None
+            self._workload_admission_generation += 1
+            generation = self._workload_admission_generation
+            self._workload_admission[safe_domain] = (safe_owner, generation, time.monotonic())
+            return safe_owner, generation
+
+    def release_workload(self, domain: str, lease: tuple[str, int] | None) -> None:
+        if lease is None:
+            return
+        safe_domain = re.sub(r"[^a-z0-9_.-]+", "-", str(domain or "").strip().lower())[:80]
+        with self._workload_admission_lock:
+            current = self._workload_admission.get(safe_domain)
+            if current is not None and current[0] == lease[0] and current[1] == lease[1]:
+                self._workload_admission.pop(safe_domain, None)
+
+    def workload_busy(self, domain: str) -> bool:
+        safe_domain = re.sub(r"[^a-z0-9_.-]+", "-", str(domain or "").strip().lower())[:80]
+        with self._workload_admission_lock:
+            return safe_domain in self._workload_admission
+
+    @staticmethod
+    def _refresh_backoff_seconds(cache_key: str, failures: int) -> float:
+        base = (60.0, 120.0, 300.0)[min(max(int(failures), 1) - 1, 2)]
+        digest = hashlib.sha256(f"{cache_key}:{failures}".encode("utf-8")).digest()
+        jitter = int.from_bytes(digest[:2], "big") / 65535.0 * 0.10
+        return min(330.0, base * (1.0 + jitter))
+
     def _effective_stale_after_ms(self, cache_key: str, configured_ms: int) -> int:
         if int(configured_ms) <= 0:
             return 0
@@ -1008,6 +1057,11 @@ class ControlPlaneProjectionStore:
     ) -> None:
         with self._cache_lock:
             now = time.monotonic()
+            build_future = self._build_futures_by_key.get(cache_key)
+            if build_future is not None and not build_future.done():
+                return
+            if build_future is not None and build_future.done():
+                self._build_futures_by_key.pop(cache_key, None)
             if cache_key in self._refreshing or now < float(self._next_refresh_allowed_at.get(cache_key, 0.0)):
                 return
             self._refreshing.add(cache_key)
@@ -1039,19 +1093,34 @@ class ControlPlaneProjectionStore:
                 scheduled_database_path,
             )
         except Exception as exc:
+            failures = 0
             with self._cache_lock:
                 if self._refresh_generation_by_key.get(cache_key) == generation:
                     self._refresh_errors[cache_key] = type(exc).__name__
                     failures = min(8, self._consecutive_refresh_failures.get(cache_key, 0) + 1)
                     self._consecutive_refresh_failures[cache_key] = failures
-                    backoff = min(300.0, 2.0 ** failures)
+                    backoff = self._refresh_backoff_seconds(cache_key, failures)
                     self._next_refresh_allowed_at[cache_key] = time.monotonic() + backoff
-            _LOGGER.warning(
-                "pocketlab.control_projection.refresh_degraded key=%s error_type=%s",
-                cache_key,
-                type(exc).__name__,
-                exc_info=True,
-            )
+                    saved_state = cache_key in self._prepared
+                else:
+                    backoff = 0.0
+                    saved_state = False
+            if isinstance(exc, TimeoutError):
+                _LOGGER.warning(
+                    "pocketlab.control_projection.refresh_timeout key=%s deadline_ms=%.0f "
+                    "saved_state=%s retry_seconds=%.0f failures=%d",
+                    cache_key,
+                    max(0.05, min(float(args[5]), 30.0)) * 1000.0,
+                    str(saved_state).lower(),
+                    backoff,
+                    failures,
+                )
+            else:
+                _LOGGER.exception(
+                    "pocketlab.control_projection.refresh_degraded key=%s error_type=%s "
+                    "retry_seconds=%.0f failures=%d",
+                    cache_key, type(exc).__name__, backoff, failures,
+                )
         finally:
             with self._cache_lock:
                 if self._refresh_generation_by_key.get(cache_key) == generation:
@@ -1060,13 +1129,33 @@ class ControlPlaneProjectionStore:
                     self._refresh_generation_by_key.pop(cache_key, None)
 
     def _build_with_deadline(
-        self, builder: Callable[[], dict[str, Any]], deadline_seconds: float
+        self,
+        cache_key: str,
+        domain: str,
+        builder: Callable[[], dict[str, Any]],
+        deadline_seconds: float,
     ) -> dict[str, Any]:
         timeout = max(0.05, min(float(deadline_seconds), 30.0))
+        owner = f"prepared:{cache_key}"
+        lease = self.try_acquire_workload(domain, owner)
+        if lease is None:
+            raise PreparedProjectionUnavailable("Projection domain is already busy")
         try:
             future = self._build_executor.submit(builder)
         except RuntimeError as exc:
+            self.release_workload(domain, lease)
             raise PreparedProjectionUnavailable("Projection builder is shutting down") from exc
+
+        with self._cache_lock:
+            self._build_futures_by_key[cache_key] = future
+
+        def release_completed(completed: concurrent.futures.Future[Any]) -> None:
+            self.release_workload(domain, lease)
+            with self._cache_lock:
+                if self._build_futures_by_key.get(cache_key) is completed:
+                    self._build_futures_by_key.pop(cache_key, None)
+
+        future.add_done_callback(release_completed)
         try:
             payload = future.result(timeout=timeout)
         except concurrent.futures.TimeoutError as exc:
@@ -1135,7 +1224,7 @@ class ControlPlaneProjectionStore:
                     "Projection database changed before build"
                 )
             started = time.monotonic()
-            payload = self._build_with_deadline(builder, deadline_seconds)
+            payload = self._build_with_deadline(cache_key, domain, builder, deadline_seconds)
             built = time.monotonic()
             with self._cache_lock:
                 generation_after_build = self._cache_generation
