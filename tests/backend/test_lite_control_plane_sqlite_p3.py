@@ -1111,7 +1111,8 @@ def test_app_lifecycle_parallelizes_state_sensitive_read_stages_with_bounded_wor
 
 def test_security_progress_idle_polling_is_quiet_but_dirty_signal_remains_immediate():
     security = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py").read_text()
-    assert 'POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "30.0"' in security
+    assert 'POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "300.0"' in security
+    assert "reader.read_revision()" in security
     assert "_SQLITE_PROGRESS_DIRTY.wait(timeout=wait_interval)" in security
     assert "mark_security_progress_dirty()" in security
 

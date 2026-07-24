@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     diagnostics_started = False
     admission_started = False
     security_retention_task: asyncio.Task[None] | None = None
-    device_health_sweep_task: asyncio.Task[None] | None = None
+    startup_workloads_task: asyncio.Task[None] | None = None
     try:
         try:
             diagnostics_started = await RUNTIME_DIAGNOSTICS.start()
@@ -68,7 +68,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             "security.runtime.initialize",
             lite_security.initialize_security_sqlite_runtime,
         )
-        lite_security.start_security_projection_runtime()
         security_retention_task = asyncio.create_task(
             lite_security.security_progress_retention_loop(),
             name="pocketlab-security-progress-retention",
@@ -84,22 +83,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             {"service": deps.settings().server_name},
         )
         await LIVE_STATUS.start()
-        try:
-            warmup = lite.schedule_control_plane_projection_warmup()
-            logging.getLogger(__name__).info(
-                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s",
-                warmup.get("apps"),
-                warmup.get("recovery_summary"),
-                warmup.get("recovery_details"),
-            )
-        except Exception as exc:
-            logging.getLogger(__name__).warning(
-                "pocketlab.control_projection.warmup_degraded error_type=%s",
-                type(exc).__name__,
-            )
-        device_health_sweep_task = asyncio.create_task(
-            lite.device_health_projection_sweep_loop(),
-            name="pocketlab-device-health-projection-sweep",
+        startup_workloads_task = asyncio.create_task(
+            lite.run_staged_startup_workloads(lite_security),
+            name="pocketlab-staged-startup-workloads",
         )
         if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
             "1",
@@ -111,10 +97,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
-        if device_health_sweep_task is not None:
-            device_health_sweep_task.cancel()
+        if startup_workloads_task is not None:
+            startup_workloads_task.cancel()
             try:
-                await device_health_sweep_task
+                await startup_workloads_task
             except asyncio.CancelledError:
                 pass
         if security_retention_task is not None:

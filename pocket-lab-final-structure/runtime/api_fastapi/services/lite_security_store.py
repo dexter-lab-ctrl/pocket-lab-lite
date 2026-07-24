@@ -284,6 +284,28 @@ class SecurityProgressReader:
         self._connection = open_fast_read_connection(timeout_ms=self.timeout_ms)
         return (time.monotonic() - started) * 1000
 
+    def read_revision(self) -> tuple[int, float]:
+        """Read only the Security domain revision for idle change detection."""
+        connection_wait_ms = self._ensure_connection()
+        query_started = time.monotonic()
+        try:
+            row = self._connection.execute(
+                "SELECT revision FROM domain_revisions WHERE domain = 'security'"
+            ).fetchone()
+        except sqlite3.OperationalError as exc:
+            query_ms = (time.monotonic() - query_started) * 1000
+            message = str(exc).lower()
+            if "locked" in message or "busy" in message:
+                raise SecurityProgressReadContention(
+                    "Security revision SQLite read was busy",
+                    connection_wait_ms=connection_wait_ms,
+                    query_ms=query_ms,
+                ) from exc
+            self.close()
+            raise
+        query_ms = (time.monotonic() - query_started) * 1000
+        return (int(row["revision"]) if row else 0, connection_wait_ms + query_ms)
+
     def read(self, run_id: str | None = None) -> ProgressReadResult:
         connection_wait_ms = self._ensure_connection()
         query_started = time.monotonic()
