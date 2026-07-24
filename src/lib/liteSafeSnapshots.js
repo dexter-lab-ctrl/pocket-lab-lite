@@ -88,8 +88,12 @@ const SECURITY_DEFAULT_APP_ID = 'photoprism';
 const SECURITY_APP_SNAPSHOT_PATH_PATTERN = /^\/api\/lite\/security\/profiles\/app\/[a-z0-9][a-z0-9_-]{0,79}$/;
 const DEVICE_DETAILS_SNAPSHOT_PATH_PATTERN = /^\/api\/lite\/devices\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,119}$/;
 const DEVICE_HISTORY_SNAPSHOT_PATH_PATTERN = /^\/api\/lite\/devices\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,119}\/history$/;
+const DEVICE_HEALTH_SNAPSHOT_PATH_PATTERN = /^\/api\/lite\/devices\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,119}\/health$/;
+const DEVICE_HEALTH_HISTORY_SNAPSHOT_PATH_PATTERN = /^\/api\/lite\/devices\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,119}\/health\/history$/;
 const DEVICE_DETAILS_SNAPSHOT_TTL_MS = 5 * 60 * 1000;
 const DEVICE_HISTORY_SNAPSHOT_TTL_MS = 30 * 60 * 1000;
+const DEVICE_HEALTH_SNAPSHOT_TTL_MS = 5 * 60 * 1000;
+const DEVICE_HEALTH_HISTORY_SNAPSHOT_TTL_MS = 30 * 60 * 1000;
 const SECURITY_PROFILE_SNAPSHOT_ENDPOINTS = LITE_SECURITY_PROFILE_IDS.reduce((items, profile) => {
   items[profile] = `/api/lite/security/profiles/${profile}`;
   return items;
@@ -221,7 +225,9 @@ export function isSafeLiteSnapshotPath(path = '') {
   return SAFE_LITE_GET_ENDPOINTS.has(normalized)
     || SECURITY_APP_SNAPSHOT_PATH_PATTERN.test(normalized)
     || DEVICE_DETAILS_SNAPSHOT_PATH_PATTERN.test(normalized)
-    || DEVICE_HISTORY_SNAPSHOT_PATH_PATTERN.test(normalized);
+    || DEVICE_HISTORY_SNAPSHOT_PATH_PATTERN.test(normalized)
+    || DEVICE_HEALTH_SNAPSHOT_PATH_PATTERN.test(normalized)
+    || DEVICE_HEALTH_HISTORY_SNAPSHOT_PATH_PATTERN.test(normalized);
 }
 
 export function ttlForLiteSnapshotPath(path = '') {
@@ -229,6 +235,8 @@ export function ttlForLiteSnapshotPath(path = '') {
   if (SECURITY_APP_SNAPSHOT_PATH_PATTERN.test(normalized)) return LITE_SNAPSHOT_TTL_MS['/api/lite/security/profiles/app'];
   if (DEVICE_DETAILS_SNAPSHOT_PATH_PATTERN.test(normalized)) return DEVICE_DETAILS_SNAPSHOT_TTL_MS;
   if (DEVICE_HISTORY_SNAPSHOT_PATH_PATTERN.test(normalized)) return DEVICE_HISTORY_SNAPSHOT_TTL_MS;
+  if (DEVICE_HEALTH_SNAPSHOT_PATH_PATTERN.test(normalized)) return DEVICE_HEALTH_SNAPSHOT_TTL_MS;
+  if (DEVICE_HEALTH_HISTORY_SNAPSHOT_PATH_PATTERN.test(normalized)) return DEVICE_HEALTH_HISTORY_SNAPSHOT_TTL_MS;
   return LITE_SNAPSHOT_TTL_MS[normalized] || DEFAULT_TTL_MS;
 }
 

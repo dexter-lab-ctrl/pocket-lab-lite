@@ -51,6 +51,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     diagnostics_started = False
     admission_started = False
     security_retention_task: asyncio.Task[None] | None = None
+    device_health_sweep_task: asyncio.Task[None] | None = None
     try:
         try:
             diagnostics_started = await RUNTIME_DIAGNOSTICS.start()
@@ -96,6 +97,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "pocketlab.control_projection.warmup_degraded error_type=%s",
                 type(exc).__name__,
             )
+        device_health_sweep_task = asyncio.create_task(
+            lite.device_health_projection_sweep_loop(),
+            name="pocketlab-device-health-projection-sweep",
+        )
         if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
             "1",
             "true",
@@ -106,6 +111,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
+        if device_health_sweep_task is not None:
+            device_health_sweep_task.cancel()
+            try:
+                await device_health_sweep_task
+            except asyncio.CancelledError:
+                pass
         if security_retention_task is not None:
             security_retention_task.cancel()
             try:

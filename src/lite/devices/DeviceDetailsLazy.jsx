@@ -1,9 +1,12 @@
 import React from 'react';
-import { Smartphone, X } from 'lucide-react';
+import { AlertTriangle, Clock3, HeartPulse, Smartphone, X } from 'lucide-react';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
 import { useLiteQuery } from '../../hooks/useLiteQuery.js';
+import { useLiteDeviceHealthReviewFlow } from '../../hooks/useLiteDeviceHealthReviewFlow.js';
 import LiteProgressiveDetails from '../components/LiteProgressiveDetails.jsx';
+import { useLiteUiStore } from '../../stores/liteUiStore.js';
+import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
 import {
   LiteButton,
   backendBadgeStatus,
@@ -19,10 +22,14 @@ const DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION = true;
 const DEVICE_DETAILS_HISTORY_IS_LAZY = true;
 const DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY = 'normal Devices details do not fetch backend evidence endpoints';
 const DEVICE_DETAILS_TECHNICAL_DETAILS_COLLAPSED = true;
+const DEVICE_HEALTH_HISTORY_PROGRESSIVE_DISCLOSURE_D4 = true;
+const DEVICE_HEALTH_RECOMMENDATIONS_DO_NOT_EXECUTE_D4 = true;
 void DEVICE_DETAILS_USES_PROGRESSIVE_FOUNDATION;
 void DEVICE_DETAILS_HISTORY_IS_LAZY;
 void DEVICE_DETAILS_BACKEND_EVIDENCE_BOUNDARY;
 void DEVICE_DETAILS_TECHNICAL_DETAILS_COLLAPSED;
+void DEVICE_HEALTH_HISTORY_PROGRESSIVE_DISCLOSURE_D4;
+void DEVICE_HEALTH_RECOMMENDATIONS_DO_NOT_EXECUTE_D4;
 
 function normalizeStatus(value) {
   return String(value || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -166,7 +173,86 @@ function deviceAttention(device) {
   }
   if (deviceLinkState(device) === 'repairing') attention.push('Pocket Lab is still checking the device connection.');
   if (device?.remote_access?.ready === false) attention.push('Remote access is not ready yet.');
+  (Array.isArray(device?.proactive_health?.attention_items)
+    ? device.proactive_health.attention_items
+    : [])
+    .slice(0, 4)
+    .forEach((item) => {
+      const summary = String(item?.summary || '').trim();
+      if (summary && !attention.includes(summary)) attention.push(summary);
+    });
   return attention;
+}
+
+function proactiveHealthLabel(value) {
+  const status = normalizeStatus(value || 'unknown');
+  return ({
+    healthy: 'Healthy',
+    watch: 'Watch',
+    needs_attention: 'Needs attention',
+    degraded: 'Degraded',
+    repairing: 'Repairing',
+    unreachable: 'Unreachable',
+    unknown: 'Health pending',
+  })[status] || 'Health pending';
+}
+
+function recommendationLabel(value) {
+  const action = normalizeStatus(value || 'none');
+  return ({
+    none: 'No action needed',
+    review_device: 'Review device',
+    review_storage: 'Review storage',
+    wait_for_recovery: 'Wait for recovery',
+    update_agent: 'Review software update',
+    open_app: 'Open affected app',
+    open_backup_restore: 'Open Backup & Restore',
+    review_identity: 'Review identity',
+  })[action] || titleCase(action, 'Review device');
+}
+
+function recommendationScreen(value) {
+  const action = normalizeStatus(value || 'none');
+  return ({
+    open_app: 'catalog',
+    open_backup_restore: 'recovery',
+    review_identity: 'identity',
+    open_remote_access_health: 'devices',
+    review_storage: 'devices',
+    review_device: 'devices',
+    restart_agent: 'devices',
+    update_agent: 'devices',
+    wait_for_recovery: 'devices',
+    remove_old_device: 'devices',
+  })[action] || '';
+}
+
+function healthResourceRows(health = {}) {
+  const resources = health?.resources || {};
+  return [
+    ['Storage', resources.storage, resources.storage?.available_percent != null ? `${resources.storage.available_percent}% available` : resources.storage?.available_mb != null ? `${resources.storage.available_mb} MB available` : 'Not reported'],
+    ['Memory', resources.memory, resources.memory?.available_percent != null ? `${resources.memory.available_percent}% available` : resources.memory?.available_mb != null ? `${resources.memory.available_mb} MB available` : 'Not reported'],
+    ['System load', resources.load, resources.load?.usage_percent != null ? `${resources.load.usage_percent}%` : 'Not reported'],
+    ['Temperature', resources.temperature, resources.temperature?.celsius != null ? `${resources.temperature.celsius} °C` : 'Not reported'],
+  ].map(([label, value, metric]) => ({
+    label,
+    status: normalizeStatus(value?.status || 'unknown'),
+    statusLabel: titleCase(value?.status, 'Unknown'),
+    metric,
+    summary: value?.summary || 'This signal is not available yet.',
+  }));
+}
+
+function healthHistoryItems(payload = {}) {
+  return (Array.isArray(payload?.items) ? payload.items : []).slice(0, 20).map((item) => ({
+    id: item.event_id,
+    title: normalizeStatus(item.previous_state) === normalizeStatus(item.new_state)
+      ? `${proactiveHealthLabel(item.new_state)} updated`
+      : `${proactiveHealthLabel(item.previous_state)} → ${proactiveHealthLabel(item.new_state)}`,
+    summary: item.summary || 'Device health changed.',
+    status: item.new_state || 'recorded',
+    created_at: item.occurred_at,
+  }));
 }
 
 function technicalRows(device) {
@@ -245,6 +331,9 @@ function trustSummary(device) {
 export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   if (!device) return null;
   const initialDeviceId = device?.id || '';
+  const healthHistoryOpenId = useLiteUiStore((state) => state.deviceHealthHistoryOpenId);
+  const setDeviceHealthHistoryOpenId = useLiteUiStore((state) => state.setDeviceHealthHistoryOpenId);
+  const setActiveTab = useLiteUiStore((state) => state.setActiveTab);
   const detailsQuery = useLiteQuery({
     queryKey: liteQueryKeys.device(initialDeviceId),
     path: liteQueryPaths.device(initialDeviceId),
@@ -255,6 +344,32 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     refetchOnWindowFocus: false,
   });
   device = detailsQuery.data?.device || device;
+  const healthQuery = useLiteQuery({
+    queryKey: liteQueryKeys.deviceHealth(initialDeviceId),
+    path: liteQueryPaths.deviceHealth(initialDeviceId),
+    queryFn: () => liteApi.deviceHealth(initialDeviceId),
+    enabled: Boolean(initialDeviceId),
+    staleTime: 30_000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  });
+  const healthSnapshot = healthQuery.data?.__liteSnapshot || null;
+  const healthAttentionCurrent = !healthSnapshot || !(
+    healthSnapshot.stale || healthSnapshot.expired || healthSnapshot.isExpired
+    || healthSnapshot.source === 'cache' || healthSnapshot.source === 'saved'
+  );
+  const proactiveHealth = healthQuery.data?.health || device?.proactive_health || null;
+  device = proactiveHealth ? { ...device, proactive_health: proactiveHealth } : device;
+  const healthHistoryOpen = healthHistoryOpenId === initialDeviceId;
+  const healthHistoryQuery = useLiteQuery({
+    queryKey: liteQueryKeys.deviceHealthHistory(initialDeviceId, 20, ''),
+    path: liteQueryPaths.deviceHealthHistory(initialDeviceId, 20, ''),
+    queryFn: () => liteApi.deviceHealthHistory(initialDeviceId, 20, ''),
+    enabled: Boolean(initialDeviceId && healthHistoryOpen),
+    staleTime: 60_000,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  });
   const title = device?.name || device?.hostname || 'Device details';
   const effectiveStatus = effectiveDeviceStatus(device);
   const status = effectiveStatus === 'online'
@@ -278,6 +393,23 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
   const dependencies = device?.dependencies || {};
   const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
+  const healthResources = proactiveHealth ? healthResourceRows(proactiveHealth) : [];
+  const healthAttention = healthAttentionCurrent && Array.isArray(proactiveHealth?.attention_items)
+    ? proactiveHealth.attention_items.slice(0, 12)
+    : [];
+  const healthTransitions = healthHistoryItems(healthHistoryQuery.data || {});
+  const recommendationTargetScreen = recommendationScreen(proactiveHealth?.recommended_action);
+  const healthReviewFlow = useLiteDeviceHealthReviewFlow({
+    nodeId: initialDeviceId,
+    healthRevision: proactiveHealth?.health_revision || '',
+    recommendation: proactiveHealth?.recommended_action || 'review_device',
+    backendReachable: healthQuery.backendReachable,
+    savedStateOnly: !healthAttentionCurrent,
+  });
+  React.useEffect(() => {
+    if (!proactiveHealth?.health_revision) return;
+    healthReviewFlow.confirmBackend(proactiveHealth);
+  }, [healthReviewFlow.confirmBackend, proactiveHealth?.attention_count, proactiveHealth?.health_revision, proactiveHealth?.status]);
 
   return (
     <section className={`lite-device-details-panel is-${status}`} role="region" aria-label={`${title} details`}>
@@ -314,6 +446,126 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             Choose model
           </LiteButton>
         ) : null}
+      </section>
+
+      <section className={`lite-device-proactive-health is-${normalizeStatus(proactiveHealth?.status || 'unknown')}`} aria-label="Proactive device health">
+        <div className="lite-device-proactive-health-head">
+          <span className="lite-device-proactive-health-icon">
+            {healthAttention.length ? <AlertTriangle className="h-5 w-5" /> : <HeartPulse className="h-5 w-5" />}
+          </span>
+          <div>
+            <span>Overall health</span>
+            <strong>{proactiveHealthLabel(proactiveHealth?.status)}</strong>
+            <p>{proactiveHealth?.summary || 'Device health is not available yet.'}</p>
+          </div>
+          <small>{titleCase(proactiveHealth?.severity, 'No severity')}</small>
+        </div>
+
+        {proactiveHealth ? (
+          <>
+            <div className="lite-device-health-resource-grid" aria-label="Resource health">
+              {healthResources.map((item) => (
+                <article key={item.label} className={`is-${item.status}`}>
+                  <span>{item.label}</span>
+                  <strong>{item.statusLabel}</strong>
+                  <small>{item.metric}</small>
+                  <p>{item.summary}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="lite-device-health-posture-grid">
+              <article>
+                <span>Connection</span>
+                <strong>{titleCase(proactiveHealth.connection?.status)}</strong>
+                <p>{proactiveHealth.connection?.summary || 'Connection quality is not available yet.'}</p>
+              </article>
+              <article>
+                <span>Recovery</span>
+                <strong>{titleCase(proactiveHealth.recovery?.status)}</strong>
+                <p>{proactiveHealth.recovery?.summary || 'Recovery posture is not available yet.'}</p>
+              </article>
+              <article>
+                <span>Software</span>
+                <strong>{titleCase(proactiveHealth.versions?.status)}</strong>
+                <p>Agent, supervisor, and schema posture are evaluated by the backend.</p>
+              </article>
+              <article>
+                <span>Dependencies</span>
+                <strong>{titleCase(proactiveHealth.dependency_impact?.status)}</strong>
+                <p>{proactiveHealth.dependency_impact?.impact_summary || 'Dependency impact is not available yet.'}</p>
+              </article>
+            </div>
+
+            <div className="lite-device-health-recommendation" role="note">
+              <div>
+                <span>Recommended next step</span>
+                <strong>{recommendationLabel(proactiveHealth.recommended_action)}</strong>
+                <p>Recommendations are guidance only. Pocket Lab will not run an action without the normal guarded flow.</p>
+              </div>
+              {recommendationTargetScreen && healthAttentionCurrent ? (
+                <LiteButton
+                  tone="secondary"
+                  onClick={() => {
+                    triggerLiteTactileFeedback('selection');
+                    healthReviewFlow.routeTo(recommendationTargetScreen, (screenId) => {
+                      setActiveTab(screenId);
+                      if (screenId === 'devices') onClose?.();
+                    });
+                  }}
+                  disabled={healthReviewFlow.blocked}
+                >
+                  {recommendationTargetScreen === 'devices'
+                    ? 'Return to device actions'
+                    : `Open ${recommendationTargetScreen === 'catalog' ? 'Apps' : recommendationTargetScreen === 'recovery' ? 'Backup & Restore' : 'Access Center'}`}
+                </LiteButton>
+              ) : null}
+            </div>
+
+            {healthAttention.length ? (
+              <div className="lite-device-health-attention-list" aria-label="Current health attention">
+                <span>Needs attention</span>
+                {healthAttention.map((item) => (
+                  <article key={item.id || item.reason_code}>
+                    <div>
+                      <strong>{item.summary}</strong>
+                      <small>{titleCase(item.category)} · {titleCase(item.severity)}</small>
+                    </div>
+                    <p>{item.recommendation}</p>
+                  </article>
+                ))}
+              </div>
+            ) : healthAttentionCurrent ? (
+              <p className="lite-device-health-clear">No immediate health action is needed.</p>
+            ) : (
+              <p className="lite-device-health-saved-note">Saved health is visible. Reconnect before treating attention as current.</p>
+            )}
+
+            <div className="lite-device-health-history-control">
+              <LiteButton
+                tone="secondary"
+                onClick={() => setDeviceHealthHistoryOpenId(healthHistoryOpen ? '' : initialDeviceId)}
+                aria-expanded={healthHistoryOpen}
+              >
+                <Clock3 className="h-4 w-4" />
+                {healthHistoryOpen ? 'Hide health history' : 'Show health history'}
+              </LiteButton>
+              {healthHistoryOpen ? (
+                <div className="lite-device-health-history" role="region" aria-label="Device health history">
+                  {healthHistoryQuery.loading ? <p>Loading safe health history…</p> : null}
+                  {!healthHistoryQuery.loading && healthTransitions.length === 0 ? <p>No health transitions have been recorded yet.</p> : null}
+                  {healthTransitions.map((item) => (
+                    <article key={item.id}>
+                      <strong>{item.title}</strong>
+                      <span>{formatLiteTime(item.created_at)}</span>
+                      <p>{item.summary}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : <p>Health will appear after the next prepared fleet refresh.</p>}
       </section>
 
       <div className="lite-device-awareness-grid">

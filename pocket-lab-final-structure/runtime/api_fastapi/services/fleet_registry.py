@@ -512,6 +512,14 @@ def upsert_agent(
         "agent_version": data.get("agent_version")
         or existing.get("agent_version")
         or "unknown",
+        "capability_schema_version": data.get("capability_schema_version")
+        or existing.get("capability_schema_version")
+        or 1,
+        "reconnect_count": int(
+            data.get("reconnect_count")
+            if data.get("reconnect_count") is not None
+            else existing.get("reconnect_count") or 0
+        ),
         "agent_status": data.get("status")
         or data.get("agent_status")
         or existing.get("agent_status")
@@ -710,6 +718,8 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "source": "nats-agent",
                 "last_seen_at": agent.get("last_seen_at"),
                 "agent_version": agent.get("agent_version"),
+                "capability_schema_version": agent.get("capability_schema_version"),
+                "reconnect_count": agent.get("reconnect_count"),
                 "telemetry": agent.get("telemetry") or {},
                 "health": agent.get("health") or {},
                 "system_profile": agent.get("system_profile") or {},

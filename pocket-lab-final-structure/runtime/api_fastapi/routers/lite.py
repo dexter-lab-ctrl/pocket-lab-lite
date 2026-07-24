@@ -1967,6 +1967,52 @@ def get_lite_device_details(device_id: str, request: Request) -> Response:
     )
 
 
+@router.get("/devices/{device_id}/health")
+def get_lite_device_health(device_id: str, request: Request) -> Response:
+    deps.require_auth(request)
+    try:
+        _ensure_fleet_awareness_projection()
+        payload = CONTROL_PLANE.device_health(device_id)
+    except DeviceAwarenessError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    return _control_plane_history_response(
+        request, payload, domain="fleet", key=f"device-health:{device_id}"
+    )
+
+
+@router.get("/devices/{device_id}/health/history")
+def get_lite_device_health_history(
+    device_id: str,
+    request: Request,
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str = Query("", max_length=512),
+) -> Response:
+    deps.require_auth(request)
+    try:
+        _ensure_fleet_awareness_projection()
+        payload = CONTROL_PLANE.device_health_history(
+            device_id, limit=limit, cursor=cursor
+        )
+    except DeviceAwarenessError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _control_plane_history_response(
+        request, payload, domain="fleet",
+        key=f"device-health-history:{device_id}:{limit}:{cursor}",
+    )
+
+
+@router.get("/fleet/health-summary")
+def get_lite_fleet_health_summary(request: Request) -> Response:
+    deps.require_auth(request)
+    _ensure_fleet_awareness_projection()
+    payload = CONTROL_PLANE.fleet_health_summary()
+    return _control_plane_history_response(
+        request, payload, domain="fleet", key="health-summary"
+    )
+
+
 @router.get("/devices/{device_id}/history")
 def get_lite_device_lifecycle_history(
     device_id: str,
@@ -2357,6 +2403,70 @@ def schedule_control_plane_projection_warmup() -> dict[str, bool]:
         )
         _WARMUP_THREAD.start()
     return {"apps": True, "recovery_summary": True, "recovery_details": True}
+
+
+def _refresh_device_health_projection() -> dict[str, Any]:
+    prepared = CONTROL_PLANE.prepared_read(
+        domain="fleet",
+        key="summary",
+        builder=lite_status.lite_fleet,
+        projector=CONTROL_PLANE.project_fleet,
+        stale_after_ms=0,
+        max_stale_ms=0,
+        deadline_seconds=5.0,
+        cold_start_async=False,
+    )
+    return {
+        "source_revision": prepared.source_revision,
+        "projection_age_ms": prepared.projection_age_ms,
+        "read_degraded": prepared.read_degraded,
+    }
+
+
+async def device_health_projection_sweep_loop() -> None:
+    """Run one bounded fleet health sweep instead of one task per device."""
+    if os.environ.get("POCKETLAB_LITE_DISABLE_DEVICE_HEALTH_SWEEP", "").lower() in {
+        "1", "true", "yes", "on",
+    }:
+        return
+    try:
+        startup_delay = max(
+            5.0,
+            min(
+                120.0,
+                float(os.environ.get("POCKETLAB_DEVICE_HEALTH_SWEEP_START_DELAY_SECONDS", "15")),
+            ),
+        )
+    except (TypeError, ValueError):
+        startup_delay = 15.0
+    try:
+        interval = max(
+            30.0,
+            min(
+                900.0,
+                float(os.environ.get("POCKETLAB_DEVICE_HEALTH_SWEEP_SECONDS", "60")),
+            ),
+        )
+    except (TypeError, ValueError):
+        interval = 60.0
+    await asyncio.sleep(startup_delay)
+    while True:
+        try:
+            result = await asyncio.to_thread(_refresh_device_health_projection)
+            _LOGGER.debug(
+                "pocketlab.device_health.sweep revision=%s projection_age_ms=%s read_degraded=%s",
+                result.get("source_revision"),
+                result.get("projection_age_ms"),
+                result.get("read_degraded"),
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            _LOGGER.warning(
+                "pocketlab.device_health.sweep_degraded error_type=%s",
+                type(exc).__name__,
+            )
+        await asyncio.sleep(interval)
 
 
 @router.get("/recovery/summary")

@@ -10,7 +10,15 @@ from .. import deps
 from .fleet_registry import fleet_health_snapshot, list_commands, merged_fleet_nodes, normalize_node_id
 from .live_status import LIVE_STATUS
 from .nats_bus import BUS
-from . import lite_backup, lite_catalog as lite_catalog_service, lite_device_awareness, lite_device_capabilities, lite_invites, lite_security as lite_security_service
+from . import (
+    lite_backup,
+    lite_catalog as lite_catalog_service,
+    lite_device_awareness,
+    lite_device_capabilities,
+    lite_device_health,
+    lite_invites,
+    lite_security as lite_security_service,
+)
 
 LITE_MODE = "lite"
 
@@ -306,6 +314,29 @@ async def build_lite_status() -> dict[str, Any]:
     catalog_items_count = lite_catalog_service.catalog_apps_count()
     fleet = fleet_health_snapshot()
     fleet_nodes = merged_fleet_nodes()
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        fleet_health_summary = CONTROL_PLANE.fleet_health_summary()
+    except Exception:
+        fleet_health_summary = {
+            "status": "unavailable",
+            "device_count": 0,
+            "attention_count": 0,
+            "by_status": {},
+            "by_severity": {},
+            "attention_by_category": {},
+            "sanitized": True,
+        }
+    device_health_attention_current = bool(
+        fleet_health_summary.get("status") == "ready"
+        and max(0, int(fleet_health_summary.get("device_count") or 0)) == len(fleet_nodes)
+    )
+    device_health_attention = (
+        max(0, int(fleet_health_summary.get("attention_count") or 0))
+        if device_health_attention_current
+        else 0
+    )
     opa_evaluations = deps.core.build_opa_evaluations()
     blocked_findings = [
         item
@@ -352,8 +383,12 @@ async def build_lite_status() -> dict[str, Any]:
         ),
         _service(
             "Device Fleet",
-            fleet.get("status", "unknown"),
-            f"{len(fleet_nodes)} device record(s) known to Pocket Lab Lite",
+            "degraded" if device_health_attention_current and device_health_attention else fleet.get("status", "unknown"),
+            (
+                f"{device_health_attention} device health item(s) need review"
+                if device_health_attention
+                else f"{len(fleet_nodes)} device record(s) known to Pocket Lab Lite"
+            ),
         ),
         _service(
             "Security",
@@ -406,6 +441,12 @@ async def build_lite_status() -> dict[str, Any]:
         "summary": {
             "apps_available": catalog_items_count,
             "devices_known": len(fleet_nodes),
+            "device_health_attention": device_health_attention,
+            "device_health_attention_current": device_health_attention_current,
+            "device_health_summary": {
+                "by_status": fleet_health_summary.get("by_status") or {},
+                "by_severity": fleet_health_summary.get("by_severity") or {},
+            },
             "security_findings": len(blocked_findings),
             "nats_connected": bool(bus.get("connected")),
             "jetstream_enabled": bool(bus.get("jetstream_enabled")),
@@ -637,6 +678,16 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "system_profile": _public_system_profile(item.get("system_profile")),
         "system_health": _public_system_health(item.get("system_health")),
         "supervisor_version": item.get("supervisor_version"),
+        "_health_signals": {
+            "telemetry": item.get("telemetry") if isinstance(item.get("telemetry"), dict) else {},
+            "health": item.get("health") if isinstance(item.get("health"), dict) else {},
+            "storage": item.get("storage") if isinstance(item.get("storage"), dict) else {},
+            "reconnect_count": item.get("reconnect_count"),
+            "supervisor_repair_count": item.get("supervisor_repair_count"),
+            "agent_version": item.get("agent_version"),
+            "supervisor_version": item.get("supervisor_version"),
+            "capability_schema_version": item.get("capability_schema_version"),
+        },
     }
     passthrough = (
         "invite_created_at", "invite_accepted_at", "enrolled_at",
@@ -785,6 +836,43 @@ def lite_fleet() -> dict[str, Any]:
         merged_devices, remote_access=remote_access, commands=commands
     )
 
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        previous_health = CONTROL_PLANE.device_health_map()
+    except Exception:
+        previous_health = {}
+    health_summary = {
+        "healthy": 0,
+        "watch": 0,
+        "needs_attention": 0,
+        "degraded": 0,
+        "repairing": 0,
+        "unreachable": 0,
+        "unknown": 0,
+        "attention_count": 0,
+    }
+    assessed_devices = []
+    for item in merged_devices:
+        device_id = str(item.get("id") or item.get("node_id") or "")
+        signals = item.pop("_health_signals", {}) if isinstance(item.get("_health_signals"), dict) else {}
+        health = lite_device_health.evaluate_device_health(
+            item,
+            signals=signals,
+            previous=previous_health.get(device_id, {}),
+        )
+        item["proactive_health"] = health
+        item["health_status"] = health.get("status")
+        item["health_severity"] = health.get("severity")
+        item["attention_count"] = int(health.get("attention_count") or 0)
+        health_key = str(health.get("status") or "unknown")
+        if health_key not in health_summary:
+            health_key = "unknown"
+        health_summary[health_key] += 1
+        health_summary["attention_count"] += int(health.get("attention_count") or 0)
+        assessed_devices.append(item)
+    merged_devices = assessed_devices
+
     devices = sorted(
         merged_devices,
         key=lambda item: (0 if item.get("role") == "server_host" else 1, str(item.get("name") or "")),
@@ -800,6 +888,7 @@ def lite_fleet() -> dict[str, Any]:
         "remote_access": remote_access,
         "latest_invite": lite_invites.latest_invite(),
         "capability_summary": lite_device_capabilities.catalog_device_summary(devices),
+        "health_summary": health_summary,
         "staleness_policy": {
             "recently_offline_seconds": lite_device_awareness.RECENTLY_OFFLINE_SECONDS,
             "stale_seconds": lite_device_awareness.STALE_SECONDS,

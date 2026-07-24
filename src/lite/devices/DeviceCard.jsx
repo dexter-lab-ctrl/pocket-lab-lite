@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock3, Cpu, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertTriangle, Clock3, Cpu, HeartPulse, Network, RefreshCw, Server, ShieldCheck, Trash2 } from 'lucide-react';
 import {
   GlassCard,
   StatusBadge,
@@ -15,6 +15,7 @@ import {
   canRemoveDevice,
 } from '../LiteUi.jsx';
 import { formatLiteTime } from '../../lib/liteApi.js';
+import { triggerLiteTactileFeedback } from '../LiteMotion.jsx';
 
 const DEVICES_CARD_RENDER_REDUCTION_M1 = true;
 const DEVICES_CARD_ACTIONS_OWN_CLICKS = true;
@@ -55,6 +56,28 @@ function stalenessLabel(device) {
   return deviceConnectionLabel(device);
 }
 
+function healthLabel(value) {
+  const status = String(value || 'unknown').toLowerCase().replace(/[\s-]+/g, '_');
+  return ({
+    healthy: 'Healthy',
+    watch: 'Watch',
+    needs_attention: 'Needs attention',
+    degraded: 'Degraded',
+    repairing: 'Repairing',
+    unreachable: 'Unreachable',
+    unknown: 'Health pending',
+  })[status] || 'Health pending';
+}
+
+function healthTone(value) {
+  const status = String(value || '').toLowerCase();
+  if (['degraded', 'unreachable'].includes(status)) return 'is-critical';
+  if (['watch', 'needs_attention'].includes(status)) return 'is-review';
+  if (status === 'repairing') return 'is-repairing';
+  if (status === 'healthy') return 'is-ready';
+  return 'is-unknown';
+}
+
 function responsibilitySummary(device) {
   const dependencies = device?.dependencies || {};
   const parts = [];
@@ -87,6 +110,9 @@ function DeviceCard({
   const canRestart = canRestartDeviceAgent(device);
   const canRemove = canRemoveDevice(device);
   const showStorage = hasMeaningfulStorage(device);
+  const proactiveHealth = device?.proactive_health || null;
+  const healthAttentionCurrent = Boolean(proactiveHealth?.attention_current !== false);
+  const healthAttentionCount = healthAttentionCurrent ? Number(proactiveHealth?.attention_count || 0) : 0;
 
   return (
     <GlassCard className={`lite-device-card ${connectionClass}`}>
@@ -141,6 +167,19 @@ function DeviceCard({
         {capabilities.length ? <span><strong>{capabilities.length}</strong> verified capabilities</span> : null}
       </div>
 
+      {proactiveHealth ? (
+        <div className={`lite-device-health-strip ${healthTone(proactiveHealth.status)}`} aria-label="Proactive device health">
+          <span className="lite-device-health-strip-icon">
+            {healthAttentionCount > 0 ? <AlertTriangle className="h-4 w-4" /> : <HeartPulse className="h-4 w-4" />}
+          </span>
+          <span>
+            <strong>{healthLabel(proactiveHealth.status)}</strong>
+            <small>{proactiveHealth.summary || 'Device health is not available yet.'}</small>
+          </span>
+          {healthAttentionCount > 0 ? <em>{healthAttentionCount} item{healthAttentionCount === 1 ? '' : 's'}</em> : null}
+        </div>
+      ) : null}
+
       <div className="lite-device-trust-strip" aria-label="Device trust and responsibilities">
         <span><ShieldCheck className="h-4 w-4" /> <strong>{identityLabel(device)}</strong></span>
         {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
@@ -159,8 +198,16 @@ function DeviceCard({
       ) : null}
 
       <div className="lite-device-actions">
-        <LiteButton tone="secondary" onClick={onOpenDetails} aria-expanded={detailsOpen} buttonRef={detailsButtonRef}>
-          {detailsOpen ? 'Hide Details' : 'Details'}
+        <LiteButton
+          tone="secondary"
+          onClick={() => {
+            triggerLiteTactileFeedback('selection');
+            onOpenDetails?.();
+          }}
+          aria-expanded={detailsOpen}
+          buttonRef={detailsButtonRef}
+        >
+          {detailsOpen ? 'Hide Details' : healthAttentionCount > 0 ? 'Review health' : 'Details'}
         </LiteButton>
         {canRestart ? (
           <LiteButton

@@ -196,6 +196,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
   const apps = boundedCount(summary.apps_available);
   const devices = boundedCount(summary.devices_known);
   const safetyItems = boundedCount(summary.security_findings);
+  const deviceHealthAttention = boundedCount(summary.device_health_attention);
   const remoteReady = summary.remote_access_ready === true;
   const overallTone = savedStateOnly || !backendReachable ? 'review' : homeStatusTone(status.overall);
 
@@ -223,6 +224,14 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       label: 'Review Safety',
       title: 'Review the latest safety items',
       detail: `${safetyItems} ${safetyItems === 1 ? 'item needs' : 'items need'} your attention.`,
+      tone: 'review',
+    };
+  } else if (deviceHealthAttention > 0) {
+    nextAction = {
+      screen: 'devices',
+      label: 'Review device',
+      title: `${deviceHealthAttention} device health ${deviceHealthAttention === 1 ? 'item needs' : 'items need'} attention`,
+      detail: 'Open Devices to review the backend-prepared health summary and safest next step.',
       tone: 'review',
     };
   } else if (devices === 0) {
@@ -268,7 +277,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
     services: services.slice(0, 8),
     stats: [
       { key: 'apps', label: 'Apps', value: apps, note: apps === 1 ? 'self-hosted app available' : 'self-hosted apps available', screen: 'catalog' },
-      { key: 'devices', label: 'Devices', value: devices, note: devices === 1 ? 'device connected to this workspace' : 'devices connected to this workspace', screen: 'devices' },
+      { key: 'devices', label: 'Devices', value: devices, note: deviceHealthAttention ? `${deviceHealthAttention} health item${deviceHealthAttention === 1 ? '' : 's'} to review` : devices === 1 ? 'device connected to this workspace' : 'devices connected to this workspace', screen: 'devices' },
       { key: 'safety', label: 'Safety', value: safetyItems, note: safetyItems ? 'items ready for review' : 'no urgent items reported', screen: 'security' },
       { key: 'access', label: 'Remote access', value: remoteReady ? 'Ready' : 'Not ready', note: remoteReady ? 'private access is available' : 'local access remains available', screen: 'devices' },
     ],
