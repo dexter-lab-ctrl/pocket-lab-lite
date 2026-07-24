@@ -808,3 +808,64 @@ def test_e4_capacity_is_bounded_and_executor_rejection_cools_down(tmp_path, monk
     assert rejecting.status("fleet.summary")["retry_after_seconds"] >= 60
     scheduler.shutdown(drain_seconds=1.0)
     rejecting.shutdown(drain_seconds=1.0)
+
+
+def test_e4_refresh_hints_do_not_invalidate_active_generation(tmp_path, monkeypatch):
+    scheduler = _new_scheduler(tmp_path, monkeypatch)
+    from api_fastapi.services.projection_scheduler import ProjectionJob
+
+    release = threading.Event()
+    calls = 0
+    committed: list[int] = []
+
+    def builder():
+        nonlocal calls
+        calls += 1
+        release.wait(1.0)
+        return {"value": calls}
+
+    job = ProjectionJob(
+        "fleet.summary",
+        builder,
+        lambda payload: committed.append(payload["value"]) or len(committed),
+        20,
+        "io",
+        1.5,
+    )
+    first = scheduler.mark_dirty(
+        "fleet.summary", job=job, force_followup=False
+    )
+    assert first["generation"] == 1
+    assert _wait_for(lambda: scheduler.status("fleet.summary").get("active") is True)
+
+    for _ in range(100):
+        result = scheduler.mark_dirty(
+            "fleet.summary", priority=10, force_followup=False
+        )
+        assert result["generation"] == 1
+        assert result["coalesced"] is True
+
+    release.set()
+    assert _wait_for(
+        lambda: scheduler.status("fleet.summary").get("refresh_pending") is False,
+        3.0,
+    )
+    status = scheduler.status("fleet.summary")
+    assert calls == 1
+    assert committed == [1]
+    assert status["generation"] == 1
+    assert status["committed_generation"] == 1
+    assert status["stale_generation_count"] == 0
+    assert status["coalesced_count"] >= 100
+    scheduler.shutdown(drain_seconds=1.0)
+
+
+def test_e3_prepared_reads_use_coalescing_refresh_hints():
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/services/"
+        "lite_control_plane_store.py"
+    ).read_text(encoding="utf-8")
+    prepared_only = source.split("def prepared_only_read", 1)[1].split(
+        "def warm_prepared_read", 1
+    )[0]
+    assert prepared_only.count("force_followup=False") == 2
