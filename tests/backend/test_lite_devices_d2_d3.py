@@ -138,6 +138,14 @@ def test_d2_d3_projection_is_change_only_bounded_and_revision_fenced(tmp_path, m
     assert first == 1
     assert second == first
 
+    from api_fastapi.services import fleet_registry
+    fleet_registry.append_device_lifecycle_event(
+        "old-phone", "device_returned_online",
+        occurred_at="2025-01-01T00:00:00Z",
+        dedupe_key="old-phone:device_returned_online:offline-1",
+        generation_key="offline-1", current_state=device,
+    )
+
     details = store.device_details("old-phone")
     awareness_revision = details["device"]["awareness_revision"]
     assessment = store.device_removal_assessment("old-phone")
@@ -172,8 +180,13 @@ def test_d2_d3_projection_is_change_only_bounded_and_revision_fenced(tmp_path, m
 def test_d2_d3_focused_device_reads_support_etag_and_304(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
     from api_fastapi import deps
+    from api_fastapi.services import lite_status
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
 
     deps.core.write_json_file(deps.settings().state_dir / "fleet.json", [_offline_device()])
+    # E3 contract: prepare from the collector outside the GET handler.
+    CONTROL_PLANE.project_fleet(lite_status.lite_fleet())
+    CONTROL_PLANE.invalidate_after_database_replacement()
     fleet_response = client().get("/api/lite/fleet")
     assert fleet_response.status_code == 200
 

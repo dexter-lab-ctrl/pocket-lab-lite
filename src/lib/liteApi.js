@@ -115,15 +115,33 @@ async function readJson(path, options = {}) {
   }
 
   if (!response.ok) {
+    const headerRetryAfter = Number(response.headers?.get?.('Retry-After') || 0);
+    const retryAfterSeconds = Math.max(0, Math.min(
+      Number(data?.retry_after_seconds || data?.detail?.retry_after_seconds || headerRetryAfter) || 0,
+      3600,
+    ));
     if (safeSnapshot) {
       markLiteSnapshotBackendUnreachable();
       const cached = await readLiteSnapshotAsync(path);
-      if (cached) return cached;
+      if (cached) {
+        return {
+          ...cached,
+          read_degraded: true,
+          refresh_pending: Boolean(data?.refresh_pending ?? true),
+          retry_after_seconds: retryAfterSeconds,
+          __liteSnapshot: {
+            ...(cached.__liteSnapshot || {}),
+            retryAfterSeconds,
+            error: 'backend_refresh_pending',
+          },
+        };
+      }
     }
     const message = data?.message || data?.summary || data?.detail?.message || data?.detail?.summary || data?.detail || data?.error || response.statusText;
     const error = new Error(typeof message === 'string' ? message : 'Pocket Lab Lite action could not be completed.');
     error.status = response.status;
     error.payload = data;
+    error.retryAfterSeconds = retryAfterSeconds;
     throw error;
   }
 

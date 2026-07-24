@@ -315,7 +315,15 @@ def test_d4_health_endpoints_use_prepared_sqlite_etags_and_304(tmp_path, monkeyp
 
     health = evaluate_device_health(_device(), signals=_signals(), now_epoch=NOW_EPOCH)
     payload = _health_payload(health)
-    monkeypatch.setattr(lite_router.lite_status, "lite_fleet", lambda: payload)
+    lite_router.CONTROL_PLANE.prepared_read(
+        domain="fleet", key="summary", builder=lambda: payload,
+        projector=lite_router.CONTROL_PLANE.project_fleet,
+        stale_after_ms=60_000, max_stale_ms=180_000, deadline_seconds=2.0,
+    )
+    monkeypatch.setattr(
+        lite_router.lite_status, "lite_fleet",
+        lambda: (_ for _ in ()).throw(AssertionError("live fleet collector reached GET")),
+    )
 
     fleet = client().get("/api/lite/fleet")
     assert fleet.status_code == 200
@@ -849,7 +857,9 @@ def test_d4_agent_registry_serializes_overlapping_device_updates(tmp_path, monke
                 "hostname": f"Phone {index}",
                 "role": "compute",
                 "status": "online",
-                "heartbeat_at": NOW_ISO,
+                "heartbeat_at": __import__("datetime").datetime.now(
+                    __import__("datetime").timezone.utc
+                ).isoformat().replace("+00:00", "Z"),
             },
             event_type="fleet.node_heartbeat",
         )
@@ -860,13 +870,19 @@ def test_d4_agent_registry_serializes_overlapping_device_updates(tmp_path, monke
     agents = fleet_registry.list_agents(include_stale=True)
     assert {item["node_id"] for item in agents} == {f"phone-{index}" for index in range(20)}
     from api_fastapi import deps
-    payload = deps.core.read_json_file(
-        deps.settings().state_dir / "fleet_device_events.json", {"events": []}
-    )
-    first_heartbeats = [
-        item for item in payload.get("events", [])
-        if item.get("event_type") == "first_heartbeat_received"
-    ]
+    import time
+    event_path = deps.settings().state_dir / "fleet_device_events.json"
+    first_heartbeats = []
+    deadline = time.monotonic() + 3.0
+    while time.monotonic() < deadline:
+        payload = deps.core.read_json_file(event_path, {"events": []})
+        first_heartbeats = [
+            item for item in payload.get("events", [])
+            if item.get("event_type") == "first_heartbeat_received"
+        ]
+        if len(first_heartbeats) == 20:
+            break
+        time.sleep(0.02)
     assert len(first_heartbeats) == 20
 
 
@@ -879,13 +895,16 @@ def test_d4_background_health_sweep_uses_low_power_safe_configurable_deadline(mo
 
     def prepared_read(**kwargs):
         captured.update(kwargs)
-        return SimpleNamespace(source_revision=9, projection_age_ms=0, read_degraded=False)
+        return SimpleNamespace(
+            source_revision=9, projection_age_ms=0, read_degraded=False, refresh_pending=True
+        )
 
     monkeypatch.setenv("POCKETLAB_DEVICE_HEALTH_SWEEP_DEADLINE_SECONDS", "20")
-    monkeypatch.setattr(lite.CONTROL_PLANE, "prepared_read", prepared_read)
+    monkeypatch.setattr(lite.CONTROL_PLANE, "prepared_only_read", prepared_read)
 
     result = lite._refresh_device_health_projection()
 
     assert captured["deadline_seconds"] == 20.0
-    assert captured["cold_start_async"] is False
+    assert captured["priority"] == 15
+    assert captured["work_class"] == "critical"
     assert result["source_revision"] == 9

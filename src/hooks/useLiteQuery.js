@@ -133,6 +133,7 @@ export function useLiteQuery({
       failureCount: queryState?.state?.failureCount || 0,
       error: queryState?.state?.error || null,
       savedState: isSavedSnapshot(data),
+      retryAfterSeconds: data?.retry_after_seconds || data?.__liteSnapshot?.retryAfterSeconds || 0,
     });
   }, [documentVisible, enabledWhenHidden, isLive, pollingMode, refetchInterval]);
 
@@ -168,6 +169,14 @@ export function useLiteQuery({
     refetchOnWindowFocus,
     refetchOnMount,
     refetchOnReconnect,
+    retry: (failureCount, error) => {
+      if (Number(error?.status) === 503) return failureCount < 1;
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex, error) => {
+      const retryAfterMs = Math.max(0, Math.min(Number(error?.retryAfterSeconds) || 0, 3600)) * 1000;
+      return retryAfterMs || Math.min(30_000, 1_000 * (2 ** attemptIndex));
+    },
   });
 
   const refresh = useCallback(async () => {

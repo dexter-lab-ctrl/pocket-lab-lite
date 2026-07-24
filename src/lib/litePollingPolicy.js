@@ -112,9 +112,13 @@ export function liteQueryPollingInterval({
   failureCount = 0,
   error = null,
   savedState = false,
+  retryAfterSeconds = 0,
 } = {}) {
   if (!visible && !enabledWhenHidden) return litePollingIntervals.off;
   if (live) return litePollingIntervals.realtime;
+
+  const backendCooldownMs = Math.max(0, Math.min(Number(retryAfterSeconds) || 0, 3600)) * 1000;
+  if (backendCooldownMs) return Math.max(backendCooldownMs, litePollingIntervals.active);
 
   const backoff = litePollingBackoffInterval({ failureCount, error, savedState });
   if (backoff) return backoff;

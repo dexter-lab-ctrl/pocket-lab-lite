@@ -12,9 +12,21 @@ from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_di
 def isolate_recovery_r3_state(tmp_path, monkeypatch):
     ensure_runtime_path()
     from api_fastapi import deps
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+    from api_fastapi.services import lite_recovery_subprojections
 
     state = isolated_state_dir(tmp_path)
     deps.core.SETTINGS = deps.core.Settings(state_dir=state)
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(state / "pocketlab-lite.sqlite3"))
+    reset_sqlite_path_cache()
+    CONTROL_PLANE.initialize()
+    CONTROL_PLANE.invalidate_after_database_replacement()
+    with lite_recovery_subprojections._LOCK:
+        lite_recovery_subprojections._VALUES.clear()
+        lite_recovery_subprojections._FUTURES.clear()
+        lite_recovery_subprojections._FAILURES.clear()
+        lite_recovery_subprojections._NEXT_ALLOWED.clear()
     monkeypatch.setenv("POCKETLAB_LITE_BACKUP_ROOT", str(tmp_path / "lite-backups"))
     yield
 
@@ -50,6 +62,12 @@ def test_recovery_summary_is_compact_conditional_and_sanitized(monkeypatch):
         "sanitized": True,
     })
     monkeypatch.setattr(lite.lite_security_maintenance, "maintenance_state", lambda: {"active": False, "state": "ready"})
+    payload_to_prime = lite._build_lite_recovery_summary_projection()
+    lite.CONTROL_PLANE.prepared_read(
+        domain="recovery", key="summary", builder=lambda: payload_to_prime,
+        projector=lite.CONTROL_PLANE.project_recovery, stale_after_ms=60_000,
+        max_stale_ms=180_000, deadline_seconds=2.0,
+    )
 
     response = client().get("/api/lite/recovery/summary")
     assert response.status_code == 200
@@ -70,16 +88,21 @@ def test_recovery_summary_is_compact_conditional_and_sanitized(monkeypatch):
 def test_recovery_details_preserves_existing_full_contract(monkeypatch):
     from api_fastapi.routers import lite
 
-    monkeypatch.setattr(lite.lite_status, "lite_recovery_details", lambda: {
-        "status": "healthy",
-        "summary": "Recovery Ready",
+    monkeypatch.setattr(lite, "_recovery_base_subprojection", lambda: {
+        "status": "healthy", "summary": "Recovery Ready",
         "backup_history": [{"backup_id": "backup-a"}],
     })
-    monkeypatch.setattr(lite.lite_app_profiles, "app_backup_profiles", lambda: {"apps": [{"app_id": "photoprism"}]})
+    monkeypatch.setattr(lite.lite_app_lifecycle, "cached_app_backup_profiles", lambda: {"apps": [{"app_id": "photoprism"}]})
     monkeypatch.setattr(lite.lite_app_lifecycle, "app_lifecycle_profiles", lambda: {"apps": [{"app_id": "photoprism"}]})
-    monkeypatch.setattr(lite.lite_app_backup_targets, "backup_targets", lambda: {"targets": [{"device_id": "phone-2"}]})
-    monkeypatch.setattr(lite.lite_database_recovery, "database_recovery_status", lambda: {"status": "healthy", "backup_history": []})
-    monkeypatch.setattr(lite.lite_security_maintenance, "maintenance_state", lambda: {"active": False, "state": "ready"})
+    monkeypatch.setattr(lite.lite_recovery_subprojections, "backup_targets", lambda: {"targets": [{"device_id": "phone-2"}]})
+    monkeypatch.setattr(lite.lite_recovery_subprojections, "database_protection_details", lambda: {"status": "healthy", "backup_history": []})
+    monkeypatch.setattr(lite.lite_recovery_subprojections, "maintenance_state", lambda: {"active": False, "state": "ready"})
+    payload_to_prime = lite._lite_recovery_details_payload()
+    lite.CONTROL_PLANE.prepared_read(
+        domain="recovery", key="details", builder=lambda: payload_to_prime,
+        projector=lite.CONTROL_PLANE.project_recovery, stale_after_ms=60_000,
+        max_stale_ms=180_000, deadline_seconds=2.0,
+    )
 
     response = client().get("/api/lite/recovery/details")
     assert response.status_code == 200
@@ -216,6 +239,13 @@ def test_database_recovery_summary_excludes_history_and_deep_restore_details(mon
 
 
 def test_recovery_summary_payload_stays_within_mobile_key_and_size_budget():
+    from api_fastapi.routers import lite
+    lite.CONTROL_PLANE.project_recovery({
+        "status": "healthy", "summary": "Recovery Ready",
+        "updated_at": __import__("datetime").datetime.now(
+            __import__("datetime").timezone.utc
+        ).isoformat().replace("+00:00", "Z"),
+    })
     response = client().get("/api/lite/recovery/summary")
     assert response.status_code == 200
     payload = response.json()

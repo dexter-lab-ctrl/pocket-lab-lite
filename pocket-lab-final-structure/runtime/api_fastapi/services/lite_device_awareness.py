@@ -346,6 +346,46 @@ def _invite_records() -> list[dict[str, Any]]:
 
 
 def _safe_events() -> list[dict[str, Any]]:
+    # E1: SQLite is the normal lifecycle authority. JSON is read only when the
+    # database is unavailable or has not yet been migrated (disaster recovery /
+    # compatibility fallback).
+    try:
+        from ..db.connection import read_connection
+
+        with read_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT event_id,device_id,event_type,reason_code,status,occurred_at,
+                       summary,dedupe_key,generation_key,state_revision
+                FROM device_lifecycle_events
+                ORDER BY occurred_at_epoch_ms DESC,event_id DESC
+                LIMIT ?
+                """,
+                (MAX_LIFECYCLE_EVENTS * 4,),
+            ).fetchall()
+        if rows:
+            return [
+                {
+                    "event_id": row["event_id"],
+                    "device_id": row["device_id"],
+                    "node_id": row["device_id"],
+                    "event_type": row["event_type"],
+                    "reason_code": row["reason_code"],
+                    "status": row["status"],
+                    "occurred_at": row["occurred_at"],
+                    "created_at": row["occurred_at"],
+                    "summary": row["summary"],
+                    "dedupe_key": row["dedupe_key"],
+                    "generation_key": row["generation_key"],
+                    "state_revision": int(row["state_revision"] or 0),
+                    "sqlite_authoritative": True,
+                    "sanitized": True,
+                }
+                for row in rows
+            ]
+    except Exception:
+        pass
+
     combined: list[dict[str, Any]] = []
     for name in ("fleet_invite_events.json", "fleet_device_events.json"):
         payload = _read_state(name, {"events": []})

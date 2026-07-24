@@ -6,6 +6,7 @@ import os
 import re
 import time
 import threading
+import concurrent.futures
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -15,6 +16,9 @@ AGENT_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_AGENT_TTL_SECONDS", "90"
 COMMAND_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_COMMAND_TTL_SECONDS", "3600"))
 SUPERVISOR_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_SUPERVISOR_TTL_SECONDS", "180"))
 _AGENT_REGISTRY_LOCK = threading.RLock()
+_LIFECYCLE_EXPORT_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
+    max_workers=1, thread_name_prefix="pocketlab-lifecycle-export"
+)
 _PROFILE_TEXT_FIELDS = (
     "os_family", "os_name", "os_version", "security_patch", "manufacturer",
     "technical_model", "device_codename", "architecture", "android_abi", "kernel",
@@ -248,6 +252,19 @@ def _safe_profile_text(value: Any, limit: int = 160) -> str:
     return " ".join(text.strip().split())[:limit]
 
 
+_LIFECYCLE_SECRET_TEXT = re.compile(
+    r"(?:token|password|secret|credential|api[_-]?key|private[_-]?key|bearer\s+|authorization\s*[:=]|auth\s*[:=])",
+    re.IGNORECASE,
+)
+
+
+def _safe_lifecycle_summary(value: Any, limit: int = 220) -> str:
+    text = _safe_profile_text(value, limit)
+    if _LIFECYCLE_SECRET_TEXT.search(text):
+        return "Protected lifecycle metadata recorded."
+    return text or "Device activity recorded."
+
+
 def _normalize_system_profile(value: Any) -> Dict[str, Any]:
     if not isinstance(value, dict):
         return {}
@@ -354,6 +371,60 @@ def _derive_status(agent: Dict[str, Any]) -> str:
 
 
 
+def _export_device_lifecycle_compatibility(event: Dict[str, Any], transaction_id: str) -> None:
+    succeeded = False
+    try:
+        with _AGENT_REGISTRY_LOCK:
+            payload = _read(_state_path("fleet_device_events.json"), {"events": [], "updated_at": None})
+            if not isinstance(payload, dict):
+                payload = {"events": [], "updated_at": None}
+            events = payload.get("events") if isinstance(payload.get("events"), list) else []
+            event_id = str(event.get("event_id") or "")
+            dedupe_key = str(event.get("dedupe_key") or "")
+            events = [
+                item for item in events
+                if not (
+                    isinstance(item, dict)
+                    and (
+                        str(item.get("event_id") or "") == event_id
+                        or (dedupe_key and str(item.get("dedupe_key") or "") == dedupe_key)
+                    )
+                )
+            ]
+            events.insert(0, dict(event))
+            payload["events"] = events[:500]
+            payload["updated_at"] = event.get("occurred_at") or _now()
+            _write(_state_path("fleet_device_events.json"), payload)
+            succeeded = True
+    finally:
+        try:
+            from .lite_control_plane_store import CONTROL_PLANE
+            CONTROL_PLANE.mark_lifecycle_exported(transaction_id, succeeded=succeeded)
+        except Exception:
+            pass
+
+
+def resume_pending_lifecycle_exports(*, limit: int = 100) -> int:
+    """Resume bounded compatibility exports after a process restart."""
+    from .lite_control_plane_store import CONTROL_PLANE
+
+    submitted = 0
+    for item in CONTROL_PLANE.pending_lifecycle_exports(limit=limit):
+        event = item.get("event") if isinstance(item.get("event"), dict) else None
+        transaction_id = str(item.get("transaction_id") or "")
+        if not event or not transaction_id:
+            continue
+        try:
+            _LIFECYCLE_EXPORT_EXECUTOR.submit(
+                _export_device_lifecycle_compatibility, dict(event), transaction_id
+            )
+            submitted += 1
+        except RuntimeError:
+            CONTROL_PLANE.mark_lifecycle_exported(transaction_id, succeeded=False)
+            break
+    return submitted
+
+
 def append_device_lifecycle_event(
     device_id: str,
     event_type: str,
@@ -365,16 +436,19 @@ def append_device_lifecycle_event(
     invite_id: str | None = None,
     command_id: str | None = None,
     dedupe_key: str | None = None,
+    generation_key: str | None = None,
+    current_state: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
-    """Append a bounded, sanitized lifecycle event without storing raw payloads."""
+    """Commit sanitized lifecycle evidence to SQLite, then export bounded JSON."""
     safe_device_id = normalize_node_id(device_id)
     safe_type = re.sub(r"[^a-z0-9_.-]+", "_", str(event_type or "device_activity").lower())[:80]
     safe_reason = re.sub(r"[^a-z0-9_.-]+", "_", str(reason_code or "").lower())[:80]
-    safe_summary = _safe_profile_text(summary or "Device activity recorded.", 220)
+    safe_summary = _safe_lifecycle_summary(summary or "Device activity recorded.", 220)
     at = occurred_at or _now()
     safe_dedupe_key = _safe_profile_text(dedupe_key, 240) if dedupe_key else ""
+    safe_generation_key = _safe_profile_text(generation_key, 160) if generation_key else ""
     material = json.dumps(
-        [safe_device_id, safe_type, safe_dedupe_key or at, safe_reason, invite_id or "", command_id or ""],
+        [safe_device_id, safe_type, safe_dedupe_key or safe_generation_key or at, safe_reason, invite_id or "", command_id or ""],
         separators=(",", ":"),
     )
     event = {
@@ -390,27 +464,28 @@ def append_device_lifecycle_event(
         "invite_id": _safe_profile_text(invite_id, 120) if invite_id else None,
         "command_id": _safe_profile_text(command_id, 120) if command_id else None,
         "dedupe_key": safe_dedupe_key or None,
+        "generation_key": safe_generation_key or None,
         "sanitized": True,
     }
-    with _AGENT_REGISTRY_LOCK:
-        payload = _read(_state_path("fleet_device_events.json"), {"events": [], "updated_at": None})
-        if not isinstance(payload, dict):
-            payload = {"events": [], "updated_at": None}
-        events = payload.get("events") if isinstance(payload.get("events"), list) else []
-        events = [
-            item for item in events
-            if not (
-                isinstance(item, dict)
-                and (
-                    str(item.get("event_id") or "") == event["event_id"]
-                    or (safe_dedupe_key and str(item.get("dedupe_key") or "") == safe_dedupe_key)
-                )
+    from .lite_control_plane_store import CONTROL_PLANE
+
+    committed = CONTROL_PLANE.commit_device_lifecycle_transition(
+        event, current_state=current_state
+    )
+    event["event_id"] = str(committed.get("event_id") or event["event_id"])
+    event["dedupe_key"] = committed.get("dedupe_key") or event.get("dedupe_key")
+    event["generation_key"] = committed.get("generation_key") or event.get("generation_key")
+    event["sqlite_authoritative"] = True
+    event["state_revision"] = int(committed.get("state_revision") or 0)
+    event["changed"] = bool(committed.get("changed"))
+    transaction_id = str(committed.get("transaction_id") or "")
+    if committed.get("export_required") and transaction_id:
+        try:
+            _LIFECYCLE_EXPORT_EXECUTOR.submit(
+                _export_device_lifecycle_compatibility, dict(event), transaction_id
             )
-        ]
-        events.insert(0, event)
-        payload["events"] = events[:500]
-        payload["updated_at"] = at
-        _write(_state_path("fleet_device_events.json"), payload)
+        except RuntimeError:
+            CONTROL_PLANE.mark_lifecycle_exported(transaction_id, succeeded=False)
     return event
 
 
@@ -495,6 +570,13 @@ def _upsert_agent_unlocked(
         agents[node_id] = existing
         payload["updated_at"] = now
         _write(_state_path("fleet_agents.json"), payload)
+        mismatch_generation = _safe_profile_text(
+            data.get("invite_id")
+            or data.get("heartbeat_id")
+            or data.get("heartbeat_at")
+            or existing.get("identity_mismatch_count"),
+            120,
+        )
         append_device_lifecycle_event(
             node_id,
             "identity_mismatch_blocked",
@@ -502,6 +584,10 @@ def _upsert_agent_unlocked(
             summary="A mismatched device join was blocked without changing the enrolled identity.",
             status="blocked",
             occurred_at=now,
+            invite_id=_safe_profile_text(data.get("invite_id"), 120) or None,
+            dedupe_key=f"{node_id}:identity_mismatch_blocked:{mismatch_generation}",
+            generation_key=mismatch_generation,
+            current_state=existing,
         )
         return existing
 
@@ -511,10 +597,29 @@ def _upsert_agent_unlocked(
     is_join_start = normalized_event.endswith("agent_join_started")
     is_invited = normalized_event.endswith("agent_invited")
     is_supervisor = normalized_event.endswith("node_supervisor")
+    is_connection_lost = bool(
+        normalized_event.endswith("node_left")
+        or data.get("last_nats_disconnected_at")
+        or str(data.get("status") or data.get("agent_status") or "").lower() == "offline"
+    )
     previous_status = str(existing.get("agent_status") or "").lower()
     previous_identity = str(existing.get("identity_status") or "").lower()
     first_heartbeat_missing = not bool(existing.get("first_heartbeat_at"))
     first_supervisor_missing = not bool(existing.get("first_supervisor_heartbeat_at"))
+    identity_transition = bool(
+        is_heartbeat and previous_identity not in {"verified", "protected_server_host"}
+    )
+    try:
+        previous_identity_revision = max(0, int(existing.get("identity_revision") or 0))
+    except (TypeError, ValueError):
+        previous_identity_revision = 0
+    try:
+        previous_connection_generation = max(0, int(existing.get("connection_generation") or 0))
+    except (TypeError, ValueError):
+        previous_connection_generation = 0
+    connection_lost_transition = bool(
+        is_connection_lost and previous_status not in {"offline", "failed", "unhealthy", "agent_stopped"}
+    )
 
     merged = {
         **existing,
@@ -547,7 +652,8 @@ def _upsert_agent_unlocked(
             if data.get("reconnect_count") is not None
             else existing.get("reconnect_count") or 0
         ),
-        "agent_status": data.get("status")
+        "agent_status": ("offline" if is_connection_lost else None)
+        or data.get("status")
         or data.get("agent_status")
         or existing.get("agent_status")
         or "online",
@@ -649,6 +755,17 @@ def _upsert_agent_unlocked(
             merged[storage_key] = data.get(storage_key)
     if incoming_hash:
         merged["auth_token_hash"] = incoming_hash
+    if connection_lost_transition:
+        merged["connection_generation"] = previous_connection_generation + 1
+    elif previous_connection_generation:
+        merged["connection_generation"] = previous_connection_generation
+    if identity_transition:
+        # Lifecycle generations must never be derived from credential hashes.
+        # This monotonic, non-secret revision is durable in the internal fleet
+        # state and provides stable semantic idempotency across replays.
+        merged["identity_revision"] = previous_identity_revision + 1
+    elif previous_identity_revision:
+        merged["identity_revision"] = previous_identity_revision
     if merged.get("tailnet_ip"):
         merged["last_tailnet_ready_at"] = data.get("seen_at") or data.get("heartbeat_at") or now
 
@@ -657,9 +774,17 @@ def _upsert_agent_unlocked(
     _write(_state_path("fleet_agents.json"), payload)
 
     if is_invited and previous_status not in {"invited", "pending"}:
-        append_device_lifecycle_event(node_id, "invite_created", summary="Device invite created.", occurred_at=now)
+        append_device_lifecycle_event(
+            node_id, "invite_created", summary="Device invite created.",
+            occurred_at=now, invite_id=_safe_profile_text(data.get("invite_id"), 120) or None,
+            current_state=merged,
+        )
     if is_join_start and previous_status not in {"joining", "accepted"}:
-        append_device_lifecycle_event(node_id, "join_started", summary="Device join started.", occurred_at=now)
+        append_device_lifecycle_event(
+            node_id, "join_started", summary="Device join started.",
+            occurred_at=now, invite_id=_safe_profile_text(data.get("invite_id"), 120) or None,
+            current_state=merged,
+        )
     if is_heartbeat and first_heartbeat_missing:
         append_device_lifecycle_event(
             node_id,
@@ -667,21 +792,33 @@ def _upsert_agent_unlocked(
             summary="First valid device heartbeat received.",
             occurred_at=merged.get("first_heartbeat_at"),
             dedupe_key=f"{node_id}:first_heartbeat_received",
+            current_state=merged,
         )
-    if is_heartbeat and previous_identity not in {"verified", "protected_server_host"}:
-        identity_revision = _safe_profile_text(merged.get("auth_token_hash") or merged.get("identity_verified_at") or "initial", 120)
+    if is_heartbeat and first_heartbeat_missing:
+        append_device_lifecycle_event(
+            node_id,
+            "first_ready",
+            summary="Device reached ready state for the first time.",
+            occurred_at=merged.get("first_ready_at") or merged.get("first_heartbeat_at"),
+            dedupe_key=f"{node_id}:first_ready",
+            current_state=merged,
+        )
+    if identity_transition:
+        identity_revision = str(max(1, int(merged.get("identity_revision") or 1)))
         append_device_lifecycle_event(
             node_id,
             "identity_verified",
             summary="Device identity verified from the enrolled agent heartbeat.",
             occurred_at=merged.get("identity_verified_at"),
             dedupe_key=f"{node_id}:identity_verified:{identity_revision}",
+            generation_key=identity_revision,
+            current_state=merged,
         )
     if is_heartbeat and previous_status in {"offline", "failed", "unhealthy", "agent_stopped"}:
         offline_generation = _safe_profile_text(
-            existing.get("last_nats_disconnected_at")
+            existing.get("connection_generation")
+            or existing.get("last_nats_disconnected_at")
             or existing.get("stale_since")
-            or existing.get("updated_at")
             or "unknown",
             120,
         )
@@ -691,6 +828,19 @@ def _upsert_agent_unlocked(
             summary="Device returned online.",
             occurred_at=now,
             dedupe_key=f"{node_id}:device_returned_online:{offline_generation}",
+            generation_key=offline_generation,
+            current_state=merged,
+        )
+    if connection_lost_transition:
+        connection_generation = str(max(1, int(merged.get("connection_generation") or 1)))
+        append_device_lifecycle_event(
+            node_id,
+            "connection_lost",
+            summary="Device connection was lost.",
+            occurred_at=merged.get("last_nats_disconnected_at") or now,
+            dedupe_key=f"{node_id}:connection_lost:{connection_generation}",
+            generation_key=connection_generation,
+            current_state=merged,
         )
     if is_supervisor and first_supervisor_missing:
         append_device_lifecycle_event(
@@ -698,7 +848,8 @@ def _upsert_agent_unlocked(
             "first_supervisor_heartbeat",
             summary="Device supervisor reported for the first time.",
             occurred_at=merged.get("first_supervisor_heartbeat_at"),
-            dedupe_key=f"{node_id}:first_supervisor_heartbeat",
+            dedupe_key=f"{node_id}:first_supervisor_heartbeat_received",
+            current_state=merged,
         )
     if is_supervisor and data.get("last_repair_at") and data.get("last_repair_at") != existing.get("last_supervisor_repair_at"):
         repair_id = _safe_profile_text(data.get("repair_id") or data.get("last_repair_at"), 120)
@@ -709,6 +860,8 @@ def _upsert_agent_unlocked(
             occurred_at=str(data.get("last_repair_at")),
             status="completed",
             dedupe_key=f"{node_id}:repair_completed:{repair_id}",
+            generation_key=repair_id,
+            current_state=merged,
         )
     return merged
 

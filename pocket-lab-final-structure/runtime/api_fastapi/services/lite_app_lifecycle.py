@@ -509,7 +509,10 @@ def _photoprism_lifecycle_actions() -> dict[str, Any]:
 
 
 def _operation_action(action_id: str, installed: bool, operations: dict[str, Any]) -> dict[str, Any]:
-    op = (operations.get("actions") or {}).get(action_id) if isinstance(operations, dict) else {}
+    actions = operations.get("actions") if isinstance(operations, dict) else {}
+    actions = actions if isinstance(actions, dict) else {}
+    raw_op = actions.get(action_id)
+    op = raw_op if isinstance(raw_op, dict) else {}
     running = str(op.get("status") or "").lower() in {"queued", "running"}
     if action_id == "check_app":
         return _action(
