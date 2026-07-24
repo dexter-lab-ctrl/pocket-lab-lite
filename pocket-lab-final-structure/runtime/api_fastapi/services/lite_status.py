@@ -755,7 +755,8 @@ def lite_security() -> dict[str, Any]:
 
 
 def lite_fleet() -> dict[str, Any]:
-    nodes = merged_fleet_nodes()
+    nodes = lite_invites.enrolled_invite_nodes()
+    nodes.extend(merged_fleet_nodes())
     active_invite_keys = lite_invites.active_invite_device_keys()
     remote_access = lite_remote_access_status()
     server = _server_host_device(remote_access)

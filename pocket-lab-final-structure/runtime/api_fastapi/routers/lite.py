@@ -2406,6 +2406,12 @@ def schedule_control_plane_projection_warmup() -> dict[str, bool]:
 
 
 def _refresh_device_health_projection() -> dict[str, Any]:
+    try:
+        deadline_seconds = max(5.0, min(60.0, float(
+            os.environ.get("POCKETLAB_DEVICE_HEALTH_SWEEP_DEADLINE_SECONDS", "20")
+        )))
+    except (TypeError, ValueError):
+        deadline_seconds = 20.0
     prepared = CONTROL_PLANE.prepared_read(
         domain="fleet",
         key="summary",
@@ -2413,7 +2419,7 @@ def _refresh_device_health_projection() -> dict[str, Any]:
         projector=CONTROL_PLANE.project_fleet,
         stale_after_ms=0,
         max_stale_ms=0,
-        deadline_seconds=5.0,
+        deadline_seconds=deadline_seconds,
         cold_start_async=False,
     )
     return {

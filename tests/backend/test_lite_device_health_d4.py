@@ -764,3 +764,128 @@ def test_d4_migration_and_revision_sync_are_bounded_and_focused():
     assert "health_changed_ids" in (root / "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py").read_text(encoding="utf-8")
     assert "device_health_projection_sweep_loop" in router
     assert "POCKETLAB_DEVICE_HEALTH_SWEEP_SECONDS" in router
+
+
+def test_d4_missing_optional_supervisor_does_not_block_current_device_health():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_device_health import evaluate_device_health
+
+    device = _device(
+        supervisor_status=None,
+        last_seen_state={
+            **_device()["last_seen_state"],
+            "last_supervisor_heartbeat_at": None,
+        },
+        system_profile={
+            **_device()["system_profile"],
+            "supervisor_version": None,
+        },
+        dependencies={
+            **_device()["dependencies"],
+            "recovery_available": False,
+            "supervisor_status": "unknown",
+        },
+    )
+    signals = _signals(supervisor_version=None)
+
+    health = evaluate_device_health(device, signals=signals, now_epoch=NOW_EPOCH)
+
+    assert health["source_freshness"]["supervisor"]["state"] == "missing"
+    assert health["source_freshness"]["state"] == "current"
+    assert health["source_freshness"]["optional_state"] == "unavailable"
+    assert health["versions"]["supervisor"]["status"] == "unknown"
+    assert health["versions"]["status"] == "current"
+    assert health["status"] == "healthy"
+    assert health["summary"] == "No immediate action is needed."
+
+
+def test_d4_accepted_invite_remains_visible_as_offline_fleet_fallback(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi import deps
+    from api_fastapi.services import lite_invites
+
+    deps.core.write_json_file(
+        deps.settings().state_dir / "fleet_invites.json",
+        {
+            "updated_at": NOW_ISO,
+            "invites": [
+                {
+                    "invite_id": "invite-phone-two",
+                    "node_id": "phone-two",
+                    "hostname": "Phone Two",
+                    "role": "compute",
+                    "capabilities": ["compute", "health"],
+                    "status": "accepted",
+                    "uses_remaining": 0,
+                    "accepted_at": NOW_ISO,
+                    "updated_at": NOW_ISO,
+                    "created_at": NOW_ISO,
+                    "expires_at_epoch": NOW_EPOCH - 1,
+                }
+            ],
+        },
+    )
+
+    nodes = lite_invites.enrolled_invite_nodes()
+
+    assert len(nodes) == 1
+    assert nodes[0]["id"] == "phone-two"
+    assert nodes[0]["status"] == "offline"
+    assert nodes[0]["identity_status"] == "verified"
+    assert nodes[0]["source"] == "accepted-invite"
+    assert "token" not in json.dumps(nodes[0]).lower()
+
+
+def test_d4_agent_registry_serializes_overlapping_device_updates(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from concurrent.futures import ThreadPoolExecutor
+    from api_fastapi.services import fleet_registry
+
+    def write_device(index: int):
+        node_id = f"phone-{index}"
+        return fleet_registry.upsert_agent(
+            {
+                "node_id": node_id,
+                "hostname": f"Phone {index}",
+                "role": "compute",
+                "status": "online",
+                "heartbeat_at": NOW_ISO,
+            },
+            event_type="fleet.node_heartbeat",
+        )
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(write_device, range(20)))
+
+    agents = fleet_registry.list_agents(include_stale=True)
+    assert {item["node_id"] for item in agents} == {f"phone-{index}" for index in range(20)}
+    from api_fastapi import deps
+    payload = deps.core.read_json_file(
+        deps.settings().state_dir / "fleet_device_events.json", {"events": []}
+    )
+    first_heartbeats = [
+        item for item in payload.get("events", [])
+        if item.get("event_type") == "first_heartbeat_received"
+    ]
+    assert len(first_heartbeats) == 20
+
+
+def test_d4_background_health_sweep_uses_low_power_safe_configurable_deadline(monkeypatch):
+    ensure_runtime_path()
+    from types import SimpleNamespace
+    from api_fastapi.routers import lite
+
+    captured = {}
+
+    def prepared_read(**kwargs):
+        captured.update(kwargs)
+        return SimpleNamespace(source_revision=9, projection_age_ms=0, read_degraded=False)
+
+    monkeypatch.setenv("POCKETLAB_DEVICE_HEALTH_SWEEP_DEADLINE_SECONDS", "20")
+    monkeypatch.setattr(lite.CONTROL_PLANE, "prepared_read", prepared_read)
+
+    result = lite._refresh_device_health_projection()
+
+    assert captured["deadline_seconds"] == 20.0
+    assert captured["cold_start_async"] is False
+    assert result["source_revision"] == 9

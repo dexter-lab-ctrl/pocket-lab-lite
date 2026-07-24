@@ -733,6 +733,47 @@ def append_bootstrap_blocked_evidence(
     return event
 
 
+
+def enrolled_invite_nodes() -> list[dict[str, Any]]:
+    """Return sanitized durable device placeholders for completed enrollments.
+
+    Accepted invite records are durable lifecycle evidence. They provide a
+    bounded fallback when an overlapping agent-registry write or a temporary
+    state-file problem removes the live/stale agent row. A richer agent record
+    with the same node id always wins during fleet merging.
+    """
+    payload = _refresh_invite_states(_invites_payload())
+    nodes: list[dict[str, Any]] = []
+    for item in payload.get("invites", []):
+        if not isinstance(item, dict):
+            continue
+        status = str(item.get("status") or "").strip().lower()
+        if status not in {"accepted", "used", "joined"}:
+            continue
+        node_id = normalize_node_id(str(item.get("node_id") or item.get("hostname") or ""))
+        if not node_id or node_id == "unknown-node":
+            continue
+        accepted_at = item.get("accepted_at") or item.get("updated_at") or item.get("created_at")
+        nodes.append({
+            "id": node_id,
+            "node_id": node_id,
+            "name": str(item.get("hostname") or item.get("node_id") or "Pocket Lab device")[:120],
+            "role": str(item.get("role") or "compute")[:40],
+            "status": "offline",
+            "agent_status": "offline",
+            "source": "accepted-invite",
+            "accepted_at": accepted_at,
+            "invite_accepted_at": accepted_at,
+            "enrolled_at": accepted_at,
+            "enrollment_status": "ready",
+            "identity_status": "verified",
+            "capabilities": list(item.get("capabilities") or [])[:16],
+            "advertised_capabilities": list(item.get("capabilities") or [])[:16],
+            "last_seen_at": accepted_at,
+            "sanitized": True,
+        })
+    return nodes[:500]
+
 def latest_invite() -> dict[str, Any] | None:
     payload = _refresh_invite_states(_invites_payload())
     valid = [

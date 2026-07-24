@@ -5,6 +5,7 @@ import json
 import os
 import re
 import time
+import threading
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -13,6 +14,7 @@ from .. import deps
 AGENT_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_AGENT_TTL_SECONDS", "90"))
 COMMAND_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_COMMAND_TTL_SECONDS", "3600"))
 SUPERVISOR_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_SUPERVISOR_TTL_SECONDS", "180"))
+_AGENT_REGISTRY_LOCK = threading.RLock()
 _PROFILE_TEXT_FIELDS = (
     "os_family", "os_name", "os_version", "security_patch", "manufacturer",
     "technical_model", "device_codename", "architecture", "android_abi", "kernel",
@@ -423,6 +425,19 @@ def _event_timestamp_fields(event_type: str, data: Dict[str, Any], now: str) -> 
 
 
 def upsert_agent(
+    data: Dict[str, Any], *, event_type: str = "fleet.node_seen"
+) -> Dict[str, Any]:
+    """Atomically merge one agent event into the durable fleet registry.
+
+    NATS callbacks can overlap inside the API process. Serializing the full
+    read/merge/write cycle prevents a newer heartbeat from replacing a payload
+    that also contained an enrolled offline device.
+    """
+    with _AGENT_REGISTRY_LOCK:
+        return _upsert_agent_unlocked(data, event_type=event_type)
+
+
+def _upsert_agent_unlocked(
     data: Dict[str, Any], *, event_type: str = "fleet.node_seen"
 ) -> Dict[str, Any]:
     node_id = normalize_node_id(
