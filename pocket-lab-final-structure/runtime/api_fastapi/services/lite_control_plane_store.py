@@ -1107,7 +1107,9 @@ class ControlPlaneProjectionStore:
         )
 
         if item is None:
-            status = PROJECTION_SCHEDULER.mark_dirty(scheduler_domain, job=job, priority=priority)
+            status = PROJECTION_SCHEDULER.mark_dirty(
+                scheduler_domain, job=job, priority=priority, force_followup=False
+            )
             raise PreparedProjectionUnavailable(
                 "Prepared projection is warming and no safe snapshot is available yet"
             )
@@ -1118,7 +1120,10 @@ class ControlPlaneProjectionStore:
         refresh_status = PROJECTION_SCHEDULER.status(scheduler_domain)
         if stale:
             refresh_status = PROJECTION_SCHEDULER.mark_dirty(
-                scheduler_domain, job=job, priority=priority
+                scheduler_domain,
+                job=job,
+                priority=priority,
+                force_followup=False,
             )
         refresh_pending = bool(refresh_status.get("refresh_pending"))
         retry_after = max(0, int(refresh_status.get("retry_after_seconds") or 0))

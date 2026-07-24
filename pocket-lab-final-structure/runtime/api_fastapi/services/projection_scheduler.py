@@ -181,6 +181,7 @@ class ProjectionScheduler:
         *,
         job: ProjectionJob | None = None,
         priority: int | None = None,
+        force_followup: bool = True,
     ) -> dict[str, Any]:
         if job is not None:
             self.register(job)
@@ -212,13 +213,15 @@ class ProjectionScheduler:
                     "reason": "unregistered_domain",
                 }
             was_pending = bool(state.queued or state.active)
-            state.generation += 1
-            state.dirty = True
             requested_priority = registered.priority if priority is None else max(0, min(int(priority), 100))
             prior_priority = state.priority
             state.priority = min(state.priority, requested_priority) if was_pending else requested_priority
             state.work_class = registered.work_class
-            if was_pending:
+
+            if was_pending and not force_followup:
+                # Prepared-read polling is only a refresh hint. Do not invalidate an
+                # in-flight generation: doing so creates an endless build/discard
+                # loop when clients poll faster than a collector can complete.
                 state.coalesced_count += 1
                 if state.queued and state.priority < prior_priority:
                     self._heap = [item for item in self._heap if item[2] != safe_domain]
@@ -226,7 +229,17 @@ class ProjectionScheduler:
                     state.queued = False
                     self._enqueue_locked(safe_domain, state)
             else:
-                self._enqueue_locked(safe_domain, state)
+                state.generation += 1
+                state.dirty = True
+                if was_pending:
+                    state.coalesced_count += 1
+                    if state.queued and state.priority < prior_priority:
+                        self._heap = [item for item in self._heap if item[2] != safe_domain]
+                        heapq.heapify(self._heap)
+                        state.queued = False
+                        self._enqueue_locked(safe_domain, state)
+                else:
+                    self._enqueue_locked(safe_domain, state)
             retry_after = max(0, int(state.next_retry_at - time.monotonic() + 0.999))
             # Dirty signalling is request-path safe: do not synchronously write
             # scheduler diagnostics here. The background dispatcher persists the
