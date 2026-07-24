@@ -19,6 +19,7 @@ import time
 from typing import Any, Callable, Mapping
 
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
+from .hot_path_profiler import HOT_PATH_PROFILER
 
 
 def _utc_now() -> str:
@@ -615,26 +616,35 @@ class WorkloadAdmissionManager:
                 operation.admission_class,
                 "The bounded maintenance executor is unavailable.",
             )
-        return await lane.run(
-            operation,
-            function,
-            *args,
-            admission_timeout_seconds=(
-                self.default_admission_timeout_seconds
-                if admission_timeout_seconds is None
-                else max(0.0, min(float(admission_timeout_seconds), 30.0))
-            ),
-            deadline_seconds=(
-                min(
-                    operation.default_deadline_seconds,
-                    self.default_operation_deadline_seconds,
+        profile_name = f"workload.{diagnostic_name or operation_id}"
+        with HOT_PATH_PROFILER.measure(profile_name) as hot_path:
+            try:
+                result = await lane.run(
+                    operation,
+                    function,
+                    *args,
+                    admission_timeout_seconds=(
+                        self.default_admission_timeout_seconds
+                        if admission_timeout_seconds is None
+                        else max(0.0, min(float(admission_timeout_seconds), 30.0))
+                    ),
+                    deadline_seconds=(
+                        min(
+                            operation.default_deadline_seconds,
+                            self.default_operation_deadline_seconds,
+                        )
+                        if deadline_seconds is None
+                        else max(0.01, min(float(deadline_seconds), 3600.0))
+                    ),
+                    diagnostic_name=diagnostic_name or operation_id,
+                    **kwargs,
                 )
-                if deadline_seconds is None
-                else max(0.01, min(float(deadline_seconds), 3600.0))
-            ),
-            diagnostic_name=diagnostic_name or operation_id,
-            **kwargs,
-        )
+                hot_path["outcome"] = "completed"
+                return result
+            except OperationDeadlineExceeded:
+                hot_path["outcome"] = "deadline_exceeded"
+                hot_path["error_type"] = "OperationDeadlineExceeded"
+                raise
 
     async def shutdown(self) -> None:
         with self._lock:

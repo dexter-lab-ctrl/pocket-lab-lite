@@ -1751,9 +1751,11 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     payload["request_limits"] = request_limit_snapshot()
     payload["storage_readiness"] = lite_storage_guard.storage_readiness()
     from ..services.idle_efficiency import IDLE_EFFICIENCY
+    from ..services.hot_path_profiler import HOT_PATH_PROFILER
     from ..services.live_status import LIVE_STATUS
     from ..services.projection_scheduler import PROJECTION_SCHEDULER
     payload["idle_efficiency"] = IDLE_EFFICIENCY.snapshot()
+    payload["hot_path"] = HOT_PATH_PROFILER.snapshot()
     payload["live_status"] = LIVE_STATUS.status()
     payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
     payload["sanitized"] = True
