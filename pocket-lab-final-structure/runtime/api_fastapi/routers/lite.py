@@ -2429,7 +2429,85 @@ def _refresh_device_health_projection() -> dict[str, Any]:
     }
 
 
-async def device_health_projection_sweep_loop() -> None:
+def _bounded_startup_delay(name: str, default: float, minimum: float, maximum: float) -> float:
+    try:
+        value = float(os.environ.get(name, str(default)))
+    except (TypeError, ValueError):
+        value = default
+    return max(minimum, min(maximum, value))
+
+
+async def run_staged_startup_workloads(lite_security_module: Any) -> None:
+    """Start optional projection work in bounded stages on low-power hosts.
+
+    API, NATS, and live status are already ready before this coroutine starts.
+    Each stage is isolated so one optional subsystem cannot block later stages
+    or turn startup into a restart loop.
+    """
+    logger = _LOGGER
+    security_delay = _bounded_startup_delay(
+        "POCKETLAB_SECURITY_PROJECTION_START_DELAY_SECONDS", 3.0, 0.0, 60.0
+    )
+    warmup_delay = _bounded_startup_delay(
+        "POCKETLAB_CONTROL_PROJECTION_START_DELAY_SECONDS", 12.0, 1.0, 120.0
+    )
+    health_delay = _bounded_startup_delay(
+        "POCKETLAB_DEVICE_HEALTH_START_DELAY_SECONDS", 5.0, 1.0, 120.0
+    )
+    started_at = asyncio.get_running_loop().time()
+
+    async def wait_until(offset: float) -> None:
+        remaining = started_at + offset - asyncio.get_running_loop().time()
+        if remaining > 0:
+            await asyncio.sleep(remaining)
+
+    health_task: asyncio.Task[None] | None = None
+    try:
+        await wait_until(security_delay)
+        try:
+            await asyncio.to_thread(lite_security_module.start_security_projection_runtime)
+            logger.info("pocketlab.startup.stage_ready stage=security_projection")
+        except Exception as exc:
+            logger.warning(
+                "pocketlab.startup.stage_degraded stage=security_projection error_type=%s",
+                type(exc).__name__,
+            )
+
+        await wait_until(health_delay)
+        health_task = asyncio.create_task(
+            device_health_projection_sweep_loop(skip_startup_delay=True),
+            name="pocketlab-device-health-projection-sweep",
+        )
+        logger.info("pocketlab.startup.stage_ready stage=device_health_sweep")
+
+        await wait_until(warmup_delay)
+        try:
+            warmup = await asyncio.to_thread(schedule_control_plane_projection_warmup)
+            logger.info(
+                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s",
+                warmup.get("apps"),
+                warmup.get("recovery_summary"),
+                warmup.get("recovery_details"),
+            )
+        except Exception as exc:
+            logger.warning(
+                "pocketlab.startup.stage_degraded stage=control_projection_warmup error_type=%s",
+                type(exc).__name__,
+            )
+
+        if health_task is not None:
+            await health_task
+    except asyncio.CancelledError:
+        if health_task is not None:
+            health_task.cancel()
+            try:
+                await health_task
+            except asyncio.CancelledError:
+                pass
+        raise
+
+
+async def device_health_projection_sweep_loop(*, skip_startup_delay: bool = False) -> None:
     """Run one bounded fleet health sweep instead of one task per device."""
     if os.environ.get("POCKETLAB_LITE_DISABLE_DEVICE_HEALTH_SWEEP", "").lower() in {
         "1", "true", "yes", "on",
@@ -2455,7 +2533,8 @@ async def device_health_projection_sweep_loop() -> None:
         )
     except (TypeError, ValueError):
         interval = 60.0
-    await asyncio.sleep(startup_delay)
+    if not skip_startup_delay:
+        await asyncio.sleep(startup_delay)
     while True:
         try:
             result = await asyncio.to_thread(_refresh_device_health_projection)

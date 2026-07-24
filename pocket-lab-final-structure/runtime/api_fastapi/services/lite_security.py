@@ -81,7 +81,13 @@ _SQLITE_PROGRESS_METRICS: dict[str, int] = {
     "reader_reconnects": 0,
 }
 _SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS = max(0.5, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_INTERVAL_SECONDS", "2.0")))
-_SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS = max(_SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "30.0")))
+try:
+    _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS = max(
+        _SQLITE_PROGRESS_ACTIVE_INTERVAL_SECONDS,
+        min(3600.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_INTERVAL_SECONDS", "300.0"))),
+    )
+except (TypeError, ValueError):
+    _SQLITE_PROGRESS_IDLE_INTERVAL_SECONDS = 300.0
 _SQLITE_PROGRESS_ACTIVE_RETRY_SECONDS = max(0.10, min(1.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_ACTIVE_RETRY_SECONDS", "0.35"))))
 _SQLITE_PROGRESS_IDLE_RETRY_SECONDS = max(0.25, min(5.0, float(os.environ.get("POCKETLAB_LITE_SECURITY_PROGRESS_IDLE_RETRY_SECONDS", "1.0"))))
 _SQLITE_PROGRESS_MAX_FALLBACK_AGE_MS = 15_000
@@ -2566,6 +2572,25 @@ def _projection_refresher_loop() -> None:
                     if reader_opened_once:
                         _progress_metric_increment("reader_reconnects")
                     reader_opened_once = True
+                # Idle periodic reconciliation first performs a tiny revision
+                # read.  Full progress reconstruction only occurs when the
+                # domain changed, a dirty signal arrived, or a retry is active.
+                if not signaled and not retrying and not active:
+                    revision, revision_read_ms = reader.read_revision()
+                    with _SQLITE_PROGRESS_SNAPSHOT_LOCK:
+                        prepared_revision = int(
+                            (_SQLITE_PROGRESS_PREPARED.domain_revision if _SQLITE_PROGRESS_PREPARED else 0)
+                            or 0
+                        )
+                    if revision == prepared_revision:
+                        retry_delay = None
+                        _progress_metric_increment("unchanged_refreshes")
+                        if revision_read_ms >= 250:
+                            _LOGGER.warning(
+                                "pocketlab.security.progress_revision_read_slow query_ms=%.2f",
+                                revision_read_ms,
+                            )
+                        continue
                 refresh_started = time.monotonic()
                 _payload, timings = _refresh_sqlite_progress_snapshot_timed(reader=reader)
                 refresh_ms = (time.monotonic() - refresh_started) * 1000
