@@ -140,7 +140,7 @@ def main() -> int:
                 winners: set[tuple[str, str]] = set()
                 for row_id, device_id, event_type, _epoch_ms, _event_id in rows:
                     key_tuple = (str(device_id), str(event_type))
-                    dedupe_key = f"{device_id}:{event_type}"
+                    dedupe_key = f"{str(device_id).strip().lower()}:{str(event_type).strip().lower()}"
                     if key_tuple not in winners:
                         winners.add(key_tuple)
                         conn.execute("UPDATE device_lifecycle_events SET dedupe_key=? WHERE event_row_id=?", (dedupe_key, row_id))

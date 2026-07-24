@@ -787,7 +787,20 @@ def _run_saved_stage_reconciliation(
                 ",".join(sorted(pending_names)),
             )
         if projections:
-            CONTROL_PLANE.update_app_subprojections("photoprism", projections)
+            try:
+                CONTROL_PLANE.update_app_subprojections("photoprism", projections)
+            except Exception as exc:
+                _LOGGER.warning(
+                    "pocketlab.app_projection.reconcile_degraded key=all error_type=%s",
+                    type(exc).__name__,
+                    exc_info=True,
+                )
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.app_projection.reconcile_degraded key=all error_type=%s",
+            type(exc).__name__,
+            exc_info=True,
+        )
     finally:
         with _RECONCILE_LOCK:
             _RECONCILE_FUTURE = None

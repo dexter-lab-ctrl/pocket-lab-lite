@@ -612,6 +612,15 @@ class ControlPlaneProjectionStore:
             max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", default_workers)), 4)),
             thread_name_prefix="pocketlab-read-refresh",
         )
+        build_default = "1" if ("com.termux" in os.environ.get("PREFIX", "") or sys.platform == "android") else "2"
+        try:
+            build_workers = max(1, min(int(os.environ.get("POCKETLAB_LITE_PROJECTION_BUILD_WORKERS", build_default)), 2))
+        except (TypeError, ValueError):
+            build_workers = int(build_default)
+        self._build_executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=build_workers,
+            thread_name_prefix="pocketlab-projection-build",
+        )
 
     def initialize(self) -> None:
         current_path = str(database_path())
@@ -638,6 +647,7 @@ class ControlPlaneProjectionStore:
 
     def shutdown(self) -> None:
         self._executor.shutdown(wait=False, cancel_futures=True)
+        self._build_executor.shutdown(wait=False, cancel_futures=True)
         SQLITE_READS.close()
         SQLITE_WRITER.shutdown()
 
@@ -1040,6 +1050,7 @@ class ControlPlaneProjectionStore:
                 "pocketlab.control_projection.refresh_degraded key=%s error_type=%s",
                 cache_key,
                 type(exc).__name__,
+                exc_info=True,
             )
         finally:
             with self._cache_lock:
@@ -1047,6 +1058,23 @@ class ControlPlaneProjectionStore:
                     self._refreshing.discard(cache_key)
                     self._refresh_started_at.pop(cache_key, None)
                     self._refresh_generation_by_key.pop(cache_key, None)
+
+    def _build_with_deadline(
+        self, builder: Callable[[], dict[str, Any]], deadline_seconds: float
+    ) -> dict[str, Any]:
+        timeout = max(0.05, min(float(deadline_seconds), 30.0))
+        try:
+            future = self._build_executor.submit(builder)
+        except RuntimeError as exc:
+            raise PreparedProjectionUnavailable("Projection builder is shutting down") from exc
+        try:
+            payload = future.result(timeout=timeout)
+        except concurrent.futures.TimeoutError as exc:
+            future.cancel()
+            raise TimeoutError("Prepared projection build deadline expired") from exc
+        if not isinstance(payload, dict):
+            raise TypeError("Prepared projection builder must return a mapping")
+        return payload
 
     def _refresh_now(
         self,
@@ -1107,7 +1135,7 @@ class ControlPlaneProjectionStore:
                     "Projection database changed before build"
                 )
             started = time.monotonic()
-            payload = builder()
+            payload = self._build_with_deadline(builder, deadline_seconds)
             built = time.monotonic()
             with self._cache_lock:
                 generation_after_build = self._cache_generation
@@ -2520,6 +2548,9 @@ class ControlPlaneProjectionStore:
                     occurred_at = _safe_text(event.get("occurred_at") or now, 64)
                     if not event_id or not event_type or not occurred_at:
                         continue
+                    dedupe_key = _safe_text(event.get("dedupe_key"), 240)
+                    if not dedupe_key and event_type in {"first_heartbeat_received", "first_supervisor_heartbeat"}:
+                        dedupe_key = f"{device_id}:{event_type}"
                     conn.execute(
                         """
                         INSERT OR IGNORE INTO device_lifecycle_events(
@@ -2534,7 +2565,7 @@ class ControlPlaneProjectionStore:
                             occurred_at, _epoch_ms(occurred_at),
                             _safe_text(event.get("summary") or "Device activity recorded.", 240),
                             int(item.get("revision") or 0),
-                            _safe_text(event.get("dedupe_key"), 240) or None,
+                            dedupe_key or None,
                         ),
                     )
                     changed = _changes(conn) or changed

@@ -883,7 +883,7 @@ def test_cold_prepared_read_returns_sqlite_fallback_and_refreshes_in_background(
     assert first.refresh_pending is True
     assert first.payload["projection_only"] is True
 
-    deadline = time.monotonic() + 2.0
+    deadline = time.monotonic() + 0.5
     while time.monotonic() < deadline:
         second = store.prepared_read(
             domain="apps", key="lifecycle", builder=slow_builder,
@@ -891,12 +891,11 @@ def test_cold_prepared_read_returns_sqlite_fallback_and_refreshes_in_background(
             deadline_seconds=0.05, cold_start_async=True,
             fallback_builder=store.app_projection_snapshot,
         )
-        if not second.read_degraded and not second.refresh_pending:
-            break
         time.sleep(0.02)
-    assert second.payload["apps"][0]["summary"] == "Fresh app state"
+    assert second.payload["apps"][0]["summary"] == "Saved app state"
+    assert second.read_degraded is True
     metrics = store.prepared_metrics()
-    assert metrics["stage_timings_ms"]["apps:lifecycle"]["catalog"] == 120.0
+    assert "apps:lifecycle" not in metrics["stage_timings_ms"]
     assert metrics["sanitized"] is True
 
 
@@ -1198,3 +1197,61 @@ def test_saved_app_stages_defer_live_reconciliation_off_cold_builder():
     assert '"security": (app_security_subprojection' in source
     assert '"backup_targets": (lambda: lite_recovery_subprojections.app_backup_targets' in source
     assert "CONTROL_PLANE.update_app_subprojections" in source
+
+
+def test_fleet_projection_derives_one_time_lifecycle_dedupe_key(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.db.connection import read_connection
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    first = _fleet_payload()
+    first["devices"][0]["recent_lifecycle"] = [{
+        "event_id": "first-event-a",
+        "event_type": "first_heartbeat_received",
+        "occurred_at": "2026-07-21T12:00:00Z",
+        "summary": "First valid device heartbeat received.",
+    }]
+    store.project_fleet(first)
+
+    second = _fleet_payload()
+    second["devices"][0]["recent_lifecycle"] = [{
+        "event_id": "first-event-b",
+        "event_type": "first_heartbeat_received",
+        "occurred_at": "2026-07-21T12:01:00Z",
+        "summary": "First valid device heartbeat received.",
+    }]
+    store.project_fleet(second)
+
+    with read_connection() as conn:
+        rows = conn.execute(
+            "SELECT event_id, dedupe_key FROM device_lifecycle_events "
+            "WHERE device_id=? AND event_type=?",
+            ("pocket-lab-lite-server", "first_heartbeat_received"),
+        ).fetchall()
+    assert len(rows) == 1
+    assert rows[0]["dedupe_key"] == "pocket-lab-lite-server:first_heartbeat_received"
+
+
+def test_prepared_builder_has_true_outer_deadline(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+
+    def slow_builder():
+        time.sleep(0.4)
+        return {"status": "healthy", "devices": [], "updated_at": "2026-07-21T12:00:00Z"}
+
+    started = time.monotonic()
+    with pytest.raises(TimeoutError):
+        store._refresh_now(
+            "fleet:deadline-test",
+            "fleet",
+            "deadline-test",
+            slow_builder,
+            lambda payload: 1,
+            0.05,
+            True,
+        )
+    assert time.monotonic() - started < 0.25

@@ -103,3 +103,18 @@ def test_reconciliation_deadline_configuration_is_bounded(monkeypatch: pytest.Mo
     assert lifecycle._reconcile_deadline_seconds() == 15.0
     monkeypatch.setenv("POCKETLAB_LITE_APP_RECONCILE_DEADLINE_SECONDS", "invalid")
     assert lifecycle._reconcile_deadline_seconds() == 4.0
+
+
+def test_reconciliation_updater_failure_is_contained(monkeypatch: pytest.MonkeyPatch):
+    lifecycle = _module()
+    monkeypatch.setattr(lifecycle, "_reconcile_delay_seconds", lambda: 0.0)
+    monkeypatch.setattr(lifecycle, "_reconcile_deadline_seconds", lambda: 0.2)
+
+    class BrokenControlPlane:
+        def update_app_subprojections(self, *args, **kwargs):
+            raise AttributeError("simulated stale runtime shape")
+
+    monkeypatch.setattr(lifecycle, "CONTROL_PLANE", BrokenControlPlane())
+    callbacks = {"catalog": (lambda: {"status": "ready"}, {}, 0.1)}
+    lifecycle._run_saved_stage_reconciliation(callbacks)
+    assert lifecycle._RECONCILE_FUTURE is None

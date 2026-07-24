@@ -897,7 +897,14 @@ def get_lite_app_lifecycle_profiles(request: Request) -> Response:
             cold_start_async=True,
             fallback_builder=CONTROL_PLANE.app_projection_snapshot,
         )
-    except PreparedProjectionUnavailable:
+    except (PreparedProjectionUnavailable, TimeoutError):
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.apps.lifecycle.read_degraded error_type=%s",
+            type(exc).__name__,
+            exc_info=True,
+        )
         return _projection_warming_response(domain="apps", view_model=view_model)
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
@@ -1911,18 +1918,27 @@ async def check_lite_security_app(
 @router.get("/fleet")
 def get_lite_fleet(request: Request) -> Response:
     deps.require_auth(request)
-    prepared = CONTROL_PLANE.prepared_read(
-        domain="fleet",
-        key="summary",
-        builder=lite_status.lite_fleet,
-        projector=CONTROL_PLANE.project_fleet,
-        stale_after_ms=5_000,
-        max_stale_ms=30_000,
-        deadline_seconds=4.0,
-    )
-    return _control_plane_prepared_response(
-        request, prepared, view_model="fleet-sqlite-p3-v1"
-    )
+    view_model = "fleet-sqlite-p3-v1"
+    try:
+        prepared = CONTROL_PLANE.prepared_read(
+            domain="fleet",
+            key="summary",
+            builder=lite_status.lite_fleet,
+            projector=CONTROL_PLANE.project_fleet,
+            stale_after_ms=5_000,
+            max_stale_ms=30_000,
+            deadline_seconds=4.0,
+        )
+    except (PreparedProjectionUnavailable, TimeoutError):
+        return _projection_warming_response(domain="fleet", view_model=view_model)
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.fleet.read_degraded error_type=%s",
+            type(exc).__name__,
+            exc_info=True,
+        )
+        return _projection_warming_response(domain="fleet", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 def _ensure_fleet_awareness_projection() -> None:
