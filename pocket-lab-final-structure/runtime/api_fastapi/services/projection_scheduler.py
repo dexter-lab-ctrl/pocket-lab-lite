@@ -25,6 +25,7 @@ from ..db.connection import database_path
 from ..db.runtime import SQLITE_WRITER, SQLiteWriteDeadlineExceeded, SQLiteWriteRejected
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from .idle_efficiency import IDLE_EFFICIENCY
+from .hot_path_profiler import HOT_PATH_PROFILER
 
 _LOGGER = logging.getLogger(__name__)
 WorkClass = Literal["critical", "io", "cpu"]
@@ -431,7 +432,7 @@ class ProjectionScheduler:
                 state.database_instance = self._database_instance()
                 state.last_pressure_reason = ""
                 try:
-                    future = executor.submit(self._execute, job, generation, state.database_instance)
+                    future = executor.submit(self._execute_profiled, job, generation, state.database_instance)
                 except RuntimeError:
                     state.active = False
                     state.last_error_type = "ExecutorRejected"
@@ -459,6 +460,16 @@ class ProjectionScheduler:
         except (TypeError, ValueError):
             material = repr(payload)
         return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+    def _execute_profiled(self, job: ProjectionJob, generation: int, database_instance: str) -> dict[str, Any]:
+        with HOT_PATH_PROFILER.measure(f"projection.{job.domain}") as hot_path:
+            result = self._execute(job, generation, database_instance)
+            outcome = str(result.get("outcome") or "completed")
+            hot_path["outcome"] = outcome
+            hot_path["changed"] = True if outcome == "committed" else False if outcome in {"unchanged", "source_unchanged"} else None
+            if outcome == "source_unchanged":
+                HOT_PATH_PROFILER.increment(f"projection.{job.domain}", "skipped_unchanged")
+            return result
 
     def _execute(self, job: ProjectionJob, generation: int, database_instance: str) -> dict[str, Any]:
         started = time.monotonic()

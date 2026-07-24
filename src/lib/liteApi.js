@@ -258,6 +258,7 @@ export const liteApi = {
     expected_consumer_model_name: expectedConsumerModelName == null ? null : String(expectedConsumerModelName || ''),
   }),
   domainRevisions: conditionalGet('/api/lite/revisions'),
+  hotPathDiagnostics: conditionalGet('/api/lite/diagnostics/runtime'),
   deviceRecoveryHistory: (deviceId, limit = 20, cursor = '') => {
     const query = new URLSearchParams({ limit: String(limit || 20) });
     if (cursor) query.set('cursor', cursor);

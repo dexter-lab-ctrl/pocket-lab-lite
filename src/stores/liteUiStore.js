@@ -136,6 +136,23 @@ export const useLiteUiStore = create((set, get) => ({
     lastEventId: 0,
     retryAfterMs: 0,
   },
+  hotPathDiagnostics: {
+    status: 'idle',
+    capturedAt: null,
+    topJob: '',
+    topCpuMs: 0,
+    budgetWarningCount: 0,
+  },
+  setHotPathDiagnostics: (payload = {}) => set({
+    hotPathDiagnostics: {
+      status: String(payload.status || 'ready').slice(0, 32),
+      capturedAt: payload.capturedAt || new Date().toISOString(),
+      topJob: String(payload.topJob || '').slice(0, 120),
+      topCpuMs: Math.max(0, Number(payload.topCpuMs) || 0),
+      budgetWarningCount: Math.max(0, Math.min(999, Number(payload.budgetWarningCount) || 0)),
+    },
+  }),
+
   setRevisionSyncState: (next = {}) => set((state) => {
     const revisionSync = {
       ...state.revisionSync,
