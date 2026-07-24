@@ -88,6 +88,21 @@ def _app_stage_workers() -> int:
 _STAGE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
     max_workers=_app_stage_workers(), thread_name_prefix="pocketlab-app-stage"
 )
+
+
+def _app_stage_deadline_seconds() -> float:
+    configured = os.environ.get("POCKETLAB_LITE_APP_STAGE_DEADLINE_SECONDS", "1.5").strip()
+    try:
+        return max(0.25, min(4.0, float(configured)))
+    except (TypeError, ValueError):
+        return 1.5
+
+
+def _stage_timeout_payload(fallback: Any, *, refresh_pending: bool) -> dict[str, Any]:
+    value = dict(fallback) if isinstance(fallback, dict) else {}
+    value["read_degraded"] = True
+    value["refresh_pending"] = bool(refresh_pending)
+    return value
 _RECONCILE_LOCK = threading.RLock()
 _RECONCILE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
     max_workers=1, thread_name_prefix="pocketlab-app-reconcile"
@@ -710,20 +725,45 @@ def _reconcile_delay_seconds() -> float:
         return 8.0
 
 
+def _reconcile_deadline_seconds() -> float:
+    configured = os.environ.get("POCKETLAB_LITE_APP_RECONCILE_DEADLINE_SECONDS", "4.0").strip()
+    try:
+        return max(1.0, min(15.0, float(configured)))
+    except (TypeError, ValueError):
+        return 4.0
+
+
 def _run_saved_stage_reconciliation(
     callbacks: dict[str, tuple[Callable[[], Any], Any, float]],
 ) -> None:
     global _RECONCILE_FUTURE, _RECONCILE_NEXT_ALLOWED
     try:
         threading.Event().wait(_reconcile_delay_seconds())
-        futures = {
-            name: _STAGE_EXECUTOR.submit(callback)
-            for name, (callback, _fallback, _timeout) in callbacks.items()
-        }
-        projections: dict[str, dict[str, Any]] = {}
-        for name, (_callback, _fallback, timeout) in callbacks.items():
+        futures: dict[str, concurrent.futures.Future[Any]] = {}
+        for name, (callback, _fallback, _legacy_timeout) in callbacks.items():
             try:
-                value = futures[name].result(timeout=max(0.1, timeout))
+                futures[name] = _STAGE_EXECUTOR.submit(callback)
+            except RuntimeError as exc:
+                _LOGGER.warning(
+                    "pocketlab.app_projection.reconcile_submit_degraded key=%s error_type=%s",
+                    name, type(exc).__name__,
+                )
+
+        deadline_seconds = _reconcile_deadline_seconds()
+        done, pending = concurrent.futures.wait(
+            set(futures.values()),
+            timeout=deadline_seconds,
+            return_when=concurrent.futures.ALL_COMPLETED,
+        ) if futures else (set(), set())
+        projections: dict[str, dict[str, Any]] = {}
+        pending_names: list[str] = []
+        for name, future in futures.items():
+            if future not in done:
+                pending_names.append(name)
+                future.cancel()
+                continue
+            try:
+                value = future.result()
             except Exception as exc:
                 _LOGGER.warning(
                     "pocketlab.app_projection.reconcile_degraded key=%s error_type=%s",
@@ -731,11 +771,21 @@ def _run_saved_stage_reconciliation(
                 )
                 continue
             if not isinstance(value, dict):
+                _LOGGER.warning(
+                    "pocketlab.app_projection.reconcile_degraded key=%s error_type=InvalidPayload",
+                    name,
+                )
                 continue
             if name in {"backup", "security"}:
                 projections[name] = {"kind": "raw", "payload": value}
             else:
                 projections[name] = value
+        if pending_names:
+            _LOGGER.warning(
+                "pocketlab.app_projection.reconcile_deadline_exhausted deadline_ms=%.0f pending=%s",
+                deadline_seconds * 1000.0,
+                ",".join(sorted(pending_names)),
+            )
         if projections:
             CONTROL_PLANE.update_app_subprojections("photoprism", projections)
     finally:
@@ -791,13 +841,22 @@ def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[s
         saved = CONTROL_PLANE.app_current_subprojections(
             "photoprism", max_age_seconds=_saved_projection_max_age_seconds()
         )
-    except Exception:
+    except Exception as exc:
         saved = None
+        _LOGGER.warning(
+            "pocketlab.app_projection.saved_read_degraded error_type=%s",
+            type(exc).__name__,
+        )
+
+    started_at = time.monotonic()
+    deadline_seconds = _app_stage_deadline_seconds()
+    deadline_at = started_at + deadline_seconds
     submitted_at: dict[str, float] = {}
     futures: dict[str, concurrent.futures.Future[Any]] = {}
     results: dict[str, Any] = {}
     used_saved = False
-    for name, (callback, _fallback, _timeout) in callbacks.items():
+
+    for name, (callback, fallback, _legacy_timeout) in callbacks.items():
         submitted_at[name] = time.monotonic()
         saved_value = _saved_stage_value(saved, name)
         if saved_value is not None:
@@ -808,24 +867,69 @@ def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[s
             if stage_timings is not None:
                 stage_timings[name] = round(max(0.0, (time.monotonic() - submitted_at[name]) * 1000.0), 3)
             continue
-        futures[name] = _STAGE_EXECUTOR.submit(callback)
-    for name, (_callback, fallback, timeout) in callbacks.items():
+        try:
+            futures[name] = _STAGE_EXECUTOR.submit(callback)
+        except RuntimeError as exc:
+            results[name] = _stage_timeout_payload(fallback, refresh_pending=False)
+            _LOGGER.warning(
+                "pocketlab.app_stage.submit_degraded key=%s error_type=%s",
+                name, type(exc).__name__,
+            )
+
+    pending = set(futures.values())
+    if pending:
+        remaining = max(0.0, deadline_at - time.monotonic())
+        done, pending = concurrent.futures.wait(
+            pending,
+            timeout=remaining,
+            return_when=concurrent.futures.ALL_COMPLETED,
+        )
+    else:
+        done = set()
+
+    timed_out_names: list[str] = []
+    for name, (_callback, fallback, _legacy_timeout) in callbacks.items():
         if name in results:
             continue
-        future = futures[name]
-        try:
-            value = future.result(timeout=timeout)
-            results[name] = value if isinstance(value, dict) else dict(fallback)
-        except concurrent.futures.TimeoutError:
-            results[name] = {**dict(fallback), "read_degraded": True, "refresh_pending": True}
-            _LOGGER.warning("pocketlab.app_stage.timeout key=%s timeout_ms=%.0f", name, timeout * 1000.0)
-        except Exception as exc:
-            results[name] = {**dict(fallback), "read_degraded": True, "refresh_pending": False}
-            _LOGGER.warning("pocketlab.app_stage.degraded key=%s error_type=%s", name, type(exc).__name__)
-        finally:
-            if stage_timings is not None:
-                stage_timings[name] = round(max(0.0, (time.monotonic() - submitted_at[name]) * 1000.0), 3)
-    if used_saved:
+        future = futures.get(name)
+        if future is None:
+            results[name] = _stage_timeout_payload(fallback, refresh_pending=False)
+        elif future in done:
+            try:
+                value = future.result()
+                results[name] = value if isinstance(value, dict) else _stage_timeout_payload(
+                    fallback, refresh_pending=False
+                )
+                if not isinstance(value, dict):
+                    _LOGGER.warning(
+                        "pocketlab.app_stage.degraded key=%s error_type=InvalidPayload",
+                        name,
+                    )
+            except Exception as exc:
+                results[name] = _stage_timeout_payload(fallback, refresh_pending=False)
+                _LOGGER.warning(
+                    "pocketlab.app_stage.degraded key=%s error_type=%s",
+                    name, type(exc).__name__,
+                )
+        else:
+            timed_out_names.append(name)
+            results[name] = _stage_timeout_payload(fallback, refresh_pending=True)
+            future.cancel()
+        if stage_timings is not None:
+            stage_timings[name] = round(
+                max(0.0, (time.monotonic() - submitted_at.get(name, started_at)) * 1000.0),
+                3,
+            )
+
+    if timed_out_names:
+        _LOGGER.warning(
+            "pocketlab.app_stage.deadline_exhausted deadline_ms=%.0f elapsed_ms=%.3f pending=%s",
+            deadline_seconds * 1000.0,
+            max(0.0, (time.monotonic() - started_at) * 1000.0),
+            ",".join(sorted(timed_out_names)),
+        )
+
+    if used_saved or timed_out_names:
         _schedule_saved_stage_reconciliation(callbacks)
     return results
 
