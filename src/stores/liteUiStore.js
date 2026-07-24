@@ -144,9 +144,11 @@ export const useLiteUiStore = create((set, get) => ({
   openOverlay: (overlay) => set({ activeOverlay: normalizeOverlay(overlay) }),
 
   activeDeviceDetailsId: '',
+  deviceHealthHistoryOpenId: '',
   deviceModelPickerId: '',
   deviceModelSearch: '',
   setActiveDeviceDetailsId: (deviceId) => set({ activeDeviceDetailsId: String(deviceId || '').trim() }),
+  setDeviceHealthHistoryOpenId: (deviceId) => set({ deviceHealthHistoryOpenId: String(deviceId || '').trim() }),
   setDeviceModelPickerId: (deviceId) => set((state) => {
     const nextId = String(deviceId || '').trim();
     return {

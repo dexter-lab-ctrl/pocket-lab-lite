@@ -770,6 +770,7 @@ export function isLiteDeviceWorkflowLive(device = {}) {
     device.latest_command?.state,
     device.supervisor?.status,
     device.supervisor?.state,
+    device.proactive_health?.status,
   ].map(normalizeDeviceStatus).filter(Boolean);
   const live = statuses.some((status) => LIVE_DEVICE_STATUSES.has(status));
   const terminal = statuses.some((status) => STABLE_DEVICE_STATUSES.has(status));
@@ -886,16 +887,104 @@ function normalizeDeviceRemovalAssessment(value) {
   };
 }
 
+const DEVICE_CARD_VIEW_CACHE = new WeakMap();
+
+export function selectDeviceProactiveHealthView(value = {}) {
+  if (!isObject(value)) return null;
+  const resource = (item = {}) => isObject(item) ? copySafeKeys(item, [
+    'status', 'summary', 'available_mb', 'available_percent', 'usage_percent',
+    'celsius', 'candidate_status', 'candidate_since',
+  ]) : {};
+  const attentionItems = Array.isArray(value.attention_items)
+    ? value.attention_items.slice(0, 16).map((item) => isObject(item) ? copySafeKeys(item, [
+      'id', 'node_id', 'category', 'severity', 'status', 'reason_code', 'summary',
+      'recommendation', 'recommended_action', 'created_at', 'updated_at', 'resolved_at',
+      'source_revision',
+    ]) : null).filter(Boolean)
+    : [];
+  const resources = isObject(value.resources) ? {
+    storage: resource(value.resources.storage),
+    memory: resource(value.resources.memory),
+    load: resource(value.resources.load),
+    temperature: resource(value.resources.temperature),
+  } : {};
+  const connection = isObject(value.connection) ? copySafeKeys(value.connection, [
+    'status', 'summary', 'reconnect_count', 'command_delivery_status',
+    'remote_access_status', 'last_connected_at', 'last_disconnected_at', 'reconnect_window_seconds',
+  ]) : {};
+  const recovery = isObject(value.recovery) ? copySafeKeys(value.recovery, [
+    'status', 'summary', 'recent_recovery_count', 'last_recovery_at',
+    'last_recovery_result', 'automatic_recovery_available',
+  ]) : {};
+  const versionPart = (item = {}) => isObject(item) ? copySafeKeys(item, ['status', 'reported', 'expected']) : {};
+  const versions = isObject(value.versions) ? {
+    status: normalizeDeviceStatus(value.versions.status || 'unknown'),
+    node_agent: versionPart(value.versions.node_agent),
+    supervisor: versionPart(value.versions.supervisor),
+    system_profile_schema: versionPart(value.versions.system_profile_schema),
+    capability_schema: versionPart(value.versions.capability_schema),
+  } : {};
+  const dependency = isObject(value.dependency_impact) ? {
+    ...copySafeKeys(value.dependency_impact, [
+      'status', 'impact_severity', 'impact_summary', 'source_stale',
+    ]),
+    affected_apps: Array.isArray(value.dependency_impact.affected_apps)
+      ? value.dependency_impact.affected_apps.slice(0, 8).map((item) => isObject(item)
+        ? copySafeKeys(item, ['app_id', 'label']) : null).filter(Boolean)
+      : [],
+    affected_backup_sets: Array.isArray(value.dependency_impact.affected_backup_sets)
+      ? value.dependency_impact.affected_backup_sets.slice(0, 8).map(safeString).filter(Boolean)
+      : [],
+    affected_capabilities: Array.isArray(value.dependency_impact.affected_capabilities)
+      ? value.dependency_impact.affected_capabilities.slice(0, 8).map(safeString).filter(Boolean)
+      : [],
+    affected_recovery_paths: Array.isArray(value.dependency_impact.affected_recovery_paths)
+      ? value.dependency_impact.affected_recovery_paths.slice(0, 8).map(safeString).filter(Boolean)
+      : [],
+  } : {};
+  const sourceFreshness = isObject(value.source_freshness) ? Object.fromEntries(
+    Object.entries(value.source_freshness).slice(0, 8).map(([key, item]) => [
+      safeString(key), isObject(item) ? copySafeKeys(item, ['state', 'age_seconds', 'reported_at']) : safeString(item),
+    ])
+  ) : {};
+  return {
+    model_version: Number.isFinite(Number(value.model_version)) ? Number(value.model_version) : 1,
+    node_id: safeString(value.node_id || ''),
+    status: normalizeDeviceStatus(value.status || 'unknown'),
+    severity: normalizeDeviceStatus(value.severity || 'none'),
+    summary: safeString(value.summary || 'Device health is not available yet.'),
+    reason_codes: Array.isArray(value.reason_codes) ? value.reason_codes.slice(0, 16).map(safeString).filter(Boolean) : [],
+    attention_items: attentionItems,
+    attention_count: Math.min(64, Math.max(0, Number(value.attention_count || attentionItems.length || 0))),
+    attention_current: value.attention_current !== false,
+    recommended_action: normalizeDeviceStatus(value.recommended_action || 'none'),
+    recommended_action_target: safeString(value.recommended_action_target || ''),
+    last_evaluated_at: safeIso(value.last_evaluated_at),
+    health_revision: safeString(value.health_revision || ''),
+    source_revision: Number.isFinite(Number(value.source_revision)) ? Number(value.source_revision) : 0,
+    source_freshness: sourceFreshness,
+    resources,
+    connection,
+    recovery,
+    versions,
+    dependency_impact: dependency,
+    sanitized: value.sanitized !== false,
+  };
+}
+
 export function selectLiteDeviceCard(device = {}) {
   if (!isObject(device)) return null;
   const id = safeString(device.id || device.node_id || device.name || device.hostname);
   if (!id) return null;
+  const cached = DEVICE_CARD_VIEW_CACHE.get(device);
+  if (cached) return cached;
   const protectedHost = isProtectedServerHost(device);
   const restartProgress = normalizeDeviceProgress(device.restart_progress || device.restartProgress || null);
   const commandProgress = normalizeDeviceProgress(device.command_progress || device.commandProgress || device.latest_command || null);
   const remoteAccess = normalizeDeviceRemoteAccess(device.remote_access, device);
   const status = normalizeDeviceStatus(device.status || device.state || device.connection || 'unknown');
   const identitySummary = selectDeviceIdentitySummaryView(device);
+  const proactiveHealth = selectDeviceProactiveHealthView(device.proactive_health || {});
   const output = {
     id,
     node_id: id,
@@ -961,11 +1050,23 @@ export function selectLiteDeviceCard(device = {}) {
     system_health: identitySummary.system_health,
     identity_summary: identitySummary,
     display_model: identitySummary.display_model,
+    proactive_health: proactiveHealth,
+    health_status: proactiveHealth?.status || normalizeDeviceStatus(device.health_status || 'unknown'),
+    health_severity: proactiveHealth?.severity || normalizeDeviceStatus(device.health_severity || 'none'),
+    attention_count: proactiveHealth
+      ? Number(proactiveHealth.attention_count || 0)
+      : Number(device.attention_count || 0),
     live: false,
     updated_at: safeIso(device.updated_at || device.checked_at || device.last_seen),
     checked_at: safeIso(device.checked_at || device.updated_at || device.last_seen),
   };
-  output.live = isLiteDeviceWorkflowLive({ ...device, restart_progress: restartProgress, command_progress: commandProgress });
+  output.live = isLiteDeviceWorkflowLive({
+    ...device,
+    restart_progress: restartProgress,
+    command_progress: commandProgress,
+    proactive_health: proactiveHealth,
+  });
+  DEVICE_CARD_VIEW_CACHE.set(device, output);
   return output;
 }
 
@@ -1065,7 +1166,29 @@ export function selectDeviceEventsSummaryView(payload = {}) {
 
 export function selectFleetDevicesView(payload = {}) {
   if (payload?.view_model === 'devices-screen-s3-v1') return payload;
-  const devices = selectDeviceCardsView(payload);
+  const meta = snapshotMeta(payload);
+  const savedState = Boolean(meta && (meta.stale || meta.expired || meta.isExpired || meta.source === 'cache' || meta.source === 'saved'));
+  const devices = selectDeviceCardsView(payload).map((device) => {
+    if (!savedState || !device?.proactive_health) return device;
+    return {
+      ...device,
+      proactive_health: {
+        ...device.proactive_health,
+        attention_current: false,
+      },
+    };
+  });
+  const healthSummary = isObject(payload?.health_summary) ? copySafeKeys(payload.health_summary, [
+    'device_count', 'attention_count', 'healthy', 'watch', 'needs_attention',
+    'degraded', 'repairing', 'unreachable', 'unknown',
+  ]) : {
+    device_count: devices.length,
+    attention_count: devices.reduce((count, device) => count + (device.proactive_health?.attention_current ? Number(device.attention_count || 0) : 0), 0),
+    healthy: devices.filter((device) => device.health_status === 'healthy').length,
+    needs_attention: devices.filter((device) => ['watch', 'needs_attention', 'degraded', 'unreachable'].includes(device.health_status)).length,
+    repairing: devices.filter((device) => device.health_status === 'repairing').length,
+  };
+  healthSummary.attention_current = !savedState;
   return withSnapshotMeta(payload, {
     view_model: 'fleet-devices-s3-v1',
     version: LITE_DEVICES_VIEW_MODEL_VERSION,
@@ -1078,6 +1201,7 @@ export function selectFleetDevicesView(payload = {}) {
     latest_invite: selectDeviceInviteView(payload),
     current_action: selectDeviceActionStateView(payload),
     events_summary: selectDeviceEventsSummaryView(payload),
+    health_summary: healthSummary,
     live_device_ids: devices.filter((device) => device.live).map((device) => device.id),
     updated_at: safeIso(payload?.updated_at || payload?.checked_at),
     checked_at: safeIso(payload?.checked_at || payload?.updated_at),
@@ -1095,6 +1219,8 @@ export function selectDevicesScreenView(payload = {}) {
       status: fleet.status,
       count: fleet.count,
       online_count: fleet.online_count,
+      health_attention_count: fleet.health_summary?.attention_current ? Number(fleet.health_summary?.attention_count || 0) : 0,
+      health_attention_current: Boolean(fleet.health_summary?.attention_current),
       updated_at: fleet.updated_at,
       checked_at: fleet.checked_at,
     },

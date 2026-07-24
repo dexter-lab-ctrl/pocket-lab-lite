@@ -42,7 +42,7 @@ def test_lite_sqlite_connection_applies_required_policy(tmp_path, monkeypatch):
     from api_fastapi.db.health import database_health
     from api_fastapi.db.migrations import apply_migrations
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     with connection() as conn:
         assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
         assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
@@ -56,7 +56,7 @@ def test_lite_sqlite_connection_applies_required_policy(tmp_path, monkeypatch):
     health = database_health()
     assert health["reachable"] is True
     assert health["schema_current"] is True
-    assert health["schema_version"] == 11
+    assert health["schema_version"] == 12
     assert health["journal_mode"] == "wal"
     assert health["foreign_keys"] is True
     assert health["busy_timeout_ms"] == 20000

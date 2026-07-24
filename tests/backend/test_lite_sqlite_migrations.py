@@ -37,10 +37,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         migration_rows,
     )
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     assert apply_migrations() == []
-    assert current_schema_version() == 11
-    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    assert current_schema_version() == 12
+    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     with read_connection() as conn:
         tables = {
             row[0]
@@ -208,8 +208,8 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 11 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 11]
+    assert all(result[2] == 12 for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, 12]
 
 
 def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
@@ -249,8 +249,8 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
             """
         )
 
-    assert apply_migrations() == [5, 6, 7, 8, 9, 10, 11]
-    assert current_schema_version() == 11
+    assert apply_migrations() == [5, 6, 7, 8, 9, 10, 11, 12]
+    assert current_schema_version() == 12
     with connection() as conn:
         assert conn.execute(
             "SELECT summary FROM security_scan_runs WHERE run_id = ?",

@@ -9,7 +9,7 @@ export const LITE_REVISION_CHANGED_EVENT = 'lite.revision.changed';
 export const LITE_REVISION_RESET_EVENT = 'lite.revision.reset';
 export const LITE_REVISION_MAX_CHANGED_IDS = 32;
 export const LITE_REVISION_MAX_MESSAGE_BYTES = 8 * 1024;
-export const LITE_REVISION_SUPPORTED_PROJECTION_VERSIONS = new Set([1, 2]);
+export const LITE_REVISION_SUPPORTED_PROJECTION_VERSIONS = new Set([1, 2, 3, 4]);
 export const LITE_REVISION_DOMAINS = new Set([
   'security', 'fleet', 'apps', 'recovery', 'commands', 'storage', 'audit',
 ]);
@@ -27,6 +27,13 @@ export const LITE_REVISION_REASONS = new Set([
   'cursor_too_old',
   'cursor_ahead',
   'malformed_cursor',
+  'device_health_changed',
+  'device_attention_changed',
+  'device_connection_quality_changed',
+  'device_resource_pressure_changed',
+  'device_recovery_pattern_changed',
+  'device_version_posture_changed',
+  'device_dependency_impact_changed',
 ]);
 
 const DOMAIN_QUERY_PREFIXES = {
@@ -144,7 +151,8 @@ function invalidatePrefix(queryClient, queryKey) {
 
 export function invalidateLiteRevisionDomain(queryClient, domain, changedIds = []) {
   if (!queryClient || !LITE_REVISION_DOMAINS.has(domain)) return [];
-  const work = (DOMAIN_QUERY_PREFIXES[domain] || []).map((queryKey) => invalidatePrefix(queryClient, queryKey));
+  const work = (domain === 'fleet' ? [] : (DOMAIN_QUERY_PREFIXES[domain] || []))
+    .map((queryKey) => invalidatePrefix(queryClient, queryKey));
   if (domain === 'apps') {
     changedIds.forEach((appId) => {
       work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.appActions(appId), exact: false, refetchType: 'active' }));
@@ -152,6 +160,22 @@ export function invalidateLiteRevisionDomain(queryClient, domain, changedIds = [
   }
   if (domain === 'security') {
     work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.securityFreshness(), exact: false, refetchType: 'active' }));
+  }
+  if (domain === 'fleet') {
+    work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.fleet(), exact: true, refetchType: 'active' }));
+    work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.fleetHealthSummary(), exact: true, refetchType: 'active' }));
+    changedIds.forEach((nodeId) => {
+      work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.device(nodeId), exact: true, refetchType: 'active' }));
+      work.push(queryClient.invalidateQueries({ queryKey: liteQueryKeys.deviceHealth(nodeId), exact: true, refetchType: 'active' }));
+      work.push(queryClient.invalidateQueries({
+        predicate: (query) => Array.isArray(query.queryKey)
+          && query.queryKey[0] === 'lite'
+          && query.queryKey[1] === 'fleet'
+          && query.queryKey[2] === 'device-health-history'
+          && query.queryKey[3] === nodeId,
+        refetchType: 'active',
+      }));
+    });
   }
   return work;
 }

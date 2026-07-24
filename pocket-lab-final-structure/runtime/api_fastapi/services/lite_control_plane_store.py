@@ -57,6 +57,13 @@ _REVISION_REASONS = frozenset({
     "device_command_delivery_changed",
     "device_recovery_changed",
     "device_removal_assessment_changed",
+    "device_health_changed",
+    "device_attention_changed",
+    "device_connection_quality_changed",
+    "device_resource_pressure_changed",
+    "device_recovery_pattern_changed",
+    "device_version_posture_changed",
+    "device_dependency_impact_changed",
     "database_instance_changed",
     "cursor_too_old",
     "cursor_ahead",
@@ -1541,6 +1548,251 @@ class ControlPlaneProjectionStore:
             "updated_at": _safe_text(row.get("updated_at"), 64),
         }
 
+    @staticmethod
+    def _public_device_health(
+        row: dict[str, Any],
+        attention_items: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        reasons = ControlPlaneProjectionStore._json_value(row.get("reason_codes_json"), [])
+        reasons = [
+            _safe_text(item, 80)
+            for item in (reasons if isinstance(reasons, list) else [])[:16]
+            if _safe_text(item, 80)
+        ]
+        return {
+            "model_version": 1,
+            "node_id": _safe_text(row.get("device_id"), 120),
+            "status": _safe_text(row.get("health_status") or "unknown", 40),
+            "severity": _safe_text(row.get("health_severity") or "none", 24),
+            "summary": _safe_text(row.get("summary") or "Device health is not available yet.", 240),
+            "reason_codes": reasons,
+            "attention_items": (attention_items or [])[:64],
+            "attention_count": min(64, max(0, int(row.get("attention_count") or 0))),
+            "recommended_action": _safe_text(row.get("recommendation_code") or "review_device", 80),
+            "recommended_action_target": _safe_text(row.get("recommendation_target"), 120) or None,
+            "last_evaluated_at": _safe_text(row.get("last_evaluated_at"), 64) or None,
+            "health_revision": _safe_text(row.get("health_revision"), 80),
+            "source_revision": max(0, int(row.get("source_revision") or 0)),
+            "revision": max(0, int(row.get("revision") or 0)),
+            "source_freshness": ControlPlaneProjectionStore._json_value(row.get("source_freshness_json"), {}),
+            "resources": ControlPlaneProjectionStore._json_value(row.get("resources_json"), {}),
+            "connection": ControlPlaneProjectionStore._json_value(row.get("connection_json"), {}),
+            "recovery": ControlPlaneProjectionStore._json_value(row.get("recovery_json"), {}),
+            "versions": ControlPlaneProjectionStore._json_value(row.get("versions_json"), {}),
+            "dependency_impact": ControlPlaneProjectionStore._json_value(row.get("dependency_impact_json"), {}),
+            "sanitized": True,
+        }
+
+    @staticmethod
+    def _public_health_attention(row: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "id": _safe_text(row.get("attention_id"), 120),
+            "node_id": _safe_text(row.get("device_id"), 120),
+            "reason_code": _safe_text(row.get("reason_code"), 80),
+            "category": _safe_text(row.get("category"), 40),
+            "severity": _safe_text(row.get("severity"), 24),
+            "status": _safe_text(row.get("status"), 24),
+            "summary": _safe_text(row.get("summary"), 240),
+            "recommendation": _safe_text(row.get("recommendation"), 280),
+            "recommended_action": _safe_text(row.get("recommendation_code"), 80),
+            "created_at": _safe_text(row.get("created_at"), 64) or None,
+            "updated_at": _safe_text(row.get("updated_at"), 64) or None,
+            "resolved_at": _safe_text(row.get("resolved_at"), 64) or None,
+            "source_revision": max(0, int(row.get("source_revision") or 0)),
+        }
+
+    def _upsert_device_health_row(
+        self,
+        conn: sqlite3.Connection,
+        *,
+        device_id: str,
+        item: dict[str, Any],
+        updated_at: str,
+        updated_at_epoch_ms: int,
+    ) -> tuple[bool, set[str]]:
+        health = item.get("proactive_health") if isinstance(item.get("proactive_health"), dict) else {}
+        if not health:
+            return False, set()
+        resources = health.get("resources") if isinstance(health.get("resources"), dict) else {}
+        connection = health.get("connection") if isinstance(health.get("connection"), dict) else {}
+        recovery = health.get("recovery") if isinstance(health.get("recovery"), dict) else {}
+        versions = health.get("versions") if isinstance(health.get("versions"), dict) else {}
+        dependency = health.get("dependency_impact") if isinstance(health.get("dependency_impact"), dict) else {}
+        reasons = [
+            _safe_text(value, 80)
+            for value in (health.get("reason_codes") or [])[:16]
+            if _safe_text(value, 80)
+        ]
+        resource_statuses = [
+            _safe_text(value.get("status"), 24)
+            for value in resources.values()
+            if isinstance(value, dict)
+        ]
+        resource_rank = {"unknown": -1, "normal": 0, "watch": 1, "low": 2, "critical": 3}
+        resource_status = max(resource_statuses or ["unknown"], key=lambda value: resource_rank.get(value, -1))
+        evaluated_at = _safe_text(health.get("last_evaluated_at") or updated_at, 64)
+        values = {
+            "health_status": _safe_text(health.get("status") or "unknown", 40),
+            "health_severity": _safe_text(health.get("severity") or "none", 24),
+            "resource_status": resource_status,
+            "connection_status": _safe_text(connection.get("status") or "unknown", 40),
+            "recovery_status": _safe_text(recovery.get("status") or "unknown", 40),
+            "version_status": _safe_text(versions.get("status") or "unknown", 40),
+            "dependency_impact_status": _safe_text(dependency.get("status") or "unknown", 40),
+            "reason_codes_json": _safe_json(reasons, max_bytes=4096),
+            "recommendation_code": _safe_text(health.get("recommended_action") or "review_device", 80),
+            "recommendation_target": _safe_text(health.get("recommended_action_target"), 120) or None,
+            "attention_count": min(64, max(0, int(health.get("attention_count") or 0))),
+            "health_revision": _safe_text(health.get("health_revision"), 80),
+            "source_revision": max(0, int(health.get("source_revision") or 0)),
+            "source_freshness_json": _safe_json(health.get("source_freshness") or {}, max_bytes=8192),
+            "resources_json": _safe_json(resources, max_bytes=12288),
+            "connection_json": _safe_json(connection, max_bytes=8192),
+            "recovery_json": _safe_json(recovery, max_bytes=8192),
+            "versions_json": _safe_json(versions, max_bytes=8192),
+            "dependency_impact_json": _safe_json(dependency, max_bytes=12288),
+            "summary": _safe_text(health.get("summary") or "Device health is not available yet.", 240),
+            "last_evaluated_at": evaluated_at,
+            "last_evaluated_at_epoch_ms": _epoch_ms(evaluated_at),
+        }
+        existing_row = conn.execute(
+            "SELECT * FROM device_health_current WHERE device_id=?", (device_id,)
+        ).fetchone()
+        existing = dict(existing_row) if existing_row else {}
+        # The evaluator revision intentionally contains threshold buckets and
+        # lifecycle material, not raw metric values. Treat it as the compare-
+        # and-set fence so normal telemetry drift cannot write on every heartbeat.
+        health_changed = not existing or existing.get("health_revision") != values["health_revision"]
+        reasons_changed: set[str] = set()
+        if health_changed:
+            reasons_changed.add("device_health_changed")
+            if not existing or existing.get("resource_status") != values["resource_status"]:
+                reasons_changed.add("device_resource_pressure_changed")
+            if not existing or existing.get("connection_status") != values["connection_status"]:
+                reasons_changed.add("device_connection_quality_changed")
+            if not existing or existing.get("recovery_status") != values["recovery_status"]:
+                reasons_changed.add("device_recovery_pattern_changed")
+            if not existing or existing.get("version_status") != values["version_status"]:
+                reasons_changed.add("device_version_posture_changed")
+            if not existing or existing.get("dependency_impact_status") != values["dependency_impact_status"]:
+                reasons_changed.add("device_dependency_impact_changed")
+            revision = int(existing.get("revision") or 0) + 1
+            columns = list(values.keys())
+            conn.execute(
+                f"""
+                INSERT INTO device_health_current(
+                    device_id, {', '.join(columns)}, updated_at, updated_at_epoch_ms, revision
+                ) VALUES ({', '.join('?' for _ in range(len(columns) + 4))})
+                ON CONFLICT(device_id) DO UPDATE SET
+                    {', '.join(f'{column}=excluded.{column}' for column in columns)},
+                    updated_at=excluded.updated_at,
+                    updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                    revision=excluded.revision
+                """,
+                (device_id, *(values[column] for column in columns), updated_at, updated_at_epoch_ms, revision),
+            )
+            previous_state = _safe_text(existing.get("health_status") or "unknown", 40)
+            new_state = values["health_status"]
+            transition_material = json.dumps(
+                [device_id, previous_state, new_state, values["health_revision"]],
+                separators=(",", ":"),
+            )
+            event_id = hashlib.sha256(transition_material.encode("utf-8")).hexdigest()[:24]
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO device_health_transitions(
+                    event_id, device_id, previous_state, new_state, reason_codes_json,
+                    summary, occurred_at, occurred_at_epoch_ms, source_revision
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    event_id, device_id, previous_state, new_state,
+                    values["reason_codes_json"], values["summary"], evaluated_at,
+                    values["last_evaluated_at_epoch_ms"], values["source_revision"],
+                ),
+            )
+
+        attention_changed = False
+        active_ids: list[str] = []
+        for raw in (health.get("attention_items") or [])[:64]:
+            if not isinstance(raw, dict):
+                continue
+            attention_id = _safe_text(raw.get("id"), 120)
+            reason_code = _safe_text(raw.get("reason_code"), 80)
+            if not attention_id or not reason_code:
+                continue
+            active_ids.append(attention_id)
+            created_at = _safe_text(raw.get("created_at") or evaluated_at, 64)
+            item_updated_at = _safe_text(raw.get("updated_at") or evaluated_at, 64)
+            conn.execute(
+                """
+                INSERT INTO device_health_attention(
+                    attention_id, device_id, reason_code, category, severity, status,
+                    summary, recommendation, recommendation_code, created_at,
+                    created_at_epoch_ms, updated_at, updated_at_epoch_ms,
+                    resolved_at, resolved_at_epoch_ms, source_revision
+                ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, NULL, 0, ?)
+                ON CONFLICT(attention_id) DO UPDATE SET
+                    category=excluded.category,
+                    severity=excluded.severity,
+                    status=CASE
+                        WHEN device_health_attention.status='acknowledged' THEN 'acknowledged'
+                        ELSE 'active'
+                    END,
+                    summary=excluded.summary,
+                    recommendation=excluded.recommendation,
+                    recommendation_code=excluded.recommendation_code,
+                    updated_at=excluded.updated_at,
+                    updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                    resolved_at=NULL,
+                    resolved_at_epoch_ms=0,
+                    source_revision=excluded.source_revision
+                WHERE device_health_attention.category IS NOT excluded.category
+                   OR device_health_attention.severity IS NOT excluded.severity
+                   OR device_health_attention.status NOT IN ('active','acknowledged')
+                   OR device_health_attention.summary IS NOT excluded.summary
+                   OR device_health_attention.recommendation IS NOT excluded.recommendation
+                   OR device_health_attention.recommendation_code IS NOT excluded.recommendation_code
+                """,
+                (
+                    attention_id, device_id, reason_code,
+                    _safe_text(raw.get("category") or "device", 40),
+                    _safe_text(raw.get("severity") or "low", 24),
+                    _safe_text(raw.get("summary") or "Device needs review.", 240),
+                    _safe_text(raw.get("recommendation") or "Review the device.", 280),
+                    _safe_text(raw.get("recommended_action") or "review_device", 80),
+                    created_at, _epoch_ms(created_at), item_updated_at,
+                    _epoch_ms(item_updated_at), max(0, int(raw.get("source_revision") or 0)),
+                ),
+            )
+            attention_changed = bool(_changes(conn)) or attention_changed
+        if active_ids:
+            placeholders = ",".join("?" for _ in active_ids)
+            conn.execute(
+                f"""
+                UPDATE device_health_attention
+                   SET status='resolved', resolved_at=?, resolved_at_epoch_ms=?,
+                       updated_at=?, updated_at_epoch_ms=?
+                 WHERE device_id=? AND status IN ('active','acknowledged')
+                   AND attention_id NOT IN ({placeholders})
+                """,
+                (updated_at, updated_at_epoch_ms, updated_at, updated_at_epoch_ms, device_id, *active_ids),
+            )
+        else:
+            conn.execute(
+                """
+                UPDATE device_health_attention
+                   SET status='resolved', resolved_at=?, resolved_at_epoch_ms=?,
+                       updated_at=?, updated_at_epoch_ms=?
+                 WHERE device_id=? AND status IN ('active','acknowledged')
+                """,
+                (updated_at, updated_at_epoch_ms, updated_at, updated_at_epoch_ms, device_id),
+            )
+        attention_changed = bool(_changes(conn)) or attention_changed
+        if attention_changed:
+            reasons_changed.add("device_attention_changed")
+        return bool(health_changed or attention_changed), reasons_changed
+
     def _upsert_device_awareness_row(
         self,
         conn: sqlite3.Connection,
@@ -1659,6 +1911,160 @@ class ControlPlaneProjectionStore:
         )
         return bool(_changes(conn)), reasons
 
+    def device_health_map(self) -> dict[str, dict[str, Any]]:
+        self.initialize()
+
+        def read(conn: sqlite3.Connection) -> tuple[list[sqlite3.Row], list[sqlite3.Row]]:
+            current = list(conn.execute(
+                "SELECT * FROM device_health_current ORDER BY device_id"
+            ))
+            attention = list(conn.execute(
+                "SELECT * FROM device_health_attention "
+                "WHERE status IN ('active','acknowledged') "
+                "ORDER BY device_id, updated_at_epoch_ms DESC, attention_id DESC"
+            ))
+            return current, attention
+
+        (current_rows, attention_rows), _, _ = self._read(read)
+        attention_by_device: dict[str, list[dict[str, Any]]] = {}
+        for row in attention_rows:
+            public = self._public_health_attention(dict(row))
+            attention_by_device.setdefault(str(public.get("node_id") or ""), []).append(public)
+        return {
+            str(row["device_id"]): self._public_device_health(
+                dict(row), attention_by_device.get(str(row["device_id"]), [])
+            )
+            for row in current_rows
+        }
+
+    def fleet_health_summary(self) -> dict[str, Any]:
+        self.initialize()
+
+        def read(conn: sqlite3.Connection) -> tuple[list[sqlite3.Row], list[sqlite3.Row]]:
+            states = list(conn.execute(
+                "SELECT health_status, health_severity, COUNT(*) AS count "
+                "FROM device_health_current GROUP BY health_status, health_severity"
+            ))
+            attention = list(conn.execute(
+                "SELECT category, severity, COUNT(*) AS count "
+                "FROM device_health_attention WHERE status IN ('active','acknowledged') "
+                "GROUP BY category, severity"
+            ))
+            return states, attention
+
+        (state_rows, attention_rows), wait_ms, query_ms = self._read(read)
+        by_status: dict[str, int] = {}
+        by_severity: dict[str, int] = {}
+        total = 0
+        for row in state_rows:
+            count = int(row["count"] or 0)
+            total += count
+            status = _safe_text(row["health_status"] or "unknown", 40)
+            severity = _safe_text(row["health_severity"] or "none", 24)
+            by_status[status] = by_status.get(status, 0) + count
+            by_severity[severity] = by_severity.get(severity, 0) + count
+        attention_by_category: dict[str, int] = {}
+        attention_total = 0
+        for row in attention_rows:
+            count = int(row["count"] or 0)
+            attention_total += count
+            category = _safe_text(row["category"] or "device", 40)
+            attention_by_category[category] = attention_by_category.get(category, 0) + count
+        return {
+            "status": "ready",
+            "device_count": total,
+            "attention_count": attention_total,
+            "by_status": by_status,
+            "by_severity": by_severity,
+            "attention_by_category": attention_by_category,
+            "source_revision": self.domain_revision("fleet"),
+            "connection_wait_ms": round(wait_ms, 3),
+            "sqlite_query_ms": round(query_ms, 3),
+            "sanitized": True,
+        }
+
+    def device_health(self, device_id: str) -> dict[str, Any]:
+        self.initialize()
+        normalized = _safe_text(device_id, 120)
+        if not normalized:
+            raise DeviceAwarenessError(404, "Device was not found.")
+
+        def read(conn: sqlite3.Connection) -> tuple[sqlite3.Row | None, list[sqlite3.Row]]:
+            current = conn.execute(
+                "SELECT * FROM device_health_current WHERE device_id=?", (normalized,)
+            ).fetchone()
+            attention = list(conn.execute(
+                "SELECT * FROM device_health_attention "
+                "WHERE device_id=? AND status IN ('active','acknowledged') "
+                "ORDER BY updated_at_epoch_ms DESC, attention_id DESC LIMIT 64",
+                (normalized,),
+            ))
+            return current, attention
+
+        (current_row, attention_rows), wait_ms, query_ms = self._read(read)
+        if not current_row:
+            raise DeviceAwarenessError(404, "Device health is not available yet.")
+        health = self._public_device_health(
+            dict(current_row), [self._public_health_attention(dict(row)) for row in attention_rows]
+        )
+        return {
+            "status": "ready",
+            "health": health,
+            "source_revision": self.domain_revision("fleet"),
+            "connection_wait_ms": round(wait_ms, 3),
+            "sqlite_query_ms": round(query_ms, 3),
+            "updated_at": health.get("last_evaluated_at"),
+        }
+
+    def device_health_history(
+        self, device_id: str, *, limit: int = 20, cursor: str = ""
+    ) -> dict[str, Any]:
+        self.initialize()
+        normalized = _safe_text(device_id, 120)
+        if not normalized:
+            raise ValueError("device_id is required")
+        bounded_limit = max(1, min(int(limit), 100))
+        decoded = _decode_cursor(cursor)
+
+        def read(conn: sqlite3.Connection) -> tuple[bool, list[sqlite3.Row]]:
+            exists = conn.execute(
+                "SELECT 1 FROM device_current_state WHERE device_id=? LIMIT 1",
+                (normalized,),
+            ).fetchone() is not None
+            params: list[Any] = [normalized]
+            cursor_clause = ""
+            if decoded is not None:
+                cursor_clause = (
+                    " AND (occurred_at_epoch_ms < ? OR "
+                    "(occurred_at_epoch_ms = ? AND event_id < ?))"
+                )
+                params.extend([decoded[0], decoded[0], decoded[1]])
+            params.append(bounded_limit + 1)
+            rows = list(conn.execute(
+                "SELECT event_id,device_id AS node_id,previous_state,new_state,"
+                "reason_codes_json,summary,occurred_at,occurred_at_epoch_ms,source_revision "
+                "FROM device_health_transitions WHERE device_id=?"
+                + cursor_clause
+                + " ORDER BY occurred_at_epoch_ms DESC,event_id DESC LIMIT ?",
+                tuple(params),
+            ))
+            return exists, rows
+
+        (exists, rows), wait_ms, query_ms = self._read(read)
+        if not exists:
+            raise DeviceAwarenessError(404, "Device was not found.")
+        items: list[dict[str, Any]] = []
+        for row in rows:
+            item = dict(row)
+            item["reason_codes"] = self._json_value(item.pop("reason_codes_json", "[]"), [])
+            item["sanitized"] = True
+            items.append(item)
+        return self._history_result(
+            items, limit=bounded_limit, epoch_key="occurred_at_epoch_ms",
+            id_key="event_id", revision=self.domain_revision("fleet"),
+            wait_ms=wait_ms, query_ms=query_ms,
+        )
+
     def device_profile_map(self) -> dict[str, dict[str, Any]]:
         self.initialize()
         rows, _, _ = self._read(
@@ -1674,7 +2080,10 @@ class ControlPlaneProjectionStore:
         if not normalized:
             raise DeviceAwarenessError(404, "Device was not found.")
 
-        def read(conn: sqlite3.Connection) -> tuple[sqlite3.Row | None, sqlite3.Row | None, sqlite3.Row | None]:
+        def read(conn: sqlite3.Connection) -> tuple[
+            sqlite3.Row | None, sqlite3.Row | None, sqlite3.Row | None,
+            sqlite3.Row | None, list[sqlite3.Row]
+        ]:
             current = conn.execute(
                 "SELECT * FROM device_current_state WHERE device_id=?", (normalized,)
             ).fetchone()
@@ -1684,9 +2093,18 @@ class ControlPlaneProjectionStore:
             awareness = conn.execute(
                 "SELECT * FROM device_awareness_state WHERE device_id=?", (normalized,)
             ).fetchone()
-            return current, profile, awareness
+            health = conn.execute(
+                "SELECT * FROM device_health_current WHERE device_id=?", (normalized,)
+            ).fetchone()
+            attention = list(conn.execute(
+                "SELECT * FROM device_health_attention "
+                "WHERE device_id=? AND status IN ('active','acknowledged') "
+                "ORDER BY updated_at_epoch_ms DESC, attention_id DESC LIMIT 64",
+                (normalized,),
+            ))
+            return current, profile, awareness, health, attention
 
-        (current_row, profile_row, awareness_row), wait_ms, query_ms = self._read(read)
+        (current_row, profile_row, awareness_row, health_row, attention_rows), wait_ms, query_ms = self._read(read)
         if not current_row:
             raise DeviceAwarenessError(404, "Device was not found.")
         current = dict(current_row)
@@ -1710,6 +2128,14 @@ class ControlPlaneProjectionStore:
             payload.update(self._public_device_profile(dict(profile_row)))
         if awareness_row:
             payload.update(self._public_awareness(dict(awareness_row)))
+        if health_row:
+            health = self._public_device_health(
+                dict(health_row), [self._public_health_attention(dict(row)) for row in attention_rows]
+            )
+            payload["proactive_health"] = health
+            payload["health_status"] = health.get("status")
+            payload["health_severity"] = health.get("severity")
+            payload["attention_count"] = health.get("attention_count")
         revision = self.domain_revision("fleet")
         return {
             "status": "ready",
@@ -1938,6 +2364,7 @@ class ControlPlaneProjectionStore:
         def write(conn: sqlite3.Connection) -> int:
             changed = False
             awareness_reasons: set[str] = set()
+            health_changed_ids: set[str] = set()
             device_ids: list[str] = []
             for item in devices:
                 device_id = _safe_text(item.get("id") or item.get("node_id"), 120)
@@ -2074,6 +2501,17 @@ class ControlPlaneProjectionStore:
                 )
                 changed = awareness_changed or changed
                 awareness_reasons.update(device_reasons)
+                health_changed, health_reasons = self._upsert_device_health_row(
+                    conn,
+                    device_id=device_id,
+                    item=item,
+                    updated_at=now,
+                    updated_at_epoch_ms=now_epoch,
+                )
+                if health_changed:
+                    health_changed_ids.add(device_id)
+                changed = health_changed or changed
+                awareness_reasons.update(health_reasons)
                 for event in (item.get("recent_lifecycle") or [])[:50]:
                     if not isinstance(event, dict):
                         continue
@@ -2103,11 +2541,18 @@ class ControlPlaneProjectionStore:
             if device_ids:
                 placeholders = ",".join("?" for _ in device_ids)
                 conn.execute(
+                    f"DELETE FROM device_health_current WHERE device_id NOT IN ({placeholders})",
+                    tuple(device_ids),
+                )
+                changed = _changes(conn) or changed
+                conn.execute(
                     f"DELETE FROM device_current_state WHERE device_id NOT IN ({placeholders})",
                     tuple(device_ids),
                 )
                 changed = _changes(conn) or changed
             else:
+                conn.execute("DELETE FROM device_health_current")
+                changed = _changes(conn) or changed
                 conn.execute("DELETE FROM device_current_state")
                 changed = _changes(conn) or changed
 
@@ -2178,16 +2623,45 @@ class ControlPlaneProjectionStore:
                 "(SELECT event_row_id FROM device_lifecycle_events ORDER BY occurred_at_epoch_ms DESC, event_row_id DESC LIMIT 4096)"
             )
             changed = _changes(conn) or changed
+            conn.execute(
+                "DELETE FROM device_health_transitions WHERE transition_row_id NOT IN "
+                "(SELECT transition_row_id FROM device_health_transitions "
+                "ORDER BY occurred_at_epoch_ms DESC, transition_row_id DESC LIMIT 2048)"
+            )
+            changed = _changes(conn) or changed
+            conn.execute(
+                "DELETE FROM device_health_attention WHERE status='resolved' AND attention_id NOT IN "
+                "(SELECT attention_id FROM device_health_attention WHERE status='resolved' "
+                "ORDER BY updated_at_epoch_ms DESC, attention_id DESC LIMIT 1024)"
+            )
+            changed = _changes(conn) or changed
             reason_priority = (
+                "device_attention_changed", "device_health_changed",
+                "device_connection_quality_changed", "device_resource_pressure_changed",
+                "device_recovery_pattern_changed", "device_version_posture_changed",
+                "device_dependency_impact_changed",
                 "device_identity_changed", "device_enrollment_changed",
                 "device_dependencies_changed", "device_capabilities_changed",
                 "device_removal_assessment_changed", "device_command_delivery_changed",
                 "device_recovery_changed", "device_staleness_changed",
             )
             focused_reason = next((reason for reason in reason_priority if reason in awareness_reasons), "fleet_state_changed")
+            focused_ids = (
+                sorted(health_changed_ids)
+                if focused_reason.startswith("device_health_")
+                or focused_reason in {
+                    "device_attention_changed",
+                    "device_connection_quality_changed",
+                    "device_resource_pressure_changed",
+                    "device_recovery_pattern_changed",
+                    "device_version_posture_changed",
+                    "device_dependency_impact_changed",
+                }
+                else device_ids
+            )
             return _bump_revision(
-                conn, "fleet", now, changed_ids=device_ids,
-                reason=focused_reason, projection_version=3,
+                conn, "fleet", now, changed_ids=focused_ids,
+                reason=focused_reason, projection_version=4,
             ) if changed else _domain_revision(conn, "fleet")
 
         try:
@@ -2832,6 +3306,18 @@ class ControlPlaneProjectionStore:
             ),
             "device_recovery_history": (
                 "SELECT recovery_id FROM device_recovery_history WHERE device_id=? ORDER BY created_at_epoch_ms DESC, recovery_id DESC LIMIT 20",
+                ("device-1",),
+            ),
+            "device_health_current": (
+                "SELECT health_status, health_severity, health_revision FROM device_health_current WHERE device_id=?",
+                ("device-1",),
+            ),
+            "device_health_attention": (
+                "SELECT attention_id FROM device_health_attention WHERE device_id=? AND status IN ('active','acknowledged') ORDER BY updated_at_epoch_ms DESC, attention_id DESC LIMIT 20",
+                ("device-1",),
+            ),
+            "device_health_history": (
+                "SELECT event_id FROM device_health_transitions WHERE device_id=? ORDER BY occurred_at_epoch_ms DESC, event_id DESC LIMIT 20",
                 ("device-1",),
             ),
             "app_action_history": (

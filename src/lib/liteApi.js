@@ -220,6 +220,13 @@ export const liteApi = {
   checkSecurityApp: (appId = 'photoprism', payload = {}) => postJson(`/api/lite/security/apps/${encodeURIComponent(appId)}/check`, payload),
   fleet: conditionalGet('/api/lite/fleet'),
   device: (deviceId) => conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}`),
+  deviceHealth: (deviceId) => conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/health`),
+  deviceHealthHistory: (deviceId, limit = 20, cursor = '') => {
+    const query = new URLSearchParams({ limit: String(limit || 20) });
+    if (cursor) query.set('cursor', cursor);
+    return conditionalRead(`/api/lite/devices/${encodeURIComponent(deviceId || '')}/health/history?${query.toString()}`);
+  },
+  fleetHealthSummary: () => conditionalRead('/api/lite/fleet/health-summary'),
   deviceHistory: (deviceId, limit = 20, cursor = '') => {
     const query = new URLSearchParams({ limit: String(limit || 20) });
     if (cursor) query.set('cursor', cursor);

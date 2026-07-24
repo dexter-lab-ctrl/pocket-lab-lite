@@ -192,6 +192,8 @@ export default function DevicesScreen() {
     || deviceRestartProgressIsLive(restartProgress)
   ));
   const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
+  const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
+  const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
   const selectedRoleLabel = roleLabel(selectedRole);
   const candidateDeviceName = hostname.trim() || `Pocket Lab ${selectedRoleLabel}`;
   const localNameConflict = findDeviceNameConflict(candidateDeviceName, devices);
@@ -419,7 +421,7 @@ export default function DevicesScreen() {
           </div>
           <span>Connected now</span>
           <strong>{onlineDevices}</strong>
-          <p>{devices.length} total device{devices.length === 1 ? '' : 's'} known</p>
+          <p>{healthAttentionCount > 0 ? `${healthAttentionCount} health item${healthAttentionCount === 1 ? '' : 's'} to review` : `${devices.length} total device${devices.length === 1 ? '' : 's'} known`}</p>
         </div>
       </section>
 
@@ -608,6 +610,7 @@ export default function DevicesScreen() {
             <div className="lite-devices-section-metrics" aria-label="Device totals">
               <span><strong>{onlineDevices}</strong> online</span>
               <span><strong>{devices.length}</strong> total</span>
+              {healthAttentionCurrent ? <span><strong>{healthAttentionCount}</strong> health attention</span> : null}
             </div>
           </div>
 

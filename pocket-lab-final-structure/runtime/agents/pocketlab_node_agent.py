@@ -81,8 +81,10 @@ def telemetry_snapshot() -> Dict[str, Any]:
     try:
         st = os.statvfs(str(Path.home()))
         free_space = int((st.f_bavail * st.f_frsize) // (1024 * 1024))
+        total_space = int((st.f_blocks * st.f_frsize) // (1024 * 1024))
     except Exception:
         free_space = 0
+        total_space = 0
     try:
         mem = {}
         with open("/proc/meminfo", "r", encoding="utf-8") as handle:
@@ -99,6 +101,7 @@ def telemetry_snapshot() -> Dict[str, Any]:
         "cpu_temp_c": round(cpu_temp, 1),
         "cpu_usage_percent": round(cpu_usage, 1),
         "free_space_mb": free_space,
+        "total_space_mb": total_space,
         "memory_total_mb": total,
         "memory_free_mb": avail,
         "memory_usage_mb": max(0, total - avail),
@@ -263,7 +266,9 @@ class PocketLabNodeAgent:
             "auth_token_hash": token_hash(self.token),
             "capabilities": self.capabilities,
             "advertised_capabilities": self.capabilities,
+            "capability_schema_version": 1,
             "nats_connected_at": self.connected_at,
+            "reconnect_count": self.reconnect_count,
         }
 
     async def safe_publish(

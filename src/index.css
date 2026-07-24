@@ -23277,3 +23277,209 @@ html.lite-install-light-shell body {
     align-items: flex-start;
   }
 }
+
+/* Phase D4 — proactive device health */
+.theme-pocket-lite-daylight .lite-device-health-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--lite-border, #dbe4ea) 80%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--lite-card, #fff) 92%, #eef7f3);
+}
+
+.theme-pocket-lite-daylight .lite-device-health-strip-icon {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.theme-pocket-lite-daylight .lite-device-health-strip > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-strip small {
+  overflow-wrap: anywhere;
+  color: var(--lite-muted, #65737e);
+  line-height: 1.35;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-strip em {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-strip.is-ready { color: #176b4a; }
+.theme-pocket-lite-daylight .lite-device-health-strip.is-review { color: #9a5b13; }
+.theme-pocket-lite-daylight .lite-device-health-strip.is-critical { color: #a53030; }
+.theme-pocket-lite-daylight .lite-device-health-strip.is-repairing { color: #866313; }
+.theme-pocket-lite-daylight .lite-device-health-strip.is-unknown { color: var(--lite-muted, #65737e); }
+
+.theme-pocket-lite-daylight .lite-device-proactive-health {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--lite-border, #dbe4ea) 80%, transparent);
+  border-radius: 1.1rem;
+  background: color-mix(in srgb, var(--lite-card, #fff) 94%, #eef7f3);
+}
+
+.theme-pocket-lite-daylight .lite-device-proactive-health-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-proactive-health-icon {
+  display: inline-grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.theme-pocket-lite-daylight .lite-device-proactive-health-head > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-proactive-health-head span,
+.theme-pocket-lite-daylight .lite-device-health-recommendation span,
+.theme-pocket-lite-daylight .lite-device-health-attention-list > span {
+  color: var(--lite-muted, #65737e);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.theme-pocket-lite-daylight .lite-device-proactive-health-head p,
+.theme-pocket-lite-daylight .lite-device-health-recommendation p,
+.theme-pocket-lite-daylight .lite-device-health-attention-list p,
+.theme-pocket-lite-daylight .lite-device-health-history p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--lite-muted, #65737e);
+  line-height: 1.4;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-resource-grid,
+.theme-pocket-lite-daylight .lite-device-health-posture-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-resource-grid article,
+.theme-pocket-lite-daylight .lite-device-health-posture-grid article,
+.theme-pocket-lite-daylight .lite-device-health-attention-list article,
+.theme-pocket-lite-daylight .lite-device-health-history article,
+.theme-pocket-lite-daylight .lite-device-health-recommendation {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--lite-border, #dbe4ea) 75%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--lite-card, #fff) 96%, #f3f7f8);
+}
+
+.theme-pocket-lite-daylight .lite-device-health-resource-grid article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem 0.55rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-resource-grid article > span,
+.theme-pocket-lite-daylight .lite-device-health-resource-grid article > p {
+  grid-column: 1 / -1;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-resource-grid small {
+  color: var(--lite-muted, #65737e);
+  text-align: right;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-posture-grid article,
+.theme-pocket-lite-daylight .lite-device-health-recommendation,
+.theme-pocket-lite-daylight .lite-device-health-attention-list,
+.theme-pocket-lite-daylight .lite-device-health-history-control,
+.theme-pocket-lite-daylight .lite-device-health-history {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-attention-list article {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-attention-list article > div {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-attention-list small,
+.theme-pocket-lite-daylight .lite-device-health-history span {
+  color: var(--lite-muted, #65737e);
+  font-size: 0.78rem;
+}
+
+.theme-pocket-lite-daylight .lite-device-health-clear,
+.theme-pocket-lite-daylight .lite-device-health-saved-note {
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--lite-card, #fff) 88%, #eef7f3);
+  color: var(--lite-muted, #65737e);
+}
+
+.theme-pocket-lite-daylight .lite-device-health-saved-note {
+  background: color-mix(in srgb, var(--lite-card, #fff) 88%, #fff0d8);
+}
+
+@media (max-width: 760px) {
+  .theme-pocket-lite-daylight .lite-device-health-resource-grid,
+  .theme-pocket-lite-daylight .lite-device-health-posture-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .theme-pocket-lite-daylight .lite-device-proactive-health-head,
+  .theme-pocket-lite-daylight .lite-device-health-strip {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .theme-pocket-lite-daylight .lite-device-proactive-health-head > small,
+  .theme-pocket-lite-daylight .lite-device-health-strip > em {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .theme-pocket-lite-daylight .lite-device-health-attention-list article > div {
+    display: grid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pocket-lite-daylight .lite-device-health-strip,
+  .theme-pocket-lite-daylight .lite-device-proactive-health {
+    scroll-behavior: auto;
+  }
+}
