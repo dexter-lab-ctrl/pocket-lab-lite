@@ -445,7 +445,22 @@ def evaluate_device_health(
             "ignored_out_of_order": True,
         }
     heartbeat_state = freshness["heartbeat"]["state"]
-    freshness["state"] = "missing" if heartbeat_state == "missing" else "stale" if heartbeat_state == "stale" else "partial" if any(value["state"] != "current" for key, value in freshness.items() if key != "heartbeat") else "current"
+    required_freshness = (
+        freshness["heartbeat"]["state"],
+        freshness["telemetry"]["state"],
+        freshness["system_profile"]["state"],
+    )
+    if "missing" in required_freshness:
+        freshness["state"] = "missing"
+    elif "stale" in required_freshness:
+        freshness["state"] = "stale"
+    elif all(value == "current" for value in required_freshness):
+        freshness["state"] = "current"
+    else:
+        freshness["state"] = "partial"
+    freshness["optional_state"] = (
+        "current" if freshness["supervisor"]["state"] == "current" else "unavailable"
+    )
 
     previous_resources = previous.get("resources") if isinstance(previous.get("resources"), dict) else {}
     resources = (
@@ -566,7 +581,19 @@ def evaluate_device_health(
         "reported": capability_schema,
         "expected": CAPABILITY_SCHEMA_VERSION,
     }
-    version_states = [str(part.get("status") or "unknown") for part in version_parts.values()]
+    supervisor_observed = bool(
+        supervisor_version
+        or freshness["supervisor"]["state"] != "missing"
+        or supervisor_status not in {"", "unknown", "missing"}
+    )
+    required_version_parts = [
+        version_parts["node_agent"],
+        version_parts["system_profile_schema"],
+        version_parts["capability_schema"],
+    ]
+    if supervisor_observed:
+        required_version_parts.append(version_parts["supervisor"])
+    version_states = [str(part.get("status") or "unknown") for part in required_version_parts]
     if "incompatible" in version_states:
         version_status = "incompatible"
     elif "behind" in version_states:
