@@ -88,6 +88,24 @@ def _app_stage_workers() -> int:
 _STAGE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
     max_workers=_app_stage_workers(), thread_name_prefix="pocketlab-app-stage"
 )
+_STAGE_INFLIGHT_LOCK = threading.Lock()
+_STAGE_INFLIGHT: set[concurrent.futures.Future[Any]] = set()
+
+
+def _track_stage_future(future: concurrent.futures.Future[Any]) -> None:
+    with _STAGE_INFLIGHT_LOCK:
+        _STAGE_INFLIGHT.add(future)
+
+    def completed(done: concurrent.futures.Future[Any]) -> None:
+        with _STAGE_INFLIGHT_LOCK:
+            _STAGE_INFLIGHT.discard(done)
+
+    future.add_done_callback(completed)
+
+
+def _stage_work_busy() -> bool:
+    with _STAGE_INFLIGHT_LOCK:
+        return any(not future.done() for future in _STAGE_INFLIGHT)
 
 
 def _app_stage_deadline_seconds() -> float:
@@ -109,6 +127,7 @@ _RECONCILE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
 )
 _RECONCILE_FUTURE: concurrent.futures.Future[Any] | None = None
 _RECONCILE_NEXT_ALLOWED = 0.0
+_RECONCILE_FAILURES = 0
 _SUBPROJECTION_VALUES: dict[str, tuple[dict[str, Any], float]] = {}
 _SUBPROJECTION_FUTURES: dict[str, concurrent.futures.Future[Any]] = {}
 _SUBPROJECTION_FAILURES: dict[str, int] = {}
@@ -733,16 +752,55 @@ def _reconcile_deadline_seconds() -> float:
         return 4.0
 
 
+
+
+def _reconcile_backoff_seconds(failures: int) -> float:
+    base = (60.0, 120.0, 300.0)[min(max(int(failures), 1) - 1, 2)]
+    # Stable jitter avoids a restart herd without making tests or logs random.
+    jitter = ((failures * 37) % 11) / 100.0
+    return min(330.0, base * (1.0 + jitter))
+
 def _run_saved_stage_reconciliation(
     callbacks: dict[str, tuple[Callable[[], Any], Any, float]],
 ) -> None:
-    global _RECONCILE_FUTURE, _RECONCILE_NEXT_ALLOWED
+    global _RECONCILE_FUTURE, _RECONCILE_NEXT_ALLOWED, _RECONCILE_FAILURES
+    lease: tuple[str, int] | None = None
+    succeeded = False
+    timed_out = False
+    deferred = False
     try:
         threading.Event().wait(_reconcile_delay_seconds())
+        acquire_workload = getattr(CONTROL_PLANE, "try_acquire_workload", None)
+        lease = (
+            acquire_workload("apps", "app-saved-reconciliation")
+            if callable(acquire_workload)
+            else ("legacy-app-saved-reconciliation", 0)
+        )
+        if lease is None:
+            with _RECONCILE_LOCK:
+                _RECONCILE_NEXT_ALLOWED = max(
+                    _RECONCILE_NEXT_ALLOWED, time.monotonic() + 30.0
+                )
+            _LOGGER.info(
+                "pocketlab.app_projection.reconcile_deferred reason=domain_busy retry_seconds=30"
+            )
+            return
+        if _stage_work_busy():
+            deferred = True
+            with _RECONCILE_LOCK:
+                _RECONCILE_NEXT_ALLOWED = max(
+                    _RECONCILE_NEXT_ALLOWED, time.monotonic() + 30.0
+                )
+            _LOGGER.info(
+                "pocketlab.app_projection.reconcile_deferred reason=stage_busy retry_seconds=30"
+            )
+            return
+
         futures: dict[str, concurrent.futures.Future[Any]] = {}
         for name, (callback, _fallback, _legacy_timeout) in callbacks.items():
             try:
                 futures[name] = _STAGE_EXECUTOR.submit(callback)
+                _track_stage_future(futures[name])
             except RuntimeError as exc:
                 _LOGGER.warning(
                     "pocketlab.app_projection.reconcile_submit_degraded key=%s error_type=%s",
@@ -781,30 +839,42 @@ def _run_saved_stage_reconciliation(
             else:
                 projections[name] = value
         if pending_names:
+            timed_out = True
             _LOGGER.warning(
-                "pocketlab.app_projection.reconcile_deadline_exhausted deadline_ms=%.0f pending=%s",
+                "pocketlab.app_projection.reconcile_timeout deadline_ms=%.0f pending=%s",
                 deadline_seconds * 1000.0,
                 ",".join(sorted(pending_names)),
             )
         if projections:
-            try:
-                CONTROL_PLANE.update_app_subprojections("photoprism", projections)
-            except Exception as exc:
-                _LOGGER.warning(
-                    "pocketlab.app_projection.reconcile_degraded key=all error_type=%s",
-                    type(exc).__name__,
-                    exc_info=True,
-                )
+            CONTROL_PLANE.update_app_subprojections("photoprism", projections)
+        succeeded = bool(projections) and not timed_out
     except Exception as exc:
-        _LOGGER.warning(
+        _LOGGER.exception(
             "pocketlab.app_projection.reconcile_degraded key=all error_type=%s",
             type(exc).__name__,
-            exc_info=True,
         )
     finally:
+        release_workload = getattr(CONTROL_PLANE, "release_workload", None)
+        if lease is not None and callable(release_workload):
+            release_workload("apps", lease)
         with _RECONCILE_LOCK:
             _RECONCILE_FUTURE = None
-            _RECONCILE_NEXT_ALLOWED = time.monotonic() + 60.0
+            if succeeded:
+                _RECONCILE_FAILURES = 0
+                _RECONCILE_NEXT_ALLOWED = time.monotonic() + 30.0
+            elif deferred:
+                _RECONCILE_NEXT_ALLOWED = max(
+                    _RECONCILE_NEXT_ALLOWED, time.monotonic() + 30.0
+                )
+            elif lease is not None:
+                _RECONCILE_FAILURES = min(8, _RECONCILE_FAILURES + 1)
+                delay = _reconcile_backoff_seconds(_RECONCILE_FAILURES)
+                _RECONCILE_NEXT_ALLOWED = time.monotonic() + delay
+                if timed_out:
+                    _LOGGER.warning(
+                        "pocketlab.app_projection.reconcile_backoff retry_seconds=%.0f failures=%d",
+                        delay, _RECONCILE_FAILURES,
+                    )
 
 
 def _schedule_saved_stage_reconciliation(
@@ -868,6 +938,7 @@ def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[s
     futures: dict[str, concurrent.futures.Future[Any]] = {}
     results: dict[str, Any] = {}
     used_saved = False
+    prior_stage_busy = _stage_work_busy()
 
     for name, (callback, fallback, _legacy_timeout) in callbacks.items():
         submitted_at[name] = time.monotonic()
@@ -880,8 +951,14 @@ def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[s
             if stage_timings is not None:
                 stage_timings[name] = round(max(0.0, (time.monotonic() - submitted_at[name]) * 1000.0), 3)
             continue
+        if prior_stage_busy:
+            results[name] = _stage_timeout_payload(fallback, refresh_pending=True)
+            if stage_timings is not None:
+                stage_timings[name] = 0.0
+            continue
         try:
             futures[name] = _STAGE_EXECUTOR.submit(callback)
+            _track_stage_future(futures[name])
         except RuntimeError as exc:
             results[name] = _stage_timeout_payload(fallback, refresh_pending=False)
             _LOGGER.warning(
@@ -942,7 +1019,7 @@ def _collect_app_stages(stage_timings: dict[str, float] | None = None) -> dict[s
             ",".join(sorted(timed_out_names)),
         )
 
-    if used_saved or timed_out_names:
+    if used_saved or timed_out_names or prior_stage_busy:
         _schedule_saved_stage_reconciliation(callbacks)
     return results
 

@@ -118,3 +118,106 @@ def test_reconciliation_updater_failure_is_contained(monkeypatch: pytest.MonkeyP
     callbacks = {"catalog": (lambda: {"status": "ready"}, {}, 0.1)}
     lifecycle._run_saved_stage_reconciliation(callbacks)
     assert lifecycle._RECONCILE_FUTURE is None
+
+
+def test_reconciliation_defers_when_apps_domain_is_busy(monkeypatch, caplog):
+    lifecycle = _module()
+    monkeypatch.setattr(lifecycle, "_reconcile_delay_seconds", lambda: 0.0)
+
+    class BusyControlPlane:
+        @staticmethod
+        def try_acquire_workload(*args, **kwargs):
+            return None
+
+        @staticmethod
+        def release_workload(*args, **kwargs):
+            raise AssertionError("no lease should be released")
+
+        @staticmethod
+        def update_app_subprojections(*args, **kwargs):
+            raise AssertionError("busy domain must not reconcile")
+
+    monkeypatch.setattr(lifecycle, "CONTROL_PLANE", BusyControlPlane())
+    lifecycle._RECONCILE_NEXT_ALLOWED = 0.0
+    caplog.set_level("INFO")
+    lifecycle._run_saved_stage_reconciliation(
+        {"catalog": (lambda: {"status": "ready"}, {}, 0.1)}
+    )
+
+    assert lifecycle._RECONCILE_FUTURE is None
+    assert lifecycle._RECONCILE_NEXT_ALLOWED > time.monotonic() + 25.0
+    assert any("reconcile_deferred reason=domain_busy" in record.getMessage() for record in caplog.records)
+
+
+def test_reconciliation_backoff_is_bounded():
+    lifecycle = _module()
+    assert 60.0 <= lifecycle._reconcile_backoff_seconds(1) <= 66.0
+    assert 120.0 <= lifecycle._reconcile_backoff_seconds(2) <= 132.0
+    assert 300.0 <= lifecycle._reconcile_backoff_seconds(3) <= 330.0
+    assert 300.0 <= lifecycle._reconcile_backoff_seconds(8) <= 330.0
+
+
+def test_stage_busy_prevents_duplicate_stage_submission(monkeypatch):
+    lifecycle = _module()
+    monkeypatch.setattr(lifecycle.CONTROL_PLANE, "app_current_subprojections", lambda *args, **kwargs: None)
+    monkeypatch.setattr(lifecycle, "_schedule_saved_stage_reconciliation", lambda callbacks: None)
+
+    blocker = lifecycle.concurrent.futures.Future()
+    with lifecycle._STAGE_INFLIGHT_LOCK:
+        lifecycle._STAGE_INFLIGHT.add(blocker)
+    submitted = []
+
+    class RejectingExecutor:
+        def submit(self, *args, **kwargs):
+            submitted.append(args)
+            raise AssertionError("stage work must not overlap")
+
+    monkeypatch.setattr(lifecycle, "_STAGE_EXECUTOR", RejectingExecutor())
+    try:
+        result = lifecycle._collect_app_stages({})
+    finally:
+        with lifecycle._STAGE_INFLIGHT_LOCK:
+            lifecycle._STAGE_INFLIGHT.discard(blocker)
+
+    assert not submitted
+    assert all(value.get("read_degraded") is True for value in result.values())
+    assert all(value.get("refresh_pending") is True for value in result.values())
+
+
+def test_reconciliation_defers_while_prior_stage_is_running(monkeypatch, caplog):
+    lifecycle = _module()
+    monkeypatch.setattr(lifecycle, "_reconcile_delay_seconds", lambda: 0.0)
+    lease = ("test", 1)
+    released = []
+
+    class ControlPlane:
+        @staticmethod
+        def try_acquire_workload(*args, **kwargs):
+            return lease
+
+        @staticmethod
+        def release_workload(*args, **kwargs):
+            released.append(args)
+
+        @staticmethod
+        def update_app_subprojections(*args, **kwargs):
+            raise AssertionError("stage-busy reconciliation must not update")
+
+    blocker = lifecycle.concurrent.futures.Future()
+    with lifecycle._STAGE_INFLIGHT_LOCK:
+        lifecycle._STAGE_INFLIGHT.add(blocker)
+    monkeypatch.setattr(lifecycle, "CONTROL_PLANE", ControlPlane())
+    lifecycle._RECONCILE_FAILURES = 0
+    lifecycle._RECONCILE_NEXT_ALLOWED = 0.0
+    caplog.set_level("INFO")
+    try:
+        lifecycle._run_saved_stage_reconciliation(
+            {"catalog": (lambda: {"status": "ready"}, {}, 0.1)}
+        )
+    finally:
+        with lifecycle._STAGE_INFLIGHT_LOCK:
+            lifecycle._STAGE_INFLIGHT.discard(blocker)
+
+    assert released
+    assert lifecycle._RECONCILE_FAILURES == 0
+    assert any("reason=stage_busy" in record.getMessage() for record in caplog.records)

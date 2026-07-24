@@ -1255,3 +1255,68 @@ def test_prepared_builder_has_true_outer_deadline(tmp_path, monkeypatch):
             True,
         )
     assert time.monotonic() - started < 0.25
+
+
+def test_projection_timeout_backoff_is_enterprise_bounded():
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    first = ControlPlaneProjectionStore._refresh_backoff_seconds("apps:lifecycle", 1)
+    second = ControlPlaneProjectionStore._refresh_backoff_seconds("apps:lifecycle", 2)
+    third = ControlPlaneProjectionStore._refresh_backoff_seconds("apps:lifecycle", 3)
+    later = ControlPlaneProjectionStore._refresh_backoff_seconds("apps:lifecycle", 8)
+
+    assert 60.0 <= first <= 66.0
+    assert 120.0 <= second <= 132.0
+    assert 300.0 <= third <= 330.0
+    assert 300.0 <= later <= 330.0
+
+
+def test_timed_out_builder_keeps_shared_domain_admission_until_exit(monkeypatch):
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    release = threading.Event()
+
+    def slow_builder():
+        release.wait(timeout=2.0)
+        return {"status": "ready"}
+
+    with pytest.raises(TimeoutError):
+        store._build_with_deadline("apps:lifecycle", "apps", slow_builder, 0.05)
+
+    assert store.workload_busy("apps") is True
+    assert store.try_acquire_workload("apps", "overlap") is None
+
+    release.set()
+    deadline = time.monotonic() + 1.0
+    while store.workload_busy("apps") and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert store.workload_busy("apps") is False
+
+
+
+def test_expected_refresh_timeout_uses_concise_log(tmp_path, monkeypatch, caplog):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    cache_key = "apps:lifecycle"
+    generation = store._cache_generation
+    store._refresh_generation_by_key[cache_key] = generation
+    store._refreshing.add(cache_key)
+
+    def timeout(*args, **kwargs):
+        raise TimeoutError("expected")
+
+    monkeypatch.setattr(store, "_refresh_now", timeout)
+    caplog.set_level("WARNING")
+    store._background_refresh(
+        cache_key, "apps", "lifecycle", lambda: {}, lambda _payload: 1,
+        4.0, generation, str(tmp_path / "state" / "pocketlab-lite.sqlite3"),
+    )
+
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("pocketlab.control_projection.refresh_timeout" in message for message in messages)
+    assert not any("pocketlab.control_projection.refresh_degraded" in message for message in messages)
+    assert store._consecutive_refresh_failures[cache_key] == 1
+    assert store._next_refresh_allowed_at[cache_key] > time.monotonic() + 55.0
