@@ -130,6 +130,27 @@ function buildRefreshFeedback(scope, result, extra = {}) {
 }
 
 export const useLiteUiStore = create((set, get) => ({
+  revisionSync: {
+    status: 'idle',
+    failureCount: 0,
+    lastEventId: 0,
+    retryAfterMs: 0,
+  },
+  setRevisionSyncState: (next = {}) => set((state) => {
+    const revisionSync = {
+      ...state.revisionSync,
+      status: String(next.status || state.revisionSync.status || 'idle').slice(0, 32),
+      failureCount: Math.max(0, Math.min(8, Number(next.failureCount ?? state.revisionSync.failureCount) || 0)),
+      lastEventId: Math.max(0, Number(next.lastEventId ?? state.revisionSync.lastEventId) || 0),
+      retryAfterMs: Math.max(0, Math.min(30 * 60_000, Number(next.retryAfterMs ?? state.revisionSync.retryAfterMs) || 0)),
+    };
+    if (revisionSync.status === state.revisionSync.status
+      && revisionSync.failureCount === state.revisionSync.failureCount
+      && revisionSync.lastEventId === state.revisionSync.lastEventId
+      && revisionSync.retryAfterMs === state.revisionSync.retryAfterMs) return state;
+    return { revisionSync };
+  }),
+
   activeTab: DEFAULT_TAB,
   setActiveTab: (tabId) => set({ activeTab: normalizeLiteScreenId(tabId, DEFAULT_TAB), mobileMenuOpen: false, moreSheetOpen: false }),
 

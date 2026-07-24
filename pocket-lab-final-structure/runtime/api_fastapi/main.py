@@ -49,12 +49,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
     from .services.workload_admission import WORKLOAD_ADMISSION
     from .services.projection_scheduler import PROJECTION_SCHEDULER
+    from .services.idle_efficiency import IDLE_EFFICIENCY
 
     diagnostics_started = False
+    idle_governor_started = False
     admission_started = False
     security_retention_task: asyncio.Task[None] | None = None
     startup_workloads_task: asyncio.Task[None] | None = None
     try:
+        IDLE_EFFICIENCY.configure_process()
         try:
             diagnostics_started = await RUNTIME_DIAGNOSTICS.start()
         except Exception as exc:
@@ -65,6 +68,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         deps.settings().ensure_dirs()
         await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "api")
         await asyncio.to_thread(CONTROL_PLANE.initialize)
+        idle_governor_started = await IDLE_EFFICIENCY.start()
         admission_started = await WORKLOAD_ADMISSION.start()
         await asyncio.to_thread(PROJECTION_SCHEDULER.start)
         await asyncio.to_thread(fleet_registry.resume_pending_lifecycle_exports)
@@ -140,6 +144,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await asyncio.to_thread(CONTROL_PLANE.shutdown)
         if admission_started or WORKLOAD_ADMISSION.snapshot().get("status") == "running":
             await WORKLOAD_ADMISSION.shutdown()
+        if idle_governor_started or IDLE_EFFICIENCY.snapshot().get("running"):
+            await IDLE_EFFICIENCY.stop()
         if diagnostics_started:
             await RUNTIME_DIAGNOSTICS.stop()
 

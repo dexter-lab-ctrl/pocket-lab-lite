@@ -35,16 +35,24 @@ def test_staged_startup_isolates_optional_stage_failures(monkeypatch):
             calls.append("security")
             raise RuntimeError("optional stage failed")
 
-    async def fake_health(*, skip_startup_delay=False):
-        calls.append(f"health:{skip_startup_delay}")
-        await asyncio.Event().wait()
+    def fake_register(callback):
+        assert callback is router_lite._refresh_device_health_projection
+        calls.append("health:registered")
+
+    def fake_request(*names, reason="event"):
+        assert names == ("health", "fleet", "device_health")
+        assert reason == "startup_device_health"
+        calls.append("health:requested")
 
     def fake_warmup():
         calls.append("warmup")
         return {"apps": True, "recovery_summary": True, "recovery_details": True}
 
     monkeypatch.setattr(router_lite, "_bounded_startup_delay", lambda *_args: 0.0)
-    monkeypatch.setattr(router_lite, "device_health_projection_sweep_loop", fake_health)
+    from api_fastapi.services.live_status import LIVE_STATUS
+
+    monkeypatch.setattr(LIVE_STATUS, "register_device_health_sampler", fake_register)
+    monkeypatch.setattr(LIVE_STATUS, "request_sample", fake_request)
     monkeypatch.setattr(router_lite, "schedule_control_plane_projection_warmup", fake_warmup)
 
     async def run():
@@ -60,7 +68,7 @@ def test_staged_startup_isolates_optional_stage_failures(monkeypatch):
             pass
 
     asyncio.run(run())
-    assert calls[:3] == ["security", "health:True", "warmup"]
+    assert calls[:4] == ["security", "health:registered", "health:requested", "warmup"]
 
 
 def test_security_progress_reader_revision_read(tmp_path, monkeypatch):

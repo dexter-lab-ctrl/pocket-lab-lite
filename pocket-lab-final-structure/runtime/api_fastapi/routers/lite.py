@@ -1750,6 +1750,12 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     payload["workload_classification"] = workload_classification_snapshot()
     payload["request_limits"] = request_limit_snapshot()
     payload["storage_readiness"] = lite_storage_guard.storage_readiness()
+    from ..services.idle_efficiency import IDLE_EFFICIENCY
+    from ..services.live_status import LIVE_STATUS
+    from ..services.projection_scheduler import PROJECTION_SCHEDULER
+    payload["idle_efficiency"] = IDLE_EFFICIENCY.snapshot()
+    payload["live_status"] = LIVE_STATUS.status()
+    payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
     payload["sanitized"] = True
     return payload
 
@@ -2649,7 +2655,6 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
         if remaining > 0:
             await asyncio.sleep(remaining)
 
-    health_task: asyncio.Task[None] | None = None
     try:
         await wait_until(security_delay)
         try:
@@ -2662,12 +2667,16 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
             )
 
         await wait_until(health_delay)
-        health_task = asyncio.create_task(
-            device_health_projection_sweep_loop(skip_startup_delay=True),
-            name="pocketlab-device-health-projection-sweep",
+        # The consolidated LiveStatus coordinator owns health/fleet reconciliation.
+        # Startup only emits one coalesced event hint; no dedicated forever-loop is
+        # created for device health.
+        from ..services.live_status import LIVE_STATUS
+        LIVE_STATUS.register_device_health_sampler(_refresh_device_health_projection)
+        LIVE_STATUS.request_sample(
+            "health", "fleet", "device_health", reason="startup_device_health"
         )
         await asyncio.sleep(0)
-        logger.info("pocketlab.startup.stage_ready stage=device_health_sweep")
+        logger.info("pocketlab.startup.stage_ready stage=device_health_coordinator")
 
         await wait_until(warmup_delay)
         try:
@@ -2684,15 +2693,7 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
                 type(exc).__name__,
             )
 
-        if health_task is not None:
-            await health_task
     except asyncio.CancelledError:
-        if health_task is not None:
-            health_task.cancel()
-            try:
-                await health_task
-            except asyncio.CancelledError:
-                pass
         raise
 
 

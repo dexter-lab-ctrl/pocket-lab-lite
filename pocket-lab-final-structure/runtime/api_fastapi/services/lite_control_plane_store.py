@@ -686,11 +686,32 @@ class ControlPlaneProjectionStore:
             self._workload_admission_generation += 1
 
     def invalidate_domain(self, domain: str) -> None:
-        prefix = f"{str(domain or '').strip()}:"
+        safe_domain = str(domain or '').strip().lower()
+        prefix = f"{safe_domain}:"
         with self._cache_lock:
             for key in [key for key in self._prepared if key.startswith(prefix)]:
                 self._prepared.pop(key, None)
                 self._refresh_errors.pop(key, None)
+
+        # Backend-owned mutations proactively wake already-registered prepared
+        # projections. The scheduler coalesces duplicate events and keeps all
+        # collectors off the mutation/request thread.
+        try:
+            from .projection_scheduler import PROJECTION_SCHEDULER
+
+            PROJECTION_SCHEDULER.mark_registered_prefix_dirty(safe_domain)
+        except Exception:
+            pass
+
+        # Fleet mutations also wake the consolidated health sampler; it performs
+        # one change-only sample rather than waiting for a periodic poll.
+        if safe_domain == "fleet":
+            try:
+                from .live_status import LIVE_STATUS
+
+                LIVE_STATUS.request_sample("fleet", "health", reason="fleet_invalidated")
+            except Exception:
+                pass
 
     def _read(self, callback: Callable[[sqlite3.Connection], Any]) -> tuple[Any, float, float]:
         entry, wait_ms = SQLITE_READS.acquire(timeout_seconds=1.0)
@@ -1096,6 +1117,23 @@ class ControlPlaneProjectionStore:
                 self._last_refresh_completed_at[cache_key] = time.monotonic()
             return revision
 
+        def mark_prepared_current() -> None:
+            # A cheap source-revision probe proved that the saved payload is still
+            # current. Refresh only the in-memory freshness timestamp; do not write
+            # SQLite or rebuild/serialize an unchanged projection.
+            with self._cache_lock:
+                current = self._prepared.get(cache_key)
+                if current is None or current.database_instance != _database_instance():
+                    return
+                self._prepared[cache_key] = _PreparedItem(
+                    payload=current.payload,
+                    revision=current.revision,
+                    prepared_at=time.monotonic(),
+                    database_instance=current.database_instance,
+                )
+                self._refresh_errors.pop(cache_key, None)
+                self._last_refresh_completed_at[cache_key] = time.monotonic()
+
         job = ProjectionJob(
             domain=scheduler_domain,
             builder=builder,
@@ -1104,6 +1142,11 @@ class ControlPlaneProjectionStore:
             work_class=("cpu" if work_class == "cpu" else "critical" if work_class == "critical" else "io"),
             deadline_seconds=max(0.1, min(float(deadline_seconds), 300.0)),
             optional=work_class != "critical",
+            # Payload hashing provides change-only persistence for collectors that
+            # do not yet expose a cheap authoritative source revision. Never use the
+            # projection's own revision as its source fence: that would suppress a
+            # legitimate rebuild after external state changed.
+            on_unchanged=mark_prepared_current,
         )
 
         if item is None:

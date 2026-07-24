@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import heapq
+import json
 import logging
 import os
 import re
@@ -23,6 +24,7 @@ from typing import Any, Callable, Literal
 from ..db.connection import database_path
 from ..db.runtime import SQLITE_WRITER, SQLiteWriteDeadlineExceeded, SQLiteWriteRejected
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
+from .idle_efficiency import IDLE_EFFICIENCY
 
 _LOGGER = logging.getLogger(__name__)
 WorkClass = Literal["critical", "io", "cpu"]
@@ -57,6 +59,9 @@ class ProjectionJob:
     work_class: WorkClass
     deadline_seconds: float
     optional: bool = True
+    source_revision: Callable[[], int] | None = None
+    on_unchanged: Callable[[], None] | None = None
+    max_probe_seconds: float = 900.0
 
 
 @dataclass(slots=True)
@@ -76,10 +81,21 @@ class _DomainState:
     enqueued_at: float = 0.0
     started_at: float = 0.0
     completed_at: float = 0.0
+    last_started_iso: str = ""
+    last_completed_iso: str = ""
+    next_retry_epoch_ms: int = 0
     last_duration_ms: float = 0.0
     last_error_type: str = ""
     last_pressure_reason: str = ""
     database_instance: str = ""
+    last_payload_checksum: str = ""
+    last_source_revision: int = -1
+    last_full_probe_at: float = 0.0
+    unchanged_count: int = 0
+    execution_count: int = 0
+    committed_count: int = 0
+    circuit_open_count: int = 0
+    last_persisted_checksum: str = ""
 
 
 class ProjectionScheduler:
@@ -99,6 +115,15 @@ class ProjectionScheduler:
         self.critical_lag_ms = float(
             _bounded_int("POCKETLAB_LITE_PROJECTION_CRITICAL_LAG_MS", 250, 50, 5000)
         )
+        self.circuit_failure_threshold = _bounded_int(
+            "POCKETLAB_LITE_PROJECTION_CIRCUIT_FAILURES", 3, 2, 8
+        )
+        self.circuit_cooldown_seconds = float(_bounded_int(
+            "POCKETLAB_LITE_PROJECTION_CIRCUIT_COOLDOWN_SECONDS", 300, 30, 3600
+        ))
+        self.idle_wait_seconds = float(_bounded_int(
+            "POCKETLAB_LITE_PROJECTION_IDLE_WAIT_SECONDS", 60, 1, 300
+        ))
         self._condition = threading.Condition(threading.RLock())
         self._states: dict[str, _DomainState] = {}
         self._jobs: dict[str, ProjectionJob] = {}
@@ -111,6 +136,7 @@ class ProjectionScheduler:
         self._accepting = False
         self._shutdown = False
         self._startup_complete = False
+        self._event_signal_count = 0
 
     @staticmethod
     def _database_instance() -> str:
@@ -172,6 +198,9 @@ class ProjectionScheduler:
                 work_class=job.work_class,
                 deadline_seconds=max(0.1, min(float(job.deadline_seconds), 300.0)),
                 optional=bool(job.optional),
+                source_revision=job.source_revision,
+                on_unchanged=job.on_unchanged,
+                max_probe_seconds=max(5.0, min(float(job.max_probe_seconds), 86_400.0)),
             )
             self._states.setdefault(domain, _DomainState())
 
@@ -253,6 +282,38 @@ class ProjectionScheduler:
                 "coalesced": was_pending,
             }
 
+    def mark_registered_prefix_dirty(
+        self,
+        domain_prefix: str,
+        *,
+        priority: int | None = None,
+    ) -> int:
+        """Fan one trusted state-change signal into registered projection jobs.
+
+        The method is intentionally prefix-scoped and only touches jobs already
+        registered by backend-owned prepared reads. It does not execute work on
+        the caller thread and does not create arbitrary domains.
+        """
+        prefix = _safe_domain(domain_prefix).rstrip(".")
+        if not prefix:
+            return 0
+        with self._condition:
+            domains = [
+                domain for domain in self._jobs
+                if domain == prefix or domain.startswith(f"{prefix}.")
+            ]
+            self._event_signal_count += len(domains)
+        accepted = 0
+        for domain in domains:
+            result = self.mark_dirty(
+                domain,
+                priority=priority,
+                force_followup=True,
+            )
+            if result.get("accepted"):
+                accepted += 1
+        return accepted
+
     def _enqueue_locked(self, domain: str, state: _DomainState) -> None:
         if state.queued or state.active:
             return
@@ -272,6 +333,12 @@ class ProjectionScheduler:
         try:
             if RUNTIME_DIAGNOSTICS.latest_event_loop_lag_ms() >= self.critical_lag_ms:
                 return "event_loop_pressure"
+        except Exception:
+            pass
+        try:
+            governor_reason = IDLE_EFFICIENCY.pressure_reason()
+            if governor_reason:
+                return governor_reason
         except Exception:
             pass
         try:
@@ -312,7 +379,8 @@ class ProjectionScheduler:
                 if self._shutdown:
                     return
                 if not self._heap:
-                    self._condition.wait(timeout=0.25)
+                    # Interruptible monotonic sleep: no fixed 250 ms wake-up while idle.
+                    self._condition.wait(timeout=self.idle_wait_seconds)
                     continue
                 priority, sequence, domain, queued_generation = heapq.heappop(self._heap)
                 state = self._states.get(domain)
@@ -325,30 +393,41 @@ class ProjectionScheduler:
                 now = time.monotonic()
                 if now < state.next_retry_at:
                     self._enqueue_locked(domain, state)
-                    self._condition.wait(timeout=min(0.5, state.next_retry_at - now))
+                    self._condition.wait(
+                        timeout=min(self.idle_wait_seconds, state.next_retry_at - now)
+                    )
                     continue
                 pressure = self._pressure_reason(job)
                 if pressure and job.optional:
                     state.last_pressure_reason = pressure
                     state.next_retry_at = max(state.next_retry_at, now + 5.0)
+                    state.next_retry_epoch_ms = _epoch_ms() + max(
+                        0, int((state.next_retry_at - now) * 1000)
+                    )
                     self._enqueue_locked(domain, state)
                     self._persist_state_best_effort(domain, state)
                     continue
                 capacity = self.cpu_workers if job.work_class == "cpu" else self.io_workers
                 if self._active_count_locked(job.work_class) >= capacity:
                     self._enqueue_locked(domain, state)
-                    self._condition.wait(timeout=0.05)
+                    # Future completion wakes the dispatcher. Keep only a bounded
+                    # safety timeout instead of spinning at 20 Hz.
+                    self._condition.wait(timeout=1.0)
                     continue
                 executor = self._executor_for(job.work_class)
                 if executor is None:
                     state.last_error_type = "ExecutorUnavailable"
                     state.failure_count += 1
                     state.next_retry_at = now + self._retry_delay(domain, state.failure_count)
+                    state.next_retry_epoch_ms = _epoch_ms() + max(
+                        0, int((state.next_retry_at - now) * 1000)
+                    )
                     self._enqueue_locked(domain, state)
                     continue
                 generation = state.generation
                 state.active = True
                 state.started_at = now
+                state.last_started_iso = _utc_now()
                 state.database_instance = self._database_instance()
                 state.last_pressure_reason = ""
                 try:
@@ -358,6 +437,9 @@ class ProjectionScheduler:
                     state.last_error_type = "ExecutorRejected"
                     state.failure_count += 1
                     state.next_retry_at = now + self._retry_delay(domain, state.failure_count)
+                    state.next_retry_epoch_ms = _epoch_ms() + max(
+                        0, int((state.next_retry_at - now) * 1000)
+                    )
                     self._enqueue_locked(domain, state)
                     continue
                 self._active_futures[future] = (domain, generation)
@@ -368,42 +450,99 @@ class ProjectionScheduler:
         with self._condition:
             self._condition.notify_all()
 
+    @staticmethod
+    def _payload_checksum(payload: dict[str, Any]) -> str:
+        try:
+            material = json.dumps(
+                payload, sort_keys=True, separators=(",", ":"), default=str
+            )
+        except (TypeError, ValueError):
+            material = repr(payload)
+        return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
     def _execute(self, job: ProjectionJob, generation: int, database_instance: str) -> dict[str, Any]:
         started = time.monotonic()
+        source_revision: int | None = None
+        with self._condition:
+            state = self._states.get(job.domain)
+            prior_source_revision = state.last_source_revision if state is not None else -1
+            last_full_probe_at = state.last_full_probe_at if state is not None else 0.0
+        if job.source_revision is not None:
+            source_revision = int(job.source_revision())
+            within_probe_window = (
+                last_full_probe_at > 0.0
+                and time.monotonic() - last_full_probe_at < job.max_probe_seconds
+            )
+            if prior_source_revision >= 0 and source_revision == prior_source_revision and within_probe_window:
+                if job.on_unchanged is not None:
+                    job.on_unchanged()
+                return {
+                    "outcome": "source_unchanged",
+                    "duration_ms": (time.monotonic() - started) * 1000.0,
+                    "generation": generation,
+                    "database_instance": database_instance,
+                    "source_revision": source_revision,
+                }
+
         payload = job.builder()
-        duration = time.monotonic() - started
+        build_duration = time.monotonic() - started
         if not isinstance(payload, dict):
             raise TypeError("projection builder must return a mapping")
-        if duration > job.deadline_seconds:
+        if build_duration > job.deadline_seconds:
             return {
                 "outcome": "late",
-                "duration_ms": duration * 1000.0,
+                "duration_ms": build_duration * 1000.0,
                 "generation": generation,
                 "database_instance": database_instance,
+                "source_revision": source_revision,
             }
         if self._database_instance() != database_instance:
             return {
                 "outcome": "database_changed",
-                "duration_ms": duration * 1000.0,
+                "duration_ms": build_duration * 1000.0,
                 "generation": generation,
                 "database_instance": database_instance,
+                "source_revision": source_revision,
             }
+        checksum = self._payload_checksum(payload)
         with self._condition:
             state = self._states.get(job.domain)
             if state is None or state.generation != generation or self._shutdown:
                 return {
                     "outcome": "stale_generation",
-                    "duration_ms": duration * 1000.0,
+                    "duration_ms": build_duration * 1000.0,
                     "generation": generation,
                     "database_instance": database_instance,
+                    "source_revision": source_revision,
                 }
+            unchanged = bool(
+                state.last_payload_checksum and state.last_payload_checksum == checksum
+            )
+        if unchanged:
+            if job.on_unchanged is not None:
+                job.on_unchanged()
+            return {
+                "outcome": "unchanged",
+                "duration_ms": (time.monotonic() - started) * 1000.0,
+                "generation": generation,
+                "database_instance": database_instance,
+                "payload_checksum": checksum,
+                "source_revision": source_revision,
+            }
         revision = int(job.projector(payload))
+        if job.source_revision is not None:
+            try:
+                source_revision = int(job.source_revision())
+            except Exception:
+                pass
         return {
             "outcome": "committed",
             "revision": revision,
             "duration_ms": (time.monotonic() - started) * 1000.0,
             "generation": generation,
             "database_instance": database_instance,
+            "payload_checksum": checksum,
+            "source_revision": source_revision,
         }
 
     def _reap_done_locked(self) -> None:
@@ -416,6 +555,8 @@ class ProjectionScheduler:
                 continue
             state.active = False
             state.completed_at = time.monotonic()
+            state.last_completed_iso = _utc_now()
+            state.execution_count += 1
             try:
                 result = future.result()
                 outcome = str(result.get("outcome") or "unknown")
@@ -424,8 +565,28 @@ class ProjectionScheduler:
                     state.committed_generation = max(state.committed_generation, generation)
                     state.failure_count = 0
                     state.next_retry_at = 0.0
+                    state.next_retry_epoch_ms = 0
                     state.last_error_type = ""
                     state.dirty = state.generation > generation
+                    state.committed_count += 1
+                    state.last_payload_checksum = str(result.get("payload_checksum") or state.last_payload_checksum)
+                    if result.get("source_revision") is not None:
+                        state.last_source_revision = int(result["source_revision"])
+                    state.last_full_probe_at = state.completed_at
+                elif outcome in {"unchanged", "source_unchanged"}:
+                    state.committed_generation = max(state.committed_generation, generation)
+                    state.failure_count = 0
+                    state.next_retry_at = 0.0
+                    state.next_retry_epoch_ms = 0
+                    state.last_error_type = ""
+                    state.dirty = state.generation > generation
+                    state.unchanged_count += 1
+                    if result.get("payload_checksum"):
+                        state.last_payload_checksum = str(result["payload_checksum"])
+                    if result.get("source_revision") is not None:
+                        state.last_source_revision = int(result["source_revision"])
+                    if outcome == "unchanged":
+                        state.last_full_probe_at = state.completed_at
                 elif outcome == "stale_generation":
                     state.stale_generation_count += 1
                     state.dirty = True
@@ -435,7 +596,13 @@ class ProjectionScheduler:
                     else:
                         state.stale_generation_count += 1
                     state.failure_count = min(8, state.failure_count + 1)
-                    state.next_retry_at = time.monotonic() + self._retry_delay(domain, state.failure_count)
+                    delay = self._retry_delay(domain, state.failure_count)
+                    if state.failure_count >= self.circuit_failure_threshold:
+                        delay = max(delay, self.circuit_cooldown_seconds)
+                        state.circuit_open_count += 1
+                    retry_now = time.monotonic()
+                    state.next_retry_at = retry_now + delay
+                    state.next_retry_epoch_ms = _epoch_ms() + int(delay * 1000)
                     state.last_error_type = "DeadlineExceeded" if outcome == "late" else "DatabaseGenerationMismatch"
                     state.dirty = True
                     _LOGGER.warning(
@@ -449,7 +616,12 @@ class ProjectionScheduler:
                     state.dirty = True
             except Exception as exc:
                 state.failure_count = min(8, state.failure_count + 1)
-                state.next_retry_at = time.monotonic() + self._retry_delay(domain, state.failure_count)
+                delay = self._retry_delay(domain, state.failure_count)
+                if state.failure_count >= self.circuit_failure_threshold:
+                    delay = max(delay, self.circuit_cooldown_seconds)
+                    state.circuit_open_count += 1
+                state.next_retry_at = time.monotonic() + delay
+                state.next_retry_epoch_ms = _epoch_ms() + int(delay * 1000)
                 state.last_error_type = type(exc).__name__
                 state.dirty = True
                 _LOGGER.exception(
@@ -458,6 +630,14 @@ class ProjectionScheduler:
                     generation,
                     type(exc).__name__,
                 )
+            job = self._jobs.get(domain)
+            if job is not None and job.optional and state.last_duration_ms > 0:
+                cooldown = IDLE_EFFICIENCY.optional_cooldown_seconds(state.last_duration_ms)
+                if cooldown > 0:
+                    cooldown_until = time.monotonic() + cooldown
+                    if cooldown_until > state.next_retry_at:
+                        state.next_retry_at = cooldown_until
+                        state.next_retry_epoch_ms = _epoch_ms() + int(cooldown * 1000)
             if state.dirty and not self._shutdown:
                 self._enqueue_locked(domain, state)
             self._persist_state_best_effort(domain, state)
@@ -472,18 +652,27 @@ class ProjectionScheduler:
             "priority": state.priority,
             "work_class": state.work_class,
             "failure_count": state.failure_count,
-            "next_retry_epoch_ms": _epoch_ms() + max(0, int((state.next_retry_at - time.monotonic()) * 1000)),
+            "next_retry_epoch_ms": max(0, int(state.next_retry_epoch_ms)),
             "coalesced_count": state.coalesced_count,
             "late_result_count": state.late_result_count,
             "stale_generation_count": state.stale_generation_count,
-            "last_started_at": _utc_now() if state.started_at else None,
-            "last_completed_at": _utc_now() if state.completed_at else None,
+            "last_started_at": state.last_started_iso or None,
+            "last_completed_at": state.last_completed_iso or None,
             "last_error_type": state.last_error_type[:80],
             "last_pressure_reason": state.last_pressure_reason[:80],
             "database_instance": state.database_instance[:240],
             "updated_at": _utc_now(),
         }
-
+        persistence_material = json.dumps(
+            {key: value for key, value in snapshot.items() if key != "updated_at"},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        persistence_checksum = hashlib.sha256(
+            persistence_material.encode("utf-8")
+        ).hexdigest()
+        if state.last_persisted_checksum == persistence_checksum:
+            return
         def write(conn):
             conn.execute(
                 """
@@ -522,6 +711,7 @@ class ProjectionScheduler:
 
         try:
             SQLITE_WRITER.submit("projection.scheduler.state", write, deadline_seconds=0.4)
+            state.last_persisted_checksum = persistence_checksum
         except Exception:
             # Diagnostics persistence is deliberately best effort and never blocks
             # lifecycle/current-state commits or request handling.
@@ -555,6 +745,15 @@ class ProjectionScheduler:
                 "last_error_type": state.last_error_type,
                 "pressure_reason": state.last_pressure_reason,
                 "last_duration_ms": round(state.last_duration_ms, 2),
+                "execution_count": state.execution_count,
+                "committed_count": state.committed_count,
+                "unchanged_count": state.unchanged_count,
+                "circuit_open_count": state.circuit_open_count,
+                "circuit_open": bool(
+                    state.failure_count >= self.circuit_failure_threshold
+                    and state.next_retry_at > time.monotonic()
+                ),
+                "source_revision": max(-1, state.last_source_revision),
                 "sanitized": True,
             }
 
@@ -568,6 +767,11 @@ class ProjectionScheduler:
                 "active_domains": sum(1 for state in self._states.values() if state.active),
                 "active_io": self._active_count_locked("io"),
                 "active_cpu": self._active_count_locked("cpu"),
+                "circuit_failure_threshold": self.circuit_failure_threshold,
+                "circuit_cooldown_seconds": self.circuit_cooldown_seconds,
+                "idle_wait_seconds": self.idle_wait_seconds,
+                "event_signal_count": self._event_signal_count,
+                "idle_efficiency": IDLE_EFFICIENCY.snapshot(),
                 "domains": {domain: self.status(domain) for domain in sorted(self._states)},
                 "sanitized": True,
             }
