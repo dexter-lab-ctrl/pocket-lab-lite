@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sqlite3
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -27,9 +28,17 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return state
 
 
-def _events(state: Path) -> list[dict]:
+def _events(state: Path, *, expected: int | None = None) -> list[dict]:
     path = state / "fleet_device_events.json"
-    return json.loads(path.read_text()).get("events", []) if path.exists() else []
+    deadline = time.monotonic() + 2.0
+    while True:
+        try:
+            events = json.loads(path.read_text()).get("events", []) if path.exists() else []
+        except json.JSONDecodeError:
+            events = []
+        if expected is None or len(events) >= expected or time.monotonic() >= deadline:
+            return events
+        time.sleep(0.01)
 
 
 def test_server_heartbeat_is_transition_based_and_persists_first_seen(tmp_path, monkeypatch):
@@ -49,7 +58,7 @@ def test_server_heartbeat_is_transition_based_and_persists_first_seen(tmp_path, 
 
     agents = json.loads((state / "fleet_agents.json").read_text())["agents"]
     assert agents["pocket-lab-lite-server"]["first_heartbeat_at"] == "2026-07-24T08:00:00Z"
-    first = [item for item in _events(state) if item.get("event_type") == "first_heartbeat_received"]
+    first = [item for item in _events(state, expected=1) if item.get("event_type") == "first_heartbeat_received"]
     assert len(first) == 1
     assert first[0]["dedupe_key"] == "pocket-lab-lite-server:first_heartbeat_received"
 
@@ -67,9 +76,9 @@ def test_semantic_key_dedupes_replay_with_new_timestamp(tmp_path, monkeypatch):
             dedupe_key="phone-two:first_heartbeat_received",
         )
 
-    first = [item for item in _events(state) if item.get("event_type") == "first_heartbeat_received"]
+    first = [item for item in _events(state, expected=1) if item.get("event_type") == "first_heartbeat_received"]
     assert len(first) == 1
-    assert first[0]["occurred_at"] == "2026-07-24T09:00:00Z"
+    assert first[0]["occurred_at"] == "2026-07-24T08:00:00Z"
 
 
 def test_concurrent_semantic_append_keeps_one_event(tmp_path, monkeypatch):
@@ -87,7 +96,7 @@ def test_concurrent_semantic_append_keeps_one_event(tmp_path, monkeypatch):
     with ThreadPoolExecutor(max_workers=8) as pool:
         list(pool.map(append, range(20)))
 
-    matches = [item for item in _events(state) if item.get("event_type") == "first_supervisor_heartbeat"]
+    matches = [item for item in _events(state, expected=1) if item.get("event_type") == "first_supervisor_heartbeat"]
     assert len(matches) == 1
 
 

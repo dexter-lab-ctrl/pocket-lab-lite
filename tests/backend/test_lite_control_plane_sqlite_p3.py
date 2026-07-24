@@ -75,8 +75,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-    assert current_schema_version() == 13
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    assert current_schema_version() == 14
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -477,7 +477,7 @@ def test_async_lite_routes_do_not_add_blocking_io_calls():
     forbidden = ("subprocess.run(", "time.sleep(", "urllib.request.urlopen(")
     for marker in forbidden:
         assert marker not in source
-    assert "CONTROL_PLANE.prepared_read" in source
+    assert "CONTROL_PLANE.prepared_only_read" in source
     assert "_control_plane_prepared_response" in source
 
 
@@ -603,28 +603,24 @@ def test_keyset_history_pages_are_bounded_and_duplicate_free(tmp_path, monkeypat
     from api_fastapi.services import fleet_registry
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
-    events = [
-        {
-            "device_id": "phone-two",
-            "event_type": "agent_recovery",
-            "status": "succeeded",
-            "command_id": f"recovery-command-{index}",
-            "created_at": f"2026-07-21T12:0{index}:00Z",
-            "summary": f"Recovery {index}",
-        }
-        for index in range(4)
-    ]
     monkeypatch.setattr(fleet_registry, "list_commands", lambda limit=500: [])
-    monkeypatch.setattr(
-        deps.core,
-        "read_json_file",
-        lambda path, default: {"events": events}
-        if str(path).endswith("fleet_device_events.json")
-        else default,
-    )
 
     store = ControlPlaneProjectionStore()
-    store.project_fleet(_fleet_payload())
+    fleet_payload = _fleet_payload()
+    store.project_fleet(fleet_payload)
+    phone_two = next(item for item in fleet_payload["devices"] if item["id"] == "phone-two")
+    for index in range(4):
+        fleet_registry.append_device_lifecycle_event(
+            "phone-two", "recovery_completed",
+            status="succeeded",
+            occurred_at=f"2026-07-21T12:0{index}:00Z",
+            command_id=f"recovery-command-{index}",
+            generation_key=f"recovery-command-{index}",
+            dedupe_key=f"phone-two:recovery_completed:recovery-command-{index}",
+            summary=f"Recovery {index}",
+            current_state=phone_two,
+        )
+    store.project_fleet(fleet_payload)
     for index in range(4):
         timestamp = f"2026-07-21T13:0{index}:00Z"
         store.project_apps(
@@ -928,7 +924,8 @@ def test_database_replacement_fence_clears_prepared_refresh_state(tmp_path, monk
         builder=lambda: (time.sleep(0.1) or {"apps": [], "updated_at": "2026-07-21T12:00:00Z"}),
         projector=store.project_apps, deadline_seconds=0.05,
     )
-    assert "apps:lifecycle" in store.prepared_metrics()["refreshing"]
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+    assert PROJECTION_SCHEDULER.status("apps.lifecycle")["refresh_pending"] is True
     store.invalidate_after_database_replacement()
     metrics = store.prepared_metrics()
     assert metrics["refreshing"] == {}
@@ -995,11 +992,14 @@ def test_refresh_failure_backoff_blocks_immediate_reschedule(tmp_path, monkeypat
         projector=store.project_apps,
         deadline_seconds=0.1,
     )
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
     deadline = time.monotonic() + 2.0
-    while time.monotonic() < deadline and "apps:failing" not in store.prepared_metrics()["refresh_errors"]:
+    status = PROJECTION_SCHEDULER.status("apps.failing")
+    while time.monotonic() < deadline and status.get("failure_count", 0) < 1:
         time.sleep(0.01)
-    assert store.prepared_metrics()["refresh_errors"]["apps:failing"] == "OSError"
-    assert store.prepared_metrics()["refresh_backoff_seconds"]["apps:failing"] > 0
+        status = PROJECTION_SCHEDULER.status("apps.failing")
+    assert status["last_error_type"] == "OSError"
+    assert status["retry_after_seconds"] > 0
     assert store.warm_prepared_read(
         domain="apps",
         key="failing",
@@ -1077,7 +1077,7 @@ def test_cold_projection_validation_script_has_bounded_proxy_readiness_gate():
     assert 'Missing or empty revisions response' in source
 
 
-def test_app_lifecycle_primes_parallel_subprojections_and_staggers_warmup():
+def test_app_lifecycle_primes_parallel_subprojections_and_uses_unified_warmup_scheduler():
     lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
     router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
     assert "_prime_app_subprojections()" in lifecycle
@@ -1085,8 +1085,11 @@ def test_app_lifecycle_primes_parallel_subprojections_and_staggers_warmup():
     assert '("photoprism:security", _security_payload' in lifecycle
     assert '("photoprism:backup", _backup_payload' in lifecycle
     assert '("photoprism:runtime", lite_photoprism_lifecycle.lifecycle_state' in lifecycle
-    assert "POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS" in router
-    assert "POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS" in router
+    assert "CONTROL_PLANE.warm_prepared_read(" in router
+    assert 'priority=40' in router
+    assert 'work_class="cpu"' in router
+    assert "POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS" not in router
+    assert "POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS" not in router
 
 
 def test_app_subprojection_executor_is_bounded_for_termux():
@@ -1199,29 +1202,28 @@ def test_saved_app_stages_defer_live_reconciliation_off_cold_builder():
     assert "CONTROL_PLANE.update_app_subprojections" in source
 
 
-def test_fleet_projection_derives_one_time_lifecycle_dedupe_key(tmp_path, monkeypatch):
+def test_fleet_transaction_derives_one_time_lifecycle_dedupe_key(tmp_path, monkeypatch):
     _configure(tmp_path, monkeypatch)
     from api_fastapi.db.connection import read_connection
+    from api_fastapi.services import fleet_registry
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
     store = ControlPlaneProjectionStore()
-    first = _fleet_payload()
-    first["devices"][0]["recent_lifecycle"] = [{
-        "event_id": "first-event-a",
-        "event_type": "first_heartbeat_received",
-        "occurred_at": "2026-07-21T12:00:00Z",
-        "summary": "First valid device heartbeat received.",
-    }]
-    store.project_fleet(first)
-
-    second = _fleet_payload()
-    second["devices"][0]["recent_lifecycle"] = [{
-        "event_id": "first-event-b",
-        "event_type": "first_heartbeat_received",
-        "occurred_at": "2026-07-21T12:01:00Z",
-        "summary": "First valid device heartbeat received.",
-    }]
-    store.project_fleet(second)
+    payload = _fleet_payload()
+    store.project_fleet(payload)
+    server = payload["devices"][0]
+    for event_id, occurred_at in (
+        ("first-event-a", "2026-07-21T12:00:00Z"),
+        ("first-event-b", "2026-07-21T12:01:00Z"),
+    ):
+        # The event id changes across replay, but the semantic one-time key is
+        # derived transactionally and remains unique.
+        fleet_registry.append_device_lifecycle_event(
+            "pocket-lab-lite-server", "first_heartbeat_received",
+            occurred_at=occurred_at,
+            summary="First valid device heartbeat received.",
+            current_state=server,
+        )
 
     with read_connection() as conn:
         rows = conn.execute(

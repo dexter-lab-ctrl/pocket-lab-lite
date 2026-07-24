@@ -7,7 +7,105 @@ import time
 
 import pytest
 
-from pocket_lab_test_utils import client, ensure_runtime_path, isolated_state_dir
+from pocket_lab_test_utils import client as _raw_client, ensure_runtime_path, isolated_state_dir
+
+
+def _prime_prepared_get(path: str) -> None:
+    """Build legacy endpoint fixtures outside the request path.
+
+    E3 request handlers remain prepared-only; older API contract tests still need
+    a deterministic prepared snapshot after mutating their isolated JSON fixtures.
+    """
+    ensure_runtime_path()
+    from api_fastapi.routers import lite
+
+    route = str(path or "").split("?", 1)[0]
+    try:
+        if route == "/api/lite/catalog":
+            lite.CONTROL_PLANE.prepared_read(
+                domain="apps", key="catalog", builder=lite._build_lite_catalog_projection,
+                projector=lite.CONTROL_PLANE.project_apps, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=10.0,
+            )
+        elif route.startswith("/api/lite/apps/lifecycle"):
+            lite.CONTROL_PLANE.prepared_read(
+                domain="apps", key="lifecycle",
+                builder=lite.lite_app_lifecycle.app_lifecycle_profiles,
+                projector=lite.CONTROL_PLANE.project_apps, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=10.0,
+            )
+        elif route.startswith("/api/lite/apps/") and route.endswith("/actions"):
+            app_id = route.split("/")[4]
+            if app_id in lite.lite_app_actions.SUPPORTED_APP_IDS:
+                lite.CONTROL_PLANE.prepared_read(
+                    domain="apps", key=f"actions:{app_id}",
+                    builder=lambda: lite.lite_app_actions.app_actions(app_id),
+                    projector=lambda payload: lite.CONTROL_PLANE.update_app_subprojection(
+                        app_id, "operations", payload
+                    ),
+                    stale_after_ms=0, max_stale_ms=0, deadline_seconds=10.0,
+                )
+        elif route.startswith("/api/lite/apps/") and route.endswith("/update"):
+            app_id = route.split("/")[4]
+            if app_id in lite.lite_app_update.SUPPORTED_APP_IDS:
+                lite.CONTROL_PLANE.prepared_read(
+                    domain="apps", key=f"update:{app_id}",
+                    builder=lambda: lite.lite_app_update.update_status(app_id),
+                    projector=lambda payload: lite.CONTROL_PLANE.update_app_subprojection(
+                        app_id, "update", payload
+                    ),
+                    stale_after_ms=0, max_stale_ms=0, deadline_seconds=10.0,
+                )
+        elif route.startswith("/api/lite/apps/") and route.endswith("/backup"):
+            app_id = route.split("/")[4]
+            if app_id in lite.lite_app_backup.SUPPORTED_APP_IDS:
+                lite.CONTROL_PLANE.prepared_read(
+                    domain="apps", key=f"backup:{app_id}",
+                    builder=lambda: lite.lite_app_backup.app_backup_status(app_id),
+                    projector=lambda payload: lite.CONTROL_PLANE.update_app_subprojection(
+                        app_id, "backup", payload
+                    ),
+                    stale_after_ms=0, max_stale_ms=0, deadline_seconds=10.0,
+                )
+        elif route == "/api/lite/fleet" or route.startswith("/api/lite/fleet/") or route.startswith("/api/lite/devices/"):
+            lite.CONTROL_PLANE.prepared_read(
+                domain="fleet", key="summary", builder=lite.lite_status.lite_fleet,
+                projector=lite.CONTROL_PLANE.project_fleet, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=10.0,
+            )
+        elif route in {"/api/lite/recovery", "/api/lite/recovery/details"}:
+            lite.CONTROL_PLANE.prepared_read(
+                domain="recovery", key="details", builder=lite._lite_recovery_details_payload,
+                projector=lite.CONTROL_PLANE.project_recovery, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=12.0,
+            )
+        elif route == "/api/lite/recovery/summary":
+            lite.CONTROL_PLANE.prepared_read(
+                domain="recovery", key="summary",
+                builder=lite._build_lite_recovery_summary_projection,
+                projector=lite.CONTROL_PLANE.project_recovery, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=10.0,
+            )
+    except Exception:
+        # Invalid-app and intentionally unavailable-state tests exercise the
+        # real response path below. Never make priming part of production code.
+        return
+
+
+class _PreparedTestClient:
+    def __init__(self):
+        self._client = _raw_client()
+
+    def __getattr__(self, name):
+        return getattr(self._client, name)
+
+    def get(self, path, *args, **kwargs):
+        _prime_prepared_get(str(path))
+        return self._client.get(path, *args, **kwargs)
+
+
+def client():
+    return _PreparedTestClient()
 
 
 def _lite_ui_source() -> str:
@@ -6853,6 +6951,8 @@ def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeyp
     assert explicit_response.json()["scan_profile"] == "quick"
     assert any(item[2].get("profile") == "quick" for item in published)
 
+    BUS.connected = True
+    BUS.js = object()
     full_response = client().post("/api/lite/security/check", json={"profile": "full"})
     assert full_response.status_code == 202
     assert full_response.json()["scan_profile"] == "full"
@@ -6868,6 +6968,8 @@ def test_lite_security_check_accepts_default_and_rejects_unknown_profile(monkeyp
     unknown_app_response = client().post("/api/lite/security/check", json={"profile": "app", "app_id": "unknown-app"})
     assert unknown_app_response.status_code == 404
 
+    BUS.connected = True
+    BUS.js = object()
     app_response = client().post("/api/lite/security/check", json={"profile": "app", "app_id": "photoprism"})
     assert app_response.status_code == 202
     assert app_response.json()["scan_profile"] == "app"
@@ -7520,9 +7622,10 @@ def test_lite_control_plane_subprojection_and_staggered_warmup_source_contract()
     assert "POCKETLAB_LITE_APP_STAGE_DEADLINE_SECONDS" in lifecycle
     assert 'CONTROL_PLANE.prepared_payload("apps:lifecycle")' in router
     assert "lite_app_profiles.app_backup_profiles" not in router[router.index("def _lite_recovery_details_payload"):router.index("def _build_lite_recovery_summary_projection")]
-    warmup = router[router.index("def _run_staggered_projection_warmup"):router.index('@router.get("/recovery/summary")')]
+    warmup = router[router.index("def schedule_control_plane_projection_warmup"):router.index("def _refresh_device_health_projection")]
     assert warmup.index('key="summary"') < warmup.index('key="lifecycle"') < warmup.index('key="details"')
-    assert "wait_for_prepared" in warmup
+    assert "warm_prepared_read" in warmup
+    assert "Thread(" not in warmup
     assert "_effective_stale_after_ms" in store
     assert "_next_refresh_allowed_at" in store
     assert "_consecutive_refresh_failures" in store

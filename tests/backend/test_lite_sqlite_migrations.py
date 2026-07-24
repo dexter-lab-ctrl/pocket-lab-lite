@@ -37,10 +37,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         migration_rows,
     )
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
     assert apply_migrations() == []
-    assert current_schema_version() == 13
-    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    assert current_schema_version() == 14
+    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
     with read_connection() as conn:
         tables = {
             row[0]
@@ -83,6 +83,8 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "lite_revision_events",
         "device_awareness_state",
         "device_lifecycle_events",
+        "device_lifecycle_transactions",
+        "projection_refresh_state",
     }.issubset(tables)
     assert {
         "idx_security_runs_profile_completed",
@@ -113,6 +115,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "idx_device_lifecycle_device_time",
         "idx_device_lifecycle_type_time",
         "idx_device_lifecycle_events_dedupe",
+        "idx_device_lifecycle_generation",
+        "idx_device_lifecycle_transactions_device",
+        "idx_device_lifecycle_transactions_export",
+        "idx_projection_refresh_ready",
         "idx_device_invites_identity",
         "idx_device_invites_active_latest",
         "idx_commands_entity_active",
@@ -209,8 +215,8 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 13 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 13]
+    assert all(result[2] == 14 for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, 14]
 
 
 def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
@@ -250,8 +256,8 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
             """
         )
 
-    assert apply_migrations() == [5, 6, 7, 8, 9, 10, 11, 12, 13]
-    assert current_schema_version() == 13
+    assert apply_migrations() == [5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    assert current_schema_version() == 14
     with connection() as conn:
         assert conn.execute(
             "SELECT summary FROM security_scan_runs WHERE run_id = ?",
@@ -265,3 +271,71 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
         }
     assert "idx_security_runs_history_cursor" in indexes
     assert database.exists()
+
+
+def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
+    tmp_path, monkeypatch
+):
+    _database(tmp_path, monkeypatch)
+    from api_fastapi.db.connection import connection
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version, schema_dir
+
+    schema_v13 = tmp_path / "schema-v13"
+    schema_v13.mkdir()
+    for source in sorted(schema_dir().glob("*.sql")):
+        if int(source.name.split("_", 1)[0]) <= 13:
+            (schema_v13 / source.name).write_bytes(source.read_bytes())
+
+    assert apply_migrations(schema_v13) == list(range(1, 14))
+    with connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO device_current_state(
+                device_id,device_name,role,ui_state,connection_state,agent_status,
+                supervisor_status,pm2_status,remote_access_ready,protected_server_host,
+                source_revision,last_seen_at,last_seen_epoch_ms,updated_at,
+                updated_at_epoch_ms,summary
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                "phone-two", "Phone Two", "compute", "Online", "online", "online",
+                "healthy", "online", 1, 0, 1, "2026-07-24T08:00:00Z",
+                1784880000000, "2026-07-24T08:00:00Z", 1784880000000,
+                "Existing device state.",
+            ),
+        )
+        conn.execute(
+            """
+            INSERT INTO device_lifecycle_events(
+                event_id,device_id,event_type,reason_code,status,occurred_at,
+                occurred_at_epoch_ms,summary,sanitized,source_revision,dedupe_key
+            ) VALUES (?,?,?,?,?,?,?,?,1,?,?)
+            """,
+            (
+                "existing-first-heartbeat", "phone-two", "first_heartbeat_received", "",
+                "recorded", "2026-07-24T08:00:00Z", 1784880000000,
+                "Existing lifecycle evidence.", 1,
+                "phone-two:first_heartbeat_received",
+            ),
+        )
+
+    assert apply_migrations() == [14]
+    assert current_schema_version() == 14
+    with connection() as conn:
+        preserved = conn.execute(
+            "SELECT event_id,dedupe_key,generation_key,state_revision,database_instance,payload_checksum "
+            "FROM device_lifecycle_events WHERE event_id=?",
+            ("existing-first-heartbeat",),
+        ).fetchone()
+        quick_check = conn.execute("PRAGMA quick_check").fetchone()[0]
+        foreign_key_errors = conn.execute("PRAGMA foreign_key_check").fetchall()
+        transaction_table = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='device_lifecycle_transactions'"
+        ).fetchone()
+    assert preserved["event_id"] == "existing-first-heartbeat"
+    assert preserved["dedupe_key"] == "phone-two:first_heartbeat_received"
+    assert preserved["generation_key"] is None
+    assert preserved["state_revision"] == 0
+    assert quick_check == "ok"
+    assert foreign_key_errors == []
+    assert transaction_table is not None

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import hashlib
 import json
 import logging
 import os
@@ -50,8 +51,6 @@ _RECOVERY_BASE_VALUE: tuple[dict[str, Any], float] | None = None
 _RECOVERY_BASE_FUTURE: concurrent.futures.Future[Any] | None = None
 _RECOVERY_BASE_FAILURES = 0
 _RECOVERY_BASE_NEXT_ALLOWED = 0.0
-_WARMUP_LOCK = threading.Lock()
-_WARMUP_THREAD: threading.Thread | None = None
 
 
 def _recovery_base_done(future: concurrent.futures.Future[Any]) -> None:
@@ -221,6 +220,7 @@ def _control_plane_prepared_response(
         "read_degraded": bool(prepared.read_degraded),
         "refresh_pending": bool(prepared.refresh_pending),
         "source_revision": int(prepared.source_revision),
+        "retry_after_seconds": int(prepared.retry_after_seconds),
     })
     timing = prepared.timing
     headers = {
@@ -241,6 +241,8 @@ def _control_plane_prepared_response(
         "X-PocketLab-Read-Degraded": "true" if prepared.read_degraded else "false",
         "X-PocketLab-Refresh-Pending": "true" if prepared.refresh_pending else "false",
     }
+    if prepared.retry_after_seconds:
+        headers["Retry-After"] = str(max(1, int(prepared.retry_after_seconds)))
     if lite_security.if_none_match_matches(
         request.headers.get("if-none-match"), prepared.etag
     ):
@@ -259,6 +261,7 @@ def _projection_warming_response(*, domain: str, view_model: str) -> JSONRespons
             "retryable": True,
             "read_degraded": True,
             "refresh_pending": True,
+            "retry_after_seconds": int(retry_after),
         },
         headers={
             "Retry-After": retry_after,
@@ -874,10 +877,32 @@ async def get_lite_status(request: Request) -> dict[str, Any]:
     return await lite_status.build_lite_status()
 
 
+def _build_lite_catalog_projection() -> dict[str, Any]:
+    return lite_app_lifecycle.hydrate_catalog_lifecycle(
+        lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(None))
+    )
+
+
 @router.get("/catalog")
-def get_lite_catalog(request: Request) -> dict[str, Any]:
+def get_lite_catalog(request: Request) -> Response:
     deps.require_auth(request)
-    return lite_app_lifecycle.hydrate_catalog_lifecycle(lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(request)))
+    view_model = "catalog-prepared-e3-v1"
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="apps",
+            key="catalog",
+            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            builder=_build_lite_catalog_projection,
+            projector=CONTROL_PLANE.project_apps,
+            stale_after_ms=30_000,
+            max_stale_ms=5 * 60_000,
+            deadline_seconds=8.0,
+            priority=45,
+            work_class="io",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 
@@ -886,16 +911,17 @@ def get_lite_app_lifecycle_profiles(request: Request) -> Response:
     deps.require_auth(request)
     view_model = "apps-lifecycle-sqlite-p3-v2"
     try:
-        prepared = CONTROL_PLANE.prepared_read(
+        prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps",
             key="lifecycle",
+            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
             builder=lite_app_lifecycle.app_lifecycle_profiles,
             projector=CONTROL_PLANE.project_apps,
             stale_after_ms=15_000,
             max_stale_ms=90_000,
-            deadline_seconds=4.0,
-            cold_start_async=True,
-            fallback_builder=CONTROL_PLANE.app_projection_snapshot,
+            deadline_seconds=8.0,
+            priority=40,
+            work_class="cpu",
         )
     except (PreparedProjectionUnavailable, TimeoutError):
         return _projection_warming_response(domain="apps", view_model=view_model)
@@ -927,15 +953,75 @@ def get_lite_app_action_history(
 
 
 @router.get("/apps/lifecycle/{app_id}")
-def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> dict[str, Any]:
+def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    return lite_app_lifecycle.app_lifecycle_profile(app_id)
+    app_id = _require_supported_app_id(app_id)
+    view_model = "app-lifecycle-prepared-e3-v1"
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="apps", key="lifecycle",
+            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            builder=lite_app_lifecycle.app_lifecycle_profiles,
+            projector=CONTROL_PLANE.project_apps,
+            stale_after_ms=15_000, max_stale_ms=90_000,
+            deadline_seconds=8.0, priority=35, work_class="cpu",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    apps = [item for item in (prepared.payload.get("apps") or prepared.payload.get("items") or []) if isinstance(item, dict)]
+    match = next((item for item in apps if str(item.get("app_id") or item.get("id")) == app_id), None)
+    if match is None:
+        raise HTTPException(status_code=404, detail="App lifecycle state is not available.")
+    selected = PreparedRead(
+        payload=match, etag=prepared.etag, source_revision=prepared.source_revision,
+        projection_age_ms=prepared.projection_age_ms, read_degraded=prepared.read_degraded,
+        refresh_pending=prepared.refresh_pending, timing=prepared.timing,
+        retry_after_seconds=prepared.retry_after_seconds,
+    )
+    return _control_plane_prepared_response(request, selected, view_model=view_model)
+
+
+def _require_supported_app_id(app_id: str) -> str:
+    normalized = str(app_id or "").strip().lower()
+    if normalized not in lite_app_actions.SUPPORTED_APP_IDS:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": "not_found", "summary": "PhotoPrism is the first app supported by Pocket Lab Lite."},
+        )
+    return normalized
+
+
+def _saved_app_actions(app_id: str) -> dict[str, Any] | None:
+    saved = CONTROL_PLANE.app_current_subprojections(app_id)
+    if not saved:
+        return None
+    operations = saved.get("operations") if isinstance(saved.get("operations"), dict) else {}
+    if not operations:
+        return None
+    return {
+        **operations, "app_id": app_id, "projection_only": True,
+        "updated_at": saved.get("updated_at"),
+        "summary": operations.get("summary") or "Showing the latest saved app actions.",
+    }
 
 
 @router.get("/apps/{app_id}/actions")
-def get_lite_app_actions(app_id: str, request: Request) -> dict[str, Any]:
+def get_lite_app_actions(app_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    return lite_app_actions.app_actions(app_id)
+    app_id = _require_supported_app_id(app_id)
+    view_model = "app-actions-prepared-e3-v1"
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="apps", key=f"actions:{app_id}",
+            snapshot_builder=lambda: _saved_app_actions(app_id),
+            builder=lambda: lite_app_actions.app_actions(app_id),
+            projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "operations", payload),
+            stale_after_ms=15_000, max_stale_ms=90_000,
+            deadline_seconds=6.0, priority=30, work_class="io",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 @router.get("/apps/{app_id}/evidence")
@@ -951,10 +1037,46 @@ def get_lite_app_evidence(app_id: str, request: Request) -> dict[str, Any]:
     return payload
 
 
+def _saved_app_subprojection(app_id: str, name: str) -> dict[str, Any] | None:
+    saved = CONTROL_PLANE.app_current_subprojections(app_id)
+    if not saved:
+        return None
+    value = saved.get(name) if isinstance(saved.get(name), dict) else {}
+    if not value:
+        return None
+    if value.get("kind") == "raw" and isinstance(value.get("payload"), dict):
+        payload = dict(value["payload"])
+    elif value.get("kind") == "profile":
+        payload = dict(value.get(name) or {}) if isinstance(value.get(name), dict) else dict(value)
+        if name == "backup" and isinstance(value.get("recovery"), dict):
+            payload.setdefault("recovery", value["recovery"])
+    else:
+        payload = dict(value)
+    payload.update({
+        "app_id": app_id,
+        "projection_only": True,
+        "updated_at": payload.get("updated_at") or saved.get("updated_at"),
+    })
+    return payload
+
+
 @router.get("/apps/{app_id}/update")
-def get_lite_app_update_status(app_id: str, request: Request) -> dict[str, Any]:
+def get_lite_app_update_status(app_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    return lite_app_update.update_status(app_id)
+    app_id = _require_supported_app_id(app_id)
+    view_model = "app-update-prepared-e3-v1"
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="apps", key=f"update:{app_id}",
+            snapshot_builder=lambda: _saved_app_subprojection(app_id, "update"),
+            builder=lambda: lite_app_update.update_status(app_id),
+            projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "update", payload),
+            stale_after_ms=30_000, max_stale_ms=180_000,
+            deadline_seconds=6.0, priority=45, work_class="io",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 @router.get("/apps/{app_id}/update/receipts/{operation_id}")
@@ -973,9 +1095,22 @@ def apply_lite_app_update(app_id: str, payload: LiteAppUpdateRequest, request: R
 
 
 @router.get("/apps/{app_id}/backup")
-def get_lite_app_backup_status(app_id: str, request: Request) -> dict[str, Any]:
+def get_lite_app_backup_status(app_id: str, request: Request) -> Response:
     deps.require_auth(request)
-    return lite_app_backup.app_backup_status(app_id)
+    app_id = _require_supported_app_id(app_id)
+    view_model = "app-backup-prepared-e3-v1"
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="apps", key=f"backup:{app_id}",
+            snapshot_builder=lambda: _saved_app_subprojection(app_id, "backup"),
+            builder=lambda: lite_app_backup.app_backup_status(app_id),
+            projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "backup", payload),
+            stale_after_ms=30_000, max_stale_ms=180_000,
+            deadline_seconds=6.0, priority=55, work_class="io",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain="apps", view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
 @router.post("/apps/{app_id}/backup", status_code=202)
@@ -1920,14 +2055,17 @@ def get_lite_fleet(request: Request) -> Response:
     deps.require_auth(request)
     view_model = "fleet-sqlite-p3-v1"
     try:
-        prepared = CONTROL_PLANE.prepared_read(
+        prepared = CONTROL_PLANE.prepared_only_read(
             domain="fleet",
             key="summary",
+            snapshot_builder=CONTROL_PLANE.fleet_projection_snapshot,
             builder=lite_status.lite_fleet,
             projector=CONTROL_PLANE.project_fleet,
             stale_after_ms=5_000,
             max_stale_ms=30_000,
-            deadline_seconds=4.0,
+            deadline_seconds=6.0,
+            priority=10,
+            work_class="critical",
         )
     except (PreparedProjectionUnavailable, TimeoutError):
         return _projection_warming_response(domain="fleet", view_model=view_model)
@@ -1941,16 +2079,18 @@ def get_lite_fleet(request: Request) -> Response:
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
-def _ensure_fleet_awareness_projection() -> None:
-    CONTROL_PLANE.prepared_read(
-        domain="fleet",
-        key="summary",
-        builder=lite_status.lite_fleet,
-        projector=CONTROL_PLANE.project_fleet,
-        stale_after_ms=5_000,
-        max_stale_ms=30_000,
-        deadline_seconds=4.0,
-    )
+def _ensure_fleet_awareness_projection() -> bool:
+    try:
+        CONTROL_PLANE.prepared_only_read(
+            domain="fleet", key="summary",
+            snapshot_builder=CONTROL_PLANE.fleet_projection_snapshot,
+            builder=lite_status.lite_fleet, projector=CONTROL_PLANE.project_fleet,
+            stale_after_ms=5_000, max_stale_ms=30_000, deadline_seconds=6.0,
+            priority=10, work_class="critical",
+        )
+        return True
+    except PreparedProjectionUnavailable:
+        return False
 
 
 def _recompute_device_removal_assessment(device_id: str) -> dict[str, Any]:
@@ -1973,8 +2113,9 @@ def _recompute_device_removal_assessment(device_id: str) -> dict[str, Any]:
 @router.get("/devices/{device_id}")
 def get_lite_device_details(device_id: str, request: Request) -> Response:
     deps.require_auth(request)
+    if not _ensure_fleet_awareness_projection():
+        return _projection_warming_response(domain="fleet", view_model="device-details-prepared-e3-v1")
     try:
-        _ensure_fleet_awareness_projection()
         payload = CONTROL_PLANE.device_details(device_id)
     except DeviceAwarenessError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
@@ -1986,8 +2127,9 @@ def get_lite_device_details(device_id: str, request: Request) -> Response:
 @router.get("/devices/{device_id}/health")
 def get_lite_device_health(device_id: str, request: Request) -> Response:
     deps.require_auth(request)
+    if not _ensure_fleet_awareness_projection():
+        return _projection_warming_response(domain="fleet", view_model="device-health-prepared-e3-v1")
     try:
-        _ensure_fleet_awareness_projection()
         payload = CONTROL_PLANE.device_health(device_id)
     except DeviceAwarenessError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
@@ -2004,8 +2146,9 @@ def get_lite_device_health_history(
     cursor: str = Query("", max_length=512),
 ) -> Response:
     deps.require_auth(request)
+    if not _ensure_fleet_awareness_projection():
+        return _projection_warming_response(domain="fleet", view_model="device-health-history-prepared-e3-v1")
     try:
-        _ensure_fleet_awareness_projection()
         payload = CONTROL_PLANE.device_health_history(
             device_id, limit=limit, cursor=cursor
         )
@@ -2022,7 +2165,8 @@ def get_lite_device_health_history(
 @router.get("/fleet/health-summary")
 def get_lite_fleet_health_summary(request: Request) -> Response:
     deps.require_auth(request)
-    _ensure_fleet_awareness_projection()
+    if not _ensure_fleet_awareness_projection():
+        return _projection_warming_response(domain="fleet", view_model="fleet-health-summary-prepared-e3-v1")
     payload = CONTROL_PLANE.fleet_health_summary()
     return _control_plane_history_response(
         request, payload, domain="fleet", key="health-summary"
@@ -2037,8 +2181,9 @@ def get_lite_device_lifecycle_history(
     cursor: str = Query("", max_length=512),
 ) -> Response:
     deps.require_auth(request)
+    if not _ensure_fleet_awareness_projection():
+        return _projection_warming_response(domain="fleet", view_model="device-history-prepared-e3-v1")
     try:
-        _ensure_fleet_awareness_projection()
         payload = CONTROL_PLANE.device_lifecycle_history(
             device_id, limit=limit, cursor=cursor
         )
@@ -2053,8 +2198,10 @@ def get_lite_device_lifecycle_history(
 @router.get("/devices/{device_id}/removal-assessment")
 def get_lite_device_removal_assessment(device_id: str, request: Request) -> Response:
     deps.require_auth(request)
+    if not _ensure_fleet_awareness_projection():
+        return _projection_warming_response(domain="fleet", view_model="device-removal-assessment-prepared-e3-v1")
     try:
-        payload = _recompute_device_removal_assessment(device_id)
+        payload = CONTROL_PLANE.device_removal_assessment(device_id)
     except DeviceAwarenessError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
     return _control_plane_history_response(
@@ -2256,7 +2403,25 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         }
         raise HTTPException(status_code=exc.status_code, detail=detail) from exc
 
+    removal_generation = hashlib.sha256(
+        f"{device_id}:{current_assessment.get('assessment_revision')}:{current_assessment.get('awareness_revision')}".encode("utf-8")
+    ).hexdigest()[:24]
     try:
+        prepared_details = CONTROL_PLANE.device_details(device_id)
+        removal_state = (
+            prepared_details.get("device")
+            if isinstance(prepared_details.get("device"), dict)
+            else {"node_id": device_id, "role": "compute", "status": "offline"}
+        )
+        fleet_registry.append_device_lifecycle_event(
+            device_id, "removal_requested",
+            reason_code="confirmed_stale_device_cleanup",
+            summary="Saved device record removal was requested after dependency review.",
+            status="requested", occurred_at=deps.now_utc_iso(),
+            command_id=removal_generation,
+            dedupe_key=f"{device_id}:removal_requested:{removal_generation}",
+            generation_key=removal_generation, current_state=removal_state,
+        )
         removal = fleet_registry.remove_device_records(device_id)
     except fleet_registry.DeviceRemovalError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
@@ -2273,11 +2438,27 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
     await fleet_registry.publish_device_removed_evidence(evidence)
     fleet_registry.append_device_lifecycle_event(
         device_id,
-        "device_removed",
+        "removal_completed",
         reason_code="saved_record_removed",
         summary="Saved device record removed after dependency review.",
         status="completed",
         occurred_at=deps.now_utc_iso(),
+        command_id=removal_generation,
+        dedupe_key=f"{device_id}:removal_completed:{removal_generation}",
+        generation_key=removal_generation,
+        current_state={
+            "node_id": device_id,
+            "name": removal.get("device_name") or device_id,
+            "role": removal.get("role") or "compute",
+            "status": "removed",
+            "connection": "removed",
+            "agent_status": "removed",
+            "supervisor_status": "unknown",
+            "agent_process_status": "unknown",
+            "protected_server_host": False,
+            "summary": "Saved device record removed after dependency review.",
+            "last_seen_at": removal.get("updated_at") or deps.now_utc_iso(),
+        },
     )
     CONTROL_PLANE.invalidate_domain("fleet")
 
@@ -2359,66 +2540,49 @@ def _project_warmup_payload(
     return projector(payload)
 
 
-def _run_staggered_projection_warmup(expected_database_path: str) -> None:
-    try:
-        startup_delay = max(0.0, min(10.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS", "2.0"))))
-        if startup_delay:
-            threading.Event().wait(startup_delay)
-        # A delayed warm-up must never follow a test, restore, or runtime
-        # database-path switch into a different SQLite database.
-        if str(database_path()) != expected_database_path:
-            return
-        lite_recovery_subprojections.warm_startup_dependencies()
-        if str(database_path()) != expected_database_path:
-            return
-        CONTROL_PLANE.warm_prepared_read(
-            domain="recovery", key="summary",
-            builder=_build_lite_recovery_summary_projection,
-            projector=lambda payload: _project_warmup_payload(expected_database_path, CONTROL_PLANE.project_recovery, payload), deadline_seconds=4.0,
-        )
-        CONTROL_PLANE.wait_for_prepared("recovery:summary", 30.0)
-        threading.Event().wait(max(0.0, min(5.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS", "1.0")))))
-        CONTROL_PLANE.warm_prepared_read(
-            domain="apps", key="lifecycle",
-            builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=lambda payload: _project_warmup_payload(expected_database_path, CONTROL_PLANE.project_apps, payload), deadline_seconds=4.0,
-        )
-        apps_ready = CONTROL_PLANE.wait_for_prepared("apps:lifecycle", 90.0)
-        recovery_ready = CONTROL_PLANE.prepared_payload("recovery:summary") is not None
-        if apps_ready and recovery_ready:
-            threading.Event().wait(max(0.0, min(5.0, float(os.environ.get("POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS", "1.0")))))
-            CONTROL_PLANE.warm_prepared_read(
-                domain="recovery", key="details",
-                builder=_lite_recovery_details_payload,
-                projector=lambda payload: _project_warmup_payload(expected_database_path, CONTROL_PLANE.project_recovery, payload), deadline_seconds=5.0,
-            )
-        else:
-            _LOGGER.warning(
-                "pocketlab.control_projection.warmup_dependency_degraded apps_ready=%s recovery_ready=%s",
-                apps_ready, recovery_ready,
-            )
-    except Exception as exc:
-        _LOGGER.warning(
-            "pocketlab.control_projection.warmup_degraded error_type=%s", type(exc).__name__
-        )
-
-
 def schedule_control_plane_projection_warmup() -> dict[str, bool]:
-    global _WARMUP_THREAD
+    """Submit optional startup projections through the unified scheduler."""
     if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
         return {"apps": False, "recovery_summary": False, "recovery_details": False}
-    with _WARMUP_LOCK:
-        if _WARMUP_THREAD is not None and _WARMUP_THREAD.is_alive():
-            return {"apps": False, "recovery_summary": False, "recovery_details": False}
-        expected_database_path = str(database_path())
-        _WARMUP_THREAD = threading.Thread(
-            target=_run_staggered_projection_warmup,
-            args=(expected_database_path,),
-            name="pocketlab-staggered-projection-warmup",
-            daemon=True,
+    expected_database_path = str(database_path())
+    results = {"apps": False, "recovery_summary": False, "recovery_details": False}
+    try:
+        results["recovery_summary"] = CONTROL_PLANE.warm_prepared_read(
+            domain="recovery", key="summary",
+            builder=_build_lite_recovery_summary_projection,
+            projector=lambda payload: _project_warmup_payload(
+                expected_database_path, CONTROL_PLANE.project_recovery, payload
+            ),
+            deadline_seconds=4.0,
+            priority=50,
+            work_class="io",
         )
-        _WARMUP_THREAD.start()
-    return {"apps": True, "recovery_summary": True, "recovery_details": True}
+        results["apps"] = CONTROL_PLANE.warm_prepared_read(
+            domain="apps", key="lifecycle",
+            builder=lite_app_lifecycle.app_lifecycle_profiles,
+            projector=lambda payload: _project_warmup_payload(
+                expected_database_path, CONTROL_PLANE.project_apps, payload
+            ),
+            deadline_seconds=8.0,
+            priority=40,
+            work_class="cpu",
+        )
+        results["recovery_details"] = CONTROL_PLANE.warm_prepared_read(
+            domain="recovery", key="details",
+            builder=_lite_recovery_details_payload,
+            projector=lambda payload: _project_warmup_payload(
+                expected_database_path, CONTROL_PLANE.project_recovery, payload
+            ),
+            deadline_seconds=8.0,
+            priority=60,
+            work_class="io",
+        )
+    except Exception as exc:
+        _LOGGER.warning(
+            "pocketlab.control_projection.warmup_degraded error_type=%s",
+            type(exc).__name__,
+        )
+    return results
 
 
 def _refresh_device_health_projection() -> dict[str, Any]:
@@ -2428,21 +2592,29 @@ def _refresh_device_health_projection() -> dict[str, Any]:
         )))
     except (TypeError, ValueError):
         deadline_seconds = 20.0
-    prepared = CONTROL_PLANE.prepared_read(
-        domain="fleet",
-        key="summary",
-        builder=lite_status.lite_fleet,
-        projector=CONTROL_PLANE.project_fleet,
-        stale_after_ms=0,
-        max_stale_ms=0,
-        deadline_seconds=deadline_seconds,
-        cold_start_async=False,
-    )
-    return {
-        "source_revision": prepared.source_revision,
-        "projection_age_ms": prepared.projection_age_ms,
-        "read_degraded": prepared.read_degraded,
-    }
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="fleet", key="summary",
+            snapshot_builder=CONTROL_PLANE.fleet_projection_snapshot,
+            builder=lite_status.lite_fleet, projector=CONTROL_PLANE.project_fleet,
+            stale_after_ms=0, max_stale_ms=0, deadline_seconds=deadline_seconds,
+            priority=15, work_class="critical",
+        )
+        return {
+            "source_revision": prepared.source_revision,
+            "projection_age_ms": prepared.projection_age_ms,
+            "read_degraded": prepared.read_degraded,
+            "refresh_pending": prepared.refresh_pending,
+        }
+    except PreparedProjectionUnavailable:
+        from ..services.projection_scheduler import PROJECTION_SCHEDULER
+        status = PROJECTION_SCHEDULER.status("fleet.summary")
+        return {
+            "source_revision": CONTROL_PLANE.domain_revision("fleet"),
+            "projection_age_ms": 0,
+            "read_degraded": True,
+            "refresh_pending": bool(status.get("refresh_pending")),
+        }
 
 
 def _bounded_startup_delay(name: str, default: float, minimum: float, maximum: float) -> float:
@@ -2494,6 +2666,7 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
             device_health_projection_sweep_loop(skip_startup_delay=True),
             name="pocketlab-device-health-projection-sweep",
         )
+        await asyncio.sleep(0)
         logger.info("pocketlab.startup.stage_ready stage=device_health_sweep")
 
         await wait_until(warmup_delay)
@@ -2575,16 +2748,13 @@ def get_lite_recovery_summary(request: Request) -> Response:
     deps.require_auth(request)
     view_model = "recovery-summary-sqlite-p3-v2"
     try:
-        prepared = CONTROL_PLANE.prepared_read(
-            domain="recovery",
-            key="summary",
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="recovery", key="summary",
+            snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=False),
             builder=_build_lite_recovery_summary_projection,
             projector=CONTROL_PLANE.project_recovery,
-            stale_after_ms=10_000,
-            max_stale_ms=60_000,
-            deadline_seconds=4.0,
-            cold_start_async=True,
-            fallback_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=False),
+            stale_after_ms=10_000, max_stale_ms=60_000,
+            deadline_seconds=8.0, priority=50, work_class="io",
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="recovery", view_model=view_model)
@@ -2596,16 +2766,12 @@ def get_lite_recovery_details(request: Request) -> Response:
     deps.require_auth(request)
     view_model = "recovery-details-sqlite-p3-v2"
     try:
-        prepared = CONTROL_PLANE.prepared_read(
-            domain="recovery",
-            key="details",
-            builder=_lite_recovery_details_payload,
-            projector=CONTROL_PLANE.project_recovery,
-            stale_after_ms=15_000,
-            max_stale_ms=90_000,
-            deadline_seconds=5.0,
-            cold_start_async=True,
-            fallback_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True),
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain="recovery", key="details",
+            snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True),
+            builder=_lite_recovery_details_payload, projector=CONTROL_PLANE.project_recovery,
+            stale_after_ms=15_000, max_stale_ms=90_000,
+            deadline_seconds=10.0, priority=60, work_class="io",
         )
     except PreparedProjectionUnavailable:
         return _projection_warming_response(domain="recovery", view_model=view_model)
@@ -2629,9 +2795,8 @@ def get_lite_recovery_operation_history(
 
 
 @router.get("/recovery")
-def get_lite_recovery(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
-    return _lite_recovery_details_payload()
+def get_lite_recovery(request: Request) -> Response:
+    return get_lite_recovery_details(request)
 
 
 @router.get("/recovery/database")

@@ -44,9 +44,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from .services.live_status import LIVE_STATUS
     from .services import lite_security
     from .services import lite_database_recovery
+    from .services import fleet_registry
     from .services.lite_control_plane_store import CONTROL_PLANE
     from .services.runtime_diagnostics import RUNTIME_DIAGNOSTICS
     from .services.workload_admission import WORKLOAD_ADMISSION
+    from .services.projection_scheduler import PROJECTION_SCHEDULER
 
     diagnostics_started = False
     admission_started = False
@@ -64,6 +66,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await asyncio.to_thread(lite_database_recovery.startup_recovery_guard, "api")
         await asyncio.to_thread(CONTROL_PLANE.initialize)
         admission_started = await WORKLOAD_ADMISSION.start()
+        await asyncio.to_thread(PROJECTION_SCHEDULER.start)
+        await asyncio.to_thread(fleet_registry.resume_pending_lifecycle_exports)
         await WORKLOAD_ADMISSION.run(
             "security.runtime.initialize",
             lite_security.initialize_security_sqlite_runtime,
@@ -132,6 +136,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             # not turn graceful FastAPI shutdown into a crash/restart loop.
             pass
         await BUS.stop()
+        await asyncio.to_thread(PROJECTION_SCHEDULER.shutdown)
         await asyncio.to_thread(CONTROL_PLANE.shutdown)
         if admission_started or WORKLOAD_ADMISSION.snapshot().get("status") == "running":
             await WORKLOAD_ADMISSION.shutdown()

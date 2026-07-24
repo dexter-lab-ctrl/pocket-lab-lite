@@ -159,6 +159,12 @@ def _safe_text(value: Any, limit: int = 240) -> str:
     return text[:limit]
 
 
+def _sanitize_lifecycle_summary(value: Any) -> str:
+    # Reuse the control-plane secret-key guard for all lifecycle copy.
+    # Lifecycle evidence is intentionally compact and never carries raw payloads.
+    return _safe_text(value, 240) or "Device activity recorded."
+
+
 def _safe_json(value: Any, *, max_bytes: int = 4096) -> str:
     def sanitize(item: Any, depth: int = 0) -> Any:
         if depth > 4:
@@ -573,6 +579,7 @@ class PreparedRead:
     read_degraded: bool
     refresh_pending: bool
     timing: dict[str, float]
+    retry_after_seconds: int = 0
 
 
 @dataclass
@@ -1028,6 +1035,112 @@ class ControlPlaneProjectionStore:
                 timing={"connection_acquisition_ms": 0.0, "sqlite_query_ms": 0.0, "projection_build_ms": 0.0, "serialization_ms": 0.0},
             )
 
+    def prepared_only_read(
+        self,
+        *,
+        domain: str,
+        key: str,
+        snapshot_builder: Callable[[], dict[str, Any] | None],
+        builder: Callable[[], dict[str, Any]],
+        projector: Callable[[dict[str, Any]], int],
+        stale_after_ms: int,
+        max_stale_ms: int,
+        deadline_seconds: float = 3.0,
+        priority: int = 50,
+        work_class: str = "io",
+    ) -> PreparedRead:
+        """Read prepared SQLite/memory state without executing collectors.
+
+        Missing or stale state only marks scheduler work dirty. The request path
+        never invokes the supplied builder or projector.
+        """
+        self.initialize()
+        cache_key = f"{domain}:{key}"
+        instance = _database_instance()
+        now = time.monotonic()
+        with self._cache_lock:
+            item = self._prepared.get(cache_key)
+            if item is not None and item.database_instance != instance:
+                self._prepared.pop(cache_key, None)
+                item = None
+
+        if item is None:
+            snapshot = snapshot_builder()
+            if snapshot:
+                updated_epoch = _epoch_ms(snapshot.get("updated_at"))
+                age_ms = max(0, int(time.time() * 1000) - updated_epoch)
+                revision = self.domain_revision(domain)
+                prepared_at = now - (age_ms / 1000.0)
+                item = _PreparedItem(
+                    payload=dict(snapshot),
+                    revision=revision,
+                    prepared_at=prepared_at,
+                    database_instance=instance,
+                )
+                with self._cache_lock:
+                    self._prepared[cache_key] = item
+
+        from .projection_scheduler import PROJECTION_SCHEDULER, ProjectionJob
+
+        scheduler_domain = f"{domain}.{key}"
+        def scheduled_projector(payload: dict[str, Any]) -> int:
+            revision = int(projector(payload))
+            with self._cache_lock:
+                self._prepared[cache_key] = _PreparedItem(
+                    payload=dict(payload),
+                    revision=revision,
+                    prepared_at=time.monotonic(),
+                    database_instance=_database_instance(),
+                )
+                self._refresh_errors.pop(cache_key, None)
+                self._last_refresh_completed_at[cache_key] = time.monotonic()
+            return revision
+
+        job = ProjectionJob(
+            domain=scheduler_domain,
+            builder=builder,
+            projector=scheduled_projector,
+            priority=max(0, min(int(priority), 100)),
+            work_class=("cpu" if work_class == "cpu" else "critical" if work_class == "critical" else "io"),
+            deadline_seconds=max(0.1, min(float(deadline_seconds), 300.0)),
+            optional=work_class != "critical",
+        )
+
+        if item is None:
+            status = PROJECTION_SCHEDULER.mark_dirty(scheduler_domain, job=job, priority=priority)
+            raise PreparedProjectionUnavailable(
+                "Prepared projection is warming and no safe snapshot is available yet"
+            )
+
+        age_ms = int(max(0.0, (now - item.prepared_at) * 1000.0))
+        stale = age_ms > max(0, int(stale_after_ms))
+        too_old = age_ms > max(int(max_stale_ms), int(stale_after_ms))
+        refresh_status = PROJECTION_SCHEDULER.status(scheduler_domain)
+        if stale:
+            refresh_status = PROJECTION_SCHEDULER.mark_dirty(
+                scheduler_domain, job=job, priority=priority
+            )
+        refresh_pending = bool(refresh_status.get("refresh_pending"))
+        retry_after = max(0, int(refresh_status.get("retry_after_seconds") or 0))
+        payload = dict(item.payload)
+        if too_old:
+            payload["projection_only"] = True
+        return PreparedRead(
+            payload=payload,
+            etag=self._etag(domain, key, item.revision),
+            source_revision=item.revision,
+            projection_age_ms=age_ms,
+            read_degraded=bool(stale or payload.get("projection_only")),
+            refresh_pending=refresh_pending,
+            timing={
+                "connection_acquisition_ms": 0.0,
+                "sqlite_query_ms": 0.0,
+                "projection_build_ms": 0.0,
+                "serialization_ms": 0.0,
+            },
+            retry_after_seconds=retry_after,
+        )
+
     def warm_prepared_read(
         self,
         *,
@@ -1036,14 +1149,25 @@ class ControlPlaneProjectionStore:
         builder: Callable[[], dict[str, Any]],
         projector: Callable[[dict[str, Any]], int],
         deadline_seconds: float = 3.0,
+        priority: int = 70,
+        work_class: str = "io",
     ) -> bool:
+        """Submit optional startup warming through the unified scheduler."""
         self.initialize()
         cache_key = f"{domain}:{key}"
         with self._cache_lock:
             item = self._prepared.get(cache_key)
             if item is not None and item.database_instance == _database_instance():
                 return False
-        self._start_refresh(cache_key, domain, key, builder, projector, deadline_seconds)
+        try:
+            self.prepared_only_read(
+                domain=domain, key=key, snapshot_builder=lambda: None,
+                builder=builder, projector=projector, stale_after_ms=0,
+                max_stale_ms=0, deadline_seconds=deadline_seconds,
+                priority=priority, work_class=work_class,
+            )
+        except PreparedProjectionUnavailable:
+            return True
         return True
 
     def _start_refresh(
@@ -2028,6 +2152,18 @@ class ControlPlaneProjectionStore:
         )
         return bool(_changes(conn)), reasons
 
+    def device_awareness_map(self) -> dict[str, dict[str, Any]]:
+        self.initialize()
+        rows, _, _ = self._read(
+            lambda conn: [dict(row) for row in conn.execute(
+                "SELECT * FROM device_awareness_state ORDER BY device_id"
+            )]
+        )
+        return {
+            str(row["device_id"]): self._public_awareness(row)
+            for row in rows
+        }
+
     def device_health_map(self) -> dict[str, dict[str, Any]]:
         self.initialize()
 
@@ -2454,6 +2590,333 @@ class ControlPlaneProjectionStore:
         self.invalidate_domain("fleet")
         return dict(result)
 
+    def commit_device_lifecycle_transition(
+        self,
+        event: dict[str, Any],
+        *,
+        current_state: dict[str, Any] | None = None,
+        expected_database_instance: str | None = None,
+        deadline_seconds: float = 1.5,
+    ) -> dict[str, Any]:
+        """Atomically commit device current state and sanitized lifecycle evidence."""
+        self.initialize()
+        device_id = _safe_text(event.get("device_id") or event.get("node_id"), 120)
+        event_type = _safe_text(event.get("event_type") or "device_activity", 80).lower()
+        event_id = _safe_text(event.get("event_id"), 120)
+        if not device_id or device_id == "unknown-node" or not event_id:
+            raise ValueError("A durable device identity and event id are required")
+        raw_occurred = str(event.get("occurred_at") or event.get("created_at") or "").strip()
+        try:
+            occurred_dt = datetime.fromisoformat(raw_occurred.replace("Z", "+00:00"))
+            if occurred_dt.tzinfo is None:
+                occurred_dt = occurred_dt.replace(tzinfo=timezone.utc)
+            occurred_epoch = int(occurred_dt.timestamp() * 1000)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Lifecycle event timestamp is invalid") from exc
+        now_epoch = int(time.time() * 1000)
+        if occurred_epoch > now_epoch + 300_000:
+            raise ValueError("Lifecycle event timestamp is too far in the future")
+        occurred_at = occurred_dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        dedupe_key = _safe_text(event.get("dedupe_key"), 240) or None
+        generation_key = _safe_text(event.get("generation_key"), 160) or None
+        invite_id = _safe_text(event.get("invite_id"), 120) or None
+        command_id = _safe_text(event.get("command_id"), 120) or None
+        recovery_id = _safe_text(event.get("recovery_id"), 120) or None
+        normalized_type = (
+            "first_supervisor_heartbeat_received"
+            if event_type == "first_supervisor_heartbeat" else event_type
+        )
+        one_time = {
+            "first_heartbeat_received", "first_supervisor_heartbeat",
+            "first_supervisor_heartbeat_received", "first_ready",
+        }
+        if event_type in one_time and not dedupe_key:
+            dedupe_key = f"{device_id}:{normalized_type}"
+
+        generation_sources = {
+            "invite_created": invite_id, "join_started": invite_id,
+            "invite_accepted": invite_id, "invite_revoked": invite_id,
+            "invite_expired": invite_id, "blocked_invite_consumption": invite_id,
+            "identity_mismatch_blocked": invite_id,
+            "restart_requested": command_id, "restart_delivered": command_id,
+            "restart_completed": command_id, "restart_failed": command_id,
+            "repair_started": recovery_id or command_id,
+            "repair_completed": recovery_id or command_id,
+            "repair_failed": recovery_id or command_id,
+            "recovery_started": recovery_id or command_id,
+            "recovery_completed": recovery_id or command_id,
+            "recovery_failed": recovery_id or command_id,
+            "removal_requested": command_id, "removal_completed": command_id,
+            "stale_device_cleanup": command_id,
+        }
+        generation_key = generation_key or generation_sources.get(event_type)
+        generation_required = {
+            "identity_verified", "device_returned_online", "connection_lost",
+            "repair_started", "repair_completed", "repair_failed",
+            "recovery_started", "recovery_completed", "recovery_failed",
+            "blocked_invite_consumption", "identity_mismatch_blocked",
+            "removal_requested", "removal_completed", "stale_device_cleanup",
+        }
+        generation_scoped = generation_required | set(generation_sources)
+        if event_type in generation_required and not (dedupe_key or generation_key):
+            raise ValueError("Repeatable lifecycle transitions require a stable generation key")
+        if event_type in generation_scoped and generation_key and not dedupe_key:
+            dedupe_key = f"{device_id}:{normalized_type}:{generation_key}"
+        summary = _sanitize_lifecycle_summary(
+            event.get("summary") or "Device activity recorded."
+        )
+        reason_code = _safe_text(event.get("reason_code"), 80)
+        status = _safe_text(event.get("status") or "recorded", 32)
+        sanitized_payload = _safe_json({
+            "event_type": event_type, "reason_code": reason_code, "status": status,
+            "summary": summary, "generation_key": generation_key,
+        }, max_bytes=2048)
+        payload_checksum = hashlib.sha256(sanitized_payload.encode("utf-8")).hexdigest()
+        scheduled_instance = expected_database_instance or _database_instance()
+        transaction_id = hashlib.sha256(
+            f"{scheduled_instance}:{device_id}:{dedupe_key or event_id}".encode("utf-8")
+        ).hexdigest()[:32]
+        state = dict(current_state or {})
+
+        def write(conn: sqlite3.Connection) -> dict[str, Any]:
+            if _database_instance() != scheduled_instance:
+                raise RuntimeError("SQLite database instance changed before lifecycle commit")
+            version_row = conn.execute(
+                "SELECT COALESCE(MAX(version),0) AS version FROM schema_migrations"
+            ).fetchone()
+            if int(version_row["version"] or 0) < 14:
+                raise RuntimeError("SQLite lifecycle migration is not applied")
+            existing = None
+            if dedupe_key:
+                existing = conn.execute(
+                    "SELECT event_id,state_revision,dedupe_key,generation_key "
+                    "FROM device_lifecycle_events WHERE dedupe_key=?",
+                    (dedupe_key,),
+                ).fetchone()
+            if existing is None:
+                existing = conn.execute(
+                    "SELECT event_id,state_revision,dedupe_key,generation_key "
+                    "FROM device_lifecycle_events WHERE event_id=?",
+                    (event_id,),
+                ).fetchone()
+            if existing is not None:
+                return {
+                    "changed": False, "event_id": str(existing["event_id"]),
+                    "state_revision": int(existing["state_revision"] or 0),
+                    "dedupe_key": existing["dedupe_key"],
+                    "generation_key": existing["generation_key"],
+                    "database_instance": scheduled_instance, "export_required": False,
+                }
+            current = conn.execute(
+                "SELECT * FROM device_current_state WHERE device_id=?", (device_id,)
+            ).fetchone()
+            prior = dict(current) if current else {}
+            state_revision = max(1, int(prior.get("source_revision") or 0) + 1)
+            protected = bool(state.get("protected_server_host") or state.get("is_current") or state.get("isCurrent"))
+            role = _safe_text(state.get("role") or prior.get("role") or "compute", 40)
+            if role in {"server_host", "server", "control_plane", "control_plane_host"} and not protected:
+                raise ValueError("Server-host lifecycle state must be explicitly protected")
+            last_seen = _safe_text(
+                state.get("last_seen_at") or state.get("last_seen") or prior.get("last_seen_at") or occurred_at, 64
+            )
+            last_seen_epoch = _epoch_ms(last_seen)
+            connection_state = _safe_text(
+                state.get("connection") or state.get("connection_state") or state.get("status") or prior.get("connection_state") or "unknown", 32
+            ).lower()
+            remote_ready = bool(state.get("remote_access") or state.get("remote_access_ready") or prior.get("remote_access_ready"))
+            values = (
+                device_id, _safe_text(state.get("name") or state.get("hostname") or prior.get("device_name") or device_id, 120),
+                role, _ui_state(state, remote_ready), connection_state,
+                _safe_text(state.get("agent_status") or state.get("status") or prior.get("agent_status") or "unknown", 32).lower(),
+                _safe_text(state.get("supervisor_status") or prior.get("supervisor_status") or "unknown", 32).lower(),
+                _safe_text(state.get("agent_process_status") or state.get("pm2_status") or prior.get("pm2_status") or "unknown", 32).lower(),
+                int(remote_ready), int(protected),
+                _safe_text(state.get("source_heartbeat_id") or event.get("heartbeat_id"), 120) or prior.get("source_heartbeat_id"),
+                _safe_text(event.get("command_id"), 120) or prior.get("latest_command_id"),
+                _safe_text(event.get("invite_id"), 120) or prior.get("latest_invite_id"),
+                _safe_text(event.get("recovery_id"), 120) or prior.get("latest_recovery_id"),
+                state_revision, last_seen, last_seen_epoch, _utc_now(), now_epoch,
+                _safe_text(state.get("summary") or summary, 240),
+            )
+            conn.execute(
+                """
+                INSERT INTO device_current_state(
+                    device_id,device_name,role,ui_state,connection_state,agent_status,
+                    supervisor_status,pm2_status,remote_access_ready,protected_server_host,
+                    source_heartbeat_id,latest_command_id,latest_invite_id,latest_recovery_id,
+                    source_revision,last_seen_at,last_seen_epoch_ms,updated_at,updated_at_epoch_ms,summary
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT(device_id) DO UPDATE SET
+                    device_name=excluded.device_name,role=excluded.role,ui_state=excluded.ui_state,
+                    connection_state=excluded.connection_state,agent_status=excluded.agent_status,
+                    supervisor_status=excluded.supervisor_status,pm2_status=excluded.pm2_status,
+                    remote_access_ready=excluded.remote_access_ready,
+                    protected_server_host=MAX(device_current_state.protected_server_host,excluded.protected_server_host),
+                    source_heartbeat_id=COALESCE(excluded.source_heartbeat_id,device_current_state.source_heartbeat_id),
+                    latest_command_id=COALESCE(excluded.latest_command_id,device_current_state.latest_command_id),
+                    latest_invite_id=COALESCE(excluded.latest_invite_id,device_current_state.latest_invite_id),
+                    latest_recovery_id=COALESCE(excluded.latest_recovery_id,device_current_state.latest_recovery_id),
+                    source_revision=excluded.source_revision,last_seen_at=excluded.last_seen_at,
+                    last_seen_epoch_ms=excluded.last_seen_epoch_ms,updated_at=excluded.updated_at,
+                    updated_at_epoch_ms=excluded.updated_at_epoch_ms,summary=excluded.summary
+                """,
+                values,
+            )
+            conn.execute(
+                """
+                INSERT INTO device_lifecycle_events(
+                    event_id,device_id,event_type,reason_code,status,occurred_at,
+                    occurred_at_epoch_ms,summary,sanitized,source_revision,dedupe_key,
+                    generation_key,state_revision,database_instance,payload_checksum
+                ) VALUES (?,?,?,?,?,?,?,?,1,?,?,?,?,?,?)
+                """,
+                (event_id,device_id,event_type,reason_code,status,occurred_at,occurred_epoch,
+                 summary,state_revision,dedupe_key,generation_key,state_revision,
+                 scheduled_instance,payload_checksum),
+            )
+            conn.execute(
+                """
+                INSERT INTO device_lifecycle_transactions(
+                    transaction_id,device_id,event_id,event_type,dedupe_key,generation_key,
+                    state_revision,database_instance,status,export_status,occurred_at,
+                    occurred_at_epoch_ms,created_at,updated_at,summary
+                ) VALUES (?,?,?,?,?,?,?,?,?,'pending',?,?,?,?,?)
+                """,
+                (transaction_id,device_id,event_id,event_type,dedupe_key,generation_key,
+                 state_revision,scheduled_instance,'committed',occurred_at,occurred_epoch,
+                 _utc_now(),_utc_now(),summary),
+            )
+            revision = _bump_revision(
+                conn, "fleet", _utc_now(), changed_ids=[device_id],
+                reason="device_lifecycle_changed", projection_version=5,
+            )
+            return {
+                "changed": True, "event_id": event_id, "state_revision": state_revision,
+                "source_revision": revision, "transaction_id": transaction_id,
+                "dedupe_key": dedupe_key, "generation_key": generation_key,
+                "database_instance": scheduled_instance, "export_required": True,
+            }
+
+        result = SQLITE_WRITER.submit(
+            "fleet.lifecycle.transaction", write,
+            deadline_seconds=max(0.1, min(float(deadline_seconds), 10.0)),
+        )
+        self.invalidate_domain("fleet")
+        return dict(result)
+
+    def pending_lifecycle_exports(self, *, limit: int = 100) -> list[dict[str, Any]]:
+        """Return bounded sanitized committed events whose compatibility export is incomplete."""
+        self.initialize()
+        bounded = max(1, min(int(limit), 500))
+
+        def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+            rows = conn.execute(
+                """
+                SELECT t.transaction_id,e.event_id,e.device_id,e.event_type,e.reason_code,
+                       e.status,e.occurred_at,e.summary,e.dedupe_key,e.generation_key,
+                       e.state_revision
+                FROM device_lifecycle_transactions AS t
+                JOIN device_lifecycle_events AS e ON e.event_id=t.event_id
+                WHERE t.status IN ('committed','reconciled')
+                  AND t.export_status IN ('pending','failed')
+                ORDER BY t.occurred_at_epoch_ms ASC,t.transaction_id ASC
+                LIMIT ?
+                """,
+                (bounded,),
+            ).fetchall()
+            return [
+                {
+                    "transaction_id": str(row["transaction_id"]),
+                    "event": {
+                        "event_id": str(row["event_id"]),
+                        "device_id": str(row["device_id"]),
+                        "node_id": str(row["device_id"]),
+                        "event_type": str(row["event_type"]),
+                        "reason_code": str(row["reason_code"] or ""),
+                        "status": str(row["status"] or "recorded"),
+                        "occurred_at": str(row["occurred_at"]),
+                        "created_at": str(row["occurred_at"]),
+                        "summary": str(row["summary"] or ""),
+                        "dedupe_key": row["dedupe_key"],
+                        "generation_key": row["generation_key"],
+                        "state_revision": int(row["state_revision"] or 0),
+                        "sqlite_authoritative": True,
+                        "sanitized": True,
+                    },
+                }
+                for row in rows
+            ]
+
+        rows, _, _ = self._read(read)
+        return list(rows)
+
+    def mark_lifecycle_exported(self, transaction_id: str, *, succeeded: bool) -> None:
+        safe_id = _safe_text(transaction_id, 80)
+        if not safe_id:
+            return
+        def write(conn: sqlite3.Connection) -> None:
+            conn.execute(
+                "UPDATE device_lifecycle_transactions SET export_status=?, export_attempts=export_attempts+1, updated_at=? WHERE transaction_id=?",
+                ("exported" if succeeded else "failed", _utc_now(), safe_id),
+            )
+        try:
+            SQLITE_WRITER.submit("fleet.lifecycle.export_status", write, deadline_seconds=0.5)
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded, sqlite3.Error):
+            return
+
+    def fleet_projection_snapshot(self) -> dict[str, Any] | None:
+        """Build a bounded fleet response from prepared SQLite rows only."""
+        self.initialize()
+        rows = self.fleet_rows()
+        if not rows:
+            return None
+        profiles = self.device_profile_map()
+        awareness = self.device_awareness_map()
+        health = self.device_health_map()
+        devices: list[dict[str, Any]] = []
+        for row in rows[:256]:
+            if str(row.get("connection_state") or "").lower() == "removed":
+                continue
+            device_id = str(row.get("device_id") or "")
+            item: dict[str, Any] = {
+                "id": device_id, "node_id": device_id,
+                "name": row.get("device_name") or device_id,
+                "role": row.get("role") or "compute",
+                "status": row.get("ui_state") or row.get("connection_state") or "unknown",
+                "connection": row.get("connection_state") or "unknown",
+                "agent_status": row.get("agent_status") or "unknown",
+                "supervisor_status": row.get("supervisor_status") or "unknown",
+                "agent_process_status": row.get("pm2_status") or "unknown",
+                "remote_access": bool(row.get("remote_access_ready")),
+                "is_current": bool(row.get("protected_server_host")),
+                "protected_server_host": bool(row.get("protected_server_host")),
+                "last_seen_at": row.get("last_seen_at"),
+                "updated_at": row.get("updated_at"),
+                "summary": row.get("summary") or "Showing the latest saved device state.",
+                "projection_only": True,
+            }
+            if device_id in profiles:
+                item.update(profiles[device_id])
+            if device_id in awareness:
+                item.update(awareness[device_id])
+            if device_id in health:
+                item["proactive_health"] = health[device_id]
+                item["health_status"] = health[device_id].get("status")
+            devices.append(item)
+        updated_at = max(str(item.get("updated_at") or item.get("last_seen_at") or "") for item in devices)
+        return {
+            "status": "degraded",
+            "summary": "Showing the latest saved device state while Pocket Lab refreshes details.",
+            "devices": devices, "items": devices, "count": len(devices),
+            "online": sum(1 for item in devices if str(item.get("connection")) == "online"),
+            "offline": sum(1 for item in devices if str(item.get("connection")) == "offline"),
+            "remote_access": {
+                "ready": any(bool(item.get("remote_access")) for item in devices),
+                "status": "ready" if any(bool(item.get("remote_access")) for item in devices) else "not_ready",
+            },
+            "updated_at": updated_at, "projection_only": True, "sanitized": True,
+        }
+
     def project_fleet(self, payload: dict[str, Any]) -> int:
         self.initialize()
         devices = [item for item in payload.get("devices", []) if isinstance(item, dict)]
@@ -2462,19 +2925,10 @@ class ControlPlaneProjectionStore:
         now = str(payload.get("updated_at") or _utc_now())
         now_epoch = _epoch_ms(now)
         commands: list[dict[str, Any]] = []
-        recovery_events: list[dict[str, Any]] = []
         try:
             from . import fleet_registry
 
             commands = fleet_registry.list_commands(limit=500)
-            events_payload = deps.core.read_json_file(
-                deps.settings().state_dir / "fleet_device_events.json",
-                {"events": []},
-            )
-            recovery_events = [
-                item for item in (events_payload.get("events") or [])[:500]
-                if isinstance(item, dict)
-            ]
         except Exception:
             pass
 
@@ -2547,12 +3001,20 @@ class ControlPlaneProjectionStore:
                     device_id.lower(), _safe_text(item.get("name"), 120).lower()
                 }:
                     latest_invite_id = _safe_text(latest_invite.get("invite_id"), 120) or None
-                latest_recovery = next((event for event in recovery_events if str(event.get("device_id") or "") == device_id), None)
-                latest_recovery_id = None
-                if latest_recovery:
-                    latest_recovery_id = hashlib.sha256(
-                        json.dumps(latest_recovery, sort_keys=True).encode("utf-8")
-                    ).hexdigest()[:24]
+                latest_recovery_row = conn.execute(
+                    """
+                    SELECT event_id FROM device_lifecycle_events
+                    WHERE device_id=? AND (
+                        event_type LIKE 'repair_%' OR event_type LIKE 'recovery_%'
+                        OR event_type LIKE 'restart_%'
+                    )
+                    ORDER BY occurred_at_epoch_ms DESC,event_id DESC LIMIT 1
+                    """,
+                    (device_id,),
+                ).fetchone()
+                latest_recovery_id = (
+                    str(latest_recovery_row["event_id"]) if latest_recovery_row else None
+                )
                 ui_state = _ui_state(item, remote_ready)
                 conn.execute(
                     """
@@ -2629,52 +3091,41 @@ class ControlPlaneProjectionStore:
                     health_changed_ids.add(device_id)
                 changed = health_changed or changed
                 awareness_reasons.update(health_reasons)
-                for event in (item.get("recent_lifecycle") or [])[:50]:
-                    if not isinstance(event, dict):
-                        continue
-                    event_id = _safe_text(event.get("event_id"), 120)
-                    event_type = _safe_text(event.get("event_type") or "device_activity", 80)
-                    occurred_at = _safe_text(event.get("occurred_at") or now, 64)
-                    if not event_id or not event_type or not occurred_at:
-                        continue
-                    dedupe_key = _safe_text(event.get("dedupe_key"), 240)
-                    if not dedupe_key and event_type in {"first_heartbeat_received", "first_supervisor_heartbeat"}:
-                        dedupe_key = f"{device_id}:{event_type}"
-                    conn.execute(
-                        """
-                        INSERT OR IGNORE INTO device_lifecycle_events(
-                            event_id, device_id, event_type, reason_code, status,
-                            occurred_at, occurred_at_epoch_ms, summary, sanitized, source_revision, dedupe_key
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
-                        """,
-                        (
-                            event_id, device_id, event_type,
-                            _safe_text(event.get("reason_code"), 80),
-                            _safe_text(event.get("status") or "recorded", 32),
-                            occurred_at, _epoch_ms(occurred_at),
-                            _safe_text(event.get("summary") or "Device activity recorded.", 240),
-                            int(item.get("revision") or 0),
-                            dedupe_key or None,
-                        ),
-                    )
-                    changed = _changes(conn) or changed
 
+            # E1: absence from one collector snapshot must not cascade-delete
+            # the SQLite-authoritative lifecycle journal. Preserve non-server
+            # rows as offline until an explicit, transactionally evidenced
+            # removal marks the row as removed.
             if device_ids:
                 placeholders = ",".join("?" for _ in device_ids)
                 conn.execute(
-                    f"DELETE FROM device_health_current WHERE device_id NOT IN ({placeholders})",
-                    tuple(device_ids),
-                )
-                changed = _changes(conn) or changed
-                conn.execute(
-                    f"DELETE FROM device_current_state WHERE device_id NOT IN ({placeholders})",
-                    tuple(device_ids),
+                    f"""
+                    UPDATE device_current_state
+                    SET ui_state='Offline', connection_state='offline',
+                        agent_status=CASE WHEN agent_status='removed' THEN agent_status ELSE 'offline' END,
+                        remote_access_ready=0, updated_at=?, updated_at_epoch_ms=?,
+                        summary=CASE WHEN connection_state='removed' THEN summary
+                                     ELSE 'Device is offline. Showing the latest saved state.' END
+                    WHERE device_id NOT IN ({placeholders})
+                      AND protected_server_host=0
+                      AND connection_state<>'removed'
+                    """,
+                    (now, now_epoch, *tuple(device_ids)),
                 )
                 changed = _changes(conn) or changed
             else:
-                conn.execute("DELETE FROM device_health_current")
-                changed = _changes(conn) or changed
-                conn.execute("DELETE FROM device_current_state")
+                conn.execute(
+                    """
+                    UPDATE device_current_state
+                    SET ui_state='Offline', connection_state='offline',
+                        agent_status=CASE WHEN agent_status='removed' THEN agent_status ELSE 'offline' END,
+                        remote_access_ready=0, updated_at=?, updated_at_epoch_ms=?,
+                        summary=CASE WHEN connection_state='removed' THEN summary
+                                     ELSE 'Device is offline. Showing the latest saved state.' END
+                    WHERE protected_server_host=0 AND connection_state<>'removed'
+                    """,
+                    (now, now_epoch),
+                )
                 changed = _changes(conn) or changed
 
             if latest_invite:
@@ -2708,24 +3159,36 @@ class ControlPlaneProjectionStore:
             for command in commands[:500]:
                 changed = self._upsert_command_row(conn, command, entity_type="device") or changed
 
-            for event in recovery_events[:500]:
-                device_id = _safe_text(event.get("device_id"), 120)
-                if not device_id:
-                    continue
-                created_at = str(event.get("created_at") or event.get("timestamp") or now)
-                recovery_id = hashlib.sha256(
-                    json.dumps(event, sort_keys=True).encode("utf-8")
-                ).hexdigest()[:24]
+            lifecycle_recovery_rows = conn.execute(
+                """
+                SELECT event_id,device_id,event_type,status,occurred_at,
+                       occurred_at_epoch_ms,summary
+                FROM device_lifecycle_events
+                WHERE event_type LIKE 'repair_%'
+                   OR event_type LIKE 'recovery_%'
+                   OR event_type LIKE 'restart_%'
+                ORDER BY occurred_at_epoch_ms DESC,event_id DESC
+                LIMIT 500
+                """
+            ).fetchall()
+            for event in lifecycle_recovery_rows:
                 conn.execute(
                     """
                     INSERT OR IGNORE INTO device_recovery_history(
                         recovery_id, device_id, action, status, command_id,
                         created_at, created_at_epoch_ms, source_ref, summary
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?)
                     """,
-                    (recovery_id, device_id, _safe_text(event.get("event_type") or "device_recovery", 80),
-                     _safe_text(event.get("status") or "unknown", 32), _safe_text(event.get("command_id"), 120) or None,
-                     created_at, _epoch_ms(created_at), "fleet_device_events.json", _safe_text(event.get("summary") or event.get("reason"))),
+                    (
+                        str(event["event_id"]), str(event["device_id"]),
+                        _safe_text(event["event_type"], 80),
+                        _safe_text(event["status"] or "unknown", 32),
+                        str(event["occurred_at"]), int(event["occurred_at_epoch_ms"] or 0),
+                        f"sqlite:device_lifecycle_events:{event['event_id']}",
+                        _sanitize_lifecycle_summary(
+                            event["summary"] or "Device recovery evidence recorded"
+                        ),
+                    ),
                 )
                 changed = _changes(conn) or changed
 
@@ -3480,7 +3943,13 @@ class ControlPlaneProjectionStore:
         return plans
 
     def metrics(self) -> dict[str, Any]:
-        return {"writer": SQLITE_WRITER.snapshot(), "reads": SQLITE_READS.snapshot(), "prepared": self.prepared_metrics()}
+        from .projection_scheduler import PROJECTION_SCHEDULER
+        return {
+            "writer": SQLITE_WRITER.snapshot(),
+            "reads": SQLITE_READS.snapshot(),
+            "prepared": self.prepared_metrics(),
+            "projection_scheduler": PROJECTION_SCHEDULER.diagnostics(),
+        }
 
 
 CONTROL_PLANE = ControlPlaneProjectionStore()
