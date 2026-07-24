@@ -364,6 +364,7 @@ def append_device_lifecycle_event(
     occurred_at: str | None = None,
     invite_id: str | None = None,
     command_id: str | None = None,
+    dedupe_key: str | None = None,
 ) -> Dict[str, Any]:
     """Append a bounded, sanitized lifecycle event without storing raw payloads."""
     safe_device_id = normalize_node_id(device_id)
@@ -371,8 +372,9 @@ def append_device_lifecycle_event(
     safe_reason = re.sub(r"[^a-z0-9_.-]+", "_", str(reason_code or "").lower())[:80]
     safe_summary = _safe_profile_text(summary or "Device activity recorded.", 220)
     at = occurred_at or _now()
+    safe_dedupe_key = _safe_profile_text(dedupe_key, 240) if dedupe_key else ""
     material = json.dumps(
-        [safe_device_id, safe_type, at, safe_reason, invite_id or "", command_id or ""],
+        [safe_device_id, safe_type, safe_dedupe_key or at, safe_reason, invite_id or "", command_id or ""],
         separators=(",", ":"),
     )
     event = {
@@ -387,20 +389,28 @@ def append_device_lifecycle_event(
         "status": _safe_profile_text(status, 32) or "recorded",
         "invite_id": _safe_profile_text(invite_id, 120) if invite_id else None,
         "command_id": _safe_profile_text(command_id, 120) if command_id else None,
+        "dedupe_key": safe_dedupe_key or None,
         "sanitized": True,
     }
-    payload = _read(_state_path("fleet_device_events.json"), {"events": [], "updated_at": None})
-    if not isinstance(payload, dict):
-        payload = {"events": [], "updated_at": None}
-    events = payload.get("events") if isinstance(payload.get("events"), list) else []
-    events = [
-        item for item in events
-        if not (isinstance(item, dict) and str(item.get("event_id") or "") == event["event_id"])
-    ]
-    events.insert(0, event)
-    payload["events"] = events[:500]
-    payload["updated_at"] = at
-    _write(_state_path("fleet_device_events.json"), payload)
+    with _AGENT_REGISTRY_LOCK:
+        payload = _read(_state_path("fleet_device_events.json"), {"events": [], "updated_at": None})
+        if not isinstance(payload, dict):
+            payload = {"events": [], "updated_at": None}
+        events = payload.get("events") if isinstance(payload.get("events"), list) else []
+        events = [
+            item for item in events
+            if not (
+                isinstance(item, dict)
+                and (
+                    str(item.get("event_id") or "") == event["event_id"]
+                    or (safe_dedupe_key and str(item.get("dedupe_key") or "") == safe_dedupe_key)
+                )
+            )
+        ]
+        events.insert(0, event)
+        payload["events"] = events[:500]
+        payload["updated_at"] = at
+        _write(_state_path("fleet_device_events.json"), payload)
     return event
 
 
@@ -503,6 +513,8 @@ def _upsert_agent_unlocked(
     is_supervisor = normalized_event.endswith("node_supervisor")
     previous_status = str(existing.get("agent_status") or "").lower()
     previous_identity = str(existing.get("identity_status") or "").lower()
+    first_heartbeat_missing = not bool(existing.get("first_heartbeat_at"))
+    first_supervisor_missing = not bool(existing.get("first_supervisor_heartbeat_at"))
 
     merged = {
         **existing,
@@ -552,14 +564,19 @@ def _upsert_agent_unlocked(
     }
 
     if control_plane_claim:
+        first_heartbeat = existing.get("first_heartbeat_at")
+        if is_heartbeat and not first_heartbeat:
+            first_heartbeat = event_fields.get("last_heartbeat_at") or now
         merged.update({
             "identity_status": "protected_server_host",
             "enrollment_status": "ready",
-            "identity_verified_at": existing.get("identity_verified_at") or now,
-            "enrolled_at": existing.get("enrolled_at") or now,
-            "first_ready_at": existing.get("first_ready_at") or now,
-            "last_successful_join_at": now,
+            "identity_verified_at": existing.get("identity_verified_at") or first_heartbeat or now,
+            "enrolled_at": existing.get("enrolled_at") or first_heartbeat or now,
+            "first_ready_at": existing.get("first_ready_at") or first_heartbeat or now,
+            "last_successful_join_at": event_fields.get("last_heartbeat_at") or now,
         })
+        if first_heartbeat:
+            merged["first_heartbeat_at"] = first_heartbeat
     elif is_invited:
         merged.update({
             "identity_status": existing.get("identity_status") or "pending",
@@ -643,16 +660,56 @@ def _upsert_agent_unlocked(
         append_device_lifecycle_event(node_id, "invite_created", summary="Device invite created.", occurred_at=now)
     if is_join_start and previous_status not in {"joining", "accepted"}:
         append_device_lifecycle_event(node_id, "join_started", summary="Device join started.", occurred_at=now)
-    if is_heartbeat and not existing.get("first_heartbeat_at"):
-        append_device_lifecycle_event(node_id, "first_heartbeat_received", summary="First valid device heartbeat received.", occurred_at=merged.get("first_heartbeat_at"))
-    if is_heartbeat and previous_identity != "verified":
-        append_device_lifecycle_event(node_id, "identity_verified", summary="Device identity verified from the enrolled agent heartbeat.", occurred_at=merged.get("identity_verified_at"))
+    if is_heartbeat and first_heartbeat_missing:
+        append_device_lifecycle_event(
+            node_id,
+            "first_heartbeat_received",
+            summary="First valid device heartbeat received.",
+            occurred_at=merged.get("first_heartbeat_at"),
+            dedupe_key=f"{node_id}:first_heartbeat_received",
+        )
+    if is_heartbeat and previous_identity not in {"verified", "protected_server_host"}:
+        identity_revision = _safe_profile_text(merged.get("auth_token_hash") or merged.get("identity_verified_at") or "initial", 120)
+        append_device_lifecycle_event(
+            node_id,
+            "identity_verified",
+            summary="Device identity verified from the enrolled agent heartbeat.",
+            occurred_at=merged.get("identity_verified_at"),
+            dedupe_key=f"{node_id}:identity_verified:{identity_revision}",
+        )
     if is_heartbeat and previous_status in {"offline", "failed", "unhealthy", "agent_stopped"}:
-        append_device_lifecycle_event(node_id, "device_returned_online", summary="Device returned online.", occurred_at=now)
-    if is_supervisor and not existing.get("first_supervisor_heartbeat_at"):
-        append_device_lifecycle_event(node_id, "first_supervisor_heartbeat", summary="Device supervisor reported for the first time.", occurred_at=merged.get("first_supervisor_heartbeat_at"))
+        offline_generation = _safe_profile_text(
+            existing.get("last_nats_disconnected_at")
+            or existing.get("stale_since")
+            or existing.get("updated_at")
+            or "unknown",
+            120,
+        )
+        append_device_lifecycle_event(
+            node_id,
+            "device_returned_online",
+            summary="Device returned online.",
+            occurred_at=now,
+            dedupe_key=f"{node_id}:device_returned_online:{offline_generation}",
+        )
+    if is_supervisor and first_supervisor_missing:
+        append_device_lifecycle_event(
+            node_id,
+            "first_supervisor_heartbeat",
+            summary="Device supervisor reported for the first time.",
+            occurred_at=merged.get("first_supervisor_heartbeat_at"),
+            dedupe_key=f"{node_id}:first_supervisor_heartbeat",
+        )
     if is_supervisor and data.get("last_repair_at") and data.get("last_repair_at") != existing.get("last_supervisor_repair_at"):
-        append_device_lifecycle_event(node_id, "repair_completed", summary="Device supervisor completed a recovery action.", occurred_at=str(data.get("last_repair_at")), status="completed")
+        repair_id = _safe_profile_text(data.get("repair_id") or data.get("last_repair_at"), 120)
+        append_device_lifecycle_event(
+            node_id,
+            "repair_completed",
+            summary="Device supervisor completed a recovery action.",
+            occurred_at=str(data.get("last_repair_at")),
+            status="completed",
+            dedupe_key=f"{node_id}:repair_completed:{repair_id}",
+        )
     return merged
 
 

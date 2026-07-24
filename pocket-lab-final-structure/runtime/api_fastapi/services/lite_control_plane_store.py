@@ -2524,8 +2524,8 @@ class ControlPlaneProjectionStore:
                         """
                         INSERT OR IGNORE INTO device_lifecycle_events(
                             event_id, device_id, event_type, reason_code, status,
-                            occurred_at, occurred_at_epoch_ms, summary, sanitized, source_revision
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+                            occurred_at, occurred_at_epoch_ms, summary, sanitized, source_revision, dedupe_key
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
                         """,
                         (
                             event_id, device_id, event_type,
@@ -2534,6 +2534,7 @@ class ControlPlaneProjectionStore:
                             occurred_at, _epoch_ms(occurred_at),
                             _safe_text(event.get("summary") or "Device activity recorded.", 240),
                             int(item.get("revision") or 0),
+                            _safe_text(event.get("dedupe_key"), 240) or None,
                         ),
                     )
                     changed = _changes(conn) or changed
