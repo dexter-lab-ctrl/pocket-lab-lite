@@ -100,6 +100,7 @@ class _DomainState:
     last_persisted_checksum: str = ""
     not_before_at: float = 0.0
     dirty_mark_count: int = 0
+    followup_requested: bool = False
 
 
 class ProjectionScheduler:
@@ -194,6 +195,34 @@ class ProjectionScheduler:
         with self._condition:
             if domain not in self._states and len(self._states) >= self.max_domains:
                 raise RuntimeError("projection scheduler domain capacity reached")
+            existing = self._jobs.get(domain)
+            source_revision = job.source_revision
+            on_unchanged = job.on_unchanged
+            max_probe_seconds = job.max_probe_seconds
+            quiet_window_seconds = job.quiet_window_seconds
+
+            if existing is not None:
+                # Request-scoped registrations must not downgrade
+                # previously installed revision or cadence guards.
+                source_revision = (
+                    source_revision or existing.source_revision
+                )
+                on_unchanged = (
+                    on_unchanged or existing.on_unchanged
+                )
+                if (
+                    job.source_revision is None
+                    and existing.source_revision is not None
+                ):
+                    max_probe_seconds = existing.max_probe_seconds
+                if (
+                    quiet_window_seconds <= 0
+                    and existing.quiet_window_seconds > 0
+                ):
+                    quiet_window_seconds = (
+                        existing.quiet_window_seconds
+                    )
+
             self._jobs[domain] = ProjectionJob(
                 domain=domain,
                 builder=job.builder,
@@ -202,10 +231,10 @@ class ProjectionScheduler:
                 work_class=job.work_class,
                 deadline_seconds=max(0.1, min(float(job.deadline_seconds), 300.0)),
                 optional=bool(job.optional),
-                source_revision=job.source_revision,
-                on_unchanged=job.on_unchanged,
-                max_probe_seconds=max(5.0, min(float(job.max_probe_seconds), 86_400.0)),
-                quiet_window_seconds=max(0.0, min(float(job.quiet_window_seconds), 30.0)),
+                source_revision=source_revision,
+                on_unchanged=on_unchanged,
+                max_probe_seconds=max(5.0, min(float(max_probe_seconds), 86_400.0)),
+                quiet_window_seconds=max(0.0, min(float(quiet_window_seconds), 30.0)),
             )
             self._states.setdefault(domain, _DomainState())
 
@@ -257,6 +286,8 @@ class ProjectionScheduler:
                 # in-flight generation: doing so creates an endless build/discard
                 # loop when clients poll faster than a collector can complete.
                 state.coalesced_count += 1
+                if state.active:
+                    state.followup_requested = True
                 if state.queued and state.priority < prior_priority:
                     self._heap = [item for item in self._heap if item[2] != safe_domain]
                     heapq.heapify(self._heap)
@@ -319,7 +350,7 @@ class ProjectionScheduler:
             result = self.mark_dirty(
                 domain,
                 priority=priority,
-                force_followup=True,
+                force_followup=False,
             )
             if result.get("accepted"):
                 accepted += 1
@@ -655,6 +686,25 @@ class ProjectionScheduler:
                     generation,
                     type(exc).__name__,
                 )
+            if state.followup_requested and not self._shutdown:
+                # Commit active work before scheduling one bounded follow-up.
+                # The source-revision fence skips it when semantic state did
+                # not change while the collector was running.
+                state.followup_requested = False
+                if state.generation <= generation:
+                    state.generation = generation + 1
+                    state.dirty = True
+                    state.dirty_mark_count += 1
+                    registered = self._jobs.get(domain)
+                    if (
+                        registered is not None
+                        and registered.quiet_window_seconds > 0
+                    ):
+                        state.not_before_at = (
+                            time.monotonic()
+                            + registered.quiet_window_seconds
+                        )
+
             job = self._jobs.get(domain)
             if job is not None and job.optional and state.last_duration_ms > 0:
                 cooldown = IDLE_EFFICIENCY.optional_cooldown_seconds(state.last_duration_ms)
@@ -746,6 +796,7 @@ class ProjectionScheduler:
         safe_domain = _safe_domain(domain)
         with self._condition:
             state = self._states.get(safe_domain)
+            job = self._jobs.get(safe_domain)
             if state is None:
                 return {
                     "registered": False,
@@ -779,6 +830,11 @@ class ProjectionScheduler:
                     and state.next_retry_at > time.monotonic()
                 ),
                 "source_revision": max(-1, state.last_source_revision),
+                "source_revision_enabled": bool(
+                    job and job.source_revision is not None
+                ),
+                "dirty_mark_count": state.dirty_mark_count,
+                "followup_requested": state.followup_requested,
                 "sanitized": True,
             }
 
