@@ -689,9 +689,12 @@ class ControlPlaneProjectionStore:
         safe_domain = str(domain or '').strip().lower()
         prefix = f"{safe_domain}:"
         with self._cache_lock:
-            for key in [key for key in self._prepared if key.startswith(prefix)]:
-                self._prepared.pop(key, None)
-                self._refresh_errors.pop(key, None)
+            # Keep last-known-good Fleet state readable while heartbeat bursts are
+            # coalesced. Other domains retain the legacy hard invalidation contract.
+            if safe_domain != "fleet":
+                for key in [key for key in self._prepared if key.startswith(prefix)]:
+                    self._prepared.pop(key, None)
+                    self._refresh_errors.pop(key, None)
 
         # Backend-owned mutations proactively wake already-registered prepared
         # projections. The scheduler coalesces duplicate events and keeps all
@@ -1069,6 +1072,9 @@ class ControlPlaneProjectionStore:
         deadline_seconds: float = 3.0,
         priority: int = 50,
         work_class: str = "io",
+        source_revision: Callable[[], int] | None = None,
+        max_probe_seconds: float = 900.0,
+        quiet_window_seconds: float = 0.0,
     ) -> PreparedRead:
         """Read prepared SQLite/memory state without executing collectors.
 
@@ -1146,7 +1152,10 @@ class ControlPlaneProjectionStore:
             # do not yet expose a cheap authoritative source revision. Never use the
             # projection's own revision as its source fence: that would suppress a
             # legitimate rebuild after external state changed.
+            source_revision=source_revision,
             on_unchanged=mark_prepared_current,
+            max_probe_seconds=max_probe_seconds,
+            quiet_window_seconds=quiet_window_seconds,
         )
 
         if item is None:
