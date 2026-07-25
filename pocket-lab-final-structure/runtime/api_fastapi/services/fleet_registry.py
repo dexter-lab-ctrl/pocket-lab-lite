@@ -908,25 +908,32 @@ def fleet_source_revision() -> int:
     payload = _agents_payload()
     agents = payload.get("agents", {}) if isinstance(payload, dict) else {}
     semantic = []
-    now = time.time()
-    for node_id, raw in sorted(agents.items() if isinstance(agents, dict) else []):
+    for node_id, raw in sorted(
+        agents.items() if isinstance(agents, dict) else []
+    ):
         if not isinstance(raw, dict):
             continue
-        last_seen = raw.get("last_seen_at") or raw.get("last_seen") or raw.get("updated_at")
-        try:
-            from datetime import datetime
-            stamp = datetime.fromisoformat(str(last_seen).replace("Z", "+00:00")).timestamp()
-        except Exception:
-            stamp = 0.0
         semantic.append({
             "id": str(node_id),
+            # Derived status changes only when the device crosses a meaningful
+            # lifecycle boundary. Raw heartbeat timestamps are intentionally
+            # excluded from the semantic revision.
             "status": _derive_status(raw),
             "role": str(raw.get("role") or ""),
-            "supervisor": str(raw.get("supervisor_status") or raw.get("supervisor") or ""),
-            "pm2": str(raw.get("pm2_status") or raw.get("agent_status") or ""),
-            "tailscale_ready": bool(raw.get("tailscale_ready") or raw.get("tailscale_ip")),
-            "last_seen_bucket": int(stamp // 30) if stamp else 0,
-            "age_bucket": int(max(0.0, now - stamp) // 30) if stamp else -1,
+            "supervisor": str(
+                raw.get("supervisor_status")
+                or raw.get("supervisor")
+                or ""
+            ),
+            "pm2": str(
+                raw.get("pm2_status")
+                or raw.get("agent_status")
+                or ""
+            ),
+            "tailscale_ready": bool(
+                raw.get("tailscale_ready")
+                or raw.get("tailscale_ip")
+            ),
         })
     material = json.dumps(semantic, sort_keys=True, separators=(",", ":"))
     return int.from_bytes(hashlib.sha256(material.encode("utf-8")).digest()[:8], "big")
