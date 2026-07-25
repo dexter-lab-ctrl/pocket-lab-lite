@@ -75,8 +75,8 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-    assert current_schema_version() == 14
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    assert current_schema_version() == 15
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -1024,6 +1024,8 @@ def test_refresh_failure_backoff_blocks_immediate_reschedule(tmp_path, monkeypat
         builder=fail_builder,
         projector=store.project_apps,
         deadline_seconds=0.1,
+        priority=0,
+        work_class="critical",
     )
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
     deadline = time.monotonic() + 2.0
@@ -1039,6 +1041,8 @@ def test_refresh_failure_backoff_blocks_immediate_reschedule(tmp_path, monkeypat
         builder=fail_builder,
         projector=store.project_apps,
         deadline_seconds=0.1,
+        priority=0,
+        work_class="critical",
     ) is True
     time.sleep(0.05)
     assert calls == 1

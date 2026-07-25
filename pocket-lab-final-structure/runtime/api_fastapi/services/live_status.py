@@ -208,6 +208,10 @@ class LiveStatusSampler:
     _last_duration_ms: Dict[str, float] = field(default_factory=dict)
     _last_published_at: Dict[str, float] = field(default_factory=dict)
     _last_changed: Dict[str, bool] = field(default_factory=dict)
+    _semantic_source_revision: Dict[str, int] = field(default_factory=dict)
+    _semantic_full_probe_at: Dict[str, float] = field(default_factory=dict)
+    _semantic_prebuild_skips: Dict[str, int] = field(default_factory=dict)
+    _semantic_reconciliations: Dict[str, int] = field(default_factory=dict)
     _coalesced_wakeups: int = 0
     _event_wakeups: int = 0
     _pressure_deferrals: int = 0
@@ -441,6 +445,26 @@ class LiveStatusSampler:
             self._unchanged[name] += 1
         return publish
 
+    def last_telemetry_snapshot(self) -> Dict[str, Any]:
+        with self._state_lock:
+            return dict(self._last_telemetry or {})
+
+    def _semantic_probe_skipped(
+        self, name: str, source_revision: int, *, source: str, max_probe_seconds: float
+    ) -> bool:
+        if source != "coordinator" or source_revision <= 0:
+            return False
+        now = time.monotonic()
+        previous = int(self._semantic_source_revision.get(name) or 0)
+        last_full = float(self._semantic_full_probe_at.get(name) or 0.0)
+        if previous == source_revision and last_full > 0 and now - last_full < max_probe_seconds:
+            self._semantic_prebuild_skips[name] = self._semantic_prebuild_skips.get(name, 0) + 1
+            return True
+        self._semantic_source_revision[name] = source_revision
+        self._semantic_full_probe_at[name] = now
+        self._semantic_reconciliations[name] = self._semantic_reconciliations.get(name, 0) + 1
+        return False
+
     async def sample_telemetry(self, *, source: str = "manual") -> Dict[str, Any]:
         sample, _ = await WORKLOAD_ADMISSION.run(
             "system.telemetry_probe", deps.core.telemetry_snapshot
@@ -471,6 +495,17 @@ class LiveStatusSampler:
         return sample
 
     async def sample_health(self, *, source: str = "manual") -> Dict[str, Any]:
+        from . import lite_phase3b_projections as phase3b
+
+        source_revision = phase3b.system_health_source_revision()
+        if self._semantic_probe_skipped(
+            "health", source_revision, source=source, max_probe_seconds=300.0
+        ):
+            prepared = phase3b.snapshot("system.health") or {}
+            self._last_changed["health"] = False
+            self._samples["health"] += 1
+            return prepared
+
         snapshot, _ = await WORKLOAD_ADMISSION.run(
             "system.health_probe", deps.core.build_health_engine_snapshot
         )
@@ -490,6 +525,8 @@ class LiveStatusSampler:
         self._last_health_services = current_services
         self._last_changed["health"] = changed
         self._samples["health"] += 1
+        phase3b.project("system.health", phase3b.collect_system_health_state(snapshot))
+        phase3b.mark_dirty("system.status", reason="health_sample")
         payload = {
             "snapshot": snapshot,
             "status": snapshot.get("status"),
@@ -520,18 +557,33 @@ class LiveStatusSampler:
         return snapshot
 
     async def sample_fleet(self, *, source: str = "manual") -> Dict[str, Any]:
-        from .fleet_registry import fleet_health_snapshot
+        from . import lite_phase3b_projections as phase3b
 
-        snapshot, _ = await WORKLOAD_ADMISSION.run(
-            "system.fleet_probe", fleet_health_snapshot
-        )
+        source_revision = phase3b.fleet_probe_source_revision()
+        if self._semantic_probe_skipped(
+            "fleet", source_revision, source=source, max_probe_seconds=300.0
+        ):
+            prepared = phase3b.snapshot("system.fleet_probe") or {}
+            self._last_changed["fleet"] = False
+            self._samples["fleet"] += 1
+            return prepared
+
+        snapshot = await asyncio.to_thread(phase3b.collect_fleet_probe_state)
         snapshot["sample_source"] = source
-        snapshot["sampled_at"] = deps.now_utc_iso()
-        current_hash = _stable_hash(_fleet_signature(snapshot))
+        current_hash = _stable_hash(_fleet_signature({
+            "status": snapshot.get("status"),
+            "summary": snapshot.get("summary") or {},
+            "nodes": snapshot.get("items") or [],
+        }))
         changed = current_hash != self._last_fleet_hash
         self._last_fleet_hash = current_hash
         self._last_changed["fleet"] = changed
         self._samples["fleet"] += 1
+        phase3b.project("system.fleet_probe", snapshot)
+        phase3b.mark_dirty(
+            "system.agent", "system.supervisor", "system.health", "system.status",
+            reason="fleet_sample",
+        )
         payload = {"snapshot": snapshot, "changed": changed, "source": source}
         if self._should_publish("fleet", changed):
             await BUS.publish_json(
@@ -644,6 +696,11 @@ class LiveStatusSampler:
             "idle_efficiency": IDLE_EFFICIENCY.snapshot(),
             "bus": BUS.status(),
             "last_health_services": dict(self._last_health_services),
+            "semantic_revision_gates": {
+                "source_revisions": dict(self._semantic_source_revision),
+                "prebuild_unchanged_skips": dict(self._semantic_prebuild_skips),
+                "bounded_reconciliations": dict(self._semantic_reconciliations),
+            },
             "sanitized": True,
         }
 

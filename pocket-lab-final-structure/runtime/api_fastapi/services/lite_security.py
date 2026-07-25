@@ -2986,6 +2986,18 @@ def write_compact_security_state(state: dict[str, Any] | None = None) -> dict[st
         if details:
             evidence.write_compact_json(evidence.compact_details_path(str(last_run.get("run_id"))), details)
     invalidate_security_read_caches()
+    try:
+        from .lite_phase3b_projections import mark_dirty as _mark_phase3b_dirty
+
+        _mark_phase3b_dirty(
+            "security.progress",
+            "security.summary",
+            "system.health",
+            "system.status",
+            reason="security_state_written",
+        )
+    except Exception:
+        pass
     return payload
 
 
@@ -3759,6 +3771,11 @@ async def security_progress_retention_loop() -> None:
                 type(exc).__name__,
             )
         await asyncio.sleep(interval)
+
+
+def freshness_state() -> dict[str, Any]:
+    """Return the bounded Security freshness contract used by semantic probes."""
+    return split_freshness_state()
 
 
 def split_freshness_state() -> dict[str, Any]:

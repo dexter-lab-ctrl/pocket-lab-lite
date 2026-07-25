@@ -47,8 +47,8 @@ def test_n4_n5_migration_revision_events_and_change_only_bump(tmp_path, monkeypa
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-    assert current_schema_version() == 14
+    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    assert current_schema_version() == 15
     store = ControlPlaneProjectionStore()
     first = store.project_fleet(_fleet_payload())
     second = store.project_fleet(_fleet_payload())
@@ -369,6 +369,7 @@ def test_n4_n5_sse_detects_database_replacement_during_live_connection(monkeypat
 def test_n4_n5_frontend_sync_source_contract_is_focused_and_cross_tab_safe():
     sync = Path("src/lib/liteRevisionSync.js").read_text(encoding="utf-8")
     bridge = Path("src/lite/LiteRevisionSyncBridge.jsx").read_text(encoding="utf-8")
+    machine = Path("src/machines/liteRevisionSyncMachine.js").read_text(encoding="utf-8")
     snapshots = Path("src/lib/liteSafeSnapshots.js").read_text(encoding="utf-8")
 
     assert "pocketlab-lite-revision-sync-v1" in sync
@@ -383,8 +384,9 @@ def test_n4_n5_frontend_sync_source_contract_is_focused_and_cross_tab_safe():
     assert "new window.EventSource" in bridge
     assert "last_event_id" in bridge
     assert "BroadcastChannel" in bridge
-    assert "60_000 + Math.floor(Math.random() * 7_500)" in bridge
-    assert "120_000" in bridge
+    assert "revisionFallbackInterval" in bridge
+    assert "const base = !visible ? 5 * 60_000 : !isLeader ? 2 * 60_000 : 60_000" in machine
+    assert "Math.max(base, Number(context.retryAfterMs) || 0)" in machine
     assert "navigator.onLine" in bridge
     assert "visibilitychange" in bridge
     assert "applyLiteSnapshotDatabaseInstance" in snapshots

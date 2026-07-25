@@ -5,6 +5,7 @@ import socket
 import subprocess
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlsplit
 
 from .. import deps
 from .fleet_registry import fleet_health_snapshot, list_commands, merged_fleet_nodes, normalize_node_id
@@ -229,13 +230,14 @@ def _tailscale_ipv4_status() -> str | None:
     return None
 
 
-def _nats_reachable_on_host(host: str | None) -> bool:
+def _nats_reachable_on_host(host: str | None, port: int | None = None) -> bool:
     if not host:
         return False
-    try:
-        port = int(os.environ.get("POCKETLAB_LITE_NATS_PORT") or os.environ.get("POCKETLAB_PUBLIC_NATS_PORT") or "4222")
-    except ValueError:
-        port = 4222
+    if port is None:
+        try:
+            port = int(os.environ.get("POCKETLAB_LITE_NATS_PORT") or os.environ.get("POCKETLAB_PUBLIC_NATS_PORT") or "4222")
+        except ValueError:
+            port = 4222
     try:
         with socket.create_connection((host, port), timeout=0.8) as sock:
             sock.settimeout(0.5)
@@ -246,6 +248,33 @@ def _nats_reachable_on_host(host: str | None) -> bool:
         return True
     except Exception:
         return False
+
+
+def lite_secondary_nats_status() -> dict[str, Any]:
+    """Probe configured secondary NATS reachability without returning its URL."""
+    configured = str(os.environ.get("POCKETLAB_NATS_URL") or "").strip()
+    if not configured:
+        return {
+            "configured": False,
+            "reachable": False,
+            "route_selection": "primary" if BUS.status().get("connected") else "unavailable",
+            "sanitized": True,
+        }
+    try:
+        parsed = urlsplit(configured if "://" in configured else f"nats://{configured}")
+        host = parsed.hostname
+        port = int(parsed.port or 4222)
+    except (TypeError, ValueError):
+        host = None
+        port = 4222
+    reachable = _nats_reachable_on_host(host, port) if host else False
+    primary = bool(BUS.status().get("connected"))
+    return {
+        "configured": True,
+        "reachable": bool(reachable),
+        "route_selection": "secondary" if reachable else "primary" if primary else "unavailable",
+        "sanitized": True,
+    }
 
 
 def lite_remote_access_status() -> dict[str, Any]:
@@ -293,27 +322,23 @@ def _mysql_socket_available() -> bool | None:
     return None
 
 
-async def build_lite_status() -> dict[str, Any]:
-    """Build a user-facing Lite status summary without exposing tool internals."""
-    deps.settings().ensure_dirs()
-    now = deps.now_utc_iso()
-    engine = deps.core.build_health_engine_snapshot()
-    bus = BUS.status()
-    live = LIVE_STATUS.status()
-    remote_access = lite_remote_access_status()
-
-    try:
-        telemetry = await LIVE_STATUS.sample_telemetry(source="lite-status")
-    except Exception as exc:  # pragma: no cover - environment dependent
-        telemetry = {"status": "unknown", "summary": f"Telemetry unavailable: {exc}"}
-
+def _build_lite_status_from_inputs(
+    *,
+    checked_at: str,
+    engine: dict[str, Any],
+    bus: dict[str, Any],
+    live: dict[str, Any],
+    remote_access: dict[str, Any],
+    telemetry: dict[str, Any],
+    fleet: dict[str, Any],
+    fleet_nodes: list[dict[str, Any]],
+    current_state: dict[str, Any],
+) -> dict[str, Any]:
     vault = _find_health_service(engine, "vault")
     gitea = _find_health_service(engine, "gitea")
     mariadb_socket = _mysql_socket_available()
 
     catalog_items_count = lite_catalog_service.catalog_apps_count()
-    fleet = fleet_health_snapshot()
-    fleet_nodes = merged_fleet_nodes()
     try:
         from .lite_control_plane_store import CONTROL_PLANE
 
@@ -363,7 +388,7 @@ async def build_lite_status() -> dict[str, Any]:
             remote_access.get("status"),
             remote_access.get("summary") or "Remote access status is being checked",
             source="Tailscale / NATS",
-            tailnet_ip=remote_access.get("ip"),
+            tailnet_ip=remote_access.get("tailnet_ip") or remote_access.get("ip"),
         ),
         _service(
             "Worker Execution",
@@ -425,17 +450,18 @@ async def build_lite_status() -> dict[str, Any]:
             )
         )
 
+    tailnet_ip = remote_access.get("tailnet_ip") or remote_access.get("ip")
     device = {
         "name": os.environ.get("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server"),
         "mode": LITE_MODE,
         "resource_profile": os.environ.get("POCKETLAB_RESOURCE_PROFILE", "low-power"),
-        "tailnet_ip": remote_access.get("ip"),
+        "tailnet_ip": tailnet_ip if remote_access.get("ready") else None,
         "remote_access": remote_access,
     }
 
     return {
         "overall": _overall(services),
-        "checked_at": now,
+        "checked_at": checked_at,
         "device": device,
         "services": services,
         "summary": {
@@ -454,7 +480,182 @@ async def build_lite_status() -> dict[str, Any]:
             "remote_access_ready": bool(remote_access.get("ready")),
         },
         "telemetry": _lite_telemetry(telemetry),
+        "system_current_state": current_state,
+        "projection_only": True,
+        "sanitized": True,
     }
+
+
+def default_lite_status_state() -> dict[str, Any]:
+    """Safe request-path fallback while the first background projection warms."""
+    services = [
+        _service(
+            "Control API",
+            "healthy",
+            "Pocket Lab Lite API is serving local control-plane requests",
+            source="FastAPI",
+        ),
+        _service(
+            "Command Bus",
+            "unknown",
+            "Command delivery status is being refreshed",
+        ),
+        _service(
+            "Remote Access",
+            "unavailable",
+            "Remote access not ready",
+        ),
+    ]
+    return {
+        "overall": "degraded",
+        "checked_at": None,
+        "device": {
+            "name": os.environ.get("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server"),
+            "mode": LITE_MODE,
+            "resource_profile": os.environ.get("POCKETLAB_RESOURCE_PROFILE", "low-power"),
+            "tailnet_ip": None,
+            "remote_access": {
+                "status": "unavailable",
+                "ready": False,
+                "summary": "Remote access not ready",
+                "sanitized": True,
+            },
+        },
+        "services": services,
+        "summary": {
+            "apps_available": 0,
+            "devices_known": 0,
+            "device_health_attention": 0,
+            "device_health_attention_current": False,
+            "device_health_summary": {"by_status": {}, "by_severity": {}},
+            "security_findings": 0,
+            "nats_connected": False,
+            "jetstream_enabled": False,
+            "live_sampler_running": False,
+            "remote_access_ready": False,
+        },
+        "telemetry": {"status": "unknown"},
+        "system_current_state": {},
+        "projection_only": True,
+        "read_degraded": True,
+        "refresh_pending": True,
+        "retry_after_seconds": 2,
+        "sanitized": True,
+    }
+
+
+def build_lite_status_projection() -> dict[str, Any]:
+    """Build the status projection in scheduler/background context only."""
+    deps.settings().ensure_dirs()
+    from .lite_control_plane_store import CONTROL_PLANE
+    from . import lite_phase3b_projections as phase3b
+
+    dependency_builders = (
+        ("system.processes", phase3b.collect_process_state),
+        ("system.agent", phase3b.collect_agent_state),
+        ("system.supervisor", phase3b.collect_supervisor_state),
+        ("system.nats_remote", phase3b.collect_nats_remote_state),
+        ("system.remote_access", phase3b.collect_remote_access_state),
+        ("system.fleet_probe", phase3b.collect_fleet_probe_state),
+        ("security.summary", phase3b.collect_security_summary_state),
+    )
+    for domain, collector in dependency_builders:
+        if phase3b.snapshot(domain):
+            continue
+        try:
+            phase3b.project(domain, collector())
+        except Exception:
+            # Keep the last-good prepared dependency when one bounded collector fails.
+            continue
+    prepared_health = phase3b.snapshot("system.health")
+    if prepared_health:
+        components = (
+            prepared_health.get("components")
+            if isinstance(prepared_health.get("components"), dict)
+            else {}
+        )
+        engine = {
+            "status": components.get("api") or prepared_health.get("status") or "unknown",
+            "services": (
+                prepared_health.get("services")
+                if isinstance(prepared_health.get("services"), dict)
+                else {}
+            ),
+        }
+    else:
+        engine = deps.core.build_health_engine_snapshot()
+        try:
+            phase3b.project("system.health", phase3b.collect_system_health_state(engine))
+        except Exception:
+            pass
+    snapshots = {
+        domain: phase3b.snapshot(domain) or {}
+        for domain in (
+            "system.health",
+            "system.processes",
+            "system.agent",
+            "system.supervisor",
+            "system.remote_access",
+            "system.nats_remote",
+            "system.fleet_probe",
+            "security.summary",
+        )
+    }
+    bus = snapshots["system.nats_remote"] or BUS.status()
+    live = LIVE_STATUS.status()
+    remote_access = snapshots["system.remote_access"] or lite_remote_access_status()
+    telemetry = LIVE_STATUS.last_telemetry_snapshot()
+    if not telemetry:
+        try:
+            telemetry = deps.core.telemetry_snapshot()
+        except Exception:
+            telemetry = {"status": "unknown"}
+
+    prepared_fleet = CONTROL_PLANE.fleet_projection_snapshot() or {}
+    fleet_nodes = prepared_fleet.get("devices") if isinstance(prepared_fleet.get("devices"), list) else []
+    if fleet_nodes:
+        fleet = snapshots["system.fleet_probe"] or {
+            "status": prepared_fleet.get("status", "unknown"),
+            "summary": prepared_fleet.get("summary") or {},
+        }
+    else:
+        # First warm-up only. Request handlers never call this builder.
+        fleet = fleet_health_snapshot()
+        fleet_nodes = merged_fleet_nodes()
+
+    stable_times = [
+        str(value.get("updated_at") or "")
+        for value in snapshots.values()
+        if value.get("updated_at")
+    ]
+    checked_at = max(stable_times) if stable_times else deps.now_utc_iso()
+    current_state = {
+        "health": snapshots["system.health"],
+        "processes": snapshots["system.processes"],
+        "agent": snapshots["system.agent"],
+        "supervisor": snapshots["system.supervisor"],
+        "remote_access": snapshots["system.remote_access"],
+        "nats_remote": snapshots["system.nats_remote"],
+        "fleet_probe": snapshots["system.fleet_probe"],
+        "security_summary": snapshots["security.summary"],
+        "sanitized": True,
+    }
+    return _build_lite_status_from_inputs(
+        checked_at=checked_at,
+        engine=engine,
+        bus=bus,
+        live=live,
+        remote_access=remote_access,
+        telemetry=telemetry,
+        fleet=fleet,
+        fleet_nodes=fleet_nodes,
+        current_state=current_state,
+    )
+
+
+async def build_lite_status() -> dict[str, Any]:
+    """Compatibility builder; normal GET /status uses prepared state only."""
+    return build_lite_status_projection()
 
 
 def _lite_telemetry(payload: dict[str, Any]) -> dict[str, Any]:
