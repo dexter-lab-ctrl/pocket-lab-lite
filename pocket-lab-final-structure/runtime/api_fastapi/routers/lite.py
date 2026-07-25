@@ -2074,6 +2074,9 @@ def get_lite_fleet(request: Request) -> Response:
             deadline_seconds=6.0,
             priority=10,
             work_class="critical",
+            source_revision=fleet_registry.fleet_source_revision,
+            max_probe_seconds=300.0,
+            quiet_window_seconds=1.5,
         )
     except (PreparedProjectionUnavailable, TimeoutError):
         return _projection_warming_response(domain="fleet", view_model=view_model)

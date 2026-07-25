@@ -18,6 +18,8 @@ function summarize(payload = {}) {
     topJob: String(top.job || ''),
     topCpuMs: Number(top.cpu_ms_total || 0),
     budgetWarningCount: jobs.filter((job) => job?.cpu_budget_warning || job?.wall_budget_warning).length,
+    skippedUnchanged: jobs.reduce((sum, job) => sum + Number(job?.skipped_unchanged || 0), 0),
+    coalesced: jobs.reduce((sum, job) => sum + Number(job?.coalesced || 0), 0),
   };
 }
 

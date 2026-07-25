@@ -63,6 +63,7 @@ class ProjectionJob:
     source_revision: Callable[[], int] | None = None
     on_unchanged: Callable[[], None] | None = None
     max_probe_seconds: float = 900.0
+    quiet_window_seconds: float = 0.0
 
 
 @dataclass(slots=True)
@@ -97,6 +98,8 @@ class _DomainState:
     committed_count: int = 0
     circuit_open_count: int = 0
     last_persisted_checksum: str = ""
+    not_before_at: float = 0.0
+    dirty_mark_count: int = 0
 
 
 class ProjectionScheduler:
@@ -202,6 +205,7 @@ class ProjectionScheduler:
                 source_revision=job.source_revision,
                 on_unchanged=job.on_unchanged,
                 max_probe_seconds=max(5.0, min(float(job.max_probe_seconds), 86_400.0)),
+                quiet_window_seconds=max(0.0, min(float(job.quiet_window_seconds), 30.0)),
             )
             self._states.setdefault(domain, _DomainState())
 
@@ -211,7 +215,7 @@ class ProjectionScheduler:
         *,
         job: ProjectionJob | None = None,
         priority: int | None = None,
-        force_followup: bool = True,
+        force_followup: bool = False,
     ) -> dict[str, Any]:
         if job is not None:
             self.register(job)
@@ -261,6 +265,12 @@ class ProjectionScheduler:
             else:
                 state.generation += 1
                 state.dirty = True
+                state.dirty_mark_count += 1
+                if not was_pending and registered.quiet_window_seconds > 0:
+                    state.not_before_at = (
+                        time.monotonic()
+                        + registered.quiet_window_seconds
+                    )
                 if was_pending:
                     state.coalesced_count += 1
                     if state.queued and state.priority < prior_priority:
@@ -392,6 +402,10 @@ class ProjectionScheduler:
                 if state.active or not state.dirty or queued_generation > state.generation:
                     continue
                 now = time.monotonic()
+                if now < state.not_before_at:
+                    self._enqueue_locked(domain, state)
+                    self._condition.wait(timeout=min(self.idle_wait_seconds, state.not_before_at - now))
+                    continue
                 if now < state.next_retry_at:
                     self._enqueue_locked(domain, state)
                     self._condition.wait(
