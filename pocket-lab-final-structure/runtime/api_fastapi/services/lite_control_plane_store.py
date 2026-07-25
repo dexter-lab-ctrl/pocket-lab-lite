@@ -1083,6 +1083,21 @@ class ControlPlaneProjectionStore:
         """
         self.initialize()
 
+        # Phase 3A mandatory semantic contracts are installed centrally.
+        # Alternate request, event, and startup paths cannot register these
+        # domains without their source revision, cadence, admission class, and
+        # bounded collector deadline.
+        from .lite_semantic_revisions import contract_for as _semantic_contract_for
+
+        semantic_contract = _semantic_contract_for(domain, key)
+        if semantic_contract is not None:
+            source_revision = semantic_contract.source_revision
+            max_probe_seconds = semantic_contract.max_probe_seconds
+            quiet_window_seconds = semantic_contract.quiet_window_seconds
+            priority = semantic_contract.priority
+            work_class = semantic_contract.work_class
+            deadline_seconds = semantic_contract.deadline_seconds
+
         # Fleet summary revision fencing is a mandatory domain guard.
         # Apply it centrally so startup events and alternate prepared-read
         # routes cannot register fleet.summary without semantic revisions.
@@ -1134,17 +1149,22 @@ class ControlPlaneProjectionStore:
 
         scheduler_domain = f"{domain}.{key}"
         def scheduled_projector(payload: dict[str, Any]) -> int:
-            revision = int(projector(payload))
+            # The persistence projector owns the single-writer transaction and
+            # returns its change-only SQLite revision. The scheduler probes the
+            # semantic source revision before and after collection, so do not
+            # add a third callback here or stamp a newer source revision onto an
+            # older payload when state changes during collection.
+            prepared_revision = int(projector(payload))
             with self._cache_lock:
                 self._prepared[cache_key] = _PreparedItem(
                     payload=dict(payload),
-                    revision=revision,
+                    revision=prepared_revision,
                     prepared_at=time.monotonic(),
                     database_instance=_database_instance(),
                 )
                 self._refresh_errors.pop(cache_key, None)
                 self._last_refresh_completed_at[cache_key] = time.monotonic()
-            return revision
+            return prepared_revision
 
         def mark_prepared_current() -> None:
             # A cheap source-revision probe proved that the saved payload is still
@@ -3564,9 +3584,22 @@ class ControlPlaneProjectionStore:
                     action_updated = str(action.get("last_ran_at") or action.get("updated_at") or now)
                     operation_id = _safe_text(action.get("operation_id") or action.get("receipt_id"), 120)
                     if not operation_id:
-                        operation_id = hashlib.sha256(
-                            f"{app_id}:{action_id}:{action_updated}:{action.get('status')}".encode("utf-8")
-                        ).hexdigest()[:24]
+                        semantic_generation = json.dumps(
+                            {
+                                "app_id": app_id,
+                                "action_id": str(action_id),
+                                "status": _normalize_status(action.get("status")),
+                                "enabled": bool(action.get("enabled")),
+                                "category": _safe_text(action.get("category"), 40),
+                                "risk": _safe_text(action.get("risk"), 40),
+                                "phase": _safe_text((action.get("progress") or {}).get("phase") if isinstance(action.get("progress"), dict) else "", 80),
+                                "current": int((action.get("progress") or {}).get("current") or 0) if isinstance(action.get("progress"), dict) else 0,
+                                "total": int((action.get("progress") or {}).get("total") or 0) if isinstance(action.get("progress"), dict) else 0,
+                            },
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        )
+                        operation_id = hashlib.sha256(semantic_generation.encode("utf-8")).hexdigest()[:24]
                     conn.execute(
                         """
                         INSERT INTO app_action_lifecycle(
@@ -3578,14 +3611,21 @@ class ControlPlaneProjectionStore:
                             updated_at_epoch_ms=excluded.updated_at_epoch_ms,
                             summary=excluded.summary, metadata_json=excluded.metadata_json
                         WHERE app_action_lifecycle.status IS NOT excluded.status
-                           OR app_action_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
                            OR app_action_lifecycle.summary IS NOT excluded.summary
+                           OR app_action_lifecycle.metadata_json IS NOT excluded.metadata_json
                         """,
                         (operation_id, app_id, _safe_text(action_id, 100), _normalize_status(action.get("status")),
                          str(action.get("first_ran_at") or action_updated), action_updated, _epoch_ms(action_updated),
                          _safe_text(action.get("evidence_ref") or "app-lifecycle", 160),
                          _safe_text(action.get("last_result") or action.get("summary") or action.get("disabled_reason")),
-                         _safe_json({"enabled": bool(action.get("enabled")), "category": action.get("category"), "risk": action.get("risk")})),
+                         _safe_json({
+                             "enabled": bool(action.get("enabled")),
+                             "category": action.get("category"),
+                             "risk": action.get("risk"),
+                             "phase": (action.get("progress") or {}).get("phase") if isinstance(action.get("progress"), dict) else None,
+                             "current": (action.get("progress") or {}).get("current") if isinstance(action.get("progress"), dict) else None,
+                             "total": (action.get("progress") or {}).get("total") if isinstance(action.get("progress"), dict) else None,
+                         })),
                     )
                     changed = _changes(conn) or changed
             if app_ids:
@@ -3643,7 +3683,6 @@ class ControlPlaneProjectionStore:
                         summary=excluded.summary
                     WHERE backup_manifest_index.status IS NOT excluded.status
                        OR backup_manifest_index.verification_status IS NOT excluded.verification_status
-                       OR backup_manifest_index.verified_at IS NOT excluded.verified_at
                        OR backup_manifest_index.size_bytes IS NOT excluded.size_bytes
                        OR backup_manifest_index.summary IS NOT excluded.summary
                     """,
@@ -3676,14 +3715,20 @@ class ControlPlaneProjectionStore:
                         updated_at_epoch_ms=excluded.updated_at_epoch_ms,
                         summary=excluded.summary, metadata_json=excluded.metadata_json
                     WHERE recovery_operations.status IS NOT excluded.status
-                       OR recovery_operations.updated_at_epoch_ms < excluded.updated_at_epoch_ms
                        OR recovery_operations.summary IS NOT excluded.summary
+                       OR recovery_operations.metadata_json IS NOT excluded.metadata_json
                     """,
                     (operation_id, operation_type, _normalize_status(item.get("status") or item.get("state") or item.get("phase")),
                      _safe_text(item.get("backup_id"), 120) or None, _safe_text(item.get("preview_id"), 120) or None,
                      str(item.get("created_at") or operation_updated), operation_updated, _epoch_ms(operation_updated),
                      "recovery-projection", _safe_text(item.get("summary")),
-                     _safe_json({"phase": item.get("phase"), "rollback_available": item.get("rollback_available"), "verification_status": item.get("verification_status")})),
+                     _safe_json({
+                         "phase": item.get("phase"),
+                         "current": item.get("current"),
+                         "total": item.get("total"),
+                         "rollback_available": item.get("rollback_available"),
+                         "verification_status": item.get("verification_status"),
+                     })),
                 )
                 changed = _changes(conn) or changed
 

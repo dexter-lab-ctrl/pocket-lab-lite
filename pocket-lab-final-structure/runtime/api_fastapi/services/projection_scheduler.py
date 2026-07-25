@@ -200,37 +200,38 @@ class ProjectionScheduler:
             on_unchanged = job.on_unchanged
             max_probe_seconds = job.max_probe_seconds
             quiet_window_seconds = job.quiet_window_seconds
+            priority = int(job.priority)
+            work_class = job.work_class
+            deadline_seconds = job.deadline_seconds
+            optional = bool(job.optional)
 
             if existing is not None:
-                # Request-scoped registrations must not downgrade
-                # previously installed revision or cadence guards.
-                source_revision = (
-                    source_revision or existing.source_revision
-                )
-                on_unchanged = (
-                    on_unchanged or existing.on_unchanged
-                )
-                if (
+                # Request-scoped registrations must not downgrade previously
+                # installed semantic callbacks or their richer admission guards.
+                incomplete_registration = (
                     job.source_revision is None
                     and existing.source_revision is not None
-                ):
+                )
+                source_revision = source_revision or existing.source_revision
+                on_unchanged = on_unchanged or existing.on_unchanged
+                if incomplete_registration:
                     max_probe_seconds = existing.max_probe_seconds
-                if (
-                    quiet_window_seconds <= 0
-                    and existing.quiet_window_seconds > 0
-                ):
-                    quiet_window_seconds = (
-                        existing.quiet_window_seconds
-                    )
+                    quiet_window_seconds = existing.quiet_window_seconds
+                    priority = min(priority, existing.priority)
+                    work_class = existing.work_class
+                    deadline_seconds = existing.deadline_seconds
+                    optional = existing.optional
+                elif quiet_window_seconds <= 0 and existing.quiet_window_seconds > 0:
+                    quiet_window_seconds = existing.quiet_window_seconds
 
             self._jobs[domain] = ProjectionJob(
                 domain=domain,
                 builder=job.builder,
                 projector=job.projector,
-                priority=int(job.priority),
-                work_class=job.work_class,
-                deadline_seconds=max(0.1, min(float(job.deadline_seconds), 300.0)),
-                optional=bool(job.optional),
+                priority=priority,
+                work_class=work_class,
+                deadline_seconds=max(0.1, min(float(deadline_seconds), 300.0)),
+                optional=optional,
                 source_revision=source_revision,
                 on_unchanged=on_unchanged,
                 max_probe_seconds=max(5.0, min(float(max_probe_seconds), 86_400.0)),
