@@ -115,7 +115,7 @@ class ProjectionScheduler:
             "POCKETLAB_LITE_PROJECTION_CPU_WORKERS", 1, 1, 2
         )
         self.max_domains = _bounded_int(
-            "POCKETLAB_LITE_PROJECTION_MAX_DOMAINS", 16, 8, 64
+            "POCKETLAB_LITE_PROJECTION_MAX_DOMAINS", 32, 24, 64
         )
         self.critical_lag_ms = float(
             _bounded_int("POCKETLAB_LITE_PROJECTION_CRITICAL_LAG_MS", 250, 50, 5000)
@@ -845,6 +845,9 @@ class ProjectionScheduler:
                 "status": "stopping" if self._shutdown else "running" if self._accepting else "stopped",
                 "io_workers": self.io_workers,
                 "cpu_workers": self.cpu_workers,
+                "max_domains": self.max_domains,
+                "registered_domains": len(self._states),
+                "remaining_domain_capacity": max(0, self.max_domains - len(self._states)),
                 "queued_domains": sum(1 for state in self._states.values() if state.queued),
                 "active_domains": sum(1 for state in self._states.values() if state.active),
                 "active_io": self._active_count_locked("io"),
