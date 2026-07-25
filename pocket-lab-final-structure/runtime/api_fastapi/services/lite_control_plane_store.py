@@ -1082,6 +1082,29 @@ class ControlPlaneProjectionStore:
         never invokes the supplied builder or projector.
         """
         self.initialize()
+
+        # Fleet summary revision fencing is a mandatory domain guard.
+        # Apply it centrally so startup events and alternate prepared-read
+        # routes cannot register fleet.summary without semantic revisions.
+        if (
+            str(domain or "").strip().lower() == "fleet"
+            and str(key or "").strip().lower() == "summary"
+        ):
+            from . import fleet_registry as _fleet_registry
+
+            if source_revision is None:
+                source_revision = (
+                    _fleet_registry.fleet_source_revision
+                )
+            max_probe_seconds = min(
+                float(max_probe_seconds),
+                300.0,
+            )
+            quiet_window_seconds = max(
+                float(quiet_window_seconds),
+                1.5,
+            )
+
         cache_key = f"{domain}:{key}"
         instance = _database_instance()
         now = time.monotonic()
