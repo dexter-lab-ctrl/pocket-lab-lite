@@ -51,9 +51,23 @@ wait_for_api_ready() {
 fetch_json() {
   local name="$1"
   local path="$2"
-  curl -fsS --connect-timeout "$READY_CONNECT_TIMEOUT" \
-    --max-time "$READY_MAX_TIME" "$PROXY_BASE$path" > "$RUN_DIR/$name.json"
-  python3 -m json.tool "$RUN_DIR/$name.json" >/dev/null
+  local output="$RUN_DIR/$name.json"
+  local code
+
+  code="$(
+    curl -sS --connect-timeout "$READY_CONNECT_TIMEOUT" \
+      --max-time "$READY_MAX_TIME" \
+      -o "$output" -w '%{http_code}' "$PROXY_BASE$path"
+  )"
+  if [ "$code" != "200" ]; then
+    echo "Phase 3B endpoint failed: $path returned HTTP $code" >&2
+    sed -n '1,80p' "$output" >&2 || true
+    return 1
+  fi
+  if ! python3 -m json.tool "$output" >/dev/null; then
+    echo "Phase 3B endpoint returned invalid JSON: $path" >&2
+    return 1
+  fi
 }
 
 fetch_prepared_endpoints() {
