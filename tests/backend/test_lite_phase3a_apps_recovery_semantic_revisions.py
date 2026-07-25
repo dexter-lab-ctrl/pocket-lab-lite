@@ -837,3 +837,112 @@ def test_phase3a_hotfix_append_journal_growth_does_not_churn_revision(monkeypatc
     after = lite_semantic_revisions.app_source_revision(scope="lifecycle")
 
     assert after == before
+
+
+def test_phase3a_manifest_hotfix_app_scopes_do_not_parse_historical_manifests(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions
+
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "lite_catalog_state.json").write_text(
+        '{"apps":[{"id":"photoprism","status":"ready"}]}', encoding="utf-8"
+    )
+    backup_root = tmp_path / "backups"
+    manifests = backup_root / "manifests"
+    manifests.mkdir(parents=True)
+    (manifests / "app-backup-photoprism-oversized.json").write_bytes(
+        b"{" + (b"x" * (lite_semantic_revisions._MAX_JSON_BYTES + 1))
+    )
+
+    monkeypatch.setenv("POCKETLAB_LITE_BACKUP_ROOT", str(backup_root))
+    monkeypatch.setattr(
+        lite_semantic_revisions.deps,
+        "settings",
+        lambda: SimpleNamespace(state_dir=state),
+    )
+    monkeypatch.setattr(lite_semantic_revisions, "_app_current_rows", lambda _app_id: [
+        {"app_id": "photoprism", "status": "ready", "projection_version": 2}
+    ])
+    monkeypatch.setattr(lite_semantic_revisions, "_app_command_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_latest_app_security_rows", lambda _app_id: [])
+
+    for scope in ("catalog", "lifecycle", "actions"):
+        material = lite_semantic_revisions.app_semantic_material(scope=scope)
+        assert "manifests" not in material
+        assert lite_semantic_revisions.app_source_revision(scope=scope) > 0
+
+
+def test_phase3a_manifest_hotfix_recovery_uses_bounded_sqlite_metadata(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions
+
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setattr(
+        lite_semantic_revisions.deps,
+        "settings",
+        lambda: SimpleNamespace(state_dir=state),
+    )
+    rows = [
+        {
+            "backup_id": "backup-1",
+            "backup_type": "app",
+            "status": "succeeded",
+            "verification_status": "verified",
+            "size_bytes": 985596,
+            "summary": "Backup ready.",
+        }
+    ]
+    monkeypatch.setattr(lite_semantic_revisions, "_manifest_index_rows", lambda: [dict(item) for item in rows])
+    monkeypatch.setattr(lite_semantic_revisions, "_recovery_rows", lambda: {})
+
+    before = lite_semantic_revisions.recovery_summary_source_revision()
+    rows[0]["verification_status"] = "failed"
+    after = lite_semantic_revisions.recovery_summary_source_revision()
+
+    assert after != before
+    material = lite_semantic_revisions._manifest_semantics()
+    assert material["semantic_authority"] == "backup_manifest_index"
+    assert material["compatibility_files"] == {
+        "state": "excluded_compatibility",
+        "semantic_authority": False,
+        "kind": "backup_manifest",
+    }
+
+
+def test_phase3a_manifest_hotfix_manifest_file_growth_does_not_churn_revision(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions
+
+    state = tmp_path / "state"
+    state.mkdir()
+    backup_root = tmp_path / "backups"
+    manifests = backup_root / "manifests"
+    manifests.mkdir(parents=True)
+    manifest = manifests / "app-backup-photoprism.json"
+    manifest.write_text("{}", encoding="utf-8")
+
+    monkeypatch.setenv("POCKETLAB_LITE_BACKUP_ROOT", str(backup_root))
+    monkeypatch.setattr(
+        lite_semantic_revisions.deps,
+        "settings",
+        lambda: SimpleNamespace(state_dir=state),
+    )
+    monkeypatch.setattr(lite_semantic_revisions, "_manifest_index_rows", lambda: [
+        {
+            "backup_id": "backup-1",
+            "backup_type": "app",
+            "status": "succeeded",
+            "verification_status": "verified",
+            "size_bytes": 985596,
+            "summary": "Backup ready.",
+        }
+    ])
+    monkeypatch.setattr(lite_semantic_revisions, "_recovery_rows", lambda: {})
+
+    before = lite_semantic_revisions.recovery_summary_source_revision()
+    manifest.write_bytes(b"{" + (b"x" * (lite_semantic_revisions._MAX_JSON_BYTES + 8192)))
+    after = lite_semantic_revisions.recovery_summary_source_revision()
+
+    assert after == before
