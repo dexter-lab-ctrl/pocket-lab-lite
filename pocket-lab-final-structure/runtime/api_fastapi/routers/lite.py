@@ -981,12 +981,55 @@ def get_lite_remote_access_readiness(request: Request) -> Response:
     )
 
 
+def _nats_readiness_snapshot_fallback(request: Request) -> Response:
+    """Serve the last committed sanitized NATS readiness snapshot on read-path faults."""
+    payload = lite_phase3b_projections.snapshot("system.nats_remote")
+    if not isinstance(payload, dict) or not payload:
+        return _projection_warming_response(
+            domain="system.nats_remote",
+            view_model="lite-nats-readiness-phase3b-v1",
+        )
+    fallback = dict(payload)
+    fallback.update({
+        "projection_only": True,
+        "read_degraded": True,
+        "refresh_pending": True,
+        "retry_after_seconds": 2,
+        "semantic_source_revision": int(fallback.get("source_revision") or 0),
+        "stored_projection_revision": int(fallback.get("projection_revision") or 0),
+        "scheduler_generation": int(fallback.get("generation") or 0),
+    })
+    etag = lite_security.compact_response_etag(fallback)
+    headers = {
+        "ETag": etag,
+        "Cache-Control": "no-cache",
+        "Retry-After": "2",
+        "X-PocketLab-View-Model": "lite-nats-readiness-phase3b-v1",
+        "X-PocketLab-Read-Degraded": "true",
+        "X-PocketLab-Refresh-Pending": "true",
+        "X-PocketLab-Fallback": "prepared-snapshot",
+    }
+    if lite_security.if_none_match_matches(request.headers.get("if-none-match"), etag):
+        return Response(status_code=304, headers=headers)
+    return JSONResponse(content=fallback, headers=headers)
+
+
 @router.get("/system/nats-readiness")
 def get_lite_nats_readiness(request: Request) -> Response:
     deps.require_auth(request)
-    return _phase3b_prepared_read(
-        request, "system.nats_remote", view_model="lite-nats-readiness-phase3b-v1"
-    )
+    try:
+        return _phase3b_prepared_read(
+            request, "system.nats_remote", view_model="lite-nats-readiness-phase3b-v1"
+        )
+    except Exception as exc:
+        # NATS readiness is a read-only operator surface. Preserve availability
+        # from the last committed sanitized projection instead of leaking a 500
+        # when scheduler/cache metadata is temporarily inconsistent.
+        _LOGGER.warning(
+            "pocketlab.nats_readiness.prepared_read_degraded error_type=%s",
+            type(exc).__name__,
+        )
+        return _nats_readiness_snapshot_fallback(request)
 
 
 def _build_lite_catalog_projection() -> dict[str, Any]:

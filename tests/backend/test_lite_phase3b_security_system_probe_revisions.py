@@ -496,3 +496,26 @@ def test_fleet_dependency_propagation_is_revision_fenced():
     assert "_last_propagated_fleet_projection_revision" in project
     assert 'reason="fleet_projection_committed"' in project
     assert 'LIVE_STATUS.request_sample(' in project
+
+
+def test_nats_readiness_route_has_prepared_snapshot_fail_closed_fallback():
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+    ).read_text(encoding="utf-8")
+    start = source.index('def _nats_readiness_snapshot_fallback(')
+    end = source.index('@router.get("/system/telemetry-thresholds")', start)
+    block = source[start:end]
+    assert 'snapshot("system.nats_remote")' in block
+    assert 'X-PocketLab-Fallback' in block
+    assert 'prepared-snapshot' in block
+    assert 'except Exception as exc' in block
+    assert 'BUS.status' not in block
+    assert 'collect_nats_remote_state' not in block
+    assert 'subprocess' not in block
+
+
+def test_phase3b_gate_reports_the_exact_failed_endpoint():
+    source = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(encoding="utf-8")
+    assert 'Phase 3B endpoint failed: $path returned HTTP $code' in source
+    assert "-w '%{http_code}'" in source
+    assert "sed -n '1,80p'" in source
