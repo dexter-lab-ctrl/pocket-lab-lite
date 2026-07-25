@@ -897,7 +897,9 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
     try:
         from .lite_control_plane_store import CONTROL_PLANE
 
-        CONTROL_PLANE.invalidate_domain("fleet")
+        CONTROL_PLANE.invalidate_domain(
+            "fleet", semantic_revision=fleet_source_revision()
+        )
     except Exception:
         pass
 

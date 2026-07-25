@@ -498,7 +498,10 @@ def test_e3_hot_get_handlers_serve_sqlite_without_live_collectors(tmp_path, monk
     ]
     assert all(response.status_code == 200 for response in responses)
     assert all(_json_response(response).get("projection_age_ms", 0) >= 0 for response in responses if "projection_age_ms" in _json_response(response))
-    assert _json_response(responses[0])["read_degraded"] is True
+    # A valid last-good SQLite projection remains usable while any
+    # background reconciliation is pending. Projection-only delivery is not
+    # itself a degraded read; only an expired or failed refresh is degraded.
+    assert _json_response(responses[0])["read_degraded"] is False
     assert _json_response(responses[0])["projection_only"] is True
 
 

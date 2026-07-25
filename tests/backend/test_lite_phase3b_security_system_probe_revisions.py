@@ -440,3 +440,59 @@ def test_status_projection_reuses_prepared_dependencies_before_bounded_fallback(
     assert "if prepared_health:" in builder
     assert "else:\n        engine = deps.core.build_health_engine_snapshot()" in builder
     assert "First warm-up only. Request handlers never call this builder." in builder
+
+
+def test_fleet_heartbeat_invalidation_is_coalesced_by_semantic_revision(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+
+    store = ControlPlaneProjectionStore()
+    calls = []
+    monkeypatch.setattr(
+        PROJECTION_SCHEDULER,
+        "mark_registered_prefix_dirty",
+        lambda domain: calls.append(domain),
+    )
+
+    store.invalidate_domain("fleet", semantic_revision=101)
+    store.invalidate_domain("fleet", semantic_revision=101)
+    store.invalidate_domain("fleet", semantic_revision=102)
+
+    assert calls == ["fleet", "fleet"]
+
+
+def test_phase3b_prepared_metadata_names_semantic_projection_and_generation():
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py"
+    ).read_text(encoding="utf-8")
+    response = source[
+        source.index("def _control_plane_prepared_response("):
+        source.index("def _projection_warming_response(")
+    ]
+    assert '"semantic_source_revision"' in response
+    assert '"stored_projection_revision"' in response
+    assert '"scheduler_generation"' in response
+    assert 'payload["source_revision"]' in response
+
+
+def test_phase3b_gate_retries_api_readiness_without_relaxing_idle_gate():
+    script = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(
+        encoding="utf-8"
+    )
+    assert "POCKETLAB_PHASE3B_READY_ATTEMPTS" in script
+    assert '--connect-timeout "$READY_CONNECT_TIMEOUT"' in script
+    assert '--max-time "$READY_MAX_TIME"' in script
+    assert "Pocket API did not become ready" in script
+    assert 'if second["refresh_pending"] or second["followup_requested"]:' in script
+    assert "scheduler still pending after idle" in script
+
+
+def test_fleet_dependency_propagation_is_revision_fenced():
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py"
+    ).read_text(encoding="utf-8")
+    project = source[source.index("    def project_fleet("):source.index("    def _upsert_command_row(")]
+    assert "_last_propagated_fleet_projection_revision" in project
+    assert 'reason="fleet_projection_committed"' in project
+    assert 'LIVE_STATUS.request_sample(' in project

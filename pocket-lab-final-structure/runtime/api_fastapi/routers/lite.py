@@ -215,11 +215,19 @@ def _control_plane_prepared_response(
     request: Request, prepared: PreparedRead, *, view_model: str
 ) -> Response:
     payload = dict(prepared.payload)
+    semantic_source_revision = int(payload.get("source_revision") or 0)
+    stored_projection_revision = int(payload.get("projection_revision") or 0)
+    scheduler_generation = int(payload.get("generation") or 0)
     payload.update({
         "projection_age_ms": int(prepared.projection_age_ms),
         "read_degraded": bool(prepared.read_degraded),
         "refresh_pending": bool(prepared.refresh_pending),
-        "source_revision": int(prepared.source_revision),
+        # Compatibility alias: Phase 3B endpoints expose the semantic source
+        # revision rather than the in-memory ETag/cache revision.
+        "source_revision": semantic_source_revision or int(prepared.source_revision),
+        "semantic_source_revision": semantic_source_revision,
+        "stored_projection_revision": stored_projection_revision,
+        "scheduler_generation": scheduler_generation,
         "retry_after_seconds": int(prepared.retry_after_seconds),
     })
     timing = prepared.timing
@@ -237,7 +245,9 @@ def _control_plane_prepared_response(
             )
         ),
         "X-PocketLab-Projection-Age-Ms": str(int(prepared.projection_age_ms)),
-        "X-PocketLab-Source-Revision": str(int(prepared.source_revision)),
+        "X-PocketLab-Source-Revision": str(int(payload["source_revision"])),
+        "X-PocketLab-Projection-Revision": str(stored_projection_revision),
+        "X-PocketLab-Scheduler-Generation": str(scheduler_generation),
         "X-PocketLab-Read-Degraded": "true" if prepared.read_degraded else "false",
         "X-PocketLab-Refresh-Pending": "true" if prepared.refresh_pending else "false",
     }

@@ -618,6 +618,8 @@ class ControlPlaneProjectionStore:
         self._workload_admission_lock = threading.Lock()
         self._workload_admission: dict[str, tuple[str, int, float]] = {}
         self._workload_admission_generation = 0
+        self._last_fleet_invalidation_revision: int | None = None
+        self._last_propagated_fleet_projection_revision: int | None = None
         default_workers = "1" if ("com.termux" in os.environ.get("PREFIX", "") or sys.platform == "android") else "2"
         self._executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=max(1, min(int(os.environ.get("POCKETLAB_LITE_READ_REFRESH_WORKERS", default_workers)), 4)),
@@ -653,6 +655,8 @@ class ControlPlaneProjectionStore:
                 self._consecutive_refresh_failures.clear()
                 self._next_refresh_allowed_at.clear()
                 self._build_futures_by_key.clear()
+                self._last_fleet_invalidation_revision = None
+                self._last_propagated_fleet_projection_revision = None
                 self._cache_generation += 1
             with self._workload_admission_lock:
                 self._workload_admission.clear()
@@ -680,14 +684,25 @@ class ControlPlaneProjectionStore:
             self._consecutive_refresh_failures.clear()
             self._next_refresh_allowed_at.clear()
             self._build_futures_by_key.clear()
+            self._last_fleet_invalidation_revision = None
+            self._last_propagated_fleet_projection_revision = None
             self._cache_generation += 1
         with self._workload_admission_lock:
             self._workload_admission.clear()
             self._workload_admission_generation += 1
 
-    def invalidate_domain(self, domain: str) -> None:
+    def invalidate_domain(
+        self, domain: str, *, semantic_revision: int | None = None
+    ) -> None:
         safe_domain = str(domain or '').strip().lower()
         prefix = f"{safe_domain}:"
+        if safe_domain == "fleet" and semantic_revision is not None:
+            revision = max(0, int(semantic_revision))
+            with self._cache_lock:
+                if revision == self._last_fleet_invalidation_revision:
+                    return
+                self._last_fleet_invalidation_revision = revision
+
         with self._cache_lock:
             # Keep last-known-good Fleet state readable while heartbeat bursts are
             # coalesced. Other domains retain the legacy hard invalidation contract.
@@ -697,8 +712,8 @@ class ControlPlaneProjectionStore:
                     self._refresh_errors.pop(key, None)
 
         # Backend-owned mutations proactively wake already-registered prepared
-        # projections. The scheduler coalesces duplicate events and keeps all
-        # collectors off the mutation/request thread.
+        # projections. Heartbeat callers pass their semantic Fleet revision, so
+        # timestamp-only events cannot continuously queue the same projection.
         try:
             from .projection_scheduler import PROJECTION_SCHEDULER
 
@@ -706,9 +721,10 @@ class ControlPlaneProjectionStore:
         except Exception:
             pass
 
-        # Fleet mutations also wake the consolidated health sampler; it performs
-        # one change-only sample rather than waiting for a periodic poll.
-        if safe_domain == "fleet":
+        # Explicit Fleet mutations still wake the consolidated sampler. Semantic
+        # heartbeat invalidations are handled by fleet.summary and only propagate
+        # after a meaningful committed projection revision.
+        if safe_domain == "fleet" and semantic_revision is None:
             try:
                 from .live_status import LIVE_STATUS
 
@@ -1231,12 +1247,15 @@ class ControlPlaneProjectionStore:
         payload = dict(item.payload)
         if too_old:
             payload["projection_only"] = True
+        refresh_failed = bool(refresh_status.get("last_error_type")) or bool(
+            refresh_status.get("circuit_open")
+        )
         return PreparedRead(
             payload=payload,
             etag=self._etag(domain, key, item.revision),
             source_revision=item.revision,
             projection_age_ms=age_ms,
-            read_degraded=bool(stale or payload.get("projection_only")),
+            read_degraded=bool(too_old or refresh_failed),
             refresh_pending=refresh_pending,
             timing={
                 "connection_acquisition_ms": 0.0,
@@ -3360,9 +3379,16 @@ class ControlPlaneProjectionStore:
         except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
             return self.domain_revision("fleet")
         current_revision = int(revision)
+        propagate_revision = False
         if current_revision != int(previous_revision):
+            with self._cache_lock:
+                if current_revision != self._last_propagated_fleet_projection_revision:
+                    self._last_propagated_fleet_projection_revision = current_revision
+                    propagate_revision = True
+        if propagate_revision:
             try:
                 from . import lite_phase3b_projections
+                from .live_status import LIVE_STATUS
 
                 lite_phase3b_projections.mark_dirty(
                     "system.fleet_probe",
@@ -3371,6 +3397,9 @@ class ControlPlaneProjectionStore:
                     "system.health",
                     "system.status",
                     reason="fleet_projection_committed",
+                )
+                LIVE_STATUS.request_sample(
+                    "fleet", "health", reason="fleet_projection_committed"
                 )
             except Exception:
                 pass
