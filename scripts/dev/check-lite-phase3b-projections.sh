@@ -6,6 +6,9 @@ STATE_DIR="${POCKETLAB_STATE_DIR:-$ROOT/state}"
 PROXY_BASE="${POCKETLAB_PROXY_BASE:-http://127.0.0.1:8443}"
 IDLE_SECONDS="${POCKETLAB_PHASE3B_IDLE_SECONDS:-60}"
 WARMUP_ATTEMPTS="${POCKETLAB_PHASE3B_WARMUP_ATTEMPTS:-15}"
+READY_ATTEMPTS="${POCKETLAB_PHASE3B_READY_ATTEMPTS:-30}"
+READY_CONNECT_TIMEOUT="${POCKETLAB_PHASE3B_READY_CONNECT_TIMEOUT:-2}"
+READY_MAX_TIME="${POCKETLAB_PHASE3B_READY_MAX_TIME:-10}"
 RUN_ID="phase3b-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 RUN_DIR="$STATE_DIR/.pocketlab-dev/phase3b/$RUN_ID"
 mkdir -p "$RUN_DIR"
@@ -20,11 +23,28 @@ fi
 case "$WARMUP_ATTEMPTS" in
   ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_WARMUP_ATTEMPTS must be an integer" >&2; exit 2 ;;
 esac
+case "$READY_ATTEMPTS" in
+  ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_READY_ATTEMPTS must be an integer" >&2; exit 2 ;;
+esac
+
+wait_for_api_ready() {
+  local attempt
+  for attempt in $(seq 1 "$READY_ATTEMPTS"); do
+    if curl -fsS --connect-timeout "$READY_CONNECT_TIMEOUT" \
+      --max-time "$READY_MAX_TIME" "$PROXY_BASE/health" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "Pocket API did not become ready during the bounded Phase 3B readiness gate" >&2
+  return 1
+}
 
 fetch_json() {
   local name="$1"
   local path="$2"
-  curl -fsS --max-time 15 "$PROXY_BASE$path" > "$RUN_DIR/$name.json"
+  curl -fsS --connect-timeout "$READY_CONNECT_TIMEOUT" \
+    --max-time "$READY_MAX_TIME" "$PROXY_BASE$path" > "$RUN_DIR/$name.json"
   python3 -m json.tool "$RUN_DIR/$name.json" >/dev/null
 }
 
@@ -98,6 +118,7 @@ print(json.dumps({"status":"passed","domains":len(required),"sanitized":True}, s
 PY
 }
 
+wait_for_api_ready
 fetch_prepared_endpoints ""
 ready=0
 for attempt in $(seq 1 "$WARMUP_ATTEMPTS"); do
