@@ -157,6 +157,23 @@ function boundedCount(value) {
   return Math.max(0, Math.min(999, Math.round(parsed)));
 }
 
+function semanticResourceMetric({ key, label, status = 'unknown', summary = '', screen = 'home' }) {
+  const normalized = normalizedStatus(status);
+  const tone = READY_STATES.has(normalized) || normalized === 'normal' || normalized === 'healthy'
+    ? 'ready'
+    : DANGER_STATES.has(normalized) || ['critical', 'read_only', 'recovery_required', 'unavailable'].includes(normalized)
+      ? 'danger'
+      : 'review';
+  const value = tone === 'ready'
+    ? 'Looks good'
+    : tone === 'danger'
+      ? 'Needs attention'
+      : normalized === 'unknown' || normalized === 'unsupported'
+        ? 'Not available'
+        : 'Review';
+  return { key, label, value, tone, note: String(summary || '').slice(0, 160), screen };
+}
+
 function resourceMetric({ key, label, value, unit = '', thresholds = null, note }) {
   const parsed = Number(value);
   const known = Number.isFinite(parsed);
@@ -180,6 +197,11 @@ function resourceMetric({ key, label, value, unit = '', thresholds = null, note 
 export function buildLiteHomeOverview(status = {}, options = {}) {
   const summary = status.summary || {};
   const telemetry = status.telemetry || {};
+  const systemCurrentState = status.system_current_state || {};
+  const telemetryThresholds = systemCurrentState.telemetry_thresholds || {};
+  const storagePressure = systemCurrentState.storage_pressure || {};
+  const sqliteHealth = systemCurrentState.sqlite_health || {};
+  const activitySummary = systemCurrentState.activity_summary || {};
   const savedStateOnly = Boolean(options.savedStateOnly);
   const backendReachable = options.backendReachable !== false;
   const services = (Array.isArray(status.services) ? status.services : [])
@@ -266,6 +288,22 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       ? 'Open apps, connect devices, review safety, and keep a verified backup from one private workspace.'
       : 'Pocket Lab is still usable. Review the recommended next step before making important changes.';
 
+  const semanticResourcesAvailable = [telemetryThresholds, storagePressure, sqliteHealth, activitySummary]
+    .some((item) => item && Object.keys(item).length > 0);
+  const resources = semanticResourcesAvailable
+    ? [
+        semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status, summary: telemetryThresholds.summary, screen: 'devices' }),
+        semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' }),
+        semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' }),
+        semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: activitySummary.status, summary: activitySummary.summary, screen: 'home' }),
+      ]
+    : [
+        resourceMetric({ key: 'processor', label: 'Processor use', value: telemetry.cpu_usage_percent, unit: '%', thresholds: { direction: 'high', review: 75, danger: 92 }, note: 'Current workspace demand' }),
+        resourceMetric({ key: 'temperature', label: 'Device temperature', value: telemetry.cpu_temp_c, unit: '°C', thresholds: { direction: 'high', review: 58, danger: 72 }, note: 'Current device reading' }),
+        resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' }),
+        resourceMetric({ key: 'memory', label: 'Memory use', value: telemetry.memory_usage_mb, unit: ' MB', note: 'Memory used by Pocket Lab services' }),
+      ];
+
   return {
     overallTone,
     heroTitle,
@@ -281,12 +319,7 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       { key: 'safety', label: 'Safety', value: safetyItems, note: safetyItems ? 'items ready for review' : 'no urgent items reported', screen: 'security' },
       { key: 'access', label: 'Remote access', value: remoteReady ? 'Ready' : 'Not ready', note: remoteReady ? 'private access is available' : 'local access remains available', screen: 'devices' },
     ],
-    resources: [
-      resourceMetric({ key: 'processor', label: 'Processor use', value: telemetry.cpu_usage_percent, unit: '%', thresholds: { direction: 'high', review: 75, danger: 92 }, note: 'Current workspace demand' }),
-      resourceMetric({ key: 'temperature', label: 'Device temperature', value: telemetry.cpu_temp_c, unit: '°C', thresholds: { direction: 'high', review: 58, danger: 72 }, note: 'Current device reading' }),
-      resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' }),
-      resourceMetric({ key: 'memory', label: 'Memory use', value: telemetry.memory_usage_mb, unit: ' MB', note: 'Memory used by Pocket Lab services' }),
-    ],
+    resources,
   };
 }
 

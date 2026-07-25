@@ -38,6 +38,15 @@ PHASE3B_DOMAINS = (
     "system.fleet_probe",
 )
 
+PHASE3C_DOMAINS = (
+    "system.telemetry_thresholds",
+    "system.storage_pressure",
+    "system.sqlite_health",
+    "system.activity_summary",
+)
+
+SYSTEM_CURRENT_STATE_DOMAINS = PHASE3B_DOMAINS + PHASE3C_DOMAINS
+
 EXPECTED_PM2_PROCESSES = (
     "pocket-api",
     "pocket-worker",
@@ -181,8 +190,11 @@ def _bounded_payload(payload: dict[str, Any]) -> tuple[dict[str, Any], str]:
     return clean, encoded
 
 
-def _read(callback: Callable[[sqlite3.Connection], Any]) -> Any:
-    apply_migrations()
+def _read(
+    callback: Callable[[sqlite3.Connection], Any], *, ensure_schema: bool = True
+) -> Any:
+    if ensure_schema:
+        apply_migrations()
     entry, _ = SQLITE_READS.acquire(timeout_seconds=1.0)
     discard = False
     try:
@@ -196,7 +208,7 @@ def _read(callback: Callable[[sqlite3.Connection], Any]) -> Any:
 
 def snapshot(domain: str) -> dict[str, Any] | None:
     safe_domain = _safe_text(domain, 96).lower()
-    if safe_domain not in PHASE3B_DOMAINS:
+    if safe_domain not in SYSTEM_CURRENT_STATE_DOMAINS:
         return None
 
     def read(conn: sqlite3.Connection) -> dict[str, Any] | None:
@@ -229,7 +241,7 @@ def snapshot(domain: str) -> dict[str, Any] | None:
         )
         return payload
 
-    return _read(read)
+    return _read(read, ensure_schema=safe_domain in PHASE3B_DOMAINS)
 
 
 def projection_revision(domain: str) -> int:
@@ -239,8 +251,8 @@ def projection_revision(domain: str) -> int:
 
 def project(domain: str, payload: dict[str, Any]) -> int:
     safe_domain = _safe_text(domain, 96).lower()
-    if safe_domain not in PHASE3B_DOMAINS:
-        raise ValueError("unsupported Phase 3B projection domain")
+    if safe_domain not in SYSTEM_CURRENT_STATE_DOMAINS:
+        raise ValueError("unsupported prepared system projection domain")
     clean, encoded = _bounded_payload(payload)
     status = _safe_text(clean.get("status") or clean.get("overall") or "unknown", 32).lower() or "unknown"
     generation = max(0, int(clean.get("generation") or 0))
@@ -329,7 +341,20 @@ def project(domain: str, payload: dict[str, Any]) -> int:
         )
         return next_revision
 
-    return int(SQLITE_WRITER.submit(f"phase3b.project.{safe_domain}", write, deadline_seconds=2.0))
+    previous_revision = projection_revision(safe_domain)
+    revision = int(
+        SQLITE_WRITER.submit(f"phase3b.project.{safe_domain}", write, deadline_seconds=2.0)
+    )
+    if revision != previous_revision and safe_domain in {"security.progress", "security.summary"}:
+        try:
+            from . import lite_phase3c_projections
+
+            lite_phase3c_projections.mark_dirty(
+                "system.activity_summary", reason="security_projection_changed"
+            )
+        except Exception:
+            pass
+    return revision
 
 
 def _bus_material() -> dict[str, Any]:
@@ -734,6 +759,9 @@ def collect_system_health_state(engine: dict[str, Any] | None = None) -> dict[st
     supervisor = snapshot("system.supervisor") or collect_supervisor_state()
     remote = snapshot("system.remote_access") or collect_remote_access_state()
     nats = snapshot("system.nats_remote") or collect_nats_remote_state()
+    telemetry = snapshot("system.telemetry_thresholds") or {}
+    storage = snapshot("system.storage_pressure") or {}
+    sqlite_health = snapshot("system.sqlite_health") or {}
     maintenance = _maintenance_material()
     maintenance_active = any(
         str(item.get("status") or "").lower() in {"accepted", "running", "active"}
@@ -746,6 +774,9 @@ def collect_system_health_state(engine: dict[str, Any] | None = None) -> dict[st
         "supervisor": str(supervisor.get("status") or "unknown").lower(),
         "remote_access": str(remote.get("status") or "unknown").lower(),
         "nats": str(nats.get("status") or "unknown").lower(),
+        "telemetry": str(telemetry.get("status") or "unknown").lower(),
+        "storage": str(storage.get("status") or "unknown").lower(),
+        "sqlite": str(sqlite_health.get("status") or "unknown").lower(),
     }
     engine_services = (
         engine.get("services") if isinstance(engine.get("services"), dict) else {}
@@ -759,11 +790,16 @@ def collect_system_health_state(engine: dict[str, Any] | None = None) -> dict[st
         for name, item in sorted(engine_services.items())[:32]
         if isinstance(item, dict)
     }
+    unavailable_states = {"unavailable", "unhealthy", "critical", "read_only", "recovery_required"}
+    degraded_states = {
+        "degraded", "unknown", "unsupported", "watch", "elevated",
+        "storage_pressure", "maintenance_active", "attention", "active",
+    }
     if maintenance_active:
         overall = "maintenance"
-    elif any(value in {"unavailable", "unhealthy"} for value in components.values()):
+    elif any(value in unavailable_states for value in components.values()):
         overall = "unavailable"
-    elif any(value in {"degraded", "unknown"} for value in components.values()):
+    elif any(value in degraded_states for value in components.values()):
         overall = "degraded"
     else:
         overall = "healthy"
@@ -804,6 +840,9 @@ def system_health_source_revision() -> int:
             "supervisor": snapshot("system.supervisor") or {},
             "remote_access": snapshot("system.remote_access") or {},
             "nats": _bus_material(),
+            "telemetry": snapshot("system.telemetry_thresholds") or {},
+            "storage": snapshot("system.storage_pressure") or {},
+            "sqlite": snapshot("system.sqlite_health") or {},
             "maintenance": _maintenance_material(),
         },
     )
@@ -943,6 +982,10 @@ def status_source_revision() -> int:
             "nats": snapshot("system.nats_remote") or _bus_material(),
             "fleet": fleet_probe_source_revision(),
             "security": security_summary_source_revision(),
+            "telemetry": snapshot("system.telemetry_thresholds") or {},
+            "storage": snapshot("system.storage_pressure") or {},
+            "sqlite": snapshot("system.sqlite_health") or {},
+            "activity": snapshot("system.activity_summary") or {},
         },
     )
 

@@ -3398,6 +3398,16 @@ class ControlPlaneProjectionStore:
                     "system.status",
                     reason="fleet_projection_committed",
                 )
+                try:
+                    from . import lite_phase3c_projections
+
+                    lite_phase3c_projections.mark_dirty(
+                        "system.telemetry_thresholds",
+                        "system.activity_summary",
+                        reason="fleet_projection_committed",
+                    )
+                except Exception:
+                    pass
                 LIVE_STATUS.request_sample(
                     "fleet", "health", reason="fleet_projection_committed"
                 )
@@ -3541,7 +3551,19 @@ class ControlPlaneProjectionStore:
             )
 
         try:
-            SQLITE_WRITER.submit("commands.lifecycle", write, deadline_seconds=0.5)
+            previous_revision = self.domain_revision("commands")
+            current_revision = int(
+                SQLITE_WRITER.submit("commands.lifecycle", write, deadline_seconds=0.5)
+            )
+            if current_revision != previous_revision:
+                try:
+                    from . import lite_phase3c_projections
+
+                    lite_phase3c_projections.mark_dirty(
+                        "system.activity_summary", reason="command_lifecycle_changed"
+                    )
+                except Exception:
+                    pass
         except Exception:
             return
 
@@ -3703,7 +3725,18 @@ class ControlPlaneProjectionStore:
             ) if changed else _domain_revision(conn, "apps")
 
         try:
-            return int(SQLITE_WRITER.submit("apps.projection", write, deadline_seconds=3.0))
+            previous_revision = self.domain_revision("apps")
+            revision = int(SQLITE_WRITER.submit("apps.projection", write, deadline_seconds=3.0))
+            if revision != previous_revision:
+                try:
+                    from . import lite_phase3c_projections
+
+                    lite_phase3c_projections.mark_dirty(
+                        "system.activity_summary", reason="apps_projection_changed"
+                    )
+                except Exception:
+                    pass
+            return revision
         except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
             return self.domain_revision("apps")
 
@@ -3833,7 +3866,21 @@ class ControlPlaneProjectionStore:
             ) if changed else _domain_revision(conn, "recovery")
 
         try:
-            return int(SQLITE_WRITER.submit("recovery.projection", write, deadline_seconds=3.0))
+            previous_revision = self.domain_revision("recovery")
+            revision = int(SQLITE_WRITER.submit("recovery.projection", write, deadline_seconds=3.0))
+            if revision != previous_revision:
+                try:
+                    from . import lite_phase3c_projections
+
+                    lite_phase3c_projections.mark_dirty(
+                        "system.storage_pressure",
+                        "system.sqlite_health",
+                        "system.activity_summary",
+                        reason="recovery_projection_changed",
+                    )
+                except Exception:
+                    pass
+            return revision
         except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
             return self.domain_revision("recovery")
 

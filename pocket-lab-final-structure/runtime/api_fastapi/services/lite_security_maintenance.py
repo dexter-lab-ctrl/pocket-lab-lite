@@ -92,6 +92,21 @@ def maintenance_state() -> dict[str, Any]:
     }
 
 
+
+
+def _mark_phase3c_maintenance(reason: str) -> None:
+    try:
+        from . import lite_phase3c_projections
+
+        lite_phase3c_projections.mark_dirty(
+            "system.sqlite_health",
+            "system.storage_pressure",
+            "system.activity_summary",
+            reason=reason,
+        )
+    except Exception:
+        pass
+
 def enter_maintenance(
     *,
     operation_id: str,
@@ -102,7 +117,7 @@ def enter_maintenance(
     current = maintenance_state()
     if current.get("active") and current.get("operation_id") != operation_id:
         raise RuntimeError("Another maintenance operation is already active")
-    return _write_json(
+    payload = _write_json(
         maintenance_marker_path(),
         {
             "active": True,
@@ -116,6 +131,8 @@ def enter_maintenance(
             "sanitized": True,
         },
     )
+    _mark_phase3c_maintenance("sqlite_maintenance_started")
+    return payload
 
 
 def update_maintenance(
@@ -134,7 +151,9 @@ def update_maintenance(
         payload["writers_stopped"] = bool(writers_stopped)
     if summary:
         payload["summary"] = summary
-    return _write_json(maintenance_marker_path(), payload)
+    saved = _write_json(maintenance_marker_path(), payload)
+    _mark_phase3c_maintenance("sqlite_maintenance_updated")
+    return saved
 
 
 def leave_maintenance(operation_id: str, *, state: str = "ready", summary: str = "Maintenance completed.") -> dict[str, Any]:
@@ -153,7 +172,9 @@ def leave_maintenance(operation_id: str, *, state: str = "ready", summary: str =
         "summary": summary,
         "sanitized": True,
     }
-    return _write_json(maintenance_marker_path(), payload)
+    saved = _write_json(maintenance_marker_path(), payload)
+    _mark_phase3c_maintenance("sqlite_maintenance_completed")
+    return saved
 
 
 def write_blocked_by_maintenance(path: str, method: str) -> bool:

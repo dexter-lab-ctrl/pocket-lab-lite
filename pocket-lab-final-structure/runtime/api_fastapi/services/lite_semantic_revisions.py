@@ -715,6 +715,27 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 else 8.0
             ),
         )
+    phase3c_domain = f"{safe_domain}.{safe_key}"
+    if phase3c_domain in {
+        "system.telemetry_thresholds",
+        "system.storage_pressure",
+        "system.sqlite_health",
+        "system.activity_summary",
+    }:
+        from .lite_phase3c_projections import source_revision_for
+
+        return ProjectionRevisionContract(
+            source_revision=source_revision_for(phase3c_domain),
+            max_probe_seconds=(
+                120.0 if phase3c_domain == "system.activity_summary"
+                else 1800.0 if phase3c_domain == "system.sqlite_health"
+                else 300.0
+            ),
+            quiet_window_seconds=1.0,
+            priority=(25 if phase3c_domain == "system.sqlite_health" else 35 if phase3c_domain == "system.storage_pressure" else 45),
+            work_class="io",
+            deadline_seconds=8.0,
+        )
     return None
 
 

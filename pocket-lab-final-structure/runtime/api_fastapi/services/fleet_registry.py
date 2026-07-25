@@ -902,6 +902,15 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
         )
     except Exception:
         pass
+    if subject.endswith(("node_telemetry", "node_health")):
+        try:
+            from . import lite_phase3c_projections
+
+            lite_phase3c_projections.mark_dirty(
+                "system.telemetry_thresholds", reason="agent_telemetry_event"
+            )
+        except Exception:
+            pass
 
 
 
