@@ -20,7 +20,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_phase3b_projections
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_phase3b_projections, lite_phase3c_projections
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -901,6 +901,26 @@ def _phase3b_prepared_read(request: Request, projection_domain: str, *, view_mod
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
+def _phase3c_prepared_read(request: Request, projection_domain: str, *, view_model: str) -> Response:
+    parent, key = projection_domain.split(".", 1)
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain=parent,
+            key=key,
+            snapshot_builder=lambda: lite_phase3c_projections.snapshot(projection_domain),
+            builder=lite_phase3c_projections.builder_for(projection_domain),
+            projector=lambda payload: lite_phase3c_projections.project(projection_domain, payload),
+            stale_after_ms=60_000,
+            max_stale_ms=10 * 60_000,
+            deadline_seconds=10.0,
+            priority=30,
+            work_class="io",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain=projection_domain, view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
+
+
 @router.get("/status")
 def get_lite_status(request: Request) -> Response:
     deps.require_auth(request)
@@ -972,6 +992,38 @@ def get_lite_nats_readiness(request: Request) -> Response:
 def _build_lite_catalog_projection() -> dict[str, Any]:
     return lite_app_lifecycle.hydrate_catalog_lifecycle(
         lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(None))
+    )
+
+
+@router.get("/system/telemetry-thresholds")
+def get_lite_telemetry_thresholds(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3c_prepared_read(
+        request, "system.telemetry_thresholds", view_model="lite-telemetry-thresholds-phase3c-v1"
+    )
+
+
+@router.get("/system/storage-pressure")
+def get_lite_storage_pressure(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3c_prepared_read(
+        request, "system.storage_pressure", view_model="lite-storage-pressure-phase3c-v1"
+    )
+
+
+@router.get("/system/sqlite-health")
+def get_lite_sqlite_health(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3c_prepared_read(
+        request, "system.sqlite_health", view_model="lite-sqlite-health-phase3c-v1"
+    )
+
+
+@router.get("/system/activity-summary")
+def get_lite_activity_summary(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3c_prepared_read(
+        request, "system.activity_summary", view_model="lite-activity-summary-phase3c-v1"
     )
 
 
@@ -1853,6 +1905,7 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
     payload["semantic_revisions"] = semantic_revision_diagnostics()
     payload["phase3b_current_state"] = lite_phase3b_projections.diagnostics()
+    payload["phase3c_current_state"] = lite_phase3c_projections.diagnostics()
     payload["sanitized"] = True
     return payload
 
@@ -2649,9 +2702,9 @@ def _project_warmup_payload(
 def schedule_control_plane_projection_warmup() -> dict[str, bool]:
     """Submit optional startup projections through the unified scheduler."""
     if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
-        return {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False}
+        return {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False, "phase3c": False}
     expected_database_path = str(database_path())
-    results = {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False}
+    results = {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False, "phase3c": False}
     try:
         results["recovery_summary"] = CONTROL_PLANE.warm_prepared_read(
             domain="recovery", key="summary",
@@ -2685,6 +2738,8 @@ def schedule_control_plane_projection_warmup() -> dict[str, bool]:
         )
         phase3b = lite_phase3b_projections.schedule_startup_warmup()
         results["phase3b"] = bool(phase3b) and all(phase3b.values())
+        phase3c = lite_phase3c_projections.schedule_startup_warmup()
+        results["phase3c"] = bool(phase3c) and all(phase3c.values())
     except Exception as exc:
         _LOGGER.warning(
             "pocketlab.control_projection.warmup_degraded error_type=%s",
@@ -2787,11 +2842,12 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
         try:
             warmup = await asyncio.to_thread(schedule_control_plane_projection_warmup)
             logger.info(
-                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s phase3b=%s",
+                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s phase3b=%s phase3c=%s",
                 warmup.get("apps"),
                 warmup.get("recovery_summary"),
                 warmup.get("recovery_details"),
                 warmup.get("phase3b"),
+                warmup.get("phase3c"),
             )
         except Exception as exc:
             logger.warning(

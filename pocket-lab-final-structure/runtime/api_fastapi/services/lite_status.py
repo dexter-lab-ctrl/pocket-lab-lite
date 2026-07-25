@@ -599,12 +599,18 @@ def build_lite_status_projection() -> dict[str, Any]:
             "system.nats_remote",
             "system.fleet_probe",
             "security.summary",
+            "system.telemetry_thresholds",
+            "system.storage_pressure",
+            "system.sqlite_health",
+            "system.activity_summary",
         )
     }
     bus = snapshots["system.nats_remote"] or BUS.status()
     live = LIVE_STATUS.status()
     remote_access = snapshots["system.remote_access"] or lite_remote_access_status()
-    telemetry = LIVE_STATUS.last_telemetry_snapshot()
+    telemetry = snapshots["system.telemetry_thresholds"]
+    if not telemetry:
+        telemetry = LIVE_STATUS.last_telemetry_snapshot()
     if not telemetry:
         try:
             telemetry = deps.core.telemetry_snapshot()
@@ -638,6 +644,10 @@ def build_lite_status_projection() -> dict[str, Any]:
         "nats_remote": snapshots["system.nats_remote"],
         "fleet_probe": snapshots["system.fleet_probe"],
         "security_summary": snapshots["security.summary"],
+        "telemetry_thresholds": snapshots["system.telemetry_thresholds"],
+        "storage_pressure": snapshots["system.storage_pressure"],
+        "sqlite_health": snapshots["system.sqlite_health"],
+        "activity_summary": snapshots["system.activity_summary"],
         "sanitized": True,
     }
     return _build_lite_status_from_inputs(
@@ -659,6 +669,14 @@ async def build_lite_status() -> dict[str, Any]:
 
 
 def _lite_telemetry(payload: dict[str, Any]) -> dict[str, Any]:
+    if isinstance(payload.get("devices"), list) or isinstance(payload.get("counts"), dict):
+        return {
+            "status": _status(payload.get("status", "unknown")),
+            "summary": str(payload.get("summary") or "Telemetry is not available.")[:192],
+            "counts": payload.get("counts") if isinstance(payload.get("counts"), dict) else {},
+            "device_count": len(payload.get("devices") or []),
+            "semantic": True,
+        }
     return {
         "status": _status(payload.get("status", "unknown")),
         "cpu_temp_c": payload.get("cpu_temp_c") or payload.get("cpuTemp"),
