@@ -20,7 +20,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_phase3b_projections
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -871,10 +871,92 @@ def _candidate_device_name(payload: LiteAddDeviceRequest) -> str:
     return f"Pocket Lab {role_info['role_label']}"
 
 
+def _phase3b_prepared_read(request: Request, projection_domain: str, *, view_model: str) -> Response:
+    parent, key = projection_domain.split(".", 1)
+    try:
+        prepared = CONTROL_PLANE.prepared_only_read(
+            domain=parent,
+            key=key,
+            snapshot_builder=lambda: lite_phase3b_projections.snapshot(projection_domain),
+            builder=lite_phase3b_projections.builder_for(projection_domain),
+            projector=lambda payload: lite_phase3b_projections.project(projection_domain, payload),
+            stale_after_ms=15_000 if projection_domain in {"security.progress", "system.nats_remote"} else 30_000,
+            max_stale_ms=5 * 60_000,
+            deadline_seconds=10.0,
+            priority=20,
+            work_class="io",
+        )
+    except PreparedProjectionUnavailable:
+        return _projection_warming_response(domain=projection_domain, view_model=view_model)
+    return _control_plane_prepared_response(request, prepared, view_model=view_model)
+
+
 @router.get("/status")
-async def get_lite_status(request: Request) -> dict[str, Any]:
+def get_lite_status(request: Request) -> Response:
     deps.require_auth(request)
-    return await lite_status.build_lite_status()
+    response = _phase3b_prepared_read(
+        request, "system.status", view_model="lite-status-phase3b-v1"
+    )
+    if response.status_code == 503:
+        return JSONResponse(
+            content=lite_status.default_lite_status_state(),
+            headers={
+                "Cache-Control": "no-cache",
+                "Retry-After": "2",
+                "X-PocketLab-View-Model": "lite-status-phase3b-v1",
+                "X-PocketLab-Read-Degraded": "true",
+                "X-PocketLab-Refresh-Pending": "true",
+            },
+        )
+    return response
+
+
+@router.get("/system/health")
+def get_lite_system_health(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3b_prepared_read(
+        request, "system.health", view_model="lite-system-health-phase3b-v1"
+    )
+
+
+@router.get("/system/processes")
+def get_lite_system_processes(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3b_prepared_read(
+        request, "system.processes", view_model="lite-system-processes-phase3b-v1"
+    )
+
+
+@router.get("/system/agent")
+def get_lite_system_agent(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3b_prepared_read(
+        request, "system.agent", view_model="lite-system-agent-phase3b-v1"
+    )
+
+
+@router.get("/system/supervisor")
+def get_lite_system_supervisor(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3b_prepared_read(
+        request, "system.supervisor", view_model="lite-system-supervisor-phase3b-v1"
+    )
+
+
+@router.get("/remote-access/readiness")
+def get_lite_remote_access_readiness(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3b_prepared_read(
+        request, "system.remote_access", view_model="lite-remote-access-phase3b-v1"
+    )
+
+
+@router.get("/system/nats-readiness")
+def get_lite_nats_readiness(request: Request) -> Response:
+    deps.require_auth(request)
+    return _phase3b_prepared_read(
+        request, "system.nats_remote", view_model="lite-nats-readiness-phase3b-v1"
+    )
 
 
 def _build_lite_catalog_projection() -> dict[str, Any]:
@@ -1760,6 +1842,7 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     payload["live_status"] = LIVE_STATUS.status()
     payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
     payload["semantic_revisions"] = semantic_revision_diagnostics()
+    payload["phase3b_current_state"] = lite_phase3b_projections.diagnostics()
     payload["sanitized"] = True
     return payload
 
@@ -2556,9 +2639,9 @@ def _project_warmup_payload(
 def schedule_control_plane_projection_warmup() -> dict[str, bool]:
     """Submit optional startup projections through the unified scheduler."""
     if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
-        return {"apps": False, "recovery_summary": False, "recovery_details": False}
+        return {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False}
     expected_database_path = str(database_path())
-    results = {"apps": False, "recovery_summary": False, "recovery_details": False}
+    results = {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False}
     try:
         results["recovery_summary"] = CONTROL_PLANE.warm_prepared_read(
             domain="recovery", key="summary",
@@ -2590,6 +2673,8 @@ def schedule_control_plane_projection_warmup() -> dict[str, bool]:
             priority=60,
             work_class="io",
         )
+        phase3b = lite_phase3b_projections.schedule_startup_warmup()
+        results["phase3b"] = bool(phase3b) and all(phase3b.values())
     except Exception as exc:
         _LOGGER.warning(
             "pocketlab.control_projection.warmup_degraded error_type=%s",
@@ -2666,6 +2751,9 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
         await wait_until(security_delay)
         try:
             await asyncio.to_thread(lite_security_module.start_security_projection_runtime)
+            lite_phase3b_projections.mark_dirty(
+                "security.progress", "security.summary", reason="security_runtime_started"
+            )
             logger.info("pocketlab.startup.stage_ready stage=security_projection")
         except Exception as exc:
             logger.warning(
@@ -2689,10 +2777,11 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
         try:
             warmup = await asyncio.to_thread(schedule_control_plane_projection_warmup)
             logger.info(
-                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s",
+                "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s phase3b=%s",
                 warmup.get("apps"),
                 warmup.get("recovery_summary"),
                 warmup.get("recovery_details"),
+                warmup.get("phase3b"),
             )
         except Exception as exc:
             logger.warning(

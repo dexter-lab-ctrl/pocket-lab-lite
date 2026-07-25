@@ -2,6 +2,12 @@ import { QueryClient } from '@tanstack/react-query';
 
 export const liteQueryKeys = {
   status: () => ['lite', 'status'],
+  systemHealth: () => ['lite', 'system', 'health'],
+  systemProcesses: () => ['lite', 'system', 'processes'],
+  systemAgent: () => ['lite', 'system', 'agent'],
+  systemSupervisor: () => ['lite', 'system', 'supervisor'],
+  remoteAccessReadiness: () => ['lite', 'system', 'remote-access'],
+  natsReadiness: () => ['lite', 'system', 'nats-readiness'],
   catalog: () => ['lite', 'catalog'],
   appActions: (appId = 'photoprism') => ['lite', 'app', String(appId || 'photoprism').toLowerCase(), 'actions'],
   fleet: () => ['lite', 'fleet'],
@@ -39,6 +45,12 @@ export const liteQueryKeys = {
 
 export const liteQueryPaths = {
   status: '/api/lite/status',
+  systemHealth: '/api/lite/system/health',
+  systemProcesses: '/api/lite/system/processes',
+  systemAgent: '/api/lite/system/agent',
+  systemSupervisor: '/api/lite/system/supervisor',
+  remoteAccessReadiness: '/api/lite/remote-access/readiness',
+  natsReadiness: '/api/lite/system/nats-readiness',
   catalog: '/api/lite/catalog',
   appActions: (appId = 'photoprism') => `/api/lite/apps/${encodeURIComponent(appId || 'photoprism')}/actions`,
   fleet: '/api/lite/fleet',

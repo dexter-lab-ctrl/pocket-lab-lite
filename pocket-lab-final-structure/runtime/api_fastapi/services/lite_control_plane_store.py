@@ -1134,7 +1134,13 @@ class ControlPlaneProjectionStore:
             if snapshot:
                 updated_epoch = _epoch_ms(snapshot.get("updated_at"))
                 age_ms = max(0, int(time.time() * 1000) - updated_epoch)
-                revision = self.domain_revision(domain)
+                revision = max(
+                    0,
+                    int(snapshot.get("projection_revision") or 0),
+                    int(snapshot.get("source_revision") or 0),
+                    self.domain_revision(f"{domain}.{key}"),
+                    self.domain_revision(domain),
+                )
                 prepared_at = now - (age_ms / 1000.0)
                 item = _PreparedItem(
                     payload=dict(snapshot),
@@ -3019,6 +3025,7 @@ class ControlPlaneProjectionStore:
 
     def project_fleet(self, payload: dict[str, Any]) -> int:
         self.initialize()
+        previous_revision = self.domain_revision("fleet")
         devices = [item for item in payload.get("devices", []) if isinstance(item, dict)]
         remote = payload.get("remote_access") if isinstance(payload.get("remote_access"), dict) else {}
         latest_invite = payload.get("latest_invite") if isinstance(payload.get("latest_invite"), dict) else None
@@ -3352,7 +3359,22 @@ class ControlPlaneProjectionStore:
             revision = SQLITE_WRITER.submit("fleet.projection", write, deadline_seconds=3.0)
         except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
             return self.domain_revision("fleet")
-        return int(revision)
+        current_revision = int(revision)
+        if current_revision != int(previous_revision):
+            try:
+                from . import lite_phase3b_projections
+
+                lite_phase3b_projections.mark_dirty(
+                    "system.fleet_probe",
+                    "system.agent",
+                    "system.supervisor",
+                    "system.health",
+                    "system.status",
+                    reason="fleet_projection_committed",
+                )
+            except Exception:
+                pass
+        return current_revision
 
     def _upsert_command_row(
         self, conn: sqlite3.Connection, command: dict[str, Any], *, entity_type: str

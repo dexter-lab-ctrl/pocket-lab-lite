@@ -679,6 +679,42 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
             work_class="io",
             deadline_seconds=10.0,
         )
+    phase3b_domain = f"{safe_domain}.{safe_key}"
+    if phase3b_domain in {
+        "security.progress",
+        "security.summary",
+        "system.status",
+        "system.health",
+        "system.processes",
+        "system.agent",
+        "system.supervisor",
+        "system.remote_access",
+        "system.nats_remote",
+        "system.fleet_probe",
+    }:
+        from .lite_phase3b_projections import source_revision_for
+
+        critical = phase3b_domain in {"security.progress", "system.nats_remote"}
+        high_priority = phase3b_domain in {
+            "security.progress", "security.summary", "system.status", "system.health"
+        }
+        return ProjectionRevisionContract(
+            source_revision=source_revision_for(phase3b_domain),
+            max_probe_seconds=(
+                30.0 if phase3b_domain == "security.progress"
+                else 60.0 if phase3b_domain in {
+                    "system.nats_remote", "system.agent", "system.supervisor"
+                }
+                else 300.0
+            ),
+            quiet_window_seconds=0.25 if phase3b_domain == "security.progress" else 1.0,
+            priority=(10 if phase3b_domain == "security.progress" else 20 if high_priority else 40),
+            work_class="critical" if critical else "io",
+            deadline_seconds=(
+                10.0 if phase3b_domain in {"system.processes", "system.remote_access"}
+                else 8.0
+            ),
+        )
     return None
 
 

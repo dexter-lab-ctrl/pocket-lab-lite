@@ -192,6 +192,12 @@ function conditionalRead(path) {
 
 export const liteApi = {
   status: safeGet('/api/lite/status'),
+  systemHealth: conditionalGet('/api/lite/system/health'),
+  systemProcesses: conditionalGet('/api/lite/system/processes'),
+  systemAgent: conditionalGet('/api/lite/system/agent'),
+  systemSupervisor: conditionalGet('/api/lite/system/supervisor'),
+  remoteAccessReadiness: conditionalGet('/api/lite/remote-access/readiness'),
+  natsReadiness: conditionalGet('/api/lite/system/nats-readiness'),
   lifecycleDiagnosticsChallenge: () => readJson('/api/lite/diagnostics/frontend-lifecycle/challenge'),
   recordLifecycleDiagnostics: (challengeId, report = {}) => postJson('/api/lite/diagnostics/frontend-lifecycle', { challenge_id: challengeId, report }),
   catalog: safeGet('/api/lite/catalog'),
