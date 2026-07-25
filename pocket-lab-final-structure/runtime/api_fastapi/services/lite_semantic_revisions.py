@@ -68,6 +68,9 @@ _SEMANTIC_SCALAR_KEYS = frozenset(
         "operation_id",
         "command_id",
         "action_id",
+        "latest_action_id",
+        "latest_action_status",
+        "latest_backup_id",
         "backup_id",
         "preview_id",
         "restore_id",
@@ -175,6 +178,8 @@ _CONTAINER_KEYS = frozenset(
         "commands",
         "manifests",
         "related_domain_revisions",
+        "current_state",
+        "compatibility_files",
     }
 )
 
@@ -182,7 +187,6 @@ _APP_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     "catalog": (
         "lite_catalog_state.json",
         "app_routes.json",
-        "lite_app_operations.json",
         "lite_app_update_state.json",
         "lite_app_backup_state.json",
         "lite_app_storage_mappings.json",
@@ -191,7 +195,6 @@ _APP_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     "lifecycle": (
         "lite_catalog_state.json",
         "app_routes.json",
-        "lite_app_operations.json",
         "lite_app_update_state.json",
         "lite_app_backup_state.json",
         "lite_app_storage_mappings.json",
@@ -199,7 +202,6 @@ _APP_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     ),
     "actions": (
         "lite_catalog_state.json",
-        "lite_app_operations.json",
         "lite_app_update_state.json",
         "lite_app_backup_state.json",
         "lite_app_storage_mappings.json",
@@ -207,7 +209,6 @@ _APP_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     ),
     "update": (
         "lite_catalog_state.json",
-        "lite_app_operations.json",
         "lite_app_update_state.json",
     ),
     "backup": (
@@ -226,8 +227,11 @@ _RECOVERY_DETAILS_FILES = (
     *_RECOVERY_SUMMARY_FILES,
     "lite_app_storage_mappings.json",
     "lite_app_update_state.json",
-    "lite_app_operations.json",
 )
+
+# Append-only compatibility journals are not semantic current-state authorities.
+# They may grow beyond the bounded probe budget on long-lived edge nodes.
+_COMPATIBILITY_APPEND_FILES = frozenset({"lite_app_operations.json"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -390,6 +394,37 @@ def _read_rows(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
         SQLITE_READS.release(entry, discard=discard)
 
 
+def _app_current_rows(app_id: str) -> list[dict[str, Any]]:
+    return _read_rows(
+        "SELECT app_id,app_name,status,installed,health_state,latest_action_id,"
+        "latest_action_status,latest_backup_id,source_revision,summary,"
+        "catalog_state_json,media_state_json,operation_state_json,"
+        "update_state_json,backup_profile_json,security_profile_json,"
+        "backup_targets_json,projection_version "
+        "FROM app_current_state WHERE app_id=? LIMIT 1",
+        (str(app_id or "photoprism")[:120],),
+    )
+
+
+def _compatibility_file_diagnostics(state_dir: Path) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for name in sorted(_COMPATIBILITY_APPEND_FILES):
+        path = state_dir / name
+        try:
+            stat = path.stat()
+        except OSError:
+            items.append({"file": name, "state": "missing", "semantic_authority": False})
+            continue
+        items.append(
+            {
+                "file": name,
+                "state": "excluded_compatibility",
+                "semantic_authority": False,
+            }
+        )
+    return items
+
+
 def _app_command_rows(app_id: str) -> list[dict[str, Any]]:
     return _read_rows(
         "SELECT command_id,entity_id,operation_type,status,lifecycle_stage,recovery_action "
@@ -530,6 +565,8 @@ def app_semantic_material(
         "scope": normalized_scope,
         "app_id": str(app_id or "photoprism")[:120],
         "files": [_read_json_semantics(state_dir / name) for name in files],
+        "compatibility_files": _compatibility_file_diagnostics(state_dir),
+        "current_state": _app_current_rows(app_id),
         "commands": _app_command_rows(app_id),
     }
     if include_manifests and normalized_scope in {"catalog", "lifecycle", "actions", "backup"}:

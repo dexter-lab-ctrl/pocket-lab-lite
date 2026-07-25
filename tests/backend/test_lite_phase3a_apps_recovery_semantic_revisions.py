@@ -440,6 +440,7 @@ def test_phase3a_probe_diagnostics_are_sanitized(monkeypatch, tmp_path):
         "settings",
         lambda: SimpleNamespace(state_dir=state),
     )
+    monkeypatch.setattr(lite_semantic_revisions, "_app_current_rows", lambda _app_id: [])
     monkeypatch.setattr(lite_semantic_revisions, "_app_command_rows", lambda _app_id: [])
     monkeypatch.setattr(lite_semantic_revisions, "_latest_app_security_rows", lambda _app_id: [])
     monkeypatch.setattr(lite_semantic_revisions, "_manifest_semantics", lambda: {"count": 0, "items": []})
@@ -737,3 +738,102 @@ def test_phase3a_corrupt_or_oversized_source_fails_closed(monkeypatch, tmp_path)
         lite_semantic_revisions.app_source_revision(scope="catalog")
     probe = lite_semantic_revisions.diagnostics()["probes"]["apps.catalog:photoprism"]
     assert probe["last_error_type"] == "SemanticSourceUnavailable"
+
+
+def test_phase3a_hotfix_oversized_append_journal_is_excluded_not_failed(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions
+
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "lite_catalog_state.json").write_text(
+        '{"apps":[{"id":"photoprism","status":"ready"}]}', encoding="utf-8"
+    )
+    journal = state / "lite_app_operations.json"
+    journal.write_bytes(b"{" + (b"x" * (lite_semantic_revisions._MAX_JSON_BYTES + 1)))
+
+    monkeypatch.setattr(
+        lite_semantic_revisions.deps,
+        "settings",
+        lambda: SimpleNamespace(state_dir=state),
+    )
+    monkeypatch.setattr(lite_semantic_revisions, "_app_current_rows", lambda _app_id: [
+        {
+            "app_id": "photoprism",
+            "status": "ready",
+            "latest_action_id": "action-1",
+            "latest_action_status": "succeeded",
+            "projection_version": 2,
+        }
+    ])
+    monkeypatch.setattr(lite_semantic_revisions, "_app_command_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_latest_app_security_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_manifest_semantics", lambda: {"count": 0, "items": []})
+
+    revision = lite_semantic_revisions.app_source_revision(scope="catalog")
+    assert revision > 0
+    material = lite_semantic_revisions.app_semantic_material(scope="catalog")
+    compatibility = material["compatibility_files"]
+    assert compatibility == [
+        {
+            "file": "lite_app_operations.json",
+            "state": "excluded_compatibility",
+            "semantic_authority": False,
+        }
+    ]
+
+
+def test_phase3a_hotfix_sqlite_current_state_drives_app_revision(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions
+
+    state = tmp_path / "state"
+    state.mkdir()
+    monkeypatch.setattr(
+        lite_semantic_revisions.deps,
+        "settings",
+        lambda: SimpleNamespace(state_dir=state),
+    )
+    current = {
+        "status": "ready",
+        "latest_action_id": "action-1",
+        "latest_action_status": "running",
+        "projection_version": 2,
+    }
+    monkeypatch.setattr(lite_semantic_revisions, "_app_current_rows", lambda _app_id: [dict(current)])
+    monkeypatch.setattr(lite_semantic_revisions, "_app_command_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_latest_app_security_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_manifest_semantics", lambda: {"count": 0, "items": []})
+
+    before = lite_semantic_revisions.app_source_revision(scope="actions")
+    current["latest_action_status"] = "succeeded"
+    after = lite_semantic_revisions.app_source_revision(scope="actions")
+
+    assert after != before
+
+
+def test_phase3a_hotfix_append_journal_growth_does_not_churn_revision(monkeypatch, tmp_path):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_semantic_revisions
+
+    state = tmp_path / "state"
+    state.mkdir()
+    journal = state / "lite_app_operations.json"
+    journal.write_bytes(b"{}")
+    monkeypatch.setattr(
+        lite_semantic_revisions.deps,
+        "settings",
+        lambda: SimpleNamespace(state_dir=state),
+    )
+    monkeypatch.setattr(lite_semantic_revisions, "_app_current_rows", lambda _app_id: [
+        {"app_id": "photoprism", "status": "ready", "projection_version": 2}
+    ])
+    monkeypatch.setattr(lite_semantic_revisions, "_app_command_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_latest_app_security_rows", lambda _app_id: [])
+    monkeypatch.setattr(lite_semantic_revisions, "_manifest_semantics", lambda: {"count": 0, "items": []})
+
+    before = lite_semantic_revisions.app_source_revision(scope="lifecycle")
+    journal.write_bytes(b"{" + (b"x" * (lite_semantic_revisions._MAX_JSON_BYTES + 4096)))
+    after = lite_semantic_revisions.app_source_revision(scope="lifecycle")
+
+    assert after == before
