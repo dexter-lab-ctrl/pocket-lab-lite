@@ -473,29 +473,27 @@ def _backup_root() -> Path:
     return Path(configured).expanduser() if configured else Path.home() / "pocket-lab-lite-backups"
 
 
+def _manifest_index_rows() -> list[dict[str, Any]]:
+    """Return bounded backup current-state metadata without parsing historical manifests."""
+    return _read_rows(
+        "SELECT backup_id,backup_type,status,verification_status,size_bytes,summary "
+        "FROM backup_manifest_index "
+        "ORDER BY updated_at_epoch_ms DESC,backup_id DESC LIMIT ?",
+        (_MAX_DB_ROWS,),
+    )
+
+
 def _manifest_semantics() -> dict[str, Any]:
-    directory = _backup_root() / "manifests"
-    try:
-        iterator = os.scandir(directory)
-    except OSError:
-        return {"state": "missing", "count": 0, "items": []}
-    names: list[str] = []
-    count = 0
-    try:
-        for entry in iterator:
-            if count >= _MAX_MANIFEST_ENTRIES:
-                break
-            count += 1
-            if entry.is_file(follow_symlinks=False) and entry.name.endswith(".json"):
-                names.append(entry.name)
-    finally:
-        iterator.close()
-    selected = sorted(names, reverse=True)[:32]
+    """Use SQLite metadata as authority; full manifest JSON is compatibility history only."""
     return {
         "state": "ready",
-        "count": len(names),
-        "truncated": count >= _MAX_MANIFEST_ENTRIES,
-        "items": [_read_json_semantics(directory / name) for name in selected],
+        "semantic_authority": "backup_manifest_index",
+        "rows": _manifest_index_rows(),
+        "compatibility_files": {
+            "state": "excluded_compatibility",
+            "semantic_authority": False,
+            "kind": "backup_manifest",
+        },
     }
 
 
@@ -556,7 +554,7 @@ def app_semantic_material(
     *,
     scope: str = "lifecycle",
     app_id: str = "photoprism",
-    include_manifests: bool = True,
+    include_manifests: bool = False,
 ) -> dict[str, Any]:
     normalized_scope = str(scope or "lifecycle").strip().lower()
     files = _APP_SCOPE_FILES.get(normalized_scope, _APP_SCOPE_FILES["lifecycle"])
@@ -569,7 +567,7 @@ def app_semantic_material(
         "current_state": _app_current_rows(app_id),
         "commands": _app_command_rows(app_id),
     }
-    if include_manifests and normalized_scope in {"catalog", "lifecycle", "actions", "backup"}:
+    if include_manifests and normalized_scope == "backup":
         material["manifests"] = _manifest_semantics()
     if normalized_scope in {"catalog", "lifecycle", "actions"}:
         material["security"] = _latest_app_security_rows(app_id)
