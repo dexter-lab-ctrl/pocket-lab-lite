@@ -9,6 +9,8 @@ WARMUP_ATTEMPTS="${POCKETLAB_PHASE3B_WARMUP_ATTEMPTS:-15}"
 READY_ATTEMPTS="${POCKETLAB_PHASE3B_READY_ATTEMPTS:-30}"
 READY_CONNECT_TIMEOUT="${POCKETLAB_PHASE3B_READY_CONNECT_TIMEOUT:-2}"
 READY_MAX_TIME="${POCKETLAB_PHASE3B_READY_MAX_TIME:-10}"
+QUIESCENCE_ATTEMPTS="${POCKETLAB_PHASE3B_QUIESCENCE_ATTEMPTS:-30}"
+QUIESCENCE_SLEEP_SECONDS="${POCKETLAB_PHASE3B_QUIESCENCE_SLEEP_SECONDS:-2}"
 RUN_ID="phase3b-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 RUN_DIR="$STATE_DIR/.pocketlab-dev/phase3b/$RUN_ID"
 mkdir -p "$RUN_DIR"
@@ -25,6 +27,12 @@ case "$WARMUP_ATTEMPTS" in
 esac
 case "$READY_ATTEMPTS" in
   ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_READY_ATTEMPTS must be an integer" >&2; exit 2 ;;
+esac
+case "$QUIESCENCE_ATTEMPTS" in
+  ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_QUIESCENCE_ATTEMPTS must be an integer" >&2; exit 2 ;;
+esac
+case "$QUIESCENCE_SLEEP_SECONDS" in
+  ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_QUIESCENCE_SLEEP_SECONDS must be an integer" >&2; exit 2 ;;
 esac
 
 wait_for_api_ready() {
@@ -60,6 +68,70 @@ fetch_prepared_endpoints() {
   fetch_json "system-supervisor$suffix" /api/lite/system/supervisor
   fetch_json "remote-access$suffix" /api/lite/remote-access/readiness
   fetch_json "nats-readiness$suffix" /api/lite/system/nats-readiness
+}
+
+wait_for_scheduler_quiescent() {
+  local output_name="$1"
+  local attempt
+
+  for attempt in $(seq 1 "$QUIESCENCE_ATTEMPTS"); do
+    fetch_json "$output_name" /api/lite/diagnostics/runtime
+
+    if python3 - "$RUN_DIR/$output_name.json" <<'PYQ'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+scheduler = (payload.get("projection_scheduler") or {}).get("domains") or {}
+
+required = {
+    "security.progress",
+    "security.summary",
+    "system.status",
+    "system.health",
+    "system.processes",
+    "system.agent",
+    "system.supervisor",
+    "system.remote_access",
+    "system.nats_remote",
+    "system.fleet_probe",
+}
+
+busy = {}
+for name in sorted(required):
+    row = scheduler.get(name) or {}
+    reasons = [
+        key
+        for key in (
+            "refresh_pending",
+            "active",
+            "queued",
+            "followup_requested",
+        )
+        if bool(row.get(key))
+    ]
+    if reasons:
+        busy[name] = reasons
+
+if busy:
+    print(
+        json.dumps(
+            {"scheduler_not_quiescent": busy},
+            sort_keys=True,
+        ),
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+PYQ
+    then
+      return 0
+    fi
+
+    sleep "$QUIESCENCE_SLEEP_SECONDS"
+  done
+
+  echo "Phase 3B scheduler did not become quiescent after the idle read cycle" >&2
+  return 1
 }
 
 validate_runtime() {
@@ -156,8 +228,12 @@ fi
 if [ "$IDLE_SECONDS" -gt 0 ]; then
   sleep "$IDLE_SECONDS"
   fetch_prepared_endpoints "-after-idle"
-  sleep 2
-  fetch_json runtime-after-idle /api/lite/diagnostics/runtime
+
+  # The reads above may legitimately schedule stale-while-refreshing work.
+  # Wait for that bounded reconciliation to settle before asserting the
+  # strict final idle state. Persistent invalidation loops still time out.
+  wait_for_scheduler_quiescent "runtime-after-idle"
+
   validate_runtime "$RUN_DIR/runtime-after-idle.json" "$RUN_DIR/scheduler-after.json"
   python3 - "$RUN_DIR/scheduler-before.json" "$RUN_DIR/scheduler-after.json" <<'PY'
 import json, sys
