@@ -794,6 +794,27 @@ def test_e4_timed_out_child_keeps_domain_occupied_and_queue_bounded(tmp_path, mo
     scheduler.shutdown(drain_seconds=1.0)
 
 
+
+def test_e4_default_domain_capacity_covers_phase3a_phase3b_phase3c(monkeypatch):
+    monkeypatch.delenv("POCKETLAB_LITE_PROJECTION_MAX_DOMAINS", raising=False)
+    from api_fastapi.services.projection_scheduler import ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    diagnostics = scheduler.diagnostics()
+
+    assert scheduler.max_domains == 32
+    assert diagnostics["max_domains"] == 32
+    assert diagnostics["registered_domains"] == 0
+    assert diagnostics["remaining_domain_capacity"] == 32
+
+
+def test_e4_projection_domain_capacity_has_safe_minimum(monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_PROJECTION_MAX_DOMAINS", "8")
+    from api_fastapi.services.projection_scheduler import ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    assert scheduler.max_domains == 24
+
 def test_e4_capacity_is_bounded_and_executor_rejection_cools_down(tmp_path, monkeypatch):
     scheduler = _new_scheduler(tmp_path, monkeypatch)
     from api_fastapi.services.projection_scheduler import ProjectionJob

@@ -26,12 +26,19 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setenv("POCKETLAB_STATE_DIR", str(state_dir))
     monkeypatch.setenv("POCKETLAB_BASE_DIR", str(tmp_path))
     from api_fastapi.db.connection import reset_sqlite_path_cache
-    from api_fastapi.db.migrations import apply_migrations
+    from api_fastapi.db.migrations import apply_migrations, current_schema_version
     from api_fastapi.db.runtime import SQLITE_READS
 
     reset_sqlite_path_cache()
     SQLITE_READS.invalidate()
-    assert apply_migrations() == list(range(1, 17))
+
+    # Migration application is intentionally idempotent. In combined test
+    # runs, an already-imported runtime component may initialize this temporary
+    # database before this call, causing apply_migrations() to return [].
+    # Validate the authoritative postcondition rather than which caller won
+    # the initialization race.
+    apply_migrations()
+    assert current_schema_version() == 16
     return database
 
 
