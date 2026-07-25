@@ -252,6 +252,39 @@ def test_app_current_subprojections_are_persisted_bounded_and_change_only(tmp_pa
     assert "token" not in row["media_state_json"].lower()
 
 
+def test_project_apps_accepts_boolean_catalog_open_action(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    payload = {
+        "apps": [{
+            "id": "photoprism",
+            "name": "PhotoPrism",
+            "installed": True,
+            "status": "healthy",
+            "summary": "PhotoPrism is ready.",
+            "actions": {"open": True},
+        }],
+        "updated_at": datetime.now(timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z"),
+    }
+
+    assert store.project_apps(payload) == 1
+    saved = store.app_current_subprojections("photoprism", max_age_seconds=24 * 60 * 60)
+    assert saved is not None
+    assert saved["catalog"]["access"]["open_url"] == "/apps/photoprism/"
+    assert saved["catalog"]["actions"]["open"] is True
+
+    payload["apps"][0]["actions"]["open"] = False
+    assert store.project_apps(payload) == 2
+    saved = store.app_current_subprojections("photoprism", max_age_seconds=24 * 60 * 60)
+    assert saved is not None
+    assert saved["catalog"]["access"] == {}
+    assert saved["catalog"]["actions"]["open"] is False
+
+
 def test_app_lifecycle_reuses_sqlite_current_state_and_reconciles_in_background():
     source = Path(
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py"
