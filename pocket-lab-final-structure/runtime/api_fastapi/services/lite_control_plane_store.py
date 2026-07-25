@@ -3509,6 +3509,12 @@ class ControlPlaneProjectionStore:
                     continue
                 app_ids.append(app_id)
                 actions = app.get("actions") if isinstance(app.get("actions"), dict) else {}
+                open_action = actions.get("open")
+                open_enabled = (
+                    bool(open_action.get("enabled"))
+                    if isinstance(open_action, dict)
+                    else bool(open_action)
+                )
                 current = app.get("current_action") if isinstance(app.get("current_action"), dict) else {}
                 latest_action_id = _safe_text(current.get("action_id"), 120) or None
                 latest_action_status = _normalize_status(current.get("status")) if current else None
@@ -3565,9 +3571,9 @@ class ControlPlaneProjectionStore:
                          "id": app_id, "name": app.get("name"), "status": app.get("status"),
                          "installed": bool(app.get("installed")), "host_device_id": (app.get("host_device") or {}).get("id") if isinstance(app.get("host_device"), dict) else None,
                          "host_device_name": (app.get("host_device") or {}).get("name") if isinstance(app.get("host_device"), dict) else None,
-                         "access": {"open_url": "/apps/photoprism/"} if bool((actions.get("open") or {}).get("enabled")) else {},
-                         "runtime": {"url": "/apps/photoprism/"} if bool((actions.get("open") or {}).get("enabled")) else {},
-                         "actions": {"open": bool((actions.get("open") or {}).get("enabled"))},
+                         "access": {"open_url": "/apps/photoprism/"} if open_enabled else {},
+                         "runtime": {"url": "/apps/photoprism/"} if open_enabled else {},
+                         "actions": {"open": open_enabled},
                      }), max_bytes=2048),
                      _safe_json(_compact_app_subprojection("media", app.get("media")), max_bytes=4096),
                      _safe_json(_compact_app_subprojection("operations", app.get("operations")), max_bytes=4096),
