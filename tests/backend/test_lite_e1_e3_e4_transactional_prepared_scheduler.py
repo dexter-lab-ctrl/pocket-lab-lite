@@ -617,7 +617,7 @@ def _new_scheduler(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, io_worker
     return ProjectionScheduler()
 
 
-def test_e4_single_flight_coalesces_and_discards_stale_generation(tmp_path, monkeypatch):
+def test_e4_single_flight_coalesces_and_runs_one_bounded_followup(tmp_path, monkeypatch):
     scheduler = _new_scheduler(tmp_path, monkeypatch)
     from api_fastapi.services.projection_scheduler import ProjectionJob
 
@@ -650,8 +650,9 @@ def test_e4_single_flight_coalesces_and_discards_stale_generation(tmp_path, monk
     assert max_active == 1
     assert calls == 2
     assert status["coalesced_count"] >= 25
-    assert status["stale_generation_count"] >= 1
-    assert committed
+    assert status["stale_generation_count"] == 0
+    assert committed == [1, 2]
+    assert status["followup_requested"] is False
     scheduler.shutdown(drain_seconds=1.0)
 
 
@@ -851,10 +852,10 @@ def test_e4_refresh_hints_do_not_invalidate_active_generation(tmp_path, monkeypa
         3.0,
     )
     status = scheduler.status("fleet.summary")
-    assert calls == 1
-    assert committed == [1]
-    assert status["generation"] == 1
-    assert status["committed_generation"] == 1
+    assert calls == 2
+    assert committed == [1, 2]
+    assert status["generation"] == 2
+    assert status["committed_generation"] == 2
     assert status["stale_generation_count"] == 0
     assert status["coalesced_count"] >= 100
     scheduler.shutdown(drain_seconds=1.0)

@@ -1754,10 +1754,12 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     from ..services.hot_path_profiler import HOT_PATH_PROFILER
     from ..services.live_status import LIVE_STATUS
     from ..services.projection_scheduler import PROJECTION_SCHEDULER
+    from ..services.lite_semantic_revisions import diagnostics as semantic_revision_diagnostics
     payload["idle_efficiency"] = IDLE_EFFICIENCY.snapshot()
     payload["hot_path"] = HOT_PATH_PROFILER.snapshot()
     payload["live_status"] = LIVE_STATUS.status()
     payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
+    payload["semantic_revisions"] = semantic_revision_diagnostics()
     payload["sanitized"] = True
     return payload
 
