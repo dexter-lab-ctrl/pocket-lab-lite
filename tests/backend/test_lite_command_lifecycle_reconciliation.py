@@ -346,18 +346,31 @@ def test_legacy_none_attention_can_be_acknowledged_once_without_blocking_activit
     assert lite_phase3c_projections.collect_activity_summary()["attention_required"] == 0
 
 
-def test_record_command_normalizes_terminal_attention_and_preserves_acknowledgement(tmp_path, monkeypatch):
+def test_record_command_attention_is_transition_aware_and_preserves_cleared_state(tmp_path, monkeypatch):
     database = _configure(tmp_path, monkeypatch)
     from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
 
     store = ControlPlaneProjectionStore()
     store.record_command(
-        command_id="normalize-attention",
+        command_id="transition-attention",
+        subject="agent.restart",
+        status="queued",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+    assert _command(database, "transition-attention")["attention_status"] == "none"
+
+    # A genuine non-terminal -> terminal-failure transition activates attention.
+    store.record_command(
+        command_id="transition-attention",
         subject="agent.restart",
         status="undeliverable",
         entity_type="device",
         entity_id="offline-device",
     )
+    activated = _command(database, "transition-attention")
+    assert activated["status"] == "undeliverable"
+    assert activated["attention_status"] == "active"
 
     import sqlite3
     conn = sqlite3.connect(database)
@@ -367,45 +380,82 @@ def test_record_command_normalizes_terminal_attention_and_preserves_acknowledgem
             UPDATE command_lifecycle
             SET attention_status='none', attention_updated_at=NULL,
                 attention_updated_at_epoch_ms=0
-            WHERE command_id='normalize-attention'
+            WHERE command_id='transition-attention'
             """
         )
         conn.commit()
     finally:
         conn.close()
 
-    store.record_command(
-        command_id="normalize-attention",
-        subject="agent.restart",
-        status="undeliverable",
-        entity_type="device",
-        entity_id="offline-device",
-    )
-    assert _command(database, "normalize-attention")["attention_status"] == "active"
-
-    assert store.acknowledge_command_attention("normalize-attention") is True
     revision = store.domain_revision("commands")
     store.record_command(
-        command_id="normalize-attention",
+        command_id="transition-attention",
         subject="agent.restart",
         status="undeliverable",
         entity_type="device",
         entity_id="offline-device",
     )
-    row = _command(database, "normalize-attention")
+    cleared = _command(database, "transition-attention")
+    assert cleared["status"] == "undeliverable"
+    assert cleared["attention_status"] == "none"
+    assert cleared["attention_updated_at"] is None
+    assert cleared["attention_updated_at_epoch_ms"] == 0
+    assert store.domain_revision("commands") == revision
+
+
+def test_record_command_duplicate_and_stale_events_preserve_acknowledgement(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    store.record_command(
+        command_id="acknowledged-attention",
+        subject="agent.restart",
+        status="undeliverable",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+    assert store.acknowledge_command_attention("acknowledged-attention") is True
+    revision = store.domain_revision("commands")
+
+    store.record_command(
+        command_id="acknowledged-attention",
+        subject="agent.restart",
+        status="undeliverable",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+    row = _command(database, "acknowledged-attention")
     assert row["status"] == "undeliverable"
     assert row["attention_status"] == "acknowledged"
     assert store.domain_revision("commands") == revision
 
-    # A stale contradictory terminal delivery must not clear acknowledgement
-    # when the command row itself is fenced against terminal regression.
+    # A stale contradictory terminal delivery is fenced from changing the
+    # terminal status and must not reopen or clear acknowledged attention.
     store.record_command(
-        command_id="normalize-attention",
+        command_id="acknowledged-attention",
         subject="agent.restart",
         status="succeeded",
         entity_type="device",
         entity_id="offline-device",
     )
-    row = _command(database, "normalize-attention")
+    row = _command(database, "acknowledged-attention")
     assert row["status"] == "undeliverable"
     assert row["attention_status"] == "acknowledged"
+    assert store.domain_revision("commands") == revision
+
+
+def test_new_command_ids_activate_attention_independently(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    for command_id in ("retry-one", "retry-two"):
+        store.record_command(
+            command_id=command_id,
+            subject="agent.restart",
+            status="undeliverable",
+            entity_type="device",
+            entity_id="offline-device",
+        )
+        assert _command(database, command_id)["attention_status"] == "active"

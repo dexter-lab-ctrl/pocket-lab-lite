@@ -3432,6 +3432,15 @@ class ControlPlaneProjectionStore:
         recovery_action = _safe_text(command.get("recovery_action"), 80)
         entity_id = _safe_text(command.get("node_id") or command.get("app_id") or command.get("entity_id") or "control-plane", 120)
         operation_type = _safe_text(command.get("command") or command.get("action_id") or command.get("operation_type"), 100)
+        previous = conn.execute(
+            """
+            SELECT status, attention_status, attention_updated_at,
+                   attention_updated_at_epoch_ms
+            FROM command_lifecycle
+            WHERE command_id=?
+            """,
+            (command_id,),
+        ).fetchone()
         conn.execute(
             """
             INSERT INTO command_lifecycle(
@@ -3482,41 +3491,78 @@ class ControlPlaneProjectionStore:
         )
         changed = _changes(conn)
         persisted = conn.execute(
-            "SELECT status,attention_status FROM command_lifecycle WHERE command_id=?",
+            """
+            SELECT status, attention_status, attention_updated_at,
+                   attention_updated_at_epoch_ms
+            FROM command_lifecycle
+            WHERE command_id=?
+            """,
             (command_id,),
         ).fetchone()
         if persisted is None:
             return changed
+
         persisted_status = _normalize_status(persisted["status"])
-        attention_status = "active" if persisted_status in _ATTENTION_STATUSES else "none"
+        persisted_is_failure = persisted_status in _ATTENTION_STATUSES
+        previous_status = (
+            _normalize_status(previous["status"])
+            if previous is not None
+            else ""
+        )
+        previous_is_failure = previous_status in _ATTENTION_STATUSES
+        previous_attention = (
+            str(previous["attention_status"] or "none")
+            if previous is not None
+            else "none"
+        )
+
+        # Attention is edge-triggered. A command enters active attention only
+        # when this write creates a new command already in a terminal failure
+        # state, or causes a genuine non-failure -> failure transition. Duplicate
+        # terminal deliveries must preserve an intentionally cleared `none` or
+        # an explicit `acknowledged` state and must not create revision churn.
+        if persisted_is_failure and (previous is None or not previous_is_failure):
+            target_attention = "active"
+            target_attention_at = updated_at
+            target_attention_epoch_ms = _epoch_ms(updated_at)
+        elif persisted_is_failure:
+            target_attention = (
+                previous_attention
+                if previous_attention in {"none", "active", "acknowledged"}
+                else "none"
+            )
+            if target_attention in {"active", "acknowledged"}:
+                target_attention_at = previous["attention_updated_at"]
+                target_attention_epoch_ms = int(
+                    previous["attention_updated_at_epoch_ms"] or 0
+                )
+            else:
+                target_attention_at = None
+                target_attention_epoch_ms = 0
+        else:
+            target_attention = "none"
+            target_attention_at = None
+            target_attention_epoch_ms = 0
+
         conn.execute(
             """
             UPDATE command_lifecycle
-            SET attention_status=CASE
-                    WHEN attention_status='acknowledged' AND ?='active' THEN 'acknowledged'
-                    ELSE ?
-                END,
-                attention_updated_at=CASE
-                    WHEN attention_status='acknowledged' AND ?='active' THEN attention_updated_at
-                    WHEN ?='active' THEN ?
-                    ELSE NULL
-                END,
-                attention_updated_at_epoch_ms=CASE
-                    WHEN attention_status='acknowledged' AND ?='active' THEN attention_updated_at_epoch_ms
-                    WHEN ?='active' THEN ?
-                    ELSE 0
-                END
+            SET attention_status=?, attention_updated_at=?,
+                attention_updated_at_epoch_ms=?
             WHERE command_id=?
-              AND (attention_status IS NOT CASE
-                       WHEN attention_status='acknowledged' AND ?='active' THEN 'acknowledged'
-                       ELSE ?
-                   END
-                   OR (?='active' AND attention_status='none')
-                   OR (?='none' AND (attention_updated_at IS NOT NULL OR attention_updated_at_epoch_ms != 0)))
+              AND (attention_status IS NOT ?
+                   OR attention_updated_at IS NOT ?
+                   OR attention_updated_at_epoch_ms != ?)
             """,
-            (attention_status, attention_status, attention_status, attention_status, updated_at,
-             attention_status, attention_status, _epoch_ms(updated_at), command_id,
-             attention_status, attention_status, attention_status, attention_status),
+            (
+                target_attention,
+                target_attention_at,
+                target_attention_epoch_ms,
+                command_id,
+                target_attention,
+                target_attention_at,
+                target_attention_epoch_ms,
+            ),
         )
         return _changes(conn) or changed
 
