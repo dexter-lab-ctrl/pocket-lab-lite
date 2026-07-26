@@ -3773,7 +3773,7 @@ class ControlPlaneProjectionStore:
                 ).fetchone()
                 conn.execute(
                     """
-                    INSERT INTO audit_evidence_index(
+                    INSERT OR IGNORE INTO audit_evidence_index(
                         event_type,entity_type,entity_id,operation_id,status,evidence_ref,
                         created_at,created_at_epoch_ms,summary
                     ) VALUES(?,?,?,?,?,?,?,?,?)
@@ -3782,10 +3782,12 @@ class ControlPlaneProjectionStore:
                      _safe_text(row["entity_id"], 120), safe_id, str(row["status"]),
                      "command-attention", now, now_ms, "Command attention acknowledged."),
                 )
-                _bump_revision(
-                    conn, "audit", now, changed_ids=[safe_id],
-                    reason="audit_state_changed", projection_version=1,
-                )
+                audit_changed = _changes(conn)
+                if audit_changed:
+                    _bump_revision(
+                        conn, "audit", now, changed_ids=[safe_id],
+                        reason="audit_state_changed", projection_version=1,
+                    )
                 revision = _bump_revision(
                     conn, "commands", now, changed_ids=[safe_id],
                     reason="command_state_changed", projection_version=2,
