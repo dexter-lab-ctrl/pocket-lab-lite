@@ -470,41 +470,34 @@ def collect_sqlite_health() -> dict[str, Any]:
     }
 
 
-def _domain_revisions() -> dict[str, int]:
-    domains = ("commands", "apps", "recovery", "audit", "fleet", "security")
-
-    def read(conn: sqlite3.Connection) -> dict[str, int]:
-        placeholders = ",".join("?" for _ in domains)
-        rows = conn.execute(
-            f"SELECT domain,revision FROM domain_revisions WHERE domain IN ({placeholders}) ORDER BY domain",
-            domains,
-        ).fetchall()
-        return {str(row["domain"]): max(0, int(row["revision"] or 0)) for row in rows}
-
-    try:
-        return _read(read)
-    except Exception:
-        return {}
+_ACTIVITY_SEMANTIC_KEYS = (
+    "status",
+    "summary",
+    "active_operations",
+    "attention_required",
+    "recent_completed",
+    "latest_change",
+    "workflows",
+    "audit_reference_count",
+    "policy_mode",
+    "item_count",
+)
 
 
-def _activity_revision_material() -> dict[str, Any]:
-    security_summary = snapshot("security.summary") or {}
-    security_progress = snapshot("security.progress") or {}
-    return {
-        "database_instance": prepared._database_instance(),
-        "domain_revisions": _domain_revisions(),
-        "security_projection": {
-            "summary": int(security_summary.get("projection_revision") or 0),
-            "progress": int(security_progress.get("projection_revision") or 0),
-        },
-    }
+def _activity_semantic_material(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return the exact bounded user-visible activity state used for revision fencing."""
+
+    return {key: payload.get(key) for key in _ACTIVITY_SEMANTIC_KEYS}
 
 
 def activity_source_revision() -> int:
+    # Event hooks remain the admission signal.  The source revision is derived
+    # from the same bounded semantic aggregate that the projector stores, not
+    # broad domain counters or child projection envelope revisions.
+    payload = collect_activity_summary()
     return prepared.semantic_revision(
-        "system.activity_summary", _activity_revision_material()
+        "system.activity_summary", _activity_semantic_material(payload)
     )
-
 
 def collect_activity_summary() -> dict[str, Any]:
     started = time.monotonic()
@@ -592,7 +585,7 @@ def collect_activity_summary() -> dict[str, Any]:
     latest_change = max(latest_candidates, key=lambda item: (item["order"], item["domain"])) if latest_candidates else None
     status = "attention" if attention_count else "active" if active_count else "healthy"
     summary = "Action needs attention." if attention_count else "Something is running." if active_count else "No actions need attention."
-    return {
+    payload = {
         "status": status,
         "summary": summary,
         "active_operations": active_count,
@@ -602,14 +595,15 @@ def collect_activity_summary() -> dict[str, Any]:
         "workflows": workflows,
         "audit_reference_count": min(_MAX_RECENT, len(rows["audit"])),
         "policy_mode": "lite_personal",
-        "generation": prepared.semantic_revision(
-            "system.activity_summary.generation",
-            {"source": _activity_revision_material(), "active": active_count, "attention": attention_count, "workflows": workflows, "latest_change": latest_change},
-        ),
         "item_count": sum(len(items) for items in domain_rows.values()),
         "collector_duration_ms": round((time.monotonic() - started) * 1000.0, 3),
         "sanitized": True,
     }
+    payload["generation"] = prepared.semantic_revision(
+        "system.activity_summary.generation",
+        _activity_semantic_material(payload),
+    )
+    return payload
 
 
 def builder_for(domain: str) -> Callable[[], dict[str, Any]]:
