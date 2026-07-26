@@ -305,4 +305,7 @@ def test_phase3c_gate_is_termux_safe_and_strict():
     assert "POCKETLAB_PHASE3C_RUNTIME_MAX_TIME" in script
     assert "remaining_domain_capacity" in script
     assert 'rm -f "$raw"' in script
+    assert 'local name="$1"\n  local raw="$RUN_DIR/.$name.raw"' in script
+    assert 'local name="$1" raw="$RUN_DIR/.$name.raw"' not in script
+    assert "set -euo pipefail" in script
     assert "nats://user:" not in script.lower()
