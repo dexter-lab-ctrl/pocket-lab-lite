@@ -356,3 +356,98 @@ def test_activity_revision_ignores_domain_and_projection_envelope_churn(tmp_path
         conn.close()
 
     assert phase3c.activity_source_revision() != second_revision
+
+
+def _load_phase3c_gate_activity_helper():
+    import importlib.util
+
+    path = Path("scripts/dev/lib/phase3c_gate_activity.py")
+    spec = importlib.util.spec_from_file_location("phase3c_gate_activity", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _idle_activity_payload(**overrides):
+    payload = {
+        "status": "idle",
+        "summary": "Nothing is running.",
+        "active_operations": 0,
+        "attention_required": 0,
+        "recent_completed": 24,
+        "latest_change": {"domain": "security", "status": "succeeded", "summary": "quick"},
+        "workflows": {
+            "devices": {"active": 0, "attention": 0, "latest_status": "succeeded", "latest_summary": "agent.restart", "recent_completed": 1}
+        },
+        "audit_reference_count": 1,
+        "policy_mode": "lite_personal",
+        "item_count": 49,
+        "source_revision": 101,
+        "projection_revision": 12,
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_phase3c_gate_rejects_active_command_before_baseline():
+    helper = _load_phase3c_gate_activity_helper()
+    payload = _idle_activity_payload(
+        status="active",
+        active_operations=1,
+        workflows={"devices": {"active": 1, "latest_status": "queued", "latest_summary": "agent.restart"}},
+    )
+    with pytest.raises(helper.ActivityNotIdle):
+        helper.build_sample(payload)
+
+
+def test_phase3c_gate_resets_stability_when_command_completes_during_baseline():
+    helper = _load_phase3c_gate_activity_helper()
+    active = _idle_activity_payload(status="active", active_operations=1)
+    with pytest.raises(helper.ActivityNotIdle):
+        helper.build_sample(active)
+
+    completed = _idle_activity_payload(source_revision=202)
+    first = helper.build_sample(completed)
+    second = helper.build_sample(dict(completed, projection_revision=13))
+    third = helper.build_sample(dict(completed, projection_revision=14))
+    assert helper.samples_match(first, second)
+    assert helper.samples_match(second, third)
+
+
+def test_phase3c_gate_accepts_three_stable_idle_activity_samples():
+    helper = _load_phase3c_gate_activity_helper()
+    payload = _idle_activity_payload()
+    samples = [helper.build_sample(dict(payload, projection_revision=value)) for value in (12, 13, 14)]
+    assert helper.samples_match(samples[0], samples[1])
+    assert helper.samples_match(samples[1], samples[2])
+    assert helper.classify_observation(samples[2], dict(payload, projection_revision=15))[0] == "idle"
+
+
+def test_phase3c_gate_distinguishes_new_activity_during_observation():
+    helper = _load_phase3c_gate_activity_helper()
+    baseline = helper.build_sample(_idle_activity_payload())
+    active = _idle_activity_payload(status="active", active_operations=1, source_revision=303)
+    state, sample = helper.classify_observation(baseline, active)
+    assert state == "activity_appeared"
+    assert sample is None
+
+
+def test_phase3c_gate_distinguishes_completed_activity_change_during_observation():
+    helper = _load_phase3c_gate_activity_helper()
+    baseline = helper.build_sample(_idle_activity_payload())
+    changed = _idle_activity_payload(recent_completed=25, source_revision=404)
+    state, sample = helper.classify_observation(baseline, changed)
+    assert state == "activity_changed"
+    assert sample is not None
+
+
+def test_phase3c_gate_contract_requires_semantic_idle_stabilization():
+    script = Path("scripts/dev/check-lite-phase3c-projections.sh").read_text(encoding="utf-8")
+    assert "POCKETLAB_PHASE3C_IDLE_BASELINE_ATTEMPTS" in script
+    assert 'IDLE_STABLE_SAMPLES="${POCKETLAB_PHASE3C_IDLE_STABLE_SAMPLES:-3}"' in script
+    assert "wait_for_semantic_idle_baseline" in script
+    assert "activity_scheduler_quiescent" in script
+    assert "verify_activity_remained_idle" in script
+    assert "Phase 3C activity appeared during idle interval" in Path("scripts/dev/lib/phase3c_gate_activity.py").read_text(encoding="utf-8")
+    assert "if delta > 2" in script

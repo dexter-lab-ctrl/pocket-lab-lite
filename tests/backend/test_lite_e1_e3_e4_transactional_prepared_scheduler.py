@@ -885,6 +885,51 @@ def test_e4_refresh_hints_do_not_invalidate_active_generation(tmp_path, monkeypa
     scheduler.shutdown(drain_seconds=1.0)
 
 
+
+def test_scheduler_quiesce_fences_active_jobs_for_database_switch():
+    ensure_runtime_path()
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    started = threading.Event()
+    release = threading.Event()
+
+    def builder():
+        started.set()
+        release.wait(timeout=2.0)
+        return {"status": "ready"}
+
+    scheduler.mark_dirty(
+        "test.database-switch",
+        job=ProjectionJob(
+            domain="test.database-switch",
+            builder=builder,
+            projector=lambda payload: 1,
+            priority=10,
+            work_class="io",
+            deadline_seconds=2.0,
+        ),
+    )
+    assert started.wait(timeout=1.0)
+
+    result: list[bool] = []
+    thread = threading.Thread(
+        target=lambda: result.append(
+            scheduler.quiesce_for_database_switch(timeout_seconds=2.0)
+        )
+    )
+    thread.start()
+    time.sleep(0.05)
+    release.set()
+    thread.join(timeout=2.0)
+
+    assert result == [True]
+    status = scheduler.status("test.database-switch")
+    assert status["active"] is False
+    assert status["queued"] is False
+    assert status["refresh_pending"] is False
+    scheduler.shutdown(drain_seconds=1.0)
+
 def test_e3_prepared_reads_use_coalescing_refresh_hints():
     source = Path(
         "pocket-lab-final-structure/runtime/api_fastapi/services/"

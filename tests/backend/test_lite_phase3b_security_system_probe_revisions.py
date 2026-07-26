@@ -570,3 +570,18 @@ def test_phase3b_gate_reports_the_exact_failed_endpoint():
     assert 'Phase 3B endpoint failed: $path returned HTTP $code' in source
     assert "-w '%{http_code}'" in source
     assert "sed -n '1,80p'" in source
+
+
+def test_security_compact_cache_key_signals_are_opaque_and_path_safe(tmp_path, monkeypatch):
+    _configure(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_security
+
+    raw_path = "/data/data/com.termux/files/home/pocket-lab-lite/state/security/latest.json"
+    signals = lite_security._safe_cache_key_signals((raw_path, 123, 456, "quick"))
+
+    assert len(signals) == 4
+    assert all(value.startswith("security-cache-key-signal-") for value in signals)
+    encoded = json.dumps(signals).lower()
+    assert "/data/data/" not in encoded
+    assert "pocket-lab-lite" not in encoded
+    assert raw_path not in encoded

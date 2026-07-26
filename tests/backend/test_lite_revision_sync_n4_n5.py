@@ -6,17 +6,13 @@ from pathlib import Path
 import pytest
 from starlette.requests import Request
 
-from pocket_lab_test_utils import ensure_runtime_path
+from pocket_lab_test_utils import ensure_runtime_path, prepare_sqlite_test_database
 
 
 def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     ensure_runtime_path()
     target = tmp_path / "state" / "pocketlab-lite.sqlite3"
-    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(target))
-    from api_fastapi.db.connection import reset_sqlite_path_cache
-
-    reset_sqlite_path_cache()
-    return target
+    return prepare_sqlite_test_database(target, monkeypatch)
 
 
 def _fleet_payload(*, state: str = "online", count: int = 2) -> dict:

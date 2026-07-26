@@ -8,10 +8,13 @@ IDLE_SECONDS="${POCKETLAB_PHASE3C_IDLE_SECONDS:-60}"
 READY_ATTEMPTS="${POCKETLAB_PHASE3C_READY_ATTEMPTS:-30}"
 WARMUP_ATTEMPTS="${POCKETLAB_PHASE3C_WARMUP_ATTEMPTS:-20}"
 QUIESCENCE_ATTEMPTS="${POCKETLAB_PHASE3C_QUIESCENCE_ATTEMPTS:-30}"
+IDLE_BASELINE_ATTEMPTS="${POCKETLAB_PHASE3C_IDLE_BASELINE_ATTEMPTS:-60}"
+IDLE_STABLE_SAMPLES="${POCKETLAB_PHASE3C_IDLE_STABLE_SAMPLES:-3}"
 RUNTIME_MAX_TIME="${POCKETLAB_PHASE3C_RUNTIME_MAX_TIME:-30}"
 RUNTIME_ATTEMPTS="${POCKETLAB_PHASE3C_RUNTIME_ATTEMPTS:-3}"
 RUN_ID="phase3c-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 RUN_DIR="$STATE_DIR/.pocketlab-dev/phase3c/$RUN_ID"
+ACTIVITY_HELPER="$ROOT/scripts/dev/lib/phase3c_gate_activity.py"
 mkdir -p "$RUN_DIR"
 
 finalize_phase3c_gate() {
@@ -30,12 +33,14 @@ PYFINAL
 }
 trap finalize_phase3c_gate EXIT
 
-for value in "$IDLE_SECONDS" "$READY_ATTEMPTS" "$WARMUP_ATTEMPTS" "$QUIESCENCE_ATTEMPTS" "$RUNTIME_MAX_TIME" "$RUNTIME_ATTEMPTS"; do
+for value in "$IDLE_SECONDS" "$READY_ATTEMPTS" "$WARMUP_ATTEMPTS" "$QUIESCENCE_ATTEMPTS" "$IDLE_BASELINE_ATTEMPTS" "$IDLE_STABLE_SAMPLES" "$RUNTIME_MAX_TIME" "$RUNTIME_ATTEMPTS"; do
   case "$value" in ''|*[!0-9]*) echo "Phase 3C gate values must be integers" >&2; exit 2;; esac
 done
 [ "$IDLE_SECONDS" -le 1800 ] || { echo "POCKETLAB_PHASE3C_IDLE_SECONDS must be 1800 or less" >&2; exit 2; }
 [ "$RUNTIME_MAX_TIME" -ge 10 ] && [ "$RUNTIME_MAX_TIME" -le 60 ] || { echo "POCKETLAB_PHASE3C_RUNTIME_MAX_TIME must be between 10 and 60" >&2; exit 2; }
 [ "$RUNTIME_ATTEMPTS" -ge 1 ] && [ "$RUNTIME_ATTEMPTS" -le 5 ] || { echo "POCKETLAB_PHASE3C_RUNTIME_ATTEMPTS must be between 1 and 5" >&2; exit 2; }
+[ "$IDLE_BASELINE_ATTEMPTS" -ge 3 ] && [ "$IDLE_BASELINE_ATTEMPTS" -le 300 ] || { echo "POCKETLAB_PHASE3C_IDLE_BASELINE_ATTEMPTS must be between 3 and 300" >&2; exit 2; }
+[ "$IDLE_STABLE_SAMPLES" -eq 3 ] || { echo "POCKETLAB_PHASE3C_IDLE_STABLE_SAMPLES must be 3" >&2; exit 2; }
 
 fetch_json() {
   local name="$1" path="$2"
@@ -94,6 +99,64 @@ PYRUNTIME
   done
   rm -f "$raw"
   return 1
+}
+
+
+activity_semantic_sample() {
+  python3 "$ACTIVITY_HELPER" sample "$1" "$2"
+}
+
+activity_sample_matches() {
+  python3 "$ACTIVITY_HELPER" matches "$1" "$2"
+}
+
+activity_scheduler_quiescent() {
+  local runtime="$1"
+  python3 - "$runtime" <<'PYQUIET'
+import json,sys
+p=json.load(open(sys.argv[1],encoding='utf-8'))
+s=((p.get('projection_scheduler') or {}).get('domains') or {}).get('system.activity_summary') or {}
+busy=[key for key in ('refresh_pending','active','queued','followup_requested') if bool(s.get(key))]
+if busy:
+    print(json.dumps({'system.activity_summary':busy},sort_keys=True),file=sys.stderr)
+    raise SystemExit(1)
+PYQUIET
+}
+
+wait_for_semantic_idle_baseline() {
+  local stable=0 attempt=0 previous="$RUN_DIR/.activity-baseline-previous.json"
+  local candidate="$RUN_DIR/.activity-baseline-candidate.json"
+  rm -f "$previous" "$candidate"
+  for attempt in $(seq 1 "$IDLE_BASELINE_ATTEMPTS"); do
+    fetch_json activity-summary-baseline-candidate /api/lite/system/activity-summary
+    if ! activity_semantic_sample "$RUN_DIR/activity-summary-baseline-candidate.json" "$candidate"; then
+      stable=0; rm -f "$previous" "$candidate"; sleep 2; continue
+    fi
+    if ! fetch_runtime_evidence runtime-baseline-candidate || ! activity_scheduler_quiescent "$RUN_DIR/runtime-baseline-candidate.json"; then
+      stable=0; rm -f "$previous" "$candidate"; sleep 2; continue
+    fi
+    if [ -s "$previous" ] && activity_sample_matches "$previous" "$candidate"; then
+      stable=$((stable + 1))
+    else
+      stable=1
+    fi
+    cp "$candidate" "$previous"
+    if [ "$stable" -ge "$IDLE_STABLE_SAMPLES" ]; then
+      cp "$RUN_DIR/activity-summary-baseline-candidate.json" "$RUN_DIR/activity-summary.json"
+      cp "$RUN_DIR/runtime-baseline-candidate.json" "$RUN_DIR/runtime.json"
+      cp "$candidate" "$RUN_DIR/activity-baseline.json"
+      rm -f "$previous" "$candidate"
+      return 0
+    fi
+    sleep 2
+  done
+  rm -f "$previous" "$candidate"
+  echo "Phase 3C semantic-idle baseline did not stabilize" >&2
+  return 1
+}
+
+verify_activity_remained_idle() {
+  python3 "$ACTIVITY_HELPER" observe "$RUN_DIR/activity-baseline.json" "$1" "$RUN_DIR/activity-after.json"
 }
 
 ready=0
@@ -167,6 +230,8 @@ if command -v pm2 >/dev/null 2>&1; then
 fi
 
 if [ "$IDLE_SECONDS" -gt 0 ]; then
+  wait_for_semantic_idle_baseline
+  validate_runtime "$RUN_DIR/runtime.json" "$RUN_DIR/before.json"
   sleep "$IDLE_SECONDS"
   for path in telemetry-thresholds storage-pressure sqlite-health activity-summary; do
     fetch_json "$path-after-idle" "/api/lite/system/$path"
@@ -187,6 +252,7 @@ PY
     sleep 2
   done
   [ "$settled" -eq 1 ] || { echo "Phase 3C scheduler did not become quiescent" >&2; exit 1; }
+  verify_activity_remained_idle "$RUN_DIR/activity-summary-after-idle.json"
   validate_runtime "$RUN_DIR/runtime-after-idle.json" "$RUN_DIR/after.json"
   python3 - "$RUN_DIR/before.json" "$RUN_DIR/after.json" <<'PY'
 import json,sys
