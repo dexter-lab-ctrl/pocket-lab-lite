@@ -95,6 +95,40 @@ def test_phase3b_semantic_revision_ignores_volatile_probe_noise():
     )
 
 
+
+def test_status_source_revision_ignores_child_projection_envelope_churn(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import lite_phase3b_projections as phase3b
+
+    envelope = {
+        "status": "healthy",
+        "summary": "Ready",
+        "item_count": 1,
+        "domain": "system.health",
+        "generation": 10,
+        "source_revision": 20,
+        "projection_revision": 30,
+        "collector_duration_ms": 4.2,
+        "updated_at": "2026-07-25T00:00:00Z",
+        "projection_only": True,
+    }
+    snapshots = {name: dict(envelope, domain=name) for name in phase3b.SYSTEM_CURRENT_STATE_DOMAINS}
+    monkeypatch.setattr(phase3b, "snapshot", lambda domain: dict(snapshots.get(domain) or {}))
+    monkeypatch.setattr(phase3b, "_database_instance", lambda: "db")
+    monkeypatch.setattr(phase3b, "_bus_material", lambda: {"connected": True})
+
+    first = phase3b.status_source_revision()
+    for value in snapshots.values():
+        value["generation"] += 1
+        value["source_revision"] += 7
+        value["projection_revision"] += 1
+        value["collector_duration_ms"] = 999.0
+        value["updated_at"] = "2026-07-25T01:00:00Z"
+    assert phase3b.status_source_revision() == first
+
+    snapshots["system.health"]["status"] = "degraded"
+    assert phase3b.status_source_revision() != first
+
 def test_phase3b_projection_is_change_only_and_uses_indexed_lookup(tmp_path, monkeypatch):
     database = _configure(tmp_path, monkeypatch)
     from api_fastapi.db.migrations import apply_migrations

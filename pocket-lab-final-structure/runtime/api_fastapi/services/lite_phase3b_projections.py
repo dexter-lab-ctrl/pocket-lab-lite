@@ -969,23 +969,60 @@ def security_summary_source_revision() -> int:
     )
 
 
+_STATUS_SNAPSHOT_ENVELOPE_KEYS = frozenset(
+    {
+        "collector_duration_ms",
+        "domain",
+        "generation",
+        "projection_age_ms",
+        "projection_only",
+        "projection_revision",
+        "read_degraded",
+        "refresh_pending",
+        "retry_after_seconds",
+        "scheduler_generation",
+        "semantic_source_revision",
+        "source_revision",
+        "stored_projection_revision",
+        "updated_at",
+    }
+)
+
+
+def _status_snapshot_material(domain: str) -> dict[str, Any]:
+    """Return only user-visible semantic state for the status revision fence.
+
+    Child projection envelopes advance whenever collectors execute or reconcile.
+    They must not make ``system.status`` look changed when the rendered status
+    payload is identical.  The projector still consumes the complete prepared
+    snapshots; this helper is only for the cheap source-revision callback.
+    """
+
+    prepared = snapshot(domain) or {}
+    return {
+        key: value
+        for key, value in prepared.items()
+        if key not in _STATUS_SNAPSHOT_ENVELOPE_KEYS
+    }
+
+
 def status_source_revision() -> int:
     return semantic_revision(
         "system.status",
         {
             "database_instance": _database_instance(),
-            "health": snapshot("system.health") or {},
-            "processes": snapshot("system.processes") or {},
-            "agent": snapshot("system.agent") or {},
-            "supervisor": snapshot("system.supervisor") or {},
-            "remote_access": snapshot("system.remote_access") or {},
-            "nats": snapshot("system.nats_remote") or _bus_material(),
-            "fleet": fleet_probe_source_revision(),
-            "security": security_summary_source_revision(),
-            "telemetry": snapshot("system.telemetry_thresholds") or {},
-            "storage": snapshot("system.storage_pressure") or {},
-            "sqlite": snapshot("system.sqlite_health") or {},
-            "activity": snapshot("system.activity_summary") or {},
+            "health": _status_snapshot_material("system.health"),
+            "processes": _status_snapshot_material("system.processes"),
+            "agent": _status_snapshot_material("system.agent"),
+            "supervisor": _status_snapshot_material("system.supervisor"),
+            "remote_access": _status_snapshot_material("system.remote_access"),
+            "nats": _status_snapshot_material("system.nats_remote") or _bus_material(),
+            "fleet": _status_snapshot_material("system.fleet_probe"),
+            "security": _status_snapshot_material("security.summary"),
+            "telemetry": _status_snapshot_material("system.telemetry_thresholds"),
+            "storage": _status_snapshot_material("system.storage_pressure"),
+            "sqlite": _status_snapshot_material("system.sqlite_health"),
+            "activity": _status_snapshot_material("system.activity_summary"),
         },
     )
 
