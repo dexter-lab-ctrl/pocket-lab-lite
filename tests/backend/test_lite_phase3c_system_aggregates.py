@@ -38,7 +38,7 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     # Validate the authoritative postcondition rather than which caller won
     # the initialization race.
     apply_migrations()
-    assert current_schema_version() == 16
+    assert current_schema_version() == 17
     return database
 
 

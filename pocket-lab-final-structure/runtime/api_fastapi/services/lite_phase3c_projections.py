@@ -504,7 +504,7 @@ def collect_activity_summary() -> dict[str, Any]:
 
     def read(conn: sqlite3.Connection) -> dict[str, Any]:
         commands = [dict(row) for row in conn.execute(
-            "SELECT command_id,entity_type,entity_id,operation_type,status,updated_at_epoch_ms "
+            "SELECT command_id,entity_type,entity_id,operation_type,status,attention_status,updated_at_epoch_ms "
             "FROM command_lifecycle ORDER BY updated_at_epoch_ms DESC,command_id DESC LIMIT ?",
             (_MAX_RECENT,),
         ).fetchall()]
@@ -562,7 +562,16 @@ def collect_activity_summary() -> dict[str, Any]:
     for domain, items in domain_rows.items():
         statuses = Counter(_safe_status(item.get("status")) for item in items)
         active = max(0, int((rows.get("active_counts") or {}).get(domain) or 0))
-        attention = sum(statuses.get(name, 0) for name in _FAILED)
+        attention = (
+            sum(
+                1
+                for item in items
+                if _safe_status(item.get("status")) in _FAILED
+                and str(item.get("attention_status") or "active") != "acknowledged"
+            )
+            if domain == "devices"
+            else sum(statuses.get(name, 0) for name in _FAILED)
+        )
         completed = sum(statuses.get(name, 0) for name in _TERMINAL)
         active_count += active
         attention_count += attention

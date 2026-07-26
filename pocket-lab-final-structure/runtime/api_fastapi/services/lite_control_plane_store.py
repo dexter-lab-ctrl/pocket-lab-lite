@@ -32,6 +32,7 @@ _ACTIVE_STATUSES = frozenset({"queued", "published", "received", "accepted", "ru
 _TERMINAL_STATUSES = frozenset(
     {"succeeded", "failed", "cancelled", "undeliverable", "timed_out"}
 )
+_ATTENTION_STATUSES = frozenset({"failed", "undeliverable", "timed_out"})
 _SECRET_KEYS = re.compile(
     r"(?:token|password|secret|credential|api[_-]?key|private[_-]?key|auth|cookie|bootstrap|command_payload|raw_log|raw_evidence)",
     re.IGNORECASE,
@@ -3428,7 +3429,7 @@ class ControlPlaneProjectionStore:
         lifecycle_stage = _lifecycle_stage(raw_status, status)
         terminal_at = updated_at if status in _TERMINAL_STATUSES else None
         ignored_redelivery = int(lifecycle_stage == "ignored_redelivery")
-        recovery_action = _safe_text(command.get("recovery_action"), 80) if lifecycle_stage == "recovery_action" else ""
+        recovery_action = _safe_text(command.get("recovery_action"), 80)
         entity_id = _safe_text(command.get("node_id") or command.get("app_id") or command.get("entity_id") or "control-plane", 120)
         operation_type = _safe_text(command.get("command") or command.get("action_id") or command.get("operation_type"), 100)
         conn.execute(
@@ -3466,7 +3467,8 @@ class ControlPlaneProjectionStore:
               AND (excluded.lifecycle_stage IN ('ignored_redelivery','recovery_action')
                    OR command_lifecycle.status IS NOT excluded.status
                    OR command_lifecycle.lifecycle_stage IS NOT excluded.lifecycle_stage
-                   OR command_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
+                   OR (command_lifecycle.updated_at_epoch_ms < excluded.updated_at_epoch_ms
+                       AND command_lifecycle.status NOT IN ('succeeded','failed','cancelled','undeliverable','timed_out'))
                    OR command_lifecycle.summary IS NOT excluded.summary
                    OR command_lifecycle.ignored_redelivery < excluded.ignored_redelivery
                    OR command_lifecycle.recovery_action IS NOT excluded.recovery_action)
@@ -3478,7 +3480,274 @@ class ControlPlaneProjectionStore:
              _safe_json({"requested_by": command.get("requested_by"), "result_status": (command.get("result") or {}).get("status") if isinstance(command.get("result"), dict) else None}),
              lifecycle_stage, terminal_at, ignored_redelivery, recovery_action),
         )
-        return _changes(conn)
+        changed = _changes(conn)
+        attention_status = "active" if status in _ATTENTION_STATUSES else "none"
+        conn.execute(
+            """
+            UPDATE command_lifecycle
+            SET attention_status=CASE
+                    WHEN attention_status='acknowledged' AND ?='active' THEN 'acknowledged'
+                    ELSE ?
+                END,
+                attention_updated_at=CASE
+                    WHEN attention_status='acknowledged' AND ?='active' THEN attention_updated_at
+                    ELSE ?
+                END,
+                attention_updated_at_epoch_ms=CASE
+                    WHEN attention_status='acknowledged' AND ?='active' THEN attention_updated_at_epoch_ms
+                    ELSE ?
+                END
+            WHERE command_id=?
+              AND (attention_status IS NOT CASE
+                       WHEN attention_status='acknowledged' AND ?='active' THEN 'acknowledged'
+                       ELSE ?
+                   END
+                   OR (?='none' AND attention_updated_at IS NOT NULL))
+            """,
+            (attention_status, attention_status, attention_status, updated_at,
+             attention_status, _epoch_ms(updated_at), command_id,
+             attention_status, attention_status, attention_status),
+        )
+        return _changes(conn) or changed
+
+    def _propagate_command_revision(self, previous_revision: int, current_revision: int, *, reason: str) -> None:
+        if int(current_revision) == int(previous_revision):
+            return
+        try:
+            from . import lite_phase3c_projections
+
+            lite_phase3c_projections.mark_dirty(
+                "system.activity_summary", reason=reason
+            )
+        except Exception:
+            pass
+
+    def reconcile_command_lifecycle(
+        self,
+        *,
+        now_epoch_ms: int | None = None,
+        legacy_max_age_seconds: int | None = None,
+        missing_target_grace_seconds: int | None = None,
+        limit: int = 100,
+    ) -> dict[str, Any]:
+        """Terminalize persisted orphan commands with bounded, idempotent CAS updates."""
+        self.initialize()
+        now_ms = int(now_epoch_ms if now_epoch_ms is not None else time.time() * 1000)
+        now = datetime.fromtimestamp(now_ms / 1000.0, tz=timezone.utc).isoformat().replace("+00:00", "Z")
+
+        def bounded_seconds(value: int | None, env_name: str, default: int, minimum: int, maximum: int) -> int:
+            raw: Any = value if value is not None else os.environ.get(env_name, str(default))
+            try:
+                parsed = int(raw)
+            except (TypeError, ValueError):
+                parsed = default
+            return max(minimum, min(maximum, parsed))
+
+        legacy_age_ms = 1000 * bounded_seconds(
+            legacy_max_age_seconds, "POCKETLAB_COMMAND_LEGACY_MAX_AGE_SECONDS", 3600, 60, 604800
+        )
+        missing_grace_ms = 1000 * bounded_seconds(
+            missing_target_grace_seconds, "POCKETLAB_COMMAND_MISSING_TARGET_GRACE_SECONDS", 300, 30, 86400
+        )
+        row_limit = max(1, min(int(limit), 500))
+        previous_revision = self.domain_revision("commands")
+
+        def write(conn: sqlite3.Connection) -> dict[str, Any]:
+            rows = conn.execute(
+                """
+                SELECT command_id,entity_type,entity_id,operation_type,status,created_at,
+                       updated_at_epoch_ms,deadline_at,terminal_at
+                FROM command_lifecycle
+                WHERE terminal_at IS NULL
+                  AND status IN ('queued','published','received','accepted','running')
+                ORDER BY updated_at_epoch_ms ASC,command_id ASC
+                LIMIT ?
+                """,
+                (row_limit,),
+            ).fetchall()
+            changed_ids: list[str] = []
+            audit_changed = False
+            reasons: dict[str, int] = {}
+
+            for row in rows:
+                command_id = str(row["command_id"])
+                entity_type = str(row["entity_type"] or "control")
+                entity_id = str(row["entity_id"] or "control-plane")
+                old_status = str(row["status"])
+                updated_ms = max(0, int(row["updated_at_epoch_ms"] or 0))
+                age_ms = max(0, now_ms - updated_ms)
+                deadline_ms = _epoch_ms(row["deadline_at"]) if row["deadline_at"] else 0
+
+                target_known = True
+                target_online = True
+                if entity_type == "device":
+                    target_known = bool(conn.execute(
+                        """
+                        SELECT 1 FROM device_current_state WHERE device_id=?
+                        UNION ALL SELECT 1 FROM device_identity_guards WHERE device_id=?
+                        UNION ALL SELECT 1 FROM device_heartbeats WHERE device_id=?
+                        UNION ALL SELECT 1 FROM device_invite_lifecycle
+                            WHERE device_id=? AND status IN ('pending','accepted')
+                        LIMIT 1
+                        """,
+                        (entity_id, entity_id, entity_id, entity_id),
+                    ).fetchone())
+                    state = conn.execute(
+                        "SELECT connection_state,ui_state,last_seen_epoch_ms FROM device_current_state WHERE device_id=?",
+                        (entity_id,),
+                    ).fetchone()
+                    target_online = bool(
+                        state
+                        and str(state["connection_state"] or "").lower() in {"online", "connected"}
+                        and str(state["ui_state"] or "").lower() not in {"offline", "removed"}
+                    )
+
+                terminal_status = ""
+                recovery_reason = ""
+                summary = ""
+                if deadline_ms and deadline_ms <= now_ms:
+                    terminal_status = "timed_out"
+                    recovery_reason = "deadline_expired"
+                    summary = "Command delivery deadline elapsed."
+                elif entity_type == "device" and not target_known and age_ms >= missing_grace_ms:
+                    terminal_status = "undeliverable"
+                    recovery_reason = "target_missing"
+                    summary = "Command target is no longer available."
+                elif age_ms >= legacy_age_ms:
+                    terminal_status = "undeliverable" if entity_type == "device" and not target_online else "timed_out"
+                    recovery_reason = "legacy_orphan_reconciled"
+                    summary = (
+                        "Stale command could not be delivered."
+                        if terminal_status == "undeliverable"
+                        else "Stale command timed out without terminal evidence."
+                    )
+                if not terminal_status:
+                    continue
+
+                result = conn.execute(
+                    """
+                    UPDATE command_lifecycle
+                    SET status=?, lifecycle_stage='terminal', terminal_at=?, updated_at=?,
+                        updated_at_epoch_ms=?, recovery_action=?, summary=?,
+                        attention_status='active', attention_updated_at=?,
+                        attention_updated_at_epoch_ms=?
+                    WHERE command_id=? AND status=? AND terminal_at IS NULL
+                    """,
+                    (terminal_status, now, now, now_ms, recovery_reason, summary, now, now_ms,
+                     command_id, old_status),
+                )
+                if result.rowcount != 1:
+                    continue
+                changed_ids.append(command_id)
+                reasons[recovery_reason] = reasons.get(recovery_reason, 0) + 1
+                conn.execute(
+                    """
+                    INSERT INTO audit_evidence_index(
+                        event_type,entity_type,entity_id,operation_id,status,evidence_ref,
+                        created_at,created_at_epoch_ms,summary
+                    ) VALUES(?,?,?,?,?,?,?,?,?)
+                    """,
+                    (f"command.reconciled.{terminal_status}", _safe_text(entity_type, 40),
+                     _safe_text(entity_id, 120), _safe_text(command_id, 120), terminal_status,
+                     "command-lifecycle-reconciler", now, now_ms, _safe_text(summary, 240)),
+                )
+                audit_changed = True
+
+            if audit_changed:
+                _bump_revision(
+                    conn, "audit", now, changed_ids=changed_ids,
+                    reason="audit_state_changed", projection_version=1,
+                )
+            revision = (
+                _bump_revision(
+                    conn, "commands", now, changed_ids=changed_ids,
+                    reason="command_state_changed", projection_version=2,
+                )
+                if changed_ids else _domain_revision(conn, "commands")
+            )
+            return {
+                "revision": int(revision),
+                "reconciled_count": len(changed_ids),
+                "reasons": reasons,
+                "sanitized": True,
+            }
+
+        try:
+            result = dict(SQLITE_WRITER.submit(
+                "commands.reconcile", write, deadline_seconds=2.0
+            ))
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return {
+                "revision": previous_revision, "reconciled_count": 0,
+                "reasons": {}, "sanitized": True, "degraded": True,
+            }
+        self._propagate_command_revision(
+            previous_revision, int(result.get("revision") or 0),
+            reason="command_lifecycle_reconciled",
+        )
+        return result
+
+    def acknowledge_command_attention(self, command_id: str) -> bool:
+        """Acknowledge one terminal command attention item without deleting history."""
+        self.initialize()
+        safe_id = _safe_text(command_id, 120)
+        if not safe_id:
+            return False
+        now = _utc_now()
+        now_ms = _epoch_ms(now)
+        previous_revision = self.domain_revision("commands")
+
+        def write(conn: sqlite3.Connection) -> tuple[int, bool]:
+            result = conn.execute(
+                """
+                UPDATE command_lifecycle
+                SET attention_status='acknowledged', attention_updated_at=?,
+                    attention_updated_at_epoch_ms=?
+                WHERE command_id=? AND terminal_at IS NOT NULL
+                  AND attention_status='active'
+                """,
+                (now, now_ms, safe_id),
+            )
+            changed = result.rowcount == 1
+            if changed:
+                row = conn.execute(
+                    "SELECT entity_type,entity_id,status FROM command_lifecycle WHERE command_id=?",
+                    (safe_id,),
+                ).fetchone()
+                conn.execute(
+                    """
+                    INSERT INTO audit_evidence_index(
+                        event_type,entity_type,entity_id,operation_id,status,evidence_ref,
+                        created_at,created_at_epoch_ms,summary
+                    ) VALUES(?,?,?,?,?,?,?,?,?)
+                    """,
+                    ("command.attention_acknowledged", _safe_text(row["entity_type"], 40),
+                     _safe_text(row["entity_id"], 120), safe_id, str(row["status"]),
+                     "command-attention", now, now_ms, "Command attention acknowledged."),
+                )
+                _bump_revision(
+                    conn, "audit", now, changed_ids=[safe_id],
+                    reason="audit_state_changed", projection_version=1,
+                )
+                revision = _bump_revision(
+                    conn, "commands", now, changed_ids=[safe_id],
+                    reason="command_state_changed", projection_version=2,
+                )
+            else:
+                revision = _domain_revision(conn, "commands")
+            return int(revision), changed
+
+        try:
+            current_revision, changed = SQLITE_WRITER.submit(
+                "commands.attention.acknowledge", write, deadline_seconds=1.0
+            )
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return False
+        self._propagate_command_revision(
+            previous_revision, int(current_revision),
+            reason="command_attention_acknowledged",
+        )
+        return bool(changed)
 
     def record_command(
         self,
@@ -3555,15 +3824,9 @@ class ControlPlaneProjectionStore:
             current_revision = int(
                 SQLITE_WRITER.submit("commands.lifecycle", write, deadline_seconds=0.5)
             )
-            if current_revision != previous_revision:
-                try:
-                    from . import lite_phase3c_projections
-
-                    lite_phase3c_projections.mark_dirty(
-                        "system.activity_summary", reason="command_lifecycle_changed"
-                    )
-                except Exception:
-                    pass
+            self._propagate_command_revision(
+                previous_revision, current_revision, reason="command_lifecycle_changed"
+            )
         except Exception:
             return
 
