@@ -8,6 +8,18 @@ import pytest
 from pocket_lab_test_utils import ensure_runtime_path, prepare_sqlite_test_database
 
 
+@pytest.fixture(autouse=True)
+def _quiesce_runtime_after_test():
+    yield
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.db.runtime import SQLITE_READS
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+
+    assert PROJECTION_SCHEDULER.quiesce_for_database_switch(timeout_seconds=5.0)
+    reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
+
+
 def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     ensure_runtime_path()
     target = tmp_path / "state" / "pocketlab-lite.sqlite3"
@@ -283,3 +295,117 @@ def test_record_command_terminal_attention_and_revision_change_only(tmp_path, mo
         recovery_action="legacy_orphan_reconciled",
     )
     assert store.domain_revision("commands") == first_revision
+
+
+def test_legacy_none_attention_can_be_acknowledged_once_without_blocking_activity(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_phase3c_projections
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    _insert_command(database, command_id="legacy-none", status="undeliverable")
+    import sqlite3
+    conn = sqlite3.connect(database)
+    try:
+        conn.execute(
+            """
+            UPDATE command_lifecycle
+            SET lifecycle_stage='failed', terminal_at='2026-07-01T00:00:00Z',
+                attention_status='none', attention_updated_at=NULL,
+                attention_updated_at_epoch_ms=0
+            WHERE command_id='legacy-none'
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    before = lite_phase3c_projections.collect_activity_summary()
+    assert before["attention_required"] == 0
+
+    store = ControlPlaneProjectionStore()
+    commands_before = store.domain_revision("commands")
+    audit_before = store.domain_revision("audit")
+    assert store.acknowledge_command_attention("legacy-none") is True
+    assert store.acknowledge_command_attention("legacy-none") is False
+
+    row = _command(database, "legacy-none")
+    assert row["status"] == "undeliverable"
+    assert row["attention_status"] == "acknowledged"
+    assert store.domain_revision("commands") == commands_before + 1
+    assert store.domain_revision("audit") == audit_before + 1
+
+    conn = sqlite3.connect(database)
+    try:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM audit_evidence_index WHERE operation_id=? AND event_type='command.attention_acknowledged'",
+            ("legacy-none",),
+        ).fetchone()[0]
+    finally:
+        conn.close()
+    assert count == 1
+    assert lite_phase3c_projections.collect_activity_summary()["attention_required"] == 0
+
+
+def test_record_command_normalizes_terminal_attention_and_preserves_acknowledgement(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    store.record_command(
+        command_id="normalize-attention",
+        subject="agent.restart",
+        status="undeliverable",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+
+    import sqlite3
+    conn = sqlite3.connect(database)
+    try:
+        conn.execute(
+            """
+            UPDATE command_lifecycle
+            SET attention_status='none', attention_updated_at=NULL,
+                attention_updated_at_epoch_ms=0
+            WHERE command_id='normalize-attention'
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    store.record_command(
+        command_id="normalize-attention",
+        subject="agent.restart",
+        status="undeliverable",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+    assert _command(database, "normalize-attention")["attention_status"] == "active"
+
+    assert store.acknowledge_command_attention("normalize-attention") is True
+    revision = store.domain_revision("commands")
+    store.record_command(
+        command_id="normalize-attention",
+        subject="agent.restart",
+        status="undeliverable",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+    row = _command(database, "normalize-attention")
+    assert row["status"] == "undeliverable"
+    assert row["attention_status"] == "acknowledged"
+    assert store.domain_revision("commands") == revision
+
+    # A stale contradictory terminal delivery must not clear acknowledgement
+    # when the command row itself is fenced against terminal regression.
+    store.record_command(
+        command_id="normalize-attention",
+        subject="agent.restart",
+        status="succeeded",
+        entity_type="device",
+        entity_id="offline-device",
+    )
+    row = _command(database, "normalize-attention")
+    assert row["status"] == "undeliverable"
+    assert row["attention_status"] == "acknowledged"
