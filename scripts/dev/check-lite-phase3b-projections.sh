@@ -11,9 +11,27 @@ READY_CONNECT_TIMEOUT="${POCKETLAB_PHASE3B_READY_CONNECT_TIMEOUT:-2}"
 READY_MAX_TIME="${POCKETLAB_PHASE3B_READY_MAX_TIME:-10}"
 QUIESCENCE_ATTEMPTS="${POCKETLAB_PHASE3B_QUIESCENCE_ATTEMPTS:-30}"
 QUIESCENCE_SLEEP_SECONDS="${POCKETLAB_PHASE3B_QUIESCENCE_SLEEP_SECONDS:-2}"
+RUNTIME_MAX_TIME="${POCKETLAB_PHASE3B_RUNTIME_MAX_TIME:-30}"
+RUNTIME_ATTEMPTS="${POCKETLAB_PHASE3B_RUNTIME_ATTEMPTS:-3}"
 RUN_ID="phase3b-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 RUN_DIR="$STATE_DIR/.pocketlab-dev/phase3b/$RUN_ID"
 mkdir -p "$RUN_DIR"
+
+finalize_phase3b_gate() {
+  local rc="$?"
+  set +e
+  python3 - "$RUN_DIR" "$RUN_ID" "$rc" <<'PYFINAL'
+import hashlib,json,pathlib,sys
+root=pathlib.Path(sys.argv[1]); run_id=sys.argv[2]; rc=int(sys.argv[3])
+checksums={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(root.iterdir()) if p.is_file() and p.name not in {'checksums.json','summary.json'}}
+(root/'checksums.json').write_text(json.dumps(checksums,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+(root/'summary.json').write_text(json.dumps({'status':'passed' if rc == 0 else 'failed','run_id':run_id,'exit_code':rc,'sanitized':True},sort_keys=True,indent=2)+'\n',encoding='utf-8')
+PYFINAL
+  printf '%s\n' "$RUN_DIR"
+  trap - EXIT
+  exit "$rc"
+}
+trap finalize_phase3b_gate EXIT
 
 case "$IDLE_SECONDS" in
   ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_IDLE_SECONDS must be an integer" >&2; exit 2 ;;
@@ -34,6 +52,14 @@ esac
 case "$QUIESCENCE_SLEEP_SECONDS" in
   ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_QUIESCENCE_SLEEP_SECONDS must be an integer" >&2; exit 2 ;;
 esac
+case "$RUNTIME_MAX_TIME" in
+  ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_RUNTIME_MAX_TIME must be an integer" >&2; exit 2 ;;
+esac
+case "$RUNTIME_ATTEMPTS" in
+  ''|*[!0-9]*) echo "POCKETLAB_PHASE3B_RUNTIME_ATTEMPTS must be an integer" >&2; exit 2 ;;
+esac
+[ "$RUNTIME_MAX_TIME" -ge 10 ] && [ "$RUNTIME_MAX_TIME" -le 60 ] || { echo "POCKETLAB_PHASE3B_RUNTIME_MAX_TIME must be between 10 and 60" >&2; exit 2; }
+[ "$RUNTIME_ATTEMPTS" -ge 1 ] && [ "$RUNTIME_ATTEMPTS" -le 5 ] || { echo "POCKETLAB_PHASE3B_RUNTIME_ATTEMPTS must be between 1 and 5" >&2; exit 2; }
 
 wait_for_api_ready() {
   local attempt
@@ -70,6 +96,53 @@ fetch_json() {
   fi
 }
 
+fetch_runtime_evidence() {
+  local name="$1"
+  local raw="$RUN_DIR/.$name.raw"
+  local attempt
+  local code
+
+  for attempt in $(seq 1 "$RUNTIME_ATTEMPTS"); do
+    code="$(curl -sS --connect-timeout "$READY_CONNECT_TIMEOUT" --max-time "$RUNTIME_MAX_TIME" -o "$raw" -w '%{http_code}' "$PROXY_BASE/api/lite/diagnostics/runtime")" || code="000"
+    if [ "$code" = "200" ] && python3 -m json.tool "$raw" >/dev/null 2>&1; then
+      python3 - "$raw" "$RUN_DIR/$name.json" <<'PYRUNTIME'
+import json,pathlib,sys
+payload=json.load(open(sys.argv[1],encoding='utf-8'))
+required={
+ 'security.progress','security.summary','system.status','system.health',
+ 'system.processes','system.agent','system.supervisor','system.remote_access',
+ 'system.nats_remote','system.fleet_probe',
+}
+phase=payload.get('phase3b_current_state') or {}
+scheduler=payload.get('projection_scheduler') or {}
+domains=scheduler.get('domains') or {}
+safe={
+ 'phase3b_current_state':{
+   'domains':{name:(phase.get('domains') or {}).get(name,{}) for name in sorted(required)},
+   'payload_budget_bytes':int(phase.get('payload_budget_bytes') or 65536),
+   'sanitized':True,
+ },
+ 'projection_scheduler':{
+   'domains':{name:domains.get(name,{}) for name in sorted(required)},
+   'max_domains':int(scheduler.get('max_domains') or 0),
+   'registered_domains':int(scheduler.get('registered_domains') or 0),
+   'remaining_domain_capacity':int(scheduler.get('remaining_domain_capacity') or 0),
+   'sanitized':True,
+ },
+ 'sanitized':True,
+}
+pathlib.Path(sys.argv[2]).write_text(json.dumps(safe,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+PYRUNTIME
+      rm -f "$raw"
+      return 0
+    fi
+    echo "Phase 3B runtime diagnostics attempt $attempt/$RUNTIME_ATTEMPTS failed: HTTP $code" >&2
+    sleep 2
+  done
+  rm -f "$raw"
+  return 1
+}
+
 fetch_prepared_endpoints() {
   local suffix="$1"
   fetch_json "status$suffix" /api/lite/status
@@ -89,7 +162,7 @@ wait_for_scheduler_quiescent() {
   local attempt
 
   for attempt in $(seq 1 "$QUIESCENCE_ATTEMPTS"); do
-    fetch_json "$output_name" /api/lite/diagnostics/runtime
+    fetch_runtime_evidence "$output_name"
 
     if python3 - "$RUN_DIR/$output_name.json" <<'PYQ'
 import json
@@ -208,7 +281,7 @@ wait_for_api_ready
 fetch_prepared_endpoints ""
 ready=0
 for attempt in $(seq 1 "$WARMUP_ATTEMPTS"); do
-  fetch_json runtime /api/lite/diagnostics/runtime
+  fetch_runtime_evidence runtime
   if validate_runtime "$RUN_DIR/runtime.json" "$RUN_DIR/scheduler-before.json"; then
     ready=1
     break
@@ -277,16 +350,16 @@ print(json.dumps({"status":"passed","domains":report,"sanitized":True}, sort_key
 PY
 fi
 
-python3 - "$RUN_DIR" <<'PY'
-import hashlib, json, pathlib, sys
+python3 - "$RUN_DIR" <<'PYSAFE'
+import json,pathlib,sys
 root=pathlib.Path(sys.argv[1])
-checksums={}
-for path in sorted(root.iterdir()):
-    if path.is_file():
-        checksums[path.name]=hashlib.sha256(path.read_bytes()).hexdigest()
-(root/"checksums.json").write_text(json.dumps(checksums, sort_keys=True, indent=2)+"\n", encoding="utf-8")
-(root/"summary.json").write_text(json.dumps({
-    "status":"passed", "evidence_dir":str(root), "sanitized":True
-}, sort_keys=True, indent=2)+"\n", encoding="utf-8")
-print(root)
-PY
+markers=('password=','token=','nats://','/data/data/','-----begin')
+leaks={}
+for path in sorted(root.glob('*.json')):
+    text=path.read_text(encoding='utf-8',errors='replace').lower()
+    found=[marker for marker in markers if marker in text]
+    if found: leaks[path.name]=found
+if leaks:
+    print(json.dumps({'unsafe_evidence_markers':leaks},sort_keys=True),file=sys.stderr)
+    raise SystemExit(1)
+PYSAFE

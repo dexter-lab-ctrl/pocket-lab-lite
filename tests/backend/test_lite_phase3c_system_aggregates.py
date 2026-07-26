@@ -309,3 +309,50 @@ def test_phase3c_gate_is_termux_safe_and_strict():
     assert 'local name="$1" raw="$RUN_DIR/.$name.raw"' not in script
     assert "set -euo pipefail" in script
     assert "nats://user:" not in script.lower()
+
+
+def test_activity_revision_ignores_domain_and_projection_envelope_churn(tmp_path, monkeypatch):
+    database = _configure(tmp_path, monkeypatch)
+    from api_fastapi.services import lite_phase3c_projections as phase3c
+
+    conn = sqlite3.connect(database)
+    try:
+        conn.execute(
+            "INSERT INTO command_lifecycle(command_id,entity_type,entity_id,operation_type,status,created_at,updated_at,updated_at_epoch_ms,source_ref,summary,metadata_json) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            ("cmd-semantic", "device", "phone-2", "restart_agent", "running", "2026-07-26T00:00:00Z", "2026-07-26T00:00:01Z", 10, "safe", "restart", "{}"),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    first_payload = phase3c.collect_activity_summary()
+    first_revision = phase3c.activity_source_revision()
+
+    conn = sqlite3.connect(database)
+    try:
+        conn.execute(
+            "UPDATE domain_revisions SET revision=revision+100 WHERE domain IN ('commands','apps','recovery','audit','fleet','security')"
+        )
+        conn.execute(
+            "UPDATE phase3b_current_state SET projection_revision=projection_revision+100 WHERE domain IN ('security.summary','security.progress')"
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    second_payload = phase3c.collect_activity_summary()
+    second_revision = phase3c.activity_source_revision()
+    assert phase3c._activity_semantic_material(first_payload) == phase3c._activity_semantic_material(second_payload)
+    assert first_revision == second_revision
+    assert first_payload["generation"] == second_payload["generation"]
+
+    conn = sqlite3.connect(database)
+    try:
+        conn.execute(
+            "UPDATE command_lifecycle SET status='succeeded',updated_at_epoch_ms=20 WHERE command_id='cmd-semantic'"
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    assert phase3c.activity_source_revision() != second_revision

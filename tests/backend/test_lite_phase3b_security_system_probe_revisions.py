@@ -276,7 +276,8 @@ def test_phase3b_runtime_validation_script_is_termux_safe():
     assert "pm2" in script
     assert "api/lite/diagnostics/runtime" in script
     assert "api/lite/status" in script
-    assert "token" not in script.lower()
+    assert "nats://user:" not in script.lower()
+    assert "password=must-not-appear" not in script.lower()
 
 
 
@@ -520,6 +521,22 @@ def test_phase3b_gate_retries_api_readiness_without_relaxing_idle_gate():
     assert "Pocket API did not become ready" in script
     assert 'if second["refresh_pending"] or second["followup_requested"]:' in script
     assert "scheduler still pending after idle" in script
+
+
+def test_phase3b_gate_uses_bounded_sanitized_runtime_evidence():
+    script = Path("scripts/dev/check-lite-phase3b-projections.sh").read_text(
+        encoding="utf-8"
+    )
+    assert "POCKETLAB_PHASE3B_RUNTIME_MAX_TIME" in script
+    assert "POCKETLAB_PHASE3B_RUNTIME_ATTEMPTS" in script
+    assert "fetch_runtime_evidence" in script
+    assert 'local raw="$RUN_DIR/.$name.raw"' in script
+    assert 'rm -f "$raw"' in script
+    assert "phase3b_current_state" in script
+    assert "remaining_domain_capacity" in script
+    assert "unsafe_evidence_markers" in script
+    assert "exit_code" in script
+    assert 'fetch_json runtime /api/lite/diagnostics/runtime' not in script
 
 
 def test_fleet_dependency_propagation_is_revision_fenced():
