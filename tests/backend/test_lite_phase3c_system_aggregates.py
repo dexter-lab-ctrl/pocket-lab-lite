@@ -301,4 +301,8 @@ def test_phase3c_gate_is_termux_safe_and_strict():
     assert "source_revision_enabled" in script
     assert "stale_generation_count" in script
     assert "commit churn" in script
+    assert "fetch_runtime_evidence" in script
+    assert "POCKETLAB_PHASE3C_RUNTIME_MAX_TIME" in script
+    assert "remaining_domain_capacity" in script
+    assert 'rm -f "$raw"' in script
     assert "nats://user:" not in script.lower()

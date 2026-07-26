@@ -8,6 +8,8 @@ IDLE_SECONDS="${POCKETLAB_PHASE3C_IDLE_SECONDS:-60}"
 READY_ATTEMPTS="${POCKETLAB_PHASE3C_READY_ATTEMPTS:-30}"
 WARMUP_ATTEMPTS="${POCKETLAB_PHASE3C_WARMUP_ATTEMPTS:-20}"
 QUIESCENCE_ATTEMPTS="${POCKETLAB_PHASE3C_QUIESCENCE_ATTEMPTS:-30}"
+RUNTIME_MAX_TIME="${POCKETLAB_PHASE3C_RUNTIME_MAX_TIME:-30}"
+RUNTIME_ATTEMPTS="${POCKETLAB_PHASE3C_RUNTIME_ATTEMPTS:-3}"
 RUN_ID="phase3c-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 RUN_DIR="$STATE_DIR/.pocketlab-dev/phase3c/$RUN_ID"
 mkdir -p "$RUN_DIR"
@@ -28,10 +30,12 @@ PYFINAL
 }
 trap finalize_phase3c_gate EXIT
 
-for value in "$IDLE_SECONDS" "$READY_ATTEMPTS" "$WARMUP_ATTEMPTS" "$QUIESCENCE_ATTEMPTS"; do
+for value in "$IDLE_SECONDS" "$READY_ATTEMPTS" "$WARMUP_ATTEMPTS" "$QUIESCENCE_ATTEMPTS" "$RUNTIME_MAX_TIME" "$RUNTIME_ATTEMPTS"; do
   case "$value" in ''|*[!0-9]*) echo "Phase 3C gate values must be integers" >&2; exit 2;; esac
 done
 [ "$IDLE_SECONDS" -le 1800 ] || { echo "POCKETLAB_PHASE3C_IDLE_SECONDS must be 1800 or less" >&2; exit 2; }
+[ "$RUNTIME_MAX_TIME" -ge 10 ] && [ "$RUNTIME_MAX_TIME" -le 60 ] || { echo "POCKETLAB_PHASE3C_RUNTIME_MAX_TIME must be between 10 and 60" >&2; exit 2; }
+[ "$RUNTIME_ATTEMPTS" -ge 1 ] && [ "$RUNTIME_ATTEMPTS" -le 5 ] || { echo "POCKETLAB_PHASE3C_RUNTIME_ATTEMPTS must be between 1 and 5" >&2; exit 2; }
 
 fetch_json() {
   local name="$1" path="$2"
@@ -44,6 +48,48 @@ prime_json() {
   code="$(curl -sS --connect-timeout 2 --max-time 10 -o "$RUN_DIR/$name.json" -w '%{http_code}' "$PROXY_BASE$path")"
   python3 -m json.tool "$RUN_DIR/$name.json" >/dev/null
   case "$code" in 200|503) ;; *) echo "Unexpected HTTP $code while priming $path" >&2; return 1;; esac
+}
+
+fetch_runtime_evidence() {
+  local name="$1" raw="$RUN_DIR/.$name.raw" attempt code
+  for attempt in $(seq 1 "$RUNTIME_ATTEMPTS"); do
+    code="$(curl -sS --connect-timeout 2 --max-time "$RUNTIME_MAX_TIME" -o "$raw" -w '%{http_code}' "$PROXY_BASE/api/lite/diagnostics/runtime")" || code="000"
+    if [ "$code" = "200" ] && python3 -m json.tool "$raw" >/dev/null 2>&1; then
+      python3 - "$raw" "$RUN_DIR/$name.json" <<'PYRUNTIME'
+import json,pathlib,sys
+payload=json.load(open(sys.argv[1],encoding='utf-8'))
+required={
+ 'system.telemetry_thresholds','system.storage_pressure',
+ 'system.sqlite_health','system.activity_summary',
+}
+phase3c=payload.get('phase3c_current_state') or {}
+scheduler=payload.get('projection_scheduler') or {}
+domains=scheduler.get('domains') or {}
+safe={
+ 'phase3c_current_state':{
+   'domains':{name:(phase3c.get('domains') or {}).get(name,{}) for name in sorted(required)},
+   'payload_budget_bytes':int(phase3c.get('payload_budget_bytes') or 65536),
+   'sanitized':True,
+ },
+ 'projection_scheduler':{
+   'domains':{name:domains.get(name,{}) for name in sorted(required)},
+   'max_domains':int(scheduler.get('max_domains') or 0),
+   'registered_domains':int(scheduler.get('registered_domains') or 0),
+   'remaining_domain_capacity':int(scheduler.get('remaining_domain_capacity') or 0),
+   'sanitized':True,
+ },
+ 'sanitized':True,
+}
+pathlib.Path(sys.argv[2]).write_text(json.dumps(safe,sort_keys=True,indent=2)+'\n',encoding='utf-8')
+PYRUNTIME
+      rm -f "$raw"
+      return 0
+    fi
+    echo "Phase 3C runtime diagnostics attempt $attempt/$RUNTIME_ATTEMPTS failed: HTTP $code" >&2
+    sleep 2
+  done
+  rm -f "$raw"
+  return 1
 }
 
 ready=0
@@ -106,7 +152,7 @@ PY
 
 warm=0
 for _ in $(seq 1 "$WARMUP_ATTEMPTS"); do
-  fetch_json runtime /api/lite/diagnostics/runtime
+  fetch_runtime_evidence runtime
   if validate_runtime "$RUN_DIR/runtime.json" "$RUN_DIR/before.json"; then warm=1; break; fi
   sleep 2
 done
@@ -123,7 +169,7 @@ if [ "$IDLE_SECONDS" -gt 0 ]; then
   done
   settled=0
   for _ in $(seq 1 "$QUIESCENCE_ATTEMPTS"); do
-    fetch_json runtime-after-idle /api/lite/diagnostics/runtime
+    fetch_runtime_evidence runtime-after-idle
     if python3 - "$RUN_DIR/runtime-after-idle.json" <<'PY'
 import json,sys
 p=json.load(open(sys.argv[1],encoding='utf-8'))
