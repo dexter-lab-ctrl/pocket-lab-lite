@@ -830,20 +830,31 @@ def collect_system_health_state(engine: dict[str, Any] | None = None) -> dict[st
     }
 
 
+def _health_component_status(domain: str, fallback: dict[str, Any] | None = None) -> str:
+    current = snapshot(domain) or fallback or {}
+    return _safe_text(current.get("status") or "unknown", 32).lower()
+
+
 def system_health_source_revision() -> int:
+    maintenance_active = any(
+        str(item.get("status") or "").lower() in {"accepted", "running", "active"}
+        for item in _maintenance_material()
+    )
     return semantic_revision(
         "system.health",
         {
             "database_instance": _database_instance(),
-            "processes": snapshot("system.processes") or {},
-            "agent": snapshot("system.agent") or {},
-            "supervisor": snapshot("system.supervisor") or {},
-            "remote_access": snapshot("system.remote_access") or {},
-            "nats": _bus_material(),
-            "telemetry": snapshot("system.telemetry_thresholds") or {},
-            "storage": snapshot("system.storage_pressure") or {},
-            "sqlite": snapshot("system.sqlite_health") or {},
-            "maintenance": _maintenance_material(),
+            "components": {
+                "processes": _health_component_status("system.processes"),
+                "agent": _health_component_status("system.agent"),
+                "supervisor": _health_component_status("system.supervisor"),
+                "remote_access": _health_component_status("system.remote_access"),
+                "nats": _health_component_status("system.nats_remote", _bus_material()),
+                "telemetry": _health_component_status("system.telemetry_thresholds"),
+                "storage": _health_component_status("system.storage_pressure"),
+                "sqlite": _health_component_status("system.sqlite_health"),
+            },
+            "maintenance_active": maintenance_active,
         },
     )
 
