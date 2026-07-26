@@ -23,6 +23,27 @@ def ensure_runtime_path() -> None:
             sys.path.insert(0, value)
 
 
+def prepare_sqlite_test_database(target: Path, monkeypatch) -> Path:
+    """Fence shared scheduler/read-pool state before switching test databases."""
+    ensure_runtime_path()
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER
+
+    if not PROJECTION_SCHEDULER.quiesce_for_database_switch(timeout_seconds=5.0):
+        raise RuntimeError("projection scheduler did not quiesce before test database switch")
+
+    target = Path(target)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(target))
+    monkeypatch.setenv("POCKETLAB_STATE_DIR", str(target.parent))
+
+    from api_fastapi.db.connection import reset_sqlite_path_cache
+    from api_fastapi.db.runtime import SQLITE_READS
+
+    reset_sqlite_path_cache()
+    SQLITE_READS.invalidate()
+    return target
+
+
 def load_fastapi_app():
     ensure_runtime_path()
 

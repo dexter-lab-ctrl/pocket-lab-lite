@@ -839,6 +839,49 @@ class ProjectionScheduler:
                 "sanitized": True,
             }
 
+    def quiesce_for_database_switch(self, *, timeout_seconds: float = 5.0) -> bool:
+        """Cancel queued refreshes and wait for active jobs before changing databases.
+
+        Registrations are preserved so the process can continue serving after a
+        restore, test database switch, or other explicit database handoff.
+        Active collectors are generation-fenced and allowed to finish; no new
+        queued work is admitted during the bounded drain.
+        """
+        deadline = time.monotonic() + max(0.1, min(float(timeout_seconds), 30.0))
+        with self._condition:
+            self._heap.clear()
+            for state in self._states.values():
+                state.generation += 1
+                state.dirty = False
+                state.queued = False
+                state.followup_requested = False
+                state.not_before_at = 0.0
+            self._condition.notify_all()
+
+        while True:
+            with self._condition:
+                self._reap_done_locked()
+                active = [
+                    future
+                    for future in self._active_futures
+                    if not future.done()
+                ]
+                if not active:
+                    for state in self._states.values():
+                        state.active = False
+                        state.dirty = False
+                        state.queued = False
+                        state.followup_requested = False
+                    return True
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return False
+            concurrent.futures.wait(
+                active,
+                timeout=min(0.1, remaining),
+                return_when=concurrent.futures.FIRST_COMPLETED,
+            )
+
     def diagnostics(self) -> dict[str, Any]:
         with self._condition:
             return {

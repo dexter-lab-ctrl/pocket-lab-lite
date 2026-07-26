@@ -1362,6 +1362,11 @@ def _split_cache_ttl(kind: str, payload: dict[str, Any] | None = None) -> float:
     return active if _is_live_security_state(payload) else idle
 
 
+def _safe_cache_key_signals(key: tuple[Any, ...]) -> list[str]:
+    """Return opaque diagnostics without exposing filesystem-backed cache material."""
+    return [_revision_token("cache-key-signal", signal) for signal in key[-4:]]
+
+
 def _cached_compact_read(kind: str, key: tuple[Any, ...], builder) -> dict[str, Any]:
     cache_key = f"{kind}:{repr(key)}"
     cached = _SECURITY_SPLIT_READ_CACHE.get(cache_key)
@@ -1370,12 +1375,12 @@ def _cached_compact_read(kind: str, key: tuple[Any, ...], builder) -> dict[str, 
         ttl = float(cached.get("ttl") or _split_cache_ttl(kind, cached.get("data")))
         if (now - float(cached.get("cached_at") or 0.0)) <= ttl:
             data = copy.deepcopy(cached["data"])
-            data["read_cache"] = {"status": "hit", "source": f"fastapi_{kind}_memory", "ttl_seconds": int(ttl), "cache_key_signals": list(key[-4:])}
+            data["read_cache"] = {"status": "hit", "source": f"fastapi_{kind}_memory", "ttl_seconds": int(ttl), "cache_key_signals": _safe_cache_key_signals(key)}
             return data
     data = policy.redact_value(builder())
     ttl = _split_cache_ttl(kind, data)
     _SECURITY_SPLIT_READ_CACHE[cache_key] = {"cached_at": now, "ttl": ttl, "data": copy.deepcopy(data)}
-    data["read_cache"] = {"status": "miss", "source": f"compact_{kind}", "ttl_seconds": int(ttl), "cache_key_signals": list(key[-4:])}
+    data["read_cache"] = {"status": "miss", "source": f"compact_{kind}", "ttl_seconds": int(ttl), "cache_key_signals": _safe_cache_key_signals(key)}
     return data
 
 
