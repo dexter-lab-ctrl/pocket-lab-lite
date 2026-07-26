@@ -51,7 +51,11 @@ prime_json() {
 }
 
 fetch_runtime_evidence() {
-  local name="$1" raw="$RUN_DIR/.$name.raw" attempt code
+  local name="$1"
+  local raw="$RUN_DIR/.$name.raw"
+  local attempt
+  local code
+
   for attempt in $(seq 1 "$RUNTIME_ATTEMPTS"); do
     code="$(curl -sS --connect-timeout 2 --max-time "$RUNTIME_MAX_TIME" -o "$raw" -w '%{http_code}' "$PROXY_BASE/api/lite/diagnostics/runtime")" || code="000"
     if [ "$code" = "200" ] && python3 -m json.tool "$raw" >/dev/null 2>&1; then
