@@ -3481,7 +3481,14 @@ class ControlPlaneProjectionStore:
              lifecycle_stage, terminal_at, ignored_redelivery, recovery_action),
         )
         changed = _changes(conn)
-        attention_status = "active" if status in _ATTENTION_STATUSES else "none"
+        persisted = conn.execute(
+            "SELECT status,attention_status FROM command_lifecycle WHERE command_id=?",
+            (command_id,),
+        ).fetchone()
+        if persisted is None:
+            return changed
+        persisted_status = _normalize_status(persisted["status"])
+        attention_status = "active" if persisted_status in _ATTENTION_STATUSES else "none"
         conn.execute(
             """
             UPDATE command_lifecycle
@@ -3491,22 +3498,25 @@ class ControlPlaneProjectionStore:
                 END,
                 attention_updated_at=CASE
                     WHEN attention_status='acknowledged' AND ?='active' THEN attention_updated_at
-                    ELSE ?
+                    WHEN ?='active' THEN ?
+                    ELSE NULL
                 END,
                 attention_updated_at_epoch_ms=CASE
                     WHEN attention_status='acknowledged' AND ?='active' THEN attention_updated_at_epoch_ms
-                    ELSE ?
+                    WHEN ?='active' THEN ?
+                    ELSE 0
                 END
             WHERE command_id=?
               AND (attention_status IS NOT CASE
                        WHEN attention_status='acknowledged' AND ?='active' THEN 'acknowledged'
                        ELSE ?
                    END
-                   OR (?='none' AND attention_updated_at IS NOT NULL))
+                   OR (?='active' AND attention_status='none')
+                   OR (?='none' AND (attention_updated_at IS NOT NULL OR attention_updated_at_epoch_ms != 0)))
             """,
-            (attention_status, attention_status, attention_status, updated_at,
-             attention_status, _epoch_ms(updated_at), command_id,
-             attention_status, attention_status, attention_status),
+            (attention_status, attention_status, attention_status, attention_status, updated_at,
+             attention_status, attention_status, _epoch_ms(updated_at), command_id,
+             attention_status, attention_status, attention_status, attention_status),
         )
         return _changes(conn) or changed
 
@@ -3704,7 +3714,8 @@ class ControlPlaneProjectionStore:
                 SET attention_status='acknowledged', attention_updated_at=?,
                     attention_updated_at_epoch_ms=?
                 WHERE command_id=? AND terminal_at IS NOT NULL
-                  AND attention_status='active'
+                  AND status IN ('failed','undeliverable','timed_out')
+                  AND attention_status IN ('none','active')
                 """,
                 (now, now_ms, safe_id),
             )

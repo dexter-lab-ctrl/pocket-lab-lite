@@ -339,3 +339,72 @@ def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
     assert quick_check == "ok"
     assert foreign_key_errors == []
     assert transaction_table is not None
+
+
+
+
+def test_migration_17_backfills_terminal_command_attention(tmp_path):
+    ensure_runtime_path()
+    import subprocess
+    import sys
+
+    database = tmp_path / "state" / "migration-17.sqlite3"
+    script = r'''
+import os
+import sqlite3
+import sys
+from pathlib import Path
+
+os.environ["POCKETLAB_LITE_DB_PATH"] = sys.argv[1]
+os.environ["POCKETLAB_STATE_DIR"] = str(Path(sys.argv[1]).parent)
+from api_fastapi.db.connection import reset_sqlite_path_cache
+from api_fastapi.db.migrations import apply_migrations, schema_dir
+from api_fastapi.db.runtime import SQLITE_READS
+
+reset_sqlite_path_cache()
+SQLITE_READS.invalidate()
+pre17 = Path(sys.argv[2])
+pre17.mkdir(parents=True, exist_ok=True)
+for source in schema_dir().glob("*.sql"):
+    version = int(source.name.split("_", 1)[0])
+    if version <= 16:
+        (pre17 / source.name).write_bytes(source.read_bytes())
+assert apply_migrations(pre17) == list(range(1, 17))
+with sqlite3.connect(sys.argv[1]) as conn:
+    conn.execute(
+        """
+        INSERT INTO command_lifecycle(
+            command_id,entity_type,entity_id,operation_type,status,
+            created_at,updated_at,updated_at_epoch_ms,source_ref,summary,
+            metadata_json,lifecycle_stage,terminal_at
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """,
+        (
+            "pre17-undeliverable", "device", "offline-device", "agent.restart",
+            "undeliverable", "2026-07-01T00:00:00Z", "2026-07-01T00:01:00Z",
+            60000, "test", "undeliverable", "{}", "failed",
+            "2026-07-01T00:01:00Z",
+        ),
+    )
+    conn.commit()
+assert apply_migrations() == [17]
+with sqlite3.connect(sys.argv[1]) as conn:
+    row = conn.execute(
+        """
+        SELECT attention_status,attention_updated_at,attention_updated_at_epoch_ms
+        FROM command_lifecycle WHERE command_id='pre17-undeliverable'
+        """
+    ).fetchone()
+assert row == ("active", "2026-07-01T00:01:00Z", 60000), row
+'''
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(database), str(tmp_path / "pre17")],
+        cwd=Path(__file__).resolve().parents[2],
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout

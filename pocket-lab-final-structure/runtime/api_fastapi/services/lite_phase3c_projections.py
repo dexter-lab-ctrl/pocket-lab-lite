@@ -567,7 +567,7 @@ def collect_activity_summary() -> dict[str, Any]:
                 1
                 for item in items
                 if _safe_status(item.get("status")) in _FAILED
-                and str(item.get("attention_status") or "active") != "acknowledged"
+                and str(item.get("attention_status") or "none") == "active"
             )
             if domain == "devices"
             else sum(statuses.get(name, 0) for name in _FAILED)
