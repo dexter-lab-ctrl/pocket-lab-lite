@@ -125,7 +125,9 @@ def test_phase3a_prepared_read_installs_mandatory_contract_without_running_colle
     builds = 0
 
     class SchedulerStub:
-        def mark_dirty(self, domain, *, job=None, priority=None, force_followup=False):
+        def mark_dirty(
+            self, domain, *, job=None, priority=None, force_followup=False, reason=None
+        ):
             captured[domain] = job
             return {
                 "accepted": True,

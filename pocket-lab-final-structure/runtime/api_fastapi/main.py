@@ -6,6 +6,10 @@ import logging
 import os
 from typing import AsyncIterator
 
+# The API owns prepared reads and durable dirty admission. The worker is the
+# normal projection executor unless an operator explicitly selects otherwise.
+os.environ.setdefault("POCKETLAB_PROCESS_ROLE", "api")
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware

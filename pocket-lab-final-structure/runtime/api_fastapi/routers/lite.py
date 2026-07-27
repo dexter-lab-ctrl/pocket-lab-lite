@@ -921,6 +921,81 @@ def _phase3c_prepared_read(request: Request, projection_domain: str, *, view_mod
     return _control_plane_prepared_response(request, prepared, view_model=view_model)
 
 
+def _phase3c_activity_summary_read(request: Request) -> Response:
+    reads: dict[str, PreparedRead] = {}
+    for projection_domain in ("system.activity_current", "system.activity_history"):
+        parent, key = projection_domain.split(".", 1)
+        try:
+            reads[projection_domain] = CONTROL_PLANE.prepared_only_read(
+                domain=parent,
+                key=key,
+                snapshot_builder=lambda selected=projection_domain: lite_phase3c_projections.snapshot(selected),
+                builder=lite_phase3c_projections.builder_for(projection_domain),
+                projector=lambda payload, selected=projection_domain: lite_phase3c_projections.project(selected, payload),
+                stale_after_ms=60_000,
+                max_stale_ms=10 * 60_000,
+                deadline_seconds=10.0,
+                priority=30,
+                work_class="io",
+            )
+        except PreparedProjectionUnavailable:
+            if projection_domain == "system.activity_current":
+                return _projection_warming_response(
+                    domain=projection_domain,
+                    view_model="lite-activity-summary-phase3c-v2",
+                )
+    current_read = reads["system.activity_current"]
+    history_read = reads.get("system.activity_history")
+    payload = lite_phase3c_projections.compose_activity_summary(
+        dict(current_read.payload),
+        dict(history_read.payload) if history_read is not None else {},
+    )
+    payload["history_available"] = history_read is not None
+    payload["projection_only"] = True
+    timing_keys = (
+        "connection_acquisition_ms",
+        "sqlite_query_ms",
+        "projection_build_ms",
+        "serialization_ms",
+    )
+    timing = {
+        key: float(current_read.timing.get(key, 0.0))
+        + float(history_read.timing.get(key, 0.0) if history_read else 0.0)
+        for key in timing_keys
+    }
+    composed = PreparedRead(
+        payload=payload,
+        etag=lite_security.compact_response_etag(
+            {
+                "current": current_read.etag,
+                "history": history_read.etag if history_read else "missing",
+            }
+        ),
+        source_revision=int(payload.get("source_revision") or 0),
+        projection_age_ms=max(
+            int(current_read.projection_age_ms),
+            int(history_read.projection_age_ms) if history_read else 0,
+        ),
+        read_degraded=bool(
+            current_read.read_degraded
+            or history_read is None
+            or (history_read.read_degraded if history_read else False)
+        ),
+        refresh_pending=bool(
+            current_read.refresh_pending
+            or (history_read.refresh_pending if history_read else True)
+        ),
+        retry_after_seconds=max(
+            int(current_read.retry_after_seconds),
+            int(history_read.retry_after_seconds) if history_read else 2,
+        ),
+        timing=timing,
+    )
+    return _control_plane_prepared_response(
+        request, composed, view_model="lite-activity-summary-phase3c-v2"
+    )
+
+
 @router.get("/status")
 def get_lite_status(request: Request) -> Response:
     deps.require_auth(request)
@@ -1065,9 +1140,7 @@ def get_lite_sqlite_health(request: Request) -> Response:
 @router.get("/system/activity-summary")
 def get_lite_activity_summary(request: Request) -> Response:
     deps.require_auth(request)
-    return _phase3c_prepared_read(
-        request, "system.activity_summary", view_model="lite-activity-summary-phase3c-v1"
-    )
+    return _phase3c_activity_summary_read(request)
 
 
 @router.get("/catalog")

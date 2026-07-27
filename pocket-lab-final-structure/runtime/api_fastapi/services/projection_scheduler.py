@@ -8,8 +8,10 @@ SQLite writer. Payload contents are never retained in diagnostics.
 """
 
 import concurrent.futures
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 import hashlib
 import heapq
 import json
@@ -29,6 +31,83 @@ from .hot_path_profiler import HOT_PATH_PROFILER
 
 _LOGGER = logging.getLogger(__name__)
 WorkClass = Literal["critical", "io", "cpu"]
+_PROJECTION_CONTEXT: ContextVar[dict[str, Any]] = ContextVar(
+    "pocketlab_projection_context", default={}
+)
+_PROCESS_START_GENERATION = hashlib.sha256(
+    f"{time.time_ns()}:{os.getpid()}".encode("utf-8")
+).hexdigest()[:16]
+
+
+def _loaded_build_version() -> str:
+    configured = str(
+        os.environ.get("POCKETLAB_BUILD_VERSION")
+        or os.environ.get("POCKETLAB_RELEASE_VERSION")
+        or ""
+    ).strip()
+    if configured:
+        safe = re.sub(r"[^A-Za-z0-9_.:+-]+", "-", configured)[:64]
+        if safe:
+            return safe
+    digest = hashlib.sha256()
+    source_dir = Path(__file__).resolve().parent
+    loaded = 0
+    for filename in (
+        "projection_scheduler.py",
+        "lite_phase3b_projections.py",
+        "lite_phase3c_projections.py",
+    ):
+        try:
+            content = (source_dir / filename).read_bytes()
+        except OSError:
+            continue
+        digest.update(filename.encode("utf-8"))
+        digest.update(content)
+        loaded += 1
+    return f"sha256:{digest.hexdigest()[:16]}" if loaded else "unavailable"
+
+
+_LOADED_BUILD_VERSION = _loaded_build_version()
+
+
+class ProjectionCommitRejected(RuntimeError):
+    """A prepared projection commit failed a database/generation fence."""
+
+
+def _process_role() -> str:
+    value = re.sub(
+        r"[^a-z0-9_.:-]+",
+        "-",
+        str(os.environ.get("POCKETLAB_PROCESS_ROLE") or "unknown").strip().lower(),
+    )
+    return (value or "unknown")[:48]
+
+
+def _configured_execution_owner() -> str:
+    value = re.sub(
+        r"[^a-z0-9_.:-]+",
+        "-",
+        str(os.environ.get("POCKETLAB_PROJECTION_EXECUTION_OWNER") or "worker")
+        .strip()
+        .lower(),
+    )
+    return (value or "worker")[:48]
+
+
+def _is_execution_owner() -> bool:
+    role = _process_role()
+    # Direct unit-test and one-shot harnesses do not set a process role. Keep
+    # those process-local while production API/worker roles stay explicit.
+    return role in {"unknown", "test", "direct", "oneshot"} or role == _configured_execution_owner()
+
+
+def _safe_reason(value: Any) -> str:
+    text = re.sub(r"[^a-z0-9_.:-]+", "_", str(value or "event").strip().lower())
+    return (text or "event")[:96]
+
+
+def current_projection_context() -> dict[str, Any]:
+    return dict(_PROJECTION_CONTEXT.get())
 
 
 def _utc_now() -> str:
@@ -55,7 +134,7 @@ def _safe_domain(value: str) -> str:
 class ProjectionJob:
     domain: str
     builder: Callable[[], dict[str, Any]]
-    projector: Callable[[dict[str, Any]], int]
+    projector: Callable[[dict[str, Any]], Any]
     priority: int
     work_class: WorkClass
     deadline_seconds: float
@@ -101,6 +180,9 @@ class _DomainState:
     not_before_at: float = 0.0
     dirty_mark_count: int = 0
     followup_requested: bool = False
+    trigger_reason: str = "event"
+    last_trigger_reason: str = ""
+    execution_owner: str = "unknown"
 
 
 class ProjectionScheduler:
@@ -142,6 +224,8 @@ class ProjectionScheduler:
         self._shutdown = False
         self._startup_complete = False
         self._event_signal_count = 0
+        self._signal_schema_ready = False
+        self._signal_schema_lock = threading.Lock()
 
     @staticmethod
     def _database_instance() -> str:
@@ -160,6 +244,11 @@ class ProjectionScheduler:
         return min(324.0, base * (1.0 + jitter))
 
     def start(self) -> bool:
+        if not _is_execution_owner():
+            with self._condition:
+                self._startup_complete = True
+                self._accepting = False
+            return False
         with self._condition:
             if self._dispatcher is not None and self._dispatcher.is_alive():
                 self._accepting = True
@@ -239,6 +328,117 @@ class ProjectionScheduler:
             )
             self._states.setdefault(domain, _DomainState())
 
+    def _ensure_signal_schema(self) -> None:
+        if self._signal_schema_ready:
+            return
+        with self._signal_schema_lock:
+            if self._signal_schema_ready:
+                return
+            from ..db.migrations import apply_migrations
+
+            apply_migrations()
+            self._signal_schema_ready = True
+
+    def _persist_dirty_signal(self, domain: str, reason: str) -> dict[str, Any]:
+        self._ensure_signal_schema()
+        requested_by = _process_role()
+        safe_reason = _safe_reason(reason)
+        now_iso = _utc_now()
+        now_ms = _epoch_ms()
+
+        def _write(conn):
+            conn.execute(
+                """
+                INSERT INTO projection_dirty_signals(
+                    domain, signal_generation, claimed_generation, trigger_reason,
+                    requested_by, updated_at, updated_at_epoch_ms
+                ) VALUES (?, 1, 0, ?, ?, ?, ?)
+                ON CONFLICT(domain) DO UPDATE SET
+                    signal_generation = projection_dirty_signals.signal_generation + 1,
+                    trigger_reason = CASE
+                        WHEN projection_dirty_signals.claimed_generation < projection_dirty_signals.signal_generation
+                             AND projection_dirty_signals.trigger_reason <> excluded.trigger_reason
+                        THEN 'coalesced_multiple'
+                        ELSE excluded.trigger_reason
+                    END,
+                    requested_by = excluded.requested_by,
+                    updated_at = excluded.updated_at,
+                    updated_at_epoch_ms = excluded.updated_at_epoch_ms
+                """,
+                (domain, safe_reason, requested_by, now_iso, now_ms),
+            )
+            row = conn.execute(
+                "SELECT signal_generation,claimed_generation,trigger_reason "
+                "FROM projection_dirty_signals WHERE domain=?",
+                (domain,),
+            ).fetchone()
+            return dict(row) if row is not None else {}
+
+        return SQLITE_WRITER.submit(
+            "projection.dirty_signal", _write, deadline_seconds=1.5
+        )
+
+    def _claim_dirty_signal(self, domain: str, generation: int) -> None:
+        self._ensure_signal_schema()
+
+        def _write(conn):
+            conn.execute(
+                "UPDATE projection_dirty_signals SET claimed_generation=MAX(claimed_generation, ?) "
+                "WHERE domain=? AND signal_generation>=?",
+                (int(generation), domain, int(generation)),
+            )
+
+        SQLITE_WRITER.submit(
+            "projection.claim_signal", _write, deadline_seconds=1.5
+        )
+
+    def consume_dirty_signals(self, *, limit: int = 32) -> dict[str, Any]:
+        if not _is_execution_owner():
+            return {"claimed": 0, "pending": 0, "execution_owner": _configured_execution_owner()}
+        self._ensure_signal_schema()
+        from ..db.connection import read_connection
+
+        bounded_limit = max(1, min(int(limit), self.max_domains))
+        with read_connection() as conn:
+            rows = [
+                dict(row)
+                for row in conn.execute(
+                    """
+                    SELECT domain,signal_generation,claimed_generation,trigger_reason
+                    FROM projection_dirty_signals
+                    WHERE signal_generation > claimed_generation
+                    ORDER BY updated_at_epoch_ms,domain
+                    LIMIT ?
+                    """,
+                    (bounded_limit,),
+                )
+            ]
+        claimed = 0
+        unregistered = 0
+        for row in rows:
+            domain = _safe_domain(row.get("domain") or "")
+            generation = int(row.get("signal_generation") or 0)
+            with self._condition:
+                registered = domain in self._jobs
+            if not registered:
+                unregistered += 1
+                continue
+            result = self.mark_dirty(
+                domain,
+                reason=str(row.get("trigger_reason") or "mailbox"),
+                _persist_signal=False,
+            )
+            if result.get("accepted"):
+                self._claim_dirty_signal(domain, generation)
+                claimed += 1
+        return {
+            "claimed": claimed,
+            "pending": max(0, len(rows) - claimed),
+            "unregistered": unregistered,
+            "execution_owner": _configured_execution_owner(),
+            "process_role": _process_role(),
+        }
+
     def mark_dirty(
         self,
         domain: str,
@@ -246,10 +446,40 @@ class ProjectionScheduler:
         job: ProjectionJob | None = None,
         priority: int | None = None,
         force_followup: bool = False,
+        reason: str = "event",
+        _persist_signal: bool = True,
     ) -> dict[str, Any]:
         if job is not None:
             self.register(job)
         safe_domain = _safe_domain(domain)
+        if not safe_domain:
+            return {
+                "accepted": False,
+                "refresh_pending": False,
+                "retry_after_seconds": 0,
+                "reason": "invalid_domain",
+            }
+        if not _is_execution_owner():
+            try:
+                signal = self._persist_dirty_signal(safe_domain, reason)
+            except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded, OSError) as exc:
+                return {
+                    "accepted": False,
+                    "refresh_pending": False,
+                    "retry_after_seconds": 1,
+                    "reason": type(exc).__name__,
+                    "execution_owner": _configured_execution_owner(),
+                }
+            self._event_signal_count += 1
+            return {
+                "accepted": True,
+                "refresh_pending": True,
+                "generation": int(signal.get("signal_generation") or 0),
+                "retry_after_seconds": 1,
+                "coalesced": int(signal.get("signal_generation") or 0) > int(signal.get("claimed_generation") or 0),
+                "execution_owner": _configured_execution_owner(),
+                "local_execution": False,
+            }
         with self._condition:
             if self._shutdown:
                 return {
@@ -281,6 +511,11 @@ class ProjectionScheduler:
             prior_priority = state.priority
             state.priority = min(state.priority, requested_priority) if was_pending else requested_priority
             state.work_class = registered.work_class
+            requested_reason = _safe_reason(reason)
+            if was_pending and state.trigger_reason != requested_reason:
+                state.trigger_reason = "coalesced_multiple"
+            else:
+                state.trigger_reason = requested_reason
 
             if was_pending and not force_followup:
                 # Prepared-read polling is only a refresh hint. Do not invalidate an
@@ -472,13 +707,16 @@ class ProjectionScheduler:
                     self._enqueue_locked(domain, state)
                     continue
                 generation = state.generation
+                trigger_reason = _safe_reason(state.trigger_reason)
                 state.active = True
                 state.started_at = now
+                state.last_trigger_reason = trigger_reason
+                state.execution_owner = _process_role()
                 state.last_started_iso = _utc_now()
                 state.database_instance = self._database_instance()
                 state.last_pressure_reason = ""
                 try:
-                    future = executor.submit(self._execute_profiled, job, generation, state.database_instance)
+                    future = executor.submit(self._execute_profiled, job, generation, state.database_instance, trigger_reason)
                 except RuntimeError:
                     state.active = False
                     state.last_error_type = "ExecutorRejected"
@@ -507,9 +745,17 @@ class ProjectionScheduler:
             material = repr(payload)
         return hashlib.sha256(material.encode("utf-8")).hexdigest()
 
-    def _execute_profiled(self, job: ProjectionJob, generation: int, database_instance: str) -> dict[str, Any]:
+    def _execute_profiled(
+        self,
+        job: ProjectionJob,
+        generation: int,
+        database_instance: str,
+        trigger_reason: str,
+    ) -> dict[str, Any]:
         with HOT_PATH_PROFILER.measure(f"projection.{job.domain}") as hot_path:
-            result = self._execute(job, generation, database_instance)
+            result = self._execute(
+                job, generation, database_instance, trigger_reason
+            )
             outcome = str(result.get("outcome") or "completed")
             hot_path["outcome"] = outcome
             hot_path["changed"] = True if outcome == "committed" else False if outcome in {"unchanged", "source_unchanged"} else None
@@ -517,7 +763,13 @@ class ProjectionScheduler:
                 HOT_PATH_PROFILER.increment(f"projection.{job.domain}", "skipped_unchanged")
             return result
 
-    def _execute(self, job: ProjectionJob, generation: int, database_instance: str) -> dict[str, Any]:
+    def _execute(
+        self,
+        job: ProjectionJob,
+        generation: int,
+        database_instance: str,
+        trigger_reason: str = "event",
+    ) -> dict[str, Any]:
         started = time.monotonic()
         source_revision: int | None = None
         with self._condition:
@@ -586,20 +838,54 @@ class ProjectionScheduler:
                 "payload_checksum": checksum,
                 "source_revision": source_revision,
             }
-        revision = int(job.projector(payload))
+        database_instance_hash = hashlib.sha256(
+            database_instance.encode("utf-8")
+        ).hexdigest()[:24]
+        token = _PROJECTION_CONTEXT.set(
+            {
+                "domain": job.domain,
+                "scheduler_generation": generation,
+                "database_instance": database_instance,
+                "database_instance_hash": database_instance_hash,
+                "trigger_reason": _safe_reason(trigger_reason),
+                "execution_owner": _process_role(),
+                "source_revision_before": source_revision,
+            }
+        )
+        try:
+            projected = job.projector(payload)
+        except ProjectionCommitRejected as exc:
+            reason = str(exc)
+            return {
+                "outcome": (
+                    "database_changed"
+                    if reason == "database_instance_changed"
+                    else "stale_generation"
+                ),
+                "duration_ms": (time.monotonic() - started) * 1000.0,
+                "generation": generation,
+                "database_instance": database_instance,
+                "payload_checksum": checksum,
+                "source_revision": source_revision,
+            }
+        finally:
+            _PROJECTION_CONTEXT.reset(token)
+        revision = int(projected)
+        changed = getattr(projected, "changed", True) is not False
         if job.source_revision is not None:
             try:
                 source_revision = int(job.source_revision())
             except Exception:
                 pass
         return {
-            "outcome": "committed",
+            "outcome": "committed" if changed else "unchanged",
             "revision": revision,
             "duration_ms": (time.monotonic() - started) * 1000.0,
             "generation": generation,
             "database_instance": database_instance,
             "payload_checksum": checksum,
             "source_revision": source_revision,
+            "trigger_reason": _safe_reason(trigger_reason),
         }
 
     def _reap_done_locked(self) -> None:
@@ -737,6 +1023,18 @@ class ProjectionScheduler:
             "last_error_type": state.last_error_type[:80],
             "last_pressure_reason": state.last_pressure_reason[:80],
             "database_instance": state.database_instance[:240],
+            "source_revision": state.last_source_revision,
+            "last_duration_ms": round(state.last_duration_ms, 3),
+            "execution_count": state.execution_count,
+            "committed_count": state.committed_count,
+            "unchanged_count": state.unchanged_count,
+            "dirty_mark_count": state.dirty_mark_count,
+            "followup_requested": int(state.followup_requested),
+            "trigger_reason": _safe_reason(state.trigger_reason),
+            "last_trigger_reason": _safe_reason(state.last_trigger_reason),
+            "execution_owner": _safe_reason(state.execution_owner),
+            "executor_build_version": _LOADED_BUILD_VERSION,
+            "executor_process_generation": _PROCESS_START_GENERATION,
             "updated_at": _utc_now(),
         }
         persistence_material = json.dumps(
@@ -756,8 +1054,12 @@ class ProjectionScheduler:
                     domain,generation,committed_generation,dirty,active,priority,work_class,
                     failure_count,next_retry_epoch_ms,coalesced_count,late_result_count,
                     stale_generation_count,last_started_at,last_completed_at,last_error_type,
-                    last_pressure_reason,database_instance,updated_at
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    last_pressure_reason,database_instance,source_revision,last_duration_ms,
+                    execution_count,committed_count,unchanged_count,dirty_mark_count,
+                    followup_requested,trigger_reason,
+                    last_trigger_reason,execution_owner,executor_build_version,
+                    executor_process_generation,updated_at
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(domain) DO UPDATE SET
                     generation=excluded.generation,
                     committed_generation=excluded.committed_generation,
@@ -775,13 +1077,29 @@ class ProjectionScheduler:
                     last_error_type=excluded.last_error_type,
                     last_pressure_reason=excluded.last_pressure_reason,
                     database_instance=excluded.database_instance,
+                    source_revision=excluded.source_revision,
+                    last_duration_ms=excluded.last_duration_ms,
+                    execution_count=excluded.execution_count,
+                    committed_count=excluded.committed_count,
+                    unchanged_count=excluded.unchanged_count,
+                    dirty_mark_count=excluded.dirty_mark_count,
+                    followup_requested=excluded.followup_requested,
+                    trigger_reason=excluded.trigger_reason,
+                    last_trigger_reason=excluded.last_trigger_reason,
+                    execution_owner=excluded.execution_owner,
+                    executor_build_version=excluded.executor_build_version,
+                    executor_process_generation=excluded.executor_process_generation,
                     updated_at=excluded.updated_at
                 """,
                 tuple(snapshot[key] for key in (
                     "domain","generation","committed_generation","dirty","active","priority","work_class",
                     "failure_count","next_retry_epoch_ms","coalesced_count","late_result_count",
                     "stale_generation_count","last_started_at","last_completed_at","last_error_type",
-                    "last_pressure_reason","database_instance","updated_at",
+                    "last_pressure_reason","database_instance","source_revision","last_duration_ms",
+                    "execution_count","committed_count","unchanged_count","dirty_mark_count",
+                    "followup_requested","trigger_reason",
+                    "last_trigger_reason","execution_owner","executor_build_version",
+                    "executor_process_generation","updated_at",
                 )),
             )
 
@@ -793,18 +1111,85 @@ class ProjectionScheduler:
             # lifecycle/current-state commits or request handling.
             return
 
+    def _shared_status(self, domain: str) -> dict[str, Any]:
+        try:
+            self._ensure_signal_schema()
+            from ..db.connection import read_connection
+
+            with read_connection() as conn:
+                row = conn.execute(
+                    """
+                    SELECT generation,committed_generation,dirty,active,priority,work_class,
+                           failure_count,next_retry_epoch_ms,coalesced_count,late_result_count,
+                           stale_generation_count,last_error_type,last_pressure_reason,
+                           source_revision,last_duration_ms,execution_count,committed_count,
+                           unchanged_count,dirty_mark_count,
+                           followup_requested,trigger_reason,last_trigger_reason,execution_owner,
+                           executor_build_version,executor_process_generation
+                    FROM projection_refresh_state WHERE domain=?
+                    """,
+                    (domain,),
+                ).fetchone()
+            if row is None:
+                return {}
+            data = dict(row)
+            now_ms = _epoch_ms()
+            return {
+                "generation": int(data.get("generation") or 0),
+                "committed_generation": int(data.get("committed_generation") or 0),
+                "refresh_pending": bool(data.get("dirty") or data.get("active")),
+                "active": bool(data.get("active")),
+                "queued": bool(data.get("dirty") and not data.get("active")),
+                "priority": int(data.get("priority") or 50),
+                "work_class": str(data.get("work_class") or "io"),
+                "retry_after_seconds": max(
+                    0, int((int(data.get("next_retry_epoch_ms") or 0) - now_ms + 999) / 1000)
+                ),
+                "failure_count": int(data.get("failure_count") or 0),
+                "coalesced_count": int(data.get("coalesced_count") or 0),
+                "late_result_count": int(data.get("late_result_count") or 0),
+                "stale_generation_count": int(data.get("stale_generation_count") or 0),
+                "last_error_type": str(data.get("last_error_type") or "")[:80],
+                "pressure_reason": str(data.get("last_pressure_reason") or "")[:80],
+                "source_revision": int(data.get("source_revision") or -1),
+                "last_duration_ms": round(float(data.get("last_duration_ms") or 0.0), 2),
+                "execution_count": int(data.get("execution_count") or 0),
+                "committed_count": int(data.get("committed_count") or 0),
+                "unchanged_count": int(data.get("unchanged_count") or 0),
+                "dirty_mark_count": int(data.get("dirty_mark_count") or 0),
+                "followup_requested": bool(data.get("followup_requested")),
+                "trigger_reason": _safe_reason(data.get("trigger_reason")),
+                "last_trigger_reason": _safe_reason(data.get("last_trigger_reason")),
+                "execution_owner": _safe_reason(data.get("execution_owner")),
+                "executor_build_version": str(
+                    data.get("executor_build_version") or "unavailable"
+                )[:64],
+                "executor_process_generation": str(
+                    data.get("executor_process_generation") or "unknown"
+                )[:32],
+            }
+        except Exception:
+            return {}
+
     def status(self, domain: str) -> dict[str, Any]:
         safe_domain = _safe_domain(domain)
+        shared = self._shared_status(safe_domain) if not _is_execution_owner() else {}
         with self._condition:
             state = self._states.get(safe_domain)
             job = self._jobs.get(safe_domain)
             if state is None:
                 return {
                     "registered": False,
-                    "refresh_pending": False,
-                    "retry_after_seconds": 0,
+                    "refresh_pending": bool(shared.get("refresh_pending")),
+                    "retry_after_seconds": int(shared.get("retry_after_seconds") or 0),
+                    **shared,
+                    "process_role": _process_role(),
+                    "configured_execution_owner": _configured_execution_owner(),
+                    "loaded_build_version": _LOADED_BUILD_VERSION,
+                    "process_start_generation": _PROCESS_START_GENERATION,
+                    "sanitized": True,
                 }
-            return {
+            local = {
                 "registered": safe_domain in self._jobs,
                 "generation": state.generation,
                 "committed_generation": state.committed_generation,
@@ -836,8 +1221,58 @@ class ProjectionScheduler:
                 ),
                 "dirty_mark_count": state.dirty_mark_count,
                 "followup_requested": state.followup_requested,
+                "trigger_reason": _safe_reason(state.trigger_reason),
+                "last_trigger_reason": _safe_reason(state.last_trigger_reason),
+                "execution_owner": _safe_reason(state.execution_owner),
+                "process_role": _process_role(),
+                "configured_execution_owner": _configured_execution_owner(),
+                "loaded_build_version": _LOADED_BUILD_VERSION,
+                "process_start_generation": _PROCESS_START_GENERATION,
+                "executor_build_version": _LOADED_BUILD_VERSION
+                if _is_execution_owner()
+                else str(shared.get("executor_build_version") or "unavailable"),
+                "executor_process_generation": _PROCESS_START_GENERATION
+                if _is_execution_owner()
+                else str(shared.get("executor_process_generation") or "unknown"),
                 "sanitized": True,
             }
+            if shared:
+                for key, value in shared.items():
+                    if key in {
+                        "generation", "committed_generation", "refresh_pending",
+                        "active", "queued", "priority", "work_class",
+                        "retry_after_seconds", "failure_count", "coalesced_count",
+                        "late_result_count", "stale_generation_count",
+                        "last_error_type", "pressure_reason", "source_revision",
+                        "last_duration_ms", "execution_count",
+                        "committed_count", "unchanged_count", "dirty_mark_count",
+                        "followup_requested", "trigger_reason",
+                        "last_trigger_reason", "execution_owner",
+                        "executor_build_version", "executor_process_generation",
+                    }:
+                        local[key] = value
+            return local
+
+
+    def execution_fence_valid(
+        self,
+        domain: str,
+        generation: int,
+        database_instance_hash: str,
+    ) -> bool:
+        safe_domain = _safe_domain(domain)
+        with self._condition:
+            state = self._states.get(safe_domain)
+            if state is None or self._shutdown:
+                return False
+            current_hash = hashlib.sha256(
+                self._database_instance().encode("utf-8")
+            ).hexdigest()[:24]
+            return bool(
+                state.active
+                and state.generation == int(generation)
+                and current_hash == str(database_instance_hash or "")
+            )
 
     def quiesce_for_database_switch(self, *, timeout_seconds: float = 5.0) -> bool:
         """Cancel queued refreshes and wait for active jobs before changing databases.
@@ -899,6 +1334,11 @@ class ProjectionScheduler:
                 "circuit_cooldown_seconds": self.circuit_cooldown_seconds,
                 "idle_wait_seconds": self.idle_wait_seconds,
                 "event_signal_count": self._event_signal_count,
+                "process_role": _process_role(),
+                "loaded_build_version": _LOADED_BUILD_VERSION,
+                "process_start_generation": _PROCESS_START_GENERATION,
+                "projection_execution_owner": _configured_execution_owner(),
+                "is_execution_owner": _is_execution_owner(),
                 "idle_efficiency": IDLE_EFFICIENCY.snapshot(),
                 "domains": {domain: self.status(domain) for domain in sorted(self._states)},
                 "sanitized": True,
@@ -920,3 +1360,11 @@ class ProjectionScheduler:
 
 
 PROJECTION_SCHEDULER = ProjectionScheduler()
+
+
+def projection_execution_fence_valid(
+    domain: str, generation: int, database_instance_hash: str
+) -> bool:
+    return PROJECTION_SCHEDULER.execution_fence_valid(
+        domain, generation, database_instance_hash
+    )

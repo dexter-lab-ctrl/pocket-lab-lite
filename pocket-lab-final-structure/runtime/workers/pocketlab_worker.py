@@ -22,6 +22,10 @@ for path in (
     if path not in sys.path:
         sys.path.insert(0, path)
 
+# The worker is the normal prepared-projection executor. API processes only
+# admit durable dirty signals unless an operator explicitly changes ownership.
+os.environ.setdefault("POCKETLAB_PROCESS_ROLE", "worker")
+
 # The worker uses JetStream durable command consumption and publishes lifecycle
 # events. It does not need FastAPI's read-side event fanout subscription; leaving
 # it enabled requires broader subscribe permissions and can destabilize command
@@ -649,6 +653,46 @@ async def heartbeat(stop_event: asyncio.Event) -> None:
             continue
 
 
+async def projection_signal_loop(stop_event: asyncio.Event) -> None:
+    """Execute prepared projections from the durable SQLite dirty mailbox.
+
+    This loop performs no request handling and publishes no raw payloads. It
+    only registers bounded collectors, consumes sanitized domain/reason signals,
+    and lets the canonical projection writer decide whether state changed.
+    """
+
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE  # type: ignore
+    from api_fastapi.services import lite_phase3b_projections  # type: ignore
+    from api_fastapi.services import lite_phase3c_projections  # type: ignore
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
+
+    await asyncio.to_thread(CONTROL_PLANE.initialize)
+    await asyncio.to_thread(PROJECTION_SCHEDULER.start)
+    await asyncio.to_thread(lite_phase3c_projections.register_jobs)
+    await asyncio.to_thread(lite_phase3b_projections.schedule_startup_warmup)
+    await asyncio.to_thread(lite_phase3c_projections.schedule_startup_warmup)
+    while not stop_event.is_set():
+        try:
+            result = await asyncio.to_thread(
+                PROJECTION_SCHEDULER.consume_dirty_signals, limit=32
+            )
+            if int(result.get("claimed") or 0) > 0:
+                _worker_log(
+                    "worker.projection_signals_claimed",
+                    claimed=int(result.get("claimed") or 0),
+                    pending=int(result.get("pending") or 0),
+                )
+        except Exception as exc:
+            _worker_log(
+                "worker.projection_signal_degraded",
+                error_type=type(exc).__name__,
+            )
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=1.0)
+        except asyncio.TimeoutError:
+            continue
+
+
 async def main_async() -> int:
     stop_event = asyncio.Event()
 
@@ -709,10 +753,19 @@ async def main_async() -> int:
         await BUS.stop()
         return 0
 
+    projection_task = asyncio.create_task(
+        projection_signal_loop(stop_event),
+        name="pocketlab-worker-projection-signals",
+    )
     os.environ.setdefault("POCKETLAB_NATS_REQUIRED", "1")
     BUS.required = True
     await connect_worker_bus(stop_event)
     if stop_event.is_set():
+        projection_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError, Exception):
+            await projection_task
+        from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
+        await asyncio.to_thread(PROJECTION_SCHEDULER.shutdown)
         return 0
     hb_task = asyncio.create_task(
         heartbeat(stop_event), name="pocketlab-worker-heartbeat"
@@ -722,11 +775,13 @@ async def main_async() -> int:
         name="pocketlab-worker-recovery-watchdog",
     )
     await stop_event.wait()
-    for task in (hb_task, recovery_task):
+    for task in (hb_task, recovery_task, projection_task):
         task.cancel()
-    for task in (hb_task, recovery_task):
+    for task in (hb_task, recovery_task, projection_task):
         with contextlib.suppress(asyncio.CancelledError, Exception):
             await task
+    from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
+    await asyncio.to_thread(PROJECTION_SCHEDULER.shutdown)
     try:
         await publish(
             "pocketlab.events.worker.stopped", "worker.stopped", {"pid": os.getpid()}

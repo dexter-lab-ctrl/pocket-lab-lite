@@ -101,7 +101,8 @@ def _mark_phase3c_maintenance(reason: str) -> None:
         lite_phase3c_projections.mark_dirty(
             "system.sqlite_health",
             "system.storage_pressure",
-            "system.activity_summary",
+            "system.activity_current",
+            "system.activity_history",
             reason=reason,
         )
     except Exception:
