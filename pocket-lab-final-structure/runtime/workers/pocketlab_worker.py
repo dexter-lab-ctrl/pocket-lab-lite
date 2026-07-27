@@ -849,6 +849,14 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                 }
                 compact_scheduler["queue"] = {
                     "executor_depth": int(queue.get("executor_depth") or 0),
+                    "ready_executor_depth": int(
+                        queue.get("ready_executor_depth")
+                        if queue.get("ready_executor_depth") is not None
+                        else queue.get("executor_depth") or 0
+                    ),
+                    "scheduled_future_depth": int(
+                        queue.get("scheduled_future_depth") or 0
+                    ),
                     "followup_domains": int(queue.get("followup_domains") or 0),
                     "active_domains": int(queue.get("active_domains") or 0),
                     "durable_pending": pending,

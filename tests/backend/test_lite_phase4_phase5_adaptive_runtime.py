@@ -547,3 +547,83 @@ def test_prepared_runtime_contract_is_compact_cached_and_worker_authoritative() 
     assert "encoded_runtime_response" in snapshot
     assert "_RESPONSE_CACHE_BYTES" in snapshot
     assert 'media_type="application/json"' in router
+
+
+def test_projection_scheduler_ready_depth_excludes_future_entries() -> None:
+    import time
+
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    scheduler.register(
+        ProjectionJob(
+            domain="test.queue.future",
+            builder=lambda: {},
+            projector=lambda _payload: 1,
+            priority=50,
+            work_class="io",
+            deadline_seconds=1.0,
+        )
+    )
+    with scheduler._condition:
+        state = scheduler._states["test.queue.future"]
+        state.generation += 1
+        state.dirty = True
+        state.not_before_at = time.monotonic() + 60.0
+        scheduler._enqueue_locked("test.queue.future", state)
+
+    queue = scheduler.queue_health()
+    assert queue["executor_depth"] == 0
+    assert queue["ready_executor_depth"] == 0
+    assert queue["scheduled_future_depth"] == 1
+    assert scheduler.diagnostics()["queued_domains"] == 0
+
+
+def test_runtime_snapshot_hot_path_is_preencoded_revisioned_and_nonblocking() -> None:
+    root = Path(__file__).resolve().parents[2]
+    scheduler = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "services"
+        / "projection_scheduler.py"
+    ).read_text(encoding="utf-8")
+    runtime = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "services"
+        / "runtime_snapshot_store.py"
+    ).read_text(encoding="utf-8")
+    diagnostics = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "services"
+        / "runtime_diagnostics.py"
+    ).read_text(encoding="utf-8")
+    router = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "routers"
+        / "lite.py"
+    ).read_text(encoding="utf-8")
+
+    assert '"ready_executor_depth"' in scheduler
+    assert '"scheduled_future_depth"' in scheduler
+    assert "snapshot_revision" in runtime
+    assert "_append_top_level_fields" in runtime
+    assert "json.loads(row[\"payload_json\"])" not in runtime.split(
+        "def encoded_runtime_response", 1
+    )[1]
+    assert "def event_loop_summary" in diagnostics
+    assert "async def get_lite_runtime_diagnostics" in router
+    assert "await asyncio.to_thread(encoded_runtime_response, event_loop)" in router
+    assert "RUNTIME_DIAGNOSTICS.snapshot()" not in router.split(
+        '@router.get("/diagnostics/runtime")', 1
+    )[1].split('@router.get("/diagnostics/runtime/full")', 1)[0]

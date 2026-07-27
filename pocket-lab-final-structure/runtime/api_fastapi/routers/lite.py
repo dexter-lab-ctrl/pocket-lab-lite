@@ -1965,11 +1965,15 @@ def _full_lite_runtime_diagnostics() -> dict[str, Any]:
 
 
 @router.get("/diagnostics/runtime")
-def get_lite_runtime_diagnostics(request: Request) -> Response:
+async def get_lite_runtime_diagnostics(request: Request) -> Response:
     deps.require_auth(request)
     from ..services.runtime_snapshot_store import encoded_runtime_response
 
-    encoded = encoded_runtime_response(RUNTIME_DIAGNOSTICS.snapshot())
+    # The route only snapshots a small lock-protected event-loop summary on the
+    # loop. SQLite I/O and response-byte assembly run in the bounded default
+    # executor so diagnostics cannot become an event-loop blocking collector.
+    event_loop = RUNTIME_DIAGNOSTICS.event_loop_summary()
+    encoded = await asyncio.to_thread(encoded_runtime_response, event_loop)
     return Response(
         content=encoded,
         media_type="application/json",

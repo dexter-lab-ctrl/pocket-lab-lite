@@ -378,6 +378,28 @@ class RuntimeDiagnostics:
         with self._lock:
             return round(self._loop_latest_ms, 2)
 
+    def event_loop_summary(self) -> dict[str, Any]:
+        """Return the bounded fields required by the runtime acceptance gate."""
+        with self._lock:
+            recent_max = max(self._loop_recent, default=0.0)
+            status = (
+                "critical"
+                if self._loop_latest_ms >= self.loop_critical_ms
+                else "warning"
+                if self._loop_latest_ms >= self.loop_warning_ms
+                else "healthy"
+            )
+            task_running = self._loop_task is not None and not self._loop_task.done()
+            return {
+                "status": status,
+                "monitor_running": task_running,
+                "samples": int(self._loop_samples),
+                "latest_lag_ms": round(self._loop_latest_ms, 2),
+                "recent_max_lag_ms": round(recent_max, 2),
+                "warning_count": int(self._loop_warning_count),
+                "critical_count": int(self._loop_critical_count),
+            }
+
     def _install_gc_callback(self) -> None:
         with self._lock:
             if self._gc_installed:
