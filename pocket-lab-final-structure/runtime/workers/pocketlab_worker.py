@@ -654,6 +654,80 @@ async def heartbeat(stop_event: asyncio.Event) -> None:
             continue
 
 
+def _compact_distribution(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    return {
+        key: value.get(key)
+        for key in ("count", "p50", "p95", "p99", "max")
+        if value.get(key) is not None
+    }
+
+
+def _compact_adaptive_runtime(payload: dict[str, Any]) -> dict[str, Any]:
+    domains: dict[str, Any] = {}
+    raw_domains = payload.get("domains") if isinstance(payload.get("domains"), dict) else {}
+    for domain, row in raw_domains.items():
+        if not isinstance(row, dict):
+            continue
+        domains[str(domain)[:96]] = {
+            "cadence_state": row.get("cadence_state"),
+            "load_state": row.get("load_state"),
+            "next_reconciliation_seconds": row.get("next_reconciliation_seconds"),
+            "cpu_budget_remaining_ms": row.get("cpu_budget_remaining_ms"),
+            "cpu_budget_exhausted": bool(row.get("cpu_budget_exhausted")),
+            "admitted": int(row.get("admitted") or 0),
+            "deferred": int(row.get("deferred") or 0),
+            "last_reason": str(row.get("last_reason") or "")[:80],
+            "cpu_ms": _compact_distribution(row.get("cpu_ms")),
+            "wall_ms": _compact_distribution(row.get("wall_ms")),
+            "queue_wait_ms": _compact_distribution(row.get("queue_wait_ms")),
+            "payload_bytes": _compact_distribution(row.get("payload_bytes")),
+            "serialization_ms": _compact_distribution(row.get("serialization_ms")),
+            "allocation_bytes": _compact_distribution(row.get("allocation_bytes")),
+            "payload_budget_bytes": int(row.get("payload_budget_bytes") or 0),
+            "allocation_budget_bytes": int(row.get("allocation_budget_bytes") or 0),
+            "serialization_budget_ms": float(row.get("serialization_budget_ms") or 0.0),
+        }
+    return {
+        "profile": payload.get("profile"),
+        "admitted": int(payload.get("admitted") or 0),
+        "deferred": int(payload.get("deferred") or 0),
+        "rejected": int(payload.get("rejected") or 0),
+        "event_payloads": payload.get("event_payloads") if isinstance(payload.get("event_payloads"), dict) else {},
+        "domains": domains,
+        "sanitized": True,
+    }
+
+
+def _compact_process_runtime(payload: dict[str, Any]) -> dict[str, Any]:
+    workloads: dict[str, Any] = {}
+    raw = payload.get("workloads") if isinstance(payload.get("workloads"), dict) else {}
+    for name, row in raw.items():
+        if not isinstance(row, dict):
+            continue
+        workloads[str(name)[:80]] = {
+            key: int(row.get(key) or 0)
+            for key in ("runs", "failed", "timed_out", "capacity_deferred",
+                        "cleanup_degraded", "output_truncated", "active")
+        }
+    return {
+        key: payload.get(key)
+        for key in ("max_concurrent", "security_max_concurrent", "subprocess_count",
+                    "subprocess_limit", "memory_rss_bytes", "memory_peak_rss_bytes",
+                    "memory_metric_source")
+    } | {"workloads": workloads, "sanitized": True}
+
+
+def _compact_hot_path(payload: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "job_count": int(payload.get("job_count") or 0),
+        "top_cpu_jobs": (payload.get("top_cpu_jobs") or [])[:10]
+        if isinstance(payload.get("top_cpu_jobs"), list) else [],
+        "sanitized": True,
+    }
+
+
 async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     """Execute prepared projections from the durable SQLite dirty mailbox.
 
@@ -764,6 +838,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
             consecutive_signal_failures = 0
             if now - last_snapshot_at >= snapshot_interval_seconds:
                 scheduler = PROJECTION_SCHEDULER.diagnostics()
+                queue = scheduler.get("queue") if isinstance(scheduler.get("queue"), dict) else {}
                 compact_scheduler = {
                     key: scheduler.get(key)
                     for key in (
@@ -771,6 +846,13 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                         "active_io", "active_cpu", "projection_execution_owner",
                         "is_execution_owner", "registered_domains", "process_role",
                     )
+                }
+                compact_scheduler["queue"] = {
+                    "executor_depth": int(queue.get("executor_depth") or 0),
+                    "followup_domains": int(queue.get("followup_domains") or 0),
+                    "active_domains": int(queue.get("active_domains") or 0),
+                    "durable_pending": pending,
+                    "unregistered": unregistered,
                 }
                 compact_scheduler["mailbox"] = {
                     "claimed": claimed, "pending": pending, "unregistered": unregistered
@@ -786,9 +868,15 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                             "registered_domain_count": int(scheduler.get("registered_domains") or 0),
                         },
                         "projection_scheduler": compact_scheduler,
-                        "adaptive_runtime": ADAPTIVE_RUNTIME.diagnostics(),
-                        "process_runtime": PROCESS_RUNTIME.snapshot(),
-                        "hot_path": HOT_PATH_PROFILER.snapshot(),
+                        "worker_health": {
+                            "registry_ready": True,
+                            "queue": compact_scheduler["queue"],
+                            "mailbox": compact_scheduler["mailbox"],
+                            "sanitized": True,
+                        },
+                        "adaptive_runtime": _compact_adaptive_runtime(ADAPTIVE_RUNTIME.diagnostics()),
+                        "process_runtime": _compact_process_runtime(PROCESS_RUNTIME.snapshot()),
+                        "hot_path": _compact_hot_path(HOT_PATH_PROFILER.snapshot()),
                     },
                 )
                 last_snapshot_at = now

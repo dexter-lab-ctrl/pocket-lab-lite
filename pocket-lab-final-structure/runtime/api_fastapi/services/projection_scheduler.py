@@ -1479,8 +1479,82 @@ class ProjectionScheduler:
                 return_when=concurrent.futures.FIRST_COMPLETED,
             )
 
+    def _reconcile_queue_state_locked(self) -> dict[str, int]:
+        """Make queue diagnostics reflect runnable executor work, not stale flags.
+
+        Heap entries are generation-fenced.  Stale/duplicate entries are removed,
+        orphaned ``queued`` flags are cleared, and dirty inactive domains that lost
+        their heap entry are re-enqueued.  No durable mailbox rows are deleted.
+        """
+        valid_heap: list[tuple[int, int, str, int]] = []
+        queued_domains: set[str] = set()
+        stale_entries = 0
+        duplicate_entries = 0
+        for item in self._heap:
+            priority, sequence, domain, generation = item
+            state = self._states.get(domain)
+            job = self._jobs.get(domain)
+            if (
+                state is None
+                or job is None
+                or state.active
+                or not state.dirty
+                or int(generation) != int(state.generation)
+            ):
+                stale_entries += 1
+                continue
+            if domain in queued_domains:
+                duplicate_entries += 1
+                continue
+            queued_domains.add(domain)
+            valid_heap.append((priority, sequence, domain, generation))
+
+        if stale_entries or duplicate_entries or len(valid_heap) != len(self._heap):
+            self._heap = valid_heap
+            heapq.heapify(self._heap)
+
+        cleared_flags = 0
+        repaired_domains = 0
+        for domain, state in self._states.items():
+            should_be_queued = domain in queued_domains
+            if state.queued and not should_be_queued:
+                state.queued = False
+                cleared_flags += 1
+            elif should_be_queued and not state.queued:
+                state.queued = True
+
+            if (
+                state.dirty
+                and not state.active
+                and not state.queued
+                and domain in self._jobs
+                and not self._shutdown
+            ):
+                self._enqueue_locked(domain, state)
+                queued_domains.add(domain)
+                repaired_domains += 1
+
+        return {
+            "executor_depth": len(queued_domains),
+            "followup_domains": sum(
+                1 for state in self._states.values() if state.followup_requested
+            ),
+            "active_domains": sum(1 for state in self._states.values() if state.active),
+            "stale_entries_removed": stale_entries,
+            "duplicate_entries_removed": duplicate_entries,
+            "stale_flags_cleared": cleared_flags,
+            "orphaned_dirty_requeued": repaired_domains,
+        }
+
+    def queue_health(self) -> dict[str, int]:
+        with self._condition:
+            self._reap_done_locked()
+            return dict(self._reconcile_queue_state_locked())
+
     def diagnostics(self) -> dict[str, Any]:
         with self._condition:
+            self._reap_done_locked()
+            queue = self._reconcile_queue_state_locked()
             return {
                 "status": "stopping" if self._shutdown else "running" if self._accepting else "stopped",
                 "io_workers": self.io_workers,
@@ -1488,8 +1562,12 @@ class ProjectionScheduler:
                 "max_domains": self.max_domains,
                 "registered_domains": len(self._states),
                 "remaining_domain_capacity": max(0, self.max_domains - len(self._states)),
-                "queued_domains": sum(1 for state in self._states.values() if state.queued),
-                "active_domains": sum(1 for state in self._states.values() if state.active),
+                # Backward-compatible alias used by the Phase 5 gate.  This is
+                # now the authoritative executor heap depth, not a count of
+                # historical per-domain flags.
+                "queued_domains": int(queue["executor_depth"]),
+                "active_domains": int(queue["active_domains"]),
+                "queue": queue,
                 "active_io": self._active_count_locked("io"),
                 "active_cpu": self._active_count_locked("cpu"),
                 "circuit_failure_threshold": self.circuit_failure_threshold,
