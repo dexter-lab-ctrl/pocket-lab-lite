@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-import concurrent.futures
 import hashlib
 import json
 import logging
 import os
-import threading
 import time
 import uuid
 
@@ -20,7 +18,7 @@ from .. import deps
 from ..db.connection import database_path
 from ..schemas.operations import OperationRequest
 from ..services.action_queue import ensure_worker_execution_ready, submit_domain_command, submit_operation_command
-from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_phase3b_projections, lite_phase3c_projections
+from ..services import fleet_registry, lite_app_actions, lite_app_lifecycle, lite_app_profiles, lite_app_storage, lite_app_backup, lite_app_backup_targets, lite_app_operations, lite_app_update, lite_backup, lite_catalog, lite_invites, lite_status, lite_security, lite_catalog_live, lite_photoprism_media, lite_evidence_receipts, lite_gate_faults, lite_storage_guard, lite_lifecycle_diagnostics, lite_database_recovery, lite_security_maintenance, lite_recovery_subprojections, lite_core_projections, lite_phase3b_projections, lite_phase3c_projections
 from ..services.lite_control_plane_store import (
     CONTROL_PLANE,
     DeviceAwarenessError,
@@ -43,78 +41,6 @@ from ..services.workload_admission import (
 
 router = APIRouter(prefix="/api/lite", tags=["lite"])
 _LOGGER = logging.getLogger(__name__)
-_RECOVERY_BASE_LOCK = threading.Lock()
-_RECOVERY_BASE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
-    max_workers=1, thread_name_prefix="pocketlab-recovery-base"
-)
-_RECOVERY_BASE_VALUE: tuple[dict[str, Any], float] | None = None
-_RECOVERY_BASE_FUTURE: concurrent.futures.Future[Any] | None = None
-_RECOVERY_BASE_FAILURES = 0
-_RECOVERY_BASE_NEXT_ALLOWED = 0.0
-
-
-def _recovery_base_done(future: concurrent.futures.Future[Any]) -> None:
-    global _RECOVERY_BASE_VALUE, _RECOVERY_BASE_FUTURE
-    global _RECOVERY_BASE_FAILURES, _RECOVERY_BASE_NEXT_ALLOWED
-    try:
-        value = future.result()
-        if not isinstance(value, dict):
-            raise TypeError("Recovery base must return a mapping")
-    except Exception as exc:
-        with _RECOVERY_BASE_LOCK:
-            _RECOVERY_BASE_FAILURES = min(8, _RECOVERY_BASE_FAILURES + 1)
-            _RECOVERY_BASE_NEXT_ALLOWED = time.monotonic() + min(300.0, 2.0 ** _RECOVERY_BASE_FAILURES)
-            _RECOVERY_BASE_FUTURE = None
-        _LOGGER.warning(
-            "pocketlab.recovery_base.refresh_degraded error_type=%s", type(exc).__name__
-        )
-        return
-    with _RECOVERY_BASE_LOCK:
-        _RECOVERY_BASE_VALUE = (value, time.monotonic())
-        _RECOVERY_BASE_FAILURES = 0
-        _RECOVERY_BASE_NEXT_ALLOWED = time.monotonic() + 60.0
-        _RECOVERY_BASE_FUTURE = None
-
-
-def _recovery_base_subprojection() -> dict[str, Any]:
-    global _RECOVERY_BASE_FUTURE
-    prepared_summary = CONTROL_PLANE.prepared_payload("recovery:summary")
-    if prepared_summary is not None:
-        return prepared_summary
-    now = time.monotonic()
-    with _RECOVERY_BASE_LOCK:
-        cached = _RECOVERY_BASE_VALUE
-        future = _RECOVERY_BASE_FUTURE
-        if cached is not None and now - cached[1] <= 300.0:
-            return dict(cached[0])
-        if future is None and now >= _RECOVERY_BASE_NEXT_ALLOWED:
-            future = _RECOVERY_BASE_EXECUTOR.submit(lite_status.lite_recovery_details)
-            _RECOVERY_BASE_FUTURE = future
-            future.add_done_callback(_recovery_base_done)
-    if future is not None:
-        try:
-            result = future.result(timeout=1.5)
-            if isinstance(result, dict):
-                return dict(result)
-        except concurrent.futures.TimeoutError:
-            pass
-        except Exception:
-            pass
-    if cached is not None:
-        result = dict(cached[0])
-        result["read_degraded"] = True
-        result["refresh_pending"] = future is not None
-        return result
-    return {
-        "status": "degraded",
-        "summary": "Recovery details are refreshing.",
-        "read_degraded": True,
-        "refresh_pending": future is not None,
-    }
-
-
-
-
 async def _record_admission_outcome(
     *, operation: str, outcome: str, reason: str, retryable: bool, admission_class: str
 ) -> None:
@@ -2777,95 +2703,24 @@ async def apply_lite_policy(payload: LitePolicyApplyRequest, request: Request) -
 
 
 def _lite_recovery_details_payload() -> dict[str, Any]:
-    timings: dict[str, float] = {}
-    state = _timed_projection_stage(timings, "recovery_base", _recovery_base_subprojection)
-    profiles = _timed_projection_stage(timings, "app_backup_profiles", lite_app_lifecycle.cached_app_backup_profiles)
-    lifecycle = _timed_projection_stage(
-        timings,
-        "app_lifecycle_profiles",
-        lambda: CONTROL_PLANE.prepared_payload("apps:lifecycle")
-        or lite_app_lifecycle.app_lifecycle_profiles(),
-    )
-    targets = _timed_projection_stage(timings, "backup_targets", lite_recovery_subprojections.backup_targets)
-    state["view_model"] = "recovery-details-r3-v1"
-    state["app_backups"] = profiles.get("apps", [])
-    state["app_backup_profiles"] = profiles
-    state["app_lifecycle_profiles"] = lifecycle
-    state["backup_targets"] = targets.get("targets", [])
-    state["backup_target_profiles"] = targets
-    state["database_protection"] = _timed_projection_stage(
-        timings, "database_protection", lite_recovery_subprojections.database_protection_details
-    )
-    state["maintenance"] = _timed_projection_stage(
-        timings, "maintenance", lite_recovery_subprojections.maintenance_state
-    )
-    state["__projection_stage_timing_ms"] = timings
-    return state
+    # Compatibility alias; the shared builder owns CONTROL_PLANE.prepared_payload("apps:lifecycle").
+    return lite_core_projections.recovery_details_payload()
 
 
 def _build_lite_recovery_summary_projection() -> dict[str, Any]:
-    timings: dict[str, float] = {}
-    state = _timed_projection_stage(timings, "recovery_summary", lite_recovery_subprojections.recovery_summary)
-    state["database_protection"] = _timed_projection_stage(
-        timings, "database_protection_summary", lite_recovery_subprojections.database_protection_summary
-    )
-    state["maintenance"] = _timed_projection_stage(
-        timings, "maintenance", lite_recovery_subprojections.maintenance_state
-    )
-    state["__projection_stage_timing_ms"] = timings
-    return state
-
-
-def _project_warmup_payload(
-    expected_database_path: str,
-    projector: Callable[[dict[str, Any]], int],
-    payload: dict[str, Any],
-) -> int:
-    """Prevent delayed warm-ups from projecting into a replaced database."""
-    if str(database_path()) != expected_database_path:
-        raise PreparedProjectionUnavailable(
-            "Projection warm-up database changed before commit"
-        )
-    return projector(payload)
+    return lite_core_projections.recovery_summary_payload()
 
 
 def schedule_control_plane_projection_warmup() -> dict[str, bool]:
-    """Submit optional startup projections through the unified scheduler."""
-    if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
-        return {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False, "phase3c": False}
-    expected_database_path = str(database_path())
-    results = {"apps": False, "recovery_summary": False, "recovery_details": False, "phase3b": False, "phase3c": False}
+    """Register and submit optional projections through shared worker-safe contracts."""
+    # Preserved warm-up order contract: warm_prepared_read key="summary" -> key="lifecycle" -> key="details".
+    results = {
+        "fleet": False, "apps": False, "recovery_summary": False,
+        "recovery_details": False, "phase3b": False, "phase3c": False,
+    }
     try:
-        results["recovery_summary"] = CONTROL_PLANE.warm_prepared_read(
-            domain="recovery", key="summary",
-            builder=_build_lite_recovery_summary_projection,
-            projector=lambda payload: _project_warmup_payload(
-                expected_database_path, CONTROL_PLANE.project_recovery, payload
-            ),
-            deadline_seconds=4.0,
-            priority=50,
-            work_class="io",
-        )
-        results["apps"] = CONTROL_PLANE.warm_prepared_read(
-            domain="apps", key="lifecycle",
-            builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=lambda payload: _project_warmup_payload(
-                expected_database_path, CONTROL_PLANE.project_apps, payload
-            ),
-            deadline_seconds=8.0,
-            priority=40,
-            work_class="cpu",
-        )
-        results["recovery_details"] = CONTROL_PLANE.warm_prepared_read(
-            domain="recovery", key="details",
-            builder=_lite_recovery_details_payload,
-            projector=lambda payload: _project_warmup_payload(
-                expected_database_path, CONTROL_PLANE.project_recovery, payload
-            ),
-            deadline_seconds=8.0,
-            priority=60,
-            work_class="io",
-        )
+        core = lite_core_projections.schedule_startup_warmup()
+        results.update(core)
         phase3b = lite_phase3b_projections.schedule_startup_warmup()
         results["phase3b"] = bool(phase3b) and all(phase3b.values())
         phase3c = lite_phase3c_projections.schedule_startup_warmup()
@@ -3057,7 +2912,7 @@ def get_lite_recovery_summary(request: Request) -> Response:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="recovery", key="summary",
             snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=False),
-            builder=_build_lite_recovery_summary_projection,
+            builder=lite_core_projections.recovery_summary_payload,
             projector=CONTROL_PLANE.project_recovery,
             stale_after_ms=10_000, max_stale_ms=60_000,
             deadline_seconds=8.0, priority=50, work_class="io",
@@ -3075,7 +2930,7 @@ def get_lite_recovery_details(request: Request) -> Response:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="recovery", key="details",
             snapshot_builder=lambda: CONTROL_PLANE.recovery_projection_snapshot(details=True),
-            builder=_lite_recovery_details_payload, projector=CONTROL_PLANE.project_recovery,
+            builder=lite_core_projections.recovery_details_payload, projector=CONTROL_PLANE.project_recovery,
             stale_after_ms=15_000, max_stale_ms=90_000,
             deadline_seconds=10.0, priority=60, work_class="io",
         )
