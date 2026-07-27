@@ -167,7 +167,7 @@ def register_jobs() -> dict[str, bool]:
             deadline_seconds=20.0, priority=15, work_class="critical",
         ),
         "apps": _register_job(
-            domain="apps", key="lifecycle", snapshot_builder=CONTROL_PLANE.apps_projection_snapshot,
+            domain="apps", key="lifecycle", snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
             builder=lite_app_lifecycle.app_lifecycle_profiles,
             projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_apps, payload),
             deadline_seconds=8.0, priority=40, work_class="cpu",
