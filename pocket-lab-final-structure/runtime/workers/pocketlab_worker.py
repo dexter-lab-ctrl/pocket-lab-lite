@@ -656,9 +656,9 @@ async def heartbeat(stop_event: asyncio.Event) -> None:
 async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     """Execute prepared projections from the durable SQLite dirty mailbox.
 
-    This loop performs no request handling and publishes no raw payloads. It
-    only registers bounded collectors, consumes sanitized domain/reason signals,
-    and lets the canonical projection writer decide whether state changed.
+    Registration is retried in-process so transient SQLite pressure or a bad
+    projection contract cannot silently disable worker-owned projections while
+    leaving the command consumer apparently healthy.
     """
 
     from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE  # type: ignore
@@ -667,25 +667,64 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     from api_fastapi.services import lite_phase3c_projections  # type: ignore
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
 
-    await asyncio.to_thread(CONTROL_PLANE.initialize)
-    await asyncio.to_thread(lite_core_projections.register_jobs)
-    await asyncio.to_thread(lite_phase3c_projections.register_jobs)
-    await asyncio.to_thread(lite_phase3b_projections.schedule_startup_warmup)
-    await asyncio.to_thread(PROJECTION_SCHEDULER.start)
-    await asyncio.to_thread(lite_core_projections.schedule_startup_warmup)
-    await asyncio.to_thread(lite_phase3c_projections.schedule_startup_warmup)
-
-    registry = PROJECTION_SCHEDULER.diagnostics()
-    registered = set((registry.get("domains") or {}).keys())
-    required = set(lite_core_projections.CORE_PROJECTION_DOMAINS) | {
-        "security.progress", "security.summary", "system.status", "system.health"
-    }
-    missing = sorted(required - registered)
-    _worker_log(
-        "worker.projection_registry_ready" if not missing else "worker.projection_registry_incomplete",
-        registered_count=len(registered),
-        missing_domains=missing,
+    retry_seconds = _env_int(
+        "POCKETLAB_WORKER_PROJECTION_RETRY_SECONDS",
+        5,
+        minimum=2,
+        maximum=60,
     )
+    attempt = 0
+
+    while not stop_event.is_set():
+        attempt += 1
+        try:
+            await asyncio.to_thread(CONTROL_PLANE.initialize)
+            await asyncio.to_thread(lite_core_projections.register_jobs)
+            await asyncio.to_thread(lite_phase3c_projections.register_jobs)
+            await asyncio.to_thread(lite_phase3b_projections.schedule_startup_warmup)
+            await asyncio.to_thread(PROJECTION_SCHEDULER.start)
+            await asyncio.to_thread(lite_core_projections.schedule_startup_warmup)
+            await asyncio.to_thread(lite_phase3c_projections.schedule_startup_warmup)
+
+            registry = PROJECTION_SCHEDULER.diagnostics()
+            registered = set((registry.get("domains") or {}).keys())
+            required = set(lite_core_projections.CORE_PROJECTION_DOMAINS) | {
+                "security.progress",
+                "security.summary",
+                "system.status",
+                "system.health",
+            }
+            missing = sorted(required - registered)
+            if missing:
+                _worker_log(
+                    "worker.projection_registry_incomplete",
+                    attempt=attempt,
+                    registered_count=len(registered),
+                    missing_domains=missing,
+                    retry_seconds=retry_seconds,
+                )
+                raise RuntimeError("projection_registry_incomplete")
+
+            _worker_log(
+                "worker.projection_registry_ready",
+                attempt=attempt,
+                registered_count=len(registered),
+                missing_domains=[],
+            )
+            break
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            _worker_log(
+                "worker.projection_initialization_degraded",
+                attempt=attempt,
+                error_type=type(exc).__name__,
+                retry_seconds=retry_seconds,
+            )
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=retry_seconds)
+            except asyncio.TimeoutError:
+                continue
 
     last_signal_log: tuple[int, int, int] | None = None
     last_signal_log_at = 0.0
@@ -704,10 +743,14 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
             ):
                 _worker_log(
                     "worker.projection_signals_claimed",
-                    claimed=claimed, pending=pending, unregistered=unregistered,
+                    claimed=claimed,
+                    pending=pending,
+                    unregistered=unregistered,
                 )
                 last_signal_log = signal_state
                 last_signal_log_at = now
+        except asyncio.CancelledError:
+            raise
         except Exception as exc:
             _worker_log(
                 "worker.projection_signal_degraded",
@@ -783,6 +826,21 @@ async def main_async() -> int:
         projection_signal_loop(stop_event),
         name="pocketlab-worker-projection-signals",
     )
+
+    def _projection_task_done(task: asyncio.Task[Any]) -> None:
+        if task.cancelled() or stop_event.is_set():
+            return
+        try:
+            exc = task.exception()
+        except asyncio.CancelledError:
+            return
+        _worker_log(
+            "worker.projection_task_stopped",
+            error_type=type(exc).__name__ if exc is not None else "UnexpectedExit",
+        )
+        stop_event.set()
+
+    projection_task.add_done_callback(_projection_task_done)
     os.environ.setdefault("POCKETLAB_NATS_REQUIRED", "1")
     BUS.required = True
     await connect_worker_bus(stop_event)

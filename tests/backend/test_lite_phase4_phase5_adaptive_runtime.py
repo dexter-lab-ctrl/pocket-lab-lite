@@ -451,3 +451,35 @@ def test_api_and_worker_share_core_projection_registration_contract() -> None:
     assert "lite_core_projections.schedule_startup_warmup()" in router
     assert "lite_core_projections.schedule_startup_warmup" in worker
     assert "from api_fastapi.routers import lite" not in worker
+
+
+def test_core_apps_registration_uses_existing_store_snapshot_api() -> None:
+    root = Path(__file__).resolve().parents[2]
+    shared = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "services"
+        / "lite_core_projections.py"
+    ).read_text(encoding="utf-8")
+
+    assert "CONTROL_PLANE.app_projection_snapshot" in shared
+    assert "CONTROL_PLANE.apps_projection_snapshot" not in shared
+
+
+def test_worker_projection_task_retries_initialization_and_surfaces_exit() -> None:
+    root = Path(__file__).resolve().parents[2]
+    worker = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "workers"
+        / "pocketlab_worker.py"
+    ).read_text(encoding="utf-8")
+
+    assert "POCKETLAB_WORKER_PROJECTION_RETRY_SECONDS" in worker
+    assert "worker.projection_initialization_degraded" in worker
+    assert "projection_registry_incomplete" in worker
+    assert "projection_task.add_done_callback(_projection_task_done)" in worker
+    assert "worker.projection_task_stopped" in worker
