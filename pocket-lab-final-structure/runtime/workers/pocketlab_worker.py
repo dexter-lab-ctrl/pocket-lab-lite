@@ -7,6 +7,7 @@ import json
 import os
 import signal
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict
 
@@ -728,6 +729,9 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
 
     last_signal_log: tuple[int, int, int] | None = None
     last_signal_log_at = 0.0
+    last_error_type = ""
+    last_error_log_at = 0.0
+    consecutive_signal_failures = 0
     while not stop_event.is_set():
         try:
             result = await asyncio.to_thread(
@@ -749,13 +753,22 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                 )
                 last_signal_log = signal_state
                 last_signal_log_at = now
+            consecutive_signal_failures = 0
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            _worker_log(
-                "worker.projection_signal_degraded",
-                error_type=type(exc).__name__,
-            )
+            consecutive_signal_failures += 1
+            error_type = type(exc).__name__
+            now = time.monotonic()
+            if error_type != last_error_type or now - last_error_log_at >= 30.0:
+                _worker_log(
+                    "worker.projection_signal_degraded",
+                    error_type=error_type,
+                    consecutive_failures=consecutive_signal_failures,
+                    retry_seconds=1,
+                )
+                last_error_type = error_type
+                last_error_log_at = now
         try:
             await asyncio.wait_for(stop_event.wait(), timeout=1.0)
         except asyncio.TimeoutError:

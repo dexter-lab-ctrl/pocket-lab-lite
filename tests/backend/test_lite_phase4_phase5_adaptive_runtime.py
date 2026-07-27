@@ -483,3 +483,22 @@ def test_worker_projection_task_retries_initialization_and_surfaces_exit() -> No
     assert "projection_registry_incomplete" in worker
     assert "projection_task.add_done_callback(_projection_task_done)" in worker
     assert "worker.projection_task_stopped" in worker
+
+
+def test_worker_projection_mailbox_loop_imports_monotonic_clock() -> None:
+    root = Path(__file__).resolve().parents[2]
+    worker_path = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "workers"
+        / "pocketlab_worker.py"
+    )
+    worker = worker_path.read_text(encoding="utf-8")
+
+    compile(worker, str(worker_path), "exec")
+    assert "import time" in worker
+    assert "now = time.monotonic()" in worker
+    assert "consecutive_signal_failures" in worker
+    assert "last_error_log_at" in worker
+    assert "retry_seconds=1" in worker
