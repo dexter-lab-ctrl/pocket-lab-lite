@@ -350,3 +350,20 @@ def test_projection_execution_ownership_is_explicit_in_api_and_worker_sources():
         "await connect_worker_bus(stop_event)"
     )
     assert "PROJECTION_SCHEDULER.consume_dirty_signals" in worker_source
+
+
+def test_phase3b_gate_accepts_canonical_unchanged_as_successful_outcome():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    script = (
+        root
+        / "scripts"
+        / "dev"
+        / "check-lite-phase3b-projections.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "no_successful_outcome" in script
+    assert 'get("committed_count")' in script
+    assert 'get("unchanged_count")' in script
+    assert '"not_committed":not_committed' not in script
