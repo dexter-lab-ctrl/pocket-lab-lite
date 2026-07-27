@@ -146,4 +146,28 @@ def test_activity_revision_ignores_unrelated_audit_evidence(monkeypatch):
     assert third_payload["audit_reference_count"] == 1
     assert third_revision != second_revision
 
+    conn.execute(
+        """
+        INSERT INTO audit_evidence_index(
+            event_type, entity_type, entity_id, operation_id,
+            status, created_at_epoch_ms
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "command.audit_refreshed",
+            "device",
+            "device-1",
+            "command-1",
+            "succeeded",
+            4000,
+        ),
+    )
+    conn.commit()
+
+    fourth_payload = phase3c.collect_activity_summary()
+    fourth_revision = phase3c.activity_source_revision()
+
+    assert fourth_payload["audit_reference_count"] == 1
+    assert fourth_revision == third_revision
+
     conn.close()
