@@ -90,6 +90,11 @@ def isolated_state_dir(tmp_path: Path | None = None) -> Path:
     state.mkdir(parents=True, exist_ok=True)
     os.environ["POCKETLAB_STATE_DIR"] = str(state)
     os.environ["POCKETLAB_DEV_STATE_DIR"] = str(state)
+    # Keep SQLite-backed prepared reads in the same per-test state root.
+    # Developer/server validation shells commonly export POCKETLAB_LITE_DB_PATH;
+    # allowing that inherited path to survive would make isolated tests read and
+    # write a shared live database even though JSON state is temporary.
+    os.environ["POCKETLAB_LITE_DB_PATH"] = str(state / "pocketlab-lite.sqlite3")
     return state
 
 
