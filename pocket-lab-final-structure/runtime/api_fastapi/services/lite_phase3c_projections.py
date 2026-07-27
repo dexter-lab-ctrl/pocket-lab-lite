@@ -523,11 +523,30 @@ def collect_activity_summary() -> dict[str, Any]:
             "FROM security_scan_runs ORDER BY updated_at_epoch_ms DESC,run_id DESC LIMIT ?",
             (_MAX_RECENT,),
         ).fetchall()]
-        audit = [dict(row) for row in conn.execute(
-            "SELECT event_type,entity_type,entity_id,operation_id,status,created_at_epoch_ms "
-            "FROM audit_evidence_index ORDER BY created_at_epoch_ms DESC,evidence_index_id DESC LIMIT ?",
-            (_MAX_RECENT,),
-        ).fetchall()]
+        # Activity evidence is bounded to the workflow rows shown by this
+        # projection. Periodic system-health, scheduler, or maintenance evidence
+        # must not churn the user-visible activity aggregate when no workflow
+        # changed.
+        activity_operation_ids = sorted({
+            str(value)
+            for value in (
+                [row.get("command_id") for row in commands]
+                + [row.get("operation_id") for row in app_actions]
+                + [row.get("operation_id") for row in recovery]
+                + [row.get("run_id") for row in security]
+            )
+            if value
+        })
+        if activity_operation_ids:
+            placeholders = ",".join("?" for _ in activity_operation_ids)
+            audit = [dict(row) for row in conn.execute(
+                "SELECT event_type,entity_type,entity_id,operation_id,status,created_at_epoch_ms "
+                f"FROM audit_evidence_index WHERE operation_id IN ({placeholders}) "
+                "ORDER BY created_at_epoch_ms DESC,evidence_index_id DESC LIMIT ?",
+                (*activity_operation_ids, _MAX_RECENT),
+            ).fetchall()]
+        else:
+            audit = []
         active_counts = {
             "devices": int(conn.execute(
                 "SELECT COUNT(*) FROM command_lifecycle WHERE status IN ('queued','published','received','accepted','running')"
