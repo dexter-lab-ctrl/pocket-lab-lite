@@ -667,6 +667,10 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     from api_fastapi.services import lite_phase3b_projections  # type: ignore
     from api_fastapi.services import lite_phase3c_projections  # type: ignore
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
+    from api_fastapi.services.adaptive_runtime import ADAPTIVE_RUNTIME  # type: ignore
+    from api_fastapi.services.hot_path_profiler import HOT_PATH_PROFILER  # type: ignore
+    from api_fastapi.services.process_runtime import PROCESS_RUNTIME  # type: ignore
+    from api_fastapi.services.runtime_snapshot_store import publish_worker_snapshot  # type: ignore
 
     retry_seconds = _env_int(
         "POCKETLAB_WORKER_PROJECTION_RETRY_SECONDS",
@@ -732,6 +736,10 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     last_error_type = ""
     last_error_log_at = 0.0
     consecutive_signal_failures = 0
+    last_snapshot_at = 0.0
+    snapshot_interval_seconds = _env_int(
+        "POCKETLAB_WORKER_RUNTIME_SNAPSHOT_SECONDS", 5, minimum=2, maximum=60
+    )
     while not stop_event.is_set():
         try:
             result = await asyncio.to_thread(
@@ -754,6 +762,36 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                 last_signal_log = signal_state
                 last_signal_log_at = now
             consecutive_signal_failures = 0
+            if now - last_snapshot_at >= snapshot_interval_seconds:
+                scheduler = PROJECTION_SCHEDULER.diagnostics()
+                compact_scheduler = {
+                    key: scheduler.get(key)
+                    for key in (
+                        "status", "queued_domains", "active_domains",
+                        "active_io", "active_cpu", "projection_execution_owner",
+                        "is_execution_owner", "registered_domains", "process_role",
+                    )
+                }
+                compact_scheduler["mailbox"] = {
+                    "claimed": claimed, "pending": pending, "unregistered": unregistered
+                }
+                await asyncio.to_thread(
+                    publish_worker_snapshot,
+                    {
+                        "captured_at": __import__("datetime").datetime.now(
+                            __import__("datetime").timezone.utc
+                        ).isoformat().replace("+00:00", "Z"),
+                        "worker": {
+                            "registry_ready": True,
+                            "registered_domain_count": int(scheduler.get("registered_domains") or 0),
+                        },
+                        "projection_scheduler": compact_scheduler,
+                        "adaptive_runtime": ADAPTIVE_RUNTIME.diagnostics(),
+                        "process_runtime": PROCESS_RUNTIME.snapshot(),
+                        "hot_path": HOT_PATH_PROFILER.snapshot(),
+                    },
+                )
+                last_snapshot_at = now
         except asyncio.CancelledError:
             raise
         except Exception as exc:
