@@ -27,6 +27,7 @@ from . import lite_security_evidence as evidence
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from .workload_admission import WORKLOADS, WORKLOAD_ADMISSION
 from . import lite_security_policy as policy
+from .process_runtime import PROCESS_RUNTIME
 from . import lite_security_generation
 
 
@@ -4427,62 +4428,20 @@ def _terminate_process_tree(
 
 
 def _run_command(args: list[str], *, cwd: Path, timeout: int) -> dict[str, Any]:
-    process: subprocess.Popen[str] | None = None
-    popen_kwargs: dict[str, Any] = {
-        "cwd": str(cwd),
-        "stdout": subprocess.PIPE,
-        "stderr": subprocess.PIPE,
-        "text": True,
-        "env": {**os.environ, "NO_COLOR": "1", "TERM": "dumb"},
-    }
-    if os.name == "nt":
-        create_group = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-        if create_group:
-            popen_kwargs["creationflags"] = create_group
-    else:
-        popen_kwargs["start_new_session"] = True
-
-    try:
-        process = subprocess.Popen(args, **popen_kwargs)
-        stdout, stderr = process.communicate(timeout=timeout)
-        return {
-            "ok": process.returncode == 0,
-            "returncode": process.returncode,
-            "stdout": policy.redact_text(stdout or ""),
-            "stderr": policy.redact_text(stderr or ""),
-            "timed_out": False,
-            "process_cleanup": "complete",
-        }
-    except subprocess.TimeoutExpired:
-        stdout = ""
-        stderr = ""
-        cleanup_confirmed = False
-        if process is not None:
-            stdout, stderr, cleanup_confirmed = _terminate_process_tree(process)
-        return {
-            "ok": False,
-            "returncode": process.returncode if process is not None else None,
-            "stdout": policy.redact_text(stdout),
-            "stderr": policy.redact_text(stderr),
-            "timed_out": True,
-            "timeout_seconds": timeout,
-            "process_cleanup": "complete" if cleanup_confirmed else "degraded",
-        }
-    except BaseException as exc:
-        if process is not None and process.poll() is None:
-            _terminate_process_tree(process)
-        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
-            raise
-        return {
-            "ok": False,
-            "returncode": process.returncode if process is not None else None,
-            "stdout": "",
-            "stderr": policy.redact_text(type(exc).__name__),
-            "timed_out": False,
-            "process_cleanup": "complete"
-            if process is None or process.poll() is not None
-            else "degraded",
-        }
+    executable = Path(str(args[0] if args else "collector")).name.lower()
+    workload = "security.scanner"
+    if "lynis" in executable:
+        workload = "security.lynis"
+    elif "trivy" in executable:
+        workload = "security.trivy"
+    return PROCESS_RUNTIME.run(
+        args,
+        cwd=cwd,
+        timeout=timeout,
+        workload=workload,
+        redact=policy.redact_text,
+        popen_factory=subprocess.Popen,
+    )
 
 
 def missing_tool_finding(source: str) -> dict[str, Any]:

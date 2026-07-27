@@ -229,6 +229,10 @@ def _control_plane_prepared_response(
         "stored_projection_revision": stored_projection_revision,
         "scheduler_generation": scheduler_generation,
         "retry_after_seconds": int(prepared.retry_after_seconds),
+        "retry_after_ms": int(prepared.retry_after_ms),
+        "degraded_reason": str(prepared.degraded_reason or ""),
+        "data_source": str(prepared.data_source or "prepared_sqlite"),
+        "load_state": str(prepared.load_state or "normal"),
     })
     timing = prepared.timing
     headers = {
@@ -250,6 +254,8 @@ def _control_plane_prepared_response(
         "X-PocketLab-Scheduler-Generation": str(scheduler_generation),
         "X-PocketLab-Read-Degraded": "true" if prepared.read_degraded else "false",
         "X-PocketLab-Refresh-Pending": "true" if prepared.refresh_pending else "false",
+        "X-PocketLab-Load-State": str(prepared.load_state or "normal"),
+        "X-PocketLab-Data-Source": str(prepared.data_source or "prepared_sqlite"),
     }
     if prepared.retry_after_seconds:
         headers["Retry-After"] = str(max(1, int(prepared.retry_after_seconds)))
@@ -272,6 +278,10 @@ def _projection_warming_response(*, domain: str, view_model: str) -> JSONRespons
             "read_degraded": True,
             "refresh_pending": True,
             "retry_after_seconds": int(retry_after),
+            "retry_after_ms": int(retry_after) * 1000,
+            "degraded_reason": "prepared_projection_warming",
+            "data_source": "none",
+            "load_state": "warming",
         },
         headers={
             "Retry-After": retry_after,
@@ -2014,11 +2024,15 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     from ..services.hot_path_profiler import HOT_PATH_PROFILER
     from ..services.live_status import LIVE_STATUS
     from ..services.projection_scheduler import PROJECTION_SCHEDULER
+    from ..services.process_runtime import PROCESS_RUNTIME
+    from ..services.adaptive_runtime import ADAPTIVE_RUNTIME
     from ..services.lite_semantic_revisions import diagnostics as semantic_revision_diagnostics
     payload["idle_efficiency"] = IDLE_EFFICIENCY.snapshot()
     payload["hot_path"] = HOT_PATH_PROFILER.snapshot()
     payload["live_status"] = LIVE_STATUS.status()
     payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
+    payload["adaptive_runtime"] = ADAPTIVE_RUNTIME.diagnostics()
+    payload["process_runtime"] = PROCESS_RUNTIME.snapshot()
     payload["semantic_revisions"] = semantic_revision_diagnostics()
     payload["phase3b_current_state"] = lite_phase3b_projections.diagnostics()
     payload["phase3c_current_state"] = lite_phase3c_projections.diagnostics()

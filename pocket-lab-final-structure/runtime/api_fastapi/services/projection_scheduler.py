@@ -28,6 +28,7 @@ from ..db.runtime import SQLITE_WRITER, SQLiteWriteDeadlineExceeded, SQLiteWrite
 from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from .idle_efficiency import IDLE_EFFICIENCY
 from .hot_path_profiler import HOT_PATH_PROFILER
+from .adaptive_runtime import ADAPTIVE_RUNTIME
 
 _LOGGER = logging.getLogger(__name__)
 WorkClass = Literal["critical", "io", "cpu"]
@@ -183,6 +184,12 @@ class _DomainState:
     trigger_reason: str = "event"
     last_trigger_reason: str = ""
     execution_owner: str = "unknown"
+    last_queue_wait_ms: float = 0.0
+    last_payload_bytes: int = 0
+    last_serialization_ms: float = 0.0
+    last_allocation_bytes: int = 0
+    last_cpu_ms: float = 0.0
+    adaptive_deferred_count: int = 0
 
 
 class ProjectionScheduler:
@@ -327,6 +334,12 @@ class ProjectionScheduler:
                 quiet_window_seconds=max(0.0, min(float(quiet_window_seconds), 30.0)),
             )
             self._states.setdefault(domain, _DomainState())
+            ADAPTIVE_RUNTIME.policy_for(
+                domain,
+                priority=priority,
+                work_class=work_class,
+                optional=optional,
+            )
 
     def _ensure_signal_schema(self) -> None:
         if self._signal_schema_ready:
@@ -459,6 +472,10 @@ class ProjectionScheduler:
                 "retry_after_seconds": 0,
                 "reason": "invalid_domain",
             }
+        ADAPTIVE_RUNTIME.mark_dirty(
+            safe_domain,
+            active_hint=_safe_reason(reason) not in {"adaptive_reconcile", "startup_warmup"},
+        )
         if not _is_execution_owner():
             try:
                 signal = self._persist_dirty_signal(safe_domain, reason)
@@ -650,15 +667,62 @@ class ProjectionScheduler:
                 count += 1
         return count
 
+    def _enqueue_due_reconciliations_locked(self) -> int:
+        due = ADAPTIVE_RUNTIME.due_domains(self._jobs.keys())
+        scheduled = 0
+        for domain in due:
+            state = self._states.get(domain)
+            job = self._jobs.get(domain)
+            if state is None or job is None or state.active or state.queued or state.dirty:
+                continue
+            state.generation += 1
+            state.dirty = True
+            state.dirty_mark_count += 1
+            state.priority = job.priority
+            state.work_class = job.work_class
+            state.trigger_reason = "adaptive_reconcile"
+            self._enqueue_locked(domain, state)
+            scheduled += 1
+        return scheduled
+
+    @staticmethod
+    def _payload_has_active_transition(payload: dict[str, Any]) -> bool:
+        active_values = {
+            "accepted", "queued", "running", "working", "repairing",
+            "joining", "waiting", "pending", "in_progress", "starting",
+            "restarting", "verifying", "restoring", "scanning",
+        }
+        stack: list[Any] = [payload]
+        visited = 0
+        while stack and visited < 2048:
+            item = stack.pop()
+            visited += 1
+            if isinstance(item, dict):
+                for key, value in item.items():
+                    if str(key).lower() in {"status", "state", "phase", "connection_state", "operation_state"}:
+                        if str(value or "").strip().lower().replace("-", "_") in active_values:
+                            return True
+                    if isinstance(value, (dict, list, tuple)):
+                        stack.append(value)
+            elif isinstance(item, (list, tuple)):
+                stack.extend(item[:256])
+        return False
+
     def _dispatch_loop(self) -> None:
         while True:
             with self._condition:
                 self._reap_done_locked()
+                self._enqueue_due_reconciliations_locked()
                 if self._shutdown:
                     return
                 if not self._heap:
-                    # Interruptible monotonic sleep: no fixed 250 ms wake-up while idle.
-                    self._condition.wait(timeout=self.idle_wait_seconds)
+                    # One interruptible scheduler loop owns both event-driven and
+                    # adaptive reconciliation. No second timer thread is created.
+                    next_due = ADAPTIVE_RUNTIME.next_due_seconds(self._jobs.keys())
+                    timeout = self.idle_wait_seconds if next_due is None else min(
+                        self.idle_wait_seconds, max(0.05, next_due)
+                    )
+                    self._condition.wait(timeout=timeout)
                     continue
                 priority, sequence, domain, queued_generation = heapq.heappop(self._heap)
                 state = self._states.get(domain)
@@ -680,17 +744,37 @@ class ProjectionScheduler:
                     )
                     continue
                 pressure = self._pressure_reason(job)
-                if pressure and job.optional:
-                    state.last_pressure_reason = pressure
-                    state.next_retry_at = max(state.next_retry_at, now + 5.0)
+                capacity = self.cpu_workers if job.work_class == "cpu" else self.io_workers
+                active_count = self._active_count_locked(job.work_class)
+                try:
+                    event_loop_lag_ms = float(RUNTIME_DIAGNOSTICS.latest_event_loop_lag_ms())
+                except Exception:
+                    event_loop_lag_ms = 0.0
+                queue_age_ms = max(0.0, (now - state.enqueued_at) * 1000.0)
+                admission = ADAPTIVE_RUNTIME.decide(
+                    domain,
+                    priority=job.priority,
+                    work_class=job.work_class,
+                    optional=job.optional,
+                    queue_depth=len(self._heap) + len(self._active_futures) + 1,
+                    queue_age_ms=queue_age_ms,
+                    active_count=active_count,
+                    capacity=capacity,
+                    event_loop_lag_ms=event_loop_lag_ms,
+                    external_pressure_reason=pressure,
+                )
+                if not admission.accepted and job.optional:
+                    state.last_pressure_reason = admission.reason or pressure
+                    state.adaptive_deferred_count += 1
+                    retry_seconds = max(1.0, admission.retry_after_ms / 1000.0)
+                    state.next_retry_at = max(state.next_retry_at, now + retry_seconds)
                     state.next_retry_epoch_ms = _epoch_ms() + max(
                         0, int((state.next_retry_at - now) * 1000)
                     )
                     self._enqueue_locked(domain, state)
                     self._persist_state_best_effort(domain, state)
                     continue
-                capacity = self.cpu_workers if job.work_class == "cpu" else self.io_workers
-                if self._active_count_locked(job.work_class) >= capacity:
+                if active_count >= capacity:
                     self._enqueue_locked(domain, state)
                     # Future completion wakes the dispatcher. Keep only a bounded
                     # safety timeout instead of spinning at 20 Hz.
@@ -716,7 +800,11 @@ class ProjectionScheduler:
                 state.database_instance = self._database_instance()
                 state.last_pressure_reason = ""
                 try:
-                    future = executor.submit(self._execute_profiled, job, generation, state.database_instance, trigger_reason)
+                    state.last_queue_wait_ms = queue_age_ms
+                    future = executor.submit(
+                        self._execute_profiled, job, generation, state.database_instance,
+                        trigger_reason, queue_age_ms
+                    )
                 except RuntimeError:
                     state.active = False
                     state.last_error_type = "ExecutorRejected"
@@ -751,17 +839,45 @@ class ProjectionScheduler:
         generation: int,
         database_instance: str,
         trigger_reason: str,
+        queue_wait_ms: float = 0.0,
     ) -> dict[str, Any]:
-        with HOT_PATH_PROFILER.measure(f"projection.{job.domain}") as hot_path:
-            result = self._execute(
-                job, generation, database_instance, trigger_reason
+        wall_started = time.monotonic()
+        cpu_started = time.thread_time() if hasattr(time, "thread_time") else time.process_time()
+        result: dict[str, Any] = {}
+        try:
+            with HOT_PATH_PROFILER.measure(f"projection.{job.domain}") as hot_path:
+                result = self._execute(
+                    job, generation, database_instance, trigger_reason
+                )
+                outcome = str(result.get("outcome") or "completed")
+                hot_path["outcome"] = outcome
+                hot_path["changed"] = True if outcome == "committed" else False if outcome in {"unchanged", "source_unchanged"} else None
+                if outcome == "source_unchanged":
+                    HOT_PATH_PROFILER.increment(f"projection.{job.domain}", "skipped_unchanged")
+                return result
+        except Exception:
+            result = {"outcome": "failed"}
+            raise
+        finally:
+            cpu_now = time.thread_time() if hasattr(time, "thread_time") else time.process_time()
+            cpu_ms = max(0.0, (cpu_now - cpu_started) * 1000.0)
+            wall_ms = max(0.0, (time.monotonic() - wall_started) * 1000.0)
+            outcome = str(result.get("outcome") or "failed")
+            result["cpu_ms"] = cpu_ms
+            result["wall_ms"] = wall_ms
+            result["queue_wait_ms"] = max(0.0, float(queue_wait_ms))
+            ADAPTIVE_RUNTIME.record_result(
+                job.domain,
+                cpu_ms=cpu_ms,
+                wall_ms=wall_ms,
+                queue_wait_ms=queue_wait_ms,
+                payload_bytes=int(result.get("payload_bytes") or 0),
+                serialization_ms=float(result.get("serialization_ms") or 0.0),
+                allocation_bytes=int(result.get("allocation_estimate_bytes") or 0),
+                outcome=outcome,
+                changed=True if outcome == "committed" else False if outcome in {"unchanged", "source_unchanged"} else None,
+                active_transition=bool(result.get("active_transition")),
             )
-            outcome = str(result.get("outcome") or "completed")
-            hot_path["outcome"] = outcome
-            hot_path["changed"] = True if outcome == "committed" else False if outcome in {"unchanged", "source_unchanged"} else None
-            if outcome == "source_unchanged":
-                HOT_PATH_PROFILER.increment(f"projection.{job.domain}", "skipped_unchanged")
-            return result
 
     def _execute(
         self,
@@ -813,7 +929,25 @@ class ProjectionScheduler:
                 "database_instance": database_instance,
                 "source_revision": source_revision,
             }
-        checksum = self._payload_checksum(payload)
+        assessment = ADAPTIVE_RUNTIME.assess_payload(job.domain, payload)
+        checksum = assessment.checksum
+        if not assessment.within_budget and job.optional:
+            ADAPTIVE_RUNTIME.defer_payload(job.domain, assessment.reason)
+            return {
+                "outcome": "budget_deferred",
+                "duration_ms": (time.monotonic() - started) * 1000.0,
+                "generation": generation,
+                "database_instance": database_instance,
+                "payload_checksum": checksum,
+                "payload_bytes": assessment.payload_bytes,
+                "serialization_ms": assessment.serialization_ms,
+                "allocation_estimate_bytes": assessment.allocation_estimate_bytes,
+                "budget_reason": assessment.reason,
+                "retry_after_ms": 30_000,
+                "source_revision": source_revision,
+                "active_transition": self._payload_has_active_transition(payload),
+            }
+        active_transition = self._payload_has_active_transition(payload)
         with self._condition:
             state = self._states.get(job.domain)
             if state is None or state.generation != generation or self._shutdown:
@@ -837,6 +971,10 @@ class ProjectionScheduler:
                 "database_instance": database_instance,
                 "payload_checksum": checksum,
                 "source_revision": source_revision,
+                "payload_bytes": assessment.payload_bytes,
+                "serialization_ms": assessment.serialization_ms,
+                "allocation_estimate_bytes": assessment.allocation_estimate_bytes,
+                "active_transition": active_transition,
             }
         database_instance_hash = hashlib.sha256(
             database_instance.encode("utf-8")
@@ -886,6 +1024,10 @@ class ProjectionScheduler:
             "payload_checksum": checksum,
             "source_revision": source_revision,
             "trigger_reason": _safe_reason(trigger_reason),
+            "payload_bytes": assessment.payload_bytes,
+            "serialization_ms": assessment.serialization_ms,
+            "allocation_estimate_bytes": assessment.allocation_estimate_bytes,
+            "active_transition": active_transition,
         }
 
     def _reap_done_locked(self) -> None:
@@ -904,6 +1046,11 @@ class ProjectionScheduler:
                 result = future.result()
                 outcome = str(result.get("outcome") or "unknown")
                 state.last_duration_ms = float(result.get("duration_ms") or 0.0)
+                state.last_cpu_ms = float(result.get("cpu_ms") or 0.0)
+                state.last_queue_wait_ms = float(result.get("queue_wait_ms") or state.last_queue_wait_ms)
+                state.last_payload_bytes = int(result.get("payload_bytes") or 0)
+                state.last_serialization_ms = float(result.get("serialization_ms") or 0.0)
+                state.last_allocation_bytes = int(result.get("allocation_estimate_bytes") or 0)
                 if outcome == "committed":
                     state.committed_generation = max(state.committed_generation, generation)
                     state.failure_count = 0
@@ -930,6 +1077,14 @@ class ProjectionScheduler:
                         state.last_source_revision = int(result["source_revision"])
                     if outcome == "unchanged":
                         state.last_full_probe_at = state.completed_at
+                elif outcome == "budget_deferred":
+                    state.dirty = True
+                    state.adaptive_deferred_count += 1
+                    retry_ms = max(1_000, int(result.get("retry_after_ms") or 30_000))
+                    state.next_retry_at = time.monotonic() + retry_ms / 1000.0
+                    state.next_retry_epoch_ms = _epoch_ms() + retry_ms
+                    state.last_error_type = str(result.get("budget_reason") or "RuntimeBudgetDeferred")[:80]
+                    state.last_pressure_reason = state.last_error_type
                 elif outcome == "stale_generation":
                     state.stale_generation_count += 1
                     state.dirty = True
@@ -1207,6 +1362,13 @@ class ProjectionScheduler:
                 "last_error_type": state.last_error_type,
                 "pressure_reason": state.last_pressure_reason,
                 "last_duration_ms": round(state.last_duration_ms, 2),
+                "last_cpu_ms": round(state.last_cpu_ms, 2),
+                "last_queue_wait_ms": round(state.last_queue_wait_ms, 2),
+                "last_payload_bytes": state.last_payload_bytes,
+                "last_serialization_ms": round(state.last_serialization_ms, 2),
+                "last_allocation_bytes": state.last_allocation_bytes,
+                "adaptive_deferred_count": state.adaptive_deferred_count,
+                "adaptive": ADAPTIVE_RUNTIME.domain_status(safe_domain),
                 "execution_count": state.execution_count,
                 "committed_count": state.committed_count,
                 "unchanged_count": state.unchanged_count,
@@ -1340,6 +1502,7 @@ class ProjectionScheduler:
                 "projection_execution_owner": _configured_execution_owner(),
                 "is_execution_owner": _is_execution_owner(),
                 "idle_efficiency": IDLE_EFFICIENCY.snapshot(),
+                "adaptive_runtime": ADAPTIVE_RUNTIME.diagnostics(),
                 "domains": {domain: self.status(domain) for domain in sorted(self._states)},
                 "sanitized": True,
             }

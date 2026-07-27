@@ -64,7 +64,7 @@ async function queryWithSafeSnapshotFallback({ path, queryFn, method = 'GET', sn
   try {
     const data = await queryFn();
     if (isLiteNotModified(data)) return data;
-    if (safePath && data && typeof data === 'object' && !data.__liteSnapshot && !isSavedSnapshot(data)) {
+    if (safePath && data && typeof data === 'object' && !data.__liteSnapshot && !isSavedSnapshot(data) && !data.read_degraded) {
       const snapshotPayload = typeof snapshotSelect === 'function' ? applyLiteQuerySelector(snapshotSelect, data) : data;
       writeLiteSnapshot(path, snapshotPayload);
       return data.__liteSnapshot ? data : attachFreshSnapshotMeta(path, data);
@@ -133,7 +133,11 @@ export function useLiteQuery({
       failureCount: queryState?.state?.failureCount || 0,
       error: queryState?.state?.error || null,
       savedState: isSavedSnapshot(data),
-      retryAfterSeconds: data?.retry_after_seconds || data?.__liteSnapshot?.retryAfterSeconds || 0,
+      retryAfterSeconds: Math.max(
+        Number(data?.retry_after_seconds || 0),
+        Number(data?.retry_after_ms || data?.__liteSnapshot?.retryAfterMs || 0) / 1000,
+        Number(data?.__liteSnapshot?.retryAfterSeconds || 0),
+      ),
     });
   }, [documentVisible, enabledWhenHidden, isLive, pollingMode, refetchInterval]);
 
@@ -169,12 +173,18 @@ export function useLiteQuery({
     refetchOnWindowFocus,
     refetchOnMount,
     refetchOnReconnect,
+    structuralSharing: true,
     retry: (failureCount, error) => {
+      if (['critical', 'capacity'].includes(String(error?.loadState || '').toLowerCase())) return false;
+      if (String(error?.degradedReason || '').includes('capacity')) return false;
       if (Number(error?.status) === 503) return failureCount < 1;
       return failureCount < 2;
     },
     retryDelay: (attemptIndex, error) => {
-      const retryAfterMs = Math.max(0, Math.min(Number(error?.retryAfterSeconds) || 0, 3600)) * 1000;
+      const retryAfterMs = Math.max(
+        Math.max(0, Math.min(Number(error?.retryAfterSeconds) || 0, 3600)) * 1000,
+        Math.max(0, Math.min(Number(error?.retryAfterMs) || 0, 3_600_000)),
+      );
       return retryAfterMs || Math.min(30_000, 1_000 * (2 ** attemptIndex));
     },
   });
@@ -190,6 +200,19 @@ export function useLiteQuery({
   const errorMessage = query.error instanceof Error ? query.error.message : query.error ? 'Pocket Lab Lite could not load this area.' : null;
   const checkedAt = meta?.checkedAt || meta?.savedAt || null;
   const cacheStatus = describeLiteSnapshot(meta, errorMessage);
+  const backendDegraded = Boolean(query.data?.read_degraded);
+  const loadState = String(query.data?.load_state || 'normal').toLowerCase();
+  const degradedReason = String(query.data?.degraded_reason || '');
+  const retryAfterMs = Math.max(
+    Number(query.data?.retry_after_ms || 0),
+    Number(query.data?.retry_after_seconds || 0) * 1000,
+  );
+  const waitingForCapacity = Boolean(
+    loadState === 'critical'
+    || degradedReason.includes('capacity')
+    || degradedReason.includes('queue_pressure')
+    || degradedReason.includes('cpu_budget')
+  );
 
   return {
     ...query,
@@ -206,8 +229,22 @@ export function useLiteQuery({
     lastUpdatedLabel: checkedAt ? snapshotAgeLabel(checkedAt) : '',
     cacheStatus,
     backendReachable: Boolean(query.data && !saved && !query.error),
-    degraded: Boolean(saved || query.error),
-    disabledReason: expired ? 'Saved state expired. Reconnect to continue.' : saved || query.error ? 'Saved state only. Reconnect to continue.' : '',
+    degraded: Boolean(saved || query.error || backendDegraded),
+    backendDegraded,
+    degradedReason,
+    loadState,
+    retryAfterMs,
+    waitingForCapacity,
+    dataSource: String(query.data?.data_source || (saved ? 'saved_snapshot' : 'fastapi')),
+    disabledReason: expired
+      ? 'Saved state expired. Reconnect to continue.'
+      : saved || query.error
+        ? 'Saved state only. Reconnect to continue.'
+        : waitingForCapacity
+          ? 'Pocket Lab is busy. Current saved state remains visible while capacity recovers.'
+          : backendDegraded
+            ? 'Pocket Lab is showing the latest safe state while background work recovers.'
+            : '',
     error: errorMessage,
   };
 }

@@ -59,8 +59,8 @@ class _Metric:
     last_error_type: str = ""
     last_started_at: str | None = None
     last_completed_at: str | None = None
-    recent_cpu_ms: deque[float] = field(default_factory=lambda: deque(maxlen=16))
-    recent_wall_ms: deque[float] = field(default_factory=lambda: deque(maxlen=16))
+    recent_cpu_ms: deque[float] = field(default_factory=lambda: deque(maxlen=64))
+    recent_wall_ms: deque[float] = field(default_factory=lambda: deque(maxlen=64))
     persisted_checksum: str = ""
 
 
@@ -173,6 +173,19 @@ class HotPathProfiler:
             metric = self._metric(name)
             setattr(metric, field, max(0, int(getattr(metric, field)) + max(0, int(amount))))
 
+    @staticmethod
+    def _percentile(values: list[float], percentile: float) -> float:
+        ordered = sorted(max(0.0, float(value)) for value in values)
+        if not ordered:
+            return 0.0
+        if len(ordered) == 1:
+            return ordered[0]
+        position = (len(ordered) - 1) * max(0.0, min(1.0, percentile))
+        lower = int(position)
+        upper = min(len(ordered) - 1, lower + 1)
+        fraction = position - lower
+        return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
+
     def _snapshot_metric(self, name: str, metric: _Metric) -> dict[str, Any]:
         runs = max(1, metric.runs)
         recent_cpu = list(metric.recent_cpu_ms)
@@ -191,11 +204,18 @@ class HotPathProfiler:
             "cpu_ms_last": round(metric.last_cpu_ms, 2),
             "cpu_ms_max": round(metric.cpu_ms_max, 2),
             "recent_cpu_ms_average": round(sum(recent_cpu) / max(1, len(recent_cpu)), 2),
+            "recent_sample_count": len(recent_cpu),
+            "cpu_ms_p50": round(self._percentile(recent_cpu, 0.50), 2),
+            "cpu_ms_p95": round(self._percentile(recent_cpu, 0.95), 2),
+            "cpu_ms_p99": round(self._percentile(recent_cpu, 0.99), 2),
             "wall_ms_total": round(metric.wall_ms_total, 2),
             "wall_ms_average": round(metric.wall_ms_total / runs, 2),
             "wall_ms_last": round(metric.last_wall_ms, 2),
             "wall_ms_max": round(metric.wall_ms_max, 2),
             "recent_wall_ms_average": round(sum(recent_wall) / max(1, len(recent_wall)), 2),
+            "wall_ms_p50": round(self._percentile(recent_wall, 0.50), 2),
+            "wall_ms_p95": round(self._percentile(recent_wall, 0.95), 2),
+            "wall_ms_p99": round(self._percentile(recent_wall, 0.99), 2),
             "last_outcome": metric.last_outcome,
             "last_error_type": metric.last_error_type,
             "last_started_at": metric.last_started_at,

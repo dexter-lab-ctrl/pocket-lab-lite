@@ -38,13 +38,15 @@ long_gate_resolve_shared_options() {
   if [[ -n "$GENERIC_DURATION_SECONDS" ]]; then
     long_gate_is_positive_integer "$GENERIC_DURATION_SECONDS" || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--duration-seconds must be positive."
     if [[ "$SELECT_ALL" == '1' ]]; then
-      LONG_GATE_IDLE_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"; LONG_GATE_WAL_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"
+      LONG_GATE_IDLE_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"; LONG_GATE_WAL_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"; LONG_GATE_ADAPTIVE_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"
     elif [[ "${#SELECTED_GATES[@]}" -eq 1 && "${SELECTED_GATES[0]}" == 'idle' ]]; then
       LONG_GATE_IDLE_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"
     elif [[ "${#SELECTED_GATES[@]}" -eq 1 && "${SELECTED_GATES[0]}" == 'wal-pressure' ]]; then
       LONG_GATE_WAL_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"
+    elif [[ "${#SELECTED_GATES[@]}" -eq 1 && "${SELECTED_GATES[0]}" == 'adaptive-runtime' ]]; then
+      LONG_GATE_ADAPTIVE_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"
     else
-      long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--duration-seconds applies only to idle, wal-pressure, or --all."
+      long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "--duration-seconds applies only to idle, adaptive-runtime, wal-pressure, or --all."
     fi
   fi
   if [[ -n "$GENERIC_SCENARIO" ]]; then

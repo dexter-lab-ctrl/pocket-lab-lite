@@ -130,6 +130,28 @@ function buildRefreshFeedback(scope, result, extra = {}) {
 }
 
 export const useLiteUiStore = create((set, get) => ({
+  controlPlaneLoad: {
+    state: 'normal',
+    reason: '',
+    retryAfterMs: 0,
+    dataSource: 'fastapi',
+    updatedAt: null,
+  },
+  setControlPlaneLoad: (payload = {}) => set((state) => {
+    const next = {
+      state: String(payload.state || payload.loadState || 'normal').slice(0, 32),
+      reason: String(payload.reason || payload.degradedReason || '').slice(0, 120),
+      retryAfterMs: Math.max(0, Math.min(3_600_000, Number(payload.retryAfterMs) || 0)),
+      dataSource: String(payload.dataSource || 'fastapi').slice(0, 48),
+      updatedAt: payload.updatedAt || new Date().toISOString(),
+    };
+    const current = state.controlPlaneLoad || {};
+    if (next.state === current.state
+      && next.reason === current.reason
+      && next.retryAfterMs === current.retryAfterMs
+      && next.dataSource === current.dataSource) return state;
+    return { controlPlaneLoad: next };
+  }),
   revisionSync: {
     status: 'idle',
     failureCount: 0,

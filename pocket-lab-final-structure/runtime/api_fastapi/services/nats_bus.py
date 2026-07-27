@@ -21,6 +21,7 @@ except Exception:  # pragma: no cover - exercised when nats-py is absent.
     JetStreamContext = Any  # type: ignore
 
 from .. import deps
+from .adaptive_runtime import ADAPTIVE_RUNTIME
 
 
 DEFAULT_STREAMS = {
@@ -410,6 +411,64 @@ class PocketLabEventBus:
                 with contextlib.suppress(Exception):
                     await self.js.update_stream(**kwargs)
 
+    @staticmethod
+    def _compact_metadata(data: Dict[str, Any] | None) -> Dict[str, Any]:
+        source = data if isinstance(data, dict) else {}
+        aliases = {
+            "domain": ("domain", "scope", "area"),
+            "entity_id": ("entity_id", "device_id", "app_id", "run_id", "operation_id", "command_id"),
+            "generation": ("generation", "scheduler_generation", "lifecycle_generation"),
+            "status": ("status", "state", "phase"),
+            "reason_code": ("reason_code", "failure_code", "reason"),
+        }
+        compact: Dict[str, Any] = {}
+        for target, candidates in aliases.items():
+            for candidate in candidates:
+                value = source.get(candidate)
+                if value in (None, ""):
+                    continue
+                if target == "generation":
+                    try:
+                        compact[target] = max(0, int(value))
+                    except (TypeError, ValueError):
+                        pass
+                else:
+                    compact[target] = str(value)[:96]
+                break
+        return compact
+
+    @staticmethod
+    def _payload_limit(subject: str) -> int:
+        if subject.startswith("pocketlab.commands."):
+            default = 512 * 1024
+            name = "POCKETLAB_COMMAND_EVENT_MAX_BYTES"
+        elif subject.startswith("pocketlab.audit.") or subject.startswith("pocketlab.dlq."):
+            default = 256 * 1024
+            name = "POCKETLAB_AUDIT_EVENT_MAX_BYTES"
+        else:
+            default = 128 * 1024
+            name = "POCKETLAB_EVENT_MAX_BYTES"
+        try:
+            configured = int(os.environ.get(name, str(default)))
+        except (TypeError, ValueError):
+            configured = default
+        return max(16 * 1024, min(configured, 4 * 1024 * 1024))
+
+    def _encode_event(self, subject: str, event: Dict[str, Any]) -> bytes:
+        payload = json.dumps(
+            event, ensure_ascii=False, separators=(",", ":"), default=str
+        ).encode("utf-8")
+        limit = self._payload_limit(subject)
+        accepted = len(payload) <= limit
+        ADAPTIVE_RUNTIME.record_event_size(
+            subject=subject, payload_bytes=len(payload), accepted=accepted
+        )
+        if not accepted:
+            raise ValueError(
+                f"Event payload exceeds the bounded {limit}-byte transport budget"
+            )
+        return payload
+
     def envelope(
         self,
         subject: str,
@@ -418,11 +477,26 @@ class PocketLabEventBus:
         *,
         trace_id: str | None = None,
     ) -> Dict[str, Any]:
+        event_id = uuid.uuid4().hex
+        occurred_at = deps.now_utc_iso()
+        compact = self._compact_metadata(data)
         return {
-            "id": uuid.uuid4().hex,
+            # Stable v2 compact aliases are additive; legacy consumers continue
+            # to read id/type/time/trace_id/data unchanged.
+            "schema_version": 2,
+            "event_id": event_id,
+            "event_type": event_type,
+            "occurred_at": occurred_at,
+            "correlation_id": trace_id,
+            "domain": compact.get("domain"),
+            "entity_id": compact.get("entity_id"),
+            "generation": compact.get("generation"),
+            "status": compact.get("status"),
+            "reason_code": compact.get("reason_code"),
+            "id": event_id,
             "type": event_type,
             "subject": subject,
-            "time": deps.now_utc_iso(),
+            "time": occurred_at,
             "source": self.name,
             "trace_id": trace_id,
             "data": data or {},
@@ -438,9 +512,7 @@ class PocketLabEventBus:
     ) -> tuple[Dict[str, Any], bytes]:
         """Build and encode one event outside the event loop when requested."""
         event = self.envelope(subject, event_type, data, trace_id=trace_id)
-        payload = json.dumps(event, ensure_ascii=False, separators=(",", ":")).encode(
-            "utf-8"
-        )
+        payload = self._encode_event(subject, event)
         return event, payload
 
     async def publish_prepared_json(
@@ -452,6 +524,18 @@ class PocketLabEventBus:
         timing_sink: dict[str, float] | None = None,
     ) -> Dict[str, Any]:
         """Publish pre-encoded bytes and expose send/ack/post-ack timing."""
+        limit = self._payload_limit(subject)
+        accepted = len(payload) <= limit
+        if not accepted:
+            # Pre-encoded payloads are normally counted by prepare_json_event().
+            # Record only rejection here so accepted prepared events are not
+            # double-counted in runtime diagnostics.
+            ADAPTIVE_RUNTIME.record_event_size(
+                subject=subject, payload_bytes=len(payload), accepted=False
+            )
+            raise ValueError(
+                f"Event payload exceeds the bounded {limit}-byte transport budget"
+            )
         send_ms = 0.0
         ack_wait_ms = 0.0
         broker_started = time.monotonic()
@@ -506,9 +590,7 @@ class PocketLabEventBus:
         trace_id: str | None = None,
     ) -> Dict[str, Any]:
         event = self.envelope(subject, event_type, data, trace_id=trace_id)
-        payload = json.dumps(event, ensure_ascii=False, separators=(",", ":")).encode(
-            "utf-8"
-        )
+        payload = self._encode_event(subject, event)
         if self.connected and self.nc is not None:
             try:
                 if self.js is not None and (
