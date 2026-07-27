@@ -242,8 +242,19 @@ unregistered=sorted(name for name in required if not (scheduler.get(name) or {})
 callbacks=sorted(name for name in required if not (scheduler.get(name) or {}).get("source_revision_enabled"))
 invalid_source=sorted(name for name in required if int((scheduler.get(name) or {}).get("source_revision") or 0) <= 0)
 invalid_projection=sorted(name for name in required if int((prepared_domains.get(name) or {}).get("projection_revision") or 0) <= 0)
-not_executed=sorted(name for name in required if int((scheduler.get(name) or {}).get("execution_count") or 0) < 1)
-not_committed=sorted(name for name in required if int((scheduler.get(name) or {}).get("committed_count") or 0) < 1)
+not_executed=sorted(
+    name
+    for name in required
+    if int((scheduler.get(name) or {}).get("execution_count") or 0) < 1
+)
+no_successful_outcome=sorted(
+    name
+    for name in required
+    if (
+        int((scheduler.get(name) or {}).get("committed_count") or 0)
+        + int((scheduler.get(name) or {}).get("unchanged_count") or 0)
+    ) < 1
+)
 failed=sorted(name for name in required if int((scheduler.get(name) or {}).get("failure_count") or 0) > 0)
 stale=sorted(name for name in required if int((scheduler.get(name) or {}).get("stale_generation_count") or 0) > 0)
 errors=sorted(name for name in required if str((scheduler.get(name) or {}).get("last_error_type") or ""))
@@ -251,7 +262,8 @@ problems={
  "missing":missing, "unprepared":unprepared, "unregistered":unregistered,
  "callbacks_disabled":callbacks, "invalid_source_revision":invalid_source,
  "invalid_projection_revision":invalid_projection, "not_executed":not_executed,
- "not_committed":not_committed, "failed":failed, "stale_generation":stale,
+ "no_successful_outcome":no_successful_outcome, "failed":failed,
+ "stale_generation":stale,
  "last_errors":errors,
 }
 active={key:value for key,value in problems.items() if value}
