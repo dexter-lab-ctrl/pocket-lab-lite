@@ -394,3 +394,60 @@ def test_adaptive_gate_analyzer_distinguishes_failures_and_unsupported_metrics()
     overloaded["scheduler"]["queued_domains"] = 99
     _checks, failures, _warnings = module.evaluate([overloaded] * 5, Args())
     assert "scheduler_queue_depth" in failures
+
+
+def test_worker_registers_core_projection_mailbox_domains_before_consumption() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    worker = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "workers"
+        / "pocketlab_worker.py"
+    ).read_text(encoding="utf-8")
+    shared = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "services"
+        / "lite_core_projections.py"
+    ).read_text(encoding="utf-8")
+
+    assert "await asyncio.to_thread(lite_core_projections.register_jobs)" in worker
+    assert worker.index("lite_core_projections.register_jobs") < worker.index(
+        "PROJECTION_SCHEDULER.consume_dirty_signals"
+    )
+    assert '"fleet.summary"' in shared
+    assert '"apps.lifecycle"' in shared
+    assert '"recovery.summary"' in shared
+    assert '"recovery.details"' in shared
+    assert "unregistered=unregistered" in worker
+    assert "worker.projection_registry_incomplete" in worker
+
+
+def test_api_and_worker_share_core_projection_registration_contract() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    router = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "routers"
+        / "lite.py"
+    ).read_text(encoding="utf-8")
+    worker = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "workers"
+        / "pocketlab_worker.py"
+    ).read_text(encoding="utf-8")
+
+    assert "lite_core_projections.schedule_startup_warmup()" in router
+    assert "lite_core_projections.schedule_startup_warmup" in worker
+    assert "from api_fastapi.routers import lite" not in worker

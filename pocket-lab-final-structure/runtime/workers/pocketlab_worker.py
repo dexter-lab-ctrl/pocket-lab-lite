@@ -662,26 +662,52 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     """
 
     from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE  # type: ignore
+    from api_fastapi.services import lite_core_projections  # type: ignore
     from api_fastapi.services import lite_phase3b_projections  # type: ignore
     from api_fastapi.services import lite_phase3c_projections  # type: ignore
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
 
     await asyncio.to_thread(CONTROL_PLANE.initialize)
-    await asyncio.to_thread(PROJECTION_SCHEDULER.start)
+    await asyncio.to_thread(lite_core_projections.register_jobs)
     await asyncio.to_thread(lite_phase3c_projections.register_jobs)
     await asyncio.to_thread(lite_phase3b_projections.schedule_startup_warmup)
+    await asyncio.to_thread(PROJECTION_SCHEDULER.start)
+    await asyncio.to_thread(lite_core_projections.schedule_startup_warmup)
     await asyncio.to_thread(lite_phase3c_projections.schedule_startup_warmup)
+
+    registry = PROJECTION_SCHEDULER.diagnostics()
+    registered = set((registry.get("domains") or {}).keys())
+    required = set(lite_core_projections.CORE_PROJECTION_DOMAINS) | {
+        "security.progress", "security.summary", "system.status", "system.health"
+    }
+    missing = sorted(required - registered)
+    _worker_log(
+        "worker.projection_registry_ready" if not missing else "worker.projection_registry_incomplete",
+        registered_count=len(registered),
+        missing_domains=missing,
+    )
+
+    last_signal_log: tuple[int, int, int] | None = None
+    last_signal_log_at = 0.0
     while not stop_event.is_set():
         try:
             result = await asyncio.to_thread(
                 PROJECTION_SCHEDULER.consume_dirty_signals, limit=32
             )
-            if int(result.get("claimed") or 0) > 0:
+            claimed = int(result.get("claimed") or 0)
+            pending = int(result.get("pending") or 0)
+            unregistered = int(result.get("unregistered") or 0)
+            signal_state = (claimed, pending, unregistered)
+            now = time.monotonic()
+            if (claimed > 0 or unregistered > 0) and (
+                signal_state != last_signal_log or now - last_signal_log_at >= 30.0
+            ):
                 _worker_log(
                     "worker.projection_signals_claimed",
-                    claimed=int(result.get("claimed") or 0),
-                    pending=int(result.get("pending") or 0),
+                    claimed=claimed, pending=pending, unregistered=unregistered,
                 )
+                last_signal_log = signal_state
+                last_signal_log_at = now
         except Exception as exc:
             _worker_log(
                 "worker.projection_signal_degraded",
