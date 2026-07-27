@@ -1937,9 +1937,7 @@ async def get_lite_security_progress(request: Request) -> Response:
     return response
 
 
-@router.get("/diagnostics/runtime")
-def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
-    deps.require_auth(request)
+def _full_lite_runtime_diagnostics() -> dict[str, Any]:
     payload = RUNTIME_DIAGNOSTICS.snapshot()
     payload["security_progress"] = lite_security.security_progress_runtime_diagnostics()
     payload["workload_admission"] = WORKLOAD_ADMISSION.snapshot()
@@ -1964,6 +1962,50 @@ def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
     payload["phase3c_current_state"] = lite_phase3c_projections.diagnostics()
     payload["sanitized"] = True
     return payload
+
+
+@router.get("/diagnostics/runtime")
+def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    from ..services.runtime_snapshot_store import read_worker_snapshot
+
+    local = RUNTIME_DIAGNOSTICS.snapshot()
+    prepared = read_worker_snapshot()
+    if prepared is None:
+        return {
+            "event_loop": local.get("event_loop", {}),
+            "gc": local.get("gc", {}),
+            "projection_scheduler": {
+                "status": "starting",
+                "projection_execution_owner": "worker",
+                "is_execution_owner": False,
+                "queued_domains": 0,
+                "active_domains": 0,
+            },
+            "adaptive_runtime": {},
+            "process_runtime": {},
+            "hot_path": {},
+            "snapshot_status": "unavailable",
+            "retry_after_ms": 1000,
+            "data_source": "api_local_fallback",
+            "sanitized": True,
+        }
+    prepared["event_loop"] = local.get("event_loop", {})
+    prepared["gc"] = local.get("gc", {})
+    prepared["api_process"] = {
+        "progress_requests": local.get("progress_requests", {}),
+        "sanitized": True,
+    }
+    prepared["snapshot_status"] = (
+        "fresh" if int(prepared.get("snapshot_age_ms") or 0) <= 30000 else "stale"
+    )
+    return prepared
+
+
+@router.get("/diagnostics/runtime/full")
+def get_lite_runtime_diagnostics_full(request: Request) -> dict[str, Any]:
+    deps.require_auth(request)
+    return _full_lite_runtime_diagnostics()
 
 
 @router.get("/diagnostics/frontend-lifecycle/challenge")
