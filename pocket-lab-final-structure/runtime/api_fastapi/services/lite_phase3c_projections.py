@@ -539,10 +539,14 @@ def collect_activity_summary() -> dict[str, Any]:
         })
         if activity_operation_ids:
             placeholders = ",".join("?" for _ in activity_operation_ids)
+            # Count one bounded audit reference per displayed workflow operation.
+            # Repeated evidence for the same operation must not churn the
+            # user-visible activity aggregate.
             audit = [dict(row) for row in conn.execute(
-                "SELECT event_type,entity_type,entity_id,operation_id,status,created_at_epoch_ms "
+                "SELECT operation_id,MAX(created_at_epoch_ms) AS created_at_epoch_ms "
                 f"FROM audit_evidence_index WHERE operation_id IN ({placeholders}) "
-                "ORDER BY created_at_epoch_ms DESC,evidence_index_id DESC LIMIT ?",
+                "GROUP BY operation_id "
+                "ORDER BY MAX(created_at_epoch_ms) DESC,operation_id DESC LIMIT ?",
                 (*activity_operation_ids, _MAX_RECENT),
             ).fetchall()]
         else:
