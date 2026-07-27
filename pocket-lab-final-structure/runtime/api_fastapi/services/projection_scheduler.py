@@ -1480,51 +1480,75 @@ class ProjectionScheduler:
             )
 
     def _reconcile_queue_state_locked(self) -> dict[str, int]:
-        """Make queue diagnostics reflect runnable executor work, not stale flags.
+        """Reconcile heap entries against authoritative in-memory domain state.
 
-        Heap entries are generation-fenced.  Stale/duplicate entries are removed,
-        orphaned ``queued`` flags are cleared, and dirty inactive domains that lost
-        their heap entry are re-enqueued.  No durable mailbox rows are deleted.
+        Classification is exclusive and metrics are computed only after repair.
+        Clean, active, stale-generation, duplicate, and unregistered entries are
+        removed. Dirty inactive domains that lost their canonical entry are
+        re-enqueued without touching durable mailbox generations.
         """
-        valid_heap: list[tuple[int, int, str, int]] = []
-        queued_domains: set[str] = set()
-        ready_domains: set[str] = set()
-        future_domains: set[str] = set()
-        stale_entries = 0
-        duplicate_entries = 0
-        now = time.monotonic()
-        for item in self._heap:
-            priority, sequence, domain, generation = item
-            state = self._states.get(domain)
-            job = self._jobs.get(domain)
-            if (
-                state is None
-                or job is None
-                or state.active
-                or not state.dirty
-                or int(generation) != int(state.generation)
-            ):
-                stale_entries += 1
-                continue
-            if domain in queued_domains:
-                duplicate_entries += 1
-                continue
-            queued_domains.add(domain)
-            due_at = max(float(state.not_before_at), float(state.next_retry_at))
-            if due_at <= now:
-                ready_domains.add(domain)
-            else:
-                future_domains.add(domain)
-            valid_heap.append((priority, sequence, domain, generation))
 
-        if stale_entries or duplicate_entries or len(valid_heap) != len(self._heap):
+        def classify_heap(
+            heap: list[tuple[int, int, str, int]],
+        ) -> tuple[
+            list[tuple[int, int, str, int]],
+            set[str],
+            set[str],
+            dict[str, int],
+        ]:
+            valid: list[tuple[int, int, str, int]] = []
+            queued: set[str] = set()
+            ready: set[str] = set()
+            future: set[str] = set()
+            counters = {
+                "clean_entries_removed": 0,
+                "active_entries_removed": 0,
+                "stale_generation_entries_removed": 0,
+                "duplicate_entries_removed": 0,
+                "unregistered_entries_removed": 0,
+            }
+            now = time.monotonic()
+
+            for item in heap:
+                priority, sequence, domain, generation = item
+                state = self._states.get(domain)
+                job = self._jobs.get(domain)
+                if state is None or job is None:
+                    counters["unregistered_entries_removed"] += 1
+                    continue
+                if int(generation) != int(state.generation):
+                    counters["stale_generation_entries_removed"] += 1
+                    continue
+                if state.active:
+                    counters["active_entries_removed"] += 1
+                    continue
+                if not state.dirty:
+                    counters["clean_entries_removed"] += 1
+                    continue
+                if domain in queued:
+                    counters["duplicate_entries_removed"] += 1
+                    continue
+
+                queued.add(domain)
+                due_at = max(float(state.not_before_at), float(state.next_retry_at))
+                if due_at <= now:
+                    ready.add(domain)
+                else:
+                    future.add(domain)
+                valid.append((priority, sequence, domain, generation))
+
+            return valid, ready, future, counters
+
+        valid_heap, ready_domains, future_domains, counters = classify_heap(self._heap)
+        if len(valid_heap) != len(self._heap):
             self._heap = valid_heap
             heapq.heapify(self._heap)
 
+        canonical_domains = {item[2] for item in self._heap}
         cleared_flags = 0
         repaired_domains = 0
         for domain, state in self._states.items():
-            should_be_queued = domain in queued_domains
+            should_be_queued = domain in canonical_domains
             if state.queued and not should_be_queued:
                 state.queued = False
                 cleared_flags += 1
@@ -1539,13 +1563,26 @@ class ProjectionScheduler:
                 and not self._shutdown
             ):
                 self._enqueue_locked(domain, state)
-                queued_domains.add(domain)
                 repaired_domains += 1
 
+        # Reclassify after repairs so exported metrics describe the repaired heap,
+        # never the stale pre-reconciliation representation.
+        repaired_heap, ready_domains, future_domains, repaired_counters = classify_heap(
+            self._heap
+        )
+        for key, value in repaired_counters.items():
+            counters[key] += value
+        if len(repaired_heap) != len(self._heap):
+            self._heap = repaired_heap
+            heapq.heapify(self._heap)
+
+        stale_entries = (
+            counters["clean_entries_removed"]
+            + counters["active_entries_removed"]
+            + counters["stale_generation_entries_removed"]
+            + counters["unregistered_entries_removed"]
+        )
         return {
-            # Only work eligible to dispatch now is executor backlog. Delayed
-            # retry/adaptive entries remain observable but do not fail the
-            # ready-queue acceptance budget.
             "executor_depth": len(ready_domains),
             "ready_executor_depth": len(ready_domains),
             "scheduled_future_depth": len(future_domains),
@@ -1554,7 +1591,15 @@ class ProjectionScheduler:
             ),
             "active_domains": sum(1 for state in self._states.values() if state.active),
             "stale_entries_removed": stale_entries,
-            "duplicate_entries_removed": duplicate_entries,
+            "duplicate_entries_removed": counters["duplicate_entries_removed"],
+            "clean_entries_removed": counters["clean_entries_removed"],
+            "active_entries_removed": counters["active_entries_removed"],
+            "stale_generation_entries_removed": counters[
+                "stale_generation_entries_removed"
+            ],
+            "unregistered_entries_removed": counters[
+                "unregistered_entries_removed"
+            ],
             "stale_flags_cleared": cleared_flags,
             "orphaned_dirty_requeued": repaired_domains,
         }
