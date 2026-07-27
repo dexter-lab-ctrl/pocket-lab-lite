@@ -2821,7 +2821,10 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
     try:
         await wait_until(security_delay)
         try:
-            await asyncio.to_thread(lite_security_module.start_security_projection_runtime)
+            with RUNTIME_DIAGNOSTICS.operation("startup.security_projection"):
+                await asyncio.to_thread(
+                    lite_security_module.start_security_projection_runtime
+                )
             lite_phase3b_projections.mark_dirty(
                 "security.progress", "security.summary", reason="security_runtime_started"
             )
@@ -2846,7 +2849,10 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
 
         await wait_until(warmup_delay)
         try:
-            reconciled = await asyncio.to_thread(CONTROL_PLANE.reconcile_command_lifecycle)
+            with RUNTIME_DIAGNOSTICS.operation("startup.command_reconcile"):
+                reconciled = await asyncio.to_thread(
+                    CONTROL_PLANE.reconcile_command_lifecycle
+                )
             logger.info(
                 "pocketlab.command_lifecycle.startup_reconciled count=%s degraded=%s",
                 reconciled.get("reconciled_count"),
@@ -2858,7 +2864,10 @@ async def run_staged_startup_workloads(lite_security_module: Any) -> None:
                 type(exc).__name__,
             )
         try:
-            warmup = await asyncio.to_thread(schedule_control_plane_projection_warmup)
+            with RUNTIME_DIAGNOSTICS.operation("startup.control_projection_warmup"):
+                warmup = await asyncio.to_thread(
+                    schedule_control_plane_projection_warmup
+                )
             logger.info(
                 "pocketlab.control_projection.warmup_scheduled apps=%s recovery_summary=%s recovery_details=%s phase3b=%s phase3c=%s",
                 warmup.get("apps"),
@@ -2907,8 +2916,9 @@ async def device_health_projection_sweep_loop(*, skip_startup_delay: bool = Fals
         await asyncio.sleep(startup_delay)
     while True:
         try:
-            await asyncio.to_thread(CONTROL_PLANE.reconcile_command_lifecycle)
-            result = await asyncio.to_thread(_refresh_device_health_projection)
+            with RUNTIME_DIAGNOSTICS.operation("background.device_health_sweep"):
+                await asyncio.to_thread(CONTROL_PLANE.reconcile_command_lifecycle)
+                result = await asyncio.to_thread(_refresh_device_health_projection)
             _LOGGER.debug(
                 "pocketlab.device_health.sweep revision=%s projection_age_ms=%s read_degraded=%s",
                 result.get("source_revision"),

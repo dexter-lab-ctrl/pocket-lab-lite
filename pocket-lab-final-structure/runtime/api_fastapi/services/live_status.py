@@ -14,6 +14,7 @@ from typing import Any, Callable, Dict, Optional
 from .. import deps
 from .idle_efficiency import IDLE_EFFICIENCY
 from .nats_bus import BUS
+from .runtime_diagnostics import RUNTIME_DIAGNOSTICS
 from .workload_admission import WORKLOAD_ADMISSION
 
 _LOGGER = logging.getLogger(__name__)
@@ -395,10 +396,13 @@ class LiveStatusSampler:
             "device_health": self.sample_device_health,
         }[name]
         started = time.monotonic()
+        stage_name = f"background.live_status.{name}"
         try:
-            await asyncio.wait_for(
-                sampler(source="coordinator"), timeout=self.sample_deadline_seconds
-            )
+            with RUNTIME_DIAGNOSTICS.operation(stage_name):
+                await asyncio.wait_for(
+                    sampler(source="coordinator"),
+                    timeout=self.sample_deadline_seconds,
+                )
             changed = bool(self._last_changed.get(name))
             interval = self._adaptive_interval(name, changed)
             with self._state_lock:

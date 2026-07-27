@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import deque
+import contextlib
 from datetime import datetime, timezone
 import gc
 import logging
@@ -79,7 +80,7 @@ class RuntimeDiagnostics:
         self._stack_watchdog_stop = threading.Event()
         self._stack_watchdog_thread: threading.Thread | None = None
         self._critical_stack_capture_enabled = os.environ.get(
-            "POCKETLAB_CRITICAL_LAG_STACK_CAPTURE", "0"
+            "POCKETLAB_CRITICAL_LAG_STACK_CAPTURE", "1"
         ).strip().lower() in {"1", "true", "yes", "on"}
         self._critical_stack_capture_limit = 6
         self._critical_stack_frame_limit = 8
@@ -200,11 +201,32 @@ class RuntimeDiagnostics:
                 active_operations = sorted(
                     {item["name"] for item in self._active_operations.values()}
                 )[:6]
+                recent_operations = [
+                    {
+                        "name": item["name"],
+                        "duration_ms": item["duration_ms"],
+                        "thread_kind": item["thread_kind"],
+                        "result": item["result"],
+                    }
+                    for item in list(self._recent_operations)[-6:]
+                    if float(item.get("duration_ms") or 0.0)
+                    >= min(self.loop_warning_ms, self._loop_latest_ms)
+                ]
+                latest_stack = (
+                    self._critical_stack_captures[-1]
+                    if self._critical_stack_captures
+                    else None
+                )
                 self._recent_lag_events.append({
                     "captured_at": _utc_now(),
                     "severity": severity,
                     "lag_ms": round(self._loop_latest_ms, 2),
                     "active_operations": active_operations,
+                    "recent_operations": recent_operations,
+                    "main_thread_stack": {
+                        "captured_at": latest_stack.get("captured_at"),
+                        "frames": latest_stack.get("frames", [])[:4],
+                    } if isinstance(latest_stack, dict) else None,
                 })
             self._loop_last_severity = severity
             recent_max = max(self._loop_recent, default=0.0)
@@ -260,6 +282,19 @@ class RuntimeDiagnostics:
                 self._active_operations.pop(oldest, None)
             self._active_operations[token] = item
         return token
+
+    @contextlib.contextmanager
+    def operation(self, name: str):
+        """Track one sanitized runtime stage without recording arguments or payloads."""
+        token = self.begin_operation(name)
+        result = "ok"
+        try:
+            yield
+        except BaseException:
+            result = "error"
+            raise
+        finally:
+            self.end_operation(token, result=result)
 
     def end_operation(self, token: str, *, result: str = "ok") -> float:
         now = time.monotonic()
