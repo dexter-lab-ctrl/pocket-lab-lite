@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-SUPERVISOR_VERSION = "1.1.0-lite-restore-aware"
+SUPERVISOR_VERSION = "1.2.0-adaptive-restart-budgets"
 DEFAULT_INTERVAL_SECONDS = 45
 DEFAULT_COOLDOWN_SECONDS = 120
 DEFAULT_CADDY_FAILURE_THRESHOLD = 3
@@ -195,6 +195,16 @@ class LiteCoreSupervisor:
         self.maintenance_file = self.state_root / "security" / "maintenance" / "maintenance-state.json"
         self.restore_transaction_root = self.state_root / "security" / "recovery" / "restore-transactions"
         self.last_actions: Dict[str, float] = self._load_last_actions()
+        self.restart_window_seconds = max(300, int(os.environ.get(
+            "POCKETLAB_CORE_SUPERVISOR_RESTART_WINDOW_SECONDS", "1800"
+        )))
+        self.max_restarts_per_window = max(1, min(10, int(os.environ.get(
+            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTARTS_PER_WINDOW", "3"
+        ))))
+        self.max_restart_backoff_seconds = max(self.cooldown, int(os.environ.get(
+            "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1800"
+        )))
+        self.restart_history, self.restart_generations = self._load_restart_state()
 
     def _state_root(self) -> Path:
         configured = os.environ.get("POCKETLAB_STATE_DIR") or os.environ.get("STATE_DIR")
@@ -211,6 +221,72 @@ class LiteCoreSupervisor:
         except Exception:
             pass
         return {}
+
+    def _load_restart_state(self) -> tuple[Dict[str, List[float]], Dict[str, int]]:
+        try:
+            payload = json.loads(self.state_file.read_text())
+        except Exception:
+            return {}, {}
+        if not isinstance(payload, dict):
+            return {}, {}
+        raw_history = payload.get("restart_history")
+        raw_generations = payload.get("restart_generations")
+        history: Dict[str, List[float]] = {}
+        if isinstance(raw_history, dict):
+            for service, values in raw_history.items():
+                if not isinstance(values, list):
+                    continue
+                history[str(service)] = [float(value) for value in values[-16:] if isinstance(value, (int, float))]
+        generations: Dict[str, int] = {}
+        if isinstance(raw_generations, dict):
+            for service, value in raw_generations.items():
+                try:
+                    generations[str(service)] = max(0, int(value))
+                except (TypeError, ValueError):
+                    continue
+        return history, generations
+
+    def _prune_restart_history(self, service: str, *, now: float | None = None) -> List[float]:
+        current = epoch() if now is None else float(now)
+        lower = current - self.restart_window_seconds
+        recent = [value for value in self.restart_history.get(service, []) if value >= lower]
+        self.restart_history[service] = recent[-16:]
+        return recent
+
+    def _restart_admission(self, service: str, action: str) -> tuple[bool, str, int, int]:
+        now = epoch()
+        recent = self._prune_restart_history(service, now=now)
+        generation = self.restart_generations.get(service, 0)
+        if len(recent) >= self.max_restarts_per_window:
+            retry_after = max(1, int(recent[0] + self.restart_window_seconds - now + 0.999))
+            return False, "restart_budget_exhausted", retry_after, generation
+        exponential_cooldown = min(
+            self.max_restart_backoff_seconds,
+            self.cooldown * (2 ** min(len(recent), 5)),
+        )
+        last_at = self.last_actions.get(action, 0.0)
+        if now - last_at < exponential_cooldown:
+            retry_after = max(1, int(exponential_cooldown - (now - last_at) + 0.999))
+            return False, "restart_backoff", retry_after, generation
+        return True, "", 0, generation
+
+    def restart_diagnostics(self) -> Dict[str, Any]:
+        now = epoch()
+        services = sorted({spec.name for spec in CORE_SERVICES} | set(self.restart_history))
+        return {
+            "window_seconds": self.restart_window_seconds,
+            "max_restarts_per_window": self.max_restarts_per_window,
+            "base_cooldown_seconds": self.cooldown,
+            "max_backoff_seconds": self.max_restart_backoff_seconds,
+            "services": {
+                service: {
+                    "recent_restart_count": len(self._prune_restart_history(service, now=now)),
+                    "restart_generation": self.restart_generations.get(service, 0),
+                }
+                for service in services
+            },
+            "sanitized": True,
+        }
 
     def _write_json(self, path: Path, payload: Dict[str, Any]) -> None:
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -234,26 +310,52 @@ class LiteCoreSupervisor:
 
     def restart_pm2(self, service: str, reason: str) -> Dict[str, Any]:
         action = f"restart:{service}"
-        if not self.can_act(action):
-            event = {"event": "restart_skipped_cooldown", "service": service, "reason": reason, "cooldown_seconds": self.cooldown}
+        allowed, blocked_reason, retry_after, generation = self._restart_admission(service, action)
+        if not allowed:
+            event = {
+                "event": "restart_suppressed",
+                "service": service,
+                "reason": reason,
+                "suppressed_reason": blocked_reason,
+                "retry_after_seconds": retry_after,
+                "restart_generation": generation,
+                "acted": False,
+            }
             self._append_event(event)
-            return {**event, "acted": False}
+            return event
         try:
             result = run_command(["pm2", "restart", service, "--update-env"], timeout=30)
             acted = result.returncode == 0
+            attempted_at = epoch()
             self.mark_action(action)
+            self.restart_history.setdefault(service, []).append(attempted_at)
+            if acted:
+                generation = self.restart_generations.get(service, 0) + 1
+                self.restart_generations[service] = generation
             event = {
                 "event": "restart_attempted",
                 "service": service,
                 "reason": reason,
                 "returncode": result.returncode,
                 "acted": acted,
+                "restart_generation": generation,
+                "restart_window_count": len(self._prune_restart_history(service)),
             }
             self._append_event(event)
             return event
         except Exception as exc:
+            attempted_at = epoch()
             self.mark_action(action)
-            event = {"event": "restart_failed", "service": service, "reason": reason, "error": str(exc), "acted": False}
+            self.restart_history.setdefault(service, []).append(attempted_at)
+            event = {
+                "event": "restart_failed",
+                "service": service,
+                "reason": reason,
+                "error_type": type(exc).__name__,
+                "acted": False,
+                "restart_generation": generation,
+                "restart_window_count": len(self._prune_restart_history(service)),
+            }
             self._append_event(event)
             return event
 
@@ -345,7 +447,10 @@ class LiteCoreSupervisor:
                 "observed_after": observed,
                 "actions": [],
                 "last_actions": self.last_actions,
-                "capabilities": ["core-service-supervision", "maintenance-aware", "restore-recovery-aware", "pm2-repair"],
+                "restart_history": self.restart_history,
+                "restart_generations": self.restart_generations,
+                "restart_policy": self.restart_diagnostics(),
+                "capabilities": ["core-service-supervision", "maintenance-aware", "restore-recovery-aware", "pm2-repair", "restart-budgets"],
             }
             self._write_json(self.state_file, payload)
             self._append_event({
@@ -362,6 +467,9 @@ class LiteCoreSupervisor:
                 "checked_at": now_iso(),
                 "version": SUPERVISOR_VERSION,
                 "last_actions": self.last_actions,
+                "restart_history": self.restart_history,
+                "restart_generations": self.restart_generations,
+                "restart_policy": self.restart_diagnostics(),
             }
             self._write_json(self.state_file, payload)
             self._append_event({"event": "pm2_missing", "severity": "warning"})
@@ -465,13 +573,16 @@ class LiteCoreSupervisor:
             "observed_after": post,
             "actions": actions,
             "last_actions": self.last_actions,
+            "restart_history": self.restart_history,
+            "restart_generations": self.restart_generations,
+            "restart_policy": self.restart_diagnostics(),
             "caddy_health": {
                 "tcp_failure_streak": self.caddy_tcp_failure_streak,
                 "failure_threshold": self.caddy_failure_threshold,
                 "tcp_reachable": bool(post["checks"].get("caddy_tcp_reachable")),
                 "upstream_http_reachable": bool(post["checks"].get("caddy_upstream_http_reachable")),
             },
-            "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "anti-flap-proxy-health"],
+            "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "anti-flap-proxy-health", "restart-budgets", "restart-generation-evidence"],
         }
         self._write_json(self.state_file, payload)
         if actions:

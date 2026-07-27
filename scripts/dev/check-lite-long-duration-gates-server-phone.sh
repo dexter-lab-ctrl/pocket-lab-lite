@@ -23,6 +23,7 @@ source "$REPO_ROOT/scripts/dev/lib/long_gate_group4.sh"
 readonly REGISTRY_DELIMITER='|'
 GATE_REGISTRY=(
   "idle|scripts/dev/long-gates/idle-stability.sh|low|1|1|Idle 24-hour stability|duration=86400;sample=60;heavy=3600|http,sqlite,pm2|0|0"
+  "adaptive-runtime|scripts/dev/long-gates/adaptive-runtime-hardening.sh|low|1|1|Adaptive cadence, CPU, queue, payload, and process budget qualification|duration=900;sample=15|http,sqlite,pm2,runtime-diagnostics|0|0"
   "repeated-scans|scripts/dev/long-gates/repeated-quick-scans.sh|medium|1|1|Repeated Quick Safety Check endurance|count=10;cooldown=5|http,sqlite,nats,worker|0|0"
   "progress-soak|scripts/dev/long-gates/active-progress-soak.sh|medium|1|1|Active Security Progress soak|scan_count=1;sample_ms=500|direct_http,proxy_http,etag,sqlite|0|0"
   "submission-recovery|scripts/dev/long-gates/submission-timeout-recovery.sh|high|1|1|Submission timeout recovery|client_timeout=2;response_delay_ms=5000|http,sqlite,nats,worker,gate_fault|1|1"
@@ -160,6 +161,8 @@ LONG_GATE_REPORT_LIMIT_MB="${POCKETLAB_LONG_GATE_REPORT_LIMIT_MB:-128}"
 LONG_GATE_REPORT_LIMIT_BYTES=0
 LONG_GATE_IDLE_DURATION_SECONDS="${POCKETLAB_LONG_GATE_IDLE_DURATION_SECONDS:-86400}"
 LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS="${POCKETLAB_LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS:-60}"
+LONG_GATE_ADAPTIVE_DURATION_SECONDS="${POCKETLAB_LONG_GATE_ADAPTIVE_DURATION_SECONDS:-900}"
+LONG_GATE_ADAPTIVE_SAMPLE_INTERVAL_SECONDS="${POCKETLAB_LONG_GATE_ADAPTIVE_SAMPLE_INTERVAL_SECONDS:-15}"
 LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS="${POCKETLAB_LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS:-3600}"
 LONG_GATE_IDLE_WARMUP_SECONDS="${POCKETLAB_LONG_GATE_IDLE_WARMUP_SECONDS:-900}"
 LONG_GATE_IDLE_RSS_BUDGET_MB="${POCKETLAB_LONG_GATE_IDLE_RSS_BUDGET_MB:-128}"
@@ -220,7 +223,7 @@ while [[ "$#" -gt 0 ]]; do
     --allow-disruptive) ALLOW_DISRUPTIVE=1; shift ;;
     --allow-storage-pressure) ALLOW_STORAGE_PRESSURE=1; shift ;;
     --duration-seconds) long_gate_require_option_value "$1" "$#"; GENERIC_DURATION_SECONDS="$2"; shift 2 ;;
-    --sample-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS="$2"; shift 2 ;;
+    --sample-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS="$2"; LONG_GATE_ADAPTIVE_SAMPLE_INTERVAL_SECONDS="$2"; shift 2 ;;
     --heavy-check-interval-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS="$2"; shift 2 ;;
     --warmup-seconds) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_WARMUP_SECONDS="$2"; shift 2 ;;
     --rss-budget-mb) long_gate_require_option_value "$1" "$#"; LONG_GATE_IDLE_RSS_BUDGET_MB="$2"; shift 2 ;;
@@ -282,9 +285,11 @@ long_gate_require_command "$LONG_GATE_PYTHON"
 [[ -f "$LONG_GATE_GROUP3_TOOL" ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Group 3 gate helper is missing."
 [[ -f "$LONG_GATE_GROUP4_TOOL" ]] || long_gate_die "$LONG_GATE_EXIT_INVALID_CLI" "Group 4 gate helper is missing."
 LONG_GATE_REPORT_LIMIT_BYTES=$(( LONG_GATE_REPORT_LIMIT_MB * 1024 * 1024 ))
+[[ -z "$GENERIC_DURATION_SECONDS" ]] || LONG_GATE_ADAPTIVE_DURATION_SECONDS="$GENERIC_DURATION_SECONDS"
 LONG_GATE_RESUME="$RESUME"
 export LONG_GATE_RESUME LONG_GATE_PROXY_BASE_URL LONG_GATE_DIRECT_BASE_URL LONG_GATE_CONNECT_TIMEOUT LONG_GATE_HTTP_TIMEOUT
 export LONG_GATE_REPORT_LIMIT_MB LONG_GATE_REPORT_LIMIT_BYTES LONG_GATE_IDLE_DURATION_SECONDS LONG_GATE_IDLE_SAMPLE_INTERVAL_SECONDS
+export LONG_GATE_ADAPTIVE_DURATION_SECONDS LONG_GATE_ADAPTIVE_SAMPLE_INTERVAL_SECONDS
 export LONG_GATE_IDLE_HEAVY_INTERVAL_SECONDS LONG_GATE_IDLE_WARMUP_SECONDS LONG_GATE_IDLE_RSS_BUDGET_MB
 export LONG_GATE_IDLE_WAL_BUDGET_MB LONG_GATE_IDLE_LOG_BUDGET_MB LONG_GATE_IDLE_FD_BUDGET LONG_GATE_IDLE_CPU_THRESHOLD
 export LONG_GATE_REPEATED_COUNT LONG_GATE_REPEATED_COOLDOWN_SECONDS LONG_GATE_RUN_TIMEOUT_SECONDS LONG_GATE_SUBMISSION_TIMEOUT_SECONDS

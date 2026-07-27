@@ -581,6 +581,10 @@ class PreparedRead:
     refresh_pending: bool
     timing: dict[str, float]
     retry_after_seconds: int = 0
+    retry_after_ms: int = 0
+    degraded_reason: str = ""
+    data_source: str = "prepared_sqlite"
+    load_state: str = "normal"
 
 
 @dataclass
@@ -1228,7 +1232,6 @@ class ControlPlaneProjectionStore:
         if item is None:
             status = PROJECTION_SCHEDULER.mark_dirty(
                 scheduler_domain, job=job, priority=priority, force_followup=False,
-                reason="prepared_snapshot_missing",
             )
             raise PreparedProjectionUnavailable(
                 "Prepared projection is warming and no safe snapshot is available yet"
@@ -1244,22 +1247,38 @@ class ControlPlaneProjectionStore:
                 job=job,
                 priority=priority,
                 force_followup=False,
-                reason="stale_while_refresh",
             )
         refresh_pending = bool(refresh_status.get("refresh_pending"))
         retry_after = max(0, int(refresh_status.get("retry_after_seconds") or 0))
+        adaptive = refresh_status.get("adaptive") if isinstance(refresh_status.get("adaptive"), dict) else {}
+        load_state = str(adaptive.get("load_state") or "normal")[:32]
+        adaptive_reason = str(
+            refresh_status.get("pressure_reason")
+            or adaptive.get("last_reason")
+            or ""
+        )[:80]
+        retry_after_ms = max(
+            retry_after * 1000,
+            int(adaptive.get("last_retry_after_ms") or 0),
+        )
         payload = dict(item.payload)
         if too_old:
             payload["projection_only"] = True
         refresh_failed = bool(refresh_status.get("last_error_type")) or bool(
             refresh_status.get("circuit_open")
         )
+        degraded_reason = (
+            "projection_too_old" if too_old
+            else str(refresh_status.get("last_error_type") or "")[:80] if refresh_failed
+            else adaptive_reason if adaptive_reason and load_state in {"elevated", "critical"}
+            else ""
+        )
         return PreparedRead(
             payload=payload,
             etag=self._etag(domain, key, item.revision),
             source_revision=item.revision,
             projection_age_ms=age_ms,
-            read_degraded=bool(too_old or refresh_failed),
+            read_degraded=bool(too_old or refresh_failed or degraded_reason),
             refresh_pending=refresh_pending,
             timing={
                 "connection_acquisition_ms": 0.0,
@@ -1268,6 +1287,10 @@ class ControlPlaneProjectionStore:
                 "serialization_ms": 0.0,
             },
             retry_after_seconds=retry_after,
+            retry_after_ms=retry_after_ms,
+            degraded_reason=degraded_reason,
+            data_source="prepared_sqlite",
+            load_state=load_state,
         )
 
     def warm_prepared_read(

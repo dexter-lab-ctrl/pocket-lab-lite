@@ -120,6 +120,12 @@ async function readJson(path, options = {}) {
       Number(data?.retry_after_seconds || data?.detail?.retry_after_seconds || headerRetryAfter) || 0,
       3600,
     ));
+    const retryAfterMs = Math.max(
+      retryAfterSeconds * 1000,
+      Math.max(0, Math.min(Number(data?.retry_after_ms || data?.detail?.retry_after_ms) || 0, 3_600_000)),
+    );
+    const loadState = String(data?.load_state || data?.detail?.load_state || response.headers?.get?.('X-PocketLab-Load-State') || 'normal');
+    const degradedReason = String(data?.degraded_reason || data?.detail?.degraded_reason || 'backend_refresh_pending');
     if (safeSnapshot) {
       markLiteSnapshotBackendUnreachable();
       const cached = await readLiteSnapshotAsync(path);
@@ -129,10 +135,15 @@ async function readJson(path, options = {}) {
           read_degraded: true,
           refresh_pending: Boolean(data?.refresh_pending ?? true),
           retry_after_seconds: retryAfterSeconds,
+          retry_after_ms: retryAfterMs,
+          load_state: loadState,
+          degraded_reason: degradedReason,
+          data_source: 'saved_snapshot',
           __liteSnapshot: {
             ...(cached.__liteSnapshot || {}),
             retryAfterSeconds,
-            error: 'backend_refresh_pending',
+            retryAfterMs,
+            error: degradedReason,
           },
         };
       }
@@ -142,6 +153,9 @@ async function readJson(path, options = {}) {
     error.status = response.status;
     error.payload = data;
     error.retryAfterSeconds = retryAfterSeconds;
+    error.retryAfterMs = retryAfterMs;
+    error.loadState = loadState;
+    error.degradedReason = degradedReason;
     throw error;
   }
 
@@ -159,7 +173,7 @@ async function readJson(path, options = {}) {
         checkedAt: response.headers?.get?.('Date') || '',
       });
     }
-    writeLiteSnapshot(path, data);
+    if (!data?.read_degraded) writeLiteSnapshot(path, data);
     return attachFreshSnapshotMeta(path, data);
   }
 

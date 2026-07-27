@@ -12,6 +12,15 @@ export function useLiteSecurityCheckFlow({ security = {}, backendReachable = tru
   const runId = security?.last_run?.run_id || null;
   const runStatus = String(security?.last_run?.status || security?.scan_progress?.status || security?.status || '').toLowerCase();
   const summary = security?.summary || 'Safety check needs attention.';
+  const loadState = String(security?.load_state || 'normal').toLowerCase();
+  const degradedReason = String(security?.degraded_reason || '');
+  const retryAfterMs = Math.max(
+    Number(security?.retry_after_ms || 0),
+    Number(security?.retry_after_seconds || 0) * 1000,
+  );
+  const waitingForCapacity = ['critical', 'capacity'].includes(loadState)
+    || /capacity|queue_pressure|cpu_budget/.test(degradedReason);
+  const degradedVisibility = Boolean(security?.read_degraded && !waitingForCapacity);
   const workerPickedUp = timelineHas(security, 'worker_picked_up');
   const lynisRunning = timelineHas(security, 'lynis_host_check');
   const trivyRunning = timelineHas(security, 'trivy_dependency_secret_check');
@@ -28,6 +37,11 @@ export function useLiteSecurityCheckFlow({ security = {}, backendReachable = tru
     evidenceSaved,
     partialResults,
     summary,
+    loadState,
+    degradedReason,
+    retryAfterMs,
+    waitingForCapacity,
+    degradedVisibility,
   });
   const lastBackendStateSignatureRef = useRef('');
 
@@ -37,7 +51,10 @@ export function useLiteSecurityCheckFlow({ security = {}, backendReachable = tru
     // repeatedly send events, causing React error #185 / maximum update depth.
     if (lastBackendStateSignatureRef.current === backendStateSignature) return;
     lastBackendStateSignatureRef.current = backendStateSignature;
-    send({ type: 'BACKEND_STATE', backendReachable, savedStateOnly, runId, status: runStatus });
+    send({ type: 'BACKEND_STATE', backendReachable, savedStateOnly, runId, status: runStatus, loadState, degradedReason, retryAfterMs });
+    if (waitingForCapacity) send({ type: 'CAPACITY_WAIT', loadState, degradedReason, retryAfterMs });
+    else if (degradedVisibility) send({ type: 'DEGRADED_VISIBILITY', loadState, degradedReason, retryAfterMs });
+    else send({ type: 'RECOVERED' });
     if (savedStateOnly) send({ type: 'SAVED_STATE_ONLY' });
     if (workerPickedUp) send({ type: 'WORKER_PICKED_UP' });
     if (lynisRunning) send({ type: 'LYNIS_RUNNING' });
@@ -47,6 +64,6 @@ export function useLiteSecurityCheckFlow({ security = {}, backendReachable = tru
     if (['succeeded','success','healthy','completed'].includes(runStatus)) send({ type: 'COMPLETE' });
     if (['degraded','review','needs_attention','partial'].includes(runStatus)) send({ type: 'NEEDS_ATTENTION' });
     if (['failed','failure','error'].includes(runStatus)) send({ type: 'FAILED', reason: summary });
-  }, [backendReachable, backendStateSignature, evidenceSaved, lynisRunning, partialResults, runId, runStatus, savedStateOnly, send, summary, trivyRunning, workerPickedUp]);
+  }, [backendReachable, backendStateSignature, degradedReason, degradedVisibility, evidenceSaved, loadState, lynisRunning, partialResults, retryAfterMs, runId, runStatus, savedStateOnly, send, summary, trivyRunning, waitingForCapacity, workerPickedUp]);
   return useMemo(() => ({ value, label: liteSecurityCheckLabels[value] || 'Run Safety Check', steps: securityCheckFlowSteps(value), writeBlocked, blockedReason, context: snapshot.context, requestRun: () => { if (writeBlocked) { send({ type: 'SAVED_STATE_ONLY' }); return { ok: false, reason: blockedReason || 'Reconnect to continue.' }; } send({ type: 'CHECK_READINESS' }); send({ type: 'RUN' }); return { ok: true }; }, accepted: (payload) => send({ type: 'ACCEPTED', payload }), fail: (error) => send({ type: 'FAILED', error }), cancel: () => send({ type: 'CANCEL' }), reset: () => send({ type: 'RESET' }) }), [blockedReason, send, snapshot.context, value, writeBlocked]);
 }
