@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import json
 import os
 import time
+import threading
 from typing import Any
 
 from ..db.connection import begin_immediate, connection, read_connection
@@ -17,6 +18,14 @@ from ..db.connection import begin_immediate, connection, read_connection
 _SCHEMA_VERSION = 1
 _MAX_PAYLOAD_BYTES = 256 * 1024
 _OWNER = "worker"
+_CACHE_LOCK = threading.Lock()
+_CACHE_TTL_SECONDS = 1.0
+_CACHE_KEY: tuple[str, int] | None = None
+_CACHE_EXPIRES_AT = 0.0
+_CACHE_PAYLOAD: dict[str, Any] | None = None
+_RESPONSE_CACHE_KEY: tuple[str, int] | None = None
+_RESPONSE_CACHE_EXPIRES_AT = 0.0
+_RESPONSE_CACHE_BYTES: bytes | None = None
 
 
 def _utc_now() -> str:
@@ -84,7 +93,7 @@ def read_worker_snapshot() -> dict[str, Any] | None:
         _ensure_table(conn)
         row = conn.execute(
             """
-            SELECT captured_at, captured_at_epoch_ms, payload_json, payload_bytes
+            SELECT captured_at, captured_at_epoch_ms, payload_json, payload_bytes, updated_at
             FROM runtime_diagnostics_snapshot
             WHERE owner = ?
             """,
@@ -92,15 +101,92 @@ def read_worker_snapshot() -> dict[str, Any] | None:
         ).fetchone()
     if not row:
         return None
-    try:
-        payload = json.loads(str(row["payload_json"]))
-    except (TypeError, ValueError, json.JSONDecodeError):
-        return None
-    if not isinstance(payload, dict):
-        return None
+    global _CACHE_KEY, _CACHE_EXPIRES_AT, _CACHE_PAYLOAD
+    cache_key = (str(row["updated_at"]), int(row["payload_bytes"]))
+    now = time.monotonic()
+    with _CACHE_LOCK:
+        if (
+            _CACHE_KEY == cache_key
+            and _CACHE_PAYLOAD is not None
+            and now < _CACHE_EXPIRES_AT
+        ):
+            payload = dict(_CACHE_PAYLOAD)
+        else:
+            try:
+                decoded = json.loads(str(row["payload_json"]))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                return None
+            if not isinstance(decoded, dict):
+                return None
+            _CACHE_KEY = cache_key
+            _CACHE_EXPIRES_AT = now + _CACHE_TTL_SECONDS
+            _CACHE_PAYLOAD = dict(decoded)
+            payload = dict(decoded)
     age_ms = max(0, int(time.time() * 1000) - int(row["captured_at_epoch_ms"]))
     payload["snapshot_age_ms"] = age_ms
     payload["payload_bytes"] = int(row["payload_bytes"])
     payload["data_source"] = "prepared_sqlite"
     payload["sanitized"] = True
     return payload
+
+
+def encoded_runtime_response(local_runtime: dict[str, Any]) -> bytes:
+    """Return a one-second cached encoded prepared response.
+
+    Authentication remains in the route.  Only sanitized prepared data and the
+    compact API-local event-loop summary are cached.
+    """
+    global _RESPONSE_CACHE_KEY, _RESPONSE_CACHE_EXPIRES_AT, _RESPONSE_CACHE_BYTES
+    prepared = read_worker_snapshot()
+    if prepared is None:
+        payload: dict[str, Any] = {
+            "event_loop": local_runtime.get("event_loop", {}),
+            "projection_scheduler": {
+                "status": "starting",
+                "projection_execution_owner": "worker",
+                "is_execution_owner": False,
+                "queued_domains": 0,
+                "active_domains": 0,
+                "queue": {
+                    "executor_depth": 0,
+                    "followup_domains": 0,
+                    "active_domains": 0,
+                    "durable_pending": 0,
+                    "unregistered": 0,
+                },
+            },
+            "adaptive_runtime": {},
+            "process_runtime": {},
+            "hot_path": {},
+            "snapshot_status": "unavailable",
+            "retry_after_ms": 1000,
+            "data_source": "api_local_fallback",
+            "sanitized": True,
+        }
+        cache_key = ("unavailable", 0)
+    else:
+        payload = dict(prepared)
+        payload["event_loop"] = local_runtime.get("event_loop", {})
+        payload["snapshot_status"] = (
+            "fresh" if int(payload.get("snapshot_age_ms") or 0) <= 30000 else "stale"
+        )
+        cache_key = (
+            str(payload.get("captured_at") or ""),
+            int(payload.get("payload_bytes") or 0),
+        )
+
+    now = time.monotonic()
+    with _CACHE_LOCK:
+        if (
+            _RESPONSE_CACHE_KEY == cache_key
+            and _RESPONSE_CACHE_BYTES is not None
+            and now < _RESPONSE_CACHE_EXPIRES_AT
+        ):
+            return _RESPONSE_CACHE_BYTES
+        encoded = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+        _RESPONSE_CACHE_KEY = cache_key
+        _RESPONSE_CACHE_EXPIRES_AT = now + _CACHE_TTL_SECONDS
+        _RESPONSE_CACHE_BYTES = encoded
+        return encoded

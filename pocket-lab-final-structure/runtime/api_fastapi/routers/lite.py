@@ -1965,41 +1965,16 @@ def _full_lite_runtime_diagnostics() -> dict[str, Any]:
 
 
 @router.get("/diagnostics/runtime")
-def get_lite_runtime_diagnostics(request: Request) -> dict[str, Any]:
+def get_lite_runtime_diagnostics(request: Request) -> Response:
     deps.require_auth(request)
-    from ..services.runtime_snapshot_store import read_worker_snapshot
+    from ..services.runtime_snapshot_store import encoded_runtime_response
 
-    local = RUNTIME_DIAGNOSTICS.snapshot()
-    prepared = read_worker_snapshot()
-    if prepared is None:
-        return {
-            "event_loop": local.get("event_loop", {}),
-            "gc": local.get("gc", {}),
-            "projection_scheduler": {
-                "status": "starting",
-                "projection_execution_owner": "worker",
-                "is_execution_owner": False,
-                "queued_domains": 0,
-                "active_domains": 0,
-            },
-            "adaptive_runtime": {},
-            "process_runtime": {},
-            "hot_path": {},
-            "snapshot_status": "unavailable",
-            "retry_after_ms": 1000,
-            "data_source": "api_local_fallback",
-            "sanitized": True,
-        }
-    prepared["event_loop"] = local.get("event_loop", {})
-    prepared["gc"] = local.get("gc", {})
-    prepared["api_process"] = {
-        "progress_requests": local.get("progress_requests", {}),
-        "sanitized": True,
-    }
-    prepared["snapshot_status"] = (
-        "fresh" if int(prepared.get("snapshot_age_ms") or 0) <= 30000 else "stale"
+    encoded = encoded_runtime_response(RUNTIME_DIAGNOSTICS.snapshot())
+    return Response(
+        content=encoded,
+        media_type="application/json",
+        headers={"Cache-Control": "private, max-age=1"},
     )
-    return prepared
 
 
 @router.get("/diagnostics/runtime/full")

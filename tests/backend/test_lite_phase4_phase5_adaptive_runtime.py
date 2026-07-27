@@ -502,3 +502,48 @@ def test_worker_projection_mailbox_loop_imports_monotonic_clock() -> None:
     assert "consecutive_signal_failures" in worker
     assert "last_error_log_at" in worker
     assert "retry_seconds=1" in worker
+
+
+def test_projection_scheduler_queue_depth_reconciles_stale_flags() -> None:
+    from api_fastapi.services.projection_scheduler import ProjectionJob, ProjectionScheduler
+
+    scheduler = ProjectionScheduler()
+    scheduler.register(
+        ProjectionJob(
+            domain="test.queue.truth",
+            builder=lambda: {},
+            projector=lambda _payload: 1,
+            priority=50,
+            work_class="io",
+            deadline_seconds=1.0,
+        )
+    )
+    with scheduler._condition:  # targeted invariant test of internal bookkeeping
+        state = scheduler._states["test.queue.truth"]
+        state.queued = True
+        state.dirty = False
+        scheduler._heap.clear()
+
+    diagnostics = scheduler.diagnostics()
+    assert diagnostics["queued_domains"] == 0
+    assert diagnostics["queue"]["executor_depth"] == 0
+    assert diagnostics["queue"]["stale_flags_cleared"] == 1
+    assert scheduler._states["test.queue.truth"].queued is False
+
+
+def test_prepared_runtime_contract_is_compact_cached_and_worker_authoritative() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    worker = (root / "pocket-lab-final-structure" / "runtime" / "workers" / "pocketlab_worker.py").read_text(encoding="utf-8")
+    snapshot = (root / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "services" / "runtime_snapshot_store.py").read_text(encoding="utf-8")
+    router = (root / "pocket-lab-final-structure" / "runtime" / "api_fastapi" / "routers" / "lite.py").read_text(encoding="utf-8")
+
+    assert '"executor_depth"' in worker
+    assert '"durable_pending"' in worker
+    assert '"worker_health"' in worker
+    assert "_compact_adaptive_runtime" in worker
+    assert "_compact_process_runtime" in worker
+    assert "encoded_runtime_response" in snapshot
+    assert "_RESPONSE_CACHE_BYTES" in snapshot
+    assert 'media_type="application/json"' in router
