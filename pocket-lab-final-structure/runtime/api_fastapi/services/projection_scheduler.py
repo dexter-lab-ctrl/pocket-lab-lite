@@ -1488,8 +1488,11 @@ class ProjectionScheduler:
         """
         valid_heap: list[tuple[int, int, str, int]] = []
         queued_domains: set[str] = set()
+        ready_domains: set[str] = set()
+        future_domains: set[str] = set()
         stale_entries = 0
         duplicate_entries = 0
+        now = time.monotonic()
         for item in self._heap:
             priority, sequence, domain, generation = item
             state = self._states.get(domain)
@@ -1507,6 +1510,11 @@ class ProjectionScheduler:
                 duplicate_entries += 1
                 continue
             queued_domains.add(domain)
+            due_at = max(float(state.not_before_at), float(state.next_retry_at))
+            if due_at <= now:
+                ready_domains.add(domain)
+            else:
+                future_domains.add(domain)
             valid_heap.append((priority, sequence, domain, generation))
 
         if stale_entries or duplicate_entries or len(valid_heap) != len(self._heap):
@@ -1535,7 +1543,12 @@ class ProjectionScheduler:
                 repaired_domains += 1
 
         return {
-            "executor_depth": len(queued_domains),
+            # Only work eligible to dispatch now is executor backlog. Delayed
+            # retry/adaptive entries remain observable but do not fail the
+            # ready-queue acceptance budget.
+            "executor_depth": len(ready_domains),
+            "ready_executor_depth": len(ready_domains),
+            "scheduled_future_depth": len(future_domains),
             "followup_domains": sum(
                 1 for state in self._states.values() if state.followup_requested
             ),
