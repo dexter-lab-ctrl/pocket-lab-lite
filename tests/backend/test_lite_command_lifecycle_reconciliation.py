@@ -26,7 +26,7 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     prepare_sqlite_test_database(target, monkeypatch)
     from api_fastapi.db.migrations import apply_migrations
 
-    assert apply_migrations() == list(range(1, 18))
+    assert apply_migrations() == list(range(1, 19))
     return target
 
 
@@ -144,7 +144,12 @@ def test_legacy_missing_target_becomes_undeliverable_and_propagates(tmp_path, mo
     assert row["lifecycle_stage"] == "terminal"
     assert row["attention_status"] == "active"
     assert row["recovery_action"] == "target_missing"
-    assert dirty == [(('system.activity_summary',), 'command_lifecycle_reconciled')]
+    assert dirty == [
+        (
+            ("system.activity_current", "system.activity_history"),
+            "command_lifecycle_reconciled",
+        )
+    ]
 
     import sqlite3
     conn = sqlite3.connect(database)

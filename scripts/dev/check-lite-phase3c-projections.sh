@@ -36,7 +36,7 @@ trap finalize_phase3c_gate EXIT
 for value in "$IDLE_SECONDS" "$READY_ATTEMPTS" "$WARMUP_ATTEMPTS" "$QUIESCENCE_ATTEMPTS" "$IDLE_BASELINE_ATTEMPTS" "$IDLE_STABLE_SAMPLES" "$RUNTIME_MAX_TIME" "$RUNTIME_ATTEMPTS"; do
   case "$value" in ''|*[!0-9]*) echo "Phase 3C gate values must be integers" >&2; exit 2;; esac
 done
-[ "$IDLE_SECONDS" -le 1800 ] || { echo "POCKETLAB_PHASE3C_IDLE_SECONDS must be 1800 or less" >&2; exit 2; }
+[ "$IDLE_SECONDS" -le 3600 ] || { echo "POCKETLAB_PHASE3C_IDLE_SECONDS must be 3600 or less" >&2; exit 2; }
 [ "$RUNTIME_MAX_TIME" -ge 10 ] && [ "$RUNTIME_MAX_TIME" -le 60 ] || { echo "POCKETLAB_PHASE3C_RUNTIME_MAX_TIME must be between 10 and 60" >&2; exit 2; }
 [ "$RUNTIME_ATTEMPTS" -ge 1 ] && [ "$RUNTIME_ATTEMPTS" -le 5 ] || { echo "POCKETLAB_PHASE3C_RUNTIME_ATTEMPTS must be between 1 and 5" >&2; exit 2; }
 [ "$IDLE_BASELINE_ATTEMPTS" -ge 3 ] && [ "$IDLE_BASELINE_ATTEMPTS" -le 300 ] || { echo "POCKETLAB_PHASE3C_IDLE_BASELINE_ATTEMPTS must be between 3 and 300" >&2; exit 2; }
@@ -69,7 +69,7 @@ import json,pathlib,sys
 payload=json.load(open(sys.argv[1],encoding='utf-8'))
 required={
  'system.telemetry_thresholds','system.storage_pressure',
- 'system.sqlite_health','system.activity_summary',
+ 'system.sqlite_health','system.activity_current','system.activity_history',
 }
 phase3c=payload.get('phase3c_current_state') or {}
 scheduler=payload.get('projection_scheduler') or {}
@@ -78,6 +78,7 @@ safe={
  'phase3c_current_state':{
    'domains':{name:(phase3c.get('domains') or {}).get(name,{}) for name in sorted(required)},
    'payload_budget_bytes':int(phase3c.get('payload_budget_bytes') or 65536),
+   'semantic_change_timeline':list(phase3c.get('semantic_change_timeline') or [])[-64:],
    'sanitized':True,
  },
  'projection_scheduler':{
@@ -85,6 +86,8 @@ safe={
    'max_domains':int(scheduler.get('max_domains') or 0),
    'registered_domains':int(scheduler.get('registered_domains') or 0),
    'remaining_domain_capacity':int(scheduler.get('remaining_domain_capacity') or 0),
+   'process_role':str(scheduler.get('process_role') or '')[:48],
+   'projection_execution_owner':str(scheduler.get('projection_execution_owner') or '')[:48],
    'sanitized':True,
  },
  'sanitized':True,
@@ -115,10 +118,14 @@ activity_scheduler_quiescent() {
   python3 - "$runtime" <<'PYQUIET'
 import json,sys
 p=json.load(open(sys.argv[1],encoding='utf-8'))
-s=((p.get('projection_scheduler') or {}).get('domains') or {}).get('system.activity_summary') or {}
-busy=[key for key in ('refresh_pending','active','queued','followup_requested') if bool(s.get(key))]
+domains=(p.get('projection_scheduler') or {}).get('domains') or {}
+busy={}
+for name in ('system.activity_current','system.activity_history'):
+    state=domains.get(name) or {}
+    flags=[key for key in ('refresh_pending','active','queued','followup_requested') if bool(state.get(key))]
+    if flags: busy[name]=flags
 if busy:
-    print(json.dumps({'system.activity_summary':busy},sort_keys=True),file=sys.stderr)
+    print(json.dumps(busy,sort_keys=True),file=sys.stderr)
     raise SystemExit(1)
 PYQUIET
 }
@@ -179,7 +186,7 @@ phase=(payload.get('phase3c_current_state') or {}).get('domains') or {}
 scheduler=(payload.get('projection_scheduler') or {}).get('domains') or {}
 required={
  'system.telemetry_thresholds','system.storage_pressure',
- 'system.sqlite_health','system.activity_summary',
+ 'system.sqlite_health','system.activity_current','system.activity_history',
 }
 problems={
  'missing': sorted(required-set(phase)),
@@ -243,7 +250,7 @@ if [ "$IDLE_SECONDS" -gt 0 ]; then
 import json,sys
 p=json.load(open(sys.argv[1],encoding='utf-8'))
 s=(p.get('projection_scheduler') or {}).get('domains') or {}
-required={'system.telemetry_thresholds','system.storage_pressure','system.sqlite_health','system.activity_summary'}
+required={'system.telemetry_thresholds','system.storage_pressure','system.sqlite_health','system.activity_current','system.activity_history'}
 busy={n:[k for k in ('refresh_pending','active','queued','followup_requested') if bool((s.get(n) or {}).get(k))] for n in required}
 busy={k:v for k,v in busy.items() if v}
 if busy: print(json.dumps(busy,sort_keys=True),file=sys.stderr); raise SystemExit(1)
@@ -254,20 +261,39 @@ PY
   [ "$settled" -eq 1 ] || { echo "Phase 3C scheduler did not become quiescent" >&2; exit 1; }
   verify_activity_remained_idle "$RUN_DIR/activity-summary-after-idle.json"
   validate_runtime "$RUN_DIR/runtime-after-idle.json" "$RUN_DIR/after.json"
-  python3 - "$RUN_DIR/before.json" "$RUN_DIR/after.json" <<'PY'
+  python3 - "$RUN_DIR/before.json" "$RUN_DIR/after.json" "$RUN_DIR/runtime.json" "$RUN_DIR/runtime-after-idle.json" <<'PY'
 import json,sys
-before=json.load(open(sys.argv[1],encoding='utf-8')); after=json.load(open(sys.argv[2],encoding='utf-8'))
+before=json.load(open(sys.argv[1],encoding='utf-8'))
+after=json.load(open(sys.argv[2],encoding='utf-8'))
+runtime_before=json.load(open(sys.argv[3],encoding='utf-8'))
+runtime_after=json.load(open(sys.argv[4],encoding='utf-8'))
+old_events={int(row.get('event_id') or 0) for row in ((runtime_before.get('phase3c_current_state') or {}).get('semantic_change_timeline') or [])}
+new_events=[row for row in ((runtime_after.get('phase3c_current_state') or {}).get('semantic_change_timeline') or []) if int(row.get('event_id') or 0) not in old_events]
 report={}
 for name in sorted(before):
     a,b=before[name],after[name]
     delta=b['committed_count']-a['committed_count']
     if b['failure_count'] or b['stale_generation_count'] or b['refresh_pending'] or b['followup_requested']:
         raise SystemExit(f'Phase 3C idle failure: {name}')
-    if delta > 2: raise SystemExit(f'Phase 3C commit churn: {name} delta={delta}')
-    report[name]={'source_revision_stable':b['source_revision']==a['source_revision'],'commit_delta':delta,'unchanged_delta':b['unchanged_count']-a['unchanged_count']}
+    source_stable=b['source_revision']==a['source_revision']
+    if source_stable and delta:
+        raise SystemExit(f'Phase 3C unexplained commit: {name} stable_source delta={delta}')
+    if name == 'system.activity_current' and delta:
+        raise SystemExit(f'Phase 3C current activity churn: {name} delta={delta}')
+    report[name]={'source_revision_stable':source_stable,'commit_delta':delta,'unchanged_delta':b['unchanged_count']-a['unchanged_count']}
+activity_history_delta=report['system.activity_history']['commit_delta']
+activity_events=[row for row in new_events if row.get('domain') == 'system.activity_history']
+if activity_history_delta:
+    if len(activity_events) < activity_history_delta:
+        raise SystemExit('Phase 3C history commit lacks semantic-change evidence')
+    for row in activity_events:
+        if not row.get('changed_paths'):
+            raise SystemExit('Phase 3C history commit has empty changed_paths')
+        if row.get('previous_semantic_hash') == row.get('new_semantic_hash'):
+            raise SystemExit('Phase 3C history commit has identical semantic hashes')
 if not any(item['unchanged_delta'] > 0 for item in report.values()):
     raise SystemExit('no unchanged-source skip was observed after the idle read cycle')
-print(json.dumps({'status':'passed','domains':report,'sanitized':True},sort_keys=True))
+print(json.dumps({'status':'passed','domains':report,'activity_history_events':activity_events,'sanitized':True},sort_keys=True))
 PY
 fi
 

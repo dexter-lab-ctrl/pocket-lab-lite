@@ -7,6 +7,7 @@ state. Shell/network collectors are used only by scheduler builders or bounded
 reconciliation, never by request handlers or semantic revision callbacks.
 """
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -42,10 +43,12 @@ PHASE3C_DOMAINS = (
     "system.telemetry_thresholds",
     "system.storage_pressure",
     "system.sqlite_health",
-    "system.activity_summary",
+    "system.activity_current",
+    "system.activity_history",
 )
 
-SYSTEM_CURRENT_STATE_DOMAINS = PHASE3B_DOMAINS + PHASE3C_DOMAINS
+LEGACY_COMPATIBILITY_DOMAINS = ("system.activity_summary",)
+SYSTEM_CURRENT_STATE_DOMAINS = PHASE3B_DOMAINS + PHASE3C_DOMAINS + LEGACY_COMPATIBILITY_DOMAINS
 
 EXPECTED_PM2_PROCESSES = (
     "pocket-api",
@@ -60,6 +63,23 @@ EXPECTED_PM2_PROCESSES = (
 _MAX_PAYLOAD_BYTES = 48 * 1024
 _MAX_ITEMS = 128
 _MAX_DEPTH = 7
+_MAX_CHANGED_PATHS = 24
+_MAX_CHANGED_PATH_LENGTH = 160
+_MAX_SEMANTIC_EVENTS_PER_DOMAIN = 64
+_MAX_SEMANTIC_EVENTS_GLOBAL = 2048
+_DEFAULT_COMMIT_VOLATILE_FIELDS = frozenset(
+    {
+        "collector_duration_ms",
+        "checked_at",
+        "generated_at",
+        "observed_at",
+        "sampled_at",
+        "refreshed_at",
+        "updated_at",
+        "last_connected_at",
+        "last_disconnected_at",
+    }
+)
 _SENSITIVE_KEY = re.compile(
     r"(?:token|password|passwd|secret|credential|api[_-]?key|private[_-]?key|"
     r"authorization|cookie|environment|env|command_line|raw|log|evidence|"
@@ -249,41 +269,335 @@ def projection_revision(domain: str) -> int:
     return int((row or {}).get("projection_revision") or 0)
 
 
-def project(domain: str, payload: dict[str, Any]) -> int:
+@dataclass(frozen=True, slots=True, eq=False)
+class ProjectionCommitResult:
+    revision: int
+    changed: bool
+    semantic_hash: str
+    changed_paths: tuple[str, ...] = ()
+    trigger_reason: str = "event"
+
+    def __int__(self) -> int:
+        return int(self.revision)
+
+    def __index__(self) -> int:
+        return int(self.revision)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ProjectionCommitResult):
+            return self.revision == other.revision
+        if isinstance(other, int):
+            return self.revision == other
+        return False
+
+
+def _safe_reason(value: Any) -> str:
+    text = re.sub(r"[^a-z0-9_.:-]+", "_", str(value or "event").strip().lower())
+    return (text or "event")[:96]
+
+
+def _remove_explicit_volatile(value: Any, volatile_fields: frozenset[str]) -> Any:
+    if not volatile_fields:
+        return value
+    if isinstance(value, dict):
+        return {
+            str(key): _remove_explicit_volatile(child, volatile_fields)
+            for key, child in value.items()
+            if str(key) not in volatile_fields
+        }
+    if isinstance(value, (list, tuple)):
+        return [_remove_explicit_volatile(child, volatile_fields) for child in value]
+    return value
+
+
+def _canonical_projection_value(value: Any, *, depth: int = 0) -> Any:
+    """Canonicalize committed semantics without broad field guessing.
+
+    Projection callers must explicitly select or name volatile fields. Legitimate
+    semantic keys such as CPU, memory, latency, and timestamps are preserved when
+    the domain contract intentionally includes them. Sensitive keys remain omitted.
+    """
+
+    if depth > _MAX_DEPTH:
+        return None
+    if isinstance(value, dict):
+        output: dict[str, Any] = {}
+        for key in sorted(value, key=lambda item: str(item))[:_MAX_ITEMS]:
+            name = str(key)[:96]
+            if _SENSITIVE_KEY.search(name):
+                continue
+            child = _canonical_projection_value(value[key], depth=depth + 1)
+            if child is not None and child not in ({}, []):
+                output[name] = child
+        return output
+    if isinstance(value, (list, tuple)):
+        return [
+            child
+            for child in (
+                _canonical_projection_value(item, depth=depth + 1)
+                for item in list(value)[:_MAX_ITEMS]
+            )
+            if child is not None and child not in ({}, [])
+        ]
+    if isinstance(value, (set, frozenset)):
+        material = [
+            child
+            for child in (
+                _canonical_projection_value(item, depth=depth + 1)
+                for item in list(value)[:_MAX_ITEMS]
+            )
+            if child is not None and child not in ({}, [])
+        ]
+        return sorted(
+            material,
+            key=lambda item: json.dumps(
+                item, sort_keys=True, separators=(",", ":"), default=str
+            ),
+        )
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return max(-(2**63), min(2**63 - 1, value))
+    if isinstance(value, float):
+        return round(value, 3)
+    if value is None:
+        return None
+    return _safe_text(value, 192)
+
+
+def canonical_projection_material(
+    payload: dict[str, Any],
+    *,
+    semantic_selector: Callable[[dict[str, Any]], Any] | None = None,
+    volatile_fields: tuple[str, ...] | frozenset[str] = (),
+) -> Any:
+    selected = semantic_selector(payload) if semantic_selector is not None else payload
+    explicit = _DEFAULT_COMMIT_VOLATILE_FIELDS | frozenset(
+        str(item) for item in volatile_fields if str(item)
+    )
+    return _canonical_projection_value(
+        _remove_explicit_volatile(selected, explicit)
+    )
+
+
+def canonical_semantic_hash(material: Any) -> str:
+    encoded = json.dumps(
+        material,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        default=str,
+    )
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def semantic_diff(
+    previous: Any,
+    current: Any,
+    *,
+    max_depth: int = 6,
+    max_paths: int = _MAX_CHANGED_PATHS,
+) -> list[str]:
+    """Return deterministic, bounded semantic paths without payload values."""
+
+    bounded_depth = max(1, min(int(max_depth), 8))
+    bounded_paths = max(1, min(int(max_paths), 64))
+    changes: list[str] = []
+    stack: list[tuple[str, Any, Any, int]] = [("$", previous, current, 0)]
+    truncated = False
+    while stack:
+        path, before, after, depth = stack.pop()
+        if before == after:
+            continue
+        if len(changes) >= bounded_paths:
+            truncated = True
+            break
+        if depth >= bounded_depth:
+            changes.append(path[:_MAX_CHANGED_PATH_LENGTH])
+            continue
+        if isinstance(before, dict) and isinstance(after, dict):
+            keys = sorted(set(before) | set(after), key=str, reverse=True)
+            for key in keys:
+                child_path = f"{path}.{str(key)[:96]}"
+                if key not in before or key not in after:
+                    stack.append((child_path, before.get(key), after.get(key), depth + 1))
+                else:
+                    stack.append((child_path, before[key], after[key], depth + 1))
+            continue
+        if isinstance(before, list) and isinstance(after, list):
+            if len(before) != len(after):
+                changes.append(f"{path}.length"[:_MAX_CHANGED_PATH_LENGTH])
+                if len(changes) >= bounded_paths:
+                    truncated = True
+                    break
+            for index in range(min(len(before), len(after), _MAX_ITEMS) - 1, -1, -1):
+                stack.append((f"{path}[{index}]", before[index], after[index], depth + 1))
+            continue
+        changes.append(path[:_MAX_CHANGED_PATH_LENGTH])
+    output = sorted(set(changes))[:bounded_paths]
+    if truncated and "__truncated__" not in output:
+        if len(output) >= bounded_paths:
+            output[-1] = "__truncated__"
+        else:
+            output.append("__truncated__")
+    return output
+
+
+def _execution_context(domain: str, trigger_reason: str | None) -> dict[str, Any]:
+    try:
+        from .projection_scheduler import current_projection_context
+
+        context = dict(current_projection_context())
+    except Exception:
+        context = {}
+    context.setdefault("domain", domain)
+    context.setdefault("scheduler_generation", 0)
+    context.setdefault("database_instance_hash", _database_instance())
+    context.setdefault("execution_owner", "direct")
+    context["trigger_reason"] = _safe_reason(
+        trigger_reason or context.get("trigger_reason") or "bounded_reconciliation"
+    )
+    return context
+
+
+def _stored_semantic_material(
+    payload_json: str,
+    *,
+    semantic_selector: Callable[[dict[str, Any]], Any] | None,
+    volatile_fields: tuple[str, ...] | frozenset[str],
+) -> Any:
+    try:
+        payload = json.loads(str(payload_json or "{}"))
+    except (TypeError, ValueError, json.JSONDecodeError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    return canonical_projection_material(
+        payload,
+        semantic_selector=semantic_selector,
+        volatile_fields=volatile_fields,
+    )
+
+
+def commit_projection_if_changed(
+    *,
+    domain: str,
+    payload: dict[str, Any],
+    semantic_selector: Callable[[dict[str, Any]], Any] | None = None,
+    volatile_fields: tuple[str, ...] | frozenset[str] = (),
+    trigger_reason: str | None = None,
+) -> ProjectionCommitResult:
+    """Canonical single-writer commit with bounded semantic-change evidence."""
+
     safe_domain = _safe_text(domain, 96).lower()
     if safe_domain not in SYSTEM_CURRENT_STATE_DOMAINS:
         raise ValueError("unsupported prepared system projection domain")
     clean, encoded = _bounded_payload(payload)
-    status = _safe_text(clean.get("status") or clean.get("overall") or "unknown", 32).lower() or "unknown"
+    semantic = canonical_projection_material(
+        clean,
+        semantic_selector=semantic_selector,
+        volatile_fields=volatile_fields,
+    )
+    semantic_hash = canonical_semantic_hash(semantic)
+    status = _safe_text(
+        clean.get("status") or clean.get("overall") or "unknown", 32
+    ).lower() or "unknown"
     generation = max(0, int(clean.get("generation") or 0))
-    source_revision = semantic_revision(safe_domain, clean)
-    item_count = min(_MAX_ITEMS, max(0, int(clean.get("item_count") or len(clean.get("items") or []))))
+    source_revision = semantic_revision(safe_domain, semantic)
+    item_count = min(
+        _MAX_ITEMS,
+        max(0, int(clean.get("item_count") or len(clean.get("items") or []))),
+    )
     collector_duration_ms = max(
         0.0, min(float(payload.get("collector_duration_ms") or 0.0), 300_000.0)
     )
     now = _utc_now()
+    context = _execution_context(safe_domain, trigger_reason)
+    expected_database_instance = str(context.get("database_instance_hash") or "")
+    scheduler_generation = max(0, int(context.get("scheduler_generation") or 0))
+    execution_owner = _safe_reason(context.get("execution_owner") or "direct")
+    reason = _safe_reason(context.get("trigger_reason"))
 
-    def write(conn: sqlite3.Connection) -> int:
+    if expected_database_instance and expected_database_instance != _database_instance():
+        from .projection_scheduler import ProjectionCommitRejected
+
+        raise ProjectionCommitRejected("database_instance_changed")
+
+    if scheduler_generation:
+        try:
+            from .projection_scheduler import projection_execution_fence_valid
+
+            if not projection_execution_fence_valid(
+                safe_domain,
+                scheduler_generation,
+                expected_database_instance,
+            ):
+                raise ProjectionCommitRejected("stale_scheduler_generation")
+        except ProjectionCommitRejected:
+            raise
+        except Exception:
+            pass
+
+    def write(conn: sqlite3.Connection) -> ProjectionCommitResult:
+        if expected_database_instance and expected_database_instance != _database_instance():
+            from .projection_scheduler import ProjectionCommitRejected
+
+            raise ProjectionCommitRejected("database_instance_changed")
+        if scheduler_generation:
+            try:
+                from .projection_scheduler import (
+                    ProjectionCommitRejected,
+                    projection_execution_fence_valid,
+                )
+
+                if not projection_execution_fence_valid(
+                    safe_domain,
+                    scheduler_generation,
+                    expected_database_instance,
+                ):
+                    raise ProjectionCommitRejected("stale_scheduler_generation")
+            except ProjectionCommitRejected:
+                raise
+            except Exception:
+                pass
+
         prior = conn.execute(
-            "SELECT projection_revision,status,generation,source_revision,payload_json "
+            "SELECT projection_revision,status,generation,source_revision,payload_json,canonical_hash "
             "FROM phase3b_current_state WHERE domain=?",
             (safe_domain,),
         ).fetchone()
-        unchanged = bool(
-            prior
-            and str(prior["status"] or "") == status
-            and int(prior["generation"] or 0) == generation
-            and int(prior["source_revision"] or 0) == source_revision
+        previous_revision = int(prior["projection_revision"] or 0) if prior else 0
+        previous_source_revision = int(prior["source_revision"] or 0) if prior else 0
+        previous_semantic = (
+            _stored_semantic_material(
+                str(prior["payload_json"] or "{}"),
+                semantic_selector=semantic_selector,
+                volatile_fields=volatile_fields,
+            )
+            if prior
+            else {}
         )
-        if unchanged:
-            return int(prior["projection_revision"] or 0)
-        next_revision = max(1, int(prior["projection_revision"] or 0) + 1 if prior else 1)
+        previous_hash = str(prior["canonical_hash"] or "") if prior else ""
+        if prior and not previous_hash:
+            previous_hash = canonical_semantic_hash(previous_semantic)
+        if prior and previous_hash == semantic_hash:
+            return ProjectionCommitResult(
+                revision=previous_revision,
+                changed=False,
+                semantic_hash=semantic_hash,
+                changed_paths=(),
+                trigger_reason=reason,
+            )
+
+        changed_paths = tuple(semantic_diff(previous_semantic, semantic))
+        next_revision = max(1, previous_revision + 1 if prior else 1)
         conn.execute(
             """
             INSERT INTO phase3b_current_state(
                 domain,status,generation,source_revision,projection_revision,payload_json,
-                item_count,collector_duration_ms,updated_at,updated_at_epoch_ms,sanitized
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,1)
+                item_count,collector_duration_ms,updated_at,updated_at_epoch_ms,sanitized,
+                canonical_hash
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,1,?)
             ON CONFLICT(domain) DO UPDATE SET
                 status=excluded.status,
                 generation=excluded.generation,
@@ -294,7 +608,8 @@ def project(domain: str, payload: dict[str, Any]) -> int:
                 collector_duration_ms=excluded.collector_duration_ms,
                 updated_at=excluded.updated_at,
                 updated_at_epoch_ms=excluded.updated_at_epoch_ms,
-                sanitized=1
+                sanitized=1,
+                canonical_hash=excluded.canonical_hash
             """,
             (
                 safe_domain,
@@ -307,6 +622,7 @@ def project(domain: str, payload: dict[str, Any]) -> int:
                 collector_duration_ms,
                 now,
                 _epoch_ms(now),
+                semantic_hash,
             ),
         )
         conn.execute(
@@ -322,40 +638,124 @@ def project(domain: str, payload: dict[str, Any]) -> int:
             """
             INSERT OR IGNORE INTO phase3b_revision_events(
                 database_instance,domain,projection_revision,source_revision,reason,
-                occurred_at,occurred_at_epoch_ms,sanitized
-            ) VALUES (?,?,?,?,?,?,?,1)
+                occurred_at,occurred_at_epoch_ms,sanitized,previous_semantic_hash,
+                new_semantic_hash,changed_paths_json,source_revision_before,
+                source_revision_after,scheduler_generation,execution_owner
+            ) VALUES (?,?,?,?,?,?,?,1,?,?,?,?,?,?,?)
             """,
             (
                 _database_instance(),
                 safe_domain,
                 next_revision,
                 source_revision,
-                "semantic_state_changed",
+                reason,
                 now,
                 _epoch_ms(now),
+                previous_hash,
+                semantic_hash,
+                json.dumps(changed_paths, separators=(",", ":")),
+                previous_source_revision,
+                source_revision,
+                scheduler_generation,
+                execution_owner,
             ),
         )
         conn.execute(
-            "DELETE FROM phase3b_revision_events WHERE event_id NOT IN "
-            "(SELECT event_id FROM phase3b_revision_events ORDER BY event_id DESC LIMIT 2048)"
+            "DELETE FROM phase3b_revision_events WHERE domain=? AND event_id NOT IN "
+            "(SELECT event_id FROM phase3b_revision_events WHERE domain=? "
+            "ORDER BY event_id DESC LIMIT ?)",
+            (safe_domain, safe_domain, _MAX_SEMANTIC_EVENTS_PER_DOMAIN),
         )
-        return next_revision
+        conn.execute(
+            "DELETE FROM phase3b_revision_events WHERE event_id NOT IN "
+            "(SELECT event_id FROM phase3b_revision_events ORDER BY event_id DESC LIMIT ?)",
+            (_MAX_SEMANTIC_EVENTS_GLOBAL,),
+        )
+        return ProjectionCommitResult(
+            revision=next_revision,
+            changed=True,
+            semantic_hash=semantic_hash,
+            changed_paths=changed_paths,
+            trigger_reason=reason,
+        )
 
-    previous_revision = projection_revision(safe_domain)
-    revision = int(
-        SQLITE_WRITER.submit(f"phase3b.project.{safe_domain}", write, deadline_seconds=2.0)
+    return SQLITE_WRITER.submit(
+        f"projection.commit.{safe_domain}", write, deadline_seconds=2.0
     )
-    if revision != previous_revision and safe_domain in {"security.progress", "security.summary"}:
+
+
+def project(domain: str, payload: dict[str, Any]) -> ProjectionCommitResult:
+    result = commit_projection_if_changed(domain=domain, payload=payload)
+    safe_domain = _safe_text(domain, 96).lower()
+    if result.changed and safe_domain in {"security.progress", "security.summary"}:
         try:
             from . import lite_phase3c_projections
 
             lite_phase3c_projections.mark_dirty(
-                "system.activity_summary", reason="security_projection_changed"
+                "system.activity_current",
+                "system.activity_history",
+                reason="security_projection_changed",
             )
         except Exception:
             pass
-    return revision
+    return result
 
+
+def semantic_change_events(
+    domains: tuple[str, ...] | list[str] | None = None,
+    *,
+    limit: int = 64,
+) -> list[dict[str, Any]]:
+    selected = [
+        _safe_text(domain, 96).lower()
+        for domain in (domains or SYSTEM_CURRENT_STATE_DOMAINS)
+        if _safe_text(domain, 96).lower() in SYSTEM_CURRENT_STATE_DOMAINS
+    ]
+    if not selected:
+        return []
+    bounded_limit = max(1, min(int(limit), 256))
+
+    def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+        placeholders = ",".join("?" for _ in selected)
+        rows = conn.execute(
+            "SELECT event_id,domain,projection_revision,source_revision,reason,"
+            "occurred_at,previous_semantic_hash,new_semantic_hash,changed_paths_json,"
+            "source_revision_before,source_revision_after,scheduler_generation,execution_owner "
+            f"FROM phase3b_revision_events WHERE domain IN ({placeholders}) "
+            "ORDER BY event_id DESC LIMIT ?",
+            (*selected, bounded_limit),
+        ).fetchall()
+        output: list[dict[str, Any]] = []
+        for row in reversed(rows):
+            try:
+                changed_paths = json.loads(str(row["changed_paths_json"] or "[]"))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                changed_paths = []
+            output.append(
+                {
+                    "event_id": int(row["event_id"] or 0),
+                    "sequence": int(row["event_id"] or 0),
+                    "domain": str(row["domain"] or "")[:96],
+                    "projection_revision": int(row["projection_revision"] or 0),
+                    "source_revision_before": int(row["source_revision_before"] or 0),
+                    "source_revision_after": int(row["source_revision_after"] or row["source_revision"] or 0),
+                    "trigger_reason": _safe_reason(row["reason"]),
+                    "occurred_at": str(row["occurred_at"] or "")[:40],
+                    "previous_semantic_hash": str(row["previous_semantic_hash"] or "")[:64],
+                    "new_semantic_hash": str(row["new_semantic_hash"] or "")[:64],
+                    "changed_paths": [str(item)[:_MAX_CHANGED_PATH_LENGTH] for item in list(changed_paths)[:_MAX_CHANGED_PATHS]],
+                    "changed_semantic_paths": [str(item)[:_MAX_CHANGED_PATH_LENGTH] for item in list(changed_paths)[:_MAX_CHANGED_PATHS]],
+                    "scheduler_generation": int(row["scheduler_generation"] or 0),
+                    "execution_owner": _safe_reason(row["execution_owner"]),
+                    "sanitized": True,
+                }
+            )
+        return output
+
+    try:
+        return _read(read, ensure_schema=False)
+    except Exception:
+        return []
 
 def _bus_material() -> dict[str, Any]:
     status = BUS.status()
@@ -1033,7 +1433,7 @@ def status_source_revision() -> int:
             "telemetry": _status_snapshot_material("system.telemetry_thresholds"),
             "storage": _status_snapshot_material("system.storage_pressure"),
             "sqlite": _status_snapshot_material("system.sqlite_health"),
-            "activity": _status_snapshot_material("system.activity_summary"),
+            "activity": _status_snapshot_material("system.activity_current"),
         },
     )
 
@@ -1118,6 +1518,7 @@ def mark_dirty(*domains: str, reason: str = "event") -> None:
                 quiet_window_seconds=0.25 if domain == "security.progress" else 1.0,
             ),
             priority=priority,
+            reason=reason,
         )
 
 

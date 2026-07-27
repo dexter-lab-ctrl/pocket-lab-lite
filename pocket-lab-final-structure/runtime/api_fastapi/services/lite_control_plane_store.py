@@ -1171,13 +1171,14 @@ class ControlPlaneProjectionStore:
         from .projection_scheduler import PROJECTION_SCHEDULER, ProjectionJob
 
         scheduler_domain = f"{domain}.{key}"
-        def scheduled_projector(payload: dict[str, Any]) -> int:
+        def scheduled_projector(payload: dict[str, Any]) -> Any:
             # The persistence projector owns the single-writer transaction and
             # returns its change-only SQLite revision. The scheduler probes the
             # semantic source revision before and after collection, so do not
             # add a third callback here or stamp a newer source revision onto an
             # older payload when state changes during collection.
-            prepared_revision = int(projector(payload))
+            projected = projector(payload)
+            prepared_revision = int(projected)
             with self._cache_lock:
                 self._prepared[cache_key] = _PreparedItem(
                     payload=dict(payload),
@@ -1187,7 +1188,7 @@ class ControlPlaneProjectionStore:
                 )
                 self._refresh_errors.pop(cache_key, None)
                 self._last_refresh_completed_at[cache_key] = time.monotonic()
-            return prepared_revision
+            return projected
 
         def mark_prepared_current() -> None:
             # A cheap source-revision probe proved that the saved payload is still
@@ -1226,7 +1227,8 @@ class ControlPlaneProjectionStore:
 
         if item is None:
             status = PROJECTION_SCHEDULER.mark_dirty(
-                scheduler_domain, job=job, priority=priority, force_followup=False
+                scheduler_domain, job=job, priority=priority, force_followup=False,
+                reason="prepared_snapshot_missing",
             )
             raise PreparedProjectionUnavailable(
                 "Prepared projection is warming and no safe snapshot is available yet"
@@ -1242,6 +1244,7 @@ class ControlPlaneProjectionStore:
                 job=job,
                 priority=priority,
                 force_followup=False,
+                reason="stale_while_refresh",
             )
         refresh_pending = bool(refresh_status.get("refresh_pending"))
         retry_after = max(0, int(refresh_status.get("retry_after_seconds") or 0))
@@ -3404,7 +3407,8 @@ class ControlPlaneProjectionStore:
 
                     lite_phase3c_projections.mark_dirty(
                         "system.telemetry_thresholds",
-                        "system.activity_summary",
+                        "system.activity_current",
+                        "system.activity_history",
                         reason="fleet_projection_committed",
                     )
                 except Exception:
@@ -3572,9 +3576,16 @@ class ControlPlaneProjectionStore:
         try:
             from . import lite_phase3c_projections
 
-            lite_phase3c_projections.mark_dirty(
-                "system.activity_summary", reason=reason
-            )
+            if reason == "command_attention_acknowledged":
+                lite_phase3c_projections.mark_dirty(
+                    "system.activity_current", reason=reason
+                )
+            else:
+                lite_phase3c_projections.mark_dirty(
+                    "system.activity_current",
+                    "system.activity_history",
+                    reason=reason,
+                )
         except Exception:
             pass
 
@@ -4054,7 +4065,9 @@ class ControlPlaneProjectionStore:
                     from . import lite_phase3c_projections
 
                     lite_phase3c_projections.mark_dirty(
-                        "system.activity_summary", reason="apps_projection_changed"
+                        "system.activity_current",
+                        "system.activity_history",
+                        reason="apps_projection_changed",
                     )
                 except Exception:
                     pass
@@ -4197,7 +4210,8 @@ class ControlPlaneProjectionStore:
                     lite_phase3c_projections.mark_dirty(
                         "system.storage_pressure",
                         "system.sqlite_health",
-                        "system.activity_summary",
+                        "system.activity_current",
+                        "system.activity_history",
                         reason="recovery_projection_changed",
                     )
                 except Exception:

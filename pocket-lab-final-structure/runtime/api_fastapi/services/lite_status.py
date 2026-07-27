@@ -602,7 +602,8 @@ def build_lite_status_projection() -> dict[str, Any]:
             "system.telemetry_thresholds",
             "system.storage_pressure",
             "system.sqlite_health",
-            "system.activity_summary",
+            "system.activity_current",
+            "system.activity_history",
         )
     }
     bus = snapshots["system.nats_remote"] or BUS.status()
@@ -635,6 +636,12 @@ def build_lite_status_projection() -> dict[str, Any]:
         if value.get("updated_at")
     ]
     checked_at = max(stable_times) if stable_times else deps.now_utc_iso()
+    from . import lite_phase3c_projections
+
+    activity_summary = lite_phase3c_projections.compose_activity_summary(
+        snapshots["system.activity_current"],
+        snapshots["system.activity_history"],
+    )
     current_state = {
         "health": snapshots["system.health"],
         "processes": snapshots["system.processes"],
@@ -647,7 +654,9 @@ def build_lite_status_projection() -> dict[str, Any]:
         "telemetry_thresholds": snapshots["system.telemetry_thresholds"],
         "storage_pressure": snapshots["system.storage_pressure"],
         "sqlite_health": snapshots["system.sqlite_health"],
-        "activity_summary": snapshots["system.activity_summary"],
+        "activity_summary": activity_summary,
+        "activity_current": snapshots["system.activity_current"],
+        "activity_history": snapshots["system.activity_history"],
         "sanitized": True,
     }
     return _build_lite_status_from_inputs(

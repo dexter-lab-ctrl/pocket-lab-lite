@@ -25,8 +25,8 @@ def test_phase3b_migration_creates_bounded_current_state_and_indexes(tmp_path, m
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == list(range(1, 18))
-    assert current_schema_version() == 17
+    assert apply_migrations() == list(range(1, 19))
+    assert current_schema_version() == 18
     with read_connection() as conn:
         tables = {
             row[0]

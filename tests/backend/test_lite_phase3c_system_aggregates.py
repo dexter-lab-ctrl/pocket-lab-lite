@@ -13,6 +13,8 @@ DOMAINS = {
     "system.telemetry_thresholds",
     "system.storage_pressure",
     "system.sqlite_health",
+    "system.activity_current",
+    "system.activity_history",
     "system.activity_summary",
 }
 
@@ -38,7 +40,7 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     # Validate the authoritative postcondition rather than which caller won
     # the initialization race.
     apply_migrations()
-    assert current_schema_version() == 17
+    assert current_schema_version() == 18
     return database
 
 
@@ -264,7 +266,10 @@ def test_phase3c_routes_are_prepared_read_only():
         start = source.index(f'@router.get("{path}")')
         end = source.find("\n@router.", start + 1)
         block = source[start:end if end >= 0 else len(source)]
-        assert "_phase3c_prepared_read" in block
+        assert (
+            "_phase3c_prepared_read" in block
+            or "_phase3c_activity_summary_read" in block
+        )
         for forbidden in ("subprocess", "disk_usage", "quick_check", "BUS.connect", "pm2"):
             assert forbidden not in block
 
@@ -300,7 +305,9 @@ def test_phase3c_gate_is_termux_safe_and_strict():
     assert "payload_bytes" in script
     assert "source_revision_enabled" in script
     assert "stale_generation_count" in script
-    assert "commit churn" in script
+    assert "unexplained commit" in script
+    assert "current activity churn" in script
+    assert "changed_paths" in script
     assert "fetch_runtime_evidence" in script
     assert "POCKETLAB_PHASE3C_RUNTIME_MAX_TIME" in script
     assert "remaining_domain_capacity" in script
@@ -450,4 +457,6 @@ def test_phase3c_gate_contract_requires_semantic_idle_stabilization():
     assert "activity_scheduler_quiescent" in script
     assert "verify_activity_remained_idle" in script
     assert "Phase 3C activity appeared during idle interval" in Path("scripts/dev/lib/phase3c_gate_activity.py").read_text(encoding="utf-8")
-    assert "if delta > 2" in script
+    assert "if source_stable and delta" in script
+    assert "previous_semantic_hash" in script
+    assert "new_semantic_hash" in script

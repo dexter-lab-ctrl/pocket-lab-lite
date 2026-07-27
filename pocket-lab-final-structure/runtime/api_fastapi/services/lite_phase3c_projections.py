@@ -104,13 +104,20 @@ def _read(callback: Callable[[sqlite3.Connection], Any]) -> Any:
 
 def snapshot(domain: str) -> dict[str, Any] | None:
     safe_domain = str(domain or "").strip().lower()[:96]
+    if safe_domain == "system.activity_summary":
+        current = snapshot("system.activity_current")
+        history = snapshot("system.activity_history")
+        if not current and not history:
+            return None
+        return compose_activity_summary(current or {}, history or {})
     if safe_domain not in PHASE3C_DOMAINS:
         return None
 
     def read(conn: sqlite3.Connection) -> dict[str, Any] | None:
         row = conn.execute(
             "SELECT domain,status,generation,source_revision,projection_revision,payload_json,"
-            "item_count,collector_duration_ms,updated_at FROM phase3b_current_state WHERE domain=?",
+            "item_count,collector_duration_ms,updated_at,canonical_hash "
+            "FROM phase3b_current_state WHERE domain=?",
             (safe_domain,),
         ).fetchone()
         if row is None:
@@ -129,6 +136,7 @@ def snapshot(domain: str) -> dict[str, Any] | None:
             "item_count": int(row["item_count"] or 0),
             "collector_duration_ms": round(float(row["collector_duration_ms"] or 0.0), 3),
             "updated_at": str(row["updated_at"] or ""),
+            "canonical_hash": str(row["canonical_hash"] or "")[:64],
             "projection_only": True,
             "sanitized": True,
         })
@@ -136,9 +144,8 @@ def snapshot(domain: str) -> dict[str, Any] | None:
 
     try:
         return _read(read)
-    except sqlite3.Error:
-        return None
-
+    except Exception:
+        return prepared.snapshot(safe_domain)
 
 def _telemetry_rows() -> list[dict[str, Any]]:
     def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
@@ -470,38 +477,43 @@ def collect_sqlite_health() -> dict[str, Any]:
     }
 
 
-_ACTIVITY_SEMANTIC_KEYS = (
+_ACTIVITY_CURRENT_SEMANTIC_KEYS = (
     "status",
     "summary",
     "active_operations",
     "attention_required",
-    "recent_completed",
-    "latest_change",
     "workflows",
-    "audit_reference_count",
     "policy_mode",
     "item_count",
 )
 
+_ACTIVITY_HISTORY_SEMANTIC_KEYS = (
+    "recent_completed",
+    "latest_change",
+    "workflows",
+    "audit_reference_count",
+    "item_count",
+)
+
+
+def _activity_current_semantic_material(payload: dict[str, Any]) -> dict[str, Any]:
+    return {key: payload.get(key) for key in _ACTIVITY_CURRENT_SEMANTIC_KEYS}
+
+
+def _activity_history_semantic_material(payload: dict[str, Any]) -> dict[str, Any]:
+    return {key: payload.get(key) for key in _ACTIVITY_HISTORY_SEMANTIC_KEYS}
+
 
 def _activity_semantic_material(payload: dict[str, Any]) -> dict[str, Any]:
-    """Return the exact bounded user-visible activity state used for revision fencing."""
+    """Compatibility semantic material for the composed public response."""
 
-    return {key: payload.get(key) for key in _ACTIVITY_SEMANTIC_KEYS}
+    return {
+        "current": _activity_current_semantic_material(payload),
+        "history": _activity_history_semantic_material(payload),
+    }
 
 
-def activity_source_revision() -> int:
-    # Event hooks remain the admission signal.  The source revision is derived
-    # from the same bounded semantic aggregate that the projector stores, not
-    # broad domain counters or child projection envelope revisions.
-    payload = collect_activity_summary()
-    return prepared.semantic_revision(
-        "system.activity_summary", _activity_semantic_material(payload)
-    )
-
-def collect_activity_summary() -> dict[str, Any]:
-    started = time.monotonic()
-
+def _read_activity_rows() -> dict[str, Any]:
     def read(conn: sqlite3.Connection) -> dict[str, Any]:
         commands = [dict(row) for row in conn.execute(
             "SELECT command_id,entity_type,entity_id,operation_type,status,attention_status,updated_at_epoch_ms "
@@ -523,10 +535,6 @@ def collect_activity_summary() -> dict[str, Any]:
             "FROM security_scan_runs ORDER BY updated_at_epoch_ms DESC,run_id DESC LIMIT ?",
             (_MAX_RECENT,),
         ).fetchall()]
-        # Activity evidence is bounded to the workflow rows shown by this
-        # projection. Periodic system-health, scheduler, or maintenance evidence
-        # must not churn the user-visible activity aggregate when no workflow
-        # changed.
         activity_operation_ids = sorted({
             str(value)
             for value in (
@@ -539,9 +547,6 @@ def collect_activity_summary() -> dict[str, Any]:
         })
         if activity_operation_ids:
             placeholders = ",".join("?" for _ in activity_operation_ids)
-            # Count one bounded audit reference per displayed workflow operation.
-            # Repeated evidence for the same operation must not churn the
-            # user-visible activity aggregate.
             audit = [dict(row) for row in conn.execute(
                 "SELECT operation_id,MAX(created_at_epoch_ms) AS created_at_epoch_ms "
                 f"FROM audit_evidence_index WHERE operation_id IN ({placeholders}) "
@@ -565,47 +570,117 @@ def collect_activity_summary() -> dict[str, Any]:
                 "SELECT COUNT(*) FROM security_scan_runs WHERE status IN ('accepted','running')"
             ).fetchone()[0]),
         }
-        return {"commands": commands, "apps": app_actions, "recovery": recovery, "security": security, "audit": audit, "active_counts": active_counts}
+        attention_counts = {
+            "devices": int(conn.execute(
+                "SELECT COUNT(*) FROM command_lifecycle WHERE status IN ('failed','undeliverable','timed_out','error','blocked') AND attention_status='active'"
+            ).fetchone()[0]),
+            "apps": int(conn.execute(
+                "SELECT COUNT(*) FROM app_action_lifecycle WHERE status IN ('failed','undeliverable','timed_out','error','blocked')"
+            ).fetchone()[0]),
+            "recovery": int(conn.execute(
+                "SELECT COUNT(*) FROM recovery_operations WHERE status IN ('failed','undeliverable','timed_out','error','blocked')"
+            ).fetchone()[0]),
+            "security": int(conn.execute(
+                "SELECT COUNT(*) FROM security_scan_runs WHERE status IN ('failed','timed_out','error')"
+            ).fetchone()[0]),
+        }
+        return {
+            "commands": commands,
+            "apps": app_actions,
+            "recovery": recovery,
+            "security": security,
+            "audit": audit,
+            "active_counts": active_counts,
+            "attention_counts": attention_counts,
+        }
 
     try:
-        rows = _read(read)
+        return _read(read)
     except Exception:
-        rows = {"commands": [], "apps": [], "recovery": [], "security": [], "audit": [], "active_counts": {}}
-    domain_rows = {
-        "devices": rows["commands"],
-        "apps": rows["apps"],
-        "recovery": rows["recovery"],
-        "security": rows["security"],
+        return {
+            "commands": [],
+            "apps": [],
+            "recovery": [],
+            "security": [],
+            "audit": [],
+            "active_counts": {},
+            "attention_counts": {},
+        }
+
+
+def _activity_domain_rows(rows: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    return {
+        "devices": list(rows.get("commands") or []),
+        "apps": list(rows.get("apps") or []),
+        "recovery": list(rows.get("recovery") or []),
+        "security": list(rows.get("security") or []),
     }
+
+
+def collect_activity_current() -> dict[str, Any]:
+    started = time.monotonic()
+    rows = _read_activity_rows()
     active_count = 0
     attention_count = 0
+    workflows: dict[str, dict[str, Any]] = {}
+    for domain in ("devices", "apps", "recovery", "security"):
+        active = max(0, int((rows.get("active_counts") or {}).get(domain) or 0))
+        attention = max(0, int((rows.get("attention_counts") or {}).get(domain) or 0))
+        active_count += active
+        attention_count += attention
+        workflows[domain] = {
+            "status": "attention" if attention else "active" if active else "idle",
+            "active": active,
+            "attention": attention,
+            "actionable": bool(active or attention),
+        }
+    status = "attention" if attention_count else "active" if active_count else "healthy"
+    summary = (
+        "Action needs attention."
+        if attention_count
+        else "Something is running."
+        if active_count
+        else "No actions need attention."
+    )
+    payload = {
+        "status": status,
+        "summary": summary,
+        "active_operations": active_count,
+        "attention_required": attention_count,
+        "workflows": workflows,
+        "policy_mode": "lite_personal",
+        "item_count": len(workflows),
+        "collector_duration_ms": round((time.monotonic() - started) * 1000.0, 3),
+        "sanitized": True,
+    }
+    payload["generation"] = prepared.semantic_revision(
+        "system.activity_current.generation",
+        _activity_current_semantic_material(payload),
+    )
+    return payload
+
+
+def collect_activity_history() -> dict[str, Any]:
+    started = time.monotonic()
+    rows = _read_activity_rows()
+    domain_rows = _activity_domain_rows(rows)
     completed_count = 0
     workflows: dict[str, dict[str, Any]] = {}
     latest_candidates: list[dict[str, Any]] = []
     for domain, items in domain_rows.items():
         statuses = Counter(_safe_status(item.get("status")) for item in items)
-        active = max(0, int((rows.get("active_counts") or {}).get(domain) or 0))
-        attention = (
-            sum(
-                1
-                for item in items
-                if _safe_status(item.get("status")) in _FAILED
-                and str(item.get("attention_status") or "none") == "active"
-            )
-            if domain == "devices"
-            else sum(statuses.get(name, 0) for name in _FAILED)
-        )
         completed = sum(statuses.get(name, 0) for name in _TERMINAL)
-        active_count += active
-        attention_count += attention
         completed_count += completed
         latest = items[0] if items else {}
         workflows[domain] = {
-            "active": active,
-            "attention": attention,
             "recent_completed": completed,
             "latest_status": _safe_status(latest.get("status")),
-            "latest_summary": prepared._safe_text(latest.get("operation_type") or latest.get("action_id") or latest.get("profile"), 160),
+            "latest_summary": prepared._safe_text(
+                latest.get("operation_type")
+                or latest.get("action_id")
+                or latest.get("profile"),
+                160,
+            ),
         }
         if latest:
             latest_candidates.append({
@@ -614,35 +689,127 @@ def collect_activity_summary() -> dict[str, Any]:
                 "summary": workflows[domain]["latest_summary"],
                 "order": int(latest.get("updated_at_epoch_ms") or 0),
             })
-    latest_change = max(latest_candidates, key=lambda item: (item["order"], item["domain"])) if latest_candidates else None
-    status = "attention" if attention_count else "active" if active_count else "healthy"
-    summary = "Action needs attention." if attention_count else "Something is running." if active_count else "No actions need attention."
+    latest_change = (
+        max(latest_candidates, key=lambda item: (item["order"], item["domain"]))
+        if latest_candidates
+        else None
+    )
     payload = {
-        "status": status,
-        "summary": summary,
-        "active_operations": active_count,
-        "attention_required": attention_count,
+        "status": "available",
+        "summary": "Recent activity is available." if latest_change else "No recent activity.",
         "recent_completed": completed_count,
-        "latest_change": ({key: value for key, value in latest_change.items() if key != "order"} if latest_change else None),
+        "latest_change": (
+            {key: value for key, value in latest_change.items() if key != "order"}
+            if latest_change
+            else None
+        ),
         "workflows": workflows,
-        "audit_reference_count": min(_MAX_RECENT, len(rows["audit"])),
-        "policy_mode": "lite_personal",
+        "audit_reference_count": min(_MAX_RECENT, len(rows.get("audit") or [])),
         "item_count": sum(len(items) for items in domain_rows.values()),
         "collector_duration_ms": round((time.monotonic() - started) * 1000.0, 3),
         "sanitized": True,
     }
     payload["generation"] = prepared.semantic_revision(
-        "system.activity_summary.generation",
-        _activity_semantic_material(payload),
+        "system.activity_history.generation",
+        _activity_history_semantic_material(payload),
     )
     return payload
 
+
+def compose_activity_summary(
+    current: dict[str, Any], history: dict[str, Any]
+) -> dict[str, Any]:
+    current_workflows = (
+        current.get("workflows") if isinstance(current.get("workflows"), dict) else {}
+    )
+    history_workflows = (
+        history.get("workflows") if isinstance(history.get("workflows"), dict) else {}
+    )
+    workflows: dict[str, dict[str, Any]] = {}
+    for domain in sorted(set(current_workflows) | set(history_workflows)):
+        workflows[domain] = {
+            **(current_workflows.get(domain) or {}),
+            **(history_workflows.get(domain) or {}),
+        }
+    current_revision = int(current.get("projection_revision") or 0)
+    history_revision = int(history.get("projection_revision") or 0)
+    current_hash = str(current.get("canonical_hash") or "")[:64]
+    history_hash = str(history.get("canonical_hash") or "")[:64]
+    updated_candidates = [
+        str(value)
+        for value in (current.get("updated_at"), history.get("updated_at"))
+        if value
+    ]
+    payload = {
+        "status": current.get("status") or "unknown",
+        "summary": current.get("summary") or "Activity state is not available.",
+        "active_operations": int(current.get("active_operations") or 0),
+        "attention_required": int(current.get("attention_required") or 0),
+        "recent_completed": int(history.get("recent_completed") or 0),
+        "latest_change": history.get("latest_change"),
+        "workflows": workflows,
+        "audit_reference_count": int(history.get("audit_reference_count") or 0),
+        "policy_mode": current.get("policy_mode") or "lite_personal",
+        "item_count": int(history.get("item_count") or 0),
+        "current": current,
+        "history": history,
+        "current_projection_revision": current_revision,
+        "history_projection_revision": history_revision,
+        "current_canonical_hash": current_hash,
+        "history_canonical_hash": history_hash,
+        "projection_revision": max(current_revision, history_revision),
+        "source_revision": prepared.semantic_revision(
+            "system.activity_summary.composed",
+            {
+                "current_hash": current_hash,
+                "history_hash": history_hash,
+                "current_revision": current_revision,
+                "history_revision": history_revision,
+            },
+        ),
+        "updated_at": max(updated_candidates) if updated_candidates else "",
+        "projection_only": True,
+        "sanitized": True,
+    }
+    payload["generation"] = prepared.semantic_revision(
+        "system.activity_summary.generation", _activity_semantic_material(payload)
+    )
+    return payload
+
+
+def activity_current_source_revision() -> int:
+    payload = collect_activity_current()
+    return prepared.semantic_revision(
+        "system.activity_current", _activity_current_semantic_material(payload)
+    )
+
+
+def activity_history_source_revision() -> int:
+    payload = collect_activity_history()
+    return prepared.semantic_revision(
+        "system.activity_history", _activity_history_semantic_material(payload)
+    )
+
+
+def activity_source_revision() -> int:
+    payload = collect_activity_summary()
+    return prepared.semantic_revision(
+        "system.activity_summary", _activity_semantic_material(payload)
+    )
+
+
+def collect_activity_summary() -> dict[str, Any]:
+    return compose_activity_summary(
+        collect_activity_current(), collect_activity_history()
+    )
 
 def builder_for(domain: str) -> Callable[[], dict[str, Any]]:
     builders = {
         "system.telemetry_thresholds": collect_telemetry_thresholds,
         "system.storage_pressure": collect_storage_pressure,
         "system.sqlite_health": collect_sqlite_health,
+        "system.activity_current": collect_activity_current,
+        "system.activity_history": collect_activity_history,
         "system.activity_summary": collect_activity_summary,
     }
     try:
@@ -656,6 +823,8 @@ def source_revision_for(domain: str) -> Callable[[], int]:
         "system.telemetry_thresholds": telemetry_source_revision,
         "system.storage_pressure": storage_source_revision,
         "system.sqlite_health": sqlite_health_source_revision,
+        "system.activity_current": activity_current_source_revision,
+        "system.activity_history": activity_history_source_revision,
         "system.activity_summary": activity_source_revision,
     }
     try:
@@ -664,16 +833,36 @@ def source_revision_for(domain: str) -> Callable[[], int]:
         raise ValueError("unsupported Phase 3C projection domain") from exc
 
 
-def project(domain: str, payload: dict[str, Any]) -> int:
-    before = int((snapshot(domain) or {}).get("projection_revision") or 0)
-    revision = prepared.project(domain, payload)
-    if revision != before:
+def project(domain: str, payload: dict[str, Any]) -> prepared.ProjectionCommitResult:
+    semantic_selector = None
+    if domain == "system.activity_current":
+        semantic_selector = _activity_current_semantic_material
+    elif domain == "system.activity_history":
+        semantic_selector = _activity_history_semantic_material
+    result = prepared.commit_projection_if_changed(
+        domain=domain,
+        payload=payload,
+        semantic_selector=semantic_selector,
+    )
+    if result.changed:
         _counter(domain, "semantic_change_count")
-        if domain in {"system.telemetry_thresholds", "system.storage_pressure", "system.sqlite_health"}:
-            prepared.mark_dirty("system.health", "system.status", reason="phase3c_projection_committed")
-        elif domain == "system.activity_summary":
-            prepared.mark_dirty("system.status", reason="phase3c_projection_committed")
-    return revision
+        if domain in {
+            "system.telemetry_thresholds",
+            "system.storage_pressure",
+            "system.sqlite_health",
+        }:
+            prepared.mark_dirty(
+                "system.health",
+                "system.status",
+                reason="phase3c_projection_committed",
+            )
+        elif domain == "system.activity_current":
+            prepared.mark_dirty(
+                "system.status", reason="activity_current_committed"
+            )
+    else:
+        _counter(domain, "canonical_unchanged_count")
+    return result
 
 
 def _job(domain: str):
@@ -705,10 +894,20 @@ def register_jobs() -> None:
         PROJECTION_SCHEDULER.register(_job(domain))
 
 
+def _expanded_activity_domains(domains: tuple[str, ...]) -> tuple[str, ...]:
+    output: list[str] = []
+    for domain in domains:
+        if domain == "system.activity_summary":
+            output.extend(("system.activity_current", "system.activity_history"))
+        else:
+            output.append(domain)
+    return tuple(dict.fromkeys(output))
+
+
 def mark_dirty(*domains: str, reason: str = "event") -> None:
     from .projection_scheduler import PROJECTION_SCHEDULER
 
-    selected = domains or PHASE3C_DOMAINS
+    selected = _expanded_activity_domains(domains or PHASE3C_DOMAINS)
     register_jobs()
     for domain in selected:
         if domain not in PHASE3C_DOMAINS:
@@ -718,7 +917,12 @@ def mark_dirty(*domains: str, reason: str = "event") -> None:
             _counter(domain, "reconciliation_count")
         else:
             _counter(domain, "event_driven_update_count")
-        PROJECTION_SCHEDULER.mark_dirty(domain, job=_job(domain), force_followup=False)
+        PROJECTION_SCHEDULER.mark_dirty(
+            domain,
+            job=_job(domain),
+            force_followup=False,
+            reason=reason,
+        )
 
 
 def schedule_startup_warmup() -> dict[str, bool]:
@@ -749,17 +953,33 @@ def diagnostics() -> dict[str, Any]:
             "status": item.get("status", "missing"),
             "stored_source_revision": int(item.get("source_revision") or 0),
             "projection_revision": int(item.get("projection_revision") or 0),
-            "payload_bytes": len(json.dumps(item, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")) if item else 0,
+            "canonical_hash": str(item.get("canonical_hash") or "")[:64],
+            "payload_bytes": len(
+                json.dumps(
+                    item, sort_keys=True, separators=(",", ":"), default=str
+                ).encode("utf-8")
+            ) if item else 0,
             "item_count": int(item.get("item_count") or 0),
             "collector_duration_ms": float(item.get("collector_duration_ms") or 0.0),
-            "sample_count": int(item.get("item_count") or 0) if domain == "system.telemetry_thresholds" else 0,
-            "threshold_transition_count": semantic_changes if domain in {"system.telemetry_thresholds", "system.storage_pressure"} else 0,
-            "aggregate_row_count": int(item.get("item_count") or 0) if domain == "system.activity_summary" else 0,
+            "sample_count": int(item.get("item_count") or 0)
+            if domain == "system.telemetry_thresholds"
+            else 0,
+            "threshold_transition_count": semantic_changes
+            if domain in {"system.telemetry_thresholds", "system.storage_pressure"}
+            else 0,
+            "aggregate_row_count": int(item.get("item_count") or 0)
+            if domain in {"system.activity_current", "system.activity_history"}
+            else 0,
             "query_plan_status": "indexed_contract_tested",
             **counters,
         }
+    semantic_events = prepared.semantic_change_events(
+        ["system.activity_current", "system.activity_history"], limit=64
+    )
     return {
         "domains": rows,
+        "activity_summary": snapshot("system.activity_summary") or {},
+        "semantic_change_timeline": semantic_events,
         "database_instance": prepared._database_instance(),
         "payload_budget_bytes": prepared._MAX_PAYLOAD_BYTES,
         "policy_version": POLICY_VERSION,
