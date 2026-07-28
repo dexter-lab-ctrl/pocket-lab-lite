@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import sqlite3
 import subprocess
@@ -406,7 +407,17 @@ def _canonical_release(payload: Mapping[str, Any]) -> dict[str, Any]:
         "update_available": bool(payload.get("update_available")),
         "auto_apply": bool(payload.get("auto_apply")),
         "manifest_verified": bool(payload.get("manifest_verified")),
+        # Compatibility field: this describes only the active/latest native
+        # apply operation, not the durable installed PWA identity.
         "artifact_verified": bool(payload.get("artifact_verified")),
+        "latest_release_manifest_verified": bool(payload.get("manifest_verified")),
+        "latest_release_artifact_metadata_verified": bool(
+            payload.get("manifest_verified")
+            and _safe_text(asset.get("verification_status"), 48)
+            == "manifest_and_checksum_verified"
+        ),
+        "active_operation_artifact_verified": bool(payload.get("artifact_verified")),
+        "artifact_verification_scope": "active_operation",
         "staging_status": _safe_text(payload.get("staging_status") or "idle", 32),
         "promotion_status": _safe_text(payload.get("promotion_status") or "idle", 32),
         "rollback_available": bool(payload.get("rollback_available")),
@@ -495,6 +506,19 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "installed_source_commit": "",
             "manifest_verified": False,
             "artifact_verified": False,
+            "latest_release_manifest_verified": False,
+            "latest_release_artifact_metadata_verified": False,
+            "installed_identity_verified": False,
+            "installed_artifact_verified": False,
+            "active_operation_artifact_verified": False,
+            "artifact_verification_scope": "active_operation",
+            "verification": {
+                "latest_release_manifest_verified": False,
+                "latest_release_artifact_metadata_verified": False,
+                "installed_identity_verified": False,
+                "installed_artifact_verified": False,
+                "active_operation_artifact_verified": False,
+            },
             "staging_status": "idle",
             "promotion_status": "idle",
             "rollback_available": False,
@@ -617,6 +641,42 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             )
             if not int(payload.get("active_generation") or 0):
                 payload["phase"] = "available" if comparison == "older" else "current"
+    installed_artifact_verified = bool(
+        identity.get("verified")
+        and str(identity.get("install_mode") or "").strip().lower() == "release"
+        and str(identity.get("artifact_name") or "").strip() == "dist.zip"
+        and re.fullmatch(r"[0-9a-f]{64}", str(identity.get("artifact_sha256") or "").strip().lower())
+    )
+    latest_artifact = (
+        payload.get("latest_release", {}).get("artifact", {})
+        if isinstance(payload.get("latest_release"), Mapping)
+        else {}
+    )
+    latest_manifest_verified = bool(payload.get("manifest_verified"))
+    latest_artifact_metadata_verified = bool(
+        latest_manifest_verified
+        and isinstance(latest_artifact, Mapping)
+        and str(latest_artifact.get("verification_status") or "")
+        == "manifest_and_checksum_verified"
+    )
+    active_operation_artifact_verified = bool(payload.get("artifact_verified"))
+    payload.update(
+        {
+            "latest_release_manifest_verified": latest_manifest_verified,
+            "latest_release_artifact_metadata_verified": latest_artifact_metadata_verified,
+            "installed_identity_verified": bool(identity.get("verified")),
+            "installed_artifact_verified": installed_artifact_verified,
+            "active_operation_artifact_verified": active_operation_artifact_verified,
+            "artifact_verification_scope": "active_operation",
+            "verification": {
+                "latest_release_manifest_verified": latest_manifest_verified,
+                "latest_release_artifact_metadata_verified": latest_artifact_metadata_verified,
+                "installed_identity_verified": bool(identity.get("verified")),
+                "installed_artifact_verified": installed_artifact_verified,
+                "active_operation_artifact_verified": active_operation_artifact_verified,
+            },
+        }
+    )
     if payload["status"] == "degraded":
         payload.setdefault("last_known_good", bool(row.get("canonical_hash")))
         payload.setdefault("reason", payload["last_failure_code"] or "release_worker_unavailable")

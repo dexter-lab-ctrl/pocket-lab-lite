@@ -670,6 +670,11 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
         "repository_match": True,
         "manifest_verified": True,
         "artifact_verified": False,
+        "latest_release": {
+            "artifact": {
+                "verification_status": "manifest_and_checksum_verified",
+            },
+        },
     }
     with connection() as conn:
         with begin_immediate(conn) as tx:
@@ -678,6 +683,7 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
                 UPDATE release_runtime_projection
                 SET phase = 'source', status = 'healthy', current_tag = 'unknown',
                     latest_tag = 'lite-2026.07.28.1', update_available = 0,
+                    manifest_verified = 1, artifact_verified = 0,
                     payload_json = ?, payload_bytes = ?
                 WHERE owner = 'release'
                 """,
@@ -695,6 +701,45 @@ def test_prepared_release_status_prioritizes_verified_installed_release_identity
     assert status["installed_release_tag"] == "lite-2026.07.28.1"
     assert status["update_available"] is False
     assert status["installed_identity_verified"] is True
+    assert status["installed_artifact_verified"] is True
+    assert status["latest_release_manifest_verified"] is True
+    assert status["latest_release_artifact_metadata_verified"] is True
+    assert status["active_operation_artifact_verified"] is False
+    assert status["artifact_verified"] is False
+    assert status["artifact_verification_scope"] == "active_operation"
+    assert status["verification"] == {
+        "latest_release_manifest_verified": True,
+        "latest_release_artifact_metadata_verified": True,
+        "installed_identity_verified": True,
+        "installed_artifact_verified": True,
+        "active_operation_artifact_verified": False,
+    }
+
+
+def test_release_verification_contract_is_explicit_in_ui_and_server_gate():
+    root = Path(__file__).resolve().parents[2]
+    runtime_source = (
+        root
+        / "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+    ).read_text(encoding="utf-8")
+    runner_source = (
+        root / "scripts/dev/check-lite-release-validation-server-phone.sh"
+    ).read_text(encoding="utf-8")
+    ui_source = (root / "src/lite/LiteReleaseUpdateCard.jsx").read_text(
+        encoding="utf-8"
+    )
+
+    for field in (
+        "latest_release_manifest_verified",
+        "latest_release_artifact_metadata_verified",
+        "installed_artifact_verified",
+        "active_operation_artifact_verified",
+        "artifact_verification_scope",
+    ):
+        assert field in runtime_source
+        assert field in runner_source
+    assert "Installed files:" in ui_source
+    assert "data.installed_artifact_verified" in ui_source
 
 
 def test_bootstrap_reuse_path_reconciles_verified_release_identity():

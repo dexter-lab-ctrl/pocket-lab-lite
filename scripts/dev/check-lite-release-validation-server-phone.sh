@@ -81,6 +81,9 @@ checks={
  'prepared_read_only': p.get('prepared_read_only') is True,
  'sanitized': p.get('sanitized') is True,
  'installed_identity_verified': p.get('installed_identity_verified') is True,
+ 'installed_artifact_verified': p.get('installed_artifact_verified') is True,
+ 'active_artifact_scope_explicit': p.get('artifact_verification_scope') == 'active_operation',
+ 'active_artifact_alias_consistent': p.get('active_operation_artifact_verified') == p.get('artifact_verified'),
 }
 failed=[name for name, ok in checks.items() if not ok]
 print({'checks': checks, 'precheck_status': p.get('status'), 'reason': p.get('reason')})
@@ -137,7 +140,7 @@ run_9f_settle() {
       python3 - "$attempt" "$json" <<'PY'
 import json, sys
 p=json.load(open(sys.argv[2], encoding='utf-8'))
-print({'attempt': int(sys.argv[1]), 'status': p.get('status'), 'phase': p.get('phase'), 'active_generation': p.get('active_generation'), 'current_tag': p.get('current_tag'), 'latest_tag': p.get('latest_tag'), 'comparison': p.get('comparison'), 'manifest_verified': p.get('manifest_verified'), 'failure': p.get('last_failure_code')})
+print({'attempt': int(sys.argv[1]), 'status': p.get('status'), 'phase': p.get('phase'), 'active_generation': p.get('active_generation'), 'current_tag': p.get('current_tag'), 'latest_tag': p.get('latest_tag'), 'comparison': p.get('comparison'), 'latest_release_manifest_verified': p.get('latest_release_manifest_verified'), 'installed_artifact_verified': p.get('installed_artifact_verified'), 'active_operation_artifact_verified': p.get('active_operation_artifact_verified'), 'failure': p.get('last_failure_code')})
 PY
       active="$(python3 -c 'import json,sys; print(int(json.load(open(sys.argv[1])).get("active_generation") or 0))' "$json")"
       checked="$(python3 -c 'import json,sys; print(1 if json.load(open(sys.argv[1])).get("last_checked_at") else 0)' "$json")"
@@ -157,7 +160,11 @@ dt.date(int(m[1]), int(m[2]), int(m[3]))
 checks={
  'status_not_degraded': p.get('status') not in {'degraded','error','failed'},
  'repository_match': p.get('repository_match') is True,
- 'manifest_verified': p.get('manifest_verified') is True,
+ 'latest_release_manifest_verified': p.get('latest_release_manifest_verified') is True,
+ 'latest_release_artifact_metadata_verified': p.get('latest_release_artifact_metadata_verified') is True,
+ 'installed_artifact_verified': p.get('installed_artifact_verified') is True,
+ 'active_artifact_scope_explicit': p.get('artifact_verification_scope') == 'active_operation',
+ 'active_artifact_alias_consistent': p.get('active_operation_artifact_verified') == p.get('artifact_verified'),
  'auto_apply_disabled': p.get('auto_apply') is False,
  'no_active_generation': int(p.get('active_generation') or 0) == 0,
  'no_failure_code': not p.get('last_failure_code'),
