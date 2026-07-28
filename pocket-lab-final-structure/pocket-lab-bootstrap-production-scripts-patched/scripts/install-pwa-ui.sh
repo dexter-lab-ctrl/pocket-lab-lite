@@ -234,6 +234,28 @@ PYSOURCE
     rm -rf "$preparing"
   fi
   atomic_link "$target" "$CURRENT_LINK"
+  if [[ "$tag" == lite-* ]]; then
+    PYTHONPATH="$RUNTIME_DIR${PYTHONPATH:+:$PYTHONPATH}" python3 - "$tag" "$manifest" "$archive" <<'PYIDENTITY'
+import hashlib
+import json
+import sys
+
+from api_fastapi.services.release_runtime import initialize_release_runtime, record_release_install
+
+tag, manifest_path, archive_path = sys.argv[1:]
+manifest = json.load(open(manifest_path, encoding="utf-8"))
+artifact_sha256 = hashlib.sha256(open(archive_path, "rb").read()).hexdigest()
+initialize_release_runtime()
+identity = record_release_install(
+    release_tag=tag,
+    source_repository="dexter-lab-ctrl/pocket-lab-lite",
+    source_commit=str(manifest.get("source_commit") or ""),
+    artifact_sha256=artifact_sha256,
+)
+if identity.get("release_tag") != tag or not identity.get("verified"):
+    raise SystemExit("Pocket Lab Lite installed release identity was not persisted")
+PYIDENTITY
+  fi
   rm -rf "$TMP_DIR"
   mark_done pwa_ui_ready
   log INFO "Pocket Lab Lite PWA pointer is ready"
