@@ -1972,8 +1972,10 @@ async def get_lite_runtime_diagnostics(request: Request) -> Response:
     # The route only snapshots a small lock-protected event-loop summary on the
     # loop. SQLite I/O and response-byte assembly run in the bounded default
     # executor so diagnostics cannot become an event-loop blocking collector.
-    event_loop = RUNTIME_DIAGNOSTICS.event_loop_summary()
-    encoded = await asyncio.to_thread(encoded_runtime_response, event_loop)
+    runtime_revision, runtime_fragment = RUNTIME_DIAGNOSTICS.compact_runtime_fragment()
+    encoded = await asyncio.to_thread(
+        encoded_runtime_response, runtime_revision, runtime_fragment
+    )
     return Response(
         content=encoded,
         media_type="application/json",

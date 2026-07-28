@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 import contextlib
+import json
 from datetime import datetime, timezone
 import gc
 import logging
@@ -59,13 +60,17 @@ class RuntimeDiagnostics:
         self.request_phase_slow_ms = _bounded_float(
             "POCKETLAB_PROGRESS_REQUEST_PHASE_SLOW_MS", 250.0, 10.0, 10_000.0
         )
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._loop_task: asyncio.Task[None] | None = None
         self._loop_samples = 0
         self._loop_warning_count = 0
         self._loop_critical_count = 0
         self._loop_latest_ms = 0.0
-        self._loop_recent: deque[float] = deque(maxlen=120)
+        self._loop_recent: deque[float] = deque(
+            maxlen=int(_bounded_float("POCKETLAB_EVENT_LOOP_HISTORY_SAMPLES", 64, 16, 256))
+        )
+        self._compact_revision = 0
+        self._compact_runtime_fragment = b'"event_loop":{},"gc":{}'
         self._loop_last_warning_at: str | None = None
         self._loop_last_severity = "healthy"
         self._loop_last_summary_monotonic = 0.0
@@ -117,18 +122,24 @@ class RuntimeDiagnostics:
             generation: {
                 "collections": 0,
                 "latest_duration_ms": 0.0,
-                "recent": deque(maxlen=32),
+                "recent": deque(maxlen=int(_bounded_float("POCKETLAB_GC_HISTORY_SAMPLES", 16, 4, 64))),
                 "collected": 0,
                 "uncollectable": 0,
             }
             for generation in range(3)
         }
-        self._slow_requests: deque[dict[str, Any]] = deque(maxlen=12)
+        self._slow_requests: deque[dict[str, Any]] = deque(maxlen=8)
         self._request_count = 0
         self._slow_request_count = 0
         self._failed_request_count = 0
         self._requests_during_warning_lag = 0
         self._requests_during_critical_lag = 0
+        self._gc_tuned = False
+        self._gc_frozen_objects = 0
+        self._gc_thresholds_before = tuple(int(value) for value in gc.get_threshold())
+        self._gc_thresholds_after = self._gc_thresholds_before
+        with self._lock:
+            self._refresh_compact_fragment_locked()
 
     async def start(self) -> bool:
         """Start one lag monitor and install one GC callback."""
@@ -220,6 +231,7 @@ class RuntimeDiagnostics:
                 self._loop_critical_count += 1
             elif severity == "warning":
                 self._loop_warning_count += 1
+            self._refresh_compact_fragment_locked()
             if severity != "healthy":
                 self._loop_last_warning_at = _utc_now()
                 should_log = now_monotonic - self._loop_last_summary_monotonic >= self._loop_log_interval_seconds
@@ -449,6 +461,106 @@ class RuntimeDiagnostics:
         except Exception:
             return
 
+    def _compact_gc_payload_locked(self) -> dict[str, Any]:
+        generations: dict[str, Any] = {}
+        for generation, metric in self._gc_metrics.items():
+            recent = metric["recent"]
+            generations[f"generation_{generation}"] = {
+                "collections": int(metric["collections"]),
+                "latest_duration_ms": round(float(metric["latest_duration_ms"]), 2),
+                "recent_max_duration_ms": round(max(recent, default=0.0), 2),
+                "collected": int(metric["collected"]),
+                "uncollectable": int(metric["uncollectable"]),
+            }
+        return {
+            "tuned": self._gc_tuned,
+            "frozen_objects": int(self._gc_frozen_objects),
+            "thresholds_before": list(self._gc_thresholds_before),
+            "thresholds_after": list(self._gc_thresholds_after),
+            "generations": generations,
+        }
+
+    def _refresh_compact_fragment_locked(self) -> None:
+        recent_max = max(self._loop_recent, default=0.0)
+        status = (
+            "critical"
+            if self._loop_latest_ms >= self.loop_critical_ms
+            else "warning"
+            if self._loop_latest_ms >= self.loop_warning_ms
+            else "healthy"
+        )
+        event_loop = {
+            "status": status,
+            "monitor_running": self._loop_task is not None and not self._loop_task.done(),
+            "samples": int(self._loop_samples),
+            "latest_lag_ms": round(self._loop_latest_ms, 2),
+            "recent_max_lag_ms": round(recent_max, 2),
+            "warning_count": int(self._loop_warning_count),
+            "critical_count": int(self._loop_critical_count),
+        }
+        progress_requests = {
+            "request_count": int(self._request_count),
+            "slow_request_count": int(self._slow_request_count),
+            "failed_request_count": int(self._failed_request_count),
+            "requests_during_warning_lag": int(self._requests_during_warning_lag),
+            "requests_during_critical_lag": int(self._requests_during_critical_lag),
+        }
+        encoded = json.dumps(
+            {
+                "event_loop": event_loop,
+                "gc": self._compact_gc_payload_locked(),
+                "progress_requests": progress_requests,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode("utf-8")
+        self._compact_runtime_fragment = encoded[1:-1]
+        self._compact_revision += 1
+
+    def compact_runtime_fragment(self) -> tuple[int, bytes]:
+        """Return a prepared JSON object fragment without rebuilding it on reads."""
+        with self._lock:
+            return self._compact_revision, self._compact_runtime_fragment
+
+    def compact_and_tune_gc(self) -> dict[str, Any]:
+        """Freeze the stable startup graph, then apply conservative thresholds.
+
+        This is intentionally one-shot and should run after staged startup work.
+        It reduces repeated scans of long-lived FastAPI/module objects rather than
+        disabling collection or merely hiding pauses.
+        """
+        with self._lock:
+            if self._gc_tuned:
+                return {"changed": False, "reason": "already_tuned", "sanitized": True}
+        enabled_default = "1" if ("com.termux" in os.environ.get("PREFIX", "") or sys.platform == "android") else "0"
+        if os.environ.get("POCKETLAB_GC_COMPACTION_ENABLED", enabled_default).strip().lower() not in {"1", "true", "yes", "on"}:
+            return {"changed": False, "reason": "disabled", "sanitized": True}
+        thresholds = (
+            int(_bounded_float("POCKETLAB_GC_THRESHOLD_0", 2000, 700, 10000)),
+            int(_bounded_float("POCKETLAB_GC_THRESHOLD_1", 25, 10, 100)),
+            int(_bounded_float("POCKETLAB_GC_THRESHOLD_2", 25, 10, 100)),
+        )
+        collected = gc.collect(2)
+        before_frozen = gc.get_freeze_count() if hasattr(gc, "get_freeze_count") else 0
+        if hasattr(gc, "freeze"):
+            gc.freeze()
+        after_frozen = gc.get_freeze_count() if hasattr(gc, "get_freeze_count") else before_frozen
+        gc.set_threshold(*thresholds)
+        with self._lock:
+            self._gc_tuned = True
+            self._gc_frozen_objects = max(0, int(after_frozen))
+            self._gc_thresholds_after = tuple(int(value) for value in gc.get_threshold())
+            self._refresh_compact_fragment_locked()
+        return {
+            "changed": True,
+            "collected": max(0, int(collected)),
+            "frozen_objects": max(0, int(after_frozen)),
+            "newly_frozen_objects": max(0, int(after_frozen) - int(before_frozen)),
+            "thresholds": list(self._gc_thresholds_after),
+            "sanitized": True,
+        }
+
     def latest_event_loop_lag_ms(self) -> float:
         with self._lock:
             return round(self._loop_latest_ms, 2)
@@ -523,6 +635,7 @@ class RuntimeDiagnostics:
                 metric["recent"].append(duration_ms)
                 metric["collected"] += max(0, int(info.get("collected", 0) or 0))
                 metric["uncollectable"] += max(0, int(info.get("uncollectable", 0) or 0))
+                self._refresh_compact_fragment_locked()
             if duration_ms >= self.gc_slow_ms:
                 now_monotonic = time.monotonic()
                 with self._lock:
@@ -589,6 +702,7 @@ class RuntimeDiagnostics:
                         **safe_phases,
                     }
                 )
+            self._refresh_compact_fragment_locked()
         if slow or failed:
             log = _LOGGER.warning if failed or total_ms >= self.request_slow_ms else _LOGGER.info
             log(
