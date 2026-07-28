@@ -50,6 +50,11 @@ prepare_lite_state_path(){
   export POCKETLAB_LITE_SECURITY_PUBLISHED_STALE_SECONDS="${POCKETLAB_LITE_SECURITY_PUBLISHED_STALE_SECONDS:-120}"
   export POCKETLAB_LITE_SECURITY_RECEIVED_STALE_SECONDS="${POCKETLAB_LITE_SECURITY_RECEIVED_STALE_SECONDS:-180}"
   export POCKETLAB_WORKER_ACCEPTED_RECOVERY_GRACE_SECONDS="${POCKETLAB_WORKER_ACCEPTED_RECOVERY_GRACE_SECONDS:-15}"
+  export POCKETLAB_LITE_RELEASE_REPO="${POCKETLAB_LITE_RELEASE_REPO:-dexter-lab-ctrl/pocket-lab-lite}"
+  export POCKETLAB_AUTO_RELEASE_APPLY="${POCKETLAB_AUTO_RELEASE_APPLY:-false}"
+  export POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS="${POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS:-43200}"
+  export POCKETLAB_LITE_PWA_CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$POCKET_LAB_PWA_DIR/current}"
+  export POCKETLAB_LITE_PWA_RELEASES_DIR="${POCKETLAB_LITE_PWA_RELEASES_DIR:-$POCKET_LAB_PWA_DIR/releases}"
   mkdir -p "$POCKETLAB_STATE_DIR"
   log INFO "Lite state directory: $POCKETLAB_STATE_DIR"
 }
@@ -60,8 +65,14 @@ WORKER_SERVER="$SCRIPT_DIR/../../runtime/workers/pocketlab_worker.py"
 AGENT_SERVER="$SCRIPT_DIR/../../runtime/agents/pocketlab_node_agent.py"
 CORE_SUPERVISOR_SERVER="$SCRIPT_DIR/../../runtime/supervisors/pocketlab_core_supervisor.py"
 API_SERVER="${API_SERVER:-$FASTAPI_SERVER}"
-PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"; OBS_DIR="${OBS_DIR:-$POCKET_LAB_OBSERVABILITY_DIR}"
+PWA_DIR="${PWA_DIR:-$POCKET_LAB_PWA_DIR}"; PWA_CURRENT_LINK="${POCKETLAB_LITE_PWA_CURRENT_LINK:-$PWA_DIR/current}"; CADDYFILE="${CADDYFILE:-$POCKET_LAB_CADDYFILE}"; HARDWARE_DAEMON="${HARDWARE_DAEMON:-$POCKET_LAB_HARDWARE_DAEMON}"; OBS_DIR="${OBS_DIR:-$POCKET_LAB_OBSERVABILITY_DIR}"
 DASH_PORT="${DASH_PORT:-8443}"; API_PORT="${API_PORT:-8080}"; GATUS_PORT="${GATUS_PORT:-8081}"
+if is_lite_profile; then
+  export POCKETLAB_CADDYFILE="${POCKETLAB_CADDYFILE:-$CADDYFILE}"
+  export POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL="${POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL:-http://127.0.0.1:${DASH_PORT}}"
+  export POCKETLAB_LITE_RELEASE_API_HEALTH_URL="${POCKETLAB_LITE_RELEASE_API_HEALTH_URL:-http://127.0.0.1:${API_PORT}/health}"
+  export POCKETLAB_LITE_RELEASE_API_PREPARED_URL="${POCKETLAB_LITE_RELEASE_API_PREPARED_URL:-http://127.0.0.1:${API_PORT}/api/lite/release}"
+fi
 get_ts_fqdn(){ if have tailscale; then tailscale status --json 2>/dev/null | jq -r '.Self.DNSName // empty' | sed 's/\.$//' | grep -E '.ts.net$' || true; fi; }
 
 tailscale_command(){
@@ -120,6 +131,75 @@ print(f"Lite remote access: NATS reachable on {host}:{port}")
 PYCHECK
 }
 
+pocketlab_atomic_pwa_link(){
+  local target="$1" link="$2" temp relative
+  temp="$(dirname "$link")/.${link##*/}.next.$$"
+  relative="$(python3 - "$target" "$(dirname "$link")" <<'PYREL'
+import os, sys
+print(os.path.relpath(os.path.abspath(sys.argv[1]), os.path.abspath(sys.argv[2])))
+PYREL
+)"
+  rm -f "$temp"
+  ln -s "$relative" "$temp"
+  mv -Tf "$temp" "$link"
+}
+
+migrate_legacy_lite_pwa_root(){
+  is_lite_profile || return 0
+  [[ -f "$PWA_CURRENT_LINK/index.html" ]] && return 0
+  [[ -f "$PWA_DIR/index.html" && -f "$PWA_DIR/manifest.webmanifest" ]] || return 0
+
+  local tag="source-existing" target="$PWA_DIR/releases/source-existing" preparing="$PWA_DIR/releases/.source-existing.preparing.$$"
+  log INFO "Migrating existing source-installed Lite PWA into the versioned current pointer"
+  rm -rf "$preparing"
+  mkdir -p "$preparing"
+  while IFS= read -r -d '' path; do
+    case "$(basename "$path")" in
+      current|previous|releases) continue ;;
+    esac
+    cp -a "$path" "$preparing/"
+  done < <(find "$PWA_DIR" -mindepth 1 -maxdepth 1 -print0)
+  [[ -f "$preparing/index.html" && -f "$preparing/manifest.webmanifest" ]] || {
+    rm -rf "$preparing"
+    die "Could not migrate the existing Lite PWA safely"
+  }
+  if [[ ! -f "$preparing/pocketlab-lite-build.json" ]]; then
+    python3 - "$preparing/pocketlab-lite-build.json" "$tag" "$POCKET_LAB_BASE_DIR" <<'PYIDENTITY'
+import json, subprocess, sys
+from pathlib import Path
+output, tag, repository = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+commit = "unknown"
+try:
+    observed = subprocess.run(
+        ["git", "-C", repository, "rev-parse", "HEAD"],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=2,
+    ).stdout.strip().lower()
+    if observed and all(ch in "0123456789abcdef" for ch in observed) and 7 <= len(observed) <= 64:
+        commit = observed
+except (OSError, subprocess.SubprocessError):
+    pass
+output.write_text(json.dumps({
+    "product": "pocket-lab-lite",
+    "schema_version": 1,
+    "install_mode": "source",
+    "release_tag": tag,
+    "source_commit": commit,
+    "target": "web-pwa",
+}, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+PYIDENTITY
+  fi
+  if [[ ! -d "$target" ]]; then
+    mv "$preparing" "$target"
+  else
+    rm -rf "$preparing"
+  fi
+  pocketlab_atomic_pwa_link "$target" "$PWA_CURRENT_LINK"
+  log INFO "Existing Lite PWA preserved as a source installation"
+}
+
 ensure_assets(){
   [[ -f "$API_SERVER" ]] || die "Missing dashboard API server: $API_SERVER"
   [[ -f "$WORKER_SERVER" ]] || die "Missing worker process required for production NATS execution: $WORKER_SERVER"
@@ -134,11 +214,12 @@ required = ("fastapi", "uvicorn", "pydantic", "nats")
 sys.exit(0 if all(importlib.util.find_spec(m) for m in required) else 1)
 PYCHECK
   if is_lite_profile; then
-    mkdir -p "$PWA_DIR" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+    mkdir -p "$PWA_DIR" "$PWA_DIR/releases" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+    migrate_legacy_lite_pwa_root
   else
-    mkdir -p "$PWA_DIR" "$OBS_DIR/loki_data" "$OBS_DIR/gatus" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
+    mkdir -p "$PWA_DIR" "$PWA_DIR/releases" "$OBS_DIR/loki_data" "$OBS_DIR/gatus" "$POCKET_LAB_API_DIR" "$(dirname "$CADDYFILE")"
   fi
-  if [[ ! -f "$PWA_DIR/index.html" ]]; then log INFO "UI assets missing; attempting self-recovery"; bash "$SCRIPT_DIR/install-pwa-ui.sh" || die "Failed to install UI assets"; fi
+  if [[ ! -f "$PWA_CURRENT_LINK/index.html" ]]; then log INFO "UI assets missing; attempting self-recovery"; bash "$SCRIPT_DIR/install-pwa-ui.sh" || die "Failed to install UI assets"; fi
 }
 random_secret(){
   if have openssl; then openssl rand -hex 24; else python3 - <<'PYSECRET'
@@ -402,27 +483,27 @@ write_caddy_site() {
   }
 
   handle /assets/* {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     file_server
   }
   handle /icon.svg {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     file_server
   }
   handle /manifest.webmanifest {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     file_server
   }
   handle /registerSW.js {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     file_server
   }
   handle /sw.js {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     file_server
   }
   handle /workbox-*.js {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     file_server
   }
 
@@ -436,7 +517,7 @@ EOF
 
   cat <<EOF
   handle {
-    root * ${PWA_DIR}
+    root * ${PWA_CURRENT_LINK}
     try_files {path} /index.html
     file_server
   }

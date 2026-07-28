@@ -31,6 +31,7 @@ const DATABASE_INSTANCE_META_KEY = 'pocketlab:lite:database-instance';
 export const RECOVERY_HISTORY_SNAPSHOT_ENDPOINT = '/api/lite/recovery/backups/index';
 export const SAFE_LITE_GET_ENDPOINTS = new Set([
   '/api/lite/status',
+  '/api/lite/release',
   '/api/lite/system/health',
   '/api/lite/system/processes',
   '/api/lite/system/agent',
@@ -61,6 +62,7 @@ export const SAFE_LITE_GET_ENDPOINTS = new Set([
 
 export const LITE_SNAPSHOT_TTL_MS = {
   '/api/lite/status': 5 * 60 * 1000,
+  '/api/lite/release': 24 * 60 * 60 * 1000,
   '/api/lite/system/health': 5 * 60 * 1000,
   '/api/lite/system/processes': 5 * 60 * 1000,
   '/api/lite/system/agent': 3 * 60 * 1000,

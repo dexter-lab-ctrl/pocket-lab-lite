@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, BackgroundTasks, Request
+from fastapi import APIRouter, Request
 
 from .. import deps
-from ..services.nats_bus import BUS
 from ..services.action_queue import submit_domain_command
 from ..services.release_runtime import read_release_status
 
@@ -17,8 +16,9 @@ def release_workflow(request: Request) -> dict:
     return deps.core.build_release_workflow(deps.core.ROOT_DIR)
 
 
+@router.get("/api/lite/release")
 @router.get("/api/release/self-update/status")
-def release_status(background_tasks: BackgroundTasks, request: Request) -> dict:
+def release_status(request: Request) -> dict:
     deps.require_auth(request)
     status = read_release_status()
     status["orchestration"] = {
@@ -31,14 +31,12 @@ def release_status(background_tasks: BackgroundTasks, request: Request) -> dict:
         },
         "runs": [],
     }
-    background_tasks.add_task(
-        BUS.publish_json, "pocketlab.events.release.status", "release.status", status
-    )
     return status
 
 
+@router.post("/api/lite/release/check", status_code=202)
 @router.post("/api/release/self-update/check", status_code=202)
-async def release_check(background_tasks: BackgroundTasks, request: Request) -> dict:
+async def release_check(request: Request) -> dict:
     deps.require_auth(request, write=True)
     return await submit_domain_command(
         "pocketlab.commands.release.check",
@@ -47,11 +45,12 @@ async def release_check(background_tasks: BackgroundTasks, request: Request) -> 
     )
 
 
+@router.post("/api/lite/release/apply", status_code=202)
 @router.post("/api/release/self-update/apply", status_code=202)
-async def release_apply(background_tasks: BackgroundTasks, request: Request) -> dict:
+async def release_apply(request: Request) -> dict:
     deps.require_auth(request, write=True)
     return await submit_domain_command(
         "pocketlab.commands.release.apply",
         "release.apply.requested",
-        {"force": True},
+        {"force": False},
     )

@@ -5,7 +5,6 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from contracts import OperationRequest, OperationTarget  # type: ignore
 from .. import deps
 from .nats_bus import BUS
 from . import release_runtime
@@ -180,57 +179,6 @@ async def _stage_failed(
     )
 
 
-def _run_operation_sync(
-    operation: str,
-    target_type: str,
-    target_ref: str,
-    params: Dict[str, Any] | None = None,
-) -> Dict[str, Any]:
-    request = OperationRequest(
-        operation=operation,
-        target=OperationTarget(type=target_type, ref=target_ref),
-        params=dict(params or {}),
-        dry_run=False,
-    )
-    submitted = deps.operation_service().submit_queued(request)
-    return deps.operation_service().run_existing(str(submitted["job_id"]))
-
-
-async def _run_release_operation(
-    command_id: str,
-    stage_id: str,
-    title: str,
-    operation: str,
-    target_type: str,
-    target_ref: str,
-    params: Dict[str, Any] | None = None,
-) -> Dict[str, Any]:
-    await _stage_started(command_id, stage_id, title, detail=f"Running {operation}")
-    run = await asyncio.to_thread(
-        _run_operation_sync, operation, target_type, target_ref, params or {}
-    )
-    status = str(run.get("status") or "unknown").lower()
-    result = {
-        "operation": operation,
-        "job_id": run.get("job_id"),
-        "status": status,
-        "exit_code": run.get("exit_code"),
-        "artifacts": run.get("artifacts") or {},
-    }
-    if status != "succeeded":
-        raise RuntimeError(
-            run.get("error") or run.get("stderr") or f"{operation} failed"
-        )
-    await _stage_completed(command_id, stage_id, title, result=result)
-    await _publish(
-        f"pocketlab.events.release.{stage_id}",
-        f"release.{stage_id}",
-        {"command_id": command_id, "stage": stage_id, **result},
-        trace_id=command_id,
-    )
-    return result
-
-
 async def check_release(command: Dict[str, Any]) -> Dict[str, Any]:
     command_id = str(command.get("command_id") or command.get("trace_id") or "").strip()
     if not command_id:
@@ -396,10 +344,8 @@ async def check_release(command: Dict[str, Any]) -> Dict[str, Any]:
 
 
 async def apply_release(command: Dict[str, Any]) -> Dict[str, Any]:
-    command_id = str(command.get("command_id") or command.get("trace_id") or "").strip()
-    if not command_id:
-        command_id = uuid.uuid4().hex
-    force = bool(command.get("force", True))
+    command_id = str(command.get("command_id") or command.get("trace_id") or "").strip() or uuid.uuid4().hex
+    force = bool(command.get("force", False))
     _update_run(
         command_id,
         workflow="release.apply",
@@ -410,79 +356,62 @@ async def apply_release(command: Dict[str, Any]) -> Dict[str, Any]:
     await _publish(
         "pocketlab.events.release.workflow.started",
         "release.workflow.started",
-        {
-            "command_id": command_id,
-            "workflow": "release.apply",
-            "status": "running",
-            "force": force,
-        },
+        {"command_id": command_id, "workflow": "release.apply", "status": "running"},
         trace_id=command_id,
     )
 
     lease = await release_runtime.begin_release_apply(command_id)
     if not lease.claimed:
         current = release_runtime.read_release_status()
-        if lease.deduplicated:
-            terminal_status = str(current.get("last_terminal_status") or "failed")
-            result = {
-                **current,
-                "runtime_status": current.get("status"),
-                "status": "success" if terminal_status == "succeeded" else "failed",
-                "command_id": command_id,
-                "workflow": "release.apply",
-                "deduplicated": True,
-            }
-            _update_run(
-                command_id,
-                status="completed" if terminal_status == "succeeded" else "failed",
-                completed_at=deps.now_utc_iso(),
-                result=result,
-            )
-            return result
-        result = {
+        status = "success" if lease.deduplicated and current.get("last_terminal_status") == "succeeded" else "deferred"
+        return {
             **current,
             "runtime_status": current.get("status"),
-            "status": "deferred",
+            "status": status,
             "command_id": command_id,
             "workflow": "release.apply",
-            "coalesced": True,
+            "coalesced": bool(lease.coalesced),
+            "deduplicated": bool(lease.deduplicated),
             "retry_after_seconds": lease.retry_after_seconds,
         }
-        _update_run(
-            command_id,
-            status="deferred",
-            completed_at=deps.now_utc_iso(),
-            result=result,
-        )
-        return result
 
+    current_state: Dict[str, Any] = {}
+    subprocess_metrics: Dict[str, Any] = {}
     operations: list[Dict[str, Any]] = []
-    subprocess_metrics: dict[str, Any] = {}
+    staged: Dict[str, Any] = {}
+    promoted = False
+    failure_stage = "checking"
+    rollback_status = ""
     try:
         await _stage_started(
             command_id,
-            "metadata_fetch",
-            "Check release",
-            detail="Confirming the target release in an isolated process",
+            "check",
+            "Check for updates",
+            detail="Checking the verified Pocket Lab Lite release source",
         )
         current_state, subprocess_metrics = await release_runtime.check_for_apply(lease)
+        operations.append({"operation": "lite_release_check", "stage": "check", "status": "succeeded"})
         await _stage_completed(
             command_id,
-            "metadata_fetch",
-            "Check release",
+            "check",
+            "Check for updates",
             result={
-                "current_tag": current_state.get("current_tag"),
                 "latest_tag": current_state.get("latest_tag"),
-                "update_available": current_state.get("update_available"),
+                "update_available": bool(current_state.get("update_available")),
+                "manifest_verified": bool(current_state.get("manifest_verified")),
             },
         )
-        if not force and not current_state.get("update_available"):
+        if not current_state.get("repository_match"):
+            raise release_runtime.ReleaseRuntimeError("release_product_unverified")
+        if not current_state.get("manifest_verified"):
+            raise release_runtime.ReleaseRuntimeError("release_manifest_unverified")
+        if not current_state.get("update_available") and not force:
             state = release_runtime.finalize_release_apply(
                 lease,
                 {
                     **current_state,
                     "phase": "current",
-                    "operations": [],
+                    "operations": operations,
                     "last_known_good": True,
                 },
                 subprocess_metrics=subprocess_metrics,
@@ -495,176 +424,118 @@ async def apply_release(command: Dict[str, Any]) -> Dict[str, Any]:
                 "workflow": "release.apply",
                 "skipped": True,
             }
-            _update_run(
-                command_id,
-                status="completed",
-                completed_at=deps.now_utc_iso(),
-                result=result,
-            )
-            await _publish(
-                "pocketlab.events.release.workflow.completed",
-                "release.workflow.completed",
-                {
-                    "command_id": command_id,
-                    "workflow": "release.apply",
-                    "status": "completed",
-                    "skipped": True,
-                },
-                trace_id=command_id,
-            )
+            _update_run(command_id, status="completed", completed_at=deps.now_utc_iso(), result=result)
             return result
 
-        release_runtime.update_release_stage(lease, phase="preparing")
-        prepare = await _run_release_operation(
-            command_id,
-            "prepare",
-            "Prepare rollback snapshot",
-            "release_prepare",
-            "backup",
-            "release",
-            {"scope": "full"},
-        )
-        prepare["stage"] = "prepare"
-        operations.append(prepare)
         if not release_runtime.renew_release_lease(lease, lease_seconds=1800):
             raise release_runtime.ReleaseStaleResult("release_apply_lease_lost")
 
+        failure_stage = "staging"
         release_runtime.update_release_stage(lease, phase="downloading")
-        downloaded = await _run_release_operation(
-            command_id,
-            "download",
-            "Download release source",
-            "release_sync",
-            "repo",
-            "pocket_lab_iac",
-            {"branch": "main"},
-        )
-        downloaded["stage"] = "download"
-        operations.append(downloaded)
-        if not release_runtime.renew_release_lease(lease, lease_seconds=1800):
-            raise release_runtime.ReleaseStaleResult("release_apply_lease_lost")
-
         await _stage_started(
             command_id,
-            "catalog_refreshed",
-            "Refresh Apps & Services catalog",
-            detail="Updating worker-owned catalog records",
+            "staging",
+            "Download and verify update",
+            detail="Downloading, checking, and preparing the PWA in a private staging area",
         )
-        catalog_items = await asyncio.to_thread(deps.core.build_catalog_view)
-        await asyncio.to_thread(deps.core.build_catalog_cache, catalog_items)
-        catalog_result = {
-            "operation": "catalog_refresh",
-            "stage": "catalog_refreshed",
-            "job_id": None,
-            "status": "succeeded",
-            "count": len(catalog_items),
-        }
-        operations.append(catalog_result)
+        staged, subprocess_metrics = await release_runtime.execute_release_subprocess(
+            "stage", release_runtime.build_stage_request(current_state, lease)
+        )
+        operations.append({"operation": "lite_artifact_stage", "stage": "staging", "status": "succeeded"})
         await _stage_completed(
             command_id,
-            "catalog_refreshed",
-            "Refresh Apps & Services catalog",
-            result=catalog_result,
-        )
-        await _publish(
-            "pocketlab.events.release.catalog_refreshed",
-            "release.catalog_refreshed",
-            {"command_id": command_id, **catalog_result},
-            trace_id=command_id,
-        )
-
-        release_runtime.update_release_stage(lease, phase="applying")
-        applied = await _run_release_operation(
-            command_id,
-            "apply",
-            "Apply release blueprint",
-            "release_deploy",
-            "repo",
-            "pocket_lab_iac",
-            {
-                "playbook": "site.yml",
-                "source_type": "repo",
-                "source": "pocket_lab_iac",
+            "staging",
+            "Download and verify update",
+            result={
+                "release_tag": staged.get("release_tag"),
+                "manifest_verified": bool(staged.get("manifest_verified")),
+                "artifact_verified": bool(staged.get("artifact_verified")),
             },
         )
-        applied["stage"] = "apply"
-        operations.append(applied)
         if not release_runtime.renew_release_lease(lease, lease_seconds=1800):
             raise release_runtime.ReleaseStaleResult("release_apply_lease_lost")
 
-        release_runtime.update_release_stage(lease, phase="verifying")
-        verified = await _run_release_operation(
-            command_id,
-            "verify",
-            "Verify applied release",
-            "release_verify",
-            "drift",
-            "workspace",
-            {"scope": "all"},
-        )
-        verified["stage"] = "verify"
-        operations.append(verified)
-        if not release_runtime.renew_release_lease(lease, lease_seconds=1800):
-            raise release_runtime.ReleaseStaleResult("release_apply_lease_lost")
-
+        failure_stage = "promotion"
+        release_runtime.update_release_stage(lease, phase="installing")
         await _stage_started(
             command_id,
-            "health_verified",
-            "Verify system health",
-            detail="Checking health engine, fleet health, and telemetry",
+            "promotion",
+            "Install update",
+            detail="Switching the versioned PWA pointer after complete staging",
         )
-        health = await asyncio.to_thread(deps.core.build_health_engine_snapshot)
-        fleet = await asyncio.to_thread(
-            deps.core.build_fleet_health_snapshot, deps.core.load_fleet_nodes()
+        promotion, subprocess_metrics = await release_runtime.execute_release_subprocess(
+            "promote", release_runtime.build_promote_request(staged)
         )
-        telemetry = await asyncio.to_thread(deps.core.telemetry_snapshot)
-        health_result = {
-            "operation": "health_check",
-            "stage": "health_verified",
-            "job_id": None,
-            "status": "succeeded",
-        }
-        operations.append(health_result)
+        promoted = True
+        operations.append({"operation": "lite_pwa_promote", "stage": "promotion", "status": "succeeded"})
         await _stage_completed(
             command_id,
-            "health_verified",
-            "Verify system health",
-            result=health_result,
-        )
-        await _publish(
-            "pocketlab.events.release.health_verified",
-            "release.health_verified",
-            {
-                "command_id": command_id,
-                "status": "succeeded",
-                "health_status": (health or {}).get("status") if isinstance(health, dict) else "unknown",
-                "fleet_status": (fleet or {}).get("status") if isinstance(fleet, dict) else "unknown",
-                "telemetry_ready": bool(telemetry),
-                "sanitized": True,
+            "promotion",
+            "Install update",
+            result={
+                "release_tag": promotion.get("release_tag"),
+                "rollback_available": bool(promotion.get("rollback_available")),
             },
-            trace_id=command_id,
+        )
+        if not release_runtime.renew_release_lease(lease, lease_seconds=1800):
+            raise release_runtime.ReleaseStaleResult("release_apply_lease_lost")
+
+        failure_stage = "validation"
+        release_runtime.update_release_stage(lease, phase="validating")
+        await _stage_started(
+            command_id,
+            "validation",
+            "Check the update",
+            detail="Confirming the new PWA and prepared API remain healthy",
+        )
+        validation, subprocess_metrics = await release_runtime.execute_release_subprocess(
+            "validate",
+            release_runtime.build_validate_request(
+                {**staged, "pm2_restart_baseline": promotion.get("pm2_restart_baseline") or {}}
+            ),
+        )
+        operations.append({"operation": "lite_release_validate", "stage": "validation", "status": "succeeded"})
+        await _stage_completed(
+            command_id,
+            "validation",
+            "Check the update",
+            result={"release_tag": validation.get("release_tag"), "validation_status": "passed"},
         )
 
-        latest = current_state.get("latest_release") or {}
-        latest_tag = str(
-            latest.get("tag_name")
-            or current_state.get("latest_tag")
-            or current_state.get("current_tag")
-            or "unknown"
+        manifest = ((current_state.get("latest_release") or {}).get("manifest") or {})
+        identity = release_runtime.record_release_install(
+            release_tag=str(staged.get("release_tag") or ""),
+            source_repository=str(current_state.get("verified_repository") or ""),
+            source_commit=str(manifest.get("source_commit") or ""),
+            artifact_sha256=str(staged.get("artifact_sha256") or ""),
         )
+        latest_tag = str(staged.get("release_tag") or "")
         state = release_runtime.finalize_release_apply(
             lease,
             {
                 **current_state,
-                "phase": "applied",
+                "phase": "installed",
                 "current_tag": latest_tag,
                 "latest_tag": latest_tag,
-                "latest_release": latest,
+                "comparison": "equal",
+                "update_available": False,
+                "install_mode": "release",
+                "installed_release_tag": latest_tag,
+                "installed_source_commit": identity.get("source_commit"),
+                "manifest_verified": True,
+                "artifact_verified": True,
+                "staging_status": "ready",
+                "promotion_status": "installed",
+                "rollback_available": bool(promotion.get("rollback_available")),
+                "last_failure_stage": "",
+                "last_rollback_status": "",
                 "applied_release": {
                     "tag_name": latest_tag,
-                    "applied_at": deps.now_utc_iso(),
+                    "source_commit": identity.get("source_commit"),
+                    "artifact_sha256": identity.get("artifact_sha256"),
+                    "installed_at": identity.get("installed_at"),
+                    "verified": True,
                 },
-                "update_available": False,
                 "operations": operations,
                 "last_known_good": True,
             },
@@ -678,54 +549,65 @@ async def apply_release(command: Dict[str, Any]) -> Dict[str, Any]:
             "workflow": "release.apply",
             "operations": operations,
         }
-        _update_run(
-            command_id,
-            status="completed",
-            completed_at=deps.now_utc_iso(),
-            result=result,
-        )
+        _update_run(command_id, status="completed", completed_at=deps.now_utc_iso(), result=result)
         await _publish(
             "pocketlab.events.release.applied",
             "release.applied",
             {
                 "command_id": command_id,
                 "latest_tag": latest_tag,
-                "operation_count": len(operations),
                 "projection_revision": state.get("projection_revision"),
                 "sanitized": True,
             },
             trace_id=command_id,
         )
         await _publish(
-            "pocketlab.events.release.workflow.completed",
-            "release.workflow.completed",
-            {
-                "command_id": command_id,
-                "workflow": "release.apply",
-                "status": "completed",
-                "latest_tag": latest_tag,
-            },
-            trace_id=command_id,
-        )
-        await _publish(
             "pocketlab.audit.release.applied",
             "release.applied",
-            {
-                "command_id": command_id,
-                "latest_tag": latest_tag,
-                "operation_count": len(operations),
-                "sanitized": True,
-            },
+            {"command_id": command_id, "latest_tag": latest_tag, "sanitized": True},
             trace_id=command_id,
         )
         return result
     except Exception as exc:
-        failure_code = str(getattr(exc, "code", "") or type(exc).__name__)[:80]
+        failure_code = str(getattr(exc, "code", "") or str(exc) or type(exc).__name__)[:80]
+        if promoted:
+            try:
+                rollback, rollback_metrics = await release_runtime.execute_release_subprocess(
+                    "rollback", release_runtime.build_rollback_request()
+                )
+                subprocess_metrics = rollback_metrics
+                rollback_status = str(rollback.get("rollback_status") or "rolled_back")
+                restored = str(rollback.get("restored_release_tag") or "")
+                if restored:
+                    validation_request = release_runtime.build_validate_request(
+                        {
+                            "release_tag": restored,
+                            "install_mode": "release" if restored.startswith("lite-") else "source",
+                            "archive": {},
+                        }
+                    )
+                    await release_runtime.execute_release_subprocess("validate", validation_request)
+                await _publish(
+                    "pocketlab.audit.release.rolled_back",
+                    "release.rolled_back",
+                    {
+                        "command_id": command_id,
+                        "rollback_status": rollback_status,
+                        "failure_stage": failure_stage,
+                        "failure_code": failure_code,
+                        "sanitized": True,
+                    },
+                    trace_id=command_id,
+                )
+            except Exception:
+                rollback_status = "rollback_failed"
         try:
             state = release_runtime.fail_release_apply(
                 lease,
                 failure_code,
                 subprocess_metrics=subprocess_metrics,
+                failure_stage=failure_stage,
+                rollback_status=rollback_status,
             )
         except release_runtime.ReleaseStaleResult:
             state = release_runtime.read_release_status()
@@ -744,7 +626,8 @@ async def apply_release(command: Dict[str, Any]) -> Dict[str, Any]:
                 "workflow": "release.apply",
                 "status": "failed",
                 "failure_code": failure_code,
-                "operation_count": len(operations),
+                "failure_stage": failure_stage,
+                "rollback_status": rollback_status,
                 "last_known_good": bool(state.get("last_known_good")),
                 "sanitized": True,
             },
@@ -757,5 +640,7 @@ async def apply_release(command: Dict[str, Any]) -> Dict[str, Any]:
             "command_id": command_id,
             "workflow": "release.apply",
             "failure_code": failure_code,
+            "failure_stage": failure_stage,
+            "rollback_status": rollback_status,
             "operations": operations,
         }

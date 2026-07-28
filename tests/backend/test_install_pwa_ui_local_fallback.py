@@ -18,21 +18,27 @@ def test_install_pwa_ui_supports_local_dist_zip_override():
     text = _script_text()
     assert "POCKETLAB_LOCAL_DIST_ZIP" in text
     assert "POCKET_LAB_LOCAL_DIST_ZIP" in text
-    assert "Using local PWA dist.zip" in text
-    assert "cp \"$LOCAL_DIST_ZIP\" \"$TMP_ZIP\"" in text
+    assert '[[ -r "$LOCAL_DIST_ZIP" ]]' in text
+    assert 'cp "$LOCAL_DIST_ZIP" "$archive"' in text
+    assert 'source-bootstrap-' in text
 
 
-def test_install_pwa_ui_keeps_github_release_path_as_default():
+def test_install_pwa_ui_filters_the_lite_release_stream():
     text = _script_text()
-    assert "Querying GitHub latest release" in text
-    assert "https://api.github.com/repos/$REPO/releases/latest" in text
-    assert "download_file \"$url\" \"$TMP_ZIP\"" in text
+    assert "https://api.github.com/repos/$REPO/releases?per_page=100" in text
+    assert "/releases/latest" not in text
+    assert "resolve_remote_release" in text
+    assert "pocketlab-lite-release.json" in text
+    assert "validate_manifest" in text
 
 
-def test_install_pwa_ui_requires_curl_only_for_github_path():
+def test_install_pwa_ui_uses_bounded_https_and_safe_zip_extraction():
     text = _script_text()
-    assert "require_cmd unzip" in text
-    local_branch = text.split('if [[ -n "$LOCAL_DIST_ZIP" ]]', 1)[1].split("else", 1)[0]
-    github_branch = text.split("else", 1)[1].split("fi", 1)[0]
-    assert "require_cmd curl" not in local_branch
-    assert "require_cmd curl" in github_branch
+    assert "require_cmd python3" in text
+    assert "download_https" in text
+    assert "RestrictedRedirect" in text
+    assert "release-assets.githubusercontent.com" in text
+    assert "safe_extract_pwa" in text
+    assert "safe_extract_zip" in text
+    assert "unzip -q" not in text
+    assert '"install_mode":"source"' in text

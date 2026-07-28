@@ -7489,7 +7489,7 @@ def test_lite_caddy_generator_serves_versioned_assets_before_spa_fallback():
     assert assets_handle < fallback_handle
 
     assets_block = script[assets_handle:fallback_handle]
-    assert "root * ${PWA_DIR}" in assets_block
+    assert "root * ${PWA_CURRENT_LINK}" in assets_block
     assert "file_server" in assets_block
     assert "try_files {path} /index.html" not in assets_block
 

@@ -206,6 +206,9 @@ function conditionalRead(path) {
 
 export const liteApi = {
   status: safeGet('/api/lite/status'),
+  releaseStatus: safeGet('/api/lite/release'),
+  checkRelease: () => postJson('/api/lite/release/check', {}),
+  applyRelease: () => postJson('/api/lite/release/apply', {}),
   systemHealth: conditionalGet('/api/lite/system/health'),
   systemProcesses: conditionalGet('/api/lite/system/processes'),
   systemAgent: conditionalGet('/api/lite/system/agent'),

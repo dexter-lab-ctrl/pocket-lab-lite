@@ -16,6 +16,7 @@ const initialStatus = {
 function queryKeyForLoader(loader, dependencies = []) {
   const path = loader?.safeSnapshotPath || loader?.name || 'resource';
   if (path === liteQueryPaths.status) return liteQueryKeys.status();
+  if (path === liteQueryPaths.release) return liteQueryKeys.release();
   if (path === liteQueryPaths.catalog) return liteQueryKeys.catalog();
   if (path === liteQueryPaths.appActions('photoprism')) return liteQueryKeys.appActions('photoprism');
   if (path === liteQueryPaths.fleet) return liteQueryKeys.fleet();
