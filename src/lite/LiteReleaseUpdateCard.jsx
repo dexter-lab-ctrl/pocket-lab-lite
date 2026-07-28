@@ -134,6 +134,11 @@ export default function LiteReleaseUpdateCard() {
       </div>
       <div className="lite-release-update-meta">
         <span>Source: {data.repository_match ? 'Pocket Lab Lite verified' : 'Not verified'}</span>
+        <span>
+          Installed files: {data.installed_artifact_verified
+            ? 'Verified'
+            : data.install_mode === 'source' ? 'Source install' : 'Not verified yet'}
+        </span>
         <span>{checked ? `Last checked ${new Date(checked).toLocaleString()}` : 'Not checked yet'}</span>
       </div>
       <div className="lite-release-update-actions">
