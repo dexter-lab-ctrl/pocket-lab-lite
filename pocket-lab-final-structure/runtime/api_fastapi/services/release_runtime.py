@@ -34,6 +34,7 @@ from .lite_release_contract import (
     normalize_repository,
     parse_lite_tag,
     verify_repository,
+    LiteReleaseContractError,
 )
 
 _OWNER = "release"
@@ -576,6 +577,46 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "installed_identity_verified": bool(identity.get("verified")),
         }
     )
+
+    # The prepared projection may predate a bootstrap-installed PWA release.
+    # A verified durable installed identity is authoritative for what Caddy is
+    # serving; the backend checkout remains source code, not the PWA install
+    # mode.  Reconcile at read time so stale source-mode projection fields do
+    # not mask a successfully verified release installation.
+    identity_tag = str(identity.get("release_tag") or "").strip()
+    verified_release_identity = bool(
+        identity.get("verified")
+        and str(identity.get("install_mode") or "").strip().lower() == "release"
+        and identity_tag
+    )
+    if verified_release_identity:
+        try:
+            installed = parse_lite_tag(identity_tag)
+        except LiteReleaseContractError:
+            verified_release_identity = False
+        else:
+            latest_text = str(payload.get("latest_tag") or "").strip()
+            comparison = "unknown_installed_identity"
+            try:
+                latest = parse_lite_tag(latest_text)
+            except LiteReleaseContractError:
+                latest = None
+            if latest is not None:
+                comparison = (
+                    "equal" if installed == latest else "newer" if installed > latest else "older"
+                )
+            payload.update(
+                {
+                    "install_mode": "release",
+                    "installed_release_tag": identity_tag,
+                    "installed_source_commit": str(identity.get("source_commit") or ""),
+                    "current_tag": identity_tag,
+                    "comparison": comparison,
+                    "update_available": comparison == "older",
+                }
+            )
+            if not int(payload.get("active_generation") or 0):
+                payload["phase"] = "available" if comparison == "older" else "current"
     if payload["status"] == "degraded":
         payload.setdefault("last_known_good", bool(row.get("canonical_hash")))
         payload.setdefault("reason", payload["last_failure_code"] or "release_worker_unavailable")

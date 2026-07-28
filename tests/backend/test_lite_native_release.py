@@ -615,8 +615,8 @@ def test_release_workflow_configures_bot_identity_before_annotated_tag():
 def test_bootstrap_installer_persists_verified_release_identity():
     source = (Path(__file__).resolve().parents[2] / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh").read_text(encoding="utf-8")
     assert "record_release_install" in source
-    assert "Pocket Lab Lite installed release identity was not persisted" in source
-    assert source.index('atomic_link "$target" "$CURRENT_LINK"') < source.index("record_release_install")
+    assert "Pocket Lab Lite installed release identity was not reconciled" in source
+    assert source.index('atomic_link "$target" "$CURRENT_LINK"') < source.index('reconcile_existing_release_identity "$tag" "$manifest" "$archive" "$target"')
 
 
 def test_release_prepared_read_falls_back_to_safe_repository_identity():
@@ -642,3 +642,70 @@ def test_server_phone_release_validation_runner_covers_required_sequence_and_htm
     assert "p.get('execution_owner') == 'pocket-worker/release-subprocess'" in source
     assert "Complete captured output" in source
     assert "SLEEP_BETWEEN_GATES" in source
+
+
+def test_prepared_release_status_prioritizes_verified_installed_release_identity(
+    tmp_path, monkeypatch
+):
+    runtime = _runtime(tmp_path, monkeypatch)
+    identity = runtime.record_release_install(
+        release_tag="lite-2026.07.28.1",
+        source_repository="dexter-lab-ctrl/pocket-lab-lite",
+        source_commit="c" * 40,
+        artifact_sha256="d" * 64,
+    )
+    assert identity["install_mode"] == "release"
+
+    from api_fastapi.db.connection import begin_immediate, connection
+
+    stale_payload = {
+        "product": "pocket-lab-lite",
+        "install_mode": "source",
+        "phase": "source",
+        "comparison": "source_install",
+        "current_tag": "unknown",
+        "latest_tag": "lite-2026.07.28.1",
+        "configured_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "verified_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "repository_match": True,
+        "manifest_verified": True,
+        "artifact_verified": False,
+    }
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            tx.execute(
+                """
+                UPDATE release_runtime_projection
+                SET phase = 'source', status = 'healthy', current_tag = 'unknown',
+                    latest_tag = 'lite-2026.07.28.1', update_available = 0,
+                    payload_json = ?, payload_bytes = ?
+                WHERE owner = 'release'
+                """,
+                (
+                    json.dumps(stale_payload, sort_keys=True, separators=(",", ":")),
+                    len(json.dumps(stale_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")),
+                ),
+            )
+
+    status = runtime.read_release_status()
+    assert status["install_mode"] == "release"
+    assert status["phase"] == "current"
+    assert status["comparison"] == "equal"
+    assert status["current_tag"] == "lite-2026.07.28.1"
+    assert status["installed_release_tag"] == "lite-2026.07.28.1"
+    assert status["update_available"] is False
+    assert status["installed_identity_verified"] is True
+
+
+def test_bootstrap_reuse_path_reconciles_verified_release_identity():
+    source = (
+        Path(__file__).resolve().parents[2]
+        / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "reconcile_existing_release_identity" in source
+    assert "Existing PWA release target does not match verified release identity" in source
+    assert "Pocket Lab Lite installed release identity was not reconciled" in source
+    assert source.index('atomic_link "$target" "$CURRENT_LINK"') < source.index(
+        'reconcile_existing_release_identity "$tag" "$manifest" "$archive" "$target"'
+    )
