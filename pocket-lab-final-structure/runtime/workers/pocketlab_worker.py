@@ -351,17 +351,54 @@ async def execute_domain_command(subject: str, command: Dict[str, Any]) -> None:
     )
     try:
         result = await run_domain_command(subject, command)
-        await publish(
-            "pocketlab.events.command.succeeded",
-            "command.succeeded",
-            {
-                "command_id": command_id,
-                "command_subject": subject,
-                "status": result.get("status", "success"),
-                "terminal": True,
-            },
-            trace_id=trace_id,
-        )
+        result_status = str(result.get("status") or "success").strip().lower()
+        if result_status in {"failed", "error", "degraded"}:
+            await publish(
+                "pocketlab.events.command.failed",
+                "command.failed",
+                {
+                    "command_id": command_id,
+                    "command_subject": subject,
+                    "status": result_status,
+                    "error_type": str(
+                        result.get("failure_code")
+                        or result.get("last_failure_code")
+                        or "DomainCommandFailed"
+                    )[:80],
+                    "last_known_good": bool(result.get("last_known_good")),
+                    "terminal": True,
+                    "sanitized": True,
+                },
+                trace_id=trace_id,
+            )
+        elif result_status in {"deferred", "waiting"}:
+            await publish(
+                "pocketlab.events.command.deferred",
+                "command.deferred",
+                {
+                    "command_id": command_id,
+                    "command_subject": subject,
+                    "status": result_status,
+                    "retry_after_seconds": max(
+                        0, int(result.get("retry_after_seconds") or 0)
+                    ),
+                    "terminal": True,
+                    "sanitized": True,
+                },
+                trace_id=trace_id,
+            )
+        else:
+            await publish(
+                "pocketlab.events.command.succeeded",
+                "command.succeeded",
+                {
+                    "command_id": command_id,
+                    "command_subject": subject,
+                    "status": result_status,
+                    "terminal": True,
+                },
+                trace_id=trace_id,
+            )
     except Exception as exc:
         await publish(
             "pocketlab.events.command.failed",
@@ -632,6 +669,142 @@ async def command_callback(msg: Any) -> None:
         )
 
 
+async def release_scheduler_loop(stop_event: asyncio.Event) -> None:
+    """Worker-owned automatic release checks with bounded backoff and jitter."""
+    from api_fastapi.services import release_runtime  # type: ignore
+
+    await asyncio.to_thread(release_runtime.initialize_release_runtime)
+    if str(os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "")).lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }:
+        _worker_log(
+            "worker.release_scheduler_disabled",
+            execution_owner="pocket-worker/release-subprocess",
+        )
+        await stop_event.wait()
+        return
+
+    poll_seconds = _env_int(
+        "POCKETLAB_RELEASE_POLL_SECONDS", 180, minimum=30, maximum=86400
+    )
+    initial_delay = _env_int(
+        "POCKETLAB_RELEASE_INITIAL_DELAY_SECONDS", 45, minimum=5, maximum=3600
+    )
+    maximum_backoff = _env_int(
+        "POCKETLAB_RELEASE_MAX_BACKOFF_SECONDS", 3600, minimum=60, maximum=86400
+    )
+    jitter_max = _env_int(
+        "POCKETLAB_RELEASE_JITTER_SECONDS", 17, minimum=0, maximum=300
+    )
+    jitter = (
+        int(__import__("hashlib").sha256(WORKER_NAME.encode("utf-8")).hexdigest()[:8], 16)
+        % (jitter_max + 1)
+        if jitter_max
+        else 0
+    )
+    try:
+        await asyncio.wait_for(stop_event.wait(), timeout=initial_delay + jitter)
+        return
+    except asyncio.TimeoutError:
+        pass
+
+    failure_count = 0
+    while not stop_event.is_set():
+        command_id = f"release-auto-{int(time.time())}-{os.getpid()}"
+        delay = poll_seconds + jitter
+        try:
+            result = await release_runtime.run_release_check(
+                command_id,
+                source="automatic",
+            )
+            if result.get("status") == "degraded":
+                failure_count += 1
+                delay = min(maximum_backoff, poll_seconds * (2 ** min(failure_count, 5)))
+                _worker_log(
+                    "worker.release_check_degraded",
+                    failure_code=result.get("last_failure_code"),
+                    retry_seconds=delay,
+                    last_known_good=bool(result.get("last_known_good")),
+                )
+                with contextlib.suppress(Exception):
+                    await publish(
+                        "pocketlab.events.release.check_degraded",
+                        "release.check_degraded",
+                        {
+                            "failure_code": result.get("last_failure_code"),
+                            "retry_after_seconds": delay,
+                            "last_known_good": bool(result.get("last_known_good")),
+                            "sanitized": True,
+                        },
+                        trace_id=command_id,
+                    )
+            elif result.get("coalesced"):
+                delay = max(5, int(result.get("retry_after_seconds") or 5))
+            else:
+                failure_count = 0
+                if result.get("changed") or result.get("update_available"):
+                    with contextlib.suppress(Exception):
+                        await publish(
+                            "pocketlab.events.release.available"
+                            if result.get("update_available")
+                            else "pocketlab.events.release.current",
+                            "release.available"
+                            if result.get("update_available")
+                            else "release.current",
+                            {
+                                "current_tag": result.get("current_tag"),
+                                "latest_tag": result.get("latest_tag"),
+                                "update_available": bool(result.get("update_available")),
+                                "projection_revision": result.get("projection_revision"),
+                                "automatic": True,
+                                "sanitized": True,
+                            },
+                            trace_id=command_id,
+                        )
+                if result.get("update_available") and result.get("auto_apply"):
+                    from api_fastapi.services.release_orchestrator import apply_release  # type: ignore
+
+                    apply_result = await apply_release(
+                        {
+                            "command_id": f"{command_id}-apply",
+                            "trace_id": command_id,
+                            "force": False,
+                            "source": "automatic",
+                        }
+                    )
+                    if apply_result.get("status") != "success":
+                        failure_count += 1
+                        delay = min(
+                            maximum_backoff,
+                            poll_seconds * (2 ** min(failure_count, 5)),
+                        )
+            _worker_log(
+                "worker.release_check_completed",
+                status=result.get("status"),
+                update_available=bool(result.get("update_available")),
+                changed=bool(result.get("changed")),
+                next_check_seconds=delay,
+                execution_owner="pocket-worker/release-subprocess",
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            failure_count += 1
+            delay = min(maximum_backoff, poll_seconds * (2 ** min(failure_count, 5)))
+            _worker_log(
+                "worker.release_scheduler_degraded",
+                error_type=type(exc).__name__,
+                retry_seconds=delay,
+            )
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=delay)
+        except asyncio.TimeoutError:
+            continue
+
+
 async def heartbeat(stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
         try:
@@ -851,6 +1024,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     from api_fastapi.services.process_runtime import PROCESS_RUNTIME  # type: ignore
     from api_fastapi.services.runtime_snapshot_store import publish_worker_snapshot  # type: ignore
     from api_fastapi.services.workflow_engine import WORKFLOW_ENGINE  # type: ignore
+    from api_fastapi.services import release_runtime  # type: ignore
 
     retry_seconds = _env_int(
         "POCKETLAB_WORKER_PROJECTION_RETRY_SECONDS",
@@ -971,6 +1145,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                             lite_security.security_progress_runtime_diagnostics()
                         ),
                         "workflow_projection": _compact_workflow_projection(WORKFLOW_ENGINE.status()),
+                        "release_runtime": release_runtime.release_runtime_diagnostics(),
                     },
                 )
                 last_snapshot_at = now
@@ -1091,10 +1266,14 @@ async def main_async() -> int:
         worker_recovery_watchdog(stop_event),
         name="pocketlab-worker-recovery-watchdog",
     )
+    release_task = asyncio.create_task(
+        release_scheduler_loop(stop_event),
+        name="pocketlab-worker-release-scheduler",
+    )
     await stop_event.wait()
-    for task in (hb_task, recovery_task, projection_task):
+    for task in (hb_task, recovery_task, release_task, projection_task):
         task.cancel()
-    for task in (hb_task, recovery_task, projection_task):
+    for task in (hb_task, recovery_task, release_task, projection_task):
         with contextlib.suppress(asyncio.CancelledError, Exception):
             await task
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore

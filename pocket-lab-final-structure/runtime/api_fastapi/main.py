@@ -131,13 +131,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             _compact_gc_after_startup(),
             name="pocketlab-gc-compaction",
         )
-        if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
-            "1",
-            "true",
-            "yes",
-            "on",
-        }:
-            deps.ensure_release_updater()
         yield
     finally:
         await LIVE_STATUS.stop()
