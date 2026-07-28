@@ -45,6 +45,7 @@ def _configure_sqlite(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     lite_security._SQLITE_PROGRESS_FAILURES = 0
     lite_security._SQLITE_PROGRESS_DIRTY.clear()
     lite_security.invalidate_security_read_caches()
+    lite_security.recover_security_progress_generation_at_startup()
     return state, lite_security
 
 
@@ -116,7 +117,13 @@ def test_event_loop_and_request_logging_are_thresholded_and_sanitized(caplog):
         },
         event_loop_lag_ms=300.0,
     )
-    messages = "\n".join(record.getMessage() for record in caplog.records)
+    deadline = time.monotonic() + 0.5
+    messages = ""
+    while time.monotonic() < deadline:
+        messages = "\n".join(record.getMessage() for record in caplog.records)
+        if "pocketlab.runtime.event_loop_lag" in messages:
+            break
+        time.sleep(0.01)
     assert messages.count("pocketlab.runtime.event_loop_lag") == 1
     assert "pocketlab.runtime.progress_request_slow" in messages
     for forbidden in ("authorization", "bearer", "token", "password", "nats://"):
@@ -188,6 +195,52 @@ def test_gc_callback_records_bounded_metrics_without_retaining_objects():
     assert generation["collected"] == 7
     assert generation["uncollectable"] == 0
     assert diagnostics._gc_started == {}
+
+
+def test_compact_runtime_fragment_is_prepared_and_revisioned():
+    ensure_runtime_path()
+    from api_fastapi.services.runtime_diagnostics import RuntimeDiagnostics
+
+    diagnostics = RuntimeDiagnostics(
+        loop_warning_ms=250.0,
+        loop_critical_ms=1000.0,
+        gc_slow_ms=10_000.0,
+    )
+    revision_before, fragment_before = diagnostics.compact_runtime_fragment()
+    diagnostics.record_event_loop_lag(321.0)
+    revision_after, fragment_after = diagnostics.compact_runtime_fragment()
+
+    assert revision_after > revision_before
+    assert fragment_after != fragment_before
+    payload = json.loads(b"{" + fragment_after + b"}")
+    assert payload["event_loop"]["latest_lag_ms"] == 321.0
+    assert payload["event_loop"]["status"] == "warning"
+    assert payload["gc"]["tuned"] is False
+
+
+def test_gc_compaction_freezes_stable_graph_before_tuning(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.services import runtime_diagnostics
+
+    diagnostics = runtime_diagnostics.RuntimeDiagnostics(gc_slow_ms=10_000.0)
+    monkeypatch.setenv("POCKETLAB_GC_COMPACTION_ENABLED", "1")
+    monkeypatch.setenv("POCKETLAB_GC_THRESHOLD_0", "2100")
+    monkeypatch.setenv("POCKETLAB_GC_THRESHOLD_1", "26")
+    monkeypatch.setenv("POCKETLAB_GC_THRESHOLD_2", "27")
+    calls: list[object] = []
+    monkeypatch.setattr(runtime_diagnostics.gc, "collect", lambda generation=2: calls.append(("collect", generation)) or 3)
+    monkeypatch.setattr(runtime_diagnostics.gc, "freeze", lambda: calls.append("freeze"))
+    monkeypatch.setattr(runtime_diagnostics.gc, "get_freeze_count", lambda: 42)
+    monkeypatch.setattr(runtime_diagnostics.gc, "set_threshold", lambda *values: calls.append(("threshold", values)))
+    monkeypatch.setattr(runtime_diagnostics.gc, "get_threshold", lambda: (2100, 26, 27))
+
+    result = diagnostics.compact_and_tune_gc()
+    assert result["changed"] is True
+    assert calls[:2] == [("collect", 2), "freeze"]
+    assert calls[-1] == ("threshold", (2100, 26, 27))
+    payload = json.loads(b"{" + diagnostics.compact_runtime_fragment()[1] + b"}")
+    assert payload["gc"]["tuned"] is True
+    assert payload["gc"]["thresholds_after"] == [2100, 26, 27]
 
 
 def test_prepared_progress_reuses_static_bytes_and_avoids_request_work(

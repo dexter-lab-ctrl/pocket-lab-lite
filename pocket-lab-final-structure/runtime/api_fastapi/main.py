@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import contextlib
 import asyncio
 import logging
 import os
@@ -60,6 +61,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     admission_started = False
     security_retention_task: asyncio.Task[None] | None = None
     startup_workloads_task: asyncio.Task[None] | None = None
+    gc_compaction_task: asyncio.Task[None] | None = None
     try:
         IDLE_EFFICIENCY.configure_process()
         try:
@@ -99,6 +101,36 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             lite.run_staged_startup_workloads(lite_security),
             name="pocketlab-staged-startup-workloads",
         )
+
+        async def _compact_gc_after_startup() -> None:
+            try:
+                delay = max(
+                    15.0,
+                    min(
+                        300.0,
+                        float(
+                            os.environ.get(
+                                "POCKETLAB_GC_COMPACTION_DELAY_SECONDS", "60"
+                            )
+                        ),
+                    ),
+                )
+            except (TypeError, ValueError):
+                delay = 60.0
+            await asyncio.sleep(delay)
+            result = await asyncio.to_thread(
+                RUNTIME_DIAGNOSTICS.compact_and_tune_gc
+            )
+            logging.getLogger(__name__).info(
+                "pocketlab.runtime.gc_compaction changed=%s frozen_objects=%s",
+                bool(result.get("changed")),
+                int(result.get("frozen_objects") or 0),
+            )
+
+        gc_compaction_task = asyncio.create_task(
+            _compact_gc_after_startup(),
+            name="pocketlab-gc-compaction",
+        )
         if os.environ.get("POCKETLAB_DISABLE_RELEASE_UPDATER", "").lower() not in {
             "1",
             "true",
@@ -109,6 +141,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         await LIVE_STATUS.stop()
+        if gc_compaction_task is not None:
+            gc_compaction_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await gc_compaction_task
         if startup_workloads_task is not None:
             startup_workloads_task.cancel()
             try:

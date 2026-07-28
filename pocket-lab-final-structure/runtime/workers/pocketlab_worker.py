@@ -748,6 +748,27 @@ def _compact_hot_path(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compact_security_progress(payload: dict[str, Any]) -> dict[str, Any]:
+    keys = (
+        "refresher_running",
+        "prepared_snapshot",
+        "prepared_static_bytes",
+        "projection_epoch",
+        "domain_revision",
+        "active_scan",
+        "projection_age_ms",
+        "read_failure_count",
+        "refreshes",
+        "refresh_failures",
+        "prepared_hits",
+        "prepared_misses",
+    )
+    return {
+        **{key: payload.get(key) for key in keys if key in payload},
+        "sanitized": True,
+    }
+
+
 def _compact_scheduler_snapshot(
     scheduler: dict[str, Any],
     *,
@@ -823,6 +844,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     from api_fastapi.services import lite_core_projections  # type: ignore
     from api_fastapi.services import lite_phase3b_projections  # type: ignore
     from api_fastapi.services import lite_phase3c_projections  # type: ignore
+    from api_fastapi.services import lite_security  # type: ignore
     from api_fastapi.services.projection_scheduler import PROJECTION_SCHEDULER  # type: ignore
     from api_fastapi.services.adaptive_runtime import ADAPTIVE_RUNTIME  # type: ignore
     from api_fastapi.services.hot_path_profiler import HOT_PATH_PROFILER  # type: ignore
@@ -945,6 +967,9 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                         "adaptive_runtime": _compact_adaptive_runtime(ADAPTIVE_RUNTIME.diagnostics()),
                         "process_runtime": _compact_process_runtime(PROCESS_RUNTIME.snapshot()),
                         "hot_path": _compact_hot_path(HOT_PATH_PROFILER.snapshot()),
+                        "security_progress": _compact_security_progress(
+                            lite_security.security_progress_runtime_diagnostics()
+                        ),
                         "workflow_projection": _compact_workflow_projection(WORKFLOW_ENGINE.status()),
                     },
                 )

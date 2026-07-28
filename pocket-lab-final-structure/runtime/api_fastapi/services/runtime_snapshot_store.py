@@ -10,6 +10,7 @@ payload on the event loop.
 from datetime import datetime, timezone
 import json
 import os
+import sqlite3
 import threading
 import time
 from typing import Any
@@ -23,7 +24,7 @@ _CACHE_TTL_SECONDS = 1.0
 _CACHE_LOCK = threading.Lock()
 _RAW_CACHE_EXPIRES_AT = 0.0
 _RAW_CACHE_ROW: dict[str, Any] | None = None
-_RESPONSE_CACHE_KEY: tuple[int, int] | None = None
+_RESPONSE_CACHE_KEY: tuple[int, int, int] | None = None
 _RESPONSE_CACHE_EXPIRES_AT = 0.0
 _RESPONSE_CACHE_BYTES: bytes | None = None
 
@@ -146,17 +147,21 @@ def _read_raw_worker_row() -> dict[str, Any] | None:
         if _RAW_CACHE_ROW is not None and now < _RAW_CACHE_EXPIRES_AT:
             return dict(_RAW_CACHE_ROW)
 
-    with read_connection() as conn:
-        _ensure_table(conn)
-        row = conn.execute(
-            """
-            SELECT snapshot_revision, captured_at, captured_at_epoch_ms,
-                   payload_json, payload_bytes, updated_at
-            FROM runtime_diagnostics_snapshot
-            WHERE owner = ?
-            """,
-            (_OWNER,),
-        ).fetchone()
+    try:
+        with read_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT snapshot_revision, captured_at, captured_at_epoch_ms,
+                       payload_json, payload_bytes, updated_at
+                FROM runtime_diagnostics_snapshot
+                WHERE owner = ?
+                """,
+                (_OWNER,),
+            ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc).lower():
+            return None
+        raise
     if not row:
         return None
 
@@ -207,7 +212,7 @@ def _append_top_level_fields(encoded_object: str, fields: dict[str, Any]) -> byt
     return (stripped[:-1] + "," + suffix[1:]).encode("utf-8")
 
 
-def encoded_runtime_response(event_loop: dict[str, Any]) -> bytes:
+def encoded_runtime_response(runtime_revision: int, runtime_fragment: bytes) -> bytes:
     """Return cached response bytes built from the worker's pre-encoded payload.
 
     SQLite I/O is expected to run through ``asyncio.to_thread`` in the route.
@@ -221,7 +226,6 @@ def encoded_runtime_response(event_loop: dict[str, Any]) -> bytes:
         revision = 0
         age_bucket = 0
         payload = {
-            "event_loop": event_loop,
             "projection_scheduler": {
                 "status": "starting",
                 "projection_execution_owner": "worker",
@@ -241,13 +245,21 @@ def encoded_runtime_response(event_loop: dict[str, Any]) -> bytes:
             "adaptive_runtime": {},
             "process_runtime": {},
             "hot_path": {},
+            "security_progress": {
+                "status": "starting",
+                "sanitized": True,
+            },
             "snapshot_status": "unavailable",
             "snapshot_revision": 0,
             "retry_after_ms": 1000,
             "data_source": "api_local_fallback",
             "sanitized": True,
         }
-        cache_key = (revision, age_bucket)
+        fallback = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+        encoded_fallback = fallback[:-1] + b"," + runtime_fragment + b"}"
+        cache_key = (revision, age_bucket, int(runtime_revision))
         with _CACHE_LOCK:
             if (
                 _RESPONSE_CACHE_KEY == cache_key
@@ -255,9 +267,7 @@ def encoded_runtime_response(event_loop: dict[str, Any]) -> bytes:
                 and now < _RESPONSE_CACHE_EXPIRES_AT
             ):
                 return _RESPONSE_CACHE_BYTES
-            encoded = json.dumps(
-                payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-            ).encode("utf-8")
+            encoded = encoded_fallback
             _RESPONSE_CACHE_KEY = cache_key
             _RESPONSE_CACHE_EXPIRES_AT = now + _CACHE_TTL_SECONDS
             _RESPONSE_CACHE_BYTES = encoded
@@ -268,7 +278,7 @@ def encoded_runtime_response(event_loop: dict[str, Any]) -> bytes:
     # Age changes are intentionally bucketed to the response-cache TTL. The
     # worker revision remains the authoritative invalidation signal.
     age_bucket = age_ms // 1000
-    cache_key = (revision, age_bucket)
+    cache_key = (revision, age_bucket, int(runtime_revision))
     with _CACHE_LOCK:
         if (
             _RESPONSE_CACHE_KEY == cache_key
@@ -277,16 +287,28 @@ def encoded_runtime_response(event_loop: dict[str, Any]) -> bytes:
         ):
             return _RESPONSE_CACHE_BYTES
 
-    encoded = _append_top_level_fields(
-        row["payload_json"],
+    prepared = row["payload_json"].rstrip()
+    if not prepared.endswith("}"):
+        raise ValueError("runtime_diagnostics_snapshot_invalid_json_object")
+    metadata = json.dumps(
         {
-            "event_loop": event_loop,
             "snapshot_revision": revision,
             "snapshot_age_ms": age_ms,
             "payload_bytes": row["payload_bytes"],
             "snapshot_status": "fresh" if age_ms <= 30000 else "stale",
             "data_source": "prepared_sqlite",
         },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")[1:-1]
+    encoded = (
+        prepared[:-1].encode("utf-8")
+        + b","
+        + runtime_fragment
+        + b","
+        + metadata
+        + b"}"
     )
     with _CACHE_LOCK:
         _RESPONSE_CACHE_KEY = cache_key

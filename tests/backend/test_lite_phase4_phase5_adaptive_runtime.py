@@ -617,13 +617,13 @@ def test_runtime_snapshot_hot_path_is_preencoded_revisioned_and_nonblocking() ->
     assert '"ready_executor_depth"' in scheduler
     assert '"scheduled_future_depth"' in scheduler
     assert "snapshot_revision" in runtime
-    assert "_append_top_level_fields" in runtime
+    assert "runtime_fragment" in runtime
     assert "json.loads(row[\"payload_json\"])" not in runtime.split(
         "def encoded_runtime_response", 1
     )[1]
-    assert "def event_loop_summary" in diagnostics
+    assert "def compact_runtime_fragment" in diagnostics
     assert "async def get_lite_runtime_diagnostics" in router
-    assert "await asyncio.to_thread(encoded_runtime_response, event_loop)" in router
+    assert "encoded_runtime_response, runtime_revision, runtime_fragment" in router
     assert "RUNTIME_DIAGNOSTICS.snapshot()" not in router.split(
         '@router.get("/diagnostics/runtime")', 1
     )[1].split('@router.get("/diagnostics/runtime/full")', 1)[0]
