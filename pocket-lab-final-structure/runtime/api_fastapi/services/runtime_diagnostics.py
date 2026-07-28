@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import gc
 import logging
 import os
+import queue
 import sys
 import threading
 import time
@@ -72,6 +73,14 @@ class RuntimeDiagnostics:
             "POCKETLAB_EVENT_LOOP_LOG_INTERVAL_SECONDS", 60.0, 5.0, 600.0
         )
         self._loop_suppressed_logs = 0
+        self._diagnostic_log_queue: queue.Queue[tuple[int, str, tuple[Any, ...]]] = queue.Queue(maxsize=8)
+        self._diagnostic_log_thread = threading.Thread(
+            target=self._diagnostic_log_loop,
+            name="pocketlab-diagnostic-logger",
+            daemon=True,
+        )
+        self._diagnostic_log_thread.start()
+        self._diagnostic_log_dropped = 0
         self._recent_lag_events: deque[dict[str, Any]] = deque(maxlen=12)
         self._active_operations: dict[str, dict[str, Any]] = {}
         self._recent_operations: deque[dict[str, Any]] = deque(maxlen=16)
@@ -152,6 +161,23 @@ class RuntimeDiagnostics:
                 pass
         self._stop_stack_watchdog()
         self._remove_gc_callback()
+
+    def _diagnostic_log_loop(self) -> None:
+        while True:
+            level, message, args = self._diagnostic_log_queue.get()
+            try:
+                _LOGGER.log(level, message, *args)
+            except Exception:
+                pass
+
+    def _enqueue_diagnostic_log(
+        self, level: int, message: str, *args: Any
+    ) -> None:
+        try:
+            self._diagnostic_log_queue.put_nowait((level, message, tuple(args)))
+        except queue.Full:
+            with self._lock:
+                self._diagnostic_log_dropped += 1
 
     async def _event_loop_lag_loop(self) -> None:
         loop = asyncio.get_running_loop()
@@ -244,8 +270,8 @@ class RuntimeDiagnostics:
             self._loop_last_severity = severity
             recent_max = max(self._loop_recent, default=0.0)
         if should_log:
-            log = _LOGGER.error if severity == "critical" else _LOGGER.warning
-            log(
+            self._enqueue_diagnostic_log(
+                logging.ERROR if severity == "critical" else logging.WARNING,
                 "pocketlab.runtime.event_loop_lag status=%s latest_lag_ms=%.2f recent_max_lag_ms=%.2f",
                 severity,
                 lag_ms,

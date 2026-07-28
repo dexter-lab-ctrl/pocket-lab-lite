@@ -233,6 +233,12 @@ class ProjectionScheduler:
         self._event_signal_count = 0
         self._signal_schema_ready = False
         self._signal_schema_lock = threading.Lock()
+        self._dispatcher_started_at = ""
+        self._last_dispatch_at = ""
+        self._last_dispatch_error_type = ""
+        self._dispatcher_restart_count = 0
+        self._dispatch_count = 0
+        self._future_head_skip_count = 0
 
     @staticmethod
     def _database_instance() -> str:
@@ -250,6 +256,33 @@ class ProjectionScheduler:
         jitter = int.from_bytes(digest[:2], "big") / 65535.0 * 0.08
         return min(324.0, base * (1.0 + jitter))
 
+    def _ensure_dispatcher_alive_locked(self) -> bool:
+        dispatcher = self._dispatcher
+        if dispatcher is not None and dispatcher.is_alive():
+            return False
+        if self._shutdown:
+            return False
+        if dispatcher is not None:
+            self._dispatcher_restart_count += 1
+        if self._io_executor is None:
+            self._io_executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.io_workers,
+                thread_name_prefix="pocketlab-projection-io",
+            )
+        if self._cpu_executor is None:
+            self._cpu_executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self.cpu_workers,
+                thread_name_prefix="pocketlab-projection-cpu",
+            )
+        self._dispatcher = threading.Thread(
+            target=self._dispatch_loop,
+            name="pocketlab-projection-scheduler",
+            daemon=True,
+        )
+        self._dispatcher_started_at = _utc_now()
+        self._dispatcher.start()
+        return True
+
     def start(self) -> bool:
         if not _is_execution_owner():
             with self._condition:
@@ -264,21 +297,7 @@ class ProjectionScheduler:
             self._shutdown = False
             self._accepting = True
             self._startup_complete = True
-            self._io_executor = concurrent.futures.ThreadPoolExecutor(
-                max_workers=self.io_workers,
-                thread_name_prefix="pocketlab-projection-io",
-            )
-            self._cpu_executor = concurrent.futures.ThreadPoolExecutor(
-                max_workers=self.cpu_workers,
-                thread_name_prefix="pocketlab-projection-cpu",
-            )
-            self._dispatcher = threading.Thread(
-                target=self._dispatch_loop,
-                name="pocketlab-projection-scheduler",
-                daemon=True,
-            )
-            self._dispatcher.start()
-            return True
+            return self._ensure_dispatcher_alive_locked()
 
     def register(self, job: ProjectionJob) -> None:
         domain = _safe_domain(job.domain)
@@ -708,6 +727,40 @@ class ProjectionScheduler:
                 stack.extend(item[:256])
         return False
 
+    def _pop_next_dispatchable_locked(
+        self,
+    ) -> tuple[tuple[int, int, str, int] | None, float]:
+        """Pop one due item without allowing a future heap head to starve it."""
+        now = time.monotonic()
+        future_items: list[tuple[int, int, str, int]] = []
+        earliest_delay = self.idle_wait_seconds
+        selected: tuple[int, int, str, int] | None = None
+        while self._heap:
+            item = heapq.heappop(self._heap)
+            _priority, _sequence, domain, queued_generation = item
+            state = self._states.get(domain)
+            job = self._jobs.get(domain)
+            if state is None or job is None:
+                continue
+            if state.active or not state.dirty:
+                state.queued = False
+                continue
+            if int(queued_generation) != int(state.generation):
+                state.queued = False
+                continue
+            due_at = max(float(state.not_before_at), float(state.next_retry_at))
+            if due_at > now:
+                future_items.append(item)
+                earliest_delay = min(earliest_delay, max(0.05, due_at - now))
+                continue
+            selected = item
+            break
+        for item in future_items:
+            heapq.heappush(self._heap, item)
+        if selected is not None and future_items:
+            self._future_head_skip_count += len(future_items)
+        return selected, earliest_delay
+
     def _dispatch_loop(self) -> None:
         while True:
             with self._condition:
@@ -724,7 +777,13 @@ class ProjectionScheduler:
                     )
                     self._condition.wait(timeout=timeout)
                     continue
-                priority, sequence, domain, queued_generation = heapq.heappop(self._heap)
+                selected, future_delay = self._pop_next_dispatchable_locked()
+                if selected is None:
+                    self._condition.wait(
+                        timeout=min(self.idle_wait_seconds, max(0.05, future_delay))
+                    )
+                    continue
+                priority, sequence, domain, queued_generation = selected
                 state = self._states.get(domain)
                 job = self._jobs.get(domain)
                 if state is None or job is None:
@@ -733,15 +792,10 @@ class ProjectionScheduler:
                 if state.active or not state.dirty or queued_generation > state.generation:
                     continue
                 now = time.monotonic()
-                if now < state.not_before_at:
+                if now < state.not_before_at or now < state.next_retry_at:
+                    # A due time may move after selection. Requeue and let the
+                    # due-aware pop scan choose another eligible domain.
                     self._enqueue_locked(domain, state)
-                    self._condition.wait(timeout=min(self.idle_wait_seconds, state.not_before_at - now))
-                    continue
-                if now < state.next_retry_at:
-                    self._enqueue_locked(domain, state)
-                    self._condition.wait(
-                        timeout=min(self.idle_wait_seconds, state.next_retry_at - now)
-                    )
                     continue
                 pressure = self._pressure_reason(job)
                 capacity = self.cpu_workers if job.work_class == "cpu" else self.io_workers
@@ -808,6 +862,7 @@ class ProjectionScheduler:
                 except RuntimeError:
                     state.active = False
                     state.last_error_type = "ExecutorRejected"
+                    self._last_dispatch_error_type = "ExecutorRejected"
                     state.failure_count += 1
                     state.next_retry_at = now + self._retry_delay(domain, state.failure_count)
                     state.next_retry_epoch_ms = _epoch_ms() + max(
@@ -816,6 +871,9 @@ class ProjectionScheduler:
                     self._enqueue_locked(domain, state)
                     continue
                 self._active_futures[future] = (domain, generation)
+                self._dispatch_count += 1
+                self._last_dispatch_at = _utc_now()
+                self._last_dispatch_error_type = ""
                 future.add_done_callback(lambda _future: self._wake_dispatcher())
                 self._persist_state_best_effort(domain, state)
 
@@ -1611,6 +1669,9 @@ class ProjectionScheduler:
 
     def diagnostics(self) -> dict[str, Any]:
         with self._condition:
+            if _is_execution_owner() and self._accepting and not self._shutdown:
+                self._ensure_dispatcher_alive_locked()
+            dispatcher = self._dispatcher
             self._reap_done_locked()
             queue = self._reconcile_queue_state_locked()
             return {
@@ -1631,6 +1692,14 @@ class ProjectionScheduler:
                 "circuit_failure_threshold": self.circuit_failure_threshold,
                 "circuit_cooldown_seconds": self.circuit_cooldown_seconds,
                 "idle_wait_seconds": self.idle_wait_seconds,
+                "dispatcher_alive": bool(dispatcher is not None and dispatcher.is_alive()),
+                "dispatcher_started_at": self._dispatcher_started_at,
+                "dispatcher_restart_count": self._dispatcher_restart_count,
+                "dispatch_count": self._dispatch_count,
+                "last_dispatch_at": self._last_dispatch_at,
+                "last_dispatch_error_type": self._last_dispatch_error_type,
+                "future_head_skip_count": self._future_head_skip_count,
+                "heap_entries": len(self._heap),
                 "event_signal_count": self._event_signal_count,
                 "process_role": _process_role(),
                 "loaded_build_version": _LOADED_BUILD_VERSION,
