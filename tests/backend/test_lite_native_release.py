@@ -610,3 +610,35 @@ def test_release_workflow_configures_bot_identity_before_annotated_tag():
     assert workflow.index(name_config) < workflow.index(annotated_tag)
     assert workflow.index(email_config) < workflow.index(annotated_tag)
 
+
+
+def test_bootstrap_installer_persists_verified_release_identity():
+    source = (Path(__file__).resolve().parents[2] / "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh").read_text(encoding="utf-8")
+    assert "record_release_install" in source
+    assert "Pocket Lab Lite installed release identity was not persisted" in source
+    assert source.index('atomic_link "$target" "$CURRENT_LINK"') < source.index("record_release_install")
+
+
+def test_release_prepared_read_falls_back_to_safe_repository_identity():
+    source = (Path(__file__).resolve().parents[2] / "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py").read_text(encoding="utf-8")
+    assert 'or os.environ.get("POCKETLAB_LITE_RELEASE_REPO")' in source
+    assert 'or identity.get("source_repository")' in source
+    assert "verified_repository == configured_repository" in source
+
+
+def test_server_phone_release_validation_runner_covers_required_sequence_and_html():
+    source = (Path(__file__).resolve().parents[2] / "scripts/dev/check-lite-release-validation-server-phone.sh").read_text(encoding="utf-8")
+    for marker in (
+        "run_9e",
+        "run_9f_submit",
+        "run_9f_settle",
+        "run_gate 180",
+        "run_gate 900",
+        "generate_report",
+        "HTML report:",
+    ):
+        assert marker in source
+    assert "p.get('api_thread_started') is False" in source
+    assert "p.get('execution_owner') == 'pocket-worker/release-subprocess'" in source
+    assert "Complete captured output" in source
+    assert "SLEEP_BETWEEN_GATES" in source

@@ -539,12 +539,27 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
         }
     )
     identity = read_installed_identity()
+    configured_repository = normalize_repository(
+        row.get("configured_repository")
+        or payload.get("configured_repository")
+        or os.environ.get("POCKETLAB_LITE_RELEASE_REPO")
+        or DEFAULT_REPOSITORY
+    )
+    verified_repository = normalize_repository(
+        row.get("verified_repository")
+        or payload.get("verified_repository")
+        or identity.get("source_repository")
+    )
+    repository_match = bool(
+        row.get("repository_match")
+        or (configured_repository and verified_repository == configured_repository)
+    )
     payload.update(
         {
             "product": PRODUCT,
-            "configured_repository": str(row.get("configured_repository") or payload.get("configured_repository") or ""),
-            "verified_repository": str(row.get("verified_repository") or payload.get("verified_repository") or ""),
-            "repository_match": bool(row.get("repository_match")),
+            "configured_repository": configured_repository,
+            "verified_repository": verified_repository,
+            "repository_match": repository_match,
             "install_mode": str(row.get("install_mode") or identity.get("install_mode") or "unknown"),
             "installed_release_tag": str(row.get("installed_release_tag") or identity.get("release_tag") or ""),
             "installed_source_commit": str(row.get("installed_source_commit") or identity.get("source_commit") or ""),
