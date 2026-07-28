@@ -7,6 +7,7 @@ import os
 import ssl
 import time
 import uuid
+import threading
 from collections import deque
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Awaitable, Callable, Deque, Dict, Optional
@@ -51,6 +52,93 @@ class DurableConsumerSpec:
     durable: str
     queue: str | None
     stream: str
+
+
+
+
+class _FleetEventAdmission:
+    """Bounded, coalescing handoff from the asyncio/NATS thread to Fleet IO."""
+
+    def __init__(self, *, maximum: int = 128) -> None:
+        self.maximum = max(16, min(int(maximum), 512))
+        self._condition = threading.Condition(threading.Lock())
+        self._pending: dict[str, Dict[str, Any]] = {}
+        self._thread: threading.Thread | None = None
+        self.accepted = 0
+        self.coalesced = 0
+        self.rejected = 0
+        self.completed = 0
+        self.failed = 0
+
+    @staticmethod
+    def _key(event: Dict[str, Any]) -> str:
+        data = event.get("data") if isinstance(event.get("data"), dict) else {}
+        node = str(data.get("node_id") or data.get("id") or data.get("hostname") or "unknown")[:96]
+        subject = str(event.get("subject") or event.get("type") or "fleet")[:128]
+        return f"{node}:{subject}"
+
+    def submit(self, event: Dict[str, Any]) -> dict[str, Any]:
+        safe_event = {
+            "id": event.get("id"),
+            "subject": event.get("subject"),
+            "type": event.get("type"),
+            "data": dict(event.get("data") or {}) if isinstance(event.get("data"), dict) else {},
+        }
+        key = self._key(safe_event)
+        with self._condition:
+            if key in self._pending:
+                self._pending[key] = safe_event
+                self.coalesced += 1
+                self._condition.notify()
+                return {"accepted": True, "coalesced": True}
+            if len(self._pending) >= self.maximum:
+                self.rejected += 1
+                return {"accepted": False, "coalesced": False, "reason": "queue_full"}
+            self._pending[key] = safe_event
+            self.accepted += 1
+            if self._thread is None or not self._thread.is_alive():
+                self._thread = threading.Thread(
+                    target=self._run,
+                    name="pocketlab-fleet-event-admission",
+                    daemon=True,
+                )
+                self._thread.start()
+            self._condition.notify()
+            return {"accepted": True, "coalesced": False}
+
+    def _run(self) -> None:
+        while True:
+            with self._condition:
+                while not self._pending:
+                    self._condition.wait(timeout=60.0)
+                key = next(iter(self._pending))
+                event = self._pending.pop(key)
+            try:
+                from .fleet_registry import handle_agent_event
+
+                handle_agent_event(event)
+                self.completed += 1
+            except Exception:
+                self.failed += 1
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._condition:
+            return {
+                "pending": len(self._pending),
+                "maximum": self.maximum,
+                "accepted": self.accepted,
+                "coalesced": self.coalesced,
+                "rejected": self.rejected,
+                "completed": self.completed,
+                "failed": self.failed,
+                "thread_alive": bool(self._thread is not None and self._thread.is_alive()),
+                "sanitized": True,
+            }
+
+
+_FLEET_EVENT_ADMISSION = _FleetEventAdmission(
+    maximum=int(os.environ.get("POCKETLAB_FLEET_EVENT_ADMISSION_MAX", "128"))
+)
 
 
 class PocketLabEventBus:
@@ -632,12 +720,10 @@ class PocketLabEventBus:
         self._history.append(event)
         subject = str(event.get("subject") or "")
         if subject.startswith("pocketlab.events.fleet.node_"):
-            try:
-                from .fleet_registry import handle_agent_event
-
-                handle_agent_event(event)
-            except Exception:
-                pass
+            # Fleet registry updates may perform filesystem and SQLite work.
+            # Admit them through a bounded coalescing worker so NATS callbacks
+            # never block the FastAPI event loop on local IO.
+            _FLEET_EVENT_ADMISSION.submit(event)
         stale: list[asyncio.Queue[Dict[str, Any]]] = []
         for subscriber in list(self._subscribers):
             try:
@@ -679,6 +765,9 @@ class PocketLabEventBus:
         sub = await self.nc.subscribe(subject, queue=queue, cb=callback)
         self._nats_subscriptions.append(sub)
         return sub
+
+    def fleet_event_admission_status(self) -> Dict[str, Any]:
+        return _FLEET_EVENT_ADMISSION.snapshot()
 
     def durable_consumer_status(self, durable: str | None = None) -> Dict[str, Any]:
         names = [durable] if durable else sorted(self._durable_specs)

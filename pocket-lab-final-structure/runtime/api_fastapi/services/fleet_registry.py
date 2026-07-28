@@ -16,6 +16,8 @@ AGENT_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_AGENT_TTL_SECONDS", "90"
 COMMAND_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_COMMAND_TTL_SECONDS", "3600"))
 SUPERVISOR_TTL_SECONDS = int(os.environ.get("POCKETLAB_FLEET_SUPERVISOR_TTL_SECONDS", "180"))
 _AGENT_REGISTRY_LOCK = threading.RLock()
+_FLEET_EVENT_REVISION_LOCK = threading.Lock()
+_FLEET_EVENT_REVISION = int(time.time_ns() & 0x7FFFFFFFFFFFFFFF)
 _LIFECYCLE_EXPORT_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
     max_workers=1, thread_name_prefix="pocketlab-lifecycle-export"
 )
@@ -866,6 +868,13 @@ def _upsert_agent_unlocked(
     return merged
 
 
+def _next_fleet_event_revision() -> int:
+    global _FLEET_EVENT_REVISION
+    with _FLEET_EVENT_REVISION_LOCK:
+        _FLEET_EVENT_REVISION += 1
+        return _FLEET_EVENT_REVISION
+
+
 def handle_agent_event(event: Dict[str, Any]) -> None:
     subject = str(event.get("subject") or "")
     event_type = str(event.get("type") or "")
@@ -898,7 +907,7 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
         from .lite_control_plane_store import CONTROL_PLANE
 
         CONTROL_PLANE.invalidate_domain(
-            "fleet", semantic_revision=fleet_source_revision()
+            "fleet", semantic_revision=_next_fleet_event_revision()
         )
     except Exception:
         pass
