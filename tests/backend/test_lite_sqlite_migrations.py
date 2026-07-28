@@ -37,10 +37,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         migration_rows,
     )
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    assert apply_migrations() == list(range(1, 20))
     assert apply_migrations() == []
-    assert current_schema_version() == 18
-    assert [row["version"] for row in migration_rows()] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    assert current_schema_version() == 19
+    assert [row["version"] for row in migration_rows()] == list(range(1, 20))
     with read_connection() as conn:
         tables = {
             row[0]
@@ -85,6 +85,9 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "device_lifecycle_events",
         "device_lifecycle_transactions",
         "projection_refresh_state",
+        "workflow_current_state",
+        "workflow_event_index",
+        "workflow_command_state",
     }.issubset(tables)
     assert {
         "idx_security_runs_profile_completed",
@@ -133,6 +136,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "idx_lite_revision_events_replay",
         "idx_lite_revision_events_retention",
         "idx_commands_lifecycle_stage",
+        "idx_workflow_current_status_updated",
+        "idx_workflow_current_terminal_updated",
+        "idx_workflow_event_workflow_time",
+        "idx_workflow_command_workflow",
     }.issubset(indexes)
     assert "operation_leases" not in tables
 
@@ -215,8 +222,8 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 18 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 18]
+    assert all(result[2] == 19 for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, 19]
 
 
 def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
@@ -256,8 +263,8 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
             """
         )
 
-    assert apply_migrations() == [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-    assert current_schema_version() == 18
+    assert apply_migrations() == list(range(5, 20))
+    assert current_schema_version() == 19
     with connection() as conn:
         assert conn.execute(
             "SELECT summary FROM security_scan_runs WHERE run_id = ?",
@@ -319,8 +326,8 @@ def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
             ),
         )
 
-    assert apply_migrations() == [14, 15, 16, 17, 18]
-    assert current_schema_version() == 18
+    assert apply_migrations() == list(range(14, 20))
+    assert current_schema_version() == 19
     with connection() as conn:
         preserved = conn.execute(
             "SELECT event_id,dedupe_key,generation_key,state_revision,database_instance,payload_checksum "
@@ -387,7 +394,7 @@ with sqlite3.connect(sys.argv[1]) as conn:
         ),
     )
     conn.commit()
-assert apply_migrations() == [17, 18]
+assert apply_migrations() == [17, 18, 19]
 with sqlite3.connect(sys.argv[1]) as conn:
     row = conn.execute(
         """

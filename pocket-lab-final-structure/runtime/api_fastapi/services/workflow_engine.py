@@ -20,17 +20,26 @@ on Android/Termux, but its model mirrors enterprise workflow engines:
 * recovery plan + recovery execution
 """
 
+import hashlib
 import json
 import os
 import queue
+import re
+import signal
+import sqlite3
+import subprocess
+import sys
 import threading
 import time
 import uuid
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .. import deps
+from ..db.connection import begin_immediate, connection, fast_read_connection
+from ..db.migrations import apply_migrations
 
 TERMINAL_TYPES = {
     "operation.succeeded",
@@ -122,6 +131,160 @@ def _event_sort_key(event: Dict[str, Any]) -> tuple[str, str]:
     return (str(event.get("time") or ""), str(event.get("id") or ""))
 
 
+def _epoch_ms(value: Any = None) -> int:
+    if value is None or value == "":
+        return int(time.time() * 1000)
+    if isinstance(value, (int, float)):
+        number = float(value)
+        return int(number if number > 10_000_000_000 else number * 1000)
+    try:
+        from datetime import datetime
+
+        return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp() * 1000)
+    except (TypeError, ValueError):
+        return int(time.time() * 1000)
+
+
+def _safe_error_type(exc: BaseException | Any) -> str:
+    text = type(exc).__name__ if isinstance(exc, BaseException) else str(exc or "UnknownError")
+    return "".join(character for character in text if character.isalnum() or character in "._-")[:80] or "UnknownError"
+
+
+_SECRET_VALUE_RE = re.compile(
+    r"(?i)\b(token|password|secret|api[_-]?key|authorization|private[_-]?key)\b\s*[:=]\s*([^\s,;]+)"
+)
+_BEARER_RE = re.compile(r"(?i)\bbearer\s+[a-z0-9._~+/=-]+")
+_NATS_URL_RE = re.compile(r"(?i)\bnats(?:s)?://[^\s,;]+")
+_PRIVATE_PATH_RE = re.compile(
+    r"(?i)(?:/data/data/[^\s,;]+|/storage/(?:emulated/)?[^\s,;]+|/sdcard/[^\s,;]+|/mnt/sdcard/[^\s,;]+|[a-z]:\\(?:users|windows)\\[^\s,;]+)"
+)
+
+
+def _bounded_text(value: Any, limit: int = 240) -> str:
+    text = str(value or "").replace("\x00", " ").strip()
+    text = _SECRET_VALUE_RE.sub(lambda match: f"{match.group(1)}=[redacted]", text)
+    text = _BEARER_RE.sub("Bearer [redacted]", text)
+    text = _NATS_URL_RE.sub("[redacted-url]", text)
+    text = _PRIVATE_PATH_RE.sub("[redacted-path]", text)
+    return text[:limit]
+
+
+_COMPACT_DATA_KEYS = frozenset({
+    "workflow_id", "trace_id", "job_id", "command_id", "run_id", "operation",
+    "command_subject", "subject", "attempt", "error", "terminal", "replay_of",
+    "replayed_from_dead_letter", "replayed_from", "replayed_as", "app_id", "node_id",
+    "device_id", "reason", "status", "stage", "profile", "action_id", "sequence",
+})
+
+
+def _compact_workflow_event(event: Dict[str, Any] | Any) -> Dict[str, Any] | None:
+    """Return the bounded semantic event admitted to the projection process."""
+    if not isinstance(event, dict):
+        return None
+    event_type = _bounded_text(event.get("type") or event.get("event"), 120)
+    subject = _bounded_text(event.get("subject"), 180)
+    if not event_type and not subject:
+        return None
+    event_id = _bounded_text(event.get("id"), 160) or uuid.uuid4().hex
+    data = event.get("data") if isinstance(event.get("data"), dict) else {}
+    compact_data: Dict[str, Any] = {}
+    for key in _COMPACT_DATA_KEYS:
+        if key not in data:
+            continue
+        value = data.get(key)
+        if isinstance(value, bool):
+            compact_data[key] = value
+        elif isinstance(value, (int, float)):
+            compact_data[key] = value
+        elif value is not None:
+            compact_data[key] = _bounded_text(value, 320 if key == "error" else 180)
+    compact: Dict[str, Any] = {
+        "id": event_id,
+        "type": event_type,
+        "subject": subject,
+        "time": _bounded_text(event.get("time"), 64) or deps.now_utc_iso(),
+        "trace_id": _bounded_text(event.get("trace_id"), 160),
+        "data": compact_data,
+    }
+    compact["workflow_id"] = _bounded_text(event.get("workflow_id"), 160) or workflow_id_for_event(compact)
+    return compact
+
+
+def _canonical_projection_material(projection: Dict[str, Any]) -> tuple[Any, ...]:
+    """Stable operational truth tuple; excludes timestamp/display-only churn."""
+    return tuple(
+        projection.get(key)
+        for key in (
+            "workflow_id", "status", "terminal", "success", "failed", "dead_lettered",
+            "attempts", "command_subject", "operation", "job_id", "command_id",
+            "last_error", "replay_of", "replayed_as",
+        )
+    )
+
+
+def _apply_projection_event(current: Dict[str, Any] | None, event: Dict[str, Any]) -> Dict[str, Any]:
+    projection = WorkflowProjection(
+        **{
+            key: value
+            for key, value in (current or {}).items()
+            if key in WorkflowProjection.__annotations__
+        }
+    ).asdict()
+    was_terminal = bool(projection.get("terminal"))
+    workflow_id = str(event.get("workflow_id") or workflow_id_for_event(event))
+    data = event.get("data") if isinstance(event.get("data"), dict) else {}
+    etype = str(event.get("type") or "")
+    subject = str(event.get("subject") or "")
+    now = str(event.get("time") or deps.now_utc_iso())
+    projection["workflow_id"] = workflow_id
+    projection["created_at"] = projection.get("created_at") or now
+    projection["updated_at"] = now
+    projection["event_count"] = int(projection.get("event_count") or 0) + 1
+    projection["last_event_type"] = etype
+    projection["last_subject"] = subject
+    projection["job_id"] = str(data.get("job_id") or projection.get("job_id") or "")
+    projection["command_id"] = str(data.get("command_id") or projection.get("command_id") or "")
+    projection["operation"] = str(data.get("operation") or projection.get("operation") or "")
+    projection["command_subject"] = str(
+        data.get("command_subject")
+        or data.get("subject")
+        or (subject if subject.startswith("pocketlab.commands.") else projection.get("command_subject") or "")
+    )
+    try:
+        attempt = int(data.get("attempt") or 0)
+    except (TypeError, ValueError):
+        attempt = 0
+    projection["attempts"] = max(int(projection.get("attempts") or 0), attempt)
+    if data.get("error"):
+        projection["last_error"] = _bounded_text(data.get("error"), 320)
+    if data.get("replayed_from_dead_letter") or data.get("replay_of"):
+        projection["replay_of"] = str(data.get("replayed_from_dead_letter") or data.get("replay_of"))
+    if data.get("replayed_as"):
+        projection["replayed_as"] = str(data.get("replayed_as"))
+
+    if was_terminal:
+        # Terminal workflow truth is immutable. Late/redelivered non-terminal events
+        # remain in the bounded event index but cannot regress last-known-good state.
+        return projection
+    if etype in SUCCESS_TYPES:
+        projection.update({"status": "succeeded", "terminal": True, "success": True, "failed": False})
+    elif etype in FAILURE_TYPES:
+        projection.update({"status": "failed", "terminal": True, "success": False, "failed": True})
+    elif etype in DLQ_TYPES or subject.startswith("pocketlab.dlq."):
+        projection.update({"status": "dead_lettered", "terminal": True, "dead_lettered": True, "success": False, "failed": True})
+    elif "retry" in etype:
+        projection.update({"status": "retrying", "terminal": False})
+    elif etype in ACTIVE_TYPES or subject.startswith("pocketlab.commands."):
+        projection.update({"status": "running" if "claimed" in etype else "queued", "terminal": False})
+    elif not projection.get("terminal"):
+        projection["status"] = projection.get("status") if projection.get("status") not in {"unknown", ""} else "observed"
+
+    if not projection.get("title") or projection.get("title") == "Pocket Lab workflow":
+        op = projection.get("operation") or projection.get("command_subject") or subject or workflow_id
+        projection["title"] = str(op).replace("pocketlab.commands.", "").replace(".", " ").strip().title()
+    return projection
+
+
 @dataclass
 class WorkflowProjection:
     workflow_id: str
@@ -151,14 +314,10 @@ class WorkflowProjection:
 
 class EventSourcedWorkflowEngine:
     def __init__(self) -> None:
-        self.history_limit = int(
-            os.environ.get("POCKETLAB_WORKFLOW_HISTORY_LIMIT", "5000")
-        )
+        self.history_limit = max(100, min(int(os.environ.get("POCKETLAB_WORKFLOW_HISTORY_LIMIT", "5000")), 100_000))
         self._status_cache: Dict[str, Any] | None = None
         self._status_cache_at = 0.0
-        self._status_cache_ttl = max(1.0, float(
-            os.environ.get("POCKETLAB_WORKFLOW_STATUS_CACHE_SECONDS", "15")
-        ))
+        self._status_cache_ttl = max(1.0, float(os.environ.get("POCKETLAB_WORKFLOW_STATUS_CACHE_SECONDS", "15")))
         self._status_cache_lock = threading.RLock()
         self._path_lock = threading.RLock()
         self._root: Path | None = None
@@ -167,18 +326,44 @@ class EventSourcedWorkflowEngine:
         self._command_file: Path | None = None
         self._projection_lock = threading.RLock()
         self._projection_cache: Dict[str, Any] | None = None
+        self._process_role = str(os.environ.get("POCKETLAB_PROCESS_ROLE") or "unknown").strip().lower()
+        self._execution_owner = str(os.environ.get("POCKETLAB_WORKFLOW_PROCESS_OWNER") or "worker").strip().lower()
+        self._owns_process = self._process_role == self._execution_owner
         self._writer_queue: queue.Queue[Dict[str, Any] | None] = queue.Queue(
             maxsize=max(8, min(int(os.environ.get("POCKETLAB_WORKFLOW_WRITER_QUEUE_SIZE", "256")), 4096))
         )
-        self._writer_batch_size = max(
-            1, min(int(os.environ.get("POCKETLAB_WORKFLOW_WRITER_BATCH_SIZE", "32")), 256)
-        )
+        self._writer_batch_size = max(1, min(int(os.environ.get("POCKETLAB_WORKFLOW_WRITER_BATCH_SIZE", "32")), 256))
+        self._mailbox_capacity = max(16, min(int(os.environ.get("POCKETLAB_WORKFLOW_MAILBOX_CAPACITY", "1024")), 16_384))
         self._writer_thread: threading.Thread | None = None
+        self._dispatcher_generation = 0
         self._writer_stop = threading.Event()
         self._writer_lock = threading.RLock()
+        self._pending_ids: set[str] = set()
+        self._recent_rejections: deque[Dict[str, Any]] = deque(maxlen=16)
+        self._process_health_known = False
+        self._process_available = False
+        self._supervisor_thread: threading.Thread | None = None
+        self._projection_process: subprocess.Popen[Any] | None = None
+        self._process_generation = 0
+        self._restart_times: list[float] = []
+        self._restart_backoff_seconds = 0.25
+        self._restart_max = max(1, min(int(os.environ.get("POCKETLAB_WORKFLOW_RESTART_MAX", "5")), 50))
+        self._restart_window_seconds = max(10, min(int(os.environ.get("POCKETLAB_WORKFLOW_RESTART_WINDOW_SECONDS", "300")), 3600))
         self._writer_stats: Dict[str, Any] = {
-            "queued": 0, "written": 0, "coalesced": 0, "dropped": 0, "failed": 0,
-            "recent_max_write_ms": 0.0, "last_error_type": "", "last_write_at": "",
+            "queued": 0,
+            "written": 0,
+            "accepted_events": 0,
+            "coalesced_events": 0,
+            "rejected_events": 0,
+            "dropped_events": 0,
+            "failed": 0,
+            "process_restart_count": 0,
+            "dispatcher_restart_count": 0,
+            "recycle_count": 0,
+            "last_restart_reason": "",
+            "recent_max_write_ms": 0.0,
+            "last_error_type": "",
+            "last_write_at": "",
         }
 
     def _ensure_paths(self) -> None:
@@ -187,7 +372,9 @@ class EventSourcedWorkflowEngine:
         with self._path_lock:
             if self._root is not None:
                 return
-            root = deps.settings().state_dir / "workflows"
+            state_override = str(os.environ.get("POCKETLAB_STATE_DIR") or "").strip()
+            state_dir = Path(state_override).expanduser() if state_override else deps.settings().state_dir
+            root = state_dir / "workflows"
             events = root / "events"
             projections = root / "projections"
             commands = root / "commands"
@@ -222,136 +409,416 @@ class EventSourcedWorkflowEngine:
         assert self._command_file is not None
         return self._command_file
 
+    @property
+    def mailbox_root(self) -> Path:
+        root = self.root / "mailbox"
+        for child in (root, root / "inbox", root / "processing", root / "failed"):
+            child.mkdir(parents=True, exist_ok=True)
+        return root
+
+    @property
+    def process_status_file(self) -> Path:
+        path = self.root / "runtime" / "process_status.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
+    def process_generation_file(self) -> Path:
+        path = self.root / "runtime" / "process_generation.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _next_process_generation(self) -> int:
+        payload = _read_json(self.process_generation_file, {})
+        status = _read_json(self.process_status_file, {})
+        previous = max(
+            int(payload.get("generation") or 0) if isinstance(payload, dict) else 0,
+            int(status.get("process_generation") or 0) if isinstance(status, dict) else 0,
+            self._process_generation,
+        )
+        try:
+            with fast_read_connection(timeout_ms=250) as conn:
+                row = conn.execute(
+                    "SELECT COALESCE(MAX(process_generation), 0) AS generation FROM workflow_current_state"
+                ).fetchone()
+            previous = max(previous, int(row["generation"] if row else 0))
+        except (FileNotFoundError, sqlite3.Error, TypeError, ValueError):
+            pass
+        generation = previous + 1
+        _write_json(self.process_generation_file, {
+            "generation": generation,
+            "updated_at": deps.now_utc_iso(),
+            "sanitized": True,
+        })
+        return generation
+
     def start_writer(self) -> None:
         with self._writer_lock:
-            if self._writer_thread is not None and self._writer_thread.is_alive():
-                return
-            self._writer_stop.clear()
-            self._writer_thread = threading.Thread(
-                target=self._writer_loop, name="pocketlab-workflow-projection-writer", daemon=True
-            )
-            self._writer_thread.start()
+            if self._writer_thread is None or not self._writer_thread.is_alive():
+                self._writer_stop.clear()
+                if self._dispatcher_generation > 0:
+                    self._writer_stats["dispatcher_restart_count"] += 1
+                self._dispatcher_generation += 1
+                self._writer_thread = threading.Thread(
+                    target=self._dispatcher_loop,
+                    name="pocketlab-wf-ipc",
+                    daemon=True,
+                )
+                self._writer_thread.start()
+            if self._owns_process and (
+                self._supervisor_thread is None or not self._supervisor_thread.is_alive()
+            ):
+                self._supervisor_thread = threading.Thread(
+                    target=self._supervisor_loop,
+                    name="pocketlab-wf-supervisor",
+                    daemon=True,
+                )
+                self._supervisor_thread.start()
 
     def stop_writer(self, *, drain_timeout_seconds: float = 3.0) -> None:
-        thread = self._writer_thread
-        if thread is None:
-            return
         self._writer_stop.set()
         try:
             self._writer_queue.put_nowait(None)
         except queue.Full:
             pass
-        thread.join(timeout=max(0.1, min(float(drain_timeout_seconds), 10.0)))
+        thread = self._writer_thread
+        if thread is not None:
+            thread.join(timeout=max(0.1, min(float(drain_timeout_seconds), 10.0)))
         self._writer_thread = None
+        supervisor = self._supervisor_thread
+        if supervisor is not None:
+            supervisor.join(timeout=max(0.1, min(float(drain_timeout_seconds), 10.0)))
+        self._supervisor_thread = None
+        self._terminate_projection_process()
 
-    def enqueue_event(self, event: Dict[str, Any]) -> bool:
-        if not isinstance(event, dict):
-            return False
-        self.start_writer()
+    def _sanitize_child_environment(self, generation: int) -> Dict[str, str]:
+        allowed_exact = {
+            "HOME", "PATH", "PYTHONPATH", "PREFIX", "LANG", "LC_ALL", "TMPDIR",
+            "POCKETLAB_STATE_DIR", "POCKETLAB_LITE_DB_PATH", "POCKETLAB_LITE_DB_BUSY_TIMEOUT_MS",
+            "POCKETLAB_LITE_DB_SYNCHRONOUS", "POCKETLAB_LITE_DB_WAL_AUTOCHECKPOINT",
+            "POCKETLAB_WORKFLOW_BATCH_CPU_MS", "POCKETLAB_WORKFLOW_BATCH_MAX_EVENTS",
+            "POCKETLAB_WORKFLOW_BATCH_WALL_MS", "POCKETLAB_WORKFLOW_COMPAT_SNAPSHOT_BATCHES",
+            "POCKETLAB_WORKFLOW_EVENT_INDEX_LIMIT", "POCKETLAB_WORKFLOW_FSYNC",
+            "POCKETLAB_WORKFLOW_HISTORY_LIMIT", "POCKETLAB_WORKFLOW_JOURNAL_MAX_BYTES",
+            "POCKETLAB_WORKFLOW_MEMORY_MIN_AVAILABLE_PERCENT", "POCKETLAB_WORKFLOW_MEMORY_PROBE_SECONDS",
+            "POCKETLAB_WORKFLOW_POLL_SECONDS", "POCKETLAB_WORKFLOW_PROJECTION_ITEM_MAX",
+            "POCKETLAB_WORKFLOW_RECONCILE_MAX_ROWS", "POCKETLAB_WORKFLOW_RECONCILE_WORKFLOW_MAX",
+            "POCKETLAB_WORKFLOW_SQLITE_DEADLINE_SECONDS", "POCKETLAB_WORKFLOW_RECYCLE_BATCH_COUNT",
+            "POCKETLAB_WORKFLOW_RECYCLE_EVENT_COUNT", "POCKETLAB_WORKFLOW_RECYCLE_RSS_BYTES",
+            "POCKETLAB_WORKFLOW_SERIALIZED_BYTES_MAX", "POCKETLAB_WORKFLOW_STAGGER_MAX_MS",
+            "POCKETLAB_WORKFLOW_UPDATES_PER_WORKFLOW_BATCH",
+        }
+        env = {key: value for key, value in os.environ.items() if key in allowed_exact}
+        env["POCKETLAB_PROCESS_ROLE"] = "workflow_projection"
+        env["POCKETLAB_WORKFLOW_PROCESS_GENERATION"] = str(generation)
+        env["NO_COLOR"] = "1"
+        env["TERM"] = "dumb"
+        return env
+
+    def _spawn_projection_process(self, generation: int) -> subprocess.Popen[Any]:
+        runtime_dir = Path(__file__).resolve().parents[2]
+        kwargs: Dict[str, Any] = {
+            "cwd": str(runtime_dir),
+            "env": self._sanitize_child_environment(generation),
+            "stdin": subprocess.DEVNULL,
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+        }
+        if os.name == "nt":
+            creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            if creationflags:
+                kwargs["creationflags"] = creationflags
+        else:
+            kwargs["start_new_session"] = True
+        return subprocess.Popen(
+            [sys.executable, "-m", "api_fastapi.services.workflow_projection_process"],
+            **kwargs,
+        )
+
+    def _terminate_projection_process(self) -> None:
+        process = self._projection_process
+        self._projection_process = None
+        if process is None or process.poll() is not None:
+            return
         try:
-            self._writer_queue.put_nowait(dict(event))
-        except queue.Full:
-            with self._writer_lock:
-                self._writer_stats["dropped"] += 1
-            return False
-        with self._writer_lock:
-            self._writer_stats["queued"] += 1
-        return True
+            if os.name != "nt" and hasattr(os, "killpg"):
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            else:
+                process.terminate()
+            process.wait(timeout=2.0)
+        except (OSError, ProcessLookupError, subprocess.TimeoutExpired):
+            try:
+                if os.name != "nt" and hasattr(os, "killpg"):
+                    os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+                else:
+                    process.kill()
+                process.wait(timeout=2.0)
+            except (OSError, ProcessLookupError, subprocess.TimeoutExpired):
+                pass
 
-    def _writer_loop(self) -> None:
-        while not self._writer_stop.is_set() or not self._writer_queue.empty():
-            try:
-                first = self._writer_queue.get(timeout=0.25)
-            except queue.Empty:
+    def _supervisor_loop(self) -> None:
+        while not self._writer_stop.is_set():
+            process = self._projection_process
+            if process is not None and process.poll() is None:
+                time.sleep(0.2)
                 continue
-            if first is None:
-                self._writer_queue.task_done()
+            exit_code = process.poll() if process is not None else None
+            now = time.monotonic()
+            self._restart_times = [item for item in self._restart_times if now - item <= self._restart_window_seconds]
+            if len(self._restart_times) >= self._restart_max:
+                with self._writer_lock:
+                    self._process_health_known = True
+                    self._process_available = False
+                    self._writer_stats["last_error_type"] = "WorkflowProjectionCircuitOpen"
+                    self._writer_stats["last_restart_reason"] = "restart_limit"
+                time.sleep(min(5.0, self._restart_backoff_seconds))
                 continue
-            batch = [first]
-            while len(batch) < self._writer_batch_size:
-                try:
-                    item = self._writer_queue.get_nowait()
-                except queue.Empty:
-                    break
-                if item is None:
-                    self._writer_queue.task_done()
-                    continue
-                batch.append(item)
-            started = time.monotonic()
             try:
-                changed = self.ingest_events(batch)
+                self._process_generation = self._next_process_generation()
+                self._projection_process = self._spawn_projection_process(self._process_generation)
             except Exception as exc:
                 with self._writer_lock:
-                    self._writer_stats["failed"] += len(batch)
-                    self._writer_stats["last_error_type"] = type(exc).__name__
-            else:
-                duration_ms = max(0.0, (time.monotonic() - started) * 1000.0)
+                    self._process_health_known = True
+                    self._process_available = False
+                    self._writer_stats["last_error_type"] = _safe_error_type(exc)
+                time.sleep(self._restart_backoff_seconds)
+                self._restart_backoff_seconds = min(30.0, self._restart_backoff_seconds * 2.0)
+                continue
+            self._restart_times.append(now)
+            with self._writer_lock:
+                self._process_health_known = True
+                self._process_available = True
+                if self._process_generation > 1:
+                    self._writer_stats["process_restart_count"] += 1
+                if exit_code == 75:
+                    self._writer_stats["recycle_count"] += 1
+                    self._writer_stats["last_restart_reason"] = "bounded_recycle"
+                elif exit_code is not None:
+                    self._writer_stats["last_restart_reason"] = "process_exit"
+            self._restart_backoff_seconds = 0.25
+            time.sleep(0.1)
+
+    def _record_rejection(self, reason: str, event_id: str = "") -> None:
+        with self._writer_lock:
+            self._recent_rejections.append({
+                "reason": _bounded_text(reason, 80),
+                "event_id": _bounded_text(event_id, 160),
+                "observed_at": deps.now_utc_iso(),
+                "sanitized": True,
+            })
+
+    def admit_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
+        if self._writer_stop.is_set():
+            self._record_rejection("shutting_down")
+            return {"status": "shutting_down", "accepted": False, "retry_after_ms": 1000}
+        compact = _compact_workflow_event(event)
+        if compact is None:
+            with self._writer_lock:
+                self._writer_stats["rejected_events"] += 1
+            self._record_rejection("invalid")
+            return {"status": "invalid", "accepted": False, "retry_after_ms": 0}
+        event_id = str(compact["id"])
+        with self._writer_lock:
+            if event_id in self._pending_ids:
+                self._writer_stats["coalesced_events"] += 1
+                return {"status": "coalesced", "accepted": True, "event_id": event_id}
+            self._pending_ids.add(event_id)
+        self.start_writer()
+        try:
+            self._writer_queue.put_nowait({"kind": "event", "event": compact, "event_id": event_id})
+        except queue.Full:
+            with self._writer_lock:
+                self._pending_ids.discard(event_id)
+                self._writer_stats["rejected_events"] += 1
+            self._record_rejection("queue_full", event_id)
+            return {"status": "queue_full", "accepted": False, "retry_after_ms": 2000}
+        with self._writer_lock:
+            self._writer_stats["queued"] += 1
+            self._writer_stats["accepted_events"] += 1
+            process_known = self._process_health_known
+            process_available = self._process_available
+        if process_known and not process_available:
+            return {
+                "status": "process_unavailable",
+                "accepted": True,
+                "event_id": event_id,
+                "refresh_pending": True,
+                "retry_after_ms": 5000,
+            }
+        return {"status": "accepted", "accepted": True, "event_id": event_id}
+
+    def enqueue_event(self, event: Dict[str, Any]) -> bool:
+        return bool(self.admit_event(event).get("accepted"))
+
+    def _enqueue_control(self, action: str) -> Dict[str, Any]:
+        if self._writer_stop.is_set():
+            return {"status": "shutting_down", "accepted": False}
+        self.start_writer()
+        control_id = uuid.uuid4().hex
+        try:
+            self._writer_queue.put_nowait({"kind": "control", "action": action, "event_id": control_id})
+        except queue.Full:
+            with self._writer_lock:
+                self._writer_stats["rejected_events"] += 1
+            return {"status": "queue_full", "accepted": False, "retry_after_ms": 2000}
+        return {"status": "accepted", "accepted": True, "request_id": control_id}
+
+    def _dispatcher_loop(self) -> None:
+        inbox = self.mailbox_root / "inbox"
+        while not self._writer_stop.is_set() or not self._writer_queue.empty():
+            try:
+                item = self._writer_queue.get(timeout=0.25)
+            except queue.Empty:
+                continue
+            if item is None:
+                self._writer_queue.task_done()
+                continue
+            started = time.monotonic()
+            event_id = str(item.get("event_id") or uuid.uuid4().hex)
+            try:
+                while len(list(inbox.glob("*.json"))) >= self._mailbox_capacity:
+                    with self._writer_lock:
+                        self._writer_stats["last_error_type"] = "MailboxBackpressure"
+                    if self._writer_stop.wait(0.1):
+                        failed = self.mailbox_root / "failed" / f"undelivered-{event_id}.json"
+                        _write_json(failed, {
+                            "status": "retained_unprocessed",
+                            "reason": "shutdown_during_mailbox_backpressure",
+                            "event_id": event_id,
+                            "payload": item.get("event") if str(item.get("kind") or "event") == "event" else {"kind": "control", "action": item.get("action")},
+                            "observed_at": deps.now_utc_iso(),
+                            "sanitized": True,
+                        })
+                        with self._writer_lock:
+                            self._writer_stats["failed"] += 1
+                            self._writer_stats["dropped_events"] += 1
+                        self._record_rejection("shutdown_during_mailbox_backpressure", event_id)
+                        raise RuntimeError("workflow_mailbox_shutdown")
+                kind = str(item.get("kind") or "event")
+                if kind == "control":
+                    name = f"control-{str(item.get('action') or 'unknown')}-{event_id}.json"
+                    payload = {"kind": "control", "action": item.get("action"), "request_id": event_id}
+                else:
+                    payload = item.get("event")
+                    sort_epoch_ms = _epoch_ms(payload.get("time")) if isinstance(payload, dict) else _epoch_ms()
+                    name = f"event-{sort_epoch_ms:016d}-{event_id}.json"
+                target = inbox / name
+                if target.exists():
+                    with self._writer_lock:
+                        self._writer_stats["coalesced_events"] += 1
+                else:
+                    tmp = target.with_suffix(f".json.{os.getpid()}.{uuid.uuid4().hex}.tmp")
+                    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+                    with tmp.open("xb") as handle:
+                        handle.write(encoded)
+                        handle.flush()
+                    os.replace(tmp, target)
+                    with self._writer_lock:
+                        self._writer_stats["written"] += 1
+                        self._writer_stats["last_write_at"] = deps.now_utc_iso()
+                        self._writer_stats["recent_max_write_ms"] = max(
+                            float(self._writer_stats["recent_max_write_ms"]),
+                            max(0.0, (time.monotonic() - started) * 1000.0),
+                        )
+            except Exception as exc:
                 with self._writer_lock:
-                    self._writer_stats["written"] += len(batch)
-                    if len(batch) > 1:
-                        self._writer_stats["coalesced"] += len(batch) - 1
-                    if not changed:
-                        self._writer_stats["coalesced"] += 1
-                    self._writer_stats["recent_max_write_ms"] = max(
-                        float(self._writer_stats["recent_max_write_ms"]), duration_ms
-                    )
-                    self._writer_stats["last_write_at"] = deps.now_utc_iso()
+                    self._writer_stats["failed"] += 1
+                    self._writer_stats["last_error_type"] = _safe_error_type(exc)
             finally:
-                for _ in batch:
-                    self._writer_queue.task_done()
+                with self._writer_lock:
+                    self._pending_ids.discard(event_id)
+                self._writer_queue.task_done()
+
+    def _child_status(self) -> Dict[str, Any]:
+        payload = _read_json(self.process_status_file, {})
+        if not isinstance(payload, dict):
+            return {}
+        started = str(payload.get("started_at") or "")
+        stale = True
+        try:
+            from datetime import datetime, timezone
+
+            reference = str(payload.get("heartbeat_at") or payload.get("last_batch_completed_at") or payload.get("last_success_at") or started)
+            parsed = datetime.fromisoformat(reference.replace("Z", "+00:00"))
+            stale = (datetime.now(timezone.utc) - parsed).total_seconds() > 30
+        except Exception:
+            stale = not bool(payload.get("process_alive"))
+        normalized = {**payload, "health_stale": stale}
+        for key in (
+            "process_pid", "process_generation", "oldest_queue_age_ms", "processed_events",
+            "batch_count", "last_batch_size", "serialized_bytes", "allocation_bytes",
+            "canonical_noop_count", "canonical_change_count", "hash_input_bytes",
+            "memory_pressure_deferred_count", "cpu_budget_deferred_count",
+            "last_known_good_revision", "next_batch_due_ms", "stagger_ms", "rss_bytes",
+        ):
+            normalized[key] = int(normalized.get(key) or 0)
+        for key in (
+            "last_batch_wall_ms", "last_batch_cpu_ms", "serialization_ms", "hash_cpu_ms",
+        ):
+            normalized[key] = float(normalized.get(key) or 0.0)
+        return normalized
 
     def writer_status(self) -> Dict[str, Any]:
         with self._writer_lock:
             stats = dict(self._writer_stats)
         thread = self._writer_thread
+        process = self._projection_process
+        child = self._child_status()
+        process_alive = bool(process is not None and process.poll() is None) if self._owns_process else bool(child.get("process_alive") and not child.get("health_stale"))
+        with self._writer_lock:
+            self._process_health_known = bool(self._owns_process or child)
+            self._process_available = process_alive
+            recent_rejections = list(self._recent_rejections)
         return {
             "running": bool(thread is not None and thread.is_alive()),
+            "dispatcher_alive": bool(thread is not None and thread.is_alive()),
+            "dispatcher_restart_count": int(stats.get("dispatcher_restart_count") or 0),
+            "dispatch_count": int(stats.get("written") or 0),
+            "last_dispatch_at": stats.get("last_write_at") or "",
+            "last_dispatch_error_type": stats.get("last_error_type") or "",
             "queue_depth": self._writer_queue.qsize(),
             "queue_capacity": self._writer_queue.maxsize,
+            "mailbox_capacity": self._mailbox_capacity,
             "batch_size": self._writer_batch_size,
+            "process_alive": process_alive,
+            "process_pid": int(process.pid) if process_alive and process is not None else child.get("process_pid"),
+            "process_generation": self._process_generation if self._owns_process else child.get("process_generation", 0),
+            "started_at": child.get("started_at") or "",
+            "restart_count": int(stats.get("process_restart_count") or 0),
+            "execution_owner": "pocket-worker/workflow-subprocess",
+            "degraded": not process_alive,
+            "degraded_reason": "" if process_alive else "workflow_projection_unavailable",
+            "data_source": "prepared_sqlite",
+            "refresh_pending": self._writer_queue.qsize() > 0 or int(child.get("queue_depth") or 0) > 0,
+            "retry_after_ms": 5000 if not process_alive else 0,
+            "recent_rejection_evidence": recent_rejections,
             **stats,
+            "last_error_type": child.get("last_error_type") or stats.get("last_error_type") or "",
+            "child_last_error_type": child.get("last_error_type") or "",
+            "coalesced": int(stats.get("coalesced_events") or 0),
+            "dropped": int(stats.get("dropped_events") or 0),
+            **{key: child.get(key) for key in (
+                "oldest_queue_age_ms", "processed_events", "batch_count", "last_batch_size",
+                "last_batch_started_at", "last_batch_completed_at", "last_batch_wall_ms",
+                "last_batch_cpu_ms", "last_batch_serialized_bytes", "last_batch_allocation_bytes",
+                "serialization_ms", "serialized_bytes", "allocation_bytes",
+                "canonical_noop_count", "canonical_change_count", "hash_cpu_ms", "hash_input_bytes",
+                "memory_pressure_deferred_count", "cpu_budget_deferred_count", "pressure_deferred_count", "last_error_at",
+                "last_success_at", "last_known_good_revision", "next_batch_due_ms", "stagger_ms",
+                "rss_bytes",
+            )},
         }
 
     def ingest_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
-        """Persist one event using the same ordered batch pipeline as the writer."""
-        projections = self.ingest_events([event])
+        admission = self.admit_event(event)
         workflow_id = workflow_id_for_event(event) if isinstance(event, dict) else ""
-        return self.get_projection(workflow_id) if projections and workflow_id else {}
+        return {"workflow_id": workflow_id, "admission": admission, "projection": self.get_projection(workflow_id)}
 
     def ingest_events(self, events: List[Dict[str, Any]]) -> bool:
-        """Append events in order and persist one coalesced projection snapshot."""
-        safe_events: List[Dict[str, Any]] = []
-        for raw in events:
-            if not isinstance(raw, dict):
-                continue
-            event = _safe(dict(raw))
-            event.setdefault("time", deps.now_utc_iso())
-            event.setdefault("id", uuid.uuid4().hex)
-            event["workflow_id"] = workflow_id_for_event(event)
-            safe_events.append(event)
-        if not safe_events:
-            return False
-        for event in safe_events:
-            _append_jsonl(self.event_log, event)
-        changed = False
-        with self._projection_lock:
-            data = self._projection_data()
-            workflows = data.setdefault("workflows", {})
-            for event in safe_events:
-                workflow_id = str(event["workflow_id"])
-                current = dict(workflows.get(workflow_id) or {"workflow_id": workflow_id})
-                projection = self._apply_event(current, event)
-                if workflows.get(workflow_id) != projection:
-                    workflows[workflow_id] = projection
-                    changed = True
-            if changed:
-                data["updated_at"] = deps.now_utc_iso()
-                _write_json(self.projection_file, data)
-        for event in safe_events:
-            self._maybe_record_command(event)
-        if changed:
-            self._invalidate_status_cache()
-        return changed
+        accepted = False
+        for event in events:
+            accepted = self.enqueue_event(event) or accepted
+        return accepted
 
     def _maybe_record_command(self, event: Dict[str, Any]) -> None:
         subject = str(event.get("subject") or "")
@@ -453,125 +920,42 @@ class EventSourcedWorkflowEngine:
     def _apply_event(
         self, current: Dict[str, Any] | None, event: Dict[str, Any]
     ) -> Dict[str, Any]:
-        projection = WorkflowProjection(
-            **{
-                k: v
-                for k, v in (current or {}).items()
-                if k in WorkflowProjection.__annotations__
-            }
-        ).asdict()
-        workflow_id = str(event.get("workflow_id") or workflow_id_for_event(event))
-        data = event.get("data") if isinstance(event.get("data"), dict) else {}
-        etype = str(event.get("type") or "")
-        subject = str(event.get("subject") or "")
-        now = str(event.get("time") or deps.now_utc_iso())
-        projection["workflow_id"] = workflow_id
-        projection["created_at"] = projection.get("created_at") or now
-        projection["updated_at"] = now
-        projection["event_count"] = int(projection.get("event_count") or 0) + 1
-        projection["last_event_type"] = etype
-        projection["last_subject"] = subject
-        projection["job_id"] = str(data.get("job_id") or projection.get("job_id") or "")
-        projection["command_id"] = str(
-            data.get("command_id") or projection.get("command_id") or ""
-        )
-        projection["operation"] = str(
-            data.get("operation") or projection.get("operation") or ""
-        )
-        projection["command_subject"] = str(
-            data.get("command_subject")
-            or data.get("subject")
-            or (
-                subject
-                if subject.startswith("pocketlab.commands.")
-                else projection.get("command_subject") or ""
-            )
-        )
-        projection["attempts"] = max(
-            int(projection.get("attempts") or 0), int(data.get("attempt") or 0)
-        )
-        if data.get("error"):
-            projection["last_error"] = str(data.get("error"))
-        if data.get("replayed_from_dead_letter") or data.get("replay_of"):
-            projection["replay_of"] = str(
-                data.get("replayed_from_dead_letter") or data.get("replay_of")
-            )
-        if data.get("replayed_as"):
-            projection["replayed_as"] = str(data.get("replayed_as"))
-
-        if etype in SUCCESS_TYPES:
-            projection.update(
-                {
-                    "status": "succeeded",
-                    "terminal": True,
-                    "success": True,
-                    "failed": False,
-                }
-            )
-        elif etype in FAILURE_TYPES:
-            projection.update(
-                {"status": "failed", "terminal": True, "success": False, "failed": True}
-            )
-        elif etype in DLQ_TYPES or subject.startswith("pocketlab.dlq."):
-            projection.update(
-                {
-                    "status": "dead_lettered",
-                    "terminal": True,
-                    "dead_lettered": True,
-                    "success": False,
-                    "failed": True,
-                }
-            )
-        elif "retry" in etype:
-            projection.update({"status": "retrying", "terminal": False})
-        elif etype in ACTIVE_TYPES or subject.startswith("pocketlab.commands."):
-            projection.update(
-                {
-                    "status": "running" if "claimed" in etype else "queued",
-                    "terminal": False,
-                }
-            )
-        elif not projection.get("terminal"):
-            projection["status"] = (
-                projection.get("status")
-                if projection.get("status") not in {"unknown", ""}
-                else "observed"
-            )
-
-        if (
-            not projection.get("title")
-            or projection.get("title") == "Pocket Lab workflow"
-        ):
-            op = (
-                projection.get("operation")
-                or projection.get("command_subject")
-                or subject
-                or workflow_id
-            )
-            projection["title"] = (
-                str(op)
-                .replace("pocketlab.commands.", "")
-                .replace(".", " ")
-                .strip()
-                .title()
-            )
-        return projection
+        return _apply_projection_event(current, event)
 
     def _projection_data(self) -> Dict[str, Any]:
         with self._projection_lock:
-            if self._projection_cache is None:
-                loaded = _read_json(self.projection_file, {"workflows": {}})
-                self._projection_cache = loaded if isinstance(loaded, dict) else {"workflows": {}}
-                self._projection_cache.setdefault("workflows", {})
-            return self._projection_cache
+            loaded = _read_json(self.projection_file, {"workflows": {}})
+            return loaded if isinstance(loaded, dict) else {"workflows": {}}
+
+    def _prepared_projection_row(self, workflow_id: str) -> Dict[str, Any] | None:
+        try:
+            with fast_read_connection(timeout_ms=250) as conn:
+                row = conn.execute(
+                    "SELECT projection_json, revision, process_generation FROM workflow_current_state WHERE workflow_id = ?",
+                    (str(workflow_id),),
+                ).fetchone()
+            if row is None:
+                return None
+            payload = json.loads(str(row["projection_json"]))
+            if not isinstance(payload, dict):
+                return None
+            payload["revision"] = int(row["revision"])
+            payload["process_generation"] = int(row["process_generation"])
+            payload["data_source"] = "prepared_sqlite"
+            return payload
+        except (FileNotFoundError, sqlite3.Error, ValueError, TypeError, json.JSONDecodeError):
+            return None
 
     def get_projection(self, workflow_id: str) -> Dict[str, Any]:
-        with self._projection_lock:
-            data = self._projection_data()
-            return dict(
-                (data.get("workflows") or {}).get(str(workflow_id))
-                or {"workflow_id": str(workflow_id)}
-            )
+        prepared = self._prepared_projection_row(str(workflow_id))
+        if prepared is not None:
+            return prepared
+        data = self._projection_data()
+        fallback = dict((data.get("workflows") or {}).get(str(workflow_id)) or {"workflow_id": str(workflow_id)})
+        fallback["data_source"] = "last_known_good_file"
+        fallback["degraded"] = True
+        fallback["degraded_reason"] = "prepared_workflow_unavailable"
+        return fallback
 
     def _invalidate_status_cache(self) -> None:
         with self._status_cache_lock:
@@ -579,89 +963,148 @@ class EventSourcedWorkflowEngine:
             self._status_cache_at = 0.0
 
     def save_projection(self, projection: Dict[str, Any]) -> bool:
+        """Administrative/test-only bounded component write; normal events use the subprocess."""
         workflow_id = str(projection.get("workflow_id") or "")
         if not workflow_id:
             return False
-        with self._projection_lock:
-            data = self._projection_data()
-            workflows = data.setdefault("workflows", {})
-            current = workflows.get(workflow_id)
-            if current == projection:
-                with self._writer_lock:
-                    self._writer_stats["coalesced"] += 1
-                return False
-            workflows[workflow_id] = dict(projection)
-            data["updated_at"] = deps.now_utc_iso()
-            _write_json(self.projection_file, data)
-        self._invalidate_status_cache()
-        return True
+        apply_migrations()
+        material = _canonical_projection_material(projection)
+        encoded_material = json.dumps(material, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        canonical_hash = hashlib.sha256(encoded_material).hexdigest()
+        payload = json.dumps(projection, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        now = str(projection.get("updated_at") or deps.now_utc_iso())
+        changed = False
+        with connection() as conn:
+            with begin_immediate(conn) as tx:
+                current = tx.execute(
+                    "SELECT canonical_hash, revision FROM workflow_current_state WHERE workflow_id=?",
+                    (workflow_id,),
+                ).fetchone()
+                if current is not None and str(current["canonical_hash"]) == canonical_hash:
+                    with self._writer_lock:
+                        self._writer_stats["coalesced_events"] += 1
+                    return False
+                revision = int(current["revision"] if current else 0) + 1
+                tx.execute(
+                    """
+                    INSERT INTO workflow_current_state(
+                        workflow_id, projection_json, canonical_hash, status, terminal,
+                        revision, semantic_event_count, updated_at, updated_at_epoch_ms,
+                        process_generation
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(workflow_id) DO UPDATE SET
+                        projection_json=excluded.projection_json,
+                        canonical_hash=excluded.canonical_hash,
+                        status=excluded.status,
+                        terminal=excluded.terminal,
+                        revision=excluded.revision,
+                        semantic_event_count=excluded.semantic_event_count,
+                        updated_at=excluded.updated_at,
+                        updated_at_epoch_ms=excluded.updated_at_epoch_ms,
+                        process_generation=excluded.process_generation
+                    """,
+                    (
+                        workflow_id,
+                        payload,
+                        canonical_hash,
+                        str(projection.get("status") or "unknown"),
+                        1 if projection.get("terminal") else 0,
+                        revision,
+                        int(projection.get("event_count") or 0),
+                        now,
+                        _epoch_ms(now),
+                        0,
+                    ),
+                )
+                changed = True
+        if changed:
+            self._invalidate_status_cache()
+        return changed
 
-    def iter_events(
-        self, workflow_id: str | None = None, limit: int = 1000
-    ) -> List[Dict[str, Any]]:
-        events: List[Dict[str, Any]] = []
-        if not self.event_log.exists():
+    def iter_events(self, workflow_id: str | None = None, limit: int = 1000) -> List[Dict[str, Any]]:
+        bounded = max(1, min(int(limit), self.history_limit))
+        try:
+            with fast_read_connection(timeout_ms=250) as conn:
+                if workflow_id:
+                    rows = conn.execute(
+                        "SELECT event_json FROM workflow_event_index WHERE workflow_id=? ORDER BY observed_at_epoch_ms DESC, event_id DESC LIMIT ?",
+                        (str(workflow_id), bounded),
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        "SELECT event_json FROM workflow_event_index ORDER BY observed_at_epoch_ms DESC, event_id DESC LIMIT ?",
+                        (bounded,),
+                    ).fetchall()
+            events: List[Dict[str, Any]] = []
+            for row in reversed(rows):
+                try:
+                    item = json.loads(str(row["event_json"]))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    continue
+                if isinstance(item, dict):
+                    events.append(item)
             return events
-        lines = self.event_log.read_text(encoding="utf-8").splitlines()
-        for line in lines[-max(limit * 3, limit) :]:
-            try:
-                event = json.loads(line)
-            except Exception:
-                continue
-            if workflow_id and str(
-                event.get("workflow_id") or workflow_id_for_event(event)
-            ) != str(workflow_id):
-                continue
-            events.append(event)
-        events.sort(key=_event_sort_key)
-        return events[-max(1, min(limit, self.history_limit)) :]
+        except (FileNotFoundError, sqlite3.Error):
+            return []
 
     def reconstruct(self, workflow_id: str) -> Dict[str, Any]:
-        projection: Dict[str, Any] = {"workflow_id": str(workflow_id)}
-        events = self.iter_events(workflow_id=workflow_id, limit=self.history_limit)
-        for event in events:
-            projection = self._apply_event(projection, event)
-        projection["reconstructed_at"] = deps.now_utc_iso()
-        projection["source"] = "event-log"
+        projection = self.get_projection(workflow_id)
         return {
             "workflow_id": str(workflow_id),
             "projection": projection,
-            "events": events,
+            "events": self.iter_events(workflow_id=workflow_id, limit=min(250, self.history_limit)),
+            "source": projection.get("data_source") or "prepared_sqlite",
+            "reconstruction": "prepared",
         }
 
     def rebuild_all(self) -> Dict[str, Any]:
-        projections: Dict[str, Any] = {}
-        for event in self.iter_events(limit=self.history_limit):
-            workflow_id = str(event.get("workflow_id") or workflow_id_for_event(event))
-            projections[workflow_id] = self._apply_event(
-                projections.get(workflow_id) or {"workflow_id": workflow_id}, event
-            )
-        payload = {
-            "workflows": projections,
-            "rebuilt_at": deps.now_utc_iso(),
-            "count": len(projections),
+        admission = self._enqueue_control("rebuild")
+        return {
+            "status": "rebuild_scheduled" if admission.get("accepted") else admission.get("status"),
+            "accepted": bool(admission.get("accepted")),
+            "request_id": admission.get("request_id"),
+            "projection_writer": self.writer_status(),
         }
-        _write_json(self.projection_file, payload)
-        with self._projection_lock:
-            self._projection_cache = payload
-        return payload
 
     def list_workflows(
         self, *, status: str = "", include_terminal: bool = True, limit: int = 100
     ) -> List[Dict[str, Any]]:
-        data = _read_json(self.projection_file, {"workflows": {}})
-        items = list((data.get("workflows") or {}).values())
+        bounded = max(1, min(int(limit), 1000))
+        clauses: list[str] = []
+        params: list[Any] = []
         if status:
-            items = [item for item in items if str(item.get("status")) == status]
+            clauses.append("status = ?")
+            params.append(str(status))
         if not include_terminal:
-            items = [item for item in items if not item.get("terminal")]
-        items.sort(
-            key=lambda item: str(
-                item.get("updated_at") or item.get("created_at") or ""
-            ),
-            reverse=True,
-        )
-        return items[: max(1, min(limit, 1000))]
+            clauses.append("terminal = 0")
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        try:
+            with fast_read_connection(timeout_ms=250) as conn:
+                rows = conn.execute(
+                    f"SELECT projection_json, revision, process_generation FROM workflow_current_state {where} ORDER BY updated_at_epoch_ms DESC LIMIT ?",
+                    (*params, bounded),
+                ).fetchall()
+            items: List[Dict[str, Any]] = []
+            for row in rows:
+                try:
+                    item = json.loads(str(row["projection_json"]))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    continue
+                if isinstance(item, dict):
+                    item["revision"] = int(row["revision"])
+                    item["process_generation"] = int(row["process_generation"])
+                    item["data_source"] = "prepared_sqlite"
+                    items.append(item)
+            return items
+        except (FileNotFoundError, sqlite3.Error):
+            data = self._projection_data()
+            items = list((data.get("workflows") or {}).values())
+            if status:
+                items = [item for item in items if str(item.get("status")) == status]
+            if not include_terminal:
+                items = [item for item in items if not item.get("terminal")]
+            items.sort(key=lambda item: str(item.get("updated_at") or item.get("created_at") or ""), reverse=True)
+            return items[:bounded]
 
     def recovery_plan(
         self, *, stale_seconds: int | None = None, limit: int = 100
@@ -695,26 +1138,46 @@ class EventSourcedWorkflowEngine:
         }
 
     def command_for_workflow(self, workflow_id: str) -> Optional[Dict[str, Any]]:
-        journal = _read_json(self.command_file, {"commands": {}})
-        for item in (journal.get("commands") or {}).values():
-            if str(item.get("workflow_id")) == str(workflow_id) or str(
-                item.get("command_id")
-            ) == str(workflow_id):
-                return dict(item)
-        # Fall back to command events in journal.
-        for event in reversed(
-            self.iter_events(workflow_id=workflow_id, limit=self.history_limit)
-        ):
+        try:
+            with fast_read_connection(timeout_ms=250) as conn:
+                row = conn.execute(
+                    """
+                    SELECT command_id, workflow_id, subject, event_type, command_json,
+                           created_at, updated_at
+                      FROM workflow_command_state
+                     WHERE workflow_id = ? OR command_id = ?
+                     ORDER BY updated_at_epoch_ms DESC
+                     LIMIT 1
+                    """,
+                    (str(workflow_id), str(workflow_id)),
+                ).fetchone()
+            if row is not None:
+                try:
+                    command = json.loads(str(row["command_json"]))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    command = {}
+                return {
+                    "command_id": str(row["command_id"]),
+                    "workflow_id": str(row["workflow_id"]),
+                    "subject": str(row["subject"]),
+                    "event_type": str(row["event_type"]),
+                    "command": command if isinstance(command, dict) else {},
+                    "created_at": str(row["created_at"]),
+                    "updated_at": str(row["updated_at"]),
+                    "data_source": "prepared_sqlite",
+                }
+        except (FileNotFoundError, sqlite3.Error):
+            pass
+        for event in reversed(self.iter_events(workflow_id=workflow_id, limit=min(self.history_limit, 250))):
             subject = str(event.get("subject") or "")
             data = event.get("data") if isinstance(event.get("data"), dict) else {}
             if subject.startswith("pocketlab.commands."):
                 return {
                     "workflow_id": workflow_id,
-                    "command_id": data.get("command_id")
-                    or data.get("job_id")
-                    or workflow_id,
+                    "command_id": data.get("command_id") or data.get("job_id") or workflow_id,
                     "subject": subject,
                     "command": data,
+                    "data_source": "prepared_event_index",
                 }
         return None
 
@@ -804,6 +1267,24 @@ class EventSourcedWorkflowEngine:
             "recovered_count": len(recovered),
         }
 
+    def _prepared_counts(self) -> tuple[int, Dict[str, int]]:
+        try:
+            with fast_read_connection(timeout_ms=250) as conn:
+                rows = conn.execute(
+                    "SELECT status, COUNT(*) AS count FROM workflow_current_state GROUP BY status"
+                ).fetchall()
+            counts = {str(row["status"] or "unknown"): int(row["count"] or 0) for row in rows}
+            return sum(counts.values()), counts
+        except (FileNotFoundError, sqlite3.Error):
+            data = self._projection_data()
+            counts: Dict[str, int] = {}
+            for item in (data.get("workflows") or {}).values():
+                if not isinstance(item, dict):
+                    continue
+                state = str(item.get("status") or "unknown")
+                counts[state] = counts.get(state, 0) + 1
+            return sum(counts.values()), counts
+
     def status(self) -> Dict[str, Any]:
         now = time.monotonic()
         with self._status_cache_lock:
@@ -811,21 +1292,20 @@ class EventSourcedWorkflowEngine:
             if cached is not None and now - self._status_cache_at < self._status_cache_ttl:
                 return {**cached, "counts": dict(cached.get("counts") or {}), "cache": "hit"}
 
-        projections = self.list_workflows(limit=1000)
-        counts: Dict[str, int] = {}
-        for item in projections:
-            status = str(item.get("status") or "unknown")
-            counts[status] = counts.get(status, 0) + 1
+        workflow_count, counts = self._prepared_counts()
+        writer = self.writer_status()
         result = {
-            "status": "ok",
+            "status": "degraded" if writer.get("degraded") else "ok",
             "engine": "event-sourced-workflow-engine",
-            "event_log": str(self.event_log),
-            "projection_file": str(self.projection_file),
-            "workflow_count": len(projections),
+            "execution_owner": "pocket-worker/workflow-subprocess",
+            "workflow_count": workflow_count,
             "counts": counts,
             "history_limit": self.history_limit,
             "cache_ttl_seconds": self._status_cache_ttl,
-            "projection_writer": self.writer_status(),
+            "prepared_read_source": "sqlite",
+            "last_known_good": True,
+            "projection_writer": writer,
+            "sanitized": True,
         }
         with self._status_cache_lock:
             self._status_cache = {**result, "counts": dict(counts)}

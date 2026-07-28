@@ -719,6 +719,26 @@ def _compact_process_runtime(payload: dict[str, Any]) -> dict[str, Any]:
     } | {"workloads": workloads, "sanitized": True}
 
 
+def _compact_workflow_projection(payload: dict[str, Any]) -> dict[str, Any]:
+    writer = payload.get("projection_writer") if isinstance(payload.get("projection_writer"), dict) else {}
+    keys = (
+        "process_alive", "process_pid", "process_generation", "started_at", "execution_owner",
+        "process_restart_count", "restart_count", "recycle_count", "last_restart_reason",
+        "queue_depth", "queue_capacity", "mailbox_capacity", "oldest_queue_age_ms",
+        "accepted_events", "coalesced_events", "rejected_events", "dropped_events",
+        "processed_events", "batch_count", "last_batch_size", "last_batch_wall_ms",
+        "last_batch_cpu_ms", "last_batch_serialized_bytes", "last_batch_allocation_bytes",
+        "serialization_ms", "serialized_bytes", "allocation_bytes",
+        "canonical_noop_count", "canonical_change_count", "memory_pressure_deferred_count",
+        "cpu_budget_deferred_count", "pressure_deferred_count", "last_error_type", "last_error_at", "last_success_at",
+        "last_known_good_revision", "next_batch_due_ms", "stagger_ms", "degraded",
+        "degraded_reason", "refresh_pending", "retry_after_ms", "dispatcher_alive",
+        "dispatcher_restart_count", "dispatch_count", "last_dispatch_at",
+        "last_dispatch_error_type",
+    )
+    return {key: writer.get(key) for key in keys} | {"sanitized": True}
+
+
 def _compact_hot_path(payload: dict[str, Any]) -> dict[str, Any]:
     return {
         "job_count": int(payload.get("job_count") or 0),
@@ -808,6 +828,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     from api_fastapi.services.hot_path_profiler import HOT_PATH_PROFILER  # type: ignore
     from api_fastapi.services.process_runtime import PROCESS_RUNTIME  # type: ignore
     from api_fastapi.services.runtime_snapshot_store import publish_worker_snapshot  # type: ignore
+    from api_fastapi.services.workflow_engine import WORKFLOW_ENGINE  # type: ignore
 
     retry_seconds = _env_int(
         "POCKETLAB_WORKER_PROJECTION_RETRY_SECONDS",
@@ -924,6 +945,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                         "adaptive_runtime": _compact_adaptive_runtime(ADAPTIVE_RUNTIME.diagnostics()),
                         "process_runtime": _compact_process_runtime(PROCESS_RUNTIME.snapshot()),
                         "hot_path": _compact_hot_path(HOT_PATH_PROFILER.snapshot()),
+                        "workflow_projection": _compact_workflow_projection(WORKFLOW_ENGINE.status()),
                     },
                 )
                 last_snapshot_at = now

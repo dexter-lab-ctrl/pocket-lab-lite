@@ -443,30 +443,26 @@ def _command_journal_entry(operation_id: Any) -> dict[str, Any]:
     op_id = str(operation_id or "").strip()
     if not op_id:
         return {}
-    payload = _read_json(_state_dir() / "workflows" / "commands" / "command_journal.json", {})
-    if not isinstance(payload, dict):
+    try:
+        from .workflow_engine import WORKFLOW_ENGINE
+
+        entry = WORKFLOW_ENGINE.command_for_workflow(op_id)
+        return entry if isinstance(entry, dict) else {}
+    except Exception:
         return {}
-    for root_key in ("commands", "command_journal"):
-        root = payload.get(root_key)
-        if isinstance(root, dict) and isinstance(root.get(op_id), dict):
-            return root[op_id]
-    entry = payload.get(op_id)
-    return entry if isinstance(entry, dict) else {}
 
 
 def _workflow_projection(operation_id: Any) -> dict[str, Any]:
     op_id = str(operation_id or "").strip()
     if not op_id:
         return {}
-    payload = _read_json(_state_dir() / "workflows" / "projections" / "workflow_projections.json", {})
-    if not isinstance(payload, dict):
+    try:
+        from .workflow_engine import WORKFLOW_ENGINE
+
+        entry = WORKFLOW_ENGINE.get_projection(op_id)
+        return entry if isinstance(entry, dict) else {}
+    except Exception:
         return {}
-    for root_key in ("workflows", "projections"):
-        root = payload.get(root_key)
-        if isinstance(root, dict) and isinstance(root.get(op_id), dict):
-            return root[op_id]
-    entry = payload.get(op_id)
-    return entry if isinstance(entry, dict) else {}
 
 
 def _trace_event_label(event: dict[str, Any]) -> str:
