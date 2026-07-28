@@ -728,6 +728,69 @@ def _compact_hot_path(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compact_scheduler_snapshot(
+    scheduler: dict[str, Any],
+    *,
+    mailbox: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build the sanitized worker-owned scheduler snapshot."""
+
+    queue = scheduler.get("queue") if isinstance(scheduler.get("queue"), dict) else {}
+    queue_fields = (
+        "executor_depth",
+        "ready_executor_depth",
+        "scheduled_future_depth",
+        "followup_domains",
+        "active_domains",
+        "clean_entries_removed",
+        "active_entries_removed",
+        "stale_generation_entries_removed",
+        "duplicate_entries_removed",
+        "unregistered_entries_removed",
+        "stale_entries_removed",
+        "stale_flags_cleared",
+        "orphaned_dirty_requeued",
+    )
+    compact_queue = {key: int(queue.get(key) or 0) for key in queue_fields}
+    compact_queue["durable_pending"] = int(mailbox.get("pending") or 0)
+    compact_queue["unregistered"] = int(mailbox.get("unregistered") or 0)
+
+    compact_scheduler = {
+        key: scheduler.get(key)
+        for key in (
+            "status",
+            "registered_domains",
+            "projection_execution_owner",
+            "is_execution_owner",
+            "process_role",
+            "loaded_build_version",
+            "process_start_generation",
+        )
+    }
+    compact_scheduler.update(
+        {
+            "queued_domains": int(compact_queue["ready_executor_depth"]),
+            "active_domains": int(compact_queue["active_domains"]),
+            "queue": compact_queue,
+            "mailbox": {
+                "claimed": int(mailbox.get("claimed") or 0),
+                "pending": int(mailbox.get("pending") or 0),
+                "unregistered": int(mailbox.get("unregistered") or 0),
+            },
+            "sanitized": True,
+        }
+    )
+    worker_health = {
+        "registry_ready": int(scheduler.get("registered_domains") or 0) > 0,
+        "queue": compact_queue,
+        "mailbox": dict(compact_scheduler["mailbox"]),
+        "loaded_build_version": scheduler.get("loaded_build_version"),
+        "process_start_generation": scheduler.get("process_start_generation"),
+        "sanitized": True,
+    }
+    return compact_scheduler, worker_health
+
+
 async def projection_signal_loop(stop_event: asyncio.Event) -> None:
     """Execute prepared projections from the durable SQLite dirty mailbox.
 
@@ -838,33 +901,14 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
             consecutive_signal_failures = 0
             if now - last_snapshot_at >= snapshot_interval_seconds:
                 scheduler = PROJECTION_SCHEDULER.diagnostics()
-                queue = scheduler.get("queue") if isinstance(scheduler.get("queue"), dict) else {}
-                compact_scheduler = {
-                    key: scheduler.get(key)
-                    for key in (
-                        "status", "queued_domains", "active_domains",
-                        "active_io", "active_cpu", "projection_execution_owner",
-                        "is_execution_owner", "registered_domains", "process_role",
-                    )
-                }
-                compact_scheduler["queue"] = {
-                    "executor_depth": int(queue.get("executor_depth") or 0),
-                    "ready_executor_depth": int(
-                        queue.get("ready_executor_depth")
-                        if queue.get("ready_executor_depth") is not None
-                        else queue.get("executor_depth") or 0
-                    ),
-                    "scheduled_future_depth": int(
-                        queue.get("scheduled_future_depth") or 0
-                    ),
-                    "followup_domains": int(queue.get("followup_domains") or 0),
-                    "active_domains": int(queue.get("active_domains") or 0),
-                    "durable_pending": pending,
-                    "unregistered": unregistered,
-                }
-                compact_scheduler["mailbox"] = {
-                    "claimed": claimed, "pending": pending, "unregistered": unregistered
-                }
+                compact_scheduler, worker_health = _compact_scheduler_snapshot(
+                    scheduler,
+                    mailbox={
+                        "claimed": claimed,
+                        "pending": pending,
+                        "unregistered": unregistered,
+                    },
+                )
                 await asyncio.to_thread(
                     publish_worker_snapshot,
                     {
@@ -876,12 +920,7 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                             "registered_domain_count": int(scheduler.get("registered_domains") or 0),
                         },
                         "projection_scheduler": compact_scheduler,
-                        "worker_health": {
-                            "registry_ready": True,
-                            "queue": compact_scheduler["queue"],
-                            "mailbox": compact_scheduler["mailbox"],
-                            "sanitized": True,
-                        },
+                        "worker_health": worker_health,
                         "adaptive_runtime": _compact_adaptive_runtime(ADAPTIVE_RUNTIME.diagnostics()),
                         "process_runtime": _compact_process_runtime(PROCESS_RUNTIME.snapshot()),
                         "hot_path": _compact_hot_path(HOT_PATH_PROFILER.snapshot()),
