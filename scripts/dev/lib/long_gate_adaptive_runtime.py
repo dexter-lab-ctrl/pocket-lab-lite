@@ -102,6 +102,7 @@ def safe_sample(payload: dict[str, Any], http: dict[str, Any]) -> dict[str, Any]
     process_runtime = payload.get("process_runtime") if isinstance(payload.get("process_runtime"), dict) else {}
     hot_path = payload.get("hot_path") if isinstance(payload.get("hot_path"), dict) else {}
     event_loop = payload.get("event_loop") if isinstance(payload.get("event_loop"), dict) else {}
+    workflow = payload.get("workflow_projection") if isinstance(payload.get("workflow_projection"), dict) else {}
     domain_rows: dict[str, Any] = {}
     raw_domains = adaptive.get("domains") if isinstance(adaptive.get("domains"), dict) else {}
     for domain, row in raw_domains.items():
@@ -177,6 +178,24 @@ def safe_sample(payload: dict[str, Any], http: dict[str, Any]) -> dict[str, Any]
         "hot_path": {
             "job_count": int(hot_path.get("job_count") or 0),
             "top_cpu_jobs": (hot_path.get("top_cpu_jobs") or [])[:10] if isinstance(hot_path.get("top_cpu_jobs"), list) else [],
+        },
+        "workflow_projection": {
+            "process_alive": bool(workflow.get("process_alive")),
+            "process_pid": int(workflow.get("process_pid") or 0),
+            "process_generation": int(workflow.get("process_generation") or 0),
+            "restart_count": int(workflow.get("process_restart_count") or 0),
+            "recycle_count": int(workflow.get("recycle_count") or 0),
+            "queue_depth": int(workflow.get("queue_depth") or 0),
+            "queue_capacity": int(workflow.get("queue_capacity") or 0),
+            "oldest_queue_age_ms": int(workflow.get("oldest_queue_age_ms") or 0),
+            "processed_events": int(workflow.get("processed_events") or 0),
+            "canonical_noop_count": int(workflow.get("canonical_noop_count") or 0),
+            "canonical_change_count": int(workflow.get("canonical_change_count") or 0),
+            "dropped_events": int(workflow.get("dropped_events") or 0),
+            "rejected_events": int(workflow.get("rejected_events") or 0),
+            "degraded": bool(workflow.get("degraded")),
+            "degraded_reason": str(workflow.get("degraded_reason") or "")[:80],
+            "last_known_good_revision": int(workflow.get("last_known_good_revision") or 0),
         },
         "sanitized": True,
     }
@@ -347,6 +366,45 @@ def evaluate(samples: list[dict[str, Any]], args: argparse.Namespace) -> tuple[l
     if event_oversize:
         failures.append("event_payload_oversize_rejections")
 
+    workflow_rows = [sample.get("workflow_projection", {}) for sample in samples]
+    workflow_available = [row for row in workflow_rows if int(row.get("process_generation") or 0) > 0]
+    if workflow_available:
+        dead = sum(1 for row in workflow_available if not row.get("process_alive"))
+        degraded = sum(1 for row in workflow_available if row.get("degraded"))
+        max_queue = max((int(row.get("queue_depth") or 0) for row in workflow_available), default=0)
+        max_capacity = max((int(row.get("queue_capacity") or 0) for row in workflow_available), default=0)
+        max_restarts = max((int(row.get("restart_count") or 0) for row in workflow_available), default=0)
+        max_dropped = max((int(row.get("dropped_events") or 0) for row in workflow_available), default=0)
+        max_rejected = max((int(row.get("rejected_events") or 0) for row in workflow_available), default=0)
+        generations = [int(row.get("process_generation") or 0) for row in workflow_available]
+        generation_regressed = any(current < prior for prior, current in zip(generations, generations[1:]))
+        checks.extend([
+            {"check": "workflow_process_alive", "status": "failed" if dead else "passed", "dead_samples": dead},
+            {"check": "workflow_process_degraded", "status": "failed" if degraded else "passed", "degraded_samples": degraded},
+            {"check": "workflow_queue_bounded", "status": "failed" if max_capacity and max_queue > min(max_capacity, args.workflow_queue_depth_budget) else "passed", "maximum_depth": max_queue, "capacity": max_capacity, "budget": args.workflow_queue_depth_budget},
+            {"check": "workflow_restart_budget", "status": "failed" if max_restarts > args.workflow_restart_budget else "passed", "observed": max_restarts, "budget": args.workflow_restart_budget},
+            {"check": "workflow_event_loss", "status": "failed" if max_dropped else "passed", "dropped": max_dropped},
+            {"check": "workflow_admission_rejections", "status": "failed" if max_rejected else "passed", "rejected": max_rejected},
+            {"check": "workflow_generation_monotonic", "status": "failed" if generation_regressed else "passed", "minimum": min(generations), "maximum": max(generations)},
+        ])
+        if dead:
+            failures.append("workflow_process_not_alive")
+        if degraded:
+            failures.append("workflow_process_degraded")
+        if max_capacity and max_queue > min(max_capacity, args.workflow_queue_depth_budget):
+            failures.append("workflow_queue_depth")
+        if max_restarts > args.workflow_restart_budget:
+            failures.append("workflow_restart_budget")
+        if max_dropped:
+            failures.append("workflow_event_loss")
+        if max_rejected:
+            failures.append("workflow_admission_rejections")
+        if generation_regressed:
+            failures.append("workflow_generation_regressed")
+    else:
+        checks.append({"check": "workflow_process_metrics", "status": "unavailable"})
+        warnings.append("workflow_process_metrics_unavailable")
+
     if critical_load_observations:
         warnings.append("critical_load_observed")
     return checks, failures, warnings
@@ -391,6 +449,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--event-loop-p99-budget-ms", type=float, default=400.0)
     parser.add_argument("--rss-growth-budget-bytes", type=float, default=64 * 1024 * 1024)
     parser.add_argument("--peak-rss-budget-bytes", type=float, default=768 * 1024 * 1024)
+    parser.add_argument("--workflow-queue-depth-budget", type=int, default=64)
+    parser.add_argument("--workflow-restart-budget", type=int, default=2)
     args = parser.parse_args(argv)
 
     gate_dir = Path(args.run_dir).resolve() / "gates" / args.gate_id

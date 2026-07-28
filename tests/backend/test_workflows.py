@@ -36,8 +36,8 @@ def test_workflow_status_cache_and_invalidation(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(
         engine,
-        "list_workflows",
-        lambda limit=1000: calls.append(limit) or [{"status": "succeeded"}],
+        "_prepared_counts",
+        lambda: calls.append("counts") or (1, {"succeeded": 1}),
     )
 
     first = engine.status()
@@ -45,12 +45,12 @@ def test_workflow_status_cache_and_invalidation(tmp_path, monkeypatch):
 
     assert first["cache"] == "miss"
     assert second["cache"] == "hit"
-    assert calls == [1000]
+    assert calls == ["counts"]
 
     engine._invalidate_status_cache()
     third = engine.status()
     assert third["cache"] == "miss"
-    assert calls == [1000, 1000]
+    assert calls == ["counts", "counts"]
 
 
 def test_workflow_projection_writer_is_bounded_and_persists(tmp_path, monkeypatch):
@@ -58,6 +58,10 @@ def test_workflow_projection_writer_is_bounded_and_persists(tmp_path, monkeypatc
     from api_fastapi.services.workflow_engine import EventSourcedWorkflowEngine
 
     monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(tmp_path / "workflow.sqlite3"))
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    monkeypatch.setenv("POCKETLAB_WORKFLOW_PROCESS_OWNER", "worker")
+    monkeypatch.setenv("POCKETLAB_WORKFLOW_COMPAT_SNAPSHOT_BATCHES", "1")
     monkeypatch.setenv("POCKETLAB_WORKFLOW_WRITER_QUEUE_SIZE", "8")
     engine = EventSourcedWorkflowEngine()
     assert engine.enqueue_event({
@@ -67,8 +71,8 @@ def test_workflow_projection_writer_is_bounded_and_persists(tmp_path, monkeypatc
         "data": {"command_id": "command-1"},
     }) is True
     deadline = time.monotonic() + 2
-    while engine.writer_status()["written"] < 1 and time.monotonic() < deadline:
-        time.sleep(0.01)
+    while engine.writer_status().get("processed_events", 0) < 1 and time.monotonic() < deadline:
+        time.sleep(0.02)
     engine.stop_writer()
     status = engine.writer_status()
     assert status["queue_capacity"] == 8
@@ -81,6 +85,7 @@ def test_workflow_paths_are_cached_and_unchanged_projection_is_coalesced(tmp_pat
     from api_fastapi.services.workflow_engine import EventSourcedWorkflowEngine
 
     monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(tmp_path / "workflow.sqlite3"))
     engine = EventSourcedWorkflowEngine()
     first_root = engine.root
     second_root = engine.root
@@ -95,6 +100,9 @@ def test_workflow_writer_batches_projection_rewrites(tmp_path, monkeypatch):
     from api_fastapi.services.workflow_engine import EventSourcedWorkflowEngine
 
     monkeypatch.setenv("POCKETLAB_STATE_DIR", str(tmp_path))
+    monkeypatch.setenv("POCKETLAB_LITE_DB_PATH", str(tmp_path / "workflow.sqlite3"))
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    monkeypatch.setenv("POCKETLAB_WORKFLOW_PROCESS_OWNER", "worker")
     monkeypatch.setenv("POCKETLAB_WORKFLOW_WRITER_BATCH_SIZE", "8")
     engine = EventSourcedWorkflowEngine()
     engine.start_writer()
@@ -106,10 +114,10 @@ def test_workflow_writer_batches_projection_rewrites(tmp_path, monkeypatch):
             "data": {"command_id": "command-1", "sequence": index},
         })
     deadline = time.monotonic() + 3
-    while engine.writer_status()["written"] < 4 and time.monotonic() < deadline:
-        time.sleep(0.01)
+    while engine.writer_status().get("processed_events", 0) < 4 and time.monotonic() < deadline:
+        time.sleep(0.02)
     engine.stop_writer()
     status = engine.writer_status()
     assert status["written"] == 4
     assert status["batch_size"] == 8
-    assert status["coalesced"] >= 1
+    assert status["canonical_noop_count"] >= 1
