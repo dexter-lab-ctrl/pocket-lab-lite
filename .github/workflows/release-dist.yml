@@ -155,6 +155,8 @@ jobs:
           RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
           PRERELEASE: ${{ github.event.inputs.prerelease }}
         run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch --tags --force
           if ! git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
             git tag -a "$RELEASE_TAG" -m "Pocket Lab Lite $RELEASE_TAG"

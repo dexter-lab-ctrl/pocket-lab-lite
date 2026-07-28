@@ -589,3 +589,24 @@ def test_lite_release_frontend_uses_existing_safe_state_and_lifecycle_layers():
         / "scripts"
         / "start-dashboard.sh"
     ).read_text(encoding="utf-8")
+
+def test_release_workflow_configures_bot_identity_before_annotated_tag():
+    repo_root = Path(__file__).resolve().parents[2]
+    workflow = (repo_root / ".github" / "workflows" / "release-dist.yml").read_text(
+        encoding="utf-8"
+    )
+
+    name_config = 'git config --local user.name "github-actions[bot]"'
+    email_config = (
+        'git config --local user.email '
+        '"41898282+github-actions[bot]@users.noreply.github.com"'
+    )
+    annotated_tag = 'git tag -a "$RELEASE_TAG"'
+
+    assert "contents: write" in workflow
+    assert name_config in workflow
+    assert email_config in workflow
+    assert annotated_tag in workflow
+    assert workflow.index(name_config) < workflow.index(annotated_tag)
+    assert workflow.index(email_config) < workflow.index(annotated_tag)
+
