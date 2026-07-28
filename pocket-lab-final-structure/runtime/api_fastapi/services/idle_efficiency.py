@@ -9,6 +9,7 @@ command delivery, security writes, or recovery execution.
 
 import asyncio
 from collections import deque
+import concurrent.futures
 import gc
 import logging
 import os
@@ -98,6 +99,7 @@ class IdleEfficiencyGovernor:
         self._lock = threading.Lock()
         self._task: asyncio.Task[None] | None = None
         self._wake: asyncio.Event | None = None
+        self._sample_executor: concurrent.futures.ThreadPoolExecutor | None = None
         self._started_at: str | None = None
         self._last_wall = time.monotonic()
         self._last_cpu = time.process_time()
@@ -160,6 +162,10 @@ class IdleEfficiencyGovernor:
             self._last_wall = time.monotonic()
             self._last_cpu = time.process_time()
             self._wake = asyncio.Event()
+            self._sample_executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="pocketlab-idle-sampler",
+            )
             self._task = asyncio.create_task(
                 self._loop(), name="pocketlab-idle-efficiency-governor"
             )
@@ -171,6 +177,9 @@ class IdleEfficiencyGovernor:
             self._task = None
         wake = self._wake
         self._wake = None
+        with self._lock:
+            executor = self._sample_executor
+            self._sample_executor = None
         if wake is not None:
             wake.set()
         if task is not None and not task.done():
@@ -179,6 +188,8 @@ class IdleEfficiencyGovernor:
                 await task
             except asyncio.CancelledError:
                 pass
+        if executor is not None:
+            executor.shutdown(wait=False, cancel_futures=True)
 
     def wake(self) -> None:
         wake = self._wake
@@ -200,7 +211,12 @@ class IdleEfficiencyGovernor:
                 except asyncio.TimeoutError:
                     pass
                 wake.clear()
-                self.sample_now()
+                with self._lock:
+                    executor = self._sample_executor
+                if executor is None:
+                    return
+                loop = asyncio.get_running_loop()
+                await loop.run_in_executor(executor, self.sample_now)
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -209,6 +225,10 @@ class IdleEfficiencyGovernor:
             )
 
     def sample_now(self) -> dict[str, Any]:
+        with RUNTIME_DIAGNOSTICS.operation("background.idle_efficiency.sample"):
+            return self._sample_now_impl()
+
+    def _sample_now_impl(self) -> dict[str, Any]:
         wall = time.monotonic()
         cpu = time.process_time()
         with self._lock:

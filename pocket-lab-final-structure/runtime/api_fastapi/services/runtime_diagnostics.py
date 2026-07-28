@@ -82,17 +82,20 @@ class RuntimeDiagnostics:
         self._critical_stack_capture_enabled = os.environ.get(
             "POCKETLAB_CRITICAL_LAG_STACK_CAPTURE", "1"
         ).strip().lower() in {"1", "true", "yes", "on"}
-        self._critical_stack_capture_limit = 6
+        self._critical_stack_capture_limit = 12
         self._critical_stack_frame_limit = 8
         self._critical_stack_captures: deque[dict[str, Any]] = deque(
             maxlen=self._critical_stack_capture_limit
         )
         self._last_stack_capture_monotonic = 0.0
         self._stack_capture_interval_seconds = _bounded_float(
-            "POCKETLAB_CRITICAL_LAG_STACK_INTERVAL_SECONDS", 60.0, 10.0, 600.0
+            "POCKETLAB_CRITICAL_LAG_STACK_INTERVAL_SECONDS", 1.0, 0.25, 60.0
         )
         self._stack_watchdog_poll_seconds = _bounded_float(
-            "POCKETLAB_CRITICAL_LAG_STACK_POLL_SECONDS", 0.25, 0.10, 2.0
+            "POCKETLAB_CRITICAL_LAG_STACK_POLL_SECONDS", 0.20, 0.05, 2.0
+        )
+        self._stack_correlation_seconds = _bounded_float(
+            "POCKETLAB_CRITICAL_LAG_STACK_CORRELATION_SECONDS", 5.0, 0.5, 30.0
         )
         self._gc_installed = False
         self._gc_log_interval_seconds = _bounded_float(
@@ -217,6 +220,16 @@ class RuntimeDiagnostics:
                     if self._critical_stack_captures
                     else None
                 )
+                if isinstance(latest_stack, dict):
+                    captured_monotonic = float(
+                        latest_stack.get("_captured_monotonic") or 0.0
+                    )
+                    if (
+                        captured_monotonic <= 0.0
+                        or now_monotonic - captured_monotonic
+                        > self._stack_correlation_seconds
+                    ):
+                        latest_stack = None
                 self._recent_lag_events.append({
                     "captured_at": _utc_now(),
                     "severity": severity,
@@ -398,6 +411,7 @@ class RuntimeDiagnostics:
                 frame = frame.f_back
             capture = {
                 "captured_at": _utc_now(),
+                "_captured_monotonic": now_monotonic,
                 "lag_ms": round(max(0.0, float(lag_ms)), 2),
                 "observed_stall_ms": round(max(0.0, float(lag_ms)), 2),
                 "capture_source": str(capture_source or "unknown")[:40],
@@ -613,7 +627,10 @@ class RuntimeDiagnostics:
                     ],
                     "recent_operations": list(self._recent_operations),
                     "critical_stack_capture_enabled": self._critical_stack_capture_enabled,
-                    "critical_stack_captures": list(self._critical_stack_captures),
+                    "critical_stack_captures": [
+                        {key: value for key, value in item.items() if not key.startswith("_")}
+                        for item in self._critical_stack_captures
+                    ],
                 },
                 "gc": {
                     "recent_max_pause_ms": round(gc_recent_max, 2),
