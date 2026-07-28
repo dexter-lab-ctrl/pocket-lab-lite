@@ -103,6 +103,7 @@ def safe_sample(payload: dict[str, Any], http: dict[str, Any]) -> dict[str, Any]
     hot_path = payload.get("hot_path") if isinstance(payload.get("hot_path"), dict) else {}
     event_loop = payload.get("event_loop") if isinstance(payload.get("event_loop"), dict) else {}
     workflow = payload.get("workflow_projection") if isinstance(payload.get("workflow_projection"), dict) else {}
+    release = payload.get("release_runtime") if isinstance(payload.get("release_runtime"), dict) else {}
     domain_rows: dict[str, Any] = {}
     raw_domains = adaptive.get("domains") if isinstance(adaptive.get("domains"), dict) else {}
     for domain, row in raw_domains.items():
@@ -196,6 +197,27 @@ def safe_sample(payload: dict[str, Any], http: dict[str, Any]) -> dict[str, Any]
             "degraded": bool(workflow.get("degraded")),
             "degraded_reason": str(workflow.get("degraded_reason") or "")[:80],
             "last_known_good_revision": int(workflow.get("last_known_good_revision") or 0),
+        },
+        "release_runtime": {
+            "execution_owner": str(release.get("execution_owner") or "")[:80],
+            "configured_owner": str(release.get("configured_owner") or "")[:32],
+            "api_thread_started": bool(release.get("api_thread_started")),
+            "prepared_read_only": bool(release.get("prepared_read_only")),
+            "process_alive": bool(release.get("process_alive")),
+            "process_pid": int(release.get("process_pid") or 0),
+            "queue_depth": int(release.get("queue_depth") or 0),
+            "queue_capacity": int(release.get("queue_capacity") or 0),
+            "active_generation": int(release.get("active_generation") or 0),
+            "checks_started": int(release.get("checks_started") or 0),
+            "checks_completed": int(release.get("checks_completed") or 0),
+            "applies_started": int(release.get("applies_started") or 0),
+            "applies_completed": int(release.get("applies_completed") or 0),
+            "stale_results_rejected": int(release.get("stale_results_rejected") or 0),
+            "deadline_exceeded": int(release.get("deadline_exceeded") or 0),
+            "last_failure_code": str(release.get("last_failure_code") or "")[:80],
+            "last_cpu_ms": float(release.get("last_cpu_ms") or 0.0),
+            "last_wall_ms": float(release.get("last_wall_ms") or 0.0),
+            "last_peak_rss_bytes": int(release.get("last_peak_rss_bytes") or 0),
         },
         "sanitized": True,
     }
@@ -404,6 +426,37 @@ def evaluate(samples: list[dict[str, Any]], args: argparse.Namespace) -> tuple[l
     else:
         checks.append({"check": "workflow_process_metrics", "status": "unavailable"})
         warnings.append("workflow_process_metrics_unavailable")
+
+    release_rows = [sample.get("release_runtime", {}) for sample in samples]
+    release_available = [row for row in release_rows if row.get("execution_owner")]
+    if release_available:
+        api_threads = sum(1 for row in release_available if row.get("api_thread_started"))
+        wrong_owner = sum(
+            1
+            for row in release_available
+            if row.get("execution_owner") != "pocket-worker/release-subprocess"
+            or row.get("configured_owner") != "worker"
+        )
+        max_queue = max((int(row.get("queue_depth") or 0) for row in release_available), default=0)
+        max_capacity = max((int(row.get("queue_capacity") or 0) for row in release_available), default=0)
+        stale_rejections = max((int(row.get("stale_results_rejected") or 0) for row in release_available), default=0)
+        checks.extend([
+            {"check": "release_api_thread_absent", "status": "failed" if api_threads else "passed", "observed": api_threads},
+            {"check": "release_execution_owner", "status": "failed" if wrong_owner else "passed", "invalid_samples": wrong_owner},
+            {"check": "release_queue_bounded", "status": "failed" if max_capacity and max_queue > max_capacity else "passed", "maximum_depth": max_queue, "capacity": max_capacity},
+            {"check": "release_generation_fencing", "status": "failed" if stale_rejections else "passed", "stale_results_rejected": stale_rejections},
+        ])
+        if api_threads:
+            failures.append("release_api_thread_started")
+        if wrong_owner:
+            failures.append("release_execution_owner")
+        if max_capacity and max_queue > max_capacity:
+            failures.append("release_queue_depth")
+        if stale_rejections:
+            failures.append("release_stale_results")
+    else:
+        checks.append({"check": "release_runtime_metrics", "status": "unavailable"})
+        warnings.append("release_runtime_metrics_unavailable")
 
     if critical_load_observations:
         warnings.append("critical_load_observed")

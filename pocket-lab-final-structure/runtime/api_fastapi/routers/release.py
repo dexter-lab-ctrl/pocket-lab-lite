@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Request
 from .. import deps
 from ..services.nats_bus import BUS
 from ..services.action_queue import submit_domain_command
+from ..services.release_runtime import read_release_status
 
 router = APIRouter(tags=["release"])
 
@@ -19,25 +20,17 @@ def release_workflow(request: Request) -> dict:
 @router.get("/api/release/self-update/status")
 def release_status(background_tasks: BackgroundTasks, request: Request) -> dict:
     deps.require_auth(request)
-    updater = deps.ensure_release_updater()
-    status = (
-        updater.status()
-        if updater
-        else {
-            "phase": "idle",
-            "current_tag": "unknown",
-            "latest_tag": "unknown",
-            "update_available": False,
-            "auto_apply": False,
-            "operations": [],
-        }
-    )
-    try:
-        from ..services.release_orchestrator import release_orchestration_status
-
-        status["orchestration"] = release_orchestration_status()
-    except Exception:
-        status.setdefault("orchestration", {"runs": [], "latest": {}})
+    status = read_release_status()
+    status["orchestration"] = {
+        "prepared": True,
+        "latest": {
+            "command_id": status.get("active_command_id") or "",
+            "status": status.get("status"),
+            "phase": status.get("phase"),
+            "operation": status.get("active_operation") or "",
+        },
+        "runs": [],
+    }
     background_tasks.add_task(
         BUS.publish_json, "pocketlab.events.release.status", "release.status", status
     )

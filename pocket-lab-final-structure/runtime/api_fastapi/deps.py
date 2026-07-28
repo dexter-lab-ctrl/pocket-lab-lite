@@ -43,7 +43,6 @@ def ensure_release_updater() -> Any:
             poll_interval=core._env_int("POCKETLAB_RELEASE_POLL_SECONDS", 180),
             auto_apply=core._env_bool("POCKETLAB_AUTO_RELEASE_APPLY", True),
         )
-        core.AUTO_UPDATER.start()
     return core.AUTO_UPDATER
 
 
