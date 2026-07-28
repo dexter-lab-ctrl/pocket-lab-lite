@@ -160,6 +160,49 @@ cleanup_release_install() {
   find "$RELEASES_DIR" -mindepth 1 -maxdepth 1 -type d -name ".*.preparing.$$" -exec rm -rf {} + 2>/dev/null || true
 }
 
+reconcile_existing_release_identity() {
+  local tag="$1" manifest="$2" archive="$3" target="$4"
+  [[ "$tag" == lite-* ]] || return 0
+  [[ -f "$target/pocketlab-lite-build.json" ]] || die "Installed PWA release is missing embedded build identity"
+  PYTHONPATH="$RUNTIME_DIR${PYTHONPATH:+:$PYTHONPATH}" python3 - \
+    "$tag" "$manifest" "$archive" "$target/pocketlab-lite-build.json" <<'PYIDENTITY'
+import hashlib
+import json
+import sys
+
+from api_fastapi.services.release_runtime import initialize_release_runtime, record_release_install
+
+tag, manifest_path, archive_path, build_path = sys.argv[1:]
+manifest = json.load(open(manifest_path, encoding="utf-8"))
+build = json.load(open(build_path, encoding="utf-8"))
+artifact_sha256 = hashlib.sha256(open(archive_path, "rb").read()).hexdigest()
+
+if build.get("product") != "pocket-lab-lite" or build.get("install_mode") != "release":
+    raise SystemExit("Installed PWA release identity is invalid")
+if build.get("release_tag") != tag or manifest.get("release_tag") != tag:
+    raise SystemExit("Installed PWA release tag does not match verified assets")
+if build.get("source_commit") != manifest.get("source_commit"):
+    raise SystemExit("Installed PWA source commit does not match verified manifest")
+if manifest.get("artifact_sha256") != artifact_sha256:
+    raise SystemExit("Installed PWA artifact digest does not match verified manifest")
+
+initialize_release_runtime()
+identity = record_release_install(
+    release_tag=tag,
+    source_repository="dexter-lab-ctrl/pocket-lab-lite",
+    source_commit=str(manifest.get("source_commit") or ""),
+    artifact_sha256=artifact_sha256,
+)
+if (
+    identity.get("install_mode") != "release"
+    or identity.get("release_tag") != tag
+    or identity.get("artifact_sha256") != artifact_sha256
+    or not identity.get("verified")
+):
+    raise SystemExit("Pocket Lab Lite installed release identity was not reconciled")
+PYIDENTITY
+}
+
 main() {
   SCRIPT_NAME="install-pwa-ui.sh"
   acquire_lock "$SCRIPT_NAME"
@@ -231,31 +274,27 @@ PYSOURCE
   if [[ ! -d "$target" ]]; then
     mv "$preparing" "$target"
   else
-    rm -rf "$preparing"
-  fi
-  atomic_link "$target" "$CURRENT_LINK"
-  if [[ "$tag" == lite-* ]]; then
-    PYTHONPATH="$RUNTIME_DIR${PYTHONPATH:+:$PYTHONPATH}" python3 - "$tag" "$manifest" "$archive" <<'PYIDENTITY'
-import hashlib
+    # Release tags are immutable. Reuse only an existing target whose embedded
+    # identity matches the newly verified manifest; otherwise fail closed.
+    python3 - "$tag" "$manifest" "$target/pocketlab-lite-build.json" <<'PYREUSE'
 import json
 import sys
 
-from api_fastapi.services.release_runtime import initialize_release_runtime, record_release_install
-
-tag, manifest_path, archive_path = sys.argv[1:]
+tag, manifest_path, build_path = sys.argv[1:]
 manifest = json.load(open(manifest_path, encoding="utf-8"))
-artifact_sha256 = hashlib.sha256(open(archive_path, "rb").read()).hexdigest()
-initialize_release_runtime()
-identity = record_release_install(
-    release_tag=tag,
-    source_repository="dexter-lab-ctrl/pocket-lab-lite",
-    source_commit=str(manifest.get("source_commit") or ""),
-    artifact_sha256=artifact_sha256,
-)
-if identity.get("release_tag") != tag or not identity.get("verified"):
-    raise SystemExit("Pocket Lab Lite installed release identity was not persisted")
-PYIDENTITY
+build = json.load(open(build_path, encoding="utf-8"))
+if (
+    build.get("product") != "pocket-lab-lite"
+    or build.get("install_mode") != "release"
+    or build.get("release_tag") != tag
+    or build.get("source_commit") != manifest.get("source_commit")
+):
+    raise SystemExit("Existing PWA release target does not match verified release identity")
+PYREUSE
+    rm -rf "$preparing"
   fi
+  atomic_link "$target" "$CURRENT_LINK"
+  reconcile_existing_release_identity "$tag" "$manifest" "$archive" "$target"
   rm -rf "$TMP_DIR"
   mark_done pwa_ui_ready
   log INFO "Pocket Lab Lite PWA pointer is ready"
