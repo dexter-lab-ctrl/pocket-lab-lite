@@ -17,15 +17,27 @@ import os
 from pathlib import Path
 import secrets
 import sqlite3
+import subprocess
 import sys
 import threading
 import time
 from typing import Any, Callable, Mapping
 
 from ..db.connection import begin_immediate, connection, read_connection
+from .lite_release_contract import (
+    ARTIFACT_NAME,
+    CHECKSUMS_NAME,
+    DEFAULT_REPOSITORY,
+    MANIFEST_NAME,
+    PRODUCT,
+    canonical_hash as contract_canonical_hash,
+    normalize_repository,
+    parse_lite_tag,
+    verify_repository,
+)
 
 _OWNER = "release"
-_SCHEMA_VERSION = 1
+_SCHEMA_VERSION = 2
 _MAX_PREPARED_BYTES = 64 * 1024
 _PROCESS_GENERATION = os.environ.get("POCKETLAB_RELEASE_WORKER_GENERATION", "").strip() or (
     f"{os.getpid()}-{secrets.token_hex(8)}"
@@ -156,6 +168,178 @@ def _ensure_row(conn: sqlite3.Connection) -> None:
     )
 
 
+def _repository_root() -> Path:
+    configured = str(os.environ.get("POCKETLAB_BASE_DIR") or "").strip()
+    if configured:
+        return Path(configured).expanduser().resolve(strict=False)
+    return Path(__file__).resolve().parents[3]
+
+
+def _git_value(*args: str) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(_repository_root()), *args],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=2.0,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return completed.stdout.strip()[:4096] if completed.returncode == 0 else ""
+
+
+def repository_identity() -> dict[str, Any]:
+    configured = str(
+        os.environ.get("POCKETLAB_LITE_RELEASE_REPO", DEFAULT_REPOSITORY)
+    ).strip()
+    origin = str(os.environ.get("POCKETLAB_LITE_VERIFIED_ORIGIN") or "").strip()
+    if not origin:
+        origin = _git_value("remote", "get-url", "origin")
+    result = verify_repository(configured, origin)
+    result["origin_available"] = bool(normalize_repository(origin))
+    return result
+
+
+def _identity_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
+    if not row:
+        return {
+            "product": PRODUCT,
+            "install_mode": "unknown",
+            "source_repository": "",
+            "source_commit": "",
+            "release_tag": "",
+            "artifact_name": "",
+            "artifact_sha256": "",
+            "installed_at": None,
+            "installer_schema": 1,
+            "verified": False,
+            "identity_revision": 0,
+            "migration_status": "",
+        }
+    return {
+        "product": str(row.get("product") or PRODUCT),
+        "install_mode": str(row.get("install_mode") or "unknown"),
+        "source_repository": str(row.get("source_repository") or ""),
+        "source_commit": str(row.get("source_commit") or ""),
+        "release_tag": str(row.get("release_tag") or ""),
+        "artifact_name": str(row.get("artifact_name") or ""),
+        "artifact_sha256": str(row.get("artifact_sha256") or ""),
+        "installed_at": row.get("installed_at"),
+        "installer_schema": int(row.get("installer_schema") or 1),
+        "verified": bool(row.get("verified")),
+        "identity_revision": int(row.get("identity_revision") or 0),
+        "migration_status": str(row.get("migration_status") or ""),
+    }
+
+
+def read_installed_identity() -> dict[str, Any]:
+    try:
+        with read_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM lite_installed_release_identity WHERE owner = 'installed'"
+            ).fetchone()
+    except sqlite3.OperationalError:
+        row = None
+    return _identity_payload(dict(row) if row else None)
+
+
+def _write_installed_identity(payload: Mapping[str, Any]) -> dict[str, Any]:
+    canonical = {
+        "product": PRODUCT,
+        "install_mode": _safe_text(payload.get("install_mode") or "unknown", 16),
+        "source_repository": normalize_repository(payload.get("source_repository")),
+        "source_commit": _safe_text(payload.get("source_commit"), 64).lower(),
+        "release_tag": _safe_text(payload.get("release_tag"), 120),
+        "artifact_name": _safe_text(payload.get("artifact_name"), 120),
+        "artifact_sha256": _safe_text(payload.get("artifact_sha256"), 64).lower(),
+        "installed_at": _safe_text(payload.get("installed_at"), 80) or None,
+        "installer_schema": max(1, int(payload.get("installer_schema") or 1)),
+        "verified": bool(payload.get("verified")),
+        "migration_status": _safe_text(payload.get("migration_status"), 80),
+    }
+    digest = contract_canonical_hash(canonical)
+    now = _utc_now()
+    now_ms = _epoch_ms()
+    with connection() as conn:
+        with begin_immediate(conn) as tx:
+            row = tx.execute(
+                "SELECT canonical_hash FROM lite_installed_release_identity WHERE owner = 'installed'"
+            ).fetchone()
+            if row and str(row["canonical_hash"] or "") == digest:
+                return read_installed_identity()
+            tx.execute(
+                """
+                INSERT INTO lite_installed_release_identity(
+                    owner, schema_version, identity_revision, product, install_mode,
+                    source_repository, source_commit, release_tag, artifact_name,
+                    artifact_sha256, installed_at, installer_schema, verified,
+                    migration_status, canonical_hash, created_at, updated_at, updated_at_epoch_ms
+                ) VALUES ('installed', 1, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(owner) DO UPDATE SET
+                    identity_revision = identity_revision + 1, product = excluded.product,
+                    install_mode = excluded.install_mode, source_repository = excluded.source_repository,
+                    source_commit = excluded.source_commit, release_tag = excluded.release_tag,
+                    artifact_name = excluded.artifact_name, artifact_sha256 = excluded.artifact_sha256,
+                    installed_at = excluded.installed_at, installer_schema = excluded.installer_schema,
+                    verified = excluded.verified, migration_status = excluded.migration_status,
+                    canonical_hash = excluded.canonical_hash, updated_at = excluded.updated_at,
+                    updated_at_epoch_ms = excluded.updated_at_epoch_ms
+                """,
+                (
+                    canonical["product"], canonical["install_mode"], canonical["source_repository"],
+                    canonical["source_commit"], canonical["release_tag"], canonical["artifact_name"],
+                    canonical["artifact_sha256"], canonical["installed_at"], canonical["installer_schema"],
+                    1 if canonical["verified"] else 0, canonical["migration_status"], digest, now, now, now_ms,
+                ),
+            )
+    return read_installed_identity()
+
+
+def _initialize_installed_identity() -> None:
+    if read_installed_identity()["identity_revision"]:
+        return
+    repo = repository_identity()
+    commit = str(os.environ.get("POCKETLAB_LITE_SOURCE_COMMIT") or _git_value("rev-parse", "HEAD")).strip()[:64]
+    legacy = str(os.environ.get("POCKETLAB_RELEASE_TAG") or "").strip()
+    source_verified = bool(repo.get("repository_match") and commit)
+    _write_installed_identity(
+        {
+            "install_mode": "source" if source_verified else "unknown",
+            "source_repository": repo.get("verified_repository") if source_verified else "",
+            "source_commit": commit if source_verified else "",
+            "release_tag": "",
+            "artifact_name": "",
+            "artifact_sha256": "",
+            "installed_at": None,
+            "installer_schema": 1,
+            "verified": source_verified,
+            "migration_status": "legacy_identity_discarded" if legacy else "initialized",
+        }
+    )
+
+
+def record_release_install(
+    *, release_tag: str, source_repository: str, source_commit: str, artifact_sha256: str
+) -> dict[str, Any]:
+    parse_lite_tag(release_tag)
+    return _write_installed_identity(
+        {
+            "install_mode": "release",
+            "source_repository": source_repository,
+            "source_commit": source_commit,
+            "release_tag": release_tag,
+            "artifact_name": ARTIFACT_NAME,
+            "artifact_sha256": artifact_sha256,
+            "installed_at": _utc_now(),
+            "installer_schema": 1,
+            "verified": True,
+            "migration_status": "native_release_installed",
+        }
+    )
+
+
 def initialize_release_runtime() -> None:
     from ..db.migrations import apply_migrations
 
@@ -163,6 +347,7 @@ def initialize_release_runtime() -> None:
     with connection() as conn:
         with begin_immediate(conn) as tx:
             _ensure_row(tx)
+    _initialize_installed_identity()
 
 
 def _safe_text(value: Any, limit: int = 240) -> str:
@@ -192,6 +377,7 @@ def _sanitize(value: Any, *, depth: int = 0) -> Any:
 def _canonical_release(payload: Mapping[str, Any]) -> dict[str, Any]:
     latest = payload.get("latest_release") if isinstance(payload.get("latest_release"), Mapping) else {}
     asset = latest.get("artifact") if isinstance(latest.get("artifact"), Mapping) else {}
+    manifest = latest.get("manifest") if isinstance(latest.get("manifest"), Mapping) else {}
     operations = payload.get("operations") if isinstance(payload.get("operations"), list) else []
     compact_operations: list[dict[str, Any]] = []
     for item in operations[:16]:
@@ -202,15 +388,31 @@ def _canonical_release(payload: Mapping[str, Any]) -> dict[str, Any]:
                 "operation": _safe_text(item.get("operation"), 80),
                 "stage": _safe_text(item.get("stage"), 80),
                 "status": _safe_text(item.get("status"), 32),
-                "job_id": _safe_text(item.get("job_id"), 120) or None,
             }
         )
     return {
+        "product": PRODUCT,
+        "configured_repository": normalize_repository(payload.get("configured_repository")),
+        "verified_repository": normalize_repository(payload.get("verified_repository")),
+        "repository_match": bool(payload.get("repository_match")),
+        "install_mode": _safe_text(payload.get("install_mode") or "unknown", 16),
+        "installed_release_tag": _safe_text(payload.get("installed_release_tag"), 120),
+        "installed_source_commit": _safe_text(payload.get("installed_source_commit"), 64),
         "phase": _safe_text(payload.get("phase") or "unknown", 32),
-        "current_tag": _safe_text(payload.get("current_tag") or "unknown", 120),
-        "latest_tag": _safe_text(payload.get("latest_tag") or "unknown", 120),
+        "current_tag": _safe_text(payload.get("current_tag") or "", 120),
+        "latest_tag": _safe_text(payload.get("latest_tag") or "", 120),
+        "comparison": _safe_text(payload.get("comparison") or "unknown_installed_identity", 40),
         "update_available": bool(payload.get("update_available")),
         "auto_apply": bool(payload.get("auto_apply")),
+        "manifest_verified": bool(payload.get("manifest_verified")),
+        "artifact_verified": bool(payload.get("artifact_verified")),
+        "staging_status": _safe_text(payload.get("staging_status") or "idle", 32),
+        "promotion_status": _safe_text(payload.get("promotion_status") or "idle", 32),
+        "rollback_available": bool(payload.get("rollback_available")),
+        "last_failure_stage": _safe_text(payload.get("last_failure_stage"), 40),
+        "last_rollback_status": _safe_text(payload.get("last_rollback_status"), 40),
+        "next_check_epoch_ms": max(0, int(payload.get("next_check_epoch_ms") or 0)),
+        "stable_interval_seconds": max(0, int(payload.get("stable_interval_seconds") or 0)),
         "latest_release": {
             "tag_name": _safe_text(latest.get("tag_name"), 120),
             "name": _safe_text(latest.get("name"), 240),
@@ -218,14 +420,22 @@ def _canonical_release(payload: Mapping[str, Any]) -> dict[str, Any]:
             "published_at": _safe_text(latest.get("published_at"), 80) or None,
             "draft": bool(latest.get("draft")),
             "prerelease": bool(latest.get("prerelease")),
-            "body_excerpt": _safe_text(latest.get("body_excerpt"), 1024),
+            "manifest": {
+                "product": _safe_text(manifest.get("product"), 80),
+                "schema_version": int(manifest.get("schema_version") or 0),
+                "release_tag": _safe_text(manifest.get("release_tag"), 120),
+                "artifact": _safe_text(manifest.get("artifact"), 120),
+                "artifact_sha256": _safe_text(manifest.get("artifact_sha256"), 64),
+                "source_commit": _safe_text(manifest.get("source_commit"), 64),
+                "target": _safe_text(manifest.get("target"), 40),
+                "minimum_runtime_version": _safe_text(manifest.get("minimum_runtime_version"), 80),
+                "created_at": _safe_text(manifest.get("created_at"), 80),
+            },
             "artifact": {
                 "name": _safe_text(asset.get("name"), 240),
                 "size": max(0, int(asset.get("size") or 0)),
                 "digest": _safe_text(asset.get("digest"), 160),
-                "verification_status": _safe_text(
-                    asset.get("verification_status") or "metadata_only", 40
-                ),
+                "verification_status": _safe_text(asset.get("verification_status") or "unverified", 48),
             },
         },
         "applied_release": _sanitize(payload.get("applied_release") or {}),
@@ -269,11 +479,24 @@ def _read_row() -> dict[str, Any] | None:
 def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
     if row is None:
         return {
+            "product": PRODUCT,
             "phase": "unknown",
             "status": "degraded",
-            "current_tag": "unknown",
-            "latest_tag": "unknown",
+            "current_tag": "",
+            "latest_tag": "",
+            "comparison": "unknown_installed_identity",
             "update_available": False,
+            "configured_repository": normalize_repository(os.environ.get("POCKETLAB_LITE_RELEASE_REPO", DEFAULT_REPOSITORY)),
+            "verified_repository": "",
+            "repository_match": False,
+            "install_mode": "unknown",
+            "installed_release_tag": "",
+            "installed_source_commit": "",
+            "manifest_verified": False,
+            "artifact_verified": False,
+            "staging_status": "idle",
+            "promotion_status": "idle",
+            "rollback_available": False,
             "auto_apply": False,
             "last_known_good": False,
             "reason": "release_projection_unavailable",
@@ -313,6 +536,29 @@ def _row_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
             "api_thread_started": False,
             "prepared_read_only": True,
             "sanitized": True,
+        }
+    )
+    identity = read_installed_identity()
+    payload.update(
+        {
+            "product": PRODUCT,
+            "configured_repository": str(row.get("configured_repository") or payload.get("configured_repository") or ""),
+            "verified_repository": str(row.get("verified_repository") or payload.get("verified_repository") or ""),
+            "repository_match": bool(row.get("repository_match")),
+            "install_mode": str(row.get("install_mode") or identity.get("install_mode") or "unknown"),
+            "installed_release_tag": str(row.get("installed_release_tag") or identity.get("release_tag") or ""),
+            "installed_source_commit": str(row.get("installed_source_commit") or identity.get("source_commit") or ""),
+            "comparison": str(row.get("comparison") or payload.get("comparison") or "unknown_installed_identity"),
+            "manifest_verified": bool(row.get("manifest_verified")),
+            "artifact_verified": bool(row.get("artifact_verified")),
+            "staging_status": str(row.get("staging_status") or payload.get("staging_status") or "idle"),
+            "promotion_status": str(row.get("promotion_status") or payload.get("promotion_status") or "idle"),
+            "rollback_available": bool(row.get("rollback_available")),
+            "last_failure_stage": str(row.get("last_failure_stage") or ""),
+            "last_rollback_status": str(row.get("last_rollback_status") or ""),
+            "next_check_epoch_ms": int(row.get("next_check_epoch_ms") or 0),
+            "stable_interval_seconds": int(row.get("stable_interval_seconds") or 43200),
+            "installed_identity_verified": bool(identity.get("verified")),
         }
     )
     if payload["status"] == "degraded":
@@ -532,6 +778,22 @@ def commit_release_result(
                     "current_tag = ?",
                     "latest_tag = ?",
                     "update_available = ?",
+                    "configured_repository = ?",
+                    "verified_repository = ?",
+                    "repository_match = ?",
+                    "install_mode = ?",
+                    "installed_release_tag = ?",
+                    "installed_source_commit = ?",
+                    "comparison = ?",
+                    "manifest_verified = ?",
+                    "artifact_verified = ?",
+                    "staging_status = ?",
+                    "promotion_status = ?",
+                    "rollback_available = ?",
+                    "last_failure_stage = ?",
+                    "last_rollback_status = ?",
+                    "next_check_epoch_ms = ?",
+                    "stable_interval_seconds = ?",
                     "last_checked_at = ?",
                     "last_success_at = ?",
                     "last_failure_code = ''",
@@ -555,6 +817,22 @@ def commit_release_result(
                     current_tag,
                     latest_tag,
                     update_available,
+                    str(canonical.get("configured_repository") or ""),
+                    str(canonical.get("verified_repository") or ""),
+                    1 if canonical.get("repository_match") else 0,
+                    str(canonical.get("install_mode") or "unknown"),
+                    str(canonical.get("installed_release_tag") or ""),
+                    str(canonical.get("installed_source_commit") or ""),
+                    str(canonical.get("comparison") or "unknown_installed_identity"),
+                    1 if canonical.get("manifest_verified") else 0,
+                    1 if canonical.get("artifact_verified") else 0,
+                    str(canonical.get("staging_status") or "idle"),
+                    str(canonical.get("promotion_status") or "idle"),
+                    1 if canonical.get("rollback_available") else 0,
+                    str(canonical.get("last_failure_stage") or ""),
+                    str(canonical.get("last_rollback_status") or ""),
+                    int(canonical.get("next_check_epoch_ms") or 0),
+                    int(canonical.get("stable_interval_seconds") or 43200),
                     now,
                     now,
                     lease.command_id,
@@ -618,6 +896,8 @@ def fail_release_operation(
     phase: str = "error",
     deadline_exceeded: bool = False,
     subprocess_metrics: Mapping[str, Any] | None = None,
+    failure_stage: str = "",
+    rollback_status: str = "",
 ) -> dict[str, Any]:
     _require_worker()
     metrics = dict(subprocess_metrics or {})
@@ -631,6 +911,8 @@ def fail_release_operation(
                 "status = 'degraded'",
                 "last_failure_at = ?",
                 "last_failure_code = ?",
+                "last_failure_stage = ?",
+                "last_rollback_status = ?",
                 "last_terminal_command_id = ?",
                 "last_terminal_status = 'failed'",
                 "last_terminal_generation = ?",
@@ -658,6 +940,8 @@ def fail_release_operation(
                 _safe_text(phase, 32),
                 now,
                 _safe_text(failure_code, 80),
+                _safe_text(failure_stage, 40),
+                _safe_text(rollback_status, 40),
                 lease.command_id,
                 lease.generation,
                 int(metrics.get("pid") or 0),
@@ -790,6 +1074,9 @@ def _set_process_state(**fields: Any) -> None:
 
 def _subprocess_env() -> dict[str, str]:
     env = dict(os.environ)
+    runtime_root = str(Path(__file__).resolve().parents[2])
+    current_pythonpath = str(env.get("PYTHONPATH") or "")
+    env["PYTHONPATH"] = runtime_root + (os.pathsep + current_pythonpath if current_pythonpath else "")
     env.update(
         {
             "POCKETLAB_PROCESS_ROLE": "release-subprocess",
@@ -811,7 +1098,7 @@ async def execute_release_subprocess(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     _require_worker()
     operation = _safe_text(operation, 32)
-    if operation not in {"check", "download", "verify"}:
+    if operation not in {"check", "stage", "promote", "validate", "rollback", "recover", "cleanup"}:
         raise ReleaseRuntimeError("unsupported_release_subprocess_operation")
     body = json.dumps(
         {"operation": operation, **_sanitize(dict(request_payload))},
@@ -822,7 +1109,7 @@ async def execute_release_subprocess(
     if len(body) > 64 * 1024:
         raise ReleaseRuntimeError("release_subprocess_request_too_large")
     timeout = _bounded_float(
-        "POCKETLAB_RELEASE_SUBPROCESS_TIMEOUT_SECONDS", 20.0, 2.0, 300.0
+        "POCKETLAB_RELEASE_SUBPROCESS_TIMEOUT_SECONDS", 120.0, 2.0, 1800.0
     )
     started = time.monotonic()
     process = await asyncio.create_subprocess_exec(
@@ -940,32 +1227,264 @@ async def execute_release_subprocess(
     return _sanitize(result), metrics
 
 
-def build_check_request() -> dict[str, Any]:
-    return {
-        "source_url": str(
-            os.environ.get(
-                "POCKETLAB_GITHUB_RELEASES_API",
-                "https://api.github.com/repos/"
-                + str(
-                    os.environ.get(
-                        "POCKETLAB_GITHUB_REPO", "dexter-lab-ctrl/pocket-lab"
-                    )
-                ).strip()
-                + "/releases/latest",
+async def recover_abandoned_release_operation() -> dict[str, Any]:
+    """Recover an expired worker generation before admitting new release work.
+
+    Filesystem cleanup and pointer rollback remain process-isolated. The SQLite
+    clear is compare-and-set against the expired generation so a live worker can
+    never be displaced by stale recovery.
+    """
+
+    _require_worker()
+    async with _operation_lock():
+        row = _read_row()
+        now_ms = _epoch_ms()
+        if not row:
+            return {"recovered": False, "reason": "projection_unavailable"}
+        generation = int(row.get("active_generation") or 0)
+        lease_expires = int(row.get("lease_expires_epoch_ms") or 0)
+        if generation <= 0:
+            return {"recovered": False, "reason": "no_active_generation"}
+        if lease_expires > now_ms:
+            return {
+                "recovered": False,
+                "reason": "lease_active",
+                "retry_after_seconds": max(1, int((lease_expires - now_ms + 999) / 1000)),
+            }
+
+        phase = _safe_text(row.get("phase"), 32).lower()
+        operation = _safe_text(row.get("active_operation"), 32)
+        command_id = _safe_text(row.get("active_command_id"), 160)
+        paths = release_paths()
+        result: dict[str, Any] = {
+            "recovered": True,
+            "failure_stage": phase,
+            "rollback_status": "not_required",
+            "restored_release_tag": "",
+        }
+        metrics: dict[str, Any] = {}
+        failure_code = "release_worker_restart_recovered"
+        try:
+            result, metrics = await execute_release_subprocess(
+                "recover",
+                {
+                    "generation": generation,
+                    "phase": phase,
+                    "staging_root": str(paths["staging_root"]),
+                    "current_link": str(paths["current_link"]),
+                    "releases_dir": str(paths["releases_dir"]),
+                },
             )
-        ),
-        "current_tag": str(os.environ.get("POCKETLAB_RELEASE_TAG", "v1.0.0")),
-        "auto_apply": str(os.environ.get("POCKETLAB_AUTO_RELEASE_APPLY", "true")).lower()
+            restored = str(result.get("restored_release_tag") or "")
+            rollback_status = str(result.get("rollback_status") or "not_required")
+            if restored and rollback_status in {"rolled_back", "already_rolled_back"}:
+                await execute_release_subprocess(
+                    "validate",
+                    build_validate_request(
+                        {
+                            "release_tag": restored,
+                            "install_mode": "release" if restored.startswith("lite-") else "source",
+                            "archive": {},
+                        }
+                    ),
+                )
+            elif rollback_status == "rollback_unavailable" and phase in {
+                "installing",
+                "promoting",
+                "validating",
+            }:
+                failure_code = "release_worker_restart_recovery_incomplete"
+        except Exception as exc:
+            failure_code = "release_worker_restart_recovery_failed"
+            result = {
+                "recovered": False,
+                "failure_stage": phase,
+                "rollback_status": "rollback_failed",
+                "failure_code": _safe_text(
+                    getattr(exc, "code", "")
+                    or f"release_recovery_{type(exc).__name__}",
+                    80,
+                ),
+            }
+            metrics = dict(getattr(exc, "metrics", {}) or {})
+
+        updated = False
+        now = _utc_now()
+        with connection() as conn:
+            with begin_immediate(conn) as tx:
+                cursor = tx.execute(
+                    """
+                    UPDATE release_runtime_projection SET
+                        phase = 'error', status = 'degraded',
+                        active_generation = 0, active_operation = '', active_command_id = '',
+                        lease_expires_epoch_ms = 0,
+                        last_failure_at = ?, last_failure_code = ?, last_failure_stage = ?,
+                        last_rollback_status = ?,
+                        last_terminal_command_id = ?, last_terminal_status = 'failed',
+                        last_terminal_generation = ?, subprocess_restarts = subprocess_restarts + 1,
+                        last_subprocess_pid = ?, last_subprocess_exit_code = ?,
+                        last_cpu_ms = ?, last_wall_ms = ?, last_peak_rss_bytes = ?,
+                        last_bytes_read = ?, last_files_examined = ?,
+                        updated_at = ?, updated_at_epoch_ms = ?
+                    WHERE owner = ? AND active_generation = ? AND lease_expires_epoch_ms <= ?
+                    """,
+                    (
+                        now,
+                        failure_code,
+                        phase or operation or "unknown",
+                        _safe_text(result.get("rollback_status"), 40),
+                        command_id,
+                        generation,
+                        int(metrics.get("pid") or 0),
+                        int(metrics.get("exit_code") or 0),
+                        float(metrics.get("cpu_ms") or 0.0),
+                        float(metrics.get("wall_ms") or 0.0),
+                        int(metrics.get("peak_rss_bytes") or 0),
+                        int(metrics.get("bytes_read") or 0),
+                        int(metrics.get("files_examined") or 0),
+                        now,
+                        now_ms,
+                        _OWNER,
+                        generation,
+                        now_ms,
+                    ),
+                )
+                updated = cursor.rowcount == 1
+        if not updated:
+            return {"recovered": False, "reason": "generation_changed"}
+        return {
+            **result,
+            "recovered": True,
+            "failure_code": failure_code,
+            "generation": generation,
+            "operation": operation,
+            "command_id": command_id,
+            "sanitized": True,
+        }
+
+
+def stable_release_interval_seconds() -> int:
+    return _bounded_int("POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS", 12 * 3600, 6 * 3600, 24 * 3600)
+
+
+def release_paths() -> dict[str, Path]:
+    state = Path(os.environ.get("POCKETLAB_STATE_DIR", ".")).expanduser().resolve(strict=False)
+    staging_root = Path(
+        os.environ.get("POCKETLAB_RELEASE_STAGING_DIR", "") or (state / "release-staging")
+    ).expanduser().resolve(strict=False)
+    pwa_parent = Path(
+        os.environ.get("POCKET_LAB_PWA_DIR", "")
+        or os.environ.get("PWA_DIR", "")
+        or (_repository_root() / "pwa_dist")
+    ).expanduser().resolve(strict=False)
+    current_value = Path(
+        os.environ.get("POCKETLAB_LITE_PWA_CURRENT_LINK", "") or (pwa_parent / "current")
+    ).expanduser()
+    current_link = Path(os.path.abspath(current_value))
+    releases_dir = Path(
+        os.environ.get("POCKETLAB_LITE_PWA_RELEASES_DIR", "") or (pwa_parent / "releases")
+    ).expanduser().resolve(strict=False)
+    caddy_value = str(
+        os.environ.get("POCKETLAB_CADDYFILE")
+        or os.environ.get("POCKET_LAB_CADDYFILE")
+        or os.environ.get("CADDYFILE")
+        or ""
+    ).strip()
+    return {
+        "staging_root": staging_root,
+        "current_link": current_link,
+        "releases_dir": releases_dir,
+        "caddyfile": Path(caddy_value).expanduser().resolve(strict=False) if caddy_value else Path(),
+    }
+
+
+def build_check_request() -> dict[str, Any]:
+    repo = repository_identity()
+    if not repo.get("product_match") or (
+        repo.get("origin_available") and not repo.get("repository_match")
+    ):
+        raise ReleaseRuntimeError("release_product_mismatch")
+    identity = read_installed_identity()
+    configured = str(repo.get("configured_repository") or "")
+    source_url = str(
+        os.environ.get("POCKETLAB_GITHUB_RELEASES_API")
+        or f"https://api.github.com/repos/{configured}/releases?per_page=100"
+    )
+    return {
+        "source_url": source_url,
+        "product": PRODUCT,
+        "configured_repository": configured,
+        "verified_repository": str(repo.get("verified_repository") or ""),
+        "repository_match": bool(repo.get("repository_match")),
+        "install_mode": str(identity.get("install_mode") or "unknown"),
+        "installed_release_tag": str(identity.get("release_tag") or ""),
+        "installed_source_commit": str(identity.get("source_commit") or ""),
+        "auto_apply": str(os.environ.get("POCKETLAB_AUTO_RELEASE_APPLY", "false")).lower()
         in {"1", "true", "yes", "on"},
-        "artifact_name": str(
-            os.environ.get("POCKETLAB_RELEASE_ARTIFACT_NAME", "dist.zip")
-        ),
+        "allow_prerelease": str(os.environ.get("POCKETLAB_LITE_RELEASE_ALLOW_PRERELEASE", "false")).lower()
+        in {"1", "true", "yes", "on"},
         "network_timeout_seconds": _bounded_float(
-            "POCKETLAB_RELEASE_NETWORK_TIMEOUT_SECONDS", 10.0, 1.0, 60.0
+            "POCKETLAB_RELEASE_NETWORK_TIMEOUT_SECONDS", 15.0, 1.0, 90.0
         ),
         "max_metadata_bytes": _bounded_int(
             "POCKETLAB_RELEASE_METADATA_MAX_BYTES", 2 * 1024 * 1024, 16 * 1024, 8 * 1024 * 1024
         ),
+    }
+
+
+def build_stage_request(check_result: Mapping[str, Any], lease: ReleaseLease) -> dict[str, Any]:
+    latest = check_result.get("latest_release") if isinstance(check_result.get("latest_release"), Mapping) else {}
+    assets = latest.get("assets") if isinstance(latest.get("assets"), Mapping) else {}
+    paths = release_paths()
+    target = paths["staging_root"] / f"generation-{lease.generation}-{_safe_text(check_result.get('latest_tag'), 120)}"
+    return {
+        "release_tag": check_result.get("latest_tag"),
+        "assets": assets,
+        "staging_root": str(paths["staging_root"]),
+        "target_dir": str(target),
+        "network_timeout_seconds": _bounded_float(
+            "POCKETLAB_RELEASE_DOWNLOAD_TIMEOUT_SECONDS", 90.0, 5.0, 600.0
+        ),
+    }
+
+
+def build_promote_request(staged: Mapping[str, Any]) -> dict[str, Any]:
+    paths = release_paths()
+    return {
+        "release_tag": staged.get("release_tag"),
+        "content_path": staged.get("content_path"),
+        "current_link": str(paths["current_link"]),
+        "releases_dir": str(paths["releases_dir"]),
+        "caddyfile": str(paths["caddyfile"]) if str(paths["caddyfile"]) not in {"", "."} else "",
+    }
+
+
+def build_validate_request(staged: Mapping[str, Any]) -> dict[str, Any]:
+    paths = release_paths()
+    archive = staged.get("archive") if isinstance(staged.get("archive"), Mapping) else {}
+    representatives = list(archive.get("representative_js") or []) + list(archive.get("representative_css") or []) + list(archive.get("service_worker") or [])
+    release_tag = str(staged.get("release_tag") or "")
+    install_mode = str(staged.get("install_mode") or ("release" if release_tag.startswith("lite-") else "source"))
+    return {
+        "release_tag": release_tag,
+        "install_mode": install_mode,
+        "current_link": str(paths["current_link"]),
+        "representative_assets": representatives,
+        "pm2_restart_baseline": staged.get("pm2_restart_baseline") if isinstance(staged.get("pm2_restart_baseline"), Mapping) else {},
+        "base_url": str(os.environ.get("POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL") or "").strip(),
+        "api_health_url": str(os.environ.get("POCKETLAB_LITE_RELEASE_API_HEALTH_URL") or "").strip(),
+        "api_prepared_url": str(os.environ.get("POCKETLAB_LITE_RELEASE_API_PREPARED_URL") or "").strip(),
+        "health_timeout_seconds": _bounded_float(
+            "POCKETLAB_RELEASE_HEALTH_TIMEOUT_SECONDS", 5.0, 1.0, 30.0
+        ),
+    }
+
+
+def build_rollback_request() -> dict[str, Any]:
+    paths = release_paths()
+    return {
+        "current_link": str(paths["current_link"]),
+        "releases_dir": str(paths["releases_dir"]),
     }
 
 
@@ -976,6 +1495,7 @@ async def run_release_check(
     existing_lease: ReleaseLease | None = None,
 ) -> dict[str, Any]:
     _require_worker()
+    await recover_abandoned_release_operation()
     async with _operation_lock():
         lease = existing_lease or claim_release_operation("check", command_id)
         if not lease.claimed:
@@ -996,12 +1516,25 @@ async def run_release_check(
             )
         metrics: dict[str, Any] = {}
         try:
-            result, metrics = await execute_release_subprocess("check", build_check_request())
+            request = build_check_request()
+            result, metrics = await execute_release_subprocess("check", request)
+            interval = stable_release_interval_seconds()
             payload = {
                 **result,
-                "phase": "available" if result.get("update_available") else "current",
+                "configured_repository": request.get("configured_repository"),
+                "verified_repository": request.get("verified_repository"),
+                "repository_match": bool(request.get("repository_match")),
+                "install_mode": request.get("install_mode"),
+                "installed_release_tag": request.get("installed_release_tag"),
+                "installed_source_commit": request.get("installed_source_commit"),
+                "current_tag": request.get("installed_release_tag") or "",
+                "phase": "available" if result.get("update_available") else ("source" if request.get("install_mode") == "source" else "current"),
+                "staging_status": "idle",
+                "promotion_status": "idle",
                 "last_known_good": True,
                 "source": _safe_text(source, 32),
+                "stable_interval_seconds": interval,
+                "next_check_epoch_ms": _epoch_ms() + interval * 1000,
             }
             return commit_release_result(lease, payload, subprocess_metrics=metrics)
         except ReleaseSubprocessError as exc:
@@ -1015,7 +1548,7 @@ async def run_release_check(
         except Exception as exc:
             return fail_release_operation(
                 lease,
-                failure_code=type(exc).__name__,
+                failure_code=_safe_text(str(exc) if isinstance(exc, ReleaseRuntimeError) else type(exc).__name__, 80),
                 phase="error",
                 subprocess_metrics=metrics,
             )
@@ -1023,6 +1556,7 @@ async def run_release_check(
 
 async def begin_release_apply(command_id: str) -> ReleaseLease:
     _require_worker()
+    await recover_abandoned_release_operation()
     async with _operation_lock():
         return claim_release_operation("apply", command_id, lease_seconds=_bounded_int(
             "POCKETLAB_RELEASE_APPLY_LEASE_SECONDS", 1800, 120, 7200
@@ -1038,7 +1572,22 @@ async def check_for_apply(lease: ReleaseLease) -> tuple[dict[str, Any], dict[str
     )):
         raise ReleaseStaleResult("release_apply_lease_lost")
     update_release_stage(lease, phase="checking")
-    return await execute_release_subprocess("check", build_check_request())
+    request = build_check_request()
+    if not request.get("repository_match"):
+        raise ReleaseRuntimeError("release_product_unverified")
+    result, metrics = await execute_release_subprocess("check", request)
+    result.update(
+        {
+            "configured_repository": request.get("configured_repository"),
+            "verified_repository": request.get("verified_repository"),
+            "repository_match": True,
+            "install_mode": request.get("install_mode"),
+            "installed_release_tag": request.get("installed_release_tag"),
+            "installed_source_commit": request.get("installed_source_commit"),
+            "current_tag": request.get("installed_release_tag") or "",
+        }
+    )
+    return result, metrics
 
 
 def finalize_release_apply(
@@ -1060,12 +1609,16 @@ def fail_release_apply(
     failure_code: str,
     *,
     subprocess_metrics: Mapping[str, Any] | None = None,
+    failure_stage: str = "",
+    rollback_status: str = "",
 ) -> dict[str, Any]:
     return fail_release_operation(
         lease,
         failure_code=failure_code,
         phase="error",
         subprocess_metrics=subprocess_metrics,
+        failure_stage=failure_stage,
+        rollback_status=rollback_status,
     )
 
 

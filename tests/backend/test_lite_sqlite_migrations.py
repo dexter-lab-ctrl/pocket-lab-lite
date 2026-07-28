@@ -37,10 +37,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         migration_rows,
     )
 
-    assert apply_migrations() == list(range(1, 21))
+    assert apply_migrations() == list(range(1, 22))
     assert apply_migrations() == []
-    assert current_schema_version() == 20
-    assert [row["version"] for row in migration_rows()] == list(range(1, 21))
+    assert current_schema_version() == 21
+    assert [row["version"] for row in migration_rows()] == list(range(1, 22))
     with read_connection() as conn:
         tables = {
             row[0]
@@ -89,6 +89,7 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "workflow_event_index",
         "workflow_command_state",
         "release_runtime_projection",
+        "lite_installed_release_identity",
     }.issubset(tables)
     assert {
         "idx_security_runs_profile_completed",
@@ -143,6 +144,7 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         "idx_workflow_command_workflow",
         "idx_release_runtime_status_updated",
         "idx_release_runtime_active_lease",
+        "idx_lite_installed_release_identity_mode",
     }.issubset(indexes)
     assert "operation_leases" not in tables
 
@@ -225,8 +227,8 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 20 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 20]
+    assert all(result[2] == 21 for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, 21]
 
 
 def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
@@ -266,8 +268,8 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
             """
         )
 
-    assert apply_migrations() == list(range(5, 21))
-    assert current_schema_version() == 20
+    assert apply_migrations() == list(range(5, 22))
+    assert current_schema_version() == 21
     with connection() as conn:
         assert conn.execute(
             "SELECT summary FROM security_scan_runs WHERE run_id = ?",
@@ -329,8 +331,8 @@ def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
             ),
         )
 
-    assert apply_migrations() == list(range(14, 21))
-    assert current_schema_version() == 20
+    assert apply_migrations() == list(range(14, 22))
+    assert current_schema_version() == 21
     with connection() as conn:
         preserved = conn.execute(
             "SELECT event_id,dedupe_key,generation_key,state_revision,database_instance,payload_checksum "
@@ -397,7 +399,7 @@ with sqlite3.connect(sys.argv[1]) as conn:
         ),
     )
     conn.commit()
-assert apply_migrations() == [17, 18, 19, 20]
+assert apply_migrations() == [17, 18, 19, 20, 21]
 with sqlite3.connect(sys.argv[1]) as conn:
     row = conn.execute(
         """
@@ -408,7 +410,9 @@ with sqlite3.connect(sys.argv[1]) as conn:
 assert row == ("active", "2026-07-01T00:01:00Z", 60000), row
 '''
     env = os.environ.copy()
-    env["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
+    runtime_root = Path(__file__).resolve().parents[2] / "pocket-lab-final-structure" / "runtime"
+    existing_pythonpath = os.environ.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(runtime_root) + (os.pathsep + existing_pythonpath if existing_pythonpath else "")
     result = subprocess.run(
         [sys.executable, "-c", script, str(database), str(tmp_path / "pre17")],
         cwd=Path(__file__).resolve().parents[2],

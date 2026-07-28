@@ -28,26 +28,26 @@ class ReleaseAutoUpdater:
         refresh_catalog: Optional[Callable[[], Any]] = None,
         current_tag: Optional[str] = None,
         github_repo: Optional[str] = None,
-        poll_interval: int = 180,
+        poll_interval: int = 43200,
         auto_apply: Optional[bool] = None,
     ) -> None:
         self.state_dir = Path(state_dir)
         self.operation_service = operation_service
         self.refresh_catalog = refresh_catalog
-        self.poll_interval = max(30, int(poll_interval or 180))
+        self.poll_interval = max(21600, min(86400, int(poll_interval or 43200)))
         self.current_tag_override = str(
-            current_tag or os.environ.get("POCKETLAB_RELEASE_TAG", "v1.0.0")
+            current_tag or os.environ.get("POCKETLAB_LITE_RELEASE_TAG", "")
         ).strip()
         self.github_repo = str(
             github_repo
             or os.environ.get(
-                "POCKETLAB_GITHUB_REPO", "dexter-lab-ctrl/pocket-lab"
+                "POCKETLAB_LITE_RELEASE_REPO", "dexter-lab-ctrl/pocket-lab-lite"
             )
         ).strip()
         self.auto_apply = bool(
             auto_apply
             if auto_apply is not None
-            else str(os.environ.get("POCKETLAB_AUTO_RELEASE_APPLY", "true")).lower()
+            else str(os.environ.get("POCKETLAB_AUTO_RELEASE_APPLY", "false")).lower()
             in {"1", "true", "yes", "on"}
         )
         self._thread = None

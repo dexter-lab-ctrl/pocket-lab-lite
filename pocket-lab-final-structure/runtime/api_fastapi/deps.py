@@ -36,12 +36,14 @@ def ensure_release_updater() -> Any:
             state_dir=core.SETTINGS.state_dir,
             operation_service=core.OP_SERVICE,
             refresh_catalog=core.build_catalog_view,
-            current_tag=os.environ.get("POCKETLAB_RELEASE_TAG", "v1.0.0"),
+            current_tag=os.environ.get("POCKETLAB_LITE_RELEASE_TAG", ""),
             github_repo=os.environ.get(
-                "POCKETLAB_GITHUB_REPO", "dexter-lab-ctrl/pocket-lab"
+                "POCKETLAB_LITE_RELEASE_REPO", "dexter-lab-ctrl/pocket-lab-lite"
             ),
-            poll_interval=core._env_int("POCKETLAB_RELEASE_POLL_SECONDS", 180),
-            auto_apply=core._env_bool("POCKETLAB_AUTO_RELEASE_APPLY", True),
+            poll_interval=core._env_int(
+                "POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS", 12 * 3600
+            ),
+            auto_apply=core._env_bool("POCKETLAB_AUTO_RELEASE_APPLY", False),
         )
     return core.AUTO_UPDATER
 

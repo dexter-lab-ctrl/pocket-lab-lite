@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 
 export const liteQueryKeys = {
   status: () => ['lite', 'status'],
+  release: () => ['lite', 'release'],
   systemHealth: () => ['lite', 'system', 'health'],
   systemProcesses: () => ['lite', 'system', 'processes'],
   systemAgent: () => ['lite', 'system', 'agent'],
@@ -49,6 +50,7 @@ export const liteQueryKeys = {
 
 export const liteQueryPaths = {
   status: '/api/lite/status',
+  release: '/api/lite/release',
   systemHealth: '/api/lite/system/health',
   systemProcesses: '/api/lite/system/processes',
   systemAgent: '/api/lite/system/agent',

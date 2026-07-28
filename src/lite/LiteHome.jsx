@@ -26,6 +26,7 @@ import {
   LiteRefreshButton,
   LoadingCard,
 } from './LiteUi.jsx';
+import LiteReleaseUpdateCard from './LiteReleaseUpdateCard.jsx';
 import {
   LiteElevationSurface,
   LiteMotionReveal,
@@ -211,6 +212,8 @@ export default function HomeScreen({
           </LitePressableButton>
         </LiteElevationSurface>
       </LiteMotionReveal>
+
+      <LiteReleaseUpdateCard />
 
       <section className="lite-home-premium-overview" aria-label="Workspace overview">
         {overview.stats.map((item) => (

@@ -30,28 +30,83 @@ def _prepare_runtime(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     return release_runtime, database
 
 
-def _release_payload(tag: str = "v2.0.0") -> dict:
+def _release_payload(tag: str = "lite-2026.07.28.2") -> dict:
     return {
+        "product": "pocket-lab-lite",
         "phase": "available",
-        "current_tag": "v1.0.0",
+        "current_tag": "lite-2026.07.27.1",
         "latest_tag": tag,
+        "comparison": "older",
         "update_available": True,
         "auto_apply": False,
+        "configured_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "verified_repository": "dexter-lab-ctrl/pocket-lab-lite",
+        "repository_match": True,
+        "install_mode": "release",
+        "installed_release_tag": "lite-2026.07.27.1",
+        "manifest_verified": True,
+        "artifact_verified": False,
         "latest_release": {
             "tag_name": tag,
             "name": "Pocket Lab Lite",
             "html_url": "https://example.invalid/release",
             "published_at": "2026-07-28T00:00:00Z",
+            "manifest": {
+                "product": "pocket-lab-lite",
+                "schema_version": 1,
+                "release_tag": tag,
+                "artifact": "dist.zip",
+                "artifact_sha256": "a" * 64,
+                "source_commit": "b" * 40,
+                "target": "web-pwa",
+                "created_at": "2026-07-28T00:00:00Z",
+            },
             "artifact": {
                 "name": "dist.zip",
                 "size": 1024,
                 "digest": "sha256:" + "a" * 64,
-                "verification_status": "digest_available",
+                "verification_status": "manifest_and_checksum_verified",
             },
         },
         "last_known_good": True,
     }
 
+
+def _build_release_assets(tmp_path: Path, tag: str, *, traversal: bool = False) -> dict[str, bytes]:
+    import hashlib
+
+    archive = tmp_path / f"{tag}.zip"
+    source_commit = "b" * 40
+    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as handle:
+        handle.writestr("index.html", "<!doctype html><title>Pocket Lab Lite</title><div>Pocket Lab Lite</div>")
+        handle.writestr("manifest.webmanifest", json.dumps({"name": "Pocket Lab Lite"}))
+        handle.writestr("sw.js", "self.addEventListener('fetch', () => {});")
+        handle.writestr("assets/app.js", "console.log('Pocket Lab Lite');")
+        handle.writestr("assets/app.css", "body { min-height: 100vh; }")
+        handle.writestr(
+            "pocketlab-lite-build.json",
+            json.dumps({"product": "pocket-lab-lite", "release_tag": tag, "source_commit": source_commit}),
+        )
+        if traversal:
+            handle.writestr("../escape.txt", "blocked")
+    archive_bytes = archive.read_bytes()
+    digest = hashlib.sha256(archive_bytes).hexdigest()
+    manifest = {
+        "product": "pocket-lab-lite",
+        "schema_version": 1,
+        "release_tag": tag,
+        "artifact": "dist.zip",
+        "artifact_sha256": digest,
+        "source_commit": source_commit,
+        "target": "web-pwa",
+        "minimum_runtime_version": "1",
+        "created_at": "2026-07-28T00:00:00Z",
+    }
+    return {
+        "dist.zip": archive_bytes,
+        "checksums.txt": f"{digest}  dist.zip\n".encode(),
+        "pocketlab-lite-release.json": json.dumps(manifest).encode(),
+    }
 
 def test_api_role_never_starts_legacy_release_thread(tmp_path, monkeypatch):
     ensure_runtime_path()
@@ -109,8 +164,8 @@ def test_release_projection_is_change_only_and_generation_fenced(tmp_path, monke
     current = release_runtime.claim_release_operation("check", "check-current")
     assert current.claimed is True
     with pytest.raises(release_runtime.ReleaseStaleResult):
-        release_runtime.commit_release_result(stale, _release_payload("v3.0.0"))
-    release_runtime.commit_release_result(current, _release_payload("v3.0.0"))
+        release_runtime.commit_release_result(stale, _release_payload("lite-2026.07.28.3"))
+    release_runtime.commit_release_result(current, _release_payload("lite-2026.07.28.3"))
     diagnostics = release_runtime.release_runtime_diagnostics()
     assert diagnostics["stale_results_rejected"] == 1
     assert diagnostics["subprocess_restarts"] >= 1
@@ -129,12 +184,16 @@ def test_release_command_redelivery_is_deduplicated(tmp_path, monkeypatch):
 
 
 class _ReleaseHandler(BaseHTTPRequestHandler):
-    response: dict = {}
+    responses: dict[str, tuple[str, bytes]] = {}
 
     def do_GET(self):  # noqa: N802
-        body = json.dumps(type(self).response).encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
+        path = self.path.split("?", 1)[0]
+        content_type, body = type(self).responses.get(
+            path, ("application/json", b'{"error":"not found"}')
+        )
+        status = 200 if path in type(self).responses else 404
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -143,36 +202,58 @@ class _ReleaseHandler(BaseHTTPRequestHandler):
         return None
 
 
-def test_release_check_runs_in_bounded_subprocess(tmp_path, monkeypatch):
-    release_runtime, _database = _prepare_runtime(tmp_path, monkeypatch)
-    _ReleaseHandler.response = {
-        "tag_name": "v2.0.0",
-        "name": "Pocket Lab Lite v2",
-        "html_url": "https://example.invalid/v2",
+def _serve_release(tmp_path: Path, tag: str, *, traversal: bool = False):
+    assets = _build_release_assets(tmp_path, tag, traversal=traversal)
+    server = HTTPServer(("127.0.0.1", 0), _ReleaseHandler)
+    base = f"http://127.0.0.1:{server.server_port}"
+    release = {
+        "tag_name": tag,
+        "name": f"Pocket Lab Lite {tag}",
+        "html_url": f"{base}/release",
         "published_at": "2026-07-28T00:00:00Z",
-        "body": "Release notes",
+        "draft": False,
+        "prerelease": False,
         "assets": [
             {
-                "name": "dist.zip",
-                "size": 4096,
-                "digest": "sha256:" + "b" * 64,
-                "browser_download_url": "https://objects.githubusercontent.com/private/signed",
+                "name": name,
+                "size": len(body),
+                "browser_download_url": f"{base}/assets/{name}",
             }
+            for name, body in assets.items()
         ],
     }
-    server = HTTPServer(("127.0.0.1", 0), _ReleaseHandler)
-    server_thread = threading.Thread(
-        target=server.serve_forever,
-        name="release-test-http",
-        daemon=True,
-    )
-    server_thread.start()
-    monkeypatch.setenv("POCKETLAB_RELEASE_ALLOW_INSECURE_SOURCE", "1")
+    _ReleaseHandler.responses = {
+        "/releases": (
+            "application/json",
+            json.dumps([
+                {**release, "tag_name": "v9.9.9"},
+                release,
+                {**release, "tag_name": "lite-2026.02.30.1"},
+            ]).encode(),
+        ),
+        **{f"/assets/{name}": ("application/octet-stream", body) for name, body in assets.items()},
+    }
+    thread = threading.Thread(target=server.serve_forever, name="release-test-http", daemon=True)
+    thread.start()
+    return server, base, release
+
+def test_release_check_runs_in_bounded_subprocess(tmp_path, monkeypatch):
+    monkeypatch.setenv("POCKETLAB_LITE_RELEASE_REPO", "dexter-lab-ctrl/pocket-lab-lite")
     monkeypatch.setenv(
-        "POCKETLAB_GITHUB_RELEASES_API",
-        f"http://127.0.0.1:{server.server_port}/latest",
+        "POCKETLAB_LITE_VERIFIED_ORIGIN",
+        "git@github.com:dexter-lab-ctrl/pocket-lab-lite.git",
     )
-    monkeypatch.setenv("POCKETLAB_RELEASE_TAG", "v1.0.0")
+    release_runtime, _database = _prepare_runtime(tmp_path, monkeypatch)
+    release_runtime.record_release_install(
+        release_tag="lite-2026.07.27.1",
+        source_repository="dexter-lab-ctrl/pocket-lab-lite",
+        source_commit="a" * 40,
+        artifact_sha256="c" * 64,
+    )
+    server, base, _release = _serve_release(tmp_path, "lite-2026.07.28.2")
+    monkeypatch.setenv("POCKETLAB_RELEASE_ALLOW_INSECURE_SOURCE", "1")
+    monkeypatch.setenv("POCKETLAB_RELEASE_ALLOWED_HOSTS", "127.0.0.1")
+    monkeypatch.setenv("POCKETLAB_GITHUB_RELEASES_API", f"{base}/releases")
     try:
         result = asyncio.run(release_runtime.run_release_check("subprocess-check"))
     finally:
@@ -180,8 +261,11 @@ def test_release_check_runs_in_bounded_subprocess(tmp_path, monkeypatch):
         server.server_close()
     assert result["status"] == "healthy"
     assert result["update_available"] is True
+    assert result["latest_tag"] == "lite-2026.07.28.2"
+    assert result["manifest_verified"] is True
+    assert result["repository_match"] is True
     assert result["latest_release"]["artifact"]["name"] == "dist.zip"
-    assert "download_url" not in result["latest_release"]["artifact"]
+    assert "download_url" not in json.dumps(result["latest_release"])
     diagnostics = release_runtime.release_runtime_diagnostics()
     assert diagnostics["last_cpu_ms"] >= 0
     assert diagnostics["last_wall_ms"] > 0
@@ -189,26 +273,39 @@ def test_release_check_runs_in_bounded_subprocess(tmp_path, monkeypatch):
     assert diagnostics["api_thread_started"] is False
     assert diagnostics["execution_owner"] == "pocket-worker/release-subprocess"
 
-
-def test_release_verify_rejects_archive_traversal(tmp_path, monkeypatch):
+def test_release_stage_rejects_archive_traversal(tmp_path, monkeypatch):
     release_runtime, _database = _prepare_runtime(tmp_path, monkeypatch)
+    server, base, release = _serve_release(
+        tmp_path, "lite-2026.07.28.2", traversal=True
+    )
+    monkeypatch.setenv("POCKETLAB_RELEASE_ALLOW_INSECURE_SOURCE", "1")
+    monkeypatch.setenv("POCKETLAB_RELEASE_ALLOWED_HOSTS", "127.0.0.1")
     staging = tmp_path / "release-staging"
-    staging.mkdir(parents=True)
-    archive = staging / "bad.zip"
-    with zipfile.ZipFile(archive, "w") as handle:
-        handle.writestr("../escape.txt", "blocked")
-    monkeypatch.setenv("POCKETLAB_RELEASE_STAGING_DIR", str(staging))
-
-    with pytest.raises(release_runtime.ReleaseSubprocessError) as exc_info:
-        asyncio.run(
-            release_runtime.execute_release_subprocess(
-                "verify",
-                {"path": str(archive)},
+    try:
+        with pytest.raises(release_runtime.ReleaseSubprocessError) as exc_info:
+            asyncio.run(
+                release_runtime.execute_release_subprocess(
+                    "stage",
+                    {
+                        "release_tag": "lite-2026.07.28.2",
+                        "assets": {
+                            item["name"]: {
+                                "name": item["name"],
+                                "size": item["size"],
+                                "download_url": item["browser_download_url"],
+                            }
+                            for item in release["assets"]
+                        },
+                        "staging_root": str(staging),
+                        "target_dir": str(staging / "generation-1"),
+                    },
+                )
             )
-        )
+    finally:
+        server.shutdown()
+        server.server_close()
     assert exc_info.value.code == "release_archive_path_traversal"
     assert not (tmp_path / "escape.txt").exists()
-
 
 def test_release_source_host_is_fail_closed(tmp_path, monkeypatch):
     release_runtime, _database = _prepare_runtime(tmp_path, monkeypatch)
@@ -221,14 +318,14 @@ def test_release_source_host_is_fail_closed(tmp_path, monkeypatch):
                 "check",
                 {
                     "source_url": "https://untrusted.invalid/releases/latest",
-                    "current_tag": "v1.0.0",
+                    "installed_release_tag": "lite-2026.07.27.1",
                 },
             )
         )
     assert exc_info.value.code == "release_source_host_rejected"
 
 
-def test_apply_orchestrator_separates_download_apply_and_verify(monkeypatch):
+def test_apply_orchestrator_uses_only_native_lite_stages(monkeypatch):
     ensure_runtime_path()
     monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
     from api_fastapi.services import release_orchestrator, release_runtime
@@ -241,7 +338,7 @@ def test_apply_orchestrator_separates_download_apply_and_verify(monkeypatch):
         worker_generation="worker-7",
     )
     phases: list[str] = []
-    operation_stages: list[str] = []
+    subprocess_stages: list[str] = []
 
     async def noop_async(*_args, **_kwargs):
         return None
@@ -252,25 +349,52 @@ def test_apply_orchestrator_separates_download_apply_and_verify(monkeypatch):
     async def fake_check(_lease):
         return _release_payload(), {"pid": 700, "cpu_ms": 5.0, "wall_ms": 10.0}
 
-    async def fake_operation(
-        _command_id,
-        stage_id,
-        _title,
-        operation,
-        _target_type,
-        _target_ref,
-        _params=None,
-    ):
-        operation_stages.append(stage_id)
-        return {"operation": operation, "job_id": stage_id, "status": "succeeded"}
+    async def fake_subprocess(operation, _payload):
+        subprocess_stages.append(operation)
+        if operation == "stage":
+            return {
+                "release_tag": "lite-2026.07.28.2",
+                "content_path": "/private/staging/content",
+                "artifact_sha256": "a" * 64,
+                "manifest_verified": True,
+                "artifact_verified": True,
+                "archive": {
+                    "representative_js": ["assets/app.js"],
+                    "representative_css": ["assets/app.css"],
+                    "service_worker": ["sw.js"],
+                },
+            }, {"pid": 701}
+        if operation == "promote":
+            return {
+                "release_tag": "lite-2026.07.28.2",
+                "rollback_available": True,
+            }, {"pid": 702}
+        if operation == "validate":
+            return {
+                "release_tag": "lite-2026.07.28.2",
+                "validation_status": "passed",
+            }, {"pid": 703}
+        raise AssertionError(operation)
 
     monkeypatch.setattr(release_orchestrator, "_update_run", lambda *_a, **_k: {})
     monkeypatch.setattr(release_orchestrator, "_publish", noop_async)
     monkeypatch.setattr(release_orchestrator, "_stage_started", noop_async)
     monkeypatch.setattr(release_orchestrator, "_stage_completed", noop_async)
-    monkeypatch.setattr(release_orchestrator, "_run_release_operation", fake_operation)
     monkeypatch.setattr(release_runtime, "begin_release_apply", fake_begin)
     monkeypatch.setattr(release_runtime, "check_for_apply", fake_check)
+    monkeypatch.setattr(release_runtime, "execute_release_subprocess", fake_subprocess)
+    monkeypatch.setattr(release_runtime, "build_stage_request", lambda *_a: {})
+    monkeypatch.setattr(release_runtime, "build_promote_request", lambda *_a: {})
+    monkeypatch.setattr(release_runtime, "build_validate_request", lambda *_a: {})
+    monkeypatch.setattr(
+        release_runtime,
+        "record_release_install",
+        lambda **_kwargs: {
+            "source_commit": "b" * 40,
+            "artifact_sha256": "a" * 64,
+            "installed_at": "2026-07-28T00:00:00Z",
+        },
+    )
     monkeypatch.setattr(
         release_runtime,
         "update_release_stage",
@@ -286,38 +410,33 @@ def test_apply_orchestrator_separates_download_apply_and_verify(monkeypatch):
             "projection_revision": 8,
         },
     )
-    monkeypatch.setattr(
-        release_orchestrator.deps.core, "build_catalog_view", lambda: []
-    )
-    monkeypatch.setattr(
-        release_orchestrator.deps.core, "build_catalog_cache", lambda _items: None
-    )
-    monkeypatch.setattr(
-        release_orchestrator.deps.core, "build_health_engine_snapshot", lambda: {"status": "healthy"}
-    )
-    monkeypatch.setattr(
-        release_orchestrator.deps.core, "load_fleet_nodes", lambda: []
-    )
-    monkeypatch.setattr(
-        release_orchestrator.deps.core,
-        "build_fleet_health_snapshot",
-        lambda _nodes: {"status": "healthy"},
-    )
-    monkeypatch.setattr(
-        release_orchestrator.deps.core, "telemetry_snapshot", lambda: {"ready": True}
-    )
 
     result = asyncio.run(
-        release_orchestrator.apply_release(
-            {"command_id": "apply-7", "force": True}
-        )
+        release_orchestrator.apply_release({"command_id": "apply-7", "force": True})
     )
     assert result["status"] == "success"
     assert result["runtime_status"] == "healthy"
-    assert phases == ["preparing", "downloading", "applying", "verifying"]
-    assert operation_stages == ["prepare", "download", "apply", "verify"]
+    assert phases == ["downloading", "installing", "validating"]
+    assert subprocess_stages == ["stage", "promote", "validate"]
+    assert [item["operation"] for item in result["operations"]] == [
+        "lite_release_check",
+        "lite_artifact_stage",
+        "lite_pwa_promote",
+        "lite_release_validate",
+    ]
     assert result["update_available"] is False
-
+    source = Path(release_orchestrator.__file__).read_text(encoding="utf-8")
+    for legacy in (
+        "release_prepare",
+        "release_sync",
+        "release_deploy",
+        "release_verify",
+        "deploy_blueprint",
+        "drift_scan",
+        "pocket_lab_iac",
+        "site.yml",
+    ):
+        assert legacy not in source
 
 def test_worker_publishes_truthful_terminal_failure_for_release_result(monkeypatch):
     ensure_runtime_path()
@@ -367,8 +486,8 @@ def test_release_check_returns_truthful_degraded_state(monkeypatch):
             "phase": "error",
             "last_failure_code": "release_source_unreachable",
             "last_known_good": True,
-            "current_tag": "v1.0.0",
-            "latest_tag": "v1.0.0",
+            "current_tag": "",
+            "latest_tag": "",
             "update_available": False,
         }
 
@@ -386,3 +505,91 @@ def test_release_check_returns_truthful_degraded_state(monkeypatch):
     assert result["runtime_status"] == "degraded"
     assert result["last_failure_code"] == "release_source_unreachable"
     assert result["last_known_good"] is True
+
+
+def test_apply_validation_failure_rolls_back_before_reporting_failure(monkeypatch):
+    ensure_runtime_path()
+    monkeypatch.setenv("POCKETLAB_PROCESS_ROLE", "worker")
+    from api_fastapi.services import release_orchestrator, release_runtime
+
+    lease = release_runtime.ReleaseLease(
+        claimed=True,
+        generation=8,
+        operation="apply",
+        command_id="apply-rollback",
+        worker_generation="worker-8",
+    )
+    calls: list[str] = []
+    validation_count = 0
+
+    async def noop_async(*_args, **_kwargs):
+        return None
+
+    async def fake_begin(_command_id):
+        return lease
+
+    async def fake_check(_lease):
+        return _release_payload(), {"pid": 800}
+
+    async def fake_subprocess(operation, _payload):
+        nonlocal validation_count
+        calls.append(operation)
+        if operation == "stage":
+            return {
+                "release_tag": "lite-2026.07.28.2",
+                "content_path": "/private/staging/content",
+                "artifact_sha256": "a" * 64,
+                "manifest_verified": True,
+                "artifact_verified": True,
+                "archive": {},
+            }, {"pid": 801}
+        if operation == "promote":
+            return {"release_tag": "lite-2026.07.28.2", "rollback_available": True}, {"pid": 802}
+        if operation == "validate":
+            validation_count += 1
+            if validation_count == 1:
+                raise release_runtime.ReleaseSubprocessError("release_post_switch_asset_missing")
+            return {"release_tag": "lite-2026.07.27.1", "validation_status": "passed"}, {"pid": 804}
+        if operation == "rollback":
+            return {
+                "rollback_status": "rolled_back",
+                "restored_release_tag": "lite-2026.07.27.1",
+            }, {"pid": 803}
+        raise AssertionError(operation)
+
+    monkeypatch.setattr(release_orchestrator, "_update_run", lambda *_a, **_k: {})
+    monkeypatch.setattr(release_orchestrator, "_publish", noop_async)
+    monkeypatch.setattr(release_orchestrator, "_stage_started", noop_async)
+    monkeypatch.setattr(release_orchestrator, "_stage_completed", noop_async)
+    monkeypatch.setattr(release_runtime, "begin_release_apply", fake_begin)
+    monkeypatch.setattr(release_runtime, "check_for_apply", fake_check)
+    monkeypatch.setattr(release_runtime, "execute_release_subprocess", fake_subprocess)
+    monkeypatch.setattr(release_runtime, "build_stage_request", lambda *_a: {})
+    monkeypatch.setattr(release_runtime, "build_promote_request", lambda *_a: {})
+    monkeypatch.setattr(release_runtime, "build_validate_request", lambda *_a: {})
+    monkeypatch.setattr(release_runtime, "build_rollback_request", lambda: {})
+    monkeypatch.setattr(release_runtime, "renew_release_lease", lambda *_a, **_k: True)
+    monkeypatch.setattr(release_runtime, "update_release_stage", lambda *_a, **_k: {})
+    monkeypatch.setattr(
+        release_runtime,
+        "fail_release_apply",
+        lambda _lease, failure_code, **kwargs: {
+            "status": "degraded",
+            "phase": "error",
+            "last_failure_code": failure_code,
+            "last_failure_stage": kwargs.get("failure_stage"),
+            "last_rollback_status": kwargs.get("rollback_status"),
+            "last_known_good": True,
+        },
+    )
+
+    result = asyncio.run(
+        release_orchestrator.apply_release(
+            {"command_id": "apply-rollback", "force": True}
+        )
+    )
+    assert result["status"] == "failed"
+    assert result["failure_stage"] == "validation"
+    assert result["rollback_status"] == "rolled_back"
+    assert result["last_known_good"] is True
+    assert calls == ["stage", "promote", "validate", "rollback", "validate"]

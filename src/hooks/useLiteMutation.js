@@ -31,6 +31,8 @@ export const liteMutationInvalidations = {
   remove_device: [liteQueryKeys.fleet(), liteQueryKeys.status()],
   refresh_remote_access: [liteQueryKeys.fleet()],
   update_device_model: [liteQueryKeys.fleet()],
+  release_check: [liteQueryKeys.release()],
+  release_apply: [liteQueryKeys.release()],
 };
 
 function normalizeActionId(actionId = '') {

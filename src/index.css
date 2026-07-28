@@ -23483,3 +23483,50 @@ html.lite-install-light-shell body {
     scroll-behavior: auto;
   }
 }
+
+/* Pocket Lab Lite native release status */
+.lite-release-update-card {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0 0 1rem;
+  content-visibility: auto;
+  contain-intrinsic-size: 180px;
+}
+.lite-release-update-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+}
+.lite-release-update-head h2 { margin: 0.1rem 0 0.25rem; font-size: 1.05rem; }
+.lite-release-update-head p { margin: 0; color: var(--lite-text-muted, #94a3b8); }
+.lite-release-update-head small { color: var(--lite-text-muted, #94a3b8); }
+.lite-release-update-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+.lite-release-update-meta,
+.lite-release-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+.lite-release-update-meta {
+  color: var(--lite-text-muted, #94a3b8);
+  font-size: 0.78rem;
+}
+.lite-release-update-actions .pocket-button { display: inline-flex; gap: 0.45rem; align-items: center; }
+.lite-release-update-note { margin: 0; font-size: 0.8rem; color: var(--lite-text-muted, #94a3b8); }
+@media (max-width: 640px) {
+  .lite-release-update-head { grid-template-columns: auto minmax(0, 1fr); }
+  .lite-release-update-head > .status-badge { grid-column: 1 / -1; justify-self: start; }
+  .lite-release-update-actions .pocket-button { flex: 1 1 10rem; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lite-release-update-card .animate-spin { animation: none !important; }
+}
