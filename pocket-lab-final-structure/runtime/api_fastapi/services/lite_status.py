@@ -609,14 +609,19 @@ def build_lite_status_projection() -> dict[str, Any]:
     bus = snapshots["system.nats_remote"] or BUS.status()
     live = LIVE_STATUS.status()
     remote_access = snapshots["system.remote_access"] or lite_remote_access_status()
-    telemetry = snapshots["system.telemetry_thresholds"]
-    if not telemetry:
-        telemetry = LIVE_STATUS.last_telemetry_snapshot()
-    if not telemetry:
+    semantic_telemetry = snapshots["system.telemetry_thresholds"]
+    raw_telemetry = LIVE_STATUS.last_telemetry_snapshot()
+    if not raw_telemetry:
         try:
-            telemetry = deps.core.telemetry_snapshot()
+            raw_telemetry = deps.core.telemetry_snapshot()
         except Exception:
-            telemetry = {"status": "unknown"}
+            raw_telemetry = {"status": "unknown"}
+    telemetry = dict(raw_telemetry) if isinstance(raw_telemetry, dict) else {"status": "unknown"}
+    if isinstance(semantic_telemetry, dict) and semantic_telemetry:
+        # Preserve worker-prepared semantic status while retaining the local numeric
+        # capacity sample required by the Home UI. Never let one projection replace
+        # the other: mixed-version agents may provide only a subset of these fields.
+        telemetry.update(semantic_telemetry)
 
     prepared_fleet = CONTROL_PLANE.fleet_projection_snapshot() or {}
     fleet_nodes = prepared_fleet.get("devices") if isinstance(prepared_fleet.get("devices"), list) else []
@@ -685,6 +690,16 @@ def _lite_telemetry(payload: dict[str, Any]) -> dict[str, Any]:
             "counts": payload.get("counts") if isinstance(payload.get("counts"), dict) else {},
             "device_count": len(payload.get("devices") or []),
             "semantic": True,
+            # Semantic health and numeric capacity are complementary. Keep both so
+            # Home can show measured RAM/CPU/storage while respecting health tone.
+            "cpu_temp_c": payload.get("cpu_temp_c") or payload.get("cpuTemp"),
+            "free_space_mb": payload.get("free_space_mb") or payload.get("freeSpaceMB"),
+            "total_space_mb": payload.get("total_space_mb") or payload.get("totalSpaceMB"),
+            "cpu_usage_percent": payload.get("cpu_usage_percent"),
+            "memory_usage_mb": payload.get("memory_usage_mb"),
+            "memory_total_mb": payload.get("memory_total_mb") or payload.get("memoryTotalMB"),
+            "memory_free_mb": payload.get("memory_free_mb") or payload.get("memoryFreeMB"),
+            "sampled_at": payload.get("sampled_at") or payload.get("time") or payload.get("updated_at"),
         }
     return {
         "status": _status(payload.get("status", "unknown")),
