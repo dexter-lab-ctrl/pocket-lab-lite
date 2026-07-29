@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_catalog, lite_catalog_live
+from . import lite_app_runtime, lite_catalog, lite_catalog_live
 
 PHOTOPRISM_APP_ID = "photoprism"
 LIFECYCLE_ACTIONS = {"install_app", "update_app", "repair_app", "remove_app"}
@@ -67,7 +67,8 @@ def _catalog_app() -> dict[str, Any]:
 
 def installed() -> bool:
     app = _catalog_app()
-    return bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
+    evidence = lite_app_runtime.reconcile_install_state(PHOTOPRISM_APP_ID, app)
+    return bool(evidence.get("installed"))
 
 
 def lifecycle_state() -> dict[str, Any]:
@@ -95,12 +96,11 @@ def lifecycle_state() -> dict[str, Any]:
 
 def action_readiness() -> dict[str, dict[str, Any]]:
     is_installed = installed()
-    return {
+    raw = {
         "install_app": {
             "enabled": not is_installed,
             "label": "Install",
-            "summary": "Install PhotoPrism on this device." if not is_installed else "PhotoPrism is already installed.",
-            **({"reason": "PhotoPrism is already installed. Use Repair if something changed."} if is_installed else {}),
+            "summary": "Install PhotoPrism on this device.",
         },
         "update_app": {
             "enabled": False,
@@ -120,8 +120,13 @@ def action_readiness() -> dict[str, dict[str, Any]]:
             "risk": "destructive",
             "requires_confirmation": True,
             "summary": "Remove PhotoPrism runtime while preserving media, backups, and evidence by default.",
-            **({"reason": "Install PhotoPrism first."} if not is_installed else {}),
         },
+    }
+    return {
+        action_id: lite_app_runtime.normalize_action_availability(
+            action_id, action, installed=is_installed, app_name="PhotoPrism"
+        )
+        for action_id, action in raw.items()
     }
 
 

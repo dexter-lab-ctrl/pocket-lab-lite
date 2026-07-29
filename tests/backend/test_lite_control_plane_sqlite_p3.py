@@ -71,8 +71,11 @@ def test_control_plane_migration_and_domain_revisions(tmp_path, monkeypatch):
     from api_fastapi.db.connection import read_connection
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-    assert current_schema_version() == 18
+    applied = apply_migrations()
+    assert applied
+    assert applied == list(range(1, applied[-1] + 1))
+    assert current_schema_version() == applied[-1]
+    assert applied[-1] >= 21
     with read_connection() as conn:
         domains = {
             row["domain"]: int(row["revision"])
@@ -1110,17 +1113,21 @@ def test_cold_projection_validation_script_has_bounded_proxy_readiness_gate():
     assert 'Missing or empty revisions response' in source
 
 
-def test_app_lifecycle_primes_parallel_subprojections_and_uses_unified_warmup_scheduler():
+def test_app_lifecycle_primes_parallel_subprojections_and_uses_worker_owned_projection_registration():
     lifecycle = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_lifecycle.py").read_text()
     router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text()
+    core = Path("pocket-lab-final-structure/runtime/api_fastapi/services/lite_core_projections.py").read_text()
+    worker = Path("pocket-lab-final-structure/runtime/workers/pocketlab_worker.py").read_text()
     assert "_prime_app_subprojections()" in lifecycle
     assert "POCKETLAB_LITE_APP_SUBPROJECTION_WORKERS" in lifecycle
     assert '("photoprism:security", _security_payload' in lifecycle
     assert '("photoprism:backup", _backup_payload' in lifecycle
     assert '("photoprism:runtime", lite_photoprism_lifecycle.lifecycle_state' in lifecycle
-    assert "CONTROL_PLANE.warm_prepared_read(" in router
-    assert 'priority=40' in router
-    assert 'work_class="cpu"' in router
+    assert "CONTROL_PLANE.warm_prepared_read(" not in router
+    assert 'domain="apps"' in core
+    assert 'key="lifecycle"' in core
+    assert 'work_class="critical"' in core
+    assert "projection_registry_ready" in worker
     assert "POCKETLAB_LITE_PROJECTION_WARMUP_DELAY_SECONDS" not in router
     assert "POCKETLAB_LITE_PROJECTION_WARMUP_GAP_SECONDS" not in router
 

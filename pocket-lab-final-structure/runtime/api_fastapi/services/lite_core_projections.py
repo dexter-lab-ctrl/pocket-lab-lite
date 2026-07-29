@@ -255,7 +255,7 @@ def register_jobs() -> dict[str, bool]:
             domain="apps", key="lifecycle", snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
             builder=lite_app_lifecycle.app_lifecycle_profiles,
             projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_apps, payload),
-            deadline_seconds=8.0, priority=40, work_class="cpu",
+            deadline_seconds=8.0, priority=25, work_class="critical",
         ),
         "recovery_summary": _register_job(
             domain="recovery", key="summary", snapshot_builder=CONTROL_PLANE.recovery_projection_snapshot,

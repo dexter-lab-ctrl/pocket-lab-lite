@@ -3998,10 +3998,12 @@ class ControlPlaneProjectionStore:
                      now, now_epoch, _safe_text(app.get("summary")),
                      _safe_json(_compact_app_subprojection("catalog", {
                          "id": app_id, "name": app.get("name"), "status": app.get("status"),
-                         "installed": bool(app.get("installed")), "host_device_id": (app.get("host_device") or {}).get("id") if isinstance(app.get("host_device"), dict) else None,
-                         "host_device_name": (app.get("host_device") or {}).get("name") if isinstance(app.get("host_device"), dict) else None,
+                         "installed": bool(app.get("installed")),
+                         "install_state": app.get("install_state"),
+                         "host_device_id": app.get("host_device_id") or ((app.get("host_device") or {}).get("id") if isinstance(app.get("host_device"), dict) else None),
+                         "host_device_name": app.get("host_device_name") or ((app.get("host_device") or {}).get("name") if isinstance(app.get("host_device"), dict) else None),
                          "access": {"open_url": "/apps/photoprism/"} if open_enabled else {},
-                         "runtime": {"url": "/apps/photoprism/"} if open_enabled else {},
+                         "runtime": _compact_app_subprojection("runtime", app.get("runtime")),
                          "actions": {"open": open_enabled},
                      }), max_bytes=2048),
                      _safe_json(_compact_app_subprojection("media", app.get("media")), max_bytes=4096),
@@ -4013,28 +4015,20 @@ class ControlPlaneProjectionStore:
                      2),
                 )
                 changed = _changes(conn) or changed
+                valid_lifecycle_statuses = {
+                    "queued", "published", "received", "accepted", "running", "working", "in_progress",
+                    "succeeded", "completed", "failed", "undeliverable", "timed_out", "error",
+                    "blocked", "cancelled", "rejected",
+                }
                 for action_id, action in list(actions.items())[:64]:
                     if not isinstance(action, dict):
                         continue
                     action_updated = str(action.get("last_ran_at") or action.get("updated_at") or now)
                     operation_id = _safe_text(action.get("operation_id") or action.get("receipt_id"), 120)
-                    if not operation_id:
-                        semantic_generation = json.dumps(
-                            {
-                                "app_id": app_id,
-                                "action_id": str(action_id),
-                                "status": _normalize_status(action.get("status")),
-                                "enabled": bool(action.get("enabled")),
-                                "category": _safe_text(action.get("category"), 40),
-                                "risk": _safe_text(action.get("risk"), 40),
-                                "phase": _safe_text((action.get("progress") or {}).get("phase") if isinstance(action.get("progress"), dict) else "", 80),
-                                "current": int((action.get("progress") or {}).get("current") or 0) if isinstance(action.get("progress"), dict) else 0,
-                                "total": int((action.get("progress") or {}).get("total") or 0) if isinstance(action.get("progress"), dict) else 0,
-                            },
-                            sort_keys=True,
-                            separators=(",", ":"),
-                        )
-                        operation_id = hashlib.sha256(semantic_generation.encode("utf-8")).hexdigest()[:24]
+                    lifecycle_status = _normalize_status(action.get("status"))
+                    # Capability/readiness definitions are current state, not lifecycle events.
+                    if not operation_id or lifecycle_status not in valid_lifecycle_statuses:
+                        continue
                     conn.execute(
                         """
                         INSERT INTO app_action_lifecycle(
@@ -4049,7 +4043,7 @@ class ControlPlaneProjectionStore:
                            OR app_action_lifecycle.summary IS NOT excluded.summary
                            OR app_action_lifecycle.metadata_json IS NOT excluded.metadata_json
                         """,
-                        (operation_id, app_id, _safe_text(action_id, 100), _normalize_status(action.get("status")),
+                        (operation_id, app_id, _safe_text(action_id, 100), lifecycle_status,
                          str(action.get("first_ran_at") or action_updated), action_updated, _epoch_ms(action_updated),
                          _safe_text(action.get("evidence_ref") or "app-lifecycle", 160),
                          _safe_text(action.get("last_result") or action.get("summary") or action.get("disabled_reason")),
@@ -4070,6 +4064,35 @@ class ControlPlaneProjectionStore:
                     tuple(app_ids),
                 )
                 changed = _changes(conn) or changed
+            conn.execute(
+                """
+                DELETE FROM app_action_lifecycle
+                WHERE status='unknown'
+                  AND source_ref='app-lifecycle'
+                  AND json_valid(metadata_json)
+                  AND json_type(metadata_json, '$.enabled') IS NOT NULL
+                  AND operation_id NOT IN (
+                      SELECT operation_id FROM audit_evidence_index WHERE operation_id <> ''
+                  )
+                """
+            )
+            synthetic_removed = _changes(conn)
+            if synthetic_removed:
+                cleanup_operation = "cleanup-app-action-capabilities-v1"
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO audit_evidence_index(
+                        event_type, entity_type, entity_id, operation_id, status,
+                        evidence_ref, created_at, created_at_epoch_ms, summary
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        "app_action_lifecycle_cleanup", "app", "catalog", cleanup_operation,
+                        "succeeded", "sqlite://app_action_lifecycle", now, now_epoch,
+                        f"Removed {synthetic_removed} synthetic app action capability row(s).",
+                    ),
+                )
+                changed = True
             conn.execute(
                 "DELETE FROM app_action_lifecycle WHERE operation_id NOT IN "
                 "(SELECT operation_id FROM app_action_lifecycle ORDER BY updated_at_epoch_ms DESC, operation_id DESC LIMIT 2000)"

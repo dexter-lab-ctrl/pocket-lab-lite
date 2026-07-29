@@ -532,11 +532,11 @@ export function selectLiteCatalogAppSummary(app = {}) {
     summary: safeString(app.summary || ''),
     status: normalizeStatus(app.status || app.health || app.install_state || 'unknown'),
     health: normalizeStatus(app.health || runtime.health || ''),
-    installed: Boolean(app.installed || app.install_state === 'installed' || app.status === 'ready'),
+    installed: Boolean(app.installed || ['installed', 'installed_running', 'installed_stopped', 'installed_degraded'].includes(app.install_state) || ['ready', 'running', 'installed'].includes(app.status)),
     install_state: normalizeStatus(app.install_state || ''),
     actions: copySafeKeys(actions, ['open', 'install', 'remove', 'retry']),
     access: copySafeKeys(access, ['route_ready', 'open_url', 'route', 'url', 'message', 'https_ready', 'open']),
-    runtime: copySafeKeys(runtime, ['route', 'url', 'health', 'process', 'status', 'checked_at']),
+    runtime: copySafeKeys(runtime, ['route', 'url', 'health', 'process', 'status', 'checked_at', 'installation_state', 'process_status', 'reachable', 'state_conflict', 'evidence']),
     target: isObject(app.target)
       ? {
         default_node_id: safeString(app.target.default_node_id || ''),
