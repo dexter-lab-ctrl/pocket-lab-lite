@@ -230,8 +230,10 @@ def telemetry_snapshot() -> Dict[str, Any]:
     try:
         st = os.statvfs(str(SETTINGS.base_dir))
         free_space_mb = int((st.f_bavail * st.f_frsize) // (1024 * 1024))
+        total_space_mb = int((st.f_blocks * st.f_frsize) // (1024 * 1024))
     except Exception:
         free_space_mb = 0
+        total_space_mb = 0
 
     try:
         with open("/proc/meminfo", "r", encoding="utf-8") as handle:
@@ -252,6 +254,7 @@ def telemetry_snapshot() -> Dict[str, Any]:
         "timestamp": now_utc_iso(),
         "cpu_temp_c": cpu_temp,
         "free_space_mb": free_space_mb,
+        "total_space_mb": total_space_mb,
         "cpu_usage_percent": round(cpu_usage_percent, 1),
         "memory_usage_mb": memory_usage_mb,
         "memory_total_mb": mem_total,
@@ -259,6 +262,7 @@ def telemetry_snapshot() -> Dict[str, Any]:
         # Compatibility aliases kept for older clients and tests.
         "cpuTemp": cpu_temp,
         "freeSpaceMB": free_space_mb,
+        "totalSpaceMB": total_space_mb,
         "memoryTotalMB": mem_total,
         "memoryFreeMB": mem_available,
         "device": os.uname().nodename if hasattr(os, "uname") else "pocket-lab",
