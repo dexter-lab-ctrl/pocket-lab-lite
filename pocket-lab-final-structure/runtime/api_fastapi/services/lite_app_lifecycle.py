@@ -12,7 +12,7 @@ import time
 from fastapi import HTTPException
 
 from .. import deps
-from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_recovery_subprojections
+from . import lite_app_backup_targets, lite_app_operations, lite_app_profiles, lite_app_runtime, lite_app_storage, lite_app_update, lite_catalog, lite_catalog_live, lite_photoprism_lifecycle, lite_photoprism_media, lite_recovery_subprojections
 from .lite_control_plane_store import CONTROL_PLANE
 
 _LOGGER = logging.getLogger(__name__)
@@ -1036,7 +1036,9 @@ def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) 
     if stage_timings is not None and "backup" not in stage_timings:
         stage_timings["backup"] = 0.0
     media = parallel["media"]
-    installed = bool(app.get("installed") or app.get("install_state") == "installed" or app.get("status") == "ready")
+    runtime = lite_app_runtime.reconcile_install_state("photoprism", app)
+    installation_state = str(runtime.get("installation_state") or app.get("install_state") or "unknown")
+    installed = bool(runtime.get("installed"))
 
     storage = _storage_profile(storage_raw)
     if security_raw.get("__saved_profile__"):
@@ -1085,6 +1087,11 @@ def photoprism_lifecycle_profile(stage_timings: dict[str, float] | None = None) 
         "name": "PhotoPrism",
         "installed": installed,
         "status": status,
+        "install_state": installation_state,
+        "runtime": runtime,
+        "catalog": app,
+        "access": app.get("access") if isinstance(app.get("access"), dict) else {},
+        "device_relationships": app.get("device_relationships") if isinstance(app.get("device_relationships"), dict) else {},
         "summary": summary,
         "host_device": _host_device(app, installed),
         "storage": storage,
