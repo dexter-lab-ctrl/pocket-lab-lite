@@ -10,7 +10,7 @@ describe('Pocket Lab Lite Recovery R1/R2 UI', () => {
   it('keeps the default Recovery screen summary-first', () => {
     expect(recoverySource).toContain('data-recovery-r1-summary="true"');
     expect(recoverySource).toContain('Back Up Now');
-    expect(recoverySource).toContain('Manage Recovery');
+    expect(recoverySource).toContain('Manage backups and recovery');
     expect(recoverySource).toContain('Protection');
     expect(recoverySource).toContain('Recent activity');
     expect(recoverySource).not.toContain('lite-recovery-flip-shell');

@@ -31,7 +31,7 @@ describe('Pocket Lab Lite Recovery R3/R4', () => {
     expect(historySource).toContain('onLoadMore={loadMore}');
     expect(historySource).toContain('hasMore={hasMore}');
     expect(virtualListSource).toContain("loadMoreLabel = 'Load more'");
-    expect(virtualListSource).toContain('{loadMoreLabel}');
+    expect(virtualListSource).toContain('savedState ? savedLoadMoreLabel : loadingMore ? loadingMoreLabel : loadMoreLabel');
     expect(apiSource).toContain('cursor');
   });
 

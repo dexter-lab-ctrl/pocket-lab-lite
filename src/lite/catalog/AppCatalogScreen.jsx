@@ -1609,7 +1609,7 @@ function handleCatalogPointerDown(event) {
 
 function appTone(status) {
   const value = String(status || '').toLowerCase();
-  if (['ready', 'installed', 'healthy'].includes(value)) return 'healthy';
+  if (['ready', 'installed', 'installed_running', 'running', 'healthy'].includes(value)) return 'healthy';
   if (['installing', 'queued', 'running'].includes(value)) return 'working';
   if (['needs_attention', 'unavailable', 'failed'].includes(value)) return 'degraded';
   return 'ready';
@@ -1617,8 +1617,8 @@ function appTone(status) {
 
 function appLabel(app) {
   const value = String(app?.status || '').toLowerCase();
-  if (value === 'ready' && app?.actions?.open) return 'Ready';
-  if (value === 'ready' || app?.installed) return 'Ready';
+  if (['ready', 'running', 'installed_running'].includes(value) && app?.actions?.open) return 'Ready';
+  if (['ready', 'running', 'installed', 'installed_running', 'installed_stopped', 'installed_degraded'].includes(value) || app?.installed) return value === 'installed_stopped' ? 'Stopped' : 'Ready';
   if (value === 'installing') return 'Installing';
   if (value === 'needs_attention') return 'Needs attention';
   if (value === 'unavailable') return 'Unavailable';
@@ -1627,7 +1627,10 @@ function appLabel(app) {
 
 function lastOperationText(app) {
   const op = app?.last_operation;
-  if (!op) return 'No install has run yet.';
+  const state = String(app?.runtime?.installation_state || app?.install_state || app?.status || '').toLowerCase();
+  if (!op && ['installed_running', 'running', 'ready'].includes(state)) return `${app?.name || 'This app'} is installed and running.`;
+  if (!op && ['installed_stopped', 'installed_degraded'].includes(state)) return `${app?.name || 'This app'} is installed but needs attention.`;
+  if (!op) return `${app?.name || 'This app'} is not currently installed.`;
   const when = op.updated_at ? ` · ${formatLiteTime(op.updated_at)}` : '';
   return `${op.message || 'Latest install status is available.'}${when}`;
 }
@@ -1638,7 +1641,7 @@ function resolveAppOpenUrl(item) {
 
 function isAppInstalled(app) {
   const status = String(app?.status || '').toLowerCase();
-  return Boolean(app?.installed || status === 'ready' || status === 'installed');
+  return Boolean(app?.installed || ['ready', 'installed', 'running', 'installed_running', 'installed_stopped', 'installed_degraded'].includes(status));
 }
 
 function isPhotoPrismApp(app) {
@@ -2461,7 +2464,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const canInstall = Boolean(app?.actions?.install) && !installing;
     const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
     const installed = isAppInstalled(app);
-    const targetName = app?.target?.eligible_devices?.[0]?.name || 'Server Host';
+    const targetName = app?.host_device_name || app?.target?.eligible_devices?.[0]?.name || 'Server Host';
     const reason = attentionReason(app, canOpen);
     const progress = app?.progress;
     const percent = Math.min(100, Math.max(0, ((progress?.current || 1) / (progress?.total || 7)) * 100));
@@ -2901,8 +2904,8 @@ export default function CatalogScreen({ onOpenWorkspace }) {
           : null}
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
-          <span><CheckCircle2 className="h-4 w-4" /> {canOpen ? 'Ready' : app?.access?.message || 'Available after install'}</span>
-          <span><HeartPulse className="h-4 w-4" /> {app?.runtime?.health ? `App status: ${app.runtime.health}` : 'App status: not installed'}</span>
+          <span><CheckCircle2 className="h-4 w-4" /> {installed ? (canOpen ? 'Ready to open' : 'Installed') : 'Setup needed'}</span>
+          <span><HeartPulse className="h-4 w-4" /> {app?.runtime?.installation_state === 'installed_running' ? 'App status: running' : app?.runtime?.health ? `App status: ${app.runtime.health}` : 'App status: not installed'}</span>
         </div>
         {reason ? (
           <div className="lite-catalog-attention-reason">
@@ -2931,21 +2934,28 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     );
   }
 
-  const insecureAppCount = apps.filter((app) => {
+  const installedApps = apps.filter(isAppInstalled);
+  const setupNeededCount = apps.length - installedApps.length;
+  const insecureAppCount = installedApps.filter((app) => {
     const accessState = app?.access || {};
     const appStatus = String(app?.status || app?.health || '').toLowerCase();
-
     return (
       accessState.https_ready === false ||
       accessState.route_ready === false ||
       accessState.open === false ||
-      appStatus === 'unhealthy' ||
-      appStatus === 'error' ||
-      appStatus === 'blocked'
+      ['unhealthy', 'error', 'blocked', 'installed_degraded'].includes(appStatus) ||
+      app?.runtime?.state_conflict === true
     );
   }).length;
 
   const isCatalogSecure = Boolean(access?.https_ready) && insecureAppCount === 0;
+  const catalogBanner = insecureAppCount > 0
+    ? { secure: false, label: 'Access needs attention' }
+    : setupNeededCount > 0
+      ? { secure: false, label: 'Setup needed' }
+      : { secure: isCatalogSecure, label: isCatalogSecure ? 'Protected access' : 'Remote access not ready' };
+  const catalogSaved = savedStateOnly || data?.read_degraded === true || data?.degraded_reason === 'projection_too_old';
+  const catalogRefreshing = refreshing || data?.refresh_pending === true;
 
   return (
     <animated.div
@@ -2963,9 +2973,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         description="Install, open, and manage self-hosted apps. Pocket Lab handles setup and protection in the background."
         actions={(
           <div className="lite-catalog-hero-actions">
-            <div className={isCatalogSecure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
-              {isCatalogSecure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-              {isCatalogSecure ? 'Protected access' : 'Access needs attention'}
+            <div className={catalogBanner.secure ? 'lite-home-pill lite-catalog-hero-pill is-secure' : 'lite-home-pill lite-catalog-hero-pill is-not-secure'}>
+              {catalogBanner.secure ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+              {catalogBanner.label}
             </div>
             <LiteRefreshButton scope="apps" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />
           </div>
@@ -2974,6 +2984,9 @@ export default function CatalogScreen({ onOpenWorkspace }) {
 
       <div className="lite-catalog-toolbar lite-catalog-toolbar--simple">
         <p>{displayedApps.length} {displayedApps.length === 1 ? 'app available' : 'apps available'}</p>
+        {catalogSaved || catalogRefreshing ? (
+          <span>{catalogSaved ? 'Showing saved app status' : 'Current app status'}{catalogRefreshing ? ' · Refreshing…' : ''}</span>
+        ) : null}
       </div>
 
       {featuredApp ? (

@@ -11,6 +11,7 @@ from fastapi import HTTPException, Request
 
 from .. import deps
 from .fleet_registry import normalize_node_id
+from . import lite_app_runtime
 
 COMMAND_SUBJECT = "pocketlab.commands.lite.catalog.install"
 PHOTOPRISM_APP_ID = "photoprism"
@@ -202,15 +203,21 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
     operation = app.get("last_operation") if isinstance(app.get("last_operation"), dict) else None
     op_status = str((operation or {}).get("status") or "").lower()
     install_state = str(app.get("install_state") or "not_installed")
+    runtime_evidence = lite_app_runtime.reconcile_install_state(PHOTOPRISM_APP_ID, app)
     runtime_health = _runtime_health_from_state(app)
+    if runtime_evidence.get("running") and runtime_evidence.get("reachable"):
+        runtime_health = "healthy"
+    elif runtime_evidence.get("installed") and runtime_health == "not_installed":
+        runtime_health = "unhealthy"
     route = app.get("route") if isinstance(app.get("route"), dict) else {}
     route_ready = bool(route.get("enabled") and route.get("health") in {"healthy", "ready"} and access.get("https_ready"))
 
+    runtime_installed = bool(runtime_evidence.get("installed"))
     if op_status in RUNNING_OPERATION_STATUSES:
         status = "installing"
-    elif install_state == "installed" and runtime_health == "healthy":
+    elif runtime_installed and runtime_health == "healthy":
         status = "ready"
-    elif install_state in {"failed", "needs_attention"} or runtime_health == "unhealthy":
+    elif runtime_installed or install_state in {"failed", "needs_attention"} or runtime_health == "unhealthy":
         status = "needs_attention"
     elif install_state == "unavailable":
         status = "unavailable"
@@ -218,7 +225,7 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
         status = "not_installed"
 
     open_url = PHOTOPRISM_ROUTE if route_ready else None
-    actions = {"install": status in {"not_installed", "needs_attention", "unavailable"}, "open": bool(open_url), "details": True, "retry": status in {"needs_attention", "unavailable"}, "remove": False}
+    actions = {"install": (not runtime_installed) and status in {"not_installed", "needs_attention", "unavailable"}, "open": bool(open_url), "details": True, "retry": (not runtime_installed) and status in {"needs_attention", "unavailable"}, "remove": runtime_installed}
     access_message = "PhotoPrism is ready over secure access." if open_url else ("Install PhotoPrism to enable secure app access." if status == "not_installed" else "Open is not ready yet.")
     if not access.get("https_ready"):
         access_message = "Remote access not ready. PhotoPrism can be prepared, but Open stays disabled until HTTPS is ready."
@@ -238,11 +245,11 @@ def _app_payload(app: dict[str, Any], access: dict[str, Any]) -> dict[str, Any]:
         "category": "Photos",
         "summary": "Private photo library for your self-hosted workspace.",
         "status": status,
-        "install_state": "installed" if status == "ready" else install_state,
-        "installed": status == "ready",
+        "install_state": runtime_evidence.get("installation_state") if runtime_installed else ("installed" if status == "ready" else install_state),
+        "installed": runtime_installed or status == "ready",
         "target": _target_model(),
         "actions": actions,
-        "runtime": {"route": PHOTOPRISM_ROUTE, "url": open_url, "health": runtime_health, "version": (app.get("runtime") or {}).get("version") if isinstance(app.get("runtime"), dict) else None, "process": PHOTOPRISM_PROCESS},
+        "runtime": {"route": PHOTOPRISM_ROUTE, "url": open_url, "health": runtime_health, "version": (app.get("runtime") or {}).get("version") if isinstance(app.get("runtime"), dict) else None, "process": PHOTOPRISM_PROCESS, "installation_state": runtime_evidence.get("installation_state"), "process_status": (runtime_evidence.get("process") or {}).get("status"), "reachable": bool(runtime_evidence.get("reachable")), "state_conflict": bool(runtime_evidence.get("state_conflict")), "evidence": runtime_evidence.get("evidence") or {}},
         "access": {"https_ready": bool(access.get("https_ready")), "route_ready": bool(route_ready), "open_url": open_url, "message": access_message},
         "progress": app.get("progress") if isinstance(app.get("progress"), dict) else None,
         "last_operation": operation,
@@ -304,6 +311,9 @@ def validate_install_request(app_id: str, target_node_id: str | None = None) -> 
         raise HTTPException(status_code=409, detail="PhotoPrism can only be installed on the Server Host in this release.")
     state = _read_state()
     app = _get_app_state(state)
+    guard = lite_app_runtime.install_guard(PHOTOPRISM_APP_ID)
+    if not guard.get("allowed"):
+        return {"already_installed": True, "operation_id": _operation_id(), "target_node_id": server_id, "runtime": guard.get("runtime") or {}}
     op = app.get("last_operation") if isinstance(app.get("last_operation"), dict) else {}
     if str(op.get("status") or "").lower() in RUNNING_OPERATION_STATUSES:
         raise HTTPException(status_code=409, detail={"status": "install_in_progress", "message": "PhotoPrism install is already running.", "operation_id": op.get("operation_id") or op.get("command_id")})

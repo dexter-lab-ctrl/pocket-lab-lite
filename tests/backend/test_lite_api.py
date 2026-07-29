@@ -196,7 +196,8 @@ def test_lite_catalog_ui_is_https_aware_and_server_owned():
     assert "lite-catalog-drawer" not in ui
     assert "lite-catalog-drawer" not in css
     assert "AppActionDetailsPanel" in _lite_catalog_source()
-    assert "Ready to open" not in ui
+    assert "Ready to open" in ui
+    assert "installed_running" in ui
     assert "Ready to open" not in css
     assert ">Ready<" in ui or "'Ready'" in ui
     assert "Open full screen" in ui
