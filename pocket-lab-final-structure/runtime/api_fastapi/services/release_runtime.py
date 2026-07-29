@@ -236,6 +236,61 @@ def _identity_payload(row: Mapping[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def _filesystem_installed_identity() -> dict[str, Any] | None:
+    """Read the installer-owned, sanitized PWA identity marker.
+
+    This is a bounded local read used to reconcile a bootstrap promotion that
+    happened outside the long-running worker process. It never trusts the
+    symlink name alone and fails closed on malformed or mismatched identity.
+    """
+    base_dir = Path(os.environ.get("POCKETLAB_BASE_DIR") or os.environ.get("POCKET_LAB_BASE_DIR") or Path.home() / "pocket-lab-lite")
+    pwa_dir = Path(os.environ.get("POCKET_LAB_PWA_DIR") or base_dir / "pwa_dist")
+    marker_path = pwa_dir / "installed-release-identity.json"
+    current_build = pwa_dir / "current" / "pocketlab-lite-build.json"
+    try:
+        if marker_path.stat().st_size > 16 * 1024 or current_build.stat().st_size > 16 * 1024:
+            return None
+        marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+        build_payload = json.loads(current_build.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return None
+    if not isinstance(marker_payload, dict) or not isinstance(build_payload, dict):
+        return None
+    tag = str(marker_payload.get("release_tag") or "").strip()
+    source_commit = str(marker_payload.get("source_commit") or "").strip().lower()
+    artifact_sha256 = str(marker_payload.get("artifact_sha256") or "").strip().lower()
+    try:
+        parse_lite_tag(tag)
+    except LiteReleaseContractError:
+        return None
+    if not re.fullmatch(r"[0-9a-f]{7,64}", source_commit) or not re.fullmatch(r"[0-9a-f]{64}", artifact_sha256):
+        return None
+    if (
+        marker_payload.get("product") != PRODUCT
+        or marker_payload.get("install_mode") != "release"
+        or marker_payload.get("verified") is not True
+        or build_payload.get("product") != PRODUCT
+        or build_payload.get("install_mode") != "release"
+        or build_payload.get("release_tag") != tag
+        or str(build_payload.get("source_commit") or "").strip().lower() != source_commit
+    ):
+        return None
+    return {
+        "product": PRODUCT,
+        "install_mode": "release",
+        "source_repository": normalize_repository(marker_payload.get("source_repository") or DEFAULT_REPOSITORY),
+        "source_commit": source_commit,
+        "release_tag": tag,
+        "artifact_name": ARTIFACT_NAME,
+        "artifact_sha256": artifact_sha256,
+        "installed_at": marker_payload.get("installed_at"),
+        "installer_schema": max(1, int(marker_payload.get("installer_schema") or 1)),
+        "verified": True,
+        "identity_revision": max(1, int(marker_payload.get("identity_revision") or 1)),
+        "migration_status": "filesystem_identity_reconciled",
+    }
+
+
 def read_installed_identity() -> dict[str, Any]:
     try:
         with read_connection() as conn:
@@ -244,7 +299,13 @@ def read_installed_identity() -> dict[str, Any]:
             ).fetchone()
     except sqlite3.OperationalError:
         row = None
-    return _identity_payload(dict(row) if row else None)
+    durable = _identity_payload(dict(row) if row else None)
+    filesystem = _filesystem_installed_identity()
+    if not filesystem:
+        return durable
+    if not durable.get("verified") or durable.get("release_tag") != filesystem.get("release_tag"):
+        return filesystem
+    return durable
 
 
 def _write_installed_identity(payload: Mapping[str, Any]) -> dict[str, Any]:

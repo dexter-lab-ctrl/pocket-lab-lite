@@ -295,6 +295,39 @@ PYREUSE
   fi
   atomic_link "$target" "$CURRENT_LINK"
   reconcile_existing_release_identity "$tag" "$manifest" "$archive" "$target"
+  if [[ "$tag" == lite-* ]]; then
+    local identity_tmp="$PWA_DIR/.installed-release-identity.$$"
+    python3 - "$tag" "$manifest" "$archive" "$identity_tmp" <<'PYMARKER'
+import hashlib
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+tag, manifest_path, archive_path, output_path = sys.argv[1:]
+manifest = json.load(open(manifest_path, encoding="utf-8"))
+digest = hashlib.sha256(open(archive_path, "rb").read()).hexdigest()
+payload = {
+    "product": "pocket-lab-lite",
+    "install_mode": "release",
+    "release_tag": tag,
+    "source_repository": "dexter-lab-ctrl/pocket-lab-lite",
+    "source_commit": str(manifest.get("source_commit") or "").lower(),
+    "artifact_name": "dist.zip",
+    "artifact_sha256": digest,
+    "installed_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    "installer_schema": 1,
+    "identity_revision": 1,
+    "verified": True,
+}
+with open(output_path, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, sort_keys=True, separators=(",", ":"))
+    handle.flush()
+    os.fsync(handle.fileno())
+os.chmod(output_path, 0o600)
+PYMARKER
+    mv -f "$identity_tmp" "$PWA_DIR/installed-release-identity.json"
+  fi
   rm -rf "$TMP_DIR"
   mark_done pwa_ui_ready
   log INFO "Pocket Lab Lite PWA pointer is ready"

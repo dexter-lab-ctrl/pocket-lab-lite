@@ -2535,8 +2535,10 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         progress: importProgress,
         tone: 'secondary',
         onClick: (event) => runLifecycleAction(app, 'import_photos', event),
-        disabled: importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
-        title: lifecycleActionReason(importPhotosAction),
+        disabled: isPhotosImported || importPhotosAction.enabled !== true || actionBusyKey === `${app.id}:import_photos`,
+        title: isPhotosImported
+          ? 'Photos are already imported. PhotoPrism will handle new photos.'
+          : lifecycleActionReason(importPhotosAction),
         result,
       },
       {
