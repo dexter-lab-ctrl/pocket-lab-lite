@@ -40,3 +40,32 @@ def test_lite_status_accepts_legacy_capacity_aliases():
     assert result["total_space_mb"] == 20
     assert result["memory_total_mb"] == 30
     assert result["memory_free_mb"] == 12
+
+
+def test_lite_status_preserves_numeric_capacity_with_semantic_health():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_status import _lite_telemetry
+
+    result = _lite_telemetry({
+        "status": "normal",
+        "summary": "Device health looks good.",
+        "counts": {"normal": 1, "critical": 0},
+        "devices": [{"device_id": "server", "status": "normal"}],
+        "cpu_temp_c": 35.2,
+        "cpu_usage_percent": 4.0,
+        "free_space_mb": 135_569,
+        "total_space_mb": 228_000,
+        "memory_usage_mb": 4_054,
+        "memory_total_mb": 7_900,
+        "memory_free_mb": 3_846,
+    })
+
+    assert result["semantic"] is True
+    assert result["status"] == "normal"
+    assert result["counts"]["normal"] == 1
+    assert result["cpu_temp_c"] == 35.2
+    assert result["cpu_usage_percent"] == 4.0
+    assert result["free_space_mb"] == 135_569
+    assert result["total_space_mb"] == 228_000
+    assert result["memory_total_mb"] == 7_900
+    assert result["memory_free_mb"] == 3_846
