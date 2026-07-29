@@ -621,8 +621,8 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 source_revision=partial(app_source_revision, scope="catalog", app_id="photoprism"),
                 max_probe_seconds=300.0,
                 quiet_window_seconds=1.0,
-                priority=45,
-                work_class="io",
+                priority=20,
+                work_class="critical",
                 deadline_seconds=8.0,
             )
         if safe_key == "lifecycle":
@@ -630,8 +630,8 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 source_revision=partial(app_source_revision, scope="lifecycle", app_id="photoprism"),
                 max_probe_seconds=300.0,
                 quiet_window_seconds=1.0,
-                priority=35,
-                work_class="cpu",
+                priority=25,
+                work_class="critical",
                 deadline_seconds=8.0,
             )
         if safe_key.startswith("actions:"):
@@ -639,8 +639,8 @@ def contract_for(domain: str, key: str) -> ProjectionRevisionContract | None:
                 source_revision=partial(app_source_revision, scope="actions", app_id=app_id),
                 max_probe_seconds=120.0,
                 quiet_window_seconds=0.75,
-                priority=30,
-                work_class="io",
+                priority=15,
+                work_class="critical",
                 deadline_seconds=6.0,
             )
         if safe_key.startswith("update:"):
