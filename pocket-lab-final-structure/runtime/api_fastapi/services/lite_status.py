@@ -690,8 +690,11 @@ def _lite_telemetry(payload: dict[str, Any]) -> dict[str, Any]:
         "status": _status(payload.get("status", "unknown")),
         "cpu_temp_c": payload.get("cpu_temp_c") or payload.get("cpuTemp"),
         "free_space_mb": payload.get("free_space_mb") or payload.get("freeSpaceMB"),
+        "total_space_mb": payload.get("total_space_mb") or payload.get("totalSpaceMB"),
         "cpu_usage_percent": payload.get("cpu_usage_percent"),
         "memory_usage_mb": payload.get("memory_usage_mb"),
+        "memory_total_mb": payload.get("memory_total_mb") or payload.get("memoryTotalMB"),
+        "memory_free_mb": payload.get("memory_free_mb") or payload.get("memoryFreeMB"),
         "sampled_at": payload.get("sampled_at") or payload.get("time"),
     }
 

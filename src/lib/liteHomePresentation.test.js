@@ -50,7 +50,7 @@ describe('Lite Home presentation model', () => {
     expect(homeStatusTone('failed')).toBe('danger');
 
     const overview = buildLiteHomeOverview({
-      telemetry: { cpu_usage_percent: 94, cpu_temp_c: 60, free_space_mb: 400, memory_usage_mb: 256 },
+      telemetry: { cpu_usage_percent: 94, cpu_temp_c: 60, free_space_mb: 400, total_space_mb: 10_000, memory_usage_mb: 7_500, memory_total_mb: 8_000, memory_free_mb: 500 },
     });
 
     expect(overview.resources.map((item) => item.key)).toEqual([
@@ -60,12 +60,14 @@ describe('Lite Home presentation model', () => {
       'activity',
     ]);
     expect(overview.resources.find((item) => item.key === 'device-health')).toMatchObject({
-      value: 'Not available',
-      tone: 'neutral',
+      value: '500 MB free / 7.8 GiB',
+      tone: 'danger',
+      note: 'CPU 94% · 60°C',
     });
     expect(overview.resources.find((item) => item.key === 'storage')).toMatchObject({
-      value: '400 MB',
+      value: '400 MB free / 9.8 GiB',
       tone: 'danger',
+      note: '4% available for apps and backups',
     });
   });
   it('uses per-card semantic fallbacks without hiding valid telemetry', () => {
@@ -75,14 +77,14 @@ describe('Lite Home presentation model', () => {
         device_health_attention_current: true,
         device_health_summary: { by_status: { healthy: 1 } },
       },
-      telemetry: { free_space_mb: 135569, cpu_usage_percent: 0, cpu_temp_c: 35.2, memory_usage_mb: 4054 },
+      telemetry: { free_space_mb: 135569, total_space_mb: 228000, cpu_usage_percent: 0, cpu_temp_c: 35.2, memory_usage_mb: 4054, memory_total_mb: 7900, memory_free_mb: 3846 },
       system_current_state: {
         activity_summary: { status: 'unknown', summary: 'Activity state is not available.' },
       },
     });
 
-    expect(overview.resources.find((item) => item.key === 'device-health')).toMatchObject({ value: 'Healthy', tone: 'ready' });
-    expect(overview.resources.find((item) => item.key === 'storage')).toMatchObject({ value: '135569 MB', tone: 'ready' });
+    expect(overview.resources.find((item) => item.key === 'device-health')).toMatchObject({ value: '3.8 GiB free / 7.7 GiB', tone: 'ready', note: 'CPU 0% · 35°C' });
+    expect(overview.resources.find((item) => item.key === 'storage')).toMatchObject({ value: '132 GiB free / 223 GiB', tone: 'ready', note: '59% available for apps and backups' });
     expect(overview.resources.find((item) => item.key === 'database')).toMatchObject({ value: 'Not available' });
     expect(overview.resources.find((item) => item.key === 'activity')).toMatchObject({ value: 'Not available' });
   });

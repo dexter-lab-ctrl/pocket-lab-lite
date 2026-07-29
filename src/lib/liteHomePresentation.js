@@ -194,6 +194,46 @@ function resourceMetric({ key, label, value, unit = '', thresholds = null, note 
   };
 }
 
+function finiteNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function formatCapacityMb(value) {
+  const parsed = finiteNumber(value);
+  if (parsed === null) return 'Not available';
+  if (parsed >= 1024) {
+    const gib = parsed / 1024;
+    return `${gib >= 100 ? Math.round(gib) : gib.toFixed(1)} GiB`;
+  }
+  return `${Math.round(parsed)} MB`;
+}
+
+function worstTone(...tones) {
+  if (tones.includes('danger')) return 'danger';
+  if (tones.includes('review')) return 'review';
+  if (tones.includes('ready')) return 'ready';
+  return 'neutral';
+}
+
+function highUsageTone(value, review, danger) {
+  const parsed = finiteNumber(value);
+  if (parsed === null) return 'neutral';
+  if (parsed >= danger) return 'danger';
+  if (parsed >= review) return 'review';
+  return 'ready';
+}
+
+function lowAvailabilityTone(free, total, reviewPercent, dangerPercent) {
+  const freeValue = finiteNumber(free);
+  const totalValue = finiteNumber(total);
+  if (freeValue === null || totalValue === null || totalValue <= 0) return 'neutral';
+  const percent = (freeValue / totalValue) * 100;
+  if (percent <= dangerPercent) return 'danger';
+  if (percent <= reviewPercent) return 'review';
+  return 'ready';
+}
+
 export function buildLiteHomeOverview(status = {}, options = {}) {
   const summary = status.summary || {};
   const telemetry = status.telemetry || {};
@@ -293,24 +333,74 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
   const healthyDevices = boundedCount(healthSummary.by_status?.healthy);
   const healthSummaryCurrent = summary.device_health_attention_current === true;
 
-  const deviceHealthResource = hasProjection(telemetryThresholds)
-    ? semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status, summary: telemetryThresholds.summary, screen: 'devices' })
+  const memoryTotalMb = finiteNumber(telemetry.memory_total_mb);
+  const memoryFreeMb = finiteNumber(telemetry.memory_free_mb);
+  const memoryUsedMb = finiteNumber(telemetry.memory_usage_mb);
+  const derivedMemoryFreeMb = memoryFreeMb ?? (memoryTotalMb !== null && memoryUsedMb !== null
+    ? Math.max(0, memoryTotalMb - memoryUsedMb)
+    : null);
+  const cpuUsage = finiteNumber(telemetry.cpu_usage_percent);
+  const cpuTemp = finiteNumber(telemetry.cpu_temp_c);
+  const semanticHealthTone = hasProjection(telemetryThresholds)
+    ? semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status }).tone
     : healthSummaryCurrent
-      ? {
-          key: 'device-health',
-          label: 'Device health',
-          value: deviceHealthAttention > 0 ? 'Review' : 'Healthy',
-          tone: deviceHealthAttention > 0 ? 'review' : 'ready',
-          note: deviceHealthAttention > 0
-            ? `${deviceHealthAttention} health ${deviceHealthAttention === 1 ? 'item needs' : 'items need'} attention.`
-            : healthyDevices > 0 ? `${healthyDevices} ${healthyDevices === 1 ? 'device is' : 'devices are'} healthy.` : 'No current device health issue is reported.',
-          screen: 'devices',
-        }
-      : resourceMetric({ key: 'device-health', label: 'Device health', value: Number.NaN, note: 'Health information has not been reported yet' });
+      ? deviceHealthAttention > 0 ? 'review' : 'ready'
+      : 'neutral';
+  const deviceHealthTone = worstTone(
+    semanticHealthTone,
+    highUsageTone(cpuUsage, 75, 90),
+    highUsageTone(cpuTemp, 55, 70),
+    lowAvailabilityTone(derivedMemoryFreeMb, memoryTotalMb, 20, 10),
+  );
+  const memoryKnown = memoryTotalMb !== null && derivedMemoryFreeMb !== null && memoryTotalMb > 0;
+  const cpuParts = [
+    cpuUsage !== null ? `CPU ${Math.round(cpuUsage)}%` : '',
+    cpuTemp !== null ? `${Math.round(cpuTemp)}°C` : '',
+  ].filter(Boolean);
+  const deviceHealthResource = memoryKnown
+    ? {
+        key: 'device-health',
+        label: 'Memory and CPU',
+        value: `${formatCapacityMb(derivedMemoryFreeMb)} free / ${formatCapacityMb(memoryTotalMb)}`,
+        tone: deviceHealthTone,
+        note: cpuParts.length ? cpuParts.join(' · ') : 'CPU information has not been reported yet.',
+        screen: 'devices',
+      }
+    : hasProjection(telemetryThresholds)
+      ? semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status, summary: telemetryThresholds.summary, screen: 'devices' })
+      : healthSummaryCurrent
+        ? {
+            key: 'device-health',
+            label: 'Device health',
+            value: deviceHealthAttention > 0 ? 'Review' : 'Healthy',
+            tone: deviceHealthAttention > 0 ? 'review' : 'ready',
+            note: deviceHealthAttention > 0
+              ? `${deviceHealthAttention} health ${deviceHealthAttention === 1 ? 'item needs' : 'items need'} attention.`
+              : healthyDevices > 0 ? `${healthyDevices} ${healthyDevices === 1 ? 'device is' : 'devices are'} healthy.` : 'No current device health issue is reported.',
+            screen: 'devices',
+          }
+        : resourceMetric({ key: 'device-health', label: 'Device health', value: Number.NaN, note: 'Health information has not been reported yet' });
 
-  const storageResource = hasProjection(storagePressure)
-    ? semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' })
-    : resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' });
+  const freeSpaceMb = finiteNumber(telemetry.free_space_mb);
+  const totalSpaceMb = finiteNumber(telemetry.total_space_mb);
+  const storageKnown = freeSpaceMb !== null && totalSpaceMb !== null && totalSpaceMb > 0;
+  const storagePercent = storageKnown ? Math.max(0, Math.min(100, (freeSpaceMb / totalSpaceMb) * 100)) : null;
+  const semanticStorageTone = hasProjection(storagePressure)
+    ? semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status }).tone
+    : 'neutral';
+  const storageTone = worstTone(semanticStorageTone, lowAvailabilityTone(freeSpaceMb, totalSpaceMb, 15, 5));
+  const storageResource = storageKnown
+    ? {
+        key: 'storage',
+        label: 'Storage',
+        value: `${formatCapacityMb(freeSpaceMb)} free / ${formatCapacityMb(totalSpaceMb)}`,
+        tone: storageTone,
+        note: `${Math.round(storagePercent)}% available for apps and backups`,
+        screen: 'recovery',
+      }
+    : hasProjection(storagePressure)
+      ? semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' })
+      : resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' });
 
   const databaseResource = hasProjection(sqliteHealth)
     ? semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' })
