@@ -4,7 +4,7 @@ const UNSAFE_VIEW_MODEL_VALUE_PATTERN = /(bearer\s+[^\s]+|token=|password=|api[_
 const MAX_DETAIL_ITEMS = 6;
 const MAX_TECHNICAL_ITEMS = 8;
 
-export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-s3-v1';
+export const LITE_APP_CATALOG_VIEW_MODEL_VERSION = 'lite-app-catalog-canonical-v2';
 export const LITE_SECURITY_PROFILE_IDS = ['quick', 'full', 'app'];
 export const LITE_SECURITY_PROFILE_SNAPSHOT_VERSION = 'security-profile-snapshot-v2';
 export const LITE_SECURITY_HISTORY_SNAPSHOT_VERSION = 'lite-security-history-snapshot-v2';
@@ -441,7 +441,7 @@ function normalizeMediaSummary(media = null) {
 }
 
 export function selectPhotoPrismActionsView(payload = {}) {
-  if (payload?.view_model === 'photoprism-actions-s3-v1') return payload;
+  if (payload?.view_model === 'photoprism-actions-s3-v1' && payload?.version === LITE_APP_CATALOG_VIEW_MODEL_VERSION) return payload;
   const actions = collectActions(payload || {});
   const actionList = Object.values(actions);
   const latestResults = actionList.reduce((items, action) => {
@@ -518,25 +518,127 @@ function selectLifecycleSummary(lifecycle = {}) {
   };
 }
 
+export function selectCanonicalAppState(app = {}, actionSnapshot = {}) {
+  const runtime = isObject(app?.runtime) ? app.runtime : {};
+  const access = isObject(app?.access) ? app.access : {};
+  const actions = isObject(actionSnapshot?.actions) ? actionSnapshot.actions : isObject(app?.actions) ? app.actions : {};
+  const runtimeState = safeString(runtime.installation_state || '').toLowerCase();
+  const appState = safeString(app.install_state || '').toLowerCase();
+  const legacyStatus = safeString(app.status || '').toLowerCase();
+  const explicitInstalledFlag = Object.prototype.hasOwnProperty.call(app || {}, 'installed') ? app.installed : null;
+  let installationState = runtimeState || appState;
+  if (!installationState) {
+    if (explicitInstalledFlag === true) installationState = 'installed_degraded';
+    else if (explicitInstalledFlag === false || ['not_installed', 'unavailable', 'missing'].includes(legacyStatus)) installationState = 'not_installed';
+    else if (['ready', 'running', 'installed', 'healthy'].includes(legacyStatus)) installationState = 'installed_degraded';
+    else installationState = 'unknown';
+  }
+  const installed = Boolean(
+    ['installed', 'installed_running', 'installed_degraded', 'installed_stopped', 'state_conflict'].includes(installationState)
+    || explicitInstalledFlag === true
+  );
+  const processStatus = safeString(runtime.process_status || runtime.process?.status || runtime.status || 'unknown').toLowerCase();
+  const running = installationState === 'installed_running' || Boolean(installed && runtime.running === true);
+  const degraded = installationState === 'installed_degraded' || installationState === 'state_conflict' || runtime.state_conflict === true;
+  const stopped = installationState === 'installed_stopped';
+
+  const accessRouteReady = Boolean(access.route_ready && (access.open_url || runtime.url || runtime.route));
+  const rawOpenAction = actions.open;
+  const openActionKnown = typeof rawOpenAction === 'boolean' || isObject(rawOpenAction);
+  const openActionEnabled = isObject(rawOpenAction) ? rawOpenAction.enabled === true : rawOpenAction === true;
+  const accessDisagrees = openActionKnown && accessRouteReady !== openActionEnabled;
+  const openReady = Boolean(accessRouteReady && openActionEnabled && !accessDisagrees);
+  const routeLabel = accessDisagrees
+    ? 'Checking access'
+    : openReady ? 'Secure access ready'
+      : access.https_ready === false ? 'Remote access not ready'
+        : 'Checking access';
+
+  const media = isObject(actionSnapshot?.media) ? actionSnapshot.media : isObject(app?.media) ? app.media : isObject(app?.storage) ? app.storage : {};
+  const mappings = safeStorageMappings(isObject(app?.storage) ? app.storage : media);
+  const mappingCount = Math.max(0, Number(media.mapping_count ?? media.count ?? app?.storage?.mapping_count ?? mappings.length ?? 0) || 0);
+  const mediaStatusValue = safeString(media.status || app?.storage?.status || '').toLowerCase();
+  const mediaState = mappingCount > 0 || ['ready', 'connected', 'active', 'applied'].includes(mediaStatusValue)
+    ? 'connected'
+    : ['pending', 'connecting', 'applying'].includes(mediaStatusValue) ? 'connecting'
+      : ['unavailable', 'needs_attention', 'failed'].includes(mediaStatusValue) ? 'needs_attention'
+        : 'not_connected';
+  const mediaFrom = safeString(app?.device_relationships?.media_from || app?.storage?.summary || 'Phone storage');
+  const mediaLabel = mediaState === 'connected'
+    ? `${mediaFrom || 'Phone storage'} connected`
+    : mediaState === 'connecting' ? 'Connecting photos'
+      : mediaState === 'needs_attention' ? 'Media needs attention'
+        : 'No media folders connected';
+  const currentOperation = isObject(actionSnapshot?.current_operation) ? actionSnapshot.current_operation : {};
+  const importStatus = safeString(
+    currentOperation.action_id === 'import_photos' ? currentOperation.status : media?.last_import?.status || media?.last_import_status || ''
+  ).toLowerCase();
+  const importRunning = Boolean(media.operation_running || ['queued', 'running', 'working', 'in_progress'].includes(importStatus));
+
+  const statusLabel = installationState === 'installed_running' || running
+    ? 'Running'
+    : installationState === 'installed_stopped' ? 'App stopped'
+      : installed && (degraded || runtime.reachable === false) ? 'Needs attention'
+        : installed ? 'Installed'
+          : installationState === 'not_installed' ? 'Not installed'
+            : 'Checking';
+  const statusSummary = statusLabel === 'Running' ? 'App status: running'
+    : statusLabel === 'App stopped' ? 'App status: stopped'
+      : statusLabel === 'Needs attention' ? 'App status: needs attention'
+        : statusLabel === 'Installed' ? 'App status: installed'
+          : statusLabel === 'Not installed' ? 'App status: not installed'
+            : 'App status: checking';
+  const hostLabel = safeString(app?.device_relationships?.runs_on || app?.host_device_name || app?.lifecycle?.host_device?.label || 'Pocket Lab Lite Server');
+  const evidenceQuality = safeString(runtime.evidence_quality || 'unknown').toLowerCase();
+  const needsAttention = Boolean(installed && (degraded || stopped || runtime.reachable === false || accessDisagrees || mediaState === 'needs_attention'));
+
+  return {
+    installationState,
+    installed,
+    running,
+    reachable: runtime.reachable === true,
+    degraded,
+    stopped,
+    needsAttention,
+    processStatus,
+    routeReady: accessRouteReady,
+    openReady,
+    openEnabled: openReady,
+    routeLabel,
+    hostLabel,
+    mediaState,
+    mediaLabel,
+    mappingCount,
+    mediaConnected: mediaState === 'connected',
+    importRunning,
+    evidenceQuality,
+    statusLabel,
+    statusSummary,
+    statusTone: running ? 'healthy' : needsAttention ? 'degraded' : installed ? 'ready' : 'ready',
+  };
+}
+
 export function selectLiteCatalogAppSummary(app = {}) {
   const storage = isObject(app.storage) ? app.storage : {};
   const lifecycle = selectLifecycleSummary(app.lifecycle);
   const access = isObject(app.access) ? app.access : {};
   const runtime = isObject(app.runtime) ? app.runtime : {};
   const actions = isObject(app.actions) ? app.actions : {};
+  const canonical = selectCanonicalAppState(app);
   return {
     id: safeString(app.id || 'photoprism'),
     name: safeString(app.name || app.label || 'PhotoPrism'),
     label: safeString(app.label || app.name || 'PhotoPrism'),
     category: safeString(app.category || 'Photos'),
     summary: safeString(app.summary || ''),
-    status: normalizeStatus(app.status || app.health || app.install_state || 'unknown'),
+    status: normalizeStatus(canonical.running ? 'ready' : canonical.degraded || canonical.stopped ? 'needs_attention' : canonical.installed ? 'installed' : app.status || 'not_installed'),
     health: normalizeStatus(app.health || runtime.health || ''),
-    installed: Boolean(app.installed || ['installed', 'installed_running', 'installed_stopped', 'installed_degraded'].includes(app.install_state) || ['ready', 'running', 'installed'].includes(app.status)),
-    install_state: normalizeStatus(app.install_state || ''),
+    installed: canonical.installed,
+    install_state: canonical.installationState,
     actions: copySafeKeys(actions, ['open', 'install', 'remove', 'retry']),
     access: copySafeKeys(access, ['route_ready', 'open_url', 'route', 'url', 'message', 'https_ready', 'open']),
-    runtime: copySafeKeys(runtime, ['route', 'url', 'health', 'process', 'status', 'checked_at', 'installation_state', 'process_status', 'reachable', 'state_conflict', 'evidence']),
+    runtime: copySafeKeys(runtime, ['route', 'url', 'health', 'process', 'status', 'checked_at', 'installation_state', 'process_status', 'reachable', 'running', 'state_conflict', 'evidence_quality', 'authoritative_source', 'evidence']),
+    canonical_state: canonical,
     target: isObject(app.target)
       ? {
         default_node_id: safeString(app.target.default_node_id || ''),
@@ -555,7 +657,7 @@ export function selectLiteCatalogAppSummary(app = {}) {
     media: normalizeMediaSummary(app.media) || {},
     security_profile: isObject(app.security_profile) ? copySafeKeys(app.security_profile, ['status', 'label', 'summary', 'updated_at']) : {},
     backup_profile: isObject(app.backup_profile) ? copySafeKeys(app.backup_profile, ['status', 'label', 'summary', 'media', 'updated_at']) : {},
-    device_relationships: isObject(app.device_relationships) ? copySafeKeys(app.device_relationships, ['storage_devices_available', 'app_host_id', 'app_host_label']) : {},
+    device_relationships: isObject(app.device_relationships) ? copySafeKeys(app.device_relationships, ['runs_on', 'media_from', 'storage_devices_available', 'storage_devices_ready', 'app_host_id', 'app_host_label']) : {},
     available_device_capabilities: isObject(app.available_device_capabilities) ? copySafeKeys(app.available_device_capabilities, ['media_storage']) : {},
     storage_devices: Array.isArray(app.storage_devices)
       ? app.storage_devices.slice(0, 6).map((device) => copySafeKeys(device, ['id', 'name', 'role', 'ready', 'status']))
@@ -575,7 +677,7 @@ export function selectLiteCatalogAppSummary(app = {}) {
 }
 
 export function selectCatalogSummaryView(payload = {}) {
-  if (payload?.view_model === 'catalog-summary-s3-v1') return payload;
+  if (payload?.view_model === 'catalog-summary-s3-v1' && payload?.version === LITE_APP_CATALOG_VIEW_MODEL_VERSION) return payload;
   const sourceApps = Array.isArray(payload?.apps) ? payload.apps : Array.isArray(payload?.items) ? payload.items : [];
   const apps = sourceApps.map(selectLiteCatalogAppSummary);
   const output = {

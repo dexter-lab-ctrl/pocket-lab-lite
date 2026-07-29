@@ -1087,9 +1087,9 @@ def get_lite_catalog(request: Request) -> Response:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps",
             key="catalog",
-            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            snapshot_builder=CONTROL_PLANE.app_catalog_projection_snapshot,
             builder=_build_lite_catalog_projection,
-            projector=CONTROL_PLANE.project_apps,
+            projector=CONTROL_PLANE.project_app_catalog,
             stale_after_ms=30_000,
             max_stale_ms=5 * 60_000,
             deadline_seconds=8.0,
@@ -1110,9 +1110,9 @@ def get_lite_app_lifecycle_profiles(request: Request) -> Response:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps",
             key="lifecycle",
-            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            snapshot_builder=CONTROL_PLANE.app_lifecycle_projection_snapshot,
             builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=CONTROL_PLANE.project_apps,
+            projector=CONTROL_PLANE.project_app_lifecycle,
             stale_after_ms=15_000,
             max_stale_ms=90_000,
             deadline_seconds=8.0,
@@ -1156,9 +1156,9 @@ def get_lite_app_lifecycle_profile(app_id: str, request: Request) -> Response:
     try:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps", key="lifecycle",
-            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            snapshot_builder=CONTROL_PLANE.app_lifecycle_projection_snapshot,
             builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=CONTROL_PLANE.project_apps,
+            projector=CONTROL_PLANE.project_app_lifecycle,
             stale_after_ms=15_000, max_stale_ms=90_000,
             deadline_seconds=8.0, priority=35, work_class="cpu",
         )
@@ -1209,7 +1209,7 @@ def get_lite_app_actions(app_id: str, request: Request) -> Response:
     try:
         prepared = CONTROL_PLANE.prepared_only_read(
             domain="apps", key=f"actions:{app_id}",
-            snapshot_builder=lambda: _saved_app_actions(app_id),
+            snapshot_builder=lambda: CONTROL_PLANE.app_actions_projection_snapshot(app_id),
             builder=lambda: lite_app_actions.app_actions(app_id),
             projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "operations", payload),
             stale_after_ms=15_000, max_stale_ms=90_000,

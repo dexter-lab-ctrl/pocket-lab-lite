@@ -32,7 +32,7 @@ import { useLiteAppActionFlow } from '../../hooks/useLiteAppActionFlow.js';
 import { useLiteServiceWorkerUpdateBlocker } from '../../hooks/useLiteServiceWorkerUpdateBlocker.js';
 import { formatLiteTime, liteApi } from '../../lib/liteApi.js';
 import { liteQueryKeys, liteQueryPaths } from '../../lib/liteQueryClient.js';
-import { isLiteAppActionsViewLive, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
+import { isLiteAppActionsViewLive, selectCanonicalAppState, selectCatalogSummaryView, selectPhotoPrismActionsView } from '../../lib/liteViewModels.js';
 import { GlassCard, StatusBadge, StateSurface, PageHeader, LiteButton, LiteRefreshButton, LoadingCard, resolveSafeAppOpenPath, backendBadgeStatus, backendLabel } from '../LiteUi.jsx';
 import { useLiteUiStore } from '../../stores/liteUiStore.js';
 import AppActionRow from './AppActionRow.jsx';
@@ -50,6 +50,9 @@ const APP_CATALOG_SOURCE_CONTRACT_MARKERS = [
 void APP_CATALOG_SOURCE_CONTRACT_MARKERS;
 
 
+
+const APP_CATALOG_IMPORT_HISTORY_COPY = 'Photos are imported. PhotoPrism will handle new photos.';
+void APP_CATALOG_IMPORT_HISTORY_COPY;
 
 const APP_CATALOG_ACTION_ROWS_OWN_CLICKS = true;
 // Enterprise UI rule: action rows, action buttons, and Details buttons own their clicks.
@@ -1610,26 +1613,21 @@ function handleCatalogPointerDown(event) {
 function appTone(status) {
   const value = String(status || '').toLowerCase();
   if (['ready', 'installed', 'installed_running', 'running', 'healthy'].includes(value)) return 'healthy';
-  if (['installing', 'queued', 'running'].includes(value)) return 'working';
-  if (['needs_attention', 'unavailable', 'failed'].includes(value)) return 'degraded';
+  if (['installing', 'queued'].includes(value)) return 'working';
+  if (['needs_attention', 'unavailable', 'failed', 'installed_stopped', 'installed_degraded', 'state_conflict'].includes(value)) return 'degraded';
   return 'ready';
 }
 
-function appLabel(app) {
-  const value = String(app?.status || '').toLowerCase();
-  if (['ready', 'running', 'installed_running'].includes(value) && app?.actions?.open) return 'Ready';
-  if (['ready', 'running', 'installed', 'installed_running', 'installed_stopped', 'installed_degraded'].includes(value) || app?.installed) return value === 'installed_stopped' ? 'Stopped' : 'Ready';
-  if (value === 'installing') return 'Installing';
-  if (value === 'needs_attention') return 'Needs attention';
-  if (value === 'unavailable') return 'Unavailable';
-  return 'Available';
+function appLabel(app, actionSnapshot = null) {
+  return selectCanonicalAppState(app, actionSnapshot || {}).statusLabel;
 }
 
-function lastOperationText(app) {
+function lastOperationText(app, actionSnapshot = null) {
   const op = app?.last_operation;
-  const state = String(app?.runtime?.installation_state || app?.install_state || app?.status || '').toLowerCase();
-  if (!op && ['installed_running', 'running', 'ready'].includes(state)) return `${app?.name || 'This app'} is installed and running.`;
-  if (!op && ['installed_stopped', 'installed_degraded'].includes(state)) return `${app?.name || 'This app'} is installed but needs attention.`;
+  const canonical = selectCanonicalAppState(app, actionSnapshot || {});
+  if (!op && canonical.running) return `${app?.name || 'This app'} is installed and running.`;
+  if (!op && canonical.installed) return `${app?.name || 'This app'} is installed but needs attention.`;
+  if (!op && canonical.installationState === 'unknown') return `Pocket Lab is checking ${app?.name || 'this app'}.`;
   if (!op) return `${app?.name || 'This app'} is not currently installed.`;
   const when = op.updated_at ? ` · ${formatLiteTime(op.updated_at)}` : '';
   return `${op.message || 'Latest install status is available.'}${when}`;
@@ -1639,9 +1637,8 @@ function resolveAppOpenUrl(item) {
   return resolveSafeAppOpenPath(item);
 }
 
-function isAppInstalled(app) {
-  const status = String(app?.status || '').toLowerCase();
-  return Boolean(app?.installed || ['ready', 'installed', 'running', 'installed_running', 'installed_stopped', 'installed_degraded'].includes(status));
+function isAppInstalled(app, actionSnapshot = null) {
+  return selectCanonicalAppState(app, actionSnapshot || {}).installed;
 }
 
 function isPhotoPrismApp(app) {
@@ -2458,12 +2455,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
   }
 
   function renderAppCard(app, featured = false) {
-    const status = String(app.status || 'not_installed').toLowerCase();
+    const actionSnapshot = actionSnapshots[appSnapshotKey(app)] || null;
+    const canonical = selectCanonicalAppState(app, actionSnapshot || {});
+    const status = canonical.running ? 'ready' : canonical.degraded || canonical.stopped ? 'needs_attention' : canonical.installed ? 'installed' : String(app.status || 'not_installed').toLowerCase();
     const installing = status === 'installing' || busyId === app.id;
     const opening = openingId === app.id;
-    const canInstall = Boolean(app?.actions?.install) && !installing;
-    const canOpen = Boolean(app?.actions?.open && resolveAppOpenUrl(app));
-    const installed = isAppInstalled(app);
+    const canInstall = Boolean(app?.actions?.install) && !installing && !canonical.installed;
+    const canOpen = Boolean(canonical.openEnabled && resolveAppOpenUrl(app));
+    const installed = canonical.installed;
     const targetName = app?.host_device_name || app?.target?.eligible_devices?.[0]?.name || 'Server Host';
     const reason = attentionReason(app, canOpen);
     const progress = app?.progress;
@@ -2471,7 +2470,6 @@ export default function CatalogScreen({ onOpenWorkspace }) {
     const cardClassName = `lite-catalog-card lite-catalog-app-card ${featured ? 'is-featured' : ''} ${installing ? 'is-installing' : ''}`;
     const actionsClassName = 'lite-catalog-actions';
     const lifecycle = lifecycleProfile(app);
-    const actionSnapshot = actionSnapshots[appSnapshotKey(app)] || null;
     const actionState = (actionId) => actionFromSnapshot(actionSnapshot, actionId, lifecycleAction(lifecycle, actionId));
     const lifecycleAttention = lifecycleAttentionItems(lifecycle);
     const openAction = actionState('open');
@@ -2529,22 +2527,17 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         actionId: 'import_photos',
         action: {
           ...importPhotosAction,
-          status: isPhotosImported ? 'imported' : importPhotosAction.status,
-          summary: isPhotosImported ? 'Photos are imported. PhotoPrism will handle new photos.' : importPhotosAction.summary,
-          disabled_reason: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : importPhotosAction.disabled_reason,
-          reason: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : importPhotosAction.reason,
-          enabled: isPhotosImported ? false : importPhotosAction.enabled,
+          summary: isPhotosImported && importPhotosAction.enabled !== false
+            ? 'Import connected photos. The last import completed successfully.'
+            : importPhotosAction.summary,
         },
         busyKey: actionBusyKey,
-        progress: isPhotosImported ? null : importProgress,
+        progress: importProgress,
         tone: 'secondary',
-        onClick: (event) => {
-          if (isPhotosImported) return;
-          runLifecycleAction(app, 'import_photos', event);
-        },
-        disabled: isPhotosImported || importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
-        title: isPhotosImported ? 'Photos are already imported. PhotoPrism will handle new photos.' : lifecycleActionReason(importPhotosAction),
-        result: isPhotosImported ? null : result,
+        onClick: (event) => runLifecycleAction(app, 'import_photos', event),
+        disabled: importPhotosAction.enabled === false || actionBusyKey === `${app.id}:import_photos`,
+        title: lifecycleActionReason(importPhotosAction),
+        result,
       },
       {
         actionId: 'check_app',
@@ -2644,7 +2637,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       >
         <div className="lite-catalog-card-top">
           <div className="lite-catalog-icon"><AppIcon app={app} /></div>
-          <StatusBadge status={appTone(status)} className="lite-catalog-status-badge">{appLabel(app)}</StatusBadge>
+          <StatusBadge status={appTone(status)} className="lite-catalog-status-badge">{appLabel(app, actionSnapshot)}</StatusBadge>
         </div>
         <div className="lite-catalog-card-title-row">
           <div>
@@ -2876,11 +2869,11 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               </div>
               <div className="lite-catalog-storage-facts">
                 <span><Server className="h-4 w-4" /> {hostLabel}</span>
-                <span><FolderPlus className="h-4 w-4" /> Media from: {storageMappings(app).length ? app?.storage?.summary || storageMediaSummary(app) : 'Not connected'}</span>
+                <span><FolderPlus className="h-4 w-4" /> Media from: {canonical.mediaConnected ? app?.storage?.summary || app?.device_relationships?.media_from || storageMediaSummary(app) : 'Not connected'}</span>
                 {storageBackupLabel ? <span><HardDrive className="h-4 w-4" /> {storageBackupLabel}</span> : null}
                 <span><HardDrive className="h-4 w-4" /> Storage devices: {storageDeviceCount(app)} available</span>
               </div>
-              {storageMappings(app).length ? (
+              {canonical.mediaConnected ? (
                 <div className="lite-catalog-storage-chips">
                   {storageMappings(app).map((mapping) => (
                     <span key={mapping.mapping_id || mapping.label}>
@@ -2905,7 +2898,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
         <div className="lite-catalog-meta lite-catalog-meta-grid">
           <span><Server className="h-4 w-4" /> {targetName}</span>
           <span><CheckCircle2 className="h-4 w-4" /> {installed ? (canOpen ? 'Ready to open' : 'Installed') : 'Setup needed'}</span>
-          <span><HeartPulse className="h-4 w-4" /> {app?.runtime?.installation_state === 'installed_running' ? 'App status: running' : app?.runtime?.health ? `App status: ${app.runtime.health}` : 'App status: not installed'}</span>
+          <span><HeartPulse className="h-4 w-4" /> {canonical.statusSummary}</span>
         </div>
         {reason ? (
           <div className="lite-catalog-attention-reason">
@@ -2920,7 +2913,7 @@ export default function CatalogScreen({ onOpenWorkspace }) {
             <div className="lite-catalog-progress-bar"><span style={{ width: `${percent}%` }} /></div>
           </div>
         ) : null}
-        <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app)}</p></div>
+        <div className="lite-catalog-last-op"><strong>Latest status</strong><p>{lastOperationText(app, actionSnapshot)}</p></div>
         <div className={actionsClassName}>
           {!installed ? (
             <LiteButton onClick={(event) => { stopGestureEvent(event); install(app, event); }} disabled={!canInstall} tone={canInstall ? 'primary' : 'secondary'}>{installing ? 'Installing...' : app?.actions?.retry ? 'Retry' : 'Install'}</LiteButton>

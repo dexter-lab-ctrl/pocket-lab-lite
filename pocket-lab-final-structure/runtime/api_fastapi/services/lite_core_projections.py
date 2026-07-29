@@ -20,6 +20,15 @@ from . import (
 from .lite_control_plane_store import CONTROL_PLANE, PreparedProjectionUnavailable
 
 _LOGGER = logging.getLogger(__name__)
+
+APP_PROJECTION_SCHEMA_VERSION = 3
+APP_CATALOG_DOMAIN = "apps.catalog"
+APP_LIFECYCLE_DOMAIN = "apps.lifecycle"
+APP_ACTIONS_DOMAIN_PREFIX = "apps.actions:"
+APP_ACTIONS_PHOTOPRISM_DOMAIN = "apps.actions:photoprism"
+APP_CATALOG_CACHE_KEY = "apps:catalog"
+APP_LIFECYCLE_CACHE_KEY = "apps:lifecycle"
+APP_ACTIONS_CACHE_KEY_PREFIX = "apps:actions:"
 _RECOVERY_BASE_LOCK = threading.Lock()
 _RECOVERY_BASE_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
     max_workers=1, thread_name_prefix="pocketlab-recovery-base"
@@ -32,9 +41,9 @@ _RECOVERY_BASE_NEXT_ALLOWED = 0.0
 CORE_PROJECTION_DOMAINS = frozenset(
     {
         "fleet.summary",
-        "apps.catalog",
-        "apps.lifecycle",
-        "apps.actions:photoprism",
+        APP_CATALOG_DOMAIN,
+        APP_LIFECYCLE_DOMAIN,
+        APP_ACTIONS_PHOTOPRISM_DOMAIN,
         "recovery.summary",
         "recovery.details",
     }
@@ -163,7 +172,7 @@ def recovery_details_payload() -> dict[str, Any]:
     lifecycle = _timed_stage(
         timings,
         "app_lifecycle_profiles",
-        lambda: CONTROL_PLANE.prepared_payload("apps:lifecycle") or lite_app_lifecycle.app_lifecycle_profiles(),
+        lambda: CONTROL_PLANE.prepared_payload(APP_LIFECYCLE_CACHE_KEY) or lite_app_lifecycle.app_lifecycle_profiles(),
     )
     targets = _timed_stage(timings, "backup_targets", lite_recovery_subprojections.backup_targets)
     state["view_model"] = "recovery-details-r3-v1"
@@ -226,10 +235,10 @@ def register_jobs() -> dict[str, bool]:
         "catalog": _register_job(
             domain="apps",
             key="catalog",
-            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            snapshot_builder=CONTROL_PLANE.app_catalog_projection_snapshot,
             builder=catalog_payload,
             projector=lambda payload: _project_for_database(
-                expected_database_path, CONTROL_PLANE.project_apps, payload
+                expected_database_path, CONTROL_PLANE.project_app_catalog, payload
             ),
             deadline_seconds=8.0, priority=45, work_class="io",
         ),
@@ -252,9 +261,9 @@ def register_jobs() -> dict[str, bool]:
             deadline_seconds=20.0, priority=15, work_class="critical",
         ),
         "apps": _register_job(
-            domain="apps", key="lifecycle", snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            domain="apps", key="lifecycle", snapshot_builder=CONTROL_PLANE.app_lifecycle_projection_snapshot,
             builder=lite_app_lifecycle.app_lifecycle_profiles,
-            projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_apps, payload),
+            projector=lambda payload: _project_for_database(expected_database_path, CONTROL_PLANE.project_app_lifecycle, payload),
             deadline_seconds=8.0, priority=25, work_class="critical",
         ),
         "recovery_summary": _register_job(
@@ -272,20 +281,39 @@ def register_jobs() -> dict[str, bool]:
     }
 
 
+
+def reconcile_app_projection_schema() -> dict[str, Any]:
+    """Idempotently fence obsolete App projections without deleting history."""
+    snapshot = CONTROL_PLANE.app_catalog_projection_snapshot()
+    stored_schema = int((snapshot or {}).get("projection_schema_version") or 0)
+    stale = bool(snapshot) and stored_schema < APP_PROJECTION_SCHEMA_VERSION
+    if stale:
+        CONTROL_PLANE.invalidate_domain("apps")
+    return {
+        "schema_version": APP_PROJECTION_SCHEMA_VERSION,
+        "stored_schema_version": stored_schema,
+        "rebuild_required": stale or snapshot is None,
+        "history_preserved": True,
+        "database_wiped": False,
+        "sanitized": True,
+    }
+
 def schedule_startup_warmup() -> dict[str, bool]:
     if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
         return {"catalog": False, "app_actions_photoprism": False, "fleet": False, "apps": False, "recovery_summary": False, "recovery_details": False}
+    reconcile_app_projection_schema()
     register_jobs()
     expected_database_path = str(database_path())
     jobs = (
-        ("catalog", "apps", "catalog", catalog_payload, CONTROL_PLANE.project_apps, 8.0, 45, "io"),
+        # Canonical dependency order: lifecycle truth, catalog card, actions.
+        ("apps", "apps", "lifecycle", lite_app_lifecycle.app_lifecycle_profiles, CONTROL_PLANE.project_app_lifecycle, 8.0, 40, "cpu"),
+        ("catalog", "apps", "catalog", catalog_payload, CONTROL_PLANE.project_app_catalog, 8.0, 45, "io"),
         (
             "app_actions_photoprism", "apps", "actions:photoprism", app_actions_payload,
             lambda payload: CONTROL_PLANE.update_app_subprojection("photoprism", "operations", payload),
             6.0, 30, "io",
         ),
         ("fleet", "fleet", "summary", lite_status.lite_fleet, CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),
-        ("apps", "apps", "lifecycle", lite_app_lifecycle.app_lifecycle_profiles, CONTROL_PLANE.project_apps, 8.0, 40, "cpu"),
         ("recovery_summary", "recovery", "summary", recovery_summary_payload, CONTROL_PLANE.project_recovery, 4.0, 50, "io"),
         ("recovery_details", "recovery", "details", recovery_details_payload, CONTROL_PLANE.project_recovery, 8.0, 60, "io"),
     )

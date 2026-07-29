@@ -314,7 +314,17 @@ def _progress_payload(action_id: str, action: dict[str, Any], status: str) -> di
             step = "Ready." if status == "ready" else "Not ready."
         else:
             step = "Action status is available."
-    steps = raw.get("steps") if isinstance(raw.get("steps"), list) else []
+    steps: list[dict[str, Any]] = []
+    for item in raw.get("steps") if isinstance(raw.get("steps"), list) else []:
+        if not isinstance(item, dict):
+            continue
+        normalized = {
+            key: item.get(key)
+            for key in ("id", "label", "status", "summary", "detail")
+            if item.get(key) not in (None, "")
+        }
+        if normalized:
+            steps.append(normalized)
     return {
         "phase": _safe_text(phase, "ready"),
         "step": _safe_text(step, "Action status is available."),
@@ -331,12 +341,7 @@ def _result_payload(action_id: str, action: dict[str, Any], status: str) -> dict
     raw_summary = action.get("last_result") or latest_check.get("summary") or action.get("result_summary")
     receipt_id = action.get("receipt_id") or latest_check.get("receipt_id")
     if status not in TERMINAL_STATUS_VALUES and not raw_summary and not receipt_id:
-        return {
-            "status": None,
-            "summary": None,
-            "receipt_id": None,
-            "backend_only": True,
-        }
+        return {}
     return {
         "status": _normalized_status(raw_status, enabled=True),
         "summary": _safe_text(raw_summary, "Action result is available."),
@@ -474,7 +479,7 @@ def _apply_connect_photos_truth(actions: dict[str, Any], media: Any) -> None:
             "run_count": 0,
         })
         action["progress"] = {"phase": "idle", "step": "Connected.", "percent": None, "indeterminate": False, "bounded": True, "steps": []}
-        action["result"] = {"status": None, "summary": None, "receipt_id": None, "backend_only": True}
+        action["result"] = {}
         action["troubleshooting"] = {
             "available": False,
             "backend_only": True,
@@ -499,32 +504,36 @@ def _media_import_completed(media: Any) -> bool:
 
 
 def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
+    """Keep current import readiness separate from historical completion."""
     action = actions.get("import_photos")
-    if not isinstance(action, dict):
+    if not isinstance(action, dict) or not isinstance(media, dict):
         return
-    if _media_import_completed(media):
-        last_import = media.get("last_import") if isinstance(media, dict) and isinstance(media.get("last_import"), dict) else {}
-        completed_at = last_import.get("completed_at") or (media.get("last_imported_at") if isinstance(media, dict) else None)
+    last_import = media.get("last_import") if isinstance(media.get("last_import"), dict) else {}
+    current_status = str(last_import.get("status") or "").strip().lower()
+    if current_status in {"queued", "running"}:
         action.update({
             "enabled": False,
+            "status": "running",
+            "summary": _safe_text(last_import.get("summary"), "PhotoPrism is importing connected photos."),
+            "disabled_reason": "Import photos is already running.",
+            "reason": "Import photos is already running.",
+        })
+        return
+    if _media_import_completed(media):
+        # Historical result only. Do not convert the current action to an
+        # "imported" terminal capability or disable future imports.
+        historical_result = {
             "status": "imported",
             "summary": "Photos are imported. PhotoPrism will handle new photos.",
-            "disabled_reason": "Photos are already imported. PhotoPrism will handle new photos.",
-            "reason": "Photos are already imported. PhotoPrism will handle new photos.",
-            "last_result": "Photos imported",
-            "first_ran_at": completed_at or action.get("first_ran_at"),
-            "last_ran_at": completed_at or action.get("last_ran_at"),
-            "run_count": 1,
-        })
-        action["progress"] = {"phase": "idle", "step": "Imported.", "percent": None, "indeterminate": False, "bounded": True, "steps": []}
-        action["result"] = {"status": "imported", "summary": "Photos are imported. PhotoPrism will handle new photos.", "receipt_id": None, "backend_only": True}
-        action["troubleshooting"] = {
-            "available": False,
+            "completed_at": last_import.get("completed_at") or media.get("last_imported_at"),
             "backend_only": True,
-            "debug_only": True,
-            "receipt_id": None,
-            "summary": "No normal App Catalog troubleshooting view is needed after photos are imported.",
         }
+        action["historical_result"] = historical_result
+        action["last_result"] = historical_result["summary"]
+        action["last_ran_at"] = historical_result.get("completed_at") or action.get("last_ran_at")
+        action["run_count"] = max(1, int(action.get("run_count") or 0))
+        if action.get("enabled"):
+            action["summary"] = "Import connected photos. The last import completed successfully."
 
 
 def _details_payload(
@@ -589,11 +598,18 @@ def _details_payload(
         for item in status_checks[:6]:
             if not isinstance(item, dict):
                 continue
+            present = {
+                key: item.get(key)
+                for key in ("id", "label", "status", "summary")
+                if item.get(key) not in (None, "")
+            }
+            if not present:
+                continue
             clean_checks.append({
-                "id": _safe_text(item.get("id"), "check"),
-                "label": _safe_text(item.get("label"), "Check"),
-                "status": _normalized_status(item.get("status"), enabled=True),
-                "summary": _safe_text(item.get("summary"), "Check status is available."),
+                "id": _safe_text(present.get("id"), "check"),
+                "label": _safe_text(present.get("label"), "Check"),
+                "status": _normalized_status(present.get("status"), enabled=True),
+                "summary": _safe_text(present.get("summary"), "Check status is available."),
             })
         if clean_checks:
             details["status_checks"] = clean_checks
@@ -643,6 +659,13 @@ def _normalize_action(action_id: str, raw_action: Any) -> dict[str, Any]:
         "details": _details_payload(action_id, action, label=label, status=status, enabled=enabled, summary=summary, result=result, disabled_reason=disabled_reason),
         "troubleshooting": troubleshooting,
     })
+    if not result:
+        normalized["result"] = {}
+        normalized["last_result"] = action.get("last_result")
+    if not normalized.get("disabled_reason"):
+        normalized.pop("disabled_reason", None)
+    if not normalized.get("reason"):
+        normalized.pop("reason", None)
     return normalized
 
 
@@ -662,6 +685,20 @@ def _action_groups(actions: dict[str, Any]) -> list[dict[str, Any]]:
         }
         for category, action_ids in groups.items()
     ]
+
+
+def _compact_current_operation(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    result = {
+        key: value.get(key)
+        for key in ("operation_id", "command_id", "action_id", "status", "summary", "queued_at", "started_at", "updated_at", "completed_at")
+        if value.get(key) not in (None, "")
+    }
+    progress = value.get("progress") if isinstance(value.get("progress"), dict) else {}
+    if progress:
+        result["progress"] = _progress_payload(str(value.get("action_id") or "action"), value, str(value.get("status") or "running"))
+    return result or None
 
 
 def app_actions(app_id: str) -> dict[str, Any]:
@@ -688,7 +725,7 @@ def app_actions(app_id: str) -> dict[str, Any]:
         "action_list": list(actions.values()),
         "action_order": list(actions.keys()),
         "action_groups": _action_groups(actions),
-        "current_operation": profile.get("current_action"),
+        "current_operation": _compact_current_operation(profile.get("current_action")),
         "latest_results": {key: value.get("result") for key, value in actions.items() if isinstance(value, dict) and isinstance(value.get("result"), dict) and value["result"].get("summary")},
         "latest_troubleshooting_records": {key: value.get("troubleshooting") for key, value in actions.items() if isinstance(value, dict) and isinstance(value.get("troubleshooting"), dict) and value["troubleshooting"].get("available")},
         "media": media,
