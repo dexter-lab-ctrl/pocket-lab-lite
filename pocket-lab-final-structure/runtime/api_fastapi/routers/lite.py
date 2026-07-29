@@ -1954,7 +1954,33 @@ def _full_lite_runtime_diagnostics() -> dict[str, Any]:
     payload["idle_efficiency"] = IDLE_EFFICIENCY.snapshot()
     payload["hot_path"] = HOT_PATH_PROFILER.snapshot()
     payload["live_status"] = LIVE_STATUS.status()
-    payload["projection_scheduler"] = PROJECTION_SCHEDULER.diagnostics()
+    local_projection_scheduler = PROJECTION_SCHEDULER.diagnostics()
+    payload["projection_scheduler_local"] = {
+        **local_projection_scheduler,
+        "diagnostic_source": "api_process_local",
+        "authoritative_execution_registry": False,
+    }
+    from ..services.runtime_snapshot_store import read_worker_snapshot
+    worker_snapshot = read_worker_snapshot() or {}
+    worker_projection_scheduler = (
+        worker_snapshot.get("projection_scheduler")
+        if isinstance(worker_snapshot.get("projection_scheduler"), dict)
+        else None
+    )
+    if worker_projection_scheduler:
+        payload["projection_scheduler"] = {
+            **worker_projection_scheduler,
+            "diagnostic_source": "worker_prepared_sqlite",
+            "authoritative_execution_registry": True,
+            "snapshot_age_ms": int(worker_snapshot.get("snapshot_age_ms") or 0),
+        }
+    else:
+        payload["projection_scheduler"] = {
+            **local_projection_scheduler,
+            "diagnostic_source": "api_process_local_fallback",
+            "authoritative_execution_registry": False,
+            "worker_snapshot_available": False,
+        }
     payload["adaptive_runtime"] = ADAPTIVE_RUNTIME.diagnostics()
     payload["process_runtime"] = PROCESS_RUNTIME.snapshot()
     payload["semantic_revisions"] = semantic_revision_diagnostics()

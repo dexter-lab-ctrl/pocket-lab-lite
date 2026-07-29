@@ -9,7 +9,14 @@ from pathlib import Path
 from typing import Any, Callable
 
 from ..db.connection import database_path
-from . import lite_app_lifecycle, lite_recovery_subprojections, lite_status
+from . import (
+    lite_app_actions,
+    lite_app_lifecycle,
+    lite_catalog,
+    lite_catalog_live,
+    lite_recovery_subprojections,
+    lite_status,
+)
 from .lite_control_plane_store import CONTROL_PLANE, PreparedProjectionUnavailable
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,8 +30,50 @@ _RECOVERY_BASE_FAILURES = 0
 _RECOVERY_BASE_NEXT_ALLOWED = 0.0
 
 CORE_PROJECTION_DOMAINS = frozenset(
-    {"fleet.summary", "apps.lifecycle", "recovery.summary", "recovery.details"}
+    {
+        "fleet.summary",
+        "apps.catalog",
+        "apps.lifecycle",
+        "apps.actions:photoprism",
+        "recovery.summary",
+        "recovery.details",
+    }
 )
+
+# A missing first snapshot for any of these domains makes a primary Lite screen
+# unusable. The scheduler grants these domains one bounded bootstrap execution
+# before normal adaptive pressure admission applies.
+UI_CRITICAL_BOOTSTRAP_DOMAINS = CORE_PROJECTION_DOMAINS | frozenset({"system.status"})
+
+
+def catalog_payload() -> dict[str, Any]:
+    return lite_app_lifecycle.hydrate_catalog_lifecycle(
+        lite_catalog_live.hydrate_catalog(lite_catalog.catalog_payload(None))
+    )
+
+
+def app_actions_snapshot(app_id: str = "photoprism") -> dict[str, Any] | None:
+    saved = CONTROL_PLANE.app_current_subprojections(app_id)
+    if not saved:
+        return None
+    operations = (
+        saved.get("operations")
+        if isinstance(saved.get("operations"), dict)
+        else {}
+    )
+    if not operations:
+        return None
+    return {
+        **operations,
+        "app_id": app_id,
+        "projection_only": True,
+        "updated_at": saved.get("updated_at"),
+        "summary": operations.get("summary") or "Showing the latest saved app actions.",
+    }
+
+
+def app_actions_payload(app_id: str = "photoprism") -> dict[str, Any]:
+    return lite_app_actions.app_actions(app_id)
 
 
 def _timed_stage(timings: dict[str, float], name: str, callback: Callable[[], Any]) -> Any:
@@ -160,6 +209,28 @@ def _register_job(
 def register_jobs() -> dict[str, bool]:
     expected_database_path = str(database_path())
     return {
+        "catalog": _register_job(
+            domain="apps",
+            key="catalog",
+            snapshot_builder=CONTROL_PLANE.app_projection_snapshot,
+            builder=catalog_payload,
+            projector=lambda payload: _project_for_database(
+                expected_database_path, CONTROL_PLANE.project_apps, payload
+            ),
+            deadline_seconds=8.0, priority=45, work_class="io",
+        ),
+        "app_actions_photoprism": _register_job(
+            domain="apps",
+            key="actions:photoprism",
+            snapshot_builder=app_actions_snapshot,
+            builder=app_actions_payload,
+            projector=lambda payload: _project_for_database(
+                expected_database_path,
+                lambda value: CONTROL_PLANE.update_app_subprojection("photoprism", "operations", value),
+                payload,
+            ),
+            deadline_seconds=6.0, priority=30, work_class="io",
+        ),
         "fleet": _register_job(
             domain="fleet", key="summary", snapshot_builder=CONTROL_PLANE.fleet_projection_snapshot,
             builder=lite_status.lite_fleet,
@@ -189,10 +260,16 @@ def register_jobs() -> dict[str, bool]:
 
 def schedule_startup_warmup() -> dict[str, bool]:
     if os.environ.get("POCKETLAB_LITE_DISABLE_PROJECTION_WARMUP", "").lower() in {"1", "true", "yes", "on"}:
-        return {"fleet": False, "apps": False, "recovery_summary": False, "recovery_details": False}
+        return {"catalog": False, "app_actions_photoprism": False, "fleet": False, "apps": False, "recovery_summary": False, "recovery_details": False}
     register_jobs()
     expected_database_path = str(database_path())
     jobs = (
+        ("catalog", "apps", "catalog", catalog_payload, CONTROL_PLANE.project_apps, 8.0, 45, "io"),
+        (
+            "app_actions_photoprism", "apps", "actions:photoprism", app_actions_payload,
+            lambda payload: CONTROL_PLANE.update_app_subprojection("photoprism", "operations", payload),
+            6.0, 30, "io",
+        ),
         ("fleet", "fleet", "summary", lite_status.lite_fleet, CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),
         ("apps", "apps", "lifecycle", lite_app_lifecycle.app_lifecycle_profiles, CONTROL_PLANE.project_apps, 8.0, 40, "cpu"),
         ("recovery_summary", "recovery", "summary", recovery_summary_payload, CONTROL_PLANE.project_recovery, 4.0, 50, "io"),

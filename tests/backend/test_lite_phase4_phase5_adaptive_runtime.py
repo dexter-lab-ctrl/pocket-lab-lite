@@ -627,3 +627,58 @@ def test_runtime_snapshot_hot_path_is_preencoded_revisioned_and_nonblocking() ->
     assert "RUNTIME_DIAGNOSTICS.snapshot()" not in router.split(
         '@router.get("/diagnostics/runtime")', 1
     )[1].split('@router.get("/diagnostics/runtime/full")', 1)[0]
+
+
+def test_worker_registry_covers_ui_critical_catalog_domains_and_is_authoritative() -> None:
+    from api_fastapi.services import lite_core_projections
+
+    assert {
+        "apps.catalog",
+        "apps.actions:photoprism",
+        "apps.lifecycle",
+        "fleet.summary",
+        "recovery.summary",
+        "recovery.details",
+    }.issubset(lite_core_projections.CORE_PROJECTION_DOMAINS)
+    assert "system.status" in lite_core_projections.UI_CRITICAL_BOOTSTRAP_DOMAINS
+
+    root = Path(__file__).resolve().parents[2]
+    worker = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "workers"
+        / "pocketlab_worker.py"
+    ).read_text(encoding="utf-8")
+    diagnostics = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "routers"
+        / "lite.py"
+    ).read_text(encoding="utf-8")
+
+    assert "missing_required_domains" in worker
+    assert '"diagnostic_source": "worker_prepared_sqlite"' in worker
+    assert '"authoritative_execution_registry": True' in diagnostics
+    assert '"projection_scheduler_local"' in diagnostics
+
+
+def test_unregistered_mailbox_rows_are_separate_from_runnable_pressure() -> None:
+    root = Path(__file__).resolve().parents[2]
+    scheduler = (
+        root
+        / "pocket-lab-final-structure"
+        / "runtime"
+        / "api_fastapi"
+        / "services"
+        / "projection_scheduler.py"
+    ).read_text(encoding="utf-8")
+
+    assert '"runnable_pending": runnable_pending' in scheduler
+    assert '"total_pending": max(0, len(rows) - claimed)' in scheduler
+    assert '"unregistered_domains": sorted(unregistered_domains)' in scheduler
+    assert "queue_depth=0 if bootstrap_required" in scheduler
+    assert "optional=False if bootstrap_required" in scheduler
+    assert "bootstrap_admission_count" in scheduler

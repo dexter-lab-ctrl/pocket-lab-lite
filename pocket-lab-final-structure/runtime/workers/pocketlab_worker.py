@@ -1019,23 +1019,30 @@ def _compact_scheduler_snapshot(
             "process_role",
             "loaded_build_version",
             "process_start_generation",
+            "required_domains",
+            "missing_required_domains",
         )
     }
     compact_scheduler.update(
         {
+            "diagnostic_source": "worker_prepared_sqlite",
             "queued_domains": int(compact_queue["ready_executor_depth"]),
             "active_domains": int(compact_queue["active_domains"]),
             "queue": compact_queue,
             "mailbox": {
                 "claimed": int(mailbox.get("claimed") or 0),
                 "pending": int(mailbox.get("pending") or 0),
+                "runnable_pending": int(mailbox.get("runnable_pending") or mailbox.get("pending") or 0),
+                "total_pending": int(mailbox.get("total_pending") or mailbox.get("pending") or 0),
                 "unregistered": int(mailbox.get("unregistered") or 0),
+                "unregistered_domains": list(mailbox.get("unregistered_domains") or [])[:32],
             },
             "sanitized": True,
         }
     )
     worker_health = {
-        "registry_ready": int(scheduler.get("registered_domains") or 0) > 0,
+        "registry_ready": not bool(scheduler.get("missing_required_domains")),
+        "missing_required_domains": list(scheduler.get("missing_required_domains") or [])[:32],
         "queue": compact_queue,
         "mailbox": dict(compact_scheduler["mailbox"]),
         "loaded_build_version": scheduler.get("loaded_build_version"),
@@ -1094,6 +1101,8 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
                 "system.health",
             }
             missing = sorted(required - registered)
+            registry["required_domains"] = sorted(required)
+            registry["missing_required_domains"] = missing
             if missing:
                 _worker_log(
                     "worker.projection_registry_incomplete",
@@ -1158,12 +1167,18 @@ async def projection_signal_loop(stop_event: asyncio.Event) -> None:
             consecutive_signal_failures = 0
             if now - last_snapshot_at >= snapshot_interval_seconds:
                 scheduler = PROJECTION_SCHEDULER.diagnostics()
+                registered_now = set((scheduler.get("domains") or {}).keys())
+                scheduler["required_domains"] = sorted(required)
+                scheduler["missing_required_domains"] = sorted(required - registered_now)
                 compact_scheduler, worker_health = _compact_scheduler_snapshot(
                     scheduler,
                     mailbox={
                         "claimed": claimed,
                         "pending": pending,
                         "unregistered": unregistered,
+                        "runnable_pending": int(result.get("runnable_pending") or pending),
+                        "total_pending": int(result.get("total_pending") or pending),
+                        "unregistered_domains": list(result.get("unregistered_domains") or []),
                     },
                 )
                 await asyncio.to_thread(
