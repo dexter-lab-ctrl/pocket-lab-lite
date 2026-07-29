@@ -177,6 +177,7 @@ class _DomainState:
     execution_count: int = 0
     committed_count: int = 0
     circuit_open_count: int = 0
+    bootstrap_admission_count: int = 0
     last_persisted_checksum: str = ""
     not_before_at: float = 0.0
     dirty_mark_count: int = 0
@@ -446,14 +447,16 @@ class ProjectionScheduler:
                 )
             ]
         claimed = 0
-        unregistered = 0
+        runnable_pending = 0
+        unregistered_domains: list[str] = []
         for row in rows:
             domain = _safe_domain(row.get("domain") or "")
             generation = int(row.get("signal_generation") or 0)
             with self._condition:
                 registered = domain in self._jobs
             if not registered:
-                unregistered += 1
+                if domain and domain not in unregistered_domains:
+                    unregistered_domains.append(domain)
                 continue
             result = self.mark_dirty(
                 domain,
@@ -463,10 +466,18 @@ class ProjectionScheduler:
             if result.get("accepted"):
                 self._claim_dirty_signal(domain, generation)
                 claimed += 1
+            else:
+                runnable_pending += 1
         return {
             "claimed": claimed,
-            "pending": max(0, len(rows) - claimed),
-            "unregistered": unregistered,
+            # Compatibility field now means runnable registered backlog only.
+            # Unsupported mailbox rows are reported separately and can never
+            # inflate adaptive queue-pressure admission.
+            "pending": runnable_pending,
+            "runnable_pending": runnable_pending,
+            "total_pending": max(0, len(rows) - claimed),
+            "unregistered": len(unregistered_domains),
+            "unregistered_domains": sorted(unregistered_domains),
             "execution_owner": _configured_execution_owner(),
             "process_role": _process_role(),
         }
@@ -805,19 +816,33 @@ class ProjectionScheduler:
                 except Exception:
                     event_loop_lag_ms = 0.0
                 queue_age_ms = max(0.0, (now - state.enqueued_at) * 1000.0)
+                try:
+                    from .lite_core_projections import UI_CRITICAL_BOOTSTRAP_DOMAINS
+                    bootstrap_required = (
+                        domain in UI_CRITICAL_BOOTSTRAP_DOMAINS
+                        and int(state.committed_count) <= 0
+                    )
+                except Exception:
+                    bootstrap_required = False
                 admission = ADAPTIVE_RUNTIME.decide(
                     domain,
                     priority=job.priority,
                     work_class=job.work_class,
-                    optional=job.optional,
-                    queue_depth=len(self._heap) + len(self._active_futures) + 1,
+                    # Missing UI-critical projections receive one bounded first
+                    # build. Capacity, deadlines, generation fences and circuit
+                    # breakers still apply; only adaptive pressure deferral is
+                    # bypassed until the first durable commit exists.
+                    optional=False if bootstrap_required else job.optional,
+                    queue_depth=0 if bootstrap_required else len(self._heap) + len(self._active_futures) + 1,
                     queue_age_ms=queue_age_ms,
                     active_count=active_count,
                     capacity=capacity,
                     event_loop_lag_ms=event_loop_lag_ms,
                     external_pressure_reason=pressure,
                 )
-                if not admission.accepted and job.optional:
+                if bootstrap_required:
+                    state.bootstrap_admission_count += 1
+                if not admission.accepted and job.optional and not bootstrap_required:
                     state.last_pressure_reason = admission.reason or pressure
                     state.adaptive_deferred_count += 1
                     retry_seconds = max(1.0, admission.retry_after_ms / 1000.0)
@@ -1431,6 +1456,7 @@ class ProjectionScheduler:
                 "committed_count": state.committed_count,
                 "unchanged_count": state.unchanged_count,
                 "circuit_open_count": state.circuit_open_count,
+                "bootstrap_admission_count": state.bootstrap_admission_count,
                 "circuit_open": bool(
                     state.failure_count >= self.circuit_failure_threshold
                     and state.next_retry_at > time.monotonic()
@@ -1466,6 +1492,7 @@ class ProjectionScheduler:
                         "last_error_type", "pressure_reason", "source_revision",
                         "last_duration_ms", "execution_count",
                         "committed_count", "unchanged_count", "dirty_mark_count",
+                        "bootstrap_admission_count",
                         "followup_requested", "trigger_reason",
                         "last_trigger_reason", "execution_owner",
                         "executor_build_version", "executor_process_generation",
