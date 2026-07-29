@@ -97,3 +97,27 @@ def test_projection_store_does_not_persist_action_capabilities_as_history(tmp_pa
         ).fetchall()]
 
     assert rows == [{"operation_id": "demo-op-1", "action_id": "real_operation", "status": "succeeded"}]
+
+def test_app_projection_domains_are_worker_registered_and_ui_critical():
+    core = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_core_projections.py"
+    ).read_text()
+    semantic = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_semantic_revisions.py"
+    ).read_text()
+
+    # Worker-owned registry must include all App Catalog projection domains.
+    assert '"apps.catalog"' in core
+    assert '"apps.lifecycle"' in core
+    assert '"apps.actions:photoprism"' in core
+
+    # Stable projection keys must remain registered.
+    assert 'key="catalog"' in core
+    assert 'key="lifecycle"' in core
+    assert 'key="actions:photoprism"' in core
+
+    # App projections must remain protected from ordinary background pressure.
+    assert "priority=20" in semantic
+    assert "priority=25" in semantic
+    assert "priority=15" in semantic
+    assert semantic.count('work_class="critical"') >= 3
