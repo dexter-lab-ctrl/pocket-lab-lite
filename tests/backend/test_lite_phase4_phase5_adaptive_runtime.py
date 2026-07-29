@@ -641,6 +641,16 @@ def test_worker_registry_covers_ui_critical_catalog_domains_and_is_authoritative
         "recovery.details",
     }.issubset(lite_core_projections.CORE_PROJECTION_DOMAINS)
     assert "system.status" in lite_core_projections.UI_CRITICAL_BOOTSTRAP_DOMAINS
+    assert {
+        "system.health",
+        "system.fleet_probe",
+        "system.nats_remote",
+        "system.telemetry_thresholds",
+        "system.storage_pressure",
+        "system.sqlite_health",
+        "system.activity_current",
+        "system.activity_history",
+    }.issubset(lite_core_projections.UI_CRITICAL_BOOTSTRAP_DOMAINS)
 
     root = Path(__file__).resolve().parents[2]
     worker = (

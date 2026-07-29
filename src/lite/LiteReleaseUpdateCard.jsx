@@ -29,7 +29,7 @@ function phaseCopy(data = {}) {
   return '';
 }
 
-function releasePresentation(data = {}, savedStateOnly = false) {
+export function releasePresentation(data = {}, savedStateOnly = false) {
   const active = phaseCopy(data);
   if (active) return { label: active, status: 'checking', summary: 'Pocket Lab is handling this update through the local worker.' };
   if (data.last_rollback_status && data.last_rollback_status !== 'rollback_failed') {
@@ -75,9 +75,21 @@ export default function LiteReleaseUpdateCard() {
   });
   const data = release.data || {};
   const active = isReleaseActive(data);
+  const releaseCurrent = Boolean(
+    data.status === 'healthy'
+    && data.repository_match === true
+    && data.manifest_verified === true
+    && data.current_tag
+    && data.current_tag === data.latest_tag
+    && !data.last_failure_code,
+  );
+  const releaseSavedStateOnly = Boolean(
+    release.backendReachable === false
+    || (release.savedStateOnly && !releaseCurrent),
+  );
   const presentation = useMemo(
-    () => releasePresentation(data, release.savedStateOnly),
-    [data, release.savedStateOnly],
+    () => releasePresentation(data, releaseSavedStateOnly),
+    [data, releaseSavedStateOnly],
   );
   const backendFailed = data.status === 'degraded' || Boolean(data.last_failure_code);
 
@@ -87,7 +99,7 @@ export default function LiteReleaseUpdateCard() {
     else if (String(flow.value) === 'accepted' || String(flow.value) === 'observing') send({ type: 'BACKEND_DONE' });
   }, [active, backendFailed, flow.value, send]);
 
-  const writeBlocked = release.savedStateOnly || release.backendReachable === false || active;
+  const writeBlocked = releaseSavedStateOnly || release.backendReachable === false || active;
   const applyAllowed = Boolean(
     data.update_available
     && data.repository_match
@@ -153,7 +165,7 @@ export default function LiteReleaseUpdateCard() {
           </LiteButton>
         ) : null}
       </div>
-      {release.savedStateOnly ? <p className="lite-release-update-note">Saved status only. Reconnect before installing an update.</p> : null}
+      {releaseSavedStateOnly ? <p className="lite-release-update-note">Saved status only. Reconnect before installing an update.</p> : null}
     </GlassCard>
   );
 }

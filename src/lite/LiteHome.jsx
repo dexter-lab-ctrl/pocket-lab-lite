@@ -46,6 +46,9 @@ const HOME_RESOURCE_ICONS = Object.freeze({
   temperature: Thermometer,
   storage: HardDrive,
   memory: MemoryStick,
+  'device-health': Activity,
+  database: Database,
+  activity: Activity,
 });
 
 const HOME_SERVICE_ICONS = Object.freeze({
@@ -144,7 +147,12 @@ export default function HomeScreen({
     () => buildLiteHomeOverview(status, { savedStateOnly, backendReachable }),
     [backendReachable, savedStateOnly, status],
   );
-  const checkedLabel = lastUpdatedLabel || (status.checked_at ? formatLiteTime(status.checked_at) : 'Not checked yet');
+  const projectionStale = status.read_degraded === true || status.degraded_reason === 'projection_too_old';
+  const effectiveSavedStateOnly = savedStateOnly || projectionStale;
+  const backendUpdatedAt = status.updated_at || status.checked_at || '';
+  const checkedLabel = backendUpdatedAt
+    ? formatLiteTime(backendUpdatedAt)
+    : lastUpdatedLabel || 'Not checked yet';
 
   const goTo = useCallback((screen) => {
     if (screen === 'home') {
@@ -230,7 +238,7 @@ export default function HomeScreen({
               <p>Current capacity for apps, backups, and private services.</p>
             </div>
             <StatusBadge status={badgeStatus(overview.overallTone)}>
-              {savedStateOnly ? 'Saved state' : overview.overallTone === 'ready' ? 'Available' : 'Review'}
+              {effectiveSavedStateOnly ? 'Saved state' : overview.overallTone === 'ready' ? 'Available' : 'Review'}
             </StatusBadge>
           </div>
           <div className="lite-home-premium-resource-grid">
@@ -238,7 +246,7 @@ export default function HomeScreen({
           </div>
           <div className="lite-home-premium-freshness">
             {backendReachable ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-            <span>{savedStateOnly ? 'Saved information' : 'Current information'} · {checkedLabel}</span>
+            <span>{effectiveSavedStateOnly ? 'Saved status' : 'Current information'} · {checkedLabel}{status.refresh_pending ? ' · Refreshing…' : ''}</span>
           </div>
         </GlassCard>
 
