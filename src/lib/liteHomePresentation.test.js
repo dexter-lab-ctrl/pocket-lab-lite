@@ -44,7 +44,7 @@ describe('Lite Home presentation model', () => {
     expect(access.nextAction.title).toContain('remote access');
   });
 
-  it('normalizes service tones and resource thresholds deterministically', () => {
+  it('normalizes service tones and current resource thresholds deterministically', () => {
     expect(homeStatusTone('healthy')).toBe('ready');
     expect(homeStatusTone('degraded')).toBe('review');
     expect(homeStatusTone('failed')).toBe('danger');
@@ -52,8 +52,39 @@ describe('Lite Home presentation model', () => {
     const overview = buildLiteHomeOverview({
       telemetry: { cpu_usage_percent: 94, cpu_temp_c: 60, free_space_mb: 400, memory_usage_mb: 256 },
     });
-    expect(overview.resources.find((item) => item.key === 'processor')?.tone).toBe('danger');
-    expect(overview.resources.find((item) => item.key === 'temperature')?.tone).toBe('review');
-    expect(overview.resources.find((item) => item.key === 'storage')?.tone).toBe('danger');
+
+    expect(overview.resources.map((item) => item.key)).toEqual([
+      'device-health',
+      'storage',
+      'database',
+      'activity',
+    ]);
+    expect(overview.resources.find((item) => item.key === 'device-health')).toMatchObject({
+      value: 'Not available',
+      tone: 'neutral',
+    });
+    expect(overview.resources.find((item) => item.key === 'storage')).toMatchObject({
+      value: '400 MB',
+      tone: 'danger',
+    });
   });
+  it('uses per-card semantic fallbacks without hiding valid telemetry', () => {
+    const overview = buildLiteHomeOverview({
+      summary: {
+        device_health_attention: 0,
+        device_health_attention_current: true,
+        device_health_summary: { by_status: { healthy: 1 } },
+      },
+      telemetry: { free_space_mb: 135569, cpu_usage_percent: 0, cpu_temp_c: 35.2, memory_usage_mb: 4054 },
+      system_current_state: {
+        activity_summary: { status: 'unknown', summary: 'Activity state is not available.' },
+      },
+    });
+
+    expect(overview.resources.find((item) => item.key === 'device-health')).toMatchObject({ value: 'Healthy', tone: 'ready' });
+    expect(overview.resources.find((item) => item.key === 'storage')).toMatchObject({ value: '135569 MB', tone: 'ready' });
+    expect(overview.resources.find((item) => item.key === 'database')).toMatchObject({ value: 'Not available' });
+    expect(overview.resources.find((item) => item.key === 'activity')).toMatchObject({ value: 'Not available' });
+  });
+
 });

@@ -288,21 +288,39 @@ export function buildLiteHomeOverview(status = {}, options = {}) {
       ? 'Open apps, connect devices, review safety, and keep a verified backup from one private workspace.'
       : 'Pocket Lab is still usable. Review the recommended next step before making important changes.';
 
-  const semanticResourcesAvailable = [telemetryThresholds, storagePressure, sqliteHealth, activitySummary]
-    .some((item) => item && Object.keys(item).length > 0);
-  const resources = semanticResourcesAvailable
-    ? [
-        semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status, summary: telemetryThresholds.summary, screen: 'devices' }),
-        semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' }),
-        semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' }),
-        semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: activitySummary.status, summary: activitySummary.summary, screen: 'home' }),
-      ]
-    : [
-        resourceMetric({ key: 'processor', label: 'Processor use', value: telemetry.cpu_usage_percent, unit: '%', thresholds: { direction: 'high', review: 75, danger: 92 }, note: 'Current workspace demand' }),
-        resourceMetric({ key: 'temperature', label: 'Device temperature', value: telemetry.cpu_temp_c, unit: '°C', thresholds: { direction: 'high', review: 58, danger: 72 }, note: 'Current device reading' }),
-        resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' }),
-        resourceMetric({ key: 'memory', label: 'Memory use', value: telemetry.memory_usage_mb, unit: ' MB', note: 'Memory used by Pocket Lab services' }),
-      ];
+  const hasProjection = (value) => value && typeof value === 'object' && Object.keys(value).length > 0;
+  const healthSummary = summary.device_health_summary || {};
+  const healthyDevices = boundedCount(healthSummary.by_status?.healthy);
+  const healthSummaryCurrent = summary.device_health_attention_current === true;
+
+  const deviceHealthResource = hasProjection(telemetryThresholds)
+    ? semanticResourceMetric({ key: 'device-health', label: 'Device health', status: telemetryThresholds.status, summary: telemetryThresholds.summary, screen: 'devices' })
+    : healthSummaryCurrent
+      ? {
+          key: 'device-health',
+          label: 'Device health',
+          value: deviceHealthAttention > 0 ? 'Review' : 'Healthy',
+          tone: deviceHealthAttention > 0 ? 'review' : 'ready',
+          note: deviceHealthAttention > 0
+            ? `${deviceHealthAttention} health ${deviceHealthAttention === 1 ? 'item needs' : 'items need'} attention.`
+            : healthyDevices > 0 ? `${healthyDevices} ${healthyDevices === 1 ? 'device is' : 'devices are'} healthy.` : 'No current device health issue is reported.',
+          screen: 'devices',
+        }
+      : resourceMetric({ key: 'device-health', label: 'Device health', value: Number.NaN, note: 'Health information has not been reported yet' });
+
+  const storageResource = hasProjection(storagePressure)
+    ? semanticResourceMetric({ key: 'storage', label: 'Storage', status: storagePressure.status, summary: storagePressure.summary, screen: 'recovery' })
+    : resourceMetric({ key: 'storage', label: 'Free storage', value: telemetry.free_space_mb, unit: ' MB', thresholds: { direction: 'low', review: 2048, danger: 512 }, note: 'Space available for apps and backups' });
+
+  const databaseResource = hasProjection(sqliteHealth)
+    ? semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: sqliteHealth.status, summary: sqliteHealth.summary, screen: 'recovery' })
+    : semanticResourceMetric({ key: 'database', label: 'Pocket Lab data', status: 'unknown', summary: 'Database health has not been reported yet.', screen: 'recovery' });
+
+  const activityResource = hasProjection(activitySummary)
+    ? semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: activitySummary.status, summary: activitySummary.summary, screen: 'home' })
+    : semanticResourceMetric({ key: 'activity', label: 'Recent activity', status: 'unknown', summary: 'Activity state has not been reported yet.', screen: 'home' });
+
+  const resources = [deviceHealthResource, storageResource, databaseResource, activityResource];
 
   return {
     overallTone,

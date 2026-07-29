@@ -43,7 +43,21 @@ CORE_PROJECTION_DOMAINS = frozenset(
 # A missing first snapshot for any of these domains makes a primary Lite screen
 # unusable. The scheduler grants these domains one bounded bootstrap execution
 # before normal adaptive pressure admission applies.
-UI_CRITICAL_BOOTSTRAP_DOMAINS = CORE_PROJECTION_DOMAINS | frozenset({"system.status"})
+HOME_CRITICAL_BOOTSTRAP_DOMAINS = frozenset(
+    {
+        "system.status",
+        "system.health",
+        "system.fleet_probe",
+        "system.nats_remote",
+        "system.telemetry_thresholds",
+        "system.storage_pressure",
+        "system.sqlite_health",
+        "system.activity_current",
+        "system.activity_history",
+    }
+)
+
+UI_CRITICAL_BOOTSTRAP_DOMAINS = CORE_PROJECTION_DOMAINS | HOME_CRITICAL_BOOTSTRAP_DOMAINS
 
 
 def catalog_payload() -> dict[str, Any]:
