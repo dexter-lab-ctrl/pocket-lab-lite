@@ -101,6 +101,24 @@ describe('Lite revision-driven synchronization', () => {
     expect(acquireLiteRevisionLeadership(storage, 'tab-b', { now: 9_000, ttlMs: 20_000 })).toBe(true);
   });
 
+
+  it('marks an unchanged snapshot as a no-op so the bridge does not relay it repeatedly', () => {
+    const client = queryClientSpy();
+    const state = createLiteRevisionState({
+      databaseInstance: 'database-a',
+      lastEventId: 7,
+      revisions: { fleet: 3, apps: 3, recovery: 5, commands: 0, storage: 0, audit: 0, security: 0 },
+    });
+    const result = applyLiteRevisionSnapshot(client, state, {
+      database_instance: 'database-a',
+      revisions: { fleet: 3, apps: 3, recovery: 5, commands: 0, storage: 0, audit: 0, security: 0 },
+      event_cursor: { latest_event_id: 7 },
+    });
+    expect(result).toMatchObject({ accepted: true, changed: false, cursorAdvanced: false });
+    expect(result.changedDomains).toEqual([]);
+    expect(client.calls).toHaveLength(0);
+  });
+
   it('uses freshness snapshots to invalidate only newer domains', () => {
     const client = queryClientSpy();
     const state = createLiteRevisionState({
@@ -112,6 +130,7 @@ describe('Lite revision-driven synchronization', () => {
       revisions: { fleet: 3, apps: 3, recovery: 5, commands: 0, storage: 0, audit: 0, security: 0 },
       event_cursor: { latest_event_id: 7 },
     });
+    expect(result.changed).toBe(true);
     expect(result.changedDomains).toEqual(['apps']);
     expect(client.calls.some((call) => call.queryKey[1] === 'apps')).toBe(true);
     expect(client.calls.some((call) => call.queryKey[1] === 'fleet')).toBe(false);

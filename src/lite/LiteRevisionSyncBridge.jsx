@@ -63,15 +63,17 @@ export default function LiteRevisionSyncBridge() {
   );
   const [isLeader, setIsLeader] = useState(() => !broadcastSupported);
   const [syncSnapshot, sendSync] = useMachine(liteRevisionSyncMachine);
+  const syncSnapshotRef = useRef(syncSnapshot);
+  syncSnapshotRef.current = syncSnapshot;
   const setRevisionSyncState = useLiteUiStore((state) => state.setRevisionSyncState);
   const streamStatus = String(syncSnapshot.value || 'idle');
 
   const persistState = useCallback(() => {
     void setOfflineCacheMeta(
       REVISION_SYNC_META_KEY,
-      persistedRevisionState(revisionState.current, syncSnapshot),
+      persistedRevisionState(revisionState.current, syncSnapshotRef.current),
     );
-  }, [syncSnapshot]);
+  }, []);
 
   const processEnvelope = useCallback((envelope, { relay = false } = {}) => {
     const result = applyLiteRevisionEnvelope(queryClient, revisionState.current, envelope);
@@ -222,7 +224,7 @@ export default function LiteRevisionSyncBridge() {
   useEffect(() => {
     if (!revisions.data || revisions.data.__liteNotModified) return;
     const result = applyLiteRevisionSnapshot(queryClient, revisionState.current, revisions.data);
-    if (!result.accepted) return;
+    if (!result.accepted || !result.changed) return;
     sendSync({ type: 'EVENT', lastEventId: revisionState.current.lastEventId });
     persistState();
   }, [persistState, queryClient, revisions.data, sendSync]);
