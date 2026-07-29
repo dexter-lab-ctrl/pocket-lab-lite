@@ -1211,7 +1211,7 @@ def get_lite_app_actions(app_id: str, request: Request) -> Response:
             domain="apps", key=f"actions:{app_id}",
             snapshot_builder=lambda: CONTROL_PLANE.app_actions_projection_snapshot(app_id),
             builder=lambda: lite_app_actions.app_actions(app_id),
-            projector=lambda payload: CONTROL_PLANE.update_app_subprojection(app_id, "operations", payload),
+            projector=lambda payload: lite_core_projections.project_app_actions_payload(app_id, payload),
             stale_after_ms=15_000, max_stale_ms=90_000,
             deadline_seconds=6.0, priority=30, work_class="io",
         )

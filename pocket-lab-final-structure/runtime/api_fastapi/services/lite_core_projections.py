@@ -99,6 +99,24 @@ def app_actions_payload(app_id: str = "photoprism") -> dict[str, Any]:
     return lite_app_actions.app_actions(app_id)
 
 
+def project_app_actions_payload(app_id: str, payload: dict[str, Any]) -> int:
+    """Commit an App action projection after fencing its parent row.
+
+    Startup jobs are concurrent, so an action job may arrive before catalog or
+    lifecycle has created app_current_state. The worker may bootstrap that row
+    once; request paths remain prepared-read only.
+    """
+    if CONTROL_PLANE.app_actions_projection_snapshot(app_id) is None:
+        catalog_snapshot = CONTROL_PLANE.app_catalog_projection_snapshot()
+        if catalog_snapshot is None:
+            CONTROL_PLANE.project_app_catalog(catalog_payload())
+    revision = CONTROL_PLANE.update_app_subprojection(app_id, "operations", payload)
+    committed = CONTROL_PLANE.app_actions_projection_snapshot(app_id)
+    if not isinstance(committed, dict) or not committed:
+        raise PreparedProjectionUnavailable("App action projection parent row is unavailable")
+    return revision
+
+
 def _timed_stage(timings: dict[str, float], name: str, callback: Callable[[], Any]) -> Any:
     started = time.monotonic()
     try:
@@ -249,7 +267,7 @@ def register_jobs() -> dict[str, bool]:
             builder=app_actions_payload,
             projector=lambda payload: _project_for_database(
                 expected_database_path,
-                lambda value: CONTROL_PLANE.update_app_subprojection("photoprism", "operations", value),
+                lambda value: project_app_actions_payload("photoprism", value),
                 payload,
             ),
             deadline_seconds=6.0, priority=30, work_class="io",
@@ -310,7 +328,7 @@ def schedule_startup_warmup() -> dict[str, bool]:
         ("catalog", "apps", "catalog", catalog_payload, CONTROL_PLANE.project_app_catalog, 8.0, 45, "io"),
         (
             "app_actions_photoprism", "apps", "actions:photoprism", app_actions_payload,
-            lambda payload: CONTROL_PLANE.update_app_subprojection("photoprism", "operations", payload),
+            lambda payload: project_app_actions_payload("photoprism", payload),
             6.0, 30, "io",
         ),
         ("fleet", "fleet", "summary", lite_status.lite_fleet, CONTROL_PLANE.project_fleet, 20.0, 15, "critical"),

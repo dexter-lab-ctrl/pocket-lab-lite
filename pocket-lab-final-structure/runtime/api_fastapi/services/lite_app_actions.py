@@ -520,20 +520,79 @@ def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
         })
         return
     if _media_import_completed(media):
-        # Historical result only. Do not convert the current action to an
-        # "imported" terminal capability or disable future imports.
         historical_result = {
             "status": "imported",
-            "summary": "Photos are imported. PhotoPrism will handle new photos.",
-            "completed_at": last_import.get("completed_at") or media.get("last_imported_at"),
+            "summary": "Photos are already imported. PhotoPrism will handle new photos.",
+            "completed_at": last_import.get("completed_at") or media.get("last_imported_at") or media.get("updated_at"),
             "backend_only": True,
         }
-        action["historical_result"] = historical_result
-        action["last_result"] = historical_result["summary"]
-        action["last_ran_at"] = historical_result.get("completed_at") or action.get("last_ran_at")
-        action["run_count"] = max(1, int(action.get("run_count") or 0))
-        if action.get("enabled"):
-            action["summary"] = "Import connected photos. The last import completed successfully."
+        action.update({
+            "enabled": False,
+            "status": "imported",
+            "summary": historical_result["summary"],
+            "disabled_reason": historical_result["summary"],
+            "reason": historical_result["summary"],
+            "historical_result": historical_result,
+            "last_result": historical_result["summary"],
+            "last_ran_at": historical_result.get("completed_at") or action.get("last_ran_at"),
+            "run_count": max(1, int(action.get("run_count") or 0)),
+        })
+
+
+def _ensure_action_contract(
+    actions: dict[str, Any],
+    *,
+    catalog: Any,
+    media: Any,
+    installed: bool,
+) -> None:
+    """Populate every supported action with a fail-closed generic contract.
+
+    Saved action projections are partial by design. Capability truth comes from
+    canonical catalog/runtime/media state, while historical results only enrich
+    an action. New apps inherit this behavior by supplying definitions and state.
+    """
+    catalog_map = catalog if isinstance(catalog, dict) else {}
+    access = catalog_map.get("access") if isinstance(catalog_map.get("access"), dict) else {}
+    catalog_actions = catalog_map.get("actions") if isinstance(catalog_map.get("actions"), dict) else {}
+    route_ready = bool(access.get("route_ready") and access.get("open_url"))
+
+    for action_id in ACTION_ORDER:
+        if action_id not in actions:
+            actions[action_id] = _normalize_action(action_id, {})
+
+    for action_id in ("open", "open_full_screen", "install_to_phone"):
+        action = actions[action_id]
+        explicit = catalog_actions.get("open")
+        allowed = bool(route_ready and explicit is not False and installed)
+        action.update({
+            "enabled": allowed,
+            "status": "ready" if allowed else "checking",
+            "summary": "Open the app through Pocket Lab." if allowed else "Pocket Lab is checking the app route.",
+            "url": (
+                access.get("open_url")
+                or (catalog_map.get("runtime") or {}).get("url")
+                if isinstance(catalog_map.get("runtime"), dict)
+                else access.get("open_url")
+            ),
+        })
+        if allowed:
+            action.pop("disabled_reason", None)
+            action.pop("reason", None)
+        else:
+            action["disabled_reason"] = "Open is not ready yet."
+            action["reason"] = action["disabled_reason"]
+
+    install = actions.get("install_app")
+    if isinstance(install, dict):
+        install["enabled"] = not installed
+        install["status"] = "ready" if not installed else "blocked"
+        if installed:
+            install["disabled_reason"] = "This app is already installed."
+            install["reason"] = install["disabled_reason"]
+
+    _apply_connect_photos_truth(actions, media)
+    _apply_import_photos_truth(actions, media)
 
 
 def _details_payload(
@@ -706,15 +765,19 @@ def app_actions(app_id: str) -> dict[str, Any]:
     profile = lite_app_lifecycle.app_lifecycle_profile("photoprism")
     raw_actions = profile.get("actions") if isinstance(profile.get("actions"), dict) else {}
     actions: dict[str, Any] = {}
-    for action_id in ACTION_ORDER:
-        if action_id in raw_actions:
-            actions[action_id] = _normalize_action(action_id, raw_actions[action_id])
     for action_id, action in raw_actions.items():
-        if action_id not in actions:
+        if action_id in SUPPORTED_ACTIONS:
             actions[action_id] = _normalize_action(action_id, action)
     media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
-    _apply_connect_photos_truth(actions, media)
-    _apply_import_photos_truth(actions, media)
+    catalog = dict(profile)
+    if isinstance(profile.get("catalog"), dict):
+        catalog.update(profile["catalog"])
+    installed = bool(
+        catalog.get("installed")
+        or profile.get("installed")
+        or str(profile.get("install_state") or "").startswith("installed")
+    )
+    _ensure_action_contract(actions, catalog=catalog, media=media, installed=installed)
     return {
         "status": "healthy",
         "app_id": "photoprism",

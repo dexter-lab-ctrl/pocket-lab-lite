@@ -1419,11 +1419,13 @@ class ControlPlaneProjectionStore:
         })
         # Converged scheduler state is authoritative. A previously stale payload
         # must not keep refresh_pending true after dirty/queued/active all clear.
+        # A generation mismatch can survive a process restart or a previously
+        # failed optional refresh even while a valid SQLite snapshot is serving.
+        # Only live scheduler work is pending; generation remains diagnostic.
         refresh_pending = bool(
             refresh_status.get("dirty")
             or refresh_status.get("queued")
             or refresh_status.get("active")
-            or scheduler_generation > committed_generation
         )
         if too_old:
             payload["projection_only"] = True

@@ -521,7 +521,11 @@ function selectLifecycleSummary(lifecycle = {}) {
 export function selectCanonicalAppState(app = {}, actionSnapshot = {}) {
   const runtime = isObject(app?.runtime) ? app.runtime : {};
   const access = isObject(app?.access) ? app.access : {};
-  const actions = isObject(actionSnapshot?.actions) ? actionSnapshot.actions : isObject(app?.actions) ? app.actions : {};
+  const catalogActions = isObject(app?.actions) ? app.actions : {};
+  const snapshotActions = isObject(actionSnapshot?.actions) ? actionSnapshot.actions : {};
+  // Action snapshots are intentionally partial. Merge by action id so a saved
+  // result cannot erase canonical catalog capabilities such as Open.
+  const actions = { ...catalogActions, ...snapshotActions };
   const runtimeState = safeString(runtime.installation_state || '').toLowerCase();
   const appState = safeString(app.install_state || '').toLowerCase();
   const legacyStatus = safeString(app.status || '').toLowerCase();
@@ -545,9 +549,14 @@ export function selectCanonicalAppState(app = {}, actionSnapshot = {}) {
   const accessRouteReady = Boolean(access.route_ready && (access.open_url || runtime.url || runtime.route));
   const rawOpenAction = actions.open;
   const openActionKnown = typeof rawOpenAction === 'boolean' || isObject(rawOpenAction);
-  const openActionEnabled = isObject(rawOpenAction) ? rawOpenAction.enabled === true : rawOpenAction === true;
-  const accessDisagrees = openActionKnown && accessRouteReady !== openActionEnabled;
-  const openReady = Boolean(accessRouteReady && openActionEnabled && !accessDisagrees);
+  const openActionEnabled = isObject(rawOpenAction)
+    ? rawOpenAction.enabled === true
+    : rawOpenAction === true;
+  // Route readiness is canonical for navigation. An absent action entry is not
+  // a veto; an explicit backend false remains fail-closed.
+  const explicitOpenDenied = openActionKnown && !openActionEnabled;
+  const accessDisagrees = explicitOpenDenied && accessRouteReady;
+  const openReady = Boolean(accessRouteReady && !explicitOpenDenied);
   const routeLabel = accessDisagrees
     ? 'Checking access'
     : openReady ? 'Secure access ready'

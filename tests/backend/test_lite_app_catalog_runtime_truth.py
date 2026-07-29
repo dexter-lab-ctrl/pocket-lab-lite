@@ -303,7 +303,7 @@ def test_action_normalizer_removes_null_only_checks_and_progress_steps():
     assert action["result"] == {}
 
 
-def test_historical_import_result_does_not_override_current_readiness():
+def test_historical_import_result_disables_repeat_import():
     from api_fastapi.services import lite_app_actions
 
     actions = {"import_photos": {"enabled": True, "status": "ready", "summary": "Import connected photos."}}
@@ -313,9 +313,10 @@ def test_historical_import_result_does_not_override_current_readiness():
         "last_import": {"status": "completed", "completed_at": "2026-07-29T10:00:00Z"},
     })
 
-    assert actions["import_photos"]["enabled"] is True
-    assert actions["import_photos"]["status"] == "ready"
+    assert actions["import_photos"]["enabled"] is False
+    assert actions["import_photos"]["status"] == "imported"
     assert actions["import_photos"]["historical_result"]["status"] == "imported"
+    assert "PhotoPrism will handle new photos" in actions["import_photos"]["disabled_reason"]
 
 
 def test_app_projection_schema_reconciliation_is_idempotent(tmp_path, monkeypatch):
