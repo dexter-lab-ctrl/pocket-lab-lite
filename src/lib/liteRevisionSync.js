@@ -226,7 +226,8 @@ export function applyLiteRevisionSnapshot(queryClient, state, rawSnapshot) {
   if (state.databaseInstance && state.databaseInstance !== databaseInstance) {
     return resetLiteRevisionState(queryClient, state, databaseInstance, revisions);
   }
-  if (!state.databaseInstance) {
+  const initialized = !state.databaseInstance;
+  if (initialized) {
     state.databaseInstance = databaseInstance;
     applyLiteSnapshotDatabaseInstance(databaseInstance);
   }
@@ -240,8 +241,16 @@ export function applyLiteRevisionSnapshot(queryClient, state, rawSnapshot) {
     }
   });
   const latestEventId = safeInteger(rawSnapshot?.event_cursor?.latest_event_id);
-  if (latestEventId !== null && latestEventId > state.lastEventId) state.lastEventId = latestEventId;
-  return { accepted: true, changedDomains, databaseInstanceChanged: false };
+  const cursorAdvanced = latestEventId !== null && latestEventId > state.lastEventId;
+  if (cursorAdvanced) state.lastEventId = latestEventId;
+  return {
+    accepted: true,
+    changed: Boolean(initialized || changedDomains.length || cursorAdvanced),
+    initialized,
+    cursorAdvanced,
+    changedDomains,
+    databaseInstanceChanged: false,
+  };
 }
 
 export function createLiteRevisionSenderId() {
