@@ -1787,8 +1787,24 @@ function lifecycleMediaSummary(lifecycle) {
   return 'Connect a photo folder first';
 }
 
+const TERMINAL_ACTION_STATUSES = new Set([
+  'already_connected', 'completed', 'connected', 'done', 'imported', 'installed',
+  'nothing_needed', 'succeeded', 'success', 'verified',
+]);
+
 function lifecycleActionReason(action) {
-  return action?.enabled === false ? action.reason || 'Action not ready yet.' : '';
+  return action?.enabled === false
+    ? action.disabled_reason || action.reason || 'Action not ready yet.'
+    : '';
+}
+
+function lifecycleActionWarning(action, label) {
+  if (!action || action.enabled !== false) return '';
+  const status = String(action.status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if (TERMINAL_ACTION_STATUSES.has(status)) return '';
+  const reason = lifecycleActionReason(action);
+  if (!reason || reason === 'Action not ready yet.') return '';
+  return `${label}: ${reason}`;
 }
 
 function storageDeviceCount(app) {
@@ -2868,11 +2884,13 @@ export default function CatalogScreen({ onOpenWorkspace }) {
               </div>
             </animated.div>
             <div className="lite-catalog-action-reasons">
-              {importPhotosAction.enabled === false ? <span>Import photos: {lifecycleActionReason(importPhotosAction)}</span> : null}
-              {previewRestoreAction.enabled === false ? <span>Preview restore: {lifecycleActionReason(previewRestoreAction)}</span> : null}
-              {backupToStorageAction.enabled === false ? <span>Back up to storage device: {lifecycleActionReason(backupToStorageAction)}</span> : null}
-              {updateAppAction.enabled === false ? <span>Update: {lifecycleActionReason(updateAppAction)}</span> : null}
-              {repairAppAction.enabled === false ? <span>Repair: {lifecycleActionReason(repairAppAction)}</span> : null}
+              {[
+                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'import_photos')?.action, 'Import photos'),
+                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'preview_restore')?.action, 'Preview restore'),
+                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'backup_to_storage')?.action, 'Back up to storage device'),
+                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'update_app')?.action, 'Update'),
+                lifecycleActionWarning(appActionEntries.find((entry) => entry.actionId === 'repair_app')?.action, 'Repair'),
+              ].filter(Boolean).map((warning) => <span key={warning}>{warning}</span>)}
             </div>
             <div className="lite-catalog-storage-panel lite-catalog-storage-panel--sheet">
               <div className="lite-catalog-storage-head">
