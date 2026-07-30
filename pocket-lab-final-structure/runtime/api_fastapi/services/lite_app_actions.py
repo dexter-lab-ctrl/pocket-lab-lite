@@ -294,7 +294,7 @@ def _normalized_status(value: Any, *, enabled: bool) -> str:
         return "not_supported"
     if raw in {"not_ready", "unavailable"}:
         return "not_ready"
-    if raw in {"connected", "imported"}:
+    if raw in {"connected", "imported", "installed"}:
         return raw
     if enabled:
         return "ready"
@@ -586,9 +586,10 @@ def _ensure_action_contract(
     install = actions.get("install_app")
     if isinstance(install, dict):
         install["enabled"] = not installed
-        install["status"] = "ready" if not installed else "blocked"
+        install["status"] = "ready" if not installed else "installed"
+        install["summary"] = "Set up this app." if not installed else "This app is installed and running."
         if installed:
-            install["disabled_reason"] = "This app is already installed."
+            install["disabled_reason"] = "This app is already installed and running."
             install["reason"] = install["disabled_reason"]
 
     _apply_connect_photos_truth(actions, media)
@@ -616,7 +617,8 @@ def _details_payload(
     what_happened = _safe_list(detail_definition.get("what_happened"), [base_summary])
     what_changed = _safe_list(detail_definition.get("what_changed"), ["Nothing changed."])
     what_did_not_happen = _safe_list(detail_definition.get("what_did_not_happen"), ["No unsafe action was started."])
-    if not enabled and disabled_reason:
+    terminal_disabled = status in {"connected", "imported", "installed"}
+    if not enabled and disabled_reason and not terminal_disabled:
         paused_summary = _safe_text(disabled_reason, "This action is not ready yet.")
         what_happened = [f"This action is paused because {paused_summary[:1].lower()}{paused_summary[1:]}"]
         what_changed = ["Nothing changed."]
@@ -631,7 +633,7 @@ def _details_payload(
         "Backend troubleshooting records stay backend-only.",
     ])
     saved_default = bool(result.get("summary") or result.get("receipt_id") or status in TERMINAL_STATUS_VALUES)
-    saved = bool(detail_definition.get("saved", saved_default)) and enabled
+    saved = bool(detail_definition.get("saved", saved_default)) and (enabled or terminal_disabled)
     details: dict[str, Any] = {
         "title": label,
         "status": status,

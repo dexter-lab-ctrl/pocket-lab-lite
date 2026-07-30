@@ -323,7 +323,7 @@ function normalizeActionStatus(rawStatus, enabled, busy = false, hasProgress = f
   if (['blocked', 'disabled', 'paused'].includes(value)) return 'blocked';
   if (['not_supported', 'unsupported'].includes(value)) return 'not_supported';
   if (['not_ready', 'unavailable'].includes(value)) return 'not_ready';
-  if (['connected', 'imported'].includes(value)) return value;
+  if (['connected', 'imported', 'installed'].includes(value)) return value;
   return enabled ? 'ready' : 'not_ready';
 }
 
@@ -332,6 +332,7 @@ function getActionDisplayState(status, enabled = true) {
   if (normalized === 'ready') return { status: 'healthy', label: 'Ready' };
   if (normalized === 'connected') return { status: 'healthy', label: 'Connected' };
   if (normalized === 'imported') return { status: 'healthy', label: 'Imported' };
+  if (normalized === 'installed') return { status: 'healthy', label: 'Installed' };
   if (normalized === 'queued') return { status: 'degraded', label: 'Getting ready' };
   if (normalized === 'running') return { status: 'degraded', label: 'Working' };
   if (normalized === 'done') return { status: 'healthy', label: 'Done' };
@@ -359,7 +360,7 @@ function actionRowTone(actionId, action = {}, result = null) {
   if (['review', 'failed', 'blocked', 'not_ready'].includes(normalized)) return 'review';
   if (summary.includes('needs attention') || summary.includes('needs review') || summary.includes('something changed') || summary.includes('not ready')) return 'review';
   if (['running', 'queued'].includes(normalized)) return 'working';
-  if (['connected', 'imported', 'done', 'ready'].includes(normalized)) return 'ready';
+  if (['connected', 'imported', 'installed', 'done', 'ready'].includes(normalized)) return 'ready';
   return 'neutral';
 }
 
@@ -572,6 +573,9 @@ function normalizeAppAction(entry) {
   }
   if (actionId === 'import_photos' && String(action?.status || '').toLowerCase() === 'imported') {
     display = { status: 'healthy', label: 'Imported' };
+  }
+  if (actionId === 'install_app' && String(action?.status || '').toLowerCase() === 'installed') {
+    display = { status: 'healthy', label: 'Installed' };
   }
   return {
     ...entry,
@@ -2525,12 +2529,14 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       },
       {
         actionId: 'import_photos',
-        action: {
+        action: isPhotosImported ? {
           ...importPhotosAction,
-          summary: isPhotosImported && importPhotosAction.enabled !== false
-            ? 'Import connected photos. The last import completed successfully.'
-            : importPhotosAction.summary,
-        },
+          enabled: false,
+          status: 'imported',
+          summary: 'Photos are already imported. PhotoPrism will handle new photos.',
+          disabled_reason: 'Photos are already imported. PhotoPrism will handle new photos.',
+          reason: 'Photos are already imported. PhotoPrism will handle new photos.',
+        } : importPhotosAction,
         busyKey: actionBusyKey,
         progress: importProgress,
         tone: 'secondary',
@@ -2598,11 +2604,18 @@ export default function CatalogScreen({ onOpenWorkspace }) {
       },
       {
         actionId: 'install_app',
-        action: installAppAction,
+        action: installed ? {
+          ...installAppAction,
+          enabled: false,
+          status: 'installed',
+          summary: 'PhotoPrism is installed and running.',
+          disabled_reason: 'PhotoPrism is already installed and running.',
+          reason: 'PhotoPrism is already installed and running.',
+        } : installAppAction,
         busyKey: actionBusyKey,
         tone: 'ghost',
         onClick: (event) => runLifecycleAction(app, 'install_app', event),
-        disabled: installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`,
+        disabled: installed || installAppAction.enabled === false || actionBusyKey === `${app.id}:install_app`,
         title: lifecycleActionReason(installAppAction),
         result,
       },
