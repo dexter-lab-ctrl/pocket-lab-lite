@@ -20,13 +20,14 @@ function normalizedActionStatus(value) {
 }
 
 function getActionDisplayState(status, enabled = true) {
-  if (!enabled) return { status: 'review', label: 'Not ready' };
   const normalized = normalizedActionStatus(status);
+  if (normalized === 'imported') return { status: 'ready', label: 'Imported' };
+  if (normalized === 'installed') return { status: 'ready', label: 'Installed' };
+  if (!enabled) return { status: 'review', label: 'Not ready' };
   if (['queued', 'pending', 'accepted'].includes(normalized)) return { status: 'working', label: 'Getting ready' };
   if (['running', 'working', 'executing', 'in_progress'].includes(normalized)) return { status: 'working', label: 'Working' };
   if (['succeeded', 'success', 'completed', 'complete', 'done', 'verified', 'ready', 'protected', 'imported'].includes(normalized)) return { status: 'ready', label: 'Done' };
   if (['failed', 'error', 'blocked', 'needs_attention', 'review', 'not_ready'].includes(normalized)) return { status: 'review', label: 'Needs attention' };
-  if (normalized === 'connected') return { status: 'ready', label: 'Connected' };
   return { status: 'checking', label: 'Ready' };
 }
 
@@ -104,26 +105,52 @@ function actionDetailsTone(details = {}, saved = {}) {
   return 'neutral';
 }
 
+function technicalLabel(value) {
+  return String(value || '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 function compactTechnicalRows(actionId, details = {}, saved = {}, technical = []) {
+  const owner = String(details.execution_owner || saved.execution_owner || 'FastAPI and backend worker').replace(/_/g, ' ');
   const rows = [
-    { label: 'Action id', value: actionId },
-    { label: 'Status', value: details.status || 'ready' },
-    { label: 'Backend owner', value: details.execution_owner || saved.execution_owner || 'FastAPI and backend worker' },
-    details.operation_id ? { label: 'Operation id', value: details.operation_id } : null,
-    details.sanitized_reference_id ? { label: 'Sanitized reference', value: details.sanitized_reference_id } : null,
-    details.first_ran_at ? { label: 'First run', value: formatLiteTime(details.first_ran_at) } : null,
-    details.last_ran_at ? { label: 'Last run', value: formatLiteTime(details.last_ran_at) } : null,
+    { label: 'Action', value: technicalLabel(actionId) },
+    { label: 'Current state', value: technicalLabel(details.status || 'ready') },
+    { label: 'Execution path', value: owner },
+    details.operation_id ? { label: 'Operation reference', value: details.operation_id } : null,
+    details.sanitized_reference_id ? { label: 'Evidence reference', value: details.sanitized_reference_id } : null,
+    details.first_ran_at ? { label: 'First recorded', value: formatLiteTime(details.first_ran_at) } : null,
+    details.last_ran_at ? { label: 'Last recorded', value: formatLiteTime(details.last_ran_at) } : null,
     saved?.receipt_id ? { label: 'Backend record', value: saved.receipt_id } : null,
   ].filter(Boolean);
+  const seen = new Set(rows.map((row) => `${row.label}:${row.value}`.toLowerCase()));
 
-  technical.forEach((item) => rows.push({ label: 'Detail', value: item }));
-  return rows;
+  technical.forEach((item) => {
+    const text = String(item || '').trim();
+    const separator = text.indexOf(':');
+    const rawLabel = separator > 0 ? text.slice(0, separator).trim() : 'Runtime note';
+    const value = separator > 0 ? text.slice(separator + 1).trim() : text;
+    if (!value) return;
+    if (['action', 'status', 'execution owner'].includes(rawLabel.toLowerCase())) return;
+    const row = { label: technicalLabel(rawLabel), value };
+    const key = `${row.label}:${row.value}`.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      rows.push(row);
+    }
+  });
+  return rows.slice(0, 12);
 }
 
 function compactHistoryItems(details = {}, runLabels, saved = {}) {
-  const history = Array.isArray(details.run_history) ? details.run_history : [];
+  const history = Array.isArray(details.run_history) ? details.run_history.filter(Boolean) : [];
   if (history.length) return history;
-  return [];
+  if (!details.has_run_evidence && !saved.saved) return [];
+  return [{
+    id: details.operation_id || details.sanitized_reference_id || `${details.status || 'recorded'}:${details.last_ran_at || 'saved'}`,
+    title: details.last_result || details.summary || 'Completed action',
+    meta: details.last_ran_at ? `Recorded ${formatLiteTime(details.last_ran_at)}` : 'Saved backend record',
+  }];
 }
 
 function historySummary(details = {}, runLabels, saved = {}) {
@@ -187,7 +214,7 @@ export default function AppActionDetailsLazy({ details, actionId = '', onClose }
           summary: historySummary(details, runLabels, saved),
           items: compactHistoryItems(details, runLabels, saved),
           enabled: true,
-          emptyMessage: 'History will appear here after more runs.',
+          emptyMessage: details.has_run_evidence || saved.saved ? 'The latest backend record is shown above.' : 'No completed runs have been recorded yet.',
         }}
       />
     </section>

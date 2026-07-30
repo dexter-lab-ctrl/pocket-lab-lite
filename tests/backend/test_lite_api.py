@@ -3701,7 +3701,7 @@ def test_lite_app_actions_phase5_unified_contract(monkeypatch):
         assert action["label"]
         assert action["category"] in {"access", "media", "safety", "recovery", "setup", "danger"}
         assert isinstance(action["enabled"], bool)
-        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected", "imported"}
+        assert action["status"] in {"ready", "queued", "running", "succeeded", "review", "failed", "blocked", "not_ready", "not_supported", "connected", "imported", "installed"}
         assert action["summary"]
         assert action["risk"] in {"low", "review", "high", "destructive"}
         assert action["execution_owner"] in {"browser_navigation", "fastapi", "backend_worker"}

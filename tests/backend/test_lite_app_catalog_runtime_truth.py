@@ -335,3 +335,48 @@ def test_app_projection_schema_reconciliation_is_idempotent(tmp_path, monkeypatc
     assert current["database_wiped"] is False
     assert lite_core_projections.APP_CATALOG_DOMAIN != lite_core_projections.APP_LIFECYCLE_DOMAIN
     assert lite_core_projections.APP_CATALOG_CACHE_KEY != lite_core_projections.APP_LIFECYCLE_CACHE_KEY
+
+
+def test_terminal_disabled_actions_remain_successful_and_truthful():
+    from api_fastapi.services import lite_app_actions
+
+    actions = {}
+    lite_app_actions._ensure_action_contract(
+        actions,
+        catalog={
+            "installed": True,
+            "access": {"route_ready": True, "open_url": "/apps/example/"},
+            "actions": {"open": True},
+        },
+        media={
+            "mapping_count": 1,
+            "last_imported_at": "2026-07-29T10:00:00Z",
+            "evidence": {"status": "saved", "count": 100},
+        },
+        installed=True,
+    )
+
+    imported = lite_app_actions._normalize_action("import_photos", actions["import_photos"])
+    installed = lite_app_actions._normalize_action("install_app", actions["install_app"])
+
+    assert imported["enabled"] is False
+    assert imported["status"] == "imported"
+    assert imported["details"]["what_happened"][0] != "This action is paused because photos are already imported. PhotoPrism will handle new photos."
+    assert imported["details"]["saved_for_troubleshooting"]["saved"] is True
+    assert installed["enabled"] is False
+    assert installed["status"] == "installed"
+    assert installed["summary"] == "This app is installed and running."
+    assert installed["disabled_reason"] == "This app is already installed and running."
+
+
+def test_app_catalog_ui_fences_installed_and_imported_terminal_states():
+    source = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text(encoding="utf-8")
+    details_source = Path("src/lite/catalog/AppActionDetailsLazy.jsx").read_text(encoding="utf-8")
+
+    assert "status: 'imported'" in source
+    assert "status: 'installed'" in source
+    assert "disabled: installed || installAppAction.enabled === false" in source
+    assert "if (normalized === 'imported') return { status: 'ready', label: 'Imported' };" in details_source
+    assert "if (normalized === 'installed') return { status: 'ready', label: 'Installed' };" in details_source
+    assert "label: 'Runtime note'" not in details_source
+    assert "No completed runs have been recorded yet." in details_source
