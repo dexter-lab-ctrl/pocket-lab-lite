@@ -426,3 +426,69 @@ def test_oversize_action_projection_degrades_to_essential_contract_not_empty():
     assert len(decoded["actions"]) == 20
     assert decoded["actions"]["action_0"]["enabled"] is True
     assert decoded["actions"]["action_1"]["status"] == "blocked"
+
+
+def test_saved_import_evidence_survives_deadline_degraded_live_media():
+    from api_fastapi.services import lite_app_actions
+
+    merged = lite_app_actions._merge_canonical_media(
+        {
+            "status": "review",
+            "summary": "PhotoPrism is not ready yet.",
+            "mapping_count": 1,
+            "operation_running": False,
+        },
+        {
+            "status": "review",
+            "summary": "Import photos needs attention.",
+            "mapping_count": 1,
+            "operation_running": False,
+            "evidence": {"status": "saved", "count": 100},
+            "updated_at": "2026-07-03T09:40:47Z",
+        },
+    )
+    actions = {"import_photos": {"enabled": True, "status": "ready"}}
+    lite_app_actions._apply_import_photos_truth(actions, merged)
+
+    assert actions["import_photos"]["enabled"] is False
+    assert actions["import_photos"]["status"] == "imported"
+    assert "PhotoPrism will handle new photos" in actions["import_photos"]["disabled_reason"]
+
+
+def test_live_running_import_overrides_saved_terminal_evidence():
+    from api_fastapi.services import lite_app_actions
+
+    merged = lite_app_actions._merge_canonical_media(
+        {"last_import": {"status": "running", "summary": "Importing now."}},
+        {"evidence": {"status": "saved", "count": 100}},
+    )
+
+    assert merged["last_import"]["status"] == "running"
+
+
+def test_app_subprojection_write_retries_transient_writer_rejection(tmp_path, monkeypatch):
+    prepare_sqlite_test_database(tmp_path / "state" / "pocketlab-lite.sqlite3", monkeypatch)
+    from api_fastapi.services import lite_control_plane_store
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+
+    assert CONTROL_PLANE.ensure_app_projection_parent("photoprism", app_name="PhotoPrism")
+    original_submit = lite_control_plane_store.SQLITE_WRITER.submit
+    attempts = {"count": 0}
+
+    def flaky_submit(name, callback, *, deadline_seconds):
+        if name == "apps.subprojections" and attempts["count"] < 2:
+            attempts["count"] += 1
+            raise lite_control_plane_store.SQLiteWriteRejected("busy")
+        return original_submit(name, callback, deadline_seconds=deadline_seconds)
+
+    monkeypatch.setattr(lite_control_plane_store.SQLITE_WRITER, "submit", flaky_submit)
+    revision = CONTROL_PLANE.update_app_subprojection(
+        "photoprism",
+        "operations",
+        {"status": "healthy", "actions": {"import_photos": {"id": "import_photos", "enabled": False, "status": "imported"}}},
+    )
+
+    assert attempts["count"] == 2
+    assert revision >= 0
+    snapshot = CONTROL_PLANE.app_actions_projection_snapshot("photoprism", max_age_seconds=None)
+    assert snapshot["actions"]["import_photos"]["status"] == "imported"

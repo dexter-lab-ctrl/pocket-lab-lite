@@ -110,10 +110,27 @@ def project_app_actions_payload(app_id: str, payload: dict[str, Any]) -> int:
         app_id, app_name=str(payload.get("name") or app_id)
     ):
         raise PreparedProjectionUnavailable("App action projection parent row is unavailable")
+    expected_actions = {
+        str(action_id)
+        for action_id, action in (payload.get("actions") or {}).items()
+        if isinstance(action, dict)
+    }
     revision = CONTROL_PLANE.update_app_subprojection(app_id, "operations", payload)
-    committed = CONTROL_PLANE.app_actions_projection_snapshot(app_id)
+    committed = CONTROL_PLANE.app_actions_projection_snapshot(
+        app_id, max_age_seconds=None
+    )
     if not isinstance(committed, dict) or not committed:
-        raise PreparedProjectionUnavailable("App action projection parent row is unavailable")
+        raise PreparedProjectionUnavailable("Committed projection was not readable from SQLite")
+    committed_actions = committed.get("actions") if isinstance(committed.get("actions"), dict) else {}
+    missing_actions = sorted(expected_actions.difference(committed_actions))
+    if missing_actions:
+        _LOGGER.error(
+            "pocketlab.app_projection.commit_incomplete app_id=%s missing_count=%s",
+            app_id, len(missing_actions),
+        )
+        raise PreparedProjectionUnavailable("Committed projection did not preserve the action contract")
+    if int(committed.get("source_revision") or 0) <= 0:
+        raise PreparedProjectionUnavailable("Committed projection revision is unavailable")
     return revision
 
 
