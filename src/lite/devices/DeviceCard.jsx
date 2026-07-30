@@ -97,7 +97,7 @@ function DeviceCard({
   onOpenDetails,
   detailsButtonRef = null,
 }) {
-  const online = normalizeBackendState(device?.status) === 'ready';
+  const online = String(device?.connection || '').toLowerCase() === 'online';
   const linkState = deviceLinkState(device);
   const role = String(device?.role || '').toLowerCase();
   const isServerCard = role === 'server_host' || device?.is_current || device?.isCurrent;
@@ -129,7 +129,7 @@ function DeviceCard({
       <div className="lite-device-card-heading">
         <span className="lite-device-card-kicker">
           {isServerCard ? <Server className="h-3.5 w-3.5" /> : <Network className="h-3.5 w-3.5" />}
-          {isServerCard ? 'Pocket Lab server' : device?.role_label || roleLabel(device?.role)}
+          {isServerCard ? 'Server host' : device?.role_label || roleLabel(device?.role)}
         </span>
         <h2>{deviceName}</h2>
         <p>

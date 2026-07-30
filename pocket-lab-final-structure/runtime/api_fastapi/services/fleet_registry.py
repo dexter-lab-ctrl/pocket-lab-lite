@@ -150,6 +150,16 @@ def find_device_identity_conflict(device_name: str | None) -> Dict[str, Any] | N
             source="lite-server",
         )
 
+    from .lite_control_plane_store import CONTROL_PLANE
+
+    durable = CONTROL_PLANE.find_enrollment_identity_conflict(device_name or "")
+    if isinstance(durable, dict):
+        return _device_conflict_payload(
+            durable,
+            status="removed" if durable.get("removal_status") != "active" else "offline",
+            source="device_enrollment_registry",
+        )
+
     for agent in list_agents(include_stale=True):
         if isinstance(agent, dict) and _candidate_matches(agent, wanted_keys):
             return _device_conflict_payload(
@@ -955,7 +965,16 @@ def fleet_source_revision() -> int:
                 or raw.get("tailscale_ip")
             ),
         })
-    material = json.dumps(semantic, sort_keys=True, separators=(",", ":"))
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        enrollment_revision = CONTROL_PLANE.enrollment_source_revision()
+    except Exception:
+        enrollment_revision = 0
+    material = json.dumps(
+        {"agents": semantic, "enrollment_revision": enrollment_revision},
+        sort_keys=True, separators=(",", ":"),
+    )
     return int.from_bytes(hashlib.sha256(material.encode("utf-8")).digest()[:8], "big")
 
 def list_agents(include_stale: bool = True) -> List[Dict[str, Any]]:

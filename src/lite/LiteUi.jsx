@@ -165,6 +165,7 @@ export function appWorkspaceEmbedAllowed(item) {
 }
 
 export function roleLabel(value) {
+  if (String(value || '').toLowerCase() === 'server_host') return 'Server host';
   return DEVICE_ROLE_OPTIONS.find((role) => role.value === value)?.label || 'App Host';
 }
 
