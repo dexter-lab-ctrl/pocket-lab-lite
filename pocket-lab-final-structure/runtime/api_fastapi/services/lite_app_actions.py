@@ -503,6 +503,30 @@ def _media_import_completed(media: Any) -> bool:
     )
 
 
+
+
+def _merge_canonical_media(live_media: Any, saved_media: Any) -> dict[str, Any]:
+    """Merge live media readiness with durable terminal evidence.
+
+    Live queued/running operations win. Otherwise durable successful import
+    evidence must not be erased by a deadline-degraded collector response.
+    """
+    live = dict(live_media) if isinstance(live_media, dict) else {}
+    saved = dict(saved_media) if isinstance(saved_media, dict) else {}
+    live_import = live.get("last_import") if isinstance(live.get("last_import"), dict) else {}
+    live_status = str(live_import.get("status") or "").strip().lower()
+    if live_status in {"queued", "running"}:
+        return live
+    if _media_import_completed(saved):
+        merged = {**live, **saved}
+        if isinstance(live.get("evidence"), dict) or isinstance(saved.get("evidence"), dict):
+            merged["evidence"] = {
+                **(live.get("evidence") if isinstance(live.get("evidence"), dict) else {}),
+                **(saved.get("evidence") if isinstance(saved.get("evidence"), dict) else {}),
+            }
+        return merged
+    return {**saved, **live}
+
 def _apply_import_photos_truth(actions: dict[str, Any], media: Any) -> None:
     """Keep current import readiness separate from historical completion."""
     action = actions.get("import_photos")
@@ -770,7 +794,22 @@ def app_actions(app_id: str) -> dict[str, Any]:
     for action_id, action in raw_actions.items():
         if action_id in SUPPORTED_ACTIONS:
             actions[action_id] = _normalize_action(action_id, action)
-    media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
+    live_media = profile.get("media") or lite_photoprism_media.media_status("photoprism")
+    saved_media: dict[str, Any] = {}
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        saved = CONTROL_PLANE.app_current_subprojections("photoprism", max_age_seconds=None)
+        if isinstance(saved, dict) and isinstance(saved.get("media"), dict):
+            saved_media = saved["media"]
+    except Exception as exc:  # prepared-state enrichment must never break action reads
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "pocketlab.app_actions.saved_media_unavailable error_type=%s",
+            type(exc).__name__,
+        )
+    media = _merge_canonical_media(live_media, saved_media)
     catalog = dict(profile)
     if isinstance(profile.get("catalog"), dict):
         catalog.update(profile["catalog"])

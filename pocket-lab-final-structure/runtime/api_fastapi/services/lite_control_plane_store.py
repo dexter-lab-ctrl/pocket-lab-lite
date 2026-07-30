@@ -1840,7 +1840,7 @@ class ControlPlaneProjectionStore:
         return decoded if isinstance(decoded, dict) else {}
 
     def app_current_subprojections(
-        self, app_id: str, *, max_age_seconds: float = 900.0
+        self, app_id: str, *, max_age_seconds: float | None = 900.0
     ) -> dict[str, Any] | None:
         """Return bounded, sanitized App current-state projections for cold reads."""
         self.initialize()
@@ -1865,7 +1865,7 @@ class ControlPlaneProjectionStore:
         if not row:
             return None
         age_ms = max(0, _epoch_ms() - int(row.get("updated_at_epoch_ms") or 0))
-        if age_ms > max(1.0, float(max_age_seconds)) * 1000.0:
+        if max_age_seconds is not None and age_ms > max(1.0, float(max_age_seconds)) * 1000.0:
             return None
         payload = {
             "catalog": self._decode_projection_json(row.get("catalog_state_json")),
@@ -1988,10 +1988,26 @@ class ControlPlaneProjectionStore:
                 reason="app_subprojection_changed", projection_version=2,
             ) if _changes(conn) else _domain_revision(conn, "apps")
 
-        try:
-            return int(SQLITE_WRITER.submit("apps.subprojections", write, deadline_seconds=1.0))
-        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
-            return self.domain_revision("apps")
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                return int(
+                    SQLITE_WRITER.submit(
+                        "apps.subprojections",
+                        write,
+                        deadline_seconds=2.0 + attempt,
+                    )
+                )
+            except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded) as exc:
+                last_error = exc
+                _LOGGER.warning(
+                    "pocketlab.app_projection.write_retry app_id=%s attempt=%s error_type=%s",
+                    normalized, attempt + 1, type(exc).__name__,
+                )
+                if attempt < 2:
+                    time.sleep(0.05 * (2 ** attempt))
+        assert last_error is not None
+        raise last_error
 
     def update_app_subprojection(
         self, app_id: str, projection: str, payload: dict[str, Any]
@@ -2181,8 +2197,10 @@ class ControlPlaneProjectionStore:
         payload.update(self._projection_metadata(rows, payload))
         return payload
 
-    def app_actions_projection_snapshot(self, app_id: str) -> dict[str, Any] | None:
-        saved = self.app_current_subprojections(app_id)
+    def app_actions_projection_snapshot(
+        self, app_id: str, *, max_age_seconds: float | None = 900.0
+    ) -> dict[str, Any] | None:
+        saved = self.app_current_subprojections(app_id, max_age_seconds=max_age_seconds)
         if not saved:
             return None
         operations = saved.get("operations") if isinstance(saved.get("operations"), dict) else {}
