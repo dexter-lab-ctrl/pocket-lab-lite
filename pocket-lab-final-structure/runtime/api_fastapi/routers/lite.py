@@ -2611,8 +2611,11 @@ async def add_lite_device(payload: LiteAddDeviceRequest, request: Request) -> di
         if conflict:
             source = str(conflict.get("source") or "device_record") if isinstance(conflict, dict) else "device_record"
             protected = bool(isinstance(conflict, dict) and (conflict.get("protected_server_host") or conflict.get("role") == "server_host"))
+            conflict_device_id = str(
+                conflict.get("device_id") or conflict.get("node_id") or conflict.get("id") or device_name
+            )
             fleet_registry.append_device_lifecycle_event(
-                device_name,
+                conflict_device_id,
                 "protected_host_blocked" if protected else "duplicate_name_blocked",
                 reason_code="protected_server_host" if protected else "device_name_in_use",
                 summary="Protected server host name cannot be reused." if protected else "Device name is already in use.",
@@ -2686,7 +2689,45 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
             dedupe_key=f"{device_id}:removal_requested:{removal_generation}",
             generation_key=removal_generation, current_state=removal_state,
         )
-        removal = fleet_registry.remove_device_records(device_id)
+        retirement = CONTROL_PLANE.retire_enrolled_device(
+            device_id,
+            reason_code=payload.reason or "confirmed_stale_device_cleanup",
+            assessment_revision=str(current_assessment.get("assessment_revision") or ""),
+            awareness_revision=int(current_assessment.get("awareness_revision") or 0),
+            requested_by=(payload.requested_by or "authenticated_operator").strip() or "authenticated_operator",
+        )
+        registry_device = retirement.get("device") if isinstance(retirement.get("device"), dict) else {}
+        removal = {
+            "status": "removed",
+            "device_id": device_id,
+            "device_name": registry_device.get("device_name") or removal_state.get("name") or device_id,
+            "role": registry_device.get("role") or removal_state.get("role") or "compute",
+            "previous_status": removal_state.get("status") or "offline",
+            "previous_connection": removal_state.get("connection") or "offline",
+            "removed_device_records": 0,
+            "removed_from": [],
+            "removal_receipt": retirement.get("receipt") or {},
+            "updated_at": deps.now_utc_iso(),
+        }
+        try:
+            compatibility_cleanup = fleet_registry.remove_device_records(device_id)
+        except fleet_registry.DeviceRemovalError:
+            removal["compatibility_cleanup"] = {
+                "status": "deferred",
+                "summary": "Legacy device-list cleanup was deferred; canonical removal succeeded.",
+                "sanitized": True,
+            }
+        else:
+            removal.update(compatibility_cleanup)
+            removal["removal_receipt"] = retirement.get("receipt") or {}
+            removal["compatibility_cleanup"] = {
+                "status": "completed", "sanitized": True
+            }
+    except DeviceAwarenessError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"status": "removal_blocked", "summary": exc.detail},
+        ) from exc
     except fleet_registry.DeviceRemovalError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
 
@@ -2700,30 +2741,9 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         requested_by=requested_by,
     )
     await fleet_registry.publish_device_removed_evidence(evidence)
-    fleet_registry.append_device_lifecycle_event(
-        device_id,
-        "removal_completed",
-        reason_code="saved_record_removed",
-        summary="Saved device record removed after dependency review.",
-        status="completed",
-        occurred_at=deps.now_utc_iso(),
-        command_id=removal_generation,
-        dedupe_key=f"{device_id}:removal_completed:{removal_generation}",
-        generation_key=removal_generation,
-        current_state={
-            "node_id": device_id,
-            "name": removal.get("device_name") or device_id,
-            "role": removal.get("role") or "compute",
-            "status": "removed",
-            "connection": "removed",
-            "agent_status": "removed",
-            "supervisor_status": "unknown",
-            "agent_process_status": "unknown",
-            "protected_server_host": False,
-            "summary": "Saved device record removed after dependency review.",
-            "last_seen_at": removal.get("updated_at") or deps.now_utc_iso(),
-        },
-    )
+    # The canonical removal_completed lifecycle event, receipt and audit row were
+    # committed atomically by retire_enrolled_device(). Compatibility JSON/NATS
+    # evidence above is an export only and does not own lifecycle truth.
     CONTROL_PLANE.invalidate_domain("fleet")
 
     return {

@@ -191,7 +191,7 @@ export default function DevicesScreen() {
     || deviceInviteIsLive(latestInvite)
     || deviceRestartProgressIsLive(restartProgress)
   ));
-  const onlineDevices = devices.filter((device) => normalizeBackendState(device.status) === 'ready').length;
+  const onlineDevices = devices.filter((device) => String(device?.connection || '').toLowerCase() === 'online').length;
   const healthAttentionCurrent = Boolean(data?.health_summary?.attention_current);
   const healthAttentionCount = healthAttentionCurrent ? Number(data?.health_summary?.attention_count || 0) : 0;
   const selectedRoleLabel = roleLabel(selectedRole);
@@ -567,7 +567,6 @@ export default function DevicesScreen() {
                     <LiteButton onClick={copyInvite} tone="secondary">
                       <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy command'}
                     </LiteButton>
-                    <LiteRefreshButton scope="devices" refresh={refresh} cacheStatus={cacheStatus} error={error} refreshing={refreshing} label="Refresh devices" tone="secondary" />
                   </div>
 
                   <details className="lite-invite-details">

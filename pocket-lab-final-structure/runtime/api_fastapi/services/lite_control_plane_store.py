@@ -160,6 +160,12 @@ def _safe_text(value: Any, limit: int = 240) -> str:
     return text[:limit]
 
 
+def _normalize_device_identity(value: Any) -> str:
+    """Case- and separator-insensitive device identity used for duplicate fences."""
+    text = _safe_text(value, 160).casefold()
+    return re.sub(r"[^a-z0-9]+", "", text)[:160]
+
+
 def _sanitize_lifecycle_summary(value: Any) -> str:
     # Reuse the control-plane secret-key guard for all lifecycle copy.
     # Lifecycle evidence is intentionally compact and never carries raw payloads.
@@ -2616,24 +2622,31 @@ class ControlPlaneProjectionStore:
             )
             previous_state = _safe_text(existing.get("health_status") or "unknown", 40)
             new_state = values["health_status"]
-            transition_material = json.dumps(
-                [device_id, previous_state, new_state, values["health_revision"]],
-                separators=(",", ":"),
+            previous_reasons = str(existing.get("reason_codes_json") or "[]")
+            transition_changed = (
+                not existing
+                or previous_state != new_state
+                or previous_reasons != values["reason_codes_json"]
             )
-            event_id = hashlib.sha256(transition_material.encode("utf-8")).hexdigest()[:24]
-            conn.execute(
-                """
-                INSERT OR IGNORE INTO device_health_transitions(
-                    event_id, device_id, previous_state, new_state, reason_codes_json,
-                    summary, occurred_at, occurred_at_epoch_ms, source_revision
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    event_id, device_id, previous_state, new_state,
-                    values["reason_codes_json"], values["summary"], evaluated_at,
-                    values["last_evaluated_at_epoch_ms"], values["source_revision"],
-                ),
-            )
+            if transition_changed:
+                transition_material = json.dumps(
+                    [device_id, previous_state, new_state, values["reason_codes_json"]],
+                    separators=(",", ":"),
+                )
+                event_id = hashlib.sha256(transition_material.encode("utf-8")).hexdigest()[:24]
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO device_health_transitions(
+                        event_id, device_id, previous_state, new_state, reason_codes_json,
+                        summary, occurred_at, occurred_at_epoch_ms, source_revision
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        event_id, device_id, previous_state, new_state,
+                        values["reason_codes_json"], values["summary"], evaluated_at,
+                        values["last_evaluated_at_epoch_ms"], values["source_revision"],
+                    ),
+                )
 
         attention_changed = False
         active_ids: list[str] = []
@@ -3000,6 +3013,402 @@ class ControlPlaneProjectionStore:
             wait_ms=wait_ms, query_ms=query_ms,
         )
 
+    def _upsert_enrollment_registry_row(
+        self,
+        conn: sqlite3.Connection,
+        *,
+        device_id: str,
+        item: dict[str, Any],
+        updated_at: str,
+        updated_at_epoch_ms: int,
+    ) -> bool:
+        """Persist durable enrollment independently from transient runtime discovery."""
+        existing_row = conn.execute(
+            "SELECT * FROM device_enrollment_registry WHERE device_id=?", (device_id,)
+        ).fetchone()
+        existing = dict(existing_row) if existing_row else {}
+        # Explicit retirement/removal is terminal. A later stale heartbeat cannot
+        # silently reactivate an identity; repair/rejoin must be explicit.
+        if existing and str(existing.get("removal_status") or "active") != "active":
+            return False
+
+        device_name = _safe_text(
+            item.get("name") or item.get("hostname") or existing.get("device_name") or device_id,
+            120,
+        )
+        normalized_name = _normalize_device_identity(device_name)
+        duplicate = None
+        if normalized_name:
+            # Compare with the same case/separator-insensitive normalization used
+            # by onboarding. The bounded fallback also protects rows backfilled
+            # by older schema revisions whose stored normalized_name may be less
+            # strict than the current canonical normalizer.
+            candidates = conn.execute(
+                """SELECT device_id,device_name,normalized_name,removal_status
+                   FROM device_enrollment_registry WHERE device_id<>?
+                   ORDER BY CASE removal_status WHEN 'active' THEN 0 ELSE 1 END, device_id
+                   LIMIT 256""",
+                (device_id,),
+            ).fetchall()
+            duplicate = next(
+                (
+                    row for row in candidates
+                    if normalized_name in {
+                        _normalize_device_identity(row["device_name"]),
+                        _normalize_device_identity(row["device_id"]),
+                        _normalize_device_identity(row["normalized_name"]),
+                    }
+                ),
+                None,
+            )
+        if duplicate is not None:
+            raise ValueError(
+                "Device identity conflicts with an existing or retired enrollment; use explicit repair/rejoin."
+            )
+        role = _safe_text(item.get("role") or existing.get("role") or "compute", 40)
+        protected = bool(
+            item.get("protected_server_host")
+            or item.get("is_current")
+            or role in {"server_host", "server", "control_plane", "control_plane_host"}
+        )
+        connection = _safe_text(
+            item.get("connection") or item.get("connection_state") or item.get("status")
+            or existing.get("last_known_state") or "offline",
+            32,
+        ).lower()
+        if connection in {"healthy", "active", "ready"}:
+            connection = "online"
+        last_seen = _safe_text(
+            item.get("last_seen_at") or item.get("last_seen") or existing.get("last_seen_at"), 64
+        ) or None
+        last_seen_epoch = _epoch_ms(last_seen) if last_seen else int(existing.get("last_seen_epoch_ms") or 0)
+        if last_seen_epoch < int(existing.get("last_seen_epoch_ms") or 0):
+            last_seen = existing.get("last_seen_at")
+            last_seen_epoch = int(existing.get("last_seen_epoch_ms") or 0)
+        enrolled_at = _safe_text(
+            existing.get("enrolled_at") or item.get("enrolled_at") or item.get("invite_accepted_at")
+            or last_seen or updated_at,
+            64,
+        )
+        enrollment_status = _safe_text(
+            item.get("enrollment_status") or existing.get("enrollment_status") or "enrolled", 40
+        )
+        if enrollment_status in {"", "not_enrolled", "pending"} and connection == "online":
+            enrollment_status = "enrolled"
+        identity_payload = item.get("identity") if isinstance(item.get("identity"), dict) else {}
+        identity_status = _safe_text(
+            item.get("identity_status") or identity_payload.get("status"), 40
+        ) or _safe_text(existing.get("identity_status") or "pending", 40)
+        canonical_identity = {
+            "device_id": device_id,
+            "device_name": device_name,
+            "normalized_name": normalized_name,
+            "role": role,
+            "protected_server_host": protected,
+        }
+        last_valid = {
+            key: item.get(key)
+            for key in (
+                # Health/resource telemetry is retained in canonical current tables.
+                # Do not copy raw/volatile health or storage samples into the
+                # enrollment hash, otherwise same-bucket telemetry drift creates
+                # false fleet projection revisions.
+                "system_profile", "capabilities", "capability_labels",
+                "capability_states", "dependencies",
+                "agent_version", "supervisor_version", "agent_process_status",
+                "supervisor_status", "last_supervisor_at", "remote_access_status",
+                "removal_assessment", "enrollment", "identity", "last_seen_state",
+                "role_label", "source",
+            )
+            if item.get(key) not in (None, "", [], {})
+        }
+        previous_valid = self._json_value(existing.get("last_valid_state_json"), {})
+        if isinstance(previous_valid, dict):
+            last_valid = {**previous_valid, **last_valid}
+        material = {
+            "identity": canonical_identity,
+            "enrollment_status": enrollment_status,
+            "identity_status": identity_status,
+            "last_known_state": connection,
+            "last_seen_at": last_seen,
+            "last_seen_epoch_ms": last_seen_epoch,
+            "last_valid_state": last_valid,
+        }
+        canonical_hash = hashlib.sha256(
+            json.dumps(material, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+        ).hexdigest()
+        if existing and str(existing.get("canonical_hash") or "") == canonical_hash:
+            return False
+        revision = int(existing.get("registry_revision") or 0) + 1
+        conn.execute(
+            """
+            INSERT INTO device_enrollment_registry(
+                device_id, device_name, normalized_name, role, enrollment_status,
+                identity_status, enrolled_at, enrolled_at_epoch_ms, last_known_state,
+                last_seen_at, last_seen_epoch_ms, retired_at, retired_at_epoch_ms,
+                removal_status, removal_reason, protected_server_host,
+                canonical_identity_json, last_valid_state_json, registry_revision,
+                canonical_hash, updated_at, updated_at_epoch_ms
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0, 'active', '', ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(device_id) DO UPDATE SET
+                device_name=excluded.device_name, normalized_name=excluded.normalized_name,
+                role=excluded.role, enrollment_status=excluded.enrollment_status,
+                identity_status=excluded.identity_status, last_known_state=excluded.last_known_state,
+                last_seen_at=excluded.last_seen_at, last_seen_epoch_ms=excluded.last_seen_epoch_ms,
+                protected_server_host=excluded.protected_server_host,
+                canonical_identity_json=excluded.canonical_identity_json,
+                last_valid_state_json=excluded.last_valid_state_json,
+                registry_revision=excluded.registry_revision, canonical_hash=excluded.canonical_hash,
+                updated_at=excluded.updated_at, updated_at_epoch_ms=excluded.updated_at_epoch_ms
+            WHERE device_enrollment_registry.removal_status='active'
+              AND device_enrollment_registry.canonical_hash IS NOT excluded.canonical_hash
+            """,
+            (
+                device_id, device_name, normalized_name, role, enrollment_status, identity_status,
+                enrolled_at, _epoch_ms(enrolled_at), connection, last_seen, last_seen_epoch,
+                int(protected), _safe_json(canonical_identity, max_bytes=16384),
+                _safe_json(last_valid, max_bytes=65536), revision, canonical_hash,
+                updated_at, updated_at_epoch_ms,
+            ),
+        )
+        return _changes(conn)
+
+    def durable_enrolled_devices(self, *, include_removed: bool = False) -> list[dict[str, Any]]:
+        """Return the canonical enrollment set with optional current runtime state."""
+        self.initialize()
+        clause = "" if include_removed else "WHERE registry.removal_status='active'"
+        rows, _, _ = self._read(lambda conn: [dict(row) for row in conn.execute(
+            f"""
+            SELECT registry.*, current.device_name AS current_device_name,
+                   current.role AS current_role, current.ui_state, current.connection_state,
+                   current.agent_status, current.supervisor_status, current.pm2_status,
+                   current.remote_access_ready, current.source_heartbeat_id,
+                   current.latest_command_id, current.latest_invite_id, current.latest_recovery_id,
+                   current.source_revision, current.last_seen_at AS current_last_seen_at,
+                   current.last_seen_epoch_ms AS current_last_seen_epoch_ms,
+                   current.updated_at AS current_updated_at, current.summary AS current_summary
+            FROM device_enrollment_registry registry
+            LEFT JOIN device_current_state current ON current.device_id=registry.device_id
+            {clause}
+            ORDER BY registry.protected_server_host DESC, registry.device_name, registry.device_id
+            LIMIT 256
+            """
+        )])
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            saved = self._json_value(row.get("last_valid_state_json"), {})
+            item = dict(saved) if isinstance(saved, dict) else {}
+            current_present = row.get("current_updated_at") not in (None, "")
+            connection = _safe_text(
+                row.get("connection_state") if current_present else row.get("last_known_state"), 32
+            ).lower() or "offline"
+            if not current_present and row.get("removal_status") == "active":
+                connection = "offline"
+            if connection in {"healthy", "active", "ready"}:
+                connection = "online"
+            status = _safe_text(row.get("ui_state") if current_present else connection.title(), 40)
+            item.update({
+                "id": row.get("device_id"), "node_id": row.get("device_id"),
+                "name": row.get("current_device_name") or row.get("device_name") or row.get("device_id"),
+                "role": row.get("current_role") or row.get("role") or "compute",
+                "status": status or connection, "connection": connection,
+                "agent_status": row.get("agent_status") or ("offline" if connection != "online" else "unknown"),
+                "supervisor_status": row.get("supervisor_status") or "unknown",
+                "agent_process_status": row.get("pm2_status") or "unknown",
+                "remote_access": bool(row.get("remote_access_ready")) if current_present else False,
+                "is_current": bool(row.get("protected_server_host")),
+                "protected_server_host": bool(row.get("protected_server_host")),
+                "last_seen": row.get("current_last_seen_at") or row.get("last_seen_at"),
+                "last_seen_at": row.get("current_last_seen_at") or row.get("last_seen_at"),
+                "updated_at": row.get("current_updated_at") or row.get("updated_at"),
+                "summary": row.get("current_summary") or (
+                    "Device is offline. Showing the latest saved state."
+                    if connection != "online" else "Device is connected."
+                ),
+                "enrollment_status": row.get("enrollment_status") or "enrolled",
+                "identity_status": row.get("identity_status") or "pending",
+                "enrolled_at": row.get("enrolled_at"),
+                "removal_status": row.get("removal_status") or "active",
+                "enrollment_registry_revision": int(row.get("registry_revision") or 0),
+                "enrollment_canonical_hash": row.get("canonical_hash") or "",
+                "projection_only": not current_present,
+            })
+            if connection != "online" and row.get("removal_status") == "active":
+                item["status"] = "Offline"
+                item["staleness_state"] = "stale"
+                item["command_delivery_status"] = "undeliverable"
+                item["review_recommended"] = True
+                item["remote_access"] = False
+            result.append(item)
+        return result
+
+    def enrollment_source_revision(self) -> int:
+        self.initialize()
+        row, _, _ = self._read(lambda conn: conn.execute(
+            "SELECT COUNT(*) AS count, COALESCE(MAX(registry_revision),0) AS revision, "
+            "COALESCE(MAX(updated_at_epoch_ms),0) AS updated FROM device_enrollment_registry"
+        ).fetchone())
+        material = f"{int(row['count'] or 0)}:{int(row['revision'] or 0)}:{int(row['updated'] or 0)}"
+        return int.from_bytes(hashlib.sha256(material.encode("utf-8")).digest()[:8], "big")
+
+    def find_enrollment_identity_conflict(self, value: str) -> dict[str, Any] | None:
+        self.initialize()
+        normalized = _normalize_device_identity(value)
+        raw = _safe_text(value, 120)
+        if not normalized and not raw:
+            return None
+        rows, _, _ = self._read(lambda conn: list(conn.execute(
+            """SELECT * FROM device_enrollment_registry
+               ORDER BY protected_server_host DESC,
+                        CASE removal_status WHEN 'active' THEN 0 ELSE 1 END,
+                        device_id LIMIT 256"""
+        )))
+        row = next(
+            (
+                candidate for candidate in rows
+                if raw == str(candidate["device_id"] or "")
+                or normalized in {
+                    _normalize_device_identity(candidate["device_id"]),
+                    _normalize_device_identity(candidate["device_name"]),
+                    _normalize_device_identity(candidate["normalized_name"]),
+                }
+            ),
+            None,
+        )
+        if not row:
+            return None
+        data = dict(row)
+        return {
+            "node_id": data.get("device_id"), "id": data.get("device_id"),
+            "name": data.get("device_name"), "role": data.get("role"),
+            "is_current": bool(data.get("protected_server_host")),
+            "protected_server_host": bool(data.get("protected_server_host")),
+            "source": "durable_enrollment_registry",
+            "removal_status": data.get("removal_status"),
+        }
+
+    def retire_enrolled_device(
+        self,
+        device_id: str,
+        *,
+        reason_code: str,
+        assessment_revision: str,
+        awareness_revision: int,
+        requested_by: str = "authenticated_operator",
+    ) -> dict[str, Any]:
+        """Explicit transactional retirement; historical rows are retained."""
+        self.initialize()
+        normalized = _safe_text(device_id, 120)
+        now = _utc_now()
+        now_epoch = _epoch_ms(now)
+        receipt_id = hashlib.sha256(
+            f"{normalized}:{assessment_revision}:{awareness_revision}:{now}".encode("utf-8")
+        ).hexdigest()[:32]
+
+        def write(conn: sqlite3.Connection) -> dict[str, Any]:
+            registry_row = conn.execute(
+                "SELECT * FROM device_enrollment_registry WHERE device_id=?", (normalized,)
+            ).fetchone()
+            if not registry_row:
+                raise DeviceAwarenessError(404, "Device was not found in durable enrollment.")
+            registry = dict(registry_row)
+            if bool(registry.get("protected_server_host")):
+                raise DeviceAwarenessError(409, "Current protected server host cannot be removed.")
+            if str(registry.get("removal_status") or "active") != "active":
+                prior = conn.execute(
+                    "SELECT * FROM device_removal_receipts WHERE device_id=? ORDER BY created_at_epoch_ms DESC LIMIT 1",
+                    (normalized,),
+                ).fetchone()
+                return {"changed": False, "receipt": dict(prior) if prior else {}, "device": registry}
+            current = conn.execute(
+                "SELECT connection_state FROM device_current_state WHERE device_id=?", (normalized,)
+            ).fetchone()
+            if current and str(current["connection_state"] or "").lower() == "online":
+                raise DeviceAwarenessError(409, "Healthy online devices cannot be removed casually.")
+            conn.execute(
+                """UPDATE device_enrollment_registry SET
+                       enrollment_status='retired', last_known_state='removed',
+                       retired_at=?, retired_at_epoch_ms=?, removal_status='removed',
+                       removal_reason=?, registry_revision=registry_revision+1,
+                       canonical_hash='', updated_at=?, updated_at_epoch_ms=?
+                   WHERE device_id=? AND removal_status='active'""",
+                (now, now_epoch, _safe_text(reason_code, 80), now, now_epoch, normalized),
+            )
+            conn.execute(
+                """UPDATE device_current_state SET
+                       ui_state='Removed', connection_state='removed', agent_status='removed',
+                       remote_access_ready=0, source_revision=source_revision+1,
+                       updated_at=?, updated_at_epoch_ms=?,
+                       summary='Device was explicitly removed after dependency review.'
+                   WHERE device_id=?""",
+                (now, now_epoch, normalized),
+            )
+            summary = "Device was explicitly removed after dependency review; historical records were retained."
+            lifecycle_event_id = f"device-removal-{receipt_id}"
+            lifecycle_dedupe = f"{normalized}:removal_completed:{receipt_id}"
+            current_after = conn.execute(
+                "SELECT source_revision FROM device_current_state WHERE device_id=?", (normalized,)
+            ).fetchone()
+            state_revision = int(current_after["source_revision"] or 1) if current_after else 1
+            lifecycle_payload = _safe_json({
+                "event_type": "removal_completed",
+                "reason_code": _safe_text(reason_code, 80),
+                "status": "completed",
+                "summary": summary,
+            }, max_bytes=2048)
+            payload_checksum = hashlib.sha256(lifecycle_payload.encode("utf-8")).hexdigest()
+            database_instance = _database_instance()
+            conn.execute(
+                """INSERT OR IGNORE INTO device_lifecycle_events(
+                       event_id,device_id,event_type,reason_code,status,occurred_at,
+                       occurred_at_epoch_ms,summary,sanitized,source_revision,dedupe_key,
+                       generation_key,state_revision,database_instance,payload_checksum
+                   ) VALUES (?,?,'removal_completed',?,'completed',?,?,?,1,?,?,?,?,?,?)""",
+                (lifecycle_event_id, normalized, _safe_text(reason_code, 80), now, now_epoch,
+                 summary, state_revision, lifecycle_dedupe, receipt_id, state_revision,
+                 database_instance, payload_checksum),
+            )
+            transaction_id = hashlib.sha256(
+                f"{database_instance}:{normalized}:{lifecycle_dedupe}".encode("utf-8")
+            ).hexdigest()[:32]
+            conn.execute(
+                """INSERT OR IGNORE INTO device_lifecycle_transactions(
+                       transaction_id,device_id,event_id,event_type,dedupe_key,generation_key,
+                       state_revision,database_instance,status,export_status,occurred_at,
+                       occurred_at_epoch_ms,created_at,updated_at,summary
+                   ) VALUES (?,?,?,'removal_completed',?,?,?,?,'committed','exported',?,?,?,?,?)""",
+                (transaction_id, normalized, lifecycle_event_id, lifecycle_dedupe, receipt_id,
+                 state_revision, database_instance, now, now_epoch, now, now, summary),
+            )
+            conn.execute(
+                """INSERT INTO device_removal_receipts(
+                       receipt_id, device_id, device_name, removal_status, reason_code,
+                       assessment_revision, awareness_revision, requested_by, created_at,
+                       created_at_epoch_ms, summary, sanitized
+                   ) VALUES (?, ?, ?, 'removed', ?, ?, ?, ?, ?, ?, ?, 1)""",
+                (receipt_id, normalized, registry.get("device_name") or normalized,
+                 _safe_text(reason_code, 80), _safe_text(assessment_revision, 80),
+                 max(0, int(awareness_revision)), _safe_text(requested_by, 80),
+                 now, now_epoch, summary),
+            )
+            conn.execute(
+                """INSERT OR IGNORE INTO audit_evidence_index(
+                       event_type, entity_type, entity_id, operation_id, status, evidence_ref,
+                       created_at, created_at_epoch_ms, summary
+                   ) VALUES ('device.removed', 'device', ?, ?, 'succeeded', ?, ?, ?, ?)""",
+                (normalized, receipt_id, f"sqlite:device_removal_receipts:{receipt_id}", now, now_epoch, summary),
+            )
+            _bump_revision(conn, "audit", now, changed_ids=[normalized], reason="audit_state_changed", projection_version=2)
+            revision = _bump_revision(conn, "fleet", now, changed_ids=[normalized], reason="device_enrollment_changed", projection_version=3)
+            receipt = dict(conn.execute(
+                "SELECT * FROM device_removal_receipts WHERE receipt_id=?", (receipt_id,)
+            ).fetchone())
+            return {"changed": True, "revision": revision, "receipt": receipt, "device": registry}
+
+        result = SQLITE_WRITER.submit("fleet.enrollment.retire", write, deadline_seconds=1.5)
+        self.invalidate_domain("fleet")
+        return dict(result)
+
     def device_profile_map(self) -> dict[str, dict[str, Any]]:
         self.initialize()
         rows, _, _ = self._read(
@@ -3156,12 +3565,16 @@ class ControlPlaneProjectionStore:
                 "Device responsibilities changed. Review removal impact again.",
                 assessment=current,
             )
-        if expected_awareness_revision is None or int(expected_awareness_revision) != int(current.get("awareness_revision") or 0):
+        if expected_awareness_revision is None:
             raise DeviceAwarenessError(
                 409,
                 "Device responsibilities changed. Review removal impact again.",
                 assessment=current,
             )
+        # The assessment revision is the semantic concurrency fence. Awareness
+        # revisions may advance while recomputing the same dependency set, so a
+        # numerically newer awareness revision must not create a false removal
+        # conflict when the canonical assessment revision is unchanged.
         return current
 
     def update_device_consumer_model(
@@ -3444,6 +3857,20 @@ class ControlPlaneProjectionStore:
                 """,
                 values,
             )
+            registry_state = {
+                **state,
+                "id": device_id,
+                "node_id": device_id,
+                "name": values[1],
+                "role": role,
+                "connection": connection_state,
+                "last_seen_at": last_seen,
+                "protected_server_host": protected,
+            }
+            self._upsert_enrollment_registry_row(
+                conn, device_id=device_id, item=registry_state,
+                updated_at=_utc_now(), updated_at_epoch_ms=now_epoch,
+            )
             conn.execute(
                 """
                 INSERT INTO device_lifecycle_events(
@@ -3547,36 +3974,20 @@ class ControlPlaneProjectionStore:
             return
 
     def fleet_projection_snapshot(self) -> dict[str, Any] | None:
-        """Build a bounded fleet response from prepared SQLite rows only."""
+        """Build the active fleet from durable enrollment plus optional runtime state."""
         self.initialize()
-        rows = self.fleet_rows()
-        if not rows:
+        enrolled = self.durable_enrolled_devices()
+        if not enrolled:
             return None
         profiles = self.device_profile_map()
         awareness = self.device_awareness_map()
         health = self.device_health_map()
         devices: list[dict[str, Any]] = []
-        for row in rows[:256]:
-            if str(row.get("connection_state") or "").lower() == "removed":
+        for base in enrolled[:256]:
+            device_id = str(base.get("id") or base.get("node_id") or "")
+            if not device_id:
                 continue
-            device_id = str(row.get("device_id") or "")
-            item: dict[str, Any] = {
-                "id": device_id, "node_id": device_id,
-                "name": row.get("device_name") or device_id,
-                "role": row.get("role") or "compute",
-                "status": row.get("ui_state") or row.get("connection_state") or "unknown",
-                "connection": row.get("connection_state") or "unknown",
-                "agent_status": row.get("agent_status") or "unknown",
-                "supervisor_status": row.get("supervisor_status") or "unknown",
-                "agent_process_status": row.get("pm2_status") or "unknown",
-                "remote_access": bool(row.get("remote_access_ready")),
-                "is_current": bool(row.get("protected_server_host")),
-                "protected_server_host": bool(row.get("protected_server_host")),
-                "last_seen_at": row.get("last_seen_at"),
-                "updated_at": row.get("updated_at"),
-                "summary": row.get("summary") or "Showing the latest saved device state.",
-                "projection_only": True,
-            }
+            item = dict(base)
             if device_id in profiles:
                 item.update(profiles[device_id])
             if device_id in awareness:
@@ -3584,19 +3995,43 @@ class ControlPlaneProjectionStore:
             if device_id in health:
                 item["proactive_health"] = health[device_id]
                 item["health_status"] = health[device_id].get("status")
+            if str(item.get("connection") or "").lower() != "online" and not item.get("protected_server_host"):
+                item.update({
+                    "status": "Offline",
+                    "connection": "offline",
+                    "staleness_state": "stale",
+                    "command_delivery_status": "undeliverable",
+                    "review_recommended": True,
+                    "remote_access": False,
+                    "summary": item.get("summary") or "Device is offline. Showing the latest saved state.",
+                })
+                last_seen_state = item.get("last_seen_state") if isinstance(item.get("last_seen_state"), dict) else {}
+                item["last_seen_state"] = {
+                    **last_seen_state,
+                    "last_seen_at": item.get("last_seen_at") or item.get("last_seen"),
+                    "staleness_state": "stale",
+                    "review_recommended": True,
+                }
+            item["projection_only"] = True
             devices.append(item)
+        if not devices:
+            return None
         updated_at = max(str(item.get("updated_at") or item.get("last_seen_at") or "") for item in devices)
+        online = sum(1 for item in devices if str(item.get("connection") or "").lower() == "online")
         return {
-            "status": "degraded",
-            "summary": "Showing the latest saved device state while Pocket Lab refreshes details.",
+            "status": "healthy" if online else "degraded",
+            "summary": (
+                "Devices are connected." if online
+                else "Showing enrolled devices from saved state while they are offline."
+            ),
             "devices": devices, "items": devices, "count": len(devices),
-            "online": sum(1 for item in devices if str(item.get("connection")) == "online"),
-            "offline": sum(1 for item in devices if str(item.get("connection")) == "offline"),
+            "online": online, "offline": max(0, len(devices) - online),
             "remote_access": {
                 "ready": any(bool(item.get("remote_access")) for item in devices),
                 "status": "ready" if any(bool(item.get("remote_access")) for item in devices) else "not_ready",
             },
             "updated_at": updated_at, "projection_only": True, "sanitized": True,
+            "enrollment_owner": "sqlite:device_enrollment_registry",
         }
 
     def project_fleet(self, payload: dict[str, Any]) -> int:
@@ -3774,6 +4209,10 @@ class ControlPlaneProjectionStore:
                     health_changed_ids.add(device_id)
                 changed = health_changed or changed
                 awareness_reasons.update(health_reasons)
+                changed = self._upsert_enrollment_registry_row(
+                    conn, device_id=device_id, item=item, updated_at=now,
+                    updated_at_epoch_ms=now_epoch,
+                ) or changed
 
             # E1: absence from one collector snapshot must not cascade-delete
             # the SQLite-authoritative lifecycle journal. Preserve non-server
@@ -3796,6 +4235,18 @@ class ControlPlaneProjectionStore:
                     (now, now_epoch, *tuple(device_ids)),
                 )
                 changed = _changes(conn) or changed
+                conn.execute(
+                    f"""
+                    UPDATE device_enrollment_registry
+                    SET last_known_state='offline', registry_revision=registry_revision+1,
+                        canonical_hash='', updated_at=?, updated_at_epoch_ms=?
+                    WHERE device_id NOT IN ({placeholders})
+                      AND protected_server_host=0 AND removal_status='active'
+                      AND last_known_state<>'offline'
+                    """,
+                    (now, now_epoch, *tuple(device_ids)),
+                )
+                changed = _changes(conn) or changed
             else:
                 conn.execute(
                     """
@@ -3806,6 +4257,17 @@ class ControlPlaneProjectionStore:
                         summary=CASE WHEN connection_state='removed' THEN summary
                                      ELSE 'Device is offline. Showing the latest saved state.' END
                     WHERE protected_server_host=0 AND connection_state<>'removed'
+                    """,
+                    (now, now_epoch),
+                )
+                changed = _changes(conn) or changed
+                conn.execute(
+                    """
+                    UPDATE device_enrollment_registry
+                    SET last_known_state='offline', registry_revision=registry_revision+1,
+                        canonical_hash='', updated_at=?, updated_at_epoch_ms=?
+                    WHERE protected_server_host=0 AND removal_status='active'
+                      AND last_known_state<>'offline'
                     """,
                     (now, now_epoch),
                 )
@@ -4203,14 +4665,16 @@ class ControlPlaneProjectionStore:
                 if entity_type == "device":
                     target_known = bool(conn.execute(
                         """
-                        SELECT 1 FROM device_current_state WHERE device_id=?
+                        SELECT 1 FROM device_enrollment_registry
+                            WHERE device_id=? AND removal_status='active'
+                        UNION ALL SELECT 1 FROM device_current_state WHERE device_id=?
                         UNION ALL SELECT 1 FROM device_identity_guards WHERE device_id=?
                         UNION ALL SELECT 1 FROM device_heartbeats WHERE device_id=?
                         UNION ALL SELECT 1 FROM device_invite_lifecycle
                             WHERE device_id=? AND status IN ('pending','accepted')
                         LIMIT 1
                         """,
-                        (entity_id, entity_id, entity_id, entity_id),
+                        (entity_id, entity_id, entity_id, entity_id, entity_id),
                     ).fetchone())
                     state = conn.execute(
                         "SELECT connection_state,ui_state,last_seen_epoch_ms FROM device_current_state WHERE device_id=?",

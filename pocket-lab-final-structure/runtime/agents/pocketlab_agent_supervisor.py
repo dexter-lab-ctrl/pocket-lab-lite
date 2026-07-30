@@ -217,11 +217,17 @@ class LiteAgentSupervisor:
         process_status = self._agent_process_status()
         repair_attempted = False
         repaired = False
+        repair_started_at = ""
+        repair_completed_at = ""
+        repair_reason_code = ""
         supervisor_status = "healthy"
 
         if process_status in {"missing", "stopped", "errored", "error", "stopping", "stopped"}:
             repair_attempted = True
+            repair_started_at = _now_iso()
+            repair_reason_code = "agent_process_not_running"
             repaired = self._start_or_restart_agent(process_status)
+            repair_completed_at = _now_iso()
             supervisor_status = "repairing" if repaired else "degraded"
             if repaired:
                 process_status = self._agent_process_status()
@@ -250,6 +256,10 @@ class LiteAgentSupervisor:
             "supervisor_status": supervisor_status,
             "supervisor_version": SUPERVISOR_VERSION,
             "repair_attempted": repair_attempted,
+            "repair_reason_code": repair_reason_code,
+            "repair_result": "recovered" if repaired else "failed" if repair_attempted else "not_needed",
+            "repair_started_at": repair_started_at or None,
+            "repair_completed_at": repair_completed_at or None,
             "repair_count": self.repair_count,
             "last_repair_at": self.last_repair_at,
             "nats_reachable": nats_reachable,
@@ -271,7 +281,8 @@ class LiteAgentSupervisor:
                         "node_id": self.node_id,
                         "name": self.node_name,
                         "supervisor_status": "degraded",
-                        "error": str(exc),
+                        "error_type": type(exc).__name__,
+                        "summary": "Supervisor check failed. Details were kept private.",
                         "checked_at": _now_iso(),
                     })
                 except Exception:

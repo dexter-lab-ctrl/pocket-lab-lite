@@ -985,7 +985,9 @@ def test_lite_add_device_rejects_duplicate_active_invite_name(tmp_path, monkeypa
     assert second.status_code == 409
     detail = second.json()
     assert detail["status"] == "duplicate_device"
-    assert detail["existing_device"]["source"] in {"fleet_agents.json", "fleet_invites.json"}
+    assert detail["existing_device"]["source"] in {
+        "device_enrollment_registry", "fleet_agents.json", "fleet_invites.json"
+    }
 
 
 def test_lite_add_device_rejects_server_host_name_reuse(tmp_path):

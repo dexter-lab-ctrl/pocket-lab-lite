@@ -731,6 +731,56 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
     role_info = lite_invites.role_metadata("server_host")
     remote_access = remote_access or lite_remote_access_status()
     ready = bool(remote_access.get("ready"))
+
+    # Read only worker-prepared, sanitized local process projections here. Fresh
+    # supervisor/agent events are merged later and take precedence; no remote
+    # device ever receives local PM2 evidence.
+    process_snapshot: dict[str, Any] = {}
+    agent_snapshot: dict[str, Any] = {}
+    supervisor_snapshot: dict[str, Any] = {}
+    try:
+        from . import lite_phase3b_projections as phase3b
+
+        process_snapshot = phase3b.snapshot("system.processes") or {}
+        agent_snapshot = phase3b.snapshot("system.agent") or {}
+        supervisor_snapshot = phase3b.snapshot("system.supervisor") or {}
+    except Exception:
+        pass
+
+    process_items = {
+        str(item.get("name") or ""): item
+        for item in (process_snapshot.get("items") or [])
+        if isinstance(item, dict)
+    }
+    agent_item = next(
+        (
+            item for item in (agent_snapshot.get("items") or [])
+            if isinstance(item, dict) and normalize_node_id(item.get("device_id")) == node_id
+        ),
+        {},
+    )
+    supervisor_item = next(
+        (
+            item for item in (supervisor_snapshot.get("items") or [])
+            if isinstance(item, dict) and normalize_node_id(item.get("device_id")) == node_id
+        ),
+        {},
+    )
+    agent_pm2 = _public_text(
+        (process_items.get("pocket-node-agent") or {}).get("status"), 32
+    ) or _public_text(agent_item.get("process_status"), 32) or "unknown"
+    supervisor_pm2 = _public_text(
+        (process_items.get("pocketlab-core-supervisor") or {}).get("status"), 32
+    ) or "unknown"
+    projected_supervisor = _public_text(supervisor_item.get("supervisor_status"), 32)
+    supervisor_status = projected_supervisor or supervisor_pm2 or "unknown"
+    process_updated_at = _public_text(
+        process_snapshot.get("updated_at")
+        or supervisor_snapshot.get("updated_at")
+        or agent_snapshot.get("updated_at"),
+        64,
+    ) or None
+
     return {
         "id": node_id,
         "name": name,
@@ -764,6 +814,23 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "last_system_profile_at": now,
         "last_nats_connected_at": now,
         "last_tailnet_ready_at": now if ready else None,
+        "agent_process_status": agent_pm2,
+        "agent_process_status_source": (
+            "protected_host_pm2_projection" if agent_pm2 != "unknown" else "unknown"
+        ),
+        "agent_process_status_freshness": "saved" if process_updated_at else "unknown",
+        "supervisor_status": supervisor_status,
+        "supervisor_status_source": (
+            "protected_host_supervisor_projection"
+            if projected_supervisor
+            else "protected_host_pm2_projection"
+            if supervisor_pm2 != "unknown"
+            else "unknown"
+        ),
+        "supervisor_status_freshness": "saved" if process_updated_at else "unknown",
+        "last_supervisor_heartbeat_at": process_updated_at,
+        "recovery_available": supervisor_status in {"healthy", "online", "available", "repairing", "recovering"}
+            or supervisor_pm2 == "online",
         "is_current": True,
         "source": "lite-server",
     }
@@ -935,6 +1002,48 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
             "capability_schema_version": item.get("capability_schema_version"),
         },
     }
+    runtime_agent_version = _public_text(item.get("agent_version"), 80)
+    runtime_supervisor_version = _public_text(item.get("supervisor_version"), 80)
+    profile = result.get("system_profile") if isinstance(result.get("system_profile"), dict) else {}
+    profile_agent_version = _public_text(profile.get("agent_version"), 80)
+    profile_supervisor_version = _public_text(profile.get("supervisor_version"), 80)
+    profile_is_fresh = str(profile.get("freshness") or "").lower() == "current"
+    runtime_is_fresh = result.get("connection") == "online"
+
+    def select_version(runtime_value: str, profile_value: str, runtime_source: str) -> tuple[str, str, str]:
+        if runtime_value and runtime_is_fresh:
+            return runtime_value, runtime_source, "fresh"
+        if profile_value and profile_is_fresh:
+            return profile_value, "system_profile", "fresh"
+        if runtime_value:
+            return runtime_value, "last_valid_runtime", "saved"
+        if profile_value:
+            return profile_value, "last_valid_system_profile", "saved"
+        return "unknown", "unknown", "unknown"
+
+    selected_agent_version, agent_source, agent_freshness = select_version(
+        runtime_agent_version, profile_agent_version, "runtime_heartbeat"
+    )
+    selected_supervisor_version, supervisor_source, supervisor_freshness = select_version(
+        runtime_supervisor_version, profile_supervisor_version, "runtime_supervisor_event"
+    )
+    result.update({
+        "agent_version": selected_agent_version,
+        "agent_version_source": agent_source,
+        "agent_version_freshness": agent_freshness,
+        "supervisor_version": selected_supervisor_version,
+        "supervisor_version_source": supervisor_source,
+        "supervisor_version_freshness": supervisor_freshness,
+        "system_profile": {
+            **profile,
+            "agent_version": selected_agent_version,
+            "supervisor_version": selected_supervisor_version,
+        },
+    })
+    if item.get("last_supervisor_at") or item.get("last_supervisor_heartbeat_at"):
+        result["supervisor_status_source"] = "runtime_supervisor_event"
+        result["supervisor_status_freshness"] = "fresh" if runtime_is_fresh else "saved"
+
     passthrough = (
         "invite_created_at", "invite_accepted_at", "enrolled_at",
         "first_heartbeat_at", "first_supervisor_heartbeat_at", "first_ready_at",
@@ -1001,7 +1110,14 @@ def lite_security() -> dict[str, Any]:
 
 
 def lite_fleet() -> dict[str, Any]:
-    nodes = lite_invites.enrolled_invite_nodes()
+    # Durable enrollment is the canonical fleet owner. Live agents, heartbeats
+    # and invites enrich it but cannot remove an enrolled identity by omission.
+    # Let a registry read failure abort this refresh so the prepared-read layer
+    # keeps serving the last valid fleet instead of rebuilding from discovery only.
+    from .lite_control_plane_store import CONTROL_PLANE
+
+    nodes = CONTROL_PLANE.durable_enrolled_devices()
+    nodes.extend(lite_invites.enrolled_invite_nodes())
     nodes.extend(merged_fleet_nodes())
     active_invite_keys = lite_invites.active_invite_device_keys()
     remote_access = lite_remote_access_status()
