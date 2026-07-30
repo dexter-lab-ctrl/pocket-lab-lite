@@ -339,6 +339,101 @@ def _compact_action_projection(value: Any) -> dict[str, Any]:
     return _strip_empty_projection_value(result) or {}
 
 
+def _essential_action_projection(value: Any) -> dict[str, Any]:
+    """Return the smallest safe action contract needed by prepared reads.
+
+    Optional narrative/history fields may be reconstructed from definitions or
+    fetched from dedicated history endpoints. Capability and terminal-state truth
+    must never be dropped merely because a projection grows.
+    """
+    if not isinstance(value, dict):
+        return {}
+    result = {
+        key: value.get(key)
+        for key in (
+            "id", "app_id", "label", "category", "category_label", "summary",
+            "status", "enabled", "disabled_reason", "reason", "risk",
+            "confirmation_required", "destructive", "execution_owner",
+            "last_result", "first_ran_at", "last_ran_at", "run_count",
+            "operation_id", "receipt_id", "url",
+        )
+        if value.get(key) is not None
+    }
+    historical = value.get("historical_result")
+    if isinstance(historical, dict):
+        compact_history = {
+            key: historical.get(key)
+            for key in ("status", "summary", "completed_at", "backend_only")
+            if historical.get(key) is not None
+        }
+        if compact_history:
+            result["historical_result"] = compact_history
+    progress = value.get("progress")
+    if isinstance(progress, dict):
+        compact_progress = {
+            key: progress.get(key)
+            for key in ("phase", "step", "percent", "indeterminate", "bounded")
+            if progress.get(key) is not None
+        }
+        if compact_progress:
+            result["progress"] = compact_progress
+    return _strip_empty_projection_value(result) or {}
+
+
+def _bounded_app_subprojection_json(name: str, payload: Any, *, max_bytes: int) -> str:
+    """Encode a subprojection without all-or-nothing data loss.
+
+    Operations first retain the rich bounded payload. If it exceeds the row
+    budget, optional details are removed per action while preserving every action
+    capability and terminal status. A final overflow is rejected instead of
+    silently replacing valid state with an empty object.
+    """
+    compact = _compact_app_subprojection(name, payload)
+    encoded = _safe_json(compact, max_bytes=max_bytes)
+    if encoded != "{}" or not compact:
+        return encoded
+    if name == "operations":
+        actions = compact.get("actions") if isinstance(compact.get("actions"), dict) else {}
+        essential = {
+            key: compact.get(key)
+            for key in ("status", "summary", "operation_running", "current_action", "last_safety_check", "last_repair")
+            if compact.get(key) not in (None, {}, [], "")
+        }
+        essential["actions"] = {
+            action_id: action
+            for action_id, value in list(actions.items())[:24]
+            if (action := _essential_action_projection(value))
+        }
+        encoded = _safe_json(essential, max_bytes=max_bytes)
+        if encoded != "{}" or not essential:
+            return encoded
+        minimal_actions: dict[str, dict[str, Any]] = {}
+        for action_id, value in list(actions.items())[:24]:
+            if not isinstance(value, dict):
+                continue
+            minimal = {
+                "id": _safe_text(value.get("id") or action_id, 80),
+                "label": _safe_text(value.get("label") or action_id, 96),
+                "status": _safe_text(value.get("status"), 32),
+                "enabled": bool(value.get("enabled")),
+            }
+            for key in ("summary", "disabled_reason", "reason"):
+                text = _safe_text(value.get(key), 120)
+                if text:
+                    minimal[key] = text
+            minimal_actions[str(action_id)[:80]] = minimal
+        minimal_payload = {
+            "status": _safe_text(compact.get("status"), 32) or "healthy",
+            "operation_running": bool(compact.get("operation_running")),
+            "actions": minimal_actions,
+            "projection_compacted": True,
+        }
+        encoded = _safe_json(minimal_payload, max_bytes=max_bytes)
+        if encoded != "{}":
+            return encoded
+    raise ValueError(f"{name} App subprojection exceeds its bounded SQLite budget")
+
+
 def _compact_app_subprojection(name: str, payload: Any) -> dict[str, Any]:
     value = payload if isinstance(payload, dict) else {}
     if name == "catalog":
@@ -1795,6 +1890,42 @@ class ControlPlaneProjectionStore:
         payload["canonical_hash"] = _projection_hash({k: v for k, v in payload.items() if k not in {"projection_age_ms", "database_instance"}})
         return payload if any(payload.get(key) for key in ("catalog", "media", "operations", "update", "backup", "security", "backup_targets")) else None
 
+    def ensure_app_projection_parent(
+        self, app_id: str, *, app_name: str | None = None
+    ) -> bool:
+        """Idempotently create the minimal parent row for worker-owned subprojections."""
+        self.initialize()
+        normalized = _safe_text(app_id, 120)
+        if not normalized:
+            return False
+        name = _safe_text(app_name, 160) or normalized.replace("-", " ").title()
+        now = _utc_now()
+        now_epoch = _epoch_ms(now)
+
+        def write(conn: sqlite3.Connection) -> bool:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO app_current_state(
+                    app_id, app_name, status, installed, health_state,
+                    source_revision, updated_at, updated_at_epoch_ms, summary,
+                    catalog_state_json, media_state_json, operation_state_json,
+                    update_state_json, backup_profile_json, security_profile_json,
+                    backup_targets_json, projection_version
+                ) VALUES (?, ?, 'checking', 0, 'unknown', 0, ?, ?, ?,
+                          '{}', '{}', '{}', '{}', '{}', '{}', '{}', 2)
+                """,
+                (normalized, name, now, now_epoch, "App projection is warming."),
+            )
+            row = conn.execute(
+                "SELECT 1 FROM app_current_state WHERE app_id=?", (normalized,)
+            ).fetchone()
+            return bool(row)
+
+        try:
+            return bool(SQLITE_WRITER.submit("apps.ensure_parent", write, deadline_seconds=1.0))
+        except (SQLiteWriteRejected, SQLiteWriteDeadlineExceeded):
+            return False
+
     def update_app_subprojections(
         self, app_id: str, projections: dict[str, dict[str, Any]]
     ) -> int:
@@ -1803,7 +1934,7 @@ class ControlPlaneProjectionStore:
         columns = {
             "catalog": ("catalog_state_json", 8192),
             "media": ("media_state_json", 4096),
-            "operations": ("operation_state_json", 8192),
+            "operations": ("operation_state_json", 24576),
             "update": ("update_state_json", 4096),
             "backup": ("backup_profile_json", 4096),
             "security": ("security_profile_json", 2048),
@@ -1818,8 +1949,15 @@ class ControlPlaneProjectionStore:
             if column_budget is None or not isinstance(payload, dict):
                 continue
             column, budget = column_budget
-            compact = _compact_app_subprojection(str(name), payload)
-            encoded[column] = (_safe_json(compact, max_bytes=budget), str(name))
+            try:
+                serialized = _bounded_app_subprojection_json(str(name), payload, max_bytes=budget)
+            except ValueError:
+                _LOGGER.warning(
+                    "pocketlab.app_projection.oversize_rejected app_id=%s projection=%s budget_bytes=%s",
+                    normalized, str(name), budget,
+                )
+                continue
+            encoded[column] = (serialized, str(name))
         if not encoded:
             return self.domain_revision("apps")
         now = _utc_now()
