@@ -1927,7 +1927,11 @@ class ControlPlaneProjectionStore:
             return False
 
     def update_app_subprojections(
-        self, app_id: str, projections: dict[str, dict[str, Any]]
+        self,
+        app_id: str,
+        projections: dict[str, dict[str, Any]],
+        *,
+        owner: str = "aggregate",
     ) -> int:
         """Persist compact App subprojections in one change-only transaction."""
         self.initialize()
@@ -1941,11 +1945,22 @@ class ControlPlaneProjectionStore:
             "backup_targets": ("backup_targets_json", 2048),
         }
         normalized = _safe_text(app_id, 120)
+        normalized_owner = _safe_text(owner, 64).lower() or "aggregate"
         if not normalized or not isinstance(projections, dict):
             return self.domain_revision("apps")
         encoded: dict[str, tuple[str, str]] = {}
         for name, payload in projections.items():
-            column_budget = columns.get(str(name or "").strip().lower())
+            projection_name = str(name or "").strip().lower()
+            if projection_name == "operations" and normalized_owner != "canonical_actions":
+                incoming_actions = payload.get("actions") if isinstance(payload, dict) else {}
+                _LOGGER.warning(
+                    "pocketlab.app_operations_write_rejected app_id=%s reason=noncanonical_writer owner=%s incoming_action_count=%s",
+                    normalized,
+                    normalized_owner,
+                    len(incoming_actions) if isinstance(incoming_actions, dict) else 0,
+                )
+                continue
+            column_budget = columns.get(projection_name)
             if column_budget is None or not isinstance(payload, dict):
                 continue
             column, budget = column_budget
@@ -2012,7 +2027,13 @@ class ControlPlaneProjectionStore:
     def update_app_subprojection(
         self, app_id: str, projection: str, payload: dict[str, Any]
     ) -> int:
-        return self.update_app_subprojections(app_id, {projection: payload})
+        normalized_projection = str(projection or "").strip().lower()
+        owner = "canonical_actions" if normalized_projection == "operations" else "aggregate"
+        return self.update_app_subprojections(
+            app_id,
+            {normalized_projection: payload},
+            owner=owner,
+        )
 
     def _app_projection_rows(self) -> list[dict[str, Any]]:
         def read(conn: sqlite3.Connection) -> list[dict[str, Any]]:
@@ -4514,12 +4535,18 @@ class ControlPlaneProjectionStore:
                 catalog_json = _safe_json(_compact_app_subprojection("catalog", canonical_catalog), max_bytes=8192)
 
                 current = lifecycle_source.get("current_action") if isinstance(lifecycle_source.get("current_action"), dict) else {}
-                operations_source = dict(lifecycle_source.get("operations") or {}) if isinstance(lifecycle_source.get("operations"), dict) else {}
-                existing_actions = operations_source.get("actions") if isinstance(operations_source.get("actions"), dict) else {}
+                # operation_state_json is owned by the canonical App action projector.
+                # Legacy lifecycle aggregation may seed an empty row during bootstrap only;
+                # once any action contract exists it is preserved verbatim and cannot be downgraded.
+                existing_operations = self._decode_projection_json(existing.get("operation_state_json"))
+                existing_operation_actions = existing_operations.get("actions") if isinstance(existing_operations.get("actions"), dict) else {}
+                lifecycle_operations = dict(lifecycle_source.get("operations") or {}) if isinstance(lifecycle_source.get("operations"), dict) else {}
+                lifecycle_operation_actions = lifecycle_operations.get("actions") if isinstance(lifecycle_operations.get("actions"), dict) else {}
                 if lifecycle_actions:
-                    operations_source["actions"] = {**existing_actions, **lifecycle_actions}
-                if current and not operations_source.get("current_action"):
-                    operations_source["current_action"] = current
+                    lifecycle_operations["actions"] = {**lifecycle_operation_actions, **lifecycle_actions}
+                if current and not lifecycle_operations.get("current_action"):
+                    lifecycle_operations["current_action"] = current
+                operations_source = existing_operations if existing_operation_actions else lifecycle_operations
                 projection_sources = {
                     "media_state_json": lifecycle_source.get("media"),
                     "operation_state_json": operations_source if operations_source else None,
@@ -4530,7 +4557,7 @@ class ControlPlaneProjectionStore:
                 }
                 names = {
                     "media_state_json": ("media", 4096),
-                    "operation_state_json": ("operations", 8192),
+                    "operation_state_json": ("operations", 24576),
                     "update_state_json": ("update", 4096),
                     "backup_profile_json": ("backup", 4096),
                     "security_profile_json": ("security", 2048),
@@ -4611,7 +4638,7 @@ class ControlPlaneProjectionStore:
 
                 lifecycle_actions_for_history = lifecycle_actions
                 if isinstance(operations_source.get("actions"), dict):
-                    lifecycle_actions_for_history = {**lifecycle_actions, **operations_source["actions"]}
+                    lifecycle_actions_for_history = {**operations_source["actions"], **lifecycle_actions}
                 valid_lifecycle_statuses = {
                     "queued", "published", "received", "accepted", "running", "working", "in_progress",
                     "succeeded", "completed", "failed", "undeliverable", "timed_out", "error",

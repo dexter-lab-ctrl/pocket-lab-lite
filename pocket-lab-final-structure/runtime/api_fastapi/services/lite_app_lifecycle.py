@@ -837,6 +837,11 @@ def _run_saved_stage_reconciliation(
                     name,
                 )
                 continue
+            if name == "operations":
+                _LOGGER.info(
+                    "pocketlab.app_projection.reconcile_skip projection=operations owner=canonical_actions"
+                )
+                continue
             if name in {"backup", "security"}:
                 projections[name] = {"kind": "raw", "payload": value}
             else:

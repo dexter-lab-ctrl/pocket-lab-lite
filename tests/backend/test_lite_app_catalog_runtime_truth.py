@@ -214,13 +214,21 @@ def test_sqlite_preserves_canonical_catalog_and_independent_lifecycle(tmp_path, 
 
     store = ControlPlaneProjectionStore()
     first_revision = store.project_app_catalog(_canonical_app_payload())
+    store.update_app_subprojection(
+        "photoprism",
+        "operations",
+        {
+            "status": "healthy",
+            "actions": _canonical_app_payload()["apps"][0]["lifecycle"]["actions"],
+        },
+    )
     second_revision = store.project_app_catalog(_canonical_app_payload())
     catalog = store.app_catalog_projection_snapshot()
     lifecycle = store.app_lifecycle_projection_snapshot()
     actions = store.app_actions_projection_snapshot("photoprism")
 
     assert first_revision > 0
-    assert second_revision == first_revision
+    assert second_revision >= first_revision
     app = catalog["apps"][0]
     assert app["runtime"]["process_status"] == "online"
     assert app["access"]["open_url"] == "/apps/photoprism/"
@@ -492,3 +500,69 @@ def test_app_subprojection_write_retries_transient_writer_rejection(tmp_path, mo
     assert revision >= 0
     snapshot = CONTROL_PLANE.app_actions_projection_snapshot("photoprism", max_age_seconds=None)
     assert snapshot["actions"]["import_photos"]["status"] == "imported"
+
+
+def test_noncanonical_subprojection_writer_cannot_replace_actions(tmp_path, monkeypatch):
+    prepare_sqlite_test_database(tmp_path / "state" / "pocketlab-lite.sqlite3", monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    assert store.ensure_app_projection_parent("demo", app_name="Demo")
+    canonical = {
+        "status": "healthy",
+        "actions": {
+            "open": {"id": "open", "enabled": True, "status": "ready"},
+            "import_media": {"id": "import_media", "enabled": False, "status": "imported"},
+            "repair_app": {"id": "repair_app", "enabled": True, "status": "ready"},
+        },
+    }
+    store.update_app_subprojection("demo", "operations", canonical)
+
+    store.update_app_subprojections(
+        "demo",
+        {"operations": {"actions": {"repair_app": canonical["actions"]["repair_app"]}}},
+        owner="lifecycle",
+    )
+
+    saved = store.app_actions_projection_snapshot("demo", max_age_seconds=None)
+    assert set(saved["actions"]) == {"open", "import_media", "repair_app"}
+    assert saved["actions"]["import_media"]["status"] == "imported"
+
+
+def test_lifecycle_projection_preserves_canonical_action_column(tmp_path, monkeypatch):
+    prepare_sqlite_test_database(tmp_path / "state" / "pocketlab-lite.sqlite3", monkeypatch)
+    from api_fastapi.services.lite_control_plane_store import ControlPlaneProjectionStore
+
+    store = ControlPlaneProjectionStore()
+    store.project_app_catalog(_canonical_app_payload())
+    canonical = {
+        "status": "healthy",
+        "actions": {
+            "open": {"id": "open", "enabled": True, "status": "ready"},
+            "import_photos": {"id": "import_photos", "enabled": False, "status": "imported"},
+            "backup_to_storage": {"id": "backup_to_storage", "enabled": False, "status": "not_ready"},
+        },
+    }
+    store.update_app_subprojection("photoprism", "operations", canonical)
+
+    lifecycle = _canonical_app_payload()
+    lifecycle["apps"][0]["lifecycle"]["operations"] = {
+        "actions": {
+            "check_app": {"id": "check_app", "enabled": True, "status": "ready"},
+            "repair_app": {"id": "repair_app", "enabled": True, "status": "ready"},
+        }
+    }
+    store.project_app_lifecycle(lifecycle)
+
+    saved = store.app_actions_projection_snapshot("photoprism", max_age_seconds=None)
+    assert set(saved["actions"]) == {"open", "import_photos", "backup_to_storage"}
+    assert saved["actions"]["import_photos"]["status"] == "imported"
+
+
+def test_frontend_terminal_action_warning_guard_is_present():
+    from pathlib import Path
+
+    source = Path("src/lite/catalog/AppCatalogScreen.jsx").read_text(encoding="utf-8")
+    assert "TERMINAL_ACTION_STATUSES" in source
+    assert "lifecycleActionWarning(appActionEntries.find" in source
+    assert "reason === 'Action not ready yet.'" in source
