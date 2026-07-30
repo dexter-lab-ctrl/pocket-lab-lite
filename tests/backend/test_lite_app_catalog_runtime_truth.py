@@ -380,3 +380,49 @@ def test_app_catalog_ui_fences_installed_and_imported_terminal_states():
     assert "if (normalized === 'installed') return { status: 'ready', label: 'Installed' };" in details_source
     assert "label: 'Runtime note'" not in details_source
     assert "No completed runs have been recorded yet." in details_source
+
+
+def test_action_projection_preserves_all_actions_with_bounded_sqlite_encoding(tmp_path, monkeypatch):
+    prepare_sqlite_test_database(tmp_path / "state" / "pocketlab-lite.sqlite3", monkeypatch)
+    from api_fastapi.services import lite_app_actions, lite_core_projections
+    from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+
+    payload = lite_app_actions.app_actions("photoprism")
+    assert "import_photos" in payload["actions"]
+    assert len(payload["actions"]) >= 10
+
+    revision = lite_core_projections.project_app_actions_payload("photoprism", payload)
+    snapshot = CONTROL_PLANE.app_actions_projection_snapshot("photoprism")
+
+    assert revision >= 0
+    assert snapshot is not None
+    assert set(payload["actions"]).issubset(snapshot["actions"])
+    assert snapshot["actions"]["import_photos"]["status"] == payload["actions"]["import_photos"]["status"]
+    assert snapshot["actions"]["install_app"]["enabled"] == payload["actions"]["install_app"]["enabled"]
+
+
+def test_oversize_action_projection_degrades_to_essential_contract_not_empty():
+    from api_fastapi.services.lite_control_plane_store import _bounded_app_subprojection_json
+
+    actions = {
+        f"action_{index}": {
+            "id": f"action_{index}",
+            "label": f"Action {index}",
+            "enabled": index % 2 == 0,
+            "status": "ready" if index % 2 == 0 else "blocked",
+            "summary": "x" * 240,
+            "disabled_reason": "y" * 240,
+            "details": {"technical_details": ["z" * 240] * 8},
+            "troubleshooting": {"summary": "t" * 240, "available": True},
+        }
+        for index in range(20)
+    }
+    encoded = _bounded_app_subprojection_json(
+        "operations", {"status": "healthy", "actions": actions}, max_bytes=8192
+    )
+    decoded = json.loads(encoded)
+
+    assert decoded != {}
+    assert len(decoded["actions"]) == 20
+    assert decoded["actions"]["action_0"]["enabled"] is True
+    assert decoded["actions"]["action_1"]["status"] == "blocked"

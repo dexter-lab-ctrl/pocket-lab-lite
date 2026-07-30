@@ -106,10 +106,10 @@ def project_app_actions_payload(app_id: str, payload: dict[str, Any]) -> int:
     lifecycle has created app_current_state. The worker may bootstrap that row
     once; request paths remain prepared-read only.
     """
-    if CONTROL_PLANE.app_actions_projection_snapshot(app_id) is None:
-        catalog_snapshot = CONTROL_PLANE.app_catalog_projection_snapshot()
-        if catalog_snapshot is None:
-            CONTROL_PLANE.project_app_catalog(catalog_payload())
+    if not CONTROL_PLANE.ensure_app_projection_parent(
+        app_id, app_name=str(payload.get("name") or app_id)
+    ):
+        raise PreparedProjectionUnavailable("App action projection parent row is unavailable")
     revision = CONTROL_PLANE.update_app_subprojection(app_id, "operations", payload)
     committed = CONTROL_PLANE.app_actions_projection_snapshot(app_id)
     if not isinstance(committed, dict) or not committed:
