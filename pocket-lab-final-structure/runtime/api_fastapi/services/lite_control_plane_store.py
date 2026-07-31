@@ -19,6 +19,8 @@ from typing import Any, Callable, Iterable
 from .. import deps
 from ..db.connection import database_path
 from ..db.migrations import apply_migrations
+from .lite_device_recovery import guarded_recovery_contract
+
 from ..db.runtime import (
     SQLITE_READS,
     SQLITE_WRITER,
@@ -3241,6 +3243,7 @@ class ControlPlaneProjectionStore:
                 # enrollment hash, otherwise same-bucket telemetry drift creates
                 # false fleet projection revisions.
                 "capabilities", "capability_labels", "capability_states", "dependencies",
+                "restart_agent_assessment", "runtime_services",
                 "agent_version", "supervisor_version", "agent_process_status",
                 "supervisor_status", "last_supervisor_at", "remote_access_status",
                 "removal_assessment", "enrollment", "identity", "last_seen_state",
@@ -4332,6 +4335,11 @@ class ControlPlaneProjectionStore:
                     "staleness_state": "stale",
                     "review_recommended": True,
                 }
+            # Persisted recovery metadata is last-known display evidence only.
+            # Recompute authorization and service freshness from current prepared
+            # connection/supervisor truth so stale `allowed=true` can never survive
+            # an offline transition or an expired supervisor report.
+            item.update(guarded_recovery_contract(item))
             item["projection_only"] = True
             devices.append(item)
         if not devices:

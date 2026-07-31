@@ -634,3 +634,127 @@ def test_older_valid_registry_profile_does_not_replace_newer_sqlite_truth(tmp_pa
     profile = store.device_profile_map()["phone-two"]["system_profile"]
     assert profile["technical_model"] == "NEW-MODEL"
     assert profile["collected_at"] == new_at
+
+
+def test_prepared_fleet_retains_guarded_recovery_metadata(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    now = _iso()
+    store.project_fleet({
+        "status": "healthy",
+        "updated_at": now,
+        "remote_access": {"ready": True, "status": "ready"},
+        "devices": [{
+            "id": "phone-two",
+            "node_id": "phone-two",
+            "name": "Phone Two",
+            "role": "app_host",
+            "status": "Online",
+            "connection": "online",
+            "last_seen_at": now,
+            "last_heartbeat_at": now,
+            "last_supervisor_heartbeat_at": now,
+            "agent_process_status": "stopped",
+            "supervisor_status": "online",
+            "supervisor_status_freshness": "fresh",
+            "restart_agent_assessment": {
+                "allowed": True,
+                "reason_code": "allowed",
+                "summary": "Pocket Lab can request a guarded device-agent restart.",
+                "command_deliverable": True,
+                "supervisor_fresh": True,
+                "agent_state": "stopped",
+            },
+            "runtime_services": [{
+                "service_id": "node_agent",
+                "label": "Device agent",
+                "manager": "pm2",
+                "state": "stopped",
+                "reported_at": now,
+                "freshness": "fresh",
+                "restart_supported": True,
+                "restart_reason": "allowed",
+            }],
+        }],
+    })
+
+    enrolled = store.durable_enrolled_devices()
+    saved = next(item for item in enrolled if item["id"] == "phone-two")
+    assert isinstance(saved["restart_agent_assessment"], dict)
+    assert isinstance(saved["runtime_services"], list)
+
+    prepared = store.fleet_projection_snapshot()
+    assert prepared is not None
+    device = next(item for item in prepared["devices"] if item["id"] == "phone-two")
+    assert device["restart_agent_assessment"]["allowed"] is True
+    assert [item["service_id"] for item in device["runtime_services"]] == [
+        "node_agent", "agent_supervisor"
+    ]
+
+
+def test_prepared_fleet_recomputes_stale_restart_authorization_offline(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    now = _iso()
+    stale = _iso(-3600)
+    store.project_fleet({
+        "status": "degraded",
+        "updated_at": now,
+        "remote_access": {"ready": False, "status": "not_ready"},
+        "devices": [{
+            "id": "phone-two",
+            "node_id": "phone-two",
+            "name": "Phone Two",
+            "role": "app_host",
+            "status": "Offline",
+            "connection": "offline",
+            "last_seen_at": stale,
+            "last_heartbeat_at": stale,
+            "last_supervisor_heartbeat_at": stale,
+            "agent_process_status": "stopped",
+            "supervisor_status": "online",
+            "supervisor_status_freshness": "stale",
+            # Simulate stale persisted authorization from an earlier online state.
+            "restart_agent_assessment": {
+                "allowed": True,
+                "reason_code": "allowed",
+            },
+            "runtime_services": [{
+                "service_id": "node_agent",
+                "restart_supported": True,
+            }],
+        }],
+    })
+
+    prepared = store.fleet_projection_snapshot()
+    assert prepared is not None
+    device = next(item for item in prepared["devices"] if item["id"] == "phone-two")
+    assessment = device["restart_agent_assessment"]
+    assert assessment["allowed"] is False
+    assert assessment["reason_code"] == "device_unreachable"
+    assert assessment["command_deliverable"] is False
+    assert all(item["freshness"] == "stale" for item in device["runtime_services"])
+    assert all(item["restart_supported"] is False for item in device["runtime_services"])
+
+
+def test_guarded_recovery_contract_does_not_expose_arbitrary_process_data():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_device_recovery import guarded_recovery_contract
+
+    result = guarded_recovery_contract({
+        "id": "phone-two",
+        "role": "app_host",
+        "connection": "online",
+        "agent_process_status": "stopped",
+        "supervisor_status": "online",
+        "supervisor_status_freshness": "fresh",
+        "pm2_env": {"TOKEN": "never-return"},
+        "process_path": "/private/path/with/secret",
+        "runtime_services": [{"service_id": "arbitrary", "command": "rm -rf /"}],
+    })
+
+    encoded = str(result)
+    assert "never-return" not in encoded
+    assert "/private/path" not in encoded
+    assert "arbitrary" not in encoded
+    assert [item["service_id"] for item in result["runtime_services"]] == [
+        "node_agent", "agent_supervisor"
+    ]
