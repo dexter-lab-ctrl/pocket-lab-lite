@@ -8004,3 +8004,37 @@ def test_lite_n6a_safe_read_nonce_echo_marks_live_backend_responses():
     )
     assert invalid.status_code == 200
     assert "X-PocketLab-Read-Nonce" not in invalid.headers
+
+
+def test_guarded_recovery_contract_blocks_offline_joined_device():
+    from api_fastapi.services.lite_status import _guarded_recovery_contract
+
+    result = _guarded_recovery_contract({
+        "id": "secondary-phone",
+        "role": "app_host",
+        "connection": "offline",
+        "agent_process_status": "unknown",
+        "supervisor_status": "online",
+        "supervisor_status_freshness": "saved",
+        "last_supervisor_heartbeat_at": "2026-07-31T14:58:50Z",
+    })
+    assert result["restart_agent_assessment"]["allowed"] is False
+    assert result["restart_agent_assessment"]["reason_code"] == "device_unreachable"
+    assert result["runtime_services"][0]["restart_supported"] is False
+    assert result["runtime_services"][1]["freshness"] == "stale"
+
+
+def test_guarded_recovery_contract_allows_online_stopped_agent_with_fresh_supervisor():
+    from api_fastapi.services.lite_status import _guarded_recovery_contract
+
+    result = _guarded_recovery_contract({
+        "id": "secondary-phone",
+        "role": "app_host",
+        "connection": "online",
+        "agent_process_status": "stopped",
+        "supervisor_status": "online",
+        "supervisor_status_freshness": "fresh",
+    })
+    assert result["restart_agent_assessment"]["allowed"] is True
+    assert result["restart_agent_assessment"]["reason_code"] == "allowed"
+    assert result["runtime_services"][0]["restart_supported"] is True

@@ -232,11 +232,15 @@ export function deviceConnectionLabel(device) {
 }
 
 export function canRestartDeviceAgent(device) {
+  const assessment = device?.restart_agent_assessment;
+  if (assessment && typeof assessment === 'object') return assessment.allowed === true;
   const role = String(device?.role || '').toLowerCase();
+  const connection = String(device?.connection_truth?.state || device?.connection || '').toLowerCase();
+  const supervisorFreshness = String(device?.supervisor_status_freshness || '').toLowerCase();
+  const agentState = String(device?.agent_process_status || device?.agent_status || '').toLowerCase();
   if (!device?.id || role === 'server_host' || device?.is_current || device?.isCurrent) return false;
-  const connection = String(device?.connection || '').toLowerCase();
-  const status = String(device?.status || '').toLowerCase();
-  return ['offline', 'unknown', 'stopped', 'repairing'].includes(connection) || ['offline', 'degraded', 'stale', 'unhealthy', 'failed', 'agent_stopped', 'repairing', 'supervisor_repairing'].includes(status);
+  if (connection !== 'online' || supervisorFreshness !== 'fresh') return false;
+  return ['stopped', 'offline', 'errored', 'error', 'failed', 'unhealthy', 'unknown'].includes(agentState);
 }
 
 export function canRemoveDevice(device) {
