@@ -359,3 +359,78 @@ def test_command_lifecycle_active_sqlite_truth_is_included_without_registry_reco
         "status": "running",
         "source": "sqlite_command_lifecycle",
     }]
+
+
+def test_prepared_server_host_prefers_fresh_sqlite_supervisor_evidence(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    stale_at = _iso(-3600)
+    now = _iso()
+    store.project_fleet({
+        "status": "healthy",
+        "updated_at": stale_at,
+        "remote_access": {"ready": True, "status": "ready"},
+        "devices": [{
+            "id": "pocket-lab-lite-server",
+            "node_id": "pocket-lab-lite-server",
+            "name": "Pocket Lab Lite Server",
+            "role": "server_host",
+            "is_current": True,
+            "status": "healthy",
+            "connection": "online",
+            "last_seen_at": stale_at,
+            "system_profile": {
+                "technical_model": "SM-S911B",
+                "architecture": "arm64",
+                "architecture_family": "arm64",
+                "collected_at": stale_at,
+            },
+            "supervisor_status": "healthy",
+            "supervisor_version": "legacy-projection",
+            "supervisor_process_status": "online",
+            "agent_process_status": "online",
+            "supervisor_status_source": "protected_host_supervisor_projection",
+            "supervisor_status_freshness": "stale",
+            "last_supervisor_heartbeat_at": stale_at,
+            "convergence": {
+                "state": "waiting_for_details",
+                "profile_ready": True,
+                "supervisor_ready": False,
+                "last_good_projection": True,
+                "target_seconds": 45,
+            },
+            "field_freshness": {
+                "supervisor": {
+                    "reported_at": stale_at,
+                    "state": "stale",
+                    "source": "protected_host_supervisor_projection",
+                }
+            },
+        }],
+    })
+    store.record_supervisor_evidence({
+        "node_id": "pocket-lab-lite-server",
+        "evidence_schema_version": 1,
+        "supervisor_status": "healthy",
+        "supervisor_version": "1.2.0-adaptive-restart-budgets",
+        "supervisor_process_status": "online",
+        "agent_process_status": "online",
+        "nats_reachable": True,
+        "repair_result": "not_needed",
+        "checked_at": now,
+    })
+
+    prepared = store.fleet_projection_snapshot()
+    assert prepared is not None
+    server = next(item for item in prepared["devices"] if item["id"] == "pocket-lab-lite-server")
+    assert server["supervisor_status_source"] == "sqlite_supervisor_evidence"
+    assert server["supervisor_status_freshness"] == "fresh"
+    assert server["supervisor_version"] == "1.2.0-adaptive-restart-budgets"
+    assert server["last_supervisor_heartbeat_at"] == now
+    assert server["field_freshness"]["supervisor"] == {
+        "reported_at": now,
+        "state": "fresh",
+        "source": "sqlite_supervisor_evidence",
+    }
+    assert server["convergence"]["profile_ready"] is True
+    assert server["convergence"]["supervisor_ready"] is True
+    assert server["convergence"]["state"] == "ready"
