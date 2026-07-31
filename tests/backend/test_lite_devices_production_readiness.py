@@ -465,3 +465,172 @@ def test_system_profile_merge_preserves_last_good_truth_against_empty_live_fallb
     assert merged["architecture_raw"] == "arm64-v8a"
     assert merged["runtime_type"] == "termux"
     assert merged["collection_status"] == "current"
+
+
+def _fleet_payload(device: dict, *, updated_at: str | None = None) -> dict:
+    return {
+        "status": "healthy",
+        "updated_at": updated_at or _iso(),
+        "remote_access": {"ready": True, "status": "ready"},
+        "devices": [device],
+    }
+
+
+def test_project_fleet_recovers_server_profile_from_authoritative_registry(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    collected_at = _iso()
+    monkeypatch.setattr(fleet_registry, "list_commands", lambda limit=500: [])
+    monkeypatch.setattr(fleet_registry, "list_agents", lambda include_stale=True: [{
+        "node_id": "pocket-lab-lite-server",
+        "system_profile": {
+            "schema_version": 1,
+            "os_family": "android",
+            "os_name": "Android",
+            "os_version": "16",
+            "manufacturer": "samsung",
+            "technical_model": "SM-S911B",
+            "device_codename": "dm1q",
+            "architecture": "arm64",
+            "architecture_raw": "arm64-v8a",
+            "architecture_family": "arm64",
+            "android_abi": "arm64-v8a",
+            "runtime_type": "termux",
+            "termux_version": "0.118.3",
+            "python_version": "3.14.6",
+            "agent_version": "2.5.0-lite-trust-capability-awareness",
+            "profile_fingerprint": "registry-fingerprint",
+            "collection_status": "current",
+            "profile_status": "current",
+            "collected_at": collected_at,
+        },
+    }])
+
+    store.project_fleet(_fleet_payload({
+        "id": "pocket-lab-lite-server",
+        "node_id": "pocket-lab-lite-server",
+        "name": "Pocket Lab Lite Server",
+        "role": "server_host",
+        "is_current": True,
+        "status": "healthy",
+        "connection": "online",
+        "last_seen_at": collected_at,
+        "system_profile": {
+            "display_model": "Device",
+            "runtime_type": "unknown",
+            "collection_status": "unavailable",
+            "profile_status": "unavailable",
+        },
+        "system_health": {"uptime_seconds": 1000, "collected_at": collected_at},
+    }))
+
+    profile = store.device_profile_map()["pocket-lab-lite-server"]["system_profile"]
+    assert profile["technical_model"] == "SM-S911B"
+    assert profile["os_name"] == "Android"
+    assert profile["architecture_family"] == "arm64"
+    assert profile["architecture_raw"] == "arm64-v8a"
+    assert profile["runtime_type"] == "termux"
+    assert profile["profile_status"] == "current"
+
+
+def test_health_only_projection_cannot_erase_current_profile(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    monkeypatch.setattr(fleet_registry, "list_commands", lambda limit=500: [])
+    monkeypatch.setattr(fleet_registry, "list_agents", lambda include_stale=True: [])
+    first_at = _iso(-60)
+    store.project_fleet(_fleet_payload({
+        "id": "phone-two",
+        "name": "Phone Two",
+        "role": "compute",
+        "status": "online",
+        "connection": "online",
+        "last_seen_at": first_at,
+        "system_profile": {
+            "technical_model": "SM-S938B",
+            "os_name": "Android",
+            "os_version": "16",
+            "architecture": "arm64",
+            "architecture_family": "arm64",
+            "profile_fingerprint": "valid-fingerprint",
+            "profile_status": "current",
+            "collection_status": "current",
+            "collected_at": first_at,
+        },
+    }, updated_at=first_at))
+
+    store.project_fleet(_fleet_payload({
+        "id": "phone-two",
+        "name": "Phone Two",
+        "role": "compute",
+        "status": "online",
+        "connection": "online",
+        "last_seen_at": _iso(),
+        "system_profile": {
+            "runtime_type": "unknown",
+            "profile_status": "unavailable",
+            "collection_status": "unavailable",
+        },
+        "system_health": {"uptime_seconds": 2000, "collected_at": _iso()},
+    }))
+
+    result = store.device_profile_map()["phone-two"]
+    assert result["system_profile"]["technical_model"] == "SM-S938B"
+    assert result["system_profile"]["profile_status"] == "current"
+    assert result["system_health"]["uptime_seconds"] == 2000
+
+
+def test_older_valid_registry_profile_does_not_replace_newer_sqlite_truth(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    ensure_runtime_path()
+    from api_fastapi.services import fleet_registry
+
+    new_at = _iso()
+    old_at = _iso(-3600)
+    monkeypatch.setattr(fleet_registry, "list_commands", lambda limit=500: [])
+    monkeypatch.setattr(fleet_registry, "list_agents", lambda include_stale=True: [])
+    store.project_fleet(_fleet_payload({
+        "id": "phone-two",
+        "name": "Phone Two",
+        "status": "online",
+        "connection": "online",
+        "last_seen_at": new_at,
+        "system_profile": {
+            "technical_model": "NEW-MODEL",
+            "os_name": "Android",
+            "architecture": "arm64",
+            "profile_fingerprint": "new",
+            "profile_status": "current",
+            "collection_status": "current",
+            "collected_at": new_at,
+        },
+    }, updated_at=new_at))
+
+    monkeypatch.setattr(fleet_registry, "list_agents", lambda include_stale=True: [{
+        "node_id": "phone-two",
+        "system_profile": {
+            "technical_model": "OLD-MODEL",
+            "os_name": "Android",
+            "architecture": "arm64",
+            "profile_fingerprint": "old",
+            "profile_status": "current",
+            "collection_status": "current",
+            "collected_at": old_at,
+        },
+    }])
+    store.project_fleet(_fleet_payload({
+        "id": "phone-two",
+        "name": "Phone Two",
+        "status": "online",
+        "connection": "online",
+        "last_seen_at": new_at,
+        "system_profile": {},
+    }, updated_at=new_at))
+
+    profile = store.device_profile_map()["phone-two"]["system_profile"]
+    assert profile["technical_model"] == "NEW-MODEL"
+    assert profile["collected_at"] == new_at

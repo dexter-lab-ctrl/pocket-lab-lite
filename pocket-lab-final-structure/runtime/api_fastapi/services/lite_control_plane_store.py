@@ -85,6 +85,14 @@ _DEVICE_PROFILE_FIELDS = (
     "runtime_type", "termux_version", "python_version", "agent_version",
     "profile_fingerprint", "profile_status",
 )
+_DEVICE_PROFILE_IDENTITY_FIELDS = (
+    "os_family", "os_name", "os_version", "security_patch", "manufacturer",
+    "technical_model", "device_codename", "architecture", "architecture_raw",
+    "architecture_family", "android_abi", "kernel", "runtime_type",
+    "termux_version", "python_version", "agent_version",
+)
+_PROFILE_WEAK_VALUES = frozenset({"", "unknown", "unavailable", "pending", "none", "null"})
+_PROFILE_GOOD_STATUSES = frozenset({"current", "partial", "fresh", "saved"})
 _DISPLAY_MODEL_MAX_LENGTH = 80
 _DISPLAY_MODEL_UNSAFE = re.compile(
     r"(?:https?://|www\.|javascript:|data:text/html|[/\\]|<|>|\.\.|"
@@ -209,6 +217,82 @@ def _optional_float(value: Any, *, minimum: float = 0.0, maximum: float = 100_00
     except (TypeError, ValueError):
         return None
     return round(parsed, 3) if minimum <= parsed <= maximum else None
+
+
+def _profile_text_is_meaningful(field: str, value: Any) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return False
+    if field in {"runtime_type", "profile_status", "collection_status", "freshness"}:
+        return text.lower() not in _PROFILE_WEAK_VALUES
+    return True
+
+
+def _profile_quality(profile: Any) -> tuple[int, int, int]:
+    if not isinstance(profile, dict):
+        return (0, 0, 0)
+    meaningful = sum(
+        1 for field in _DEVICE_PROFILE_IDENTITY_FIELDS
+        if _profile_text_is_meaningful(field, profile.get(field))
+    )
+    status = str(profile.get("profile_status") or profile.get("collection_status") or "").strip().lower()
+    status_rank = 2 if status in {"current", "fresh"} else 1 if status in {"partial", "saved"} else 0
+    collected_at = profile.get("collected_at") or profile.get("profile_updated_at")
+    collected_epoch = _epoch_ms(collected_at) if collected_at else 0
+    return (meaningful, status_rank, collected_epoch)
+
+
+def _merge_profile_truth(projected: Any, registry: Any) -> tuple[dict[str, Any], str]:
+    """Choose canonical profile truth without allowing weak snapshots to erase identity.
+
+    This arbitration is intentionally transport-agnostic so any future collector or
+    component feeding Fleet can reuse the same profile contract.
+    """
+    projected_profile = dict(projected) if isinstance(projected, dict) else {}
+    registry_profile = dict(registry) if isinstance(registry, dict) else {}
+    projected_quality = _profile_quality(projected_profile)
+    registry_quality = _profile_quality(registry_profile)
+    if registry_quality <= (0, 0, 0):
+        return projected_profile, "projection_only"
+    if projected_quality <= (0, 0, 0):
+        merged = {**projected_profile, **registry_profile}
+        return merged, "registry_recovered"
+
+    registry_newer = registry_quality[2] >= projected_quality[2]
+    registry_stronger = registry_quality[:2] > projected_quality[:2]
+    if not (registry_newer or registry_stronger):
+        return projected_profile, "projection_newer"
+
+    merged = dict(projected_profile)
+    for key, value in registry_profile.items():
+        if value is None:
+            continue
+        if isinstance(value, str) and not _profile_text_is_meaningful(key, value):
+            continue
+        if isinstance(value, (dict, list)) and not value:
+            continue
+        merged[key] = value
+    if projected_profile.get("consumer_model_name"):
+        merged["consumer_model_name"] = projected_profile["consumer_model_name"]
+    return merged, "registry_authoritative"
+
+
+def _overlay_registry_profile(item: dict[str, Any], registry_agent: Any) -> tuple[dict[str, Any], str]:
+    if not isinstance(registry_agent, dict):
+        return item, "registry_missing"
+    registry_profile = registry_agent.get("system_profile")
+    projected_profile = item.get("system_profile")
+    merged_profile, result = _merge_profile_truth(projected_profile, registry_profile)
+    if merged_profile == (projected_profile if isinstance(projected_profile, dict) else {}):
+        return item, result
+    merged_item = dict(item)
+    merged_item["system_profile"] = merged_profile
+    registry_health = registry_agent.get("system_health")
+    if isinstance(registry_health, dict) and registry_health:
+        projected_health = item.get("system_health") if isinstance(item.get("system_health"), dict) else {}
+        merged_item["system_health"] = {**registry_health, **projected_health}
+    merged_item["profile_projection_source"] = result
+    return merged_item, result
 
 
 def validate_consumer_model_name(value: Any) -> str:
@@ -2342,10 +2426,24 @@ class ControlPlaneProjectionStore:
         if not has_profile and existing_row is None:
             return False
         existing = dict(existing_row) if existing_row else {}
-        if existing and (
+        incoming_quality = _profile_quality({
+            **incoming,
+            "collected_at": incoming.get("profile_collected_at"),
+        })
+        existing_quality = _profile_quality({
+            **existing,
+            "collected_at": existing.get("profile_collected_at"),
+        })
+        preserve_existing_profile = bool(existing) and (
             not incoming.get("profile_fingerprint")
-            or incoming["profile_collected_at_epoch_ms"] < int(existing.get("profile_collected_at_epoch_ms") or 0)
-        ):
+            or incoming_quality[:2] < existing_quality[:2]
+            or (
+                incoming_quality[:2] == existing_quality[:2]
+                and incoming["profile_collected_at_epoch_ms"]
+                < int(existing.get("profile_collected_at_epoch_ms") or 0)
+            )
+        )
+        if preserve_existing_profile:
             for field in ("profile_schema_version", *_DEVICE_PROFILE_FIELDS, "android_api_level", "profile_collected_at", "profile_collected_at_epoch_ms"):
                 incoming[field] = existing.get(field)
         if existing and incoming["health_collected_at_epoch_ms"] < int(existing.get("health_collected_at_epoch_ms") or 0):
@@ -4265,22 +4363,44 @@ class ControlPlaneProjectionStore:
         now = str(payload.get("updated_at") or _utc_now())
         now_epoch = _epoch_ms(now)
         commands: list[dict[str, Any]] = []
+        registry_agents: dict[str, dict[str, Any]] = {}
         try:
             from . import fleet_registry
 
             commands = fleet_registry.list_commands(limit=500)
-        except Exception:
-            pass
+            for agent in fleet_registry.list_agents(include_stale=True)[:512]:
+                if not isinstance(agent, dict):
+                    continue
+                agent_id = fleet_registry.normalize_node_id(
+                    str(agent.get("node_id") or agent.get("id") or "")
+                )
+                if agent_id:
+                    registry_agents[agent_id] = agent
+        except Exception as exc:
+            _LOGGER.warning(
+                "fleet_registry_snapshot_unavailable error_type=%s",
+                type(exc).__name__,
+            )
 
         def write(conn: sqlite3.Connection) -> int:
             changed = False
             awareness_reasons: set[str] = set()
             health_changed_ids: set[str] = set()
             device_ids: list[str] = []
-            for item in devices:
-                device_id = _safe_text(item.get("id") or item.get("node_id"), 120)
+            for raw_item in devices:
+                device_id = _safe_text(raw_item.get("id") or raw_item.get("node_id"), 120)
                 if not device_id:
                     continue
+                registry_key = re.sub(r"[^a-z0-9_.-]+", "-", device_id.lower()).strip("-._")
+                item, profile_projection_result = _overlay_registry_profile(
+                    raw_item, registry_agents.get(registry_key)
+                )
+                if profile_projection_result in {"registry_recovered", "registry_authoritative"}:
+                    _LOGGER.info(
+                        "device_profile_projection node_id=%s result=%s",
+                        device_id,
+                        profile_projection_result,
+                    )
                 device_ids.append(device_id)
                 protected = bool(item.get("role") == "server_host" or item.get("is_current"))
                 last_seen = str(item.get("last_seen_at") or item.get("last_seen") or now)
