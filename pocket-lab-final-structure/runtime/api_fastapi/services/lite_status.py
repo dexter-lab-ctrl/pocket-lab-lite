@@ -91,6 +91,22 @@ def _public_system_profile(value: Any) -> dict[str, Any]:
     return profile
 
 
+
+
+def _merge_system_profile_truth(projected: Any, live: Any) -> dict[str, Any]:
+    """Merge profile sources without allowing empty/unavailable live fallbacks to erase last-good truth."""
+    projected_profile = projected if isinstance(projected, dict) else {}
+    live_profile = live if isinstance(live, dict) else {}
+    merged = dict(projected_profile)
+    for key, value in live_profile.items():
+        if value in (None, "", [], {}):
+            continue
+        if key in {"collection_status", "profile_status", "freshness", "runtime_type"} and str(value).lower() in {"unknown", "unavailable"}:
+            if merged.get(key) not in (None, "", "unknown", "unavailable"):
+                continue
+        merged[key] = value
+    return _public_system_profile(merged)
+
 def _uptime_label(value: Any) -> str:
     try:
         seconds = int(value)
@@ -1303,7 +1319,7 @@ def lite_fleet() -> dict[str, Any]:
             live_profile = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
             projected_profile = profile.get("system_profile") if isinstance(profile.get("system_profile"), dict) else {}
             consumer_model_name = _public_text(projected_profile.get("consumer_model_name"), 80)
-            merged_profile = _public_system_profile({**projected_profile, **live_profile})
+            merged_profile = _merge_system_profile_truth(projected_profile, live_profile)
             merged_profile["consumer_model_name"] = consumer_model_name
             merged_profile["display_model"] = (
                 consumer_model_name
