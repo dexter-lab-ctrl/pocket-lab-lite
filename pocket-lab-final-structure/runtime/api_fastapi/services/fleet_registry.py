@@ -801,14 +801,28 @@ def _upsert_agent_unlocked(
     _write(_state_path("fleet_agents.json"), payload)
 
     if is_supervisor:
-        try:
-            from .lite_control_plane_store import CONTROL_PLANE
+        from .lite_control_plane_store import CONTROL_PLANE
 
-            CONTROL_PLANE.record_supervisor_evidence({**data, "node_id": node_id})
-        except Exception:
-            # The sanitized JSON registry remains a last-good fallback; a failed
-            # SQLite evidence write must not block heartbeat ingestion.
-            pass
+        try:
+            evidence_result = CONTROL_PLANE.record_supervisor_evidence(
+                {**data, "node_id": node_id}
+            )
+            merged["supervisor_evidence_persisted"] = True
+            merged["supervisor_evidence_changed"] = bool(
+                evidence_result.get("changed")
+            )
+            merged.pop("supervisor_evidence_error_type", None)
+        except Exception as exc:
+            # Preserve last-good JSON truth, but never fail silently. Expose only
+            # a bounded error class so operators can distinguish a transport
+            # success from a SQLite persistence failure without leaking paths,
+            # SQL text, payloads, credentials, or exception messages.
+            merged["supervisor_evidence_persisted"] = False
+            merged["supervisor_evidence_error_type"] = type(exc).__name__[:80]
+            agents[node_id] = merged
+            payload["updated_at"] = now
+            _write(_state_path("fleet_agents.json"), payload)
+            raise
 
     if is_invited and previous_status not in {"invited", "pending"}:
         append_device_lifecycle_event(

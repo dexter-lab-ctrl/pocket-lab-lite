@@ -151,3 +151,50 @@ def test_transport_and_history_contracts_are_bounded_and_truthful():
     assert "await nc.drain()" not in supervisor
     assert "MAX_NATS_BACKOFF_SECONDS" in supervisor
     assert "Math.max(rows.length" in virtual_list
+
+
+def test_nats_fanout_restores_transport_subject_for_external_agent_envelopes():
+    root = Path(__file__).resolve().parents[2]
+    source = (
+        root
+        / "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
+    ).read_text(encoding="utf-8")
+    assert 'event.setdefault("subject", str(getattr(msg, "subject", "") or ""))' in source
+    assert 'event.setdefault("type", str(event.get("event_type") or ""))' in source
+    assert 'event.setdefault("id", str(event.get("event_id") or ""))' in source
+
+
+def test_device_merge_uses_freshest_runtime_timestamps():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_status import _merge_lite_device
+
+    merged = _merge_lite_device(
+        {
+            "id": "phone-two",
+            "status": "online",
+            "last_seen_at": "2026-06-23T12:58:33Z",
+            "last_heartbeat_at": "2026-06-23T12:58:33Z",
+            "last_capabilities_at": "2026-06-23T12:58:33Z",
+        },
+        {
+            "id": "phone-two",
+            "status": "online",
+            "last_seen_at": "2026-07-31T09:56:02Z",
+            "last_heartbeat_at": "2026-07-31T09:56:02Z",
+            "last_capabilities_at": "2026-07-31T09:56:02Z",
+        },
+    )
+    assert merged["last_seen_at"] == "2026-07-31T09:56:02Z"
+    assert merged["last_heartbeat_at"] == "2026-07-31T09:56:02Z"
+    assert merged["last_capabilities_at"] == "2026-07-31T09:56:02Z"
+
+
+def test_supervisor_persistence_failures_are_not_silently_swallowed():
+    root = Path(__file__).resolve().parents[2]
+    source = (
+        root
+        / "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py"
+    ).read_text(encoding="utf-8")
+    assert 'merged["supervisor_evidence_persisted"] = False' in source
+    assert 'merged["supervisor_evidence_error_type"] = type(exc).__name__[:80]' in source
+    assert "raise\n" in source
