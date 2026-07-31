@@ -758,3 +758,63 @@ def test_devices_model_picker_mobile_layout_contract():
     assert 'env(safe-area-inset-bottom)' in styles
     assert '-webkit-overflow-scrolling: touch;' in styles
     assert '@media (max-height: 620px) and (max-width: 640px)' in styles
+
+
+def test_android_profile_collection_survives_minimal_pm2_environment(monkeypatch):
+    module = _import_profile_module()
+    values = {
+        ("getprop", "ro.build.version.release"): "16",
+        ("getprop", "ro.build.version.sdk"): "36",
+        ("getprop", "ro.build.version.security_patch"): "2026-07-05",
+        ("getprop", "ro.product.manufacturer"): "samsung",
+        ("getprop", "ro.product.model"): "SM-S911B",
+        ("getprop", "ro.product.device"): "dm1q",
+        ("getprop", "ro.product.cpu.abi"): "arm64-v8a",
+        ("uname", "-m"): "aarch64",
+        ("uname", "-r"): "6.6.98-android15",
+        ("termux-info",): "TERMUX_VERSION=0.118.3",
+    }
+
+    def runner(command):
+        return {"status": "available", "value": values[tuple(command)], "failure_code": ""}
+
+    real_exists = module.os.path.exists
+    monkeypatch.setattr(
+        module.os.path,
+        "exists",
+        lambda value: True if value == "/system/bin/getprop" else real_exists(value),
+    )
+    monkeypatch.setattr(module.os.path, "isdir", lambda value: value == "/data/data/com.termux/files/usr")
+    profile = module.collect_system_profile(
+        agent_version="2.5.0",
+        command_runner=runner,
+        environ={"HOME": "/data/data/com.termux/files/home"},
+    )
+
+    assert profile["runtime_type"] == "termux"
+    assert profile["os_name"] == "Android"
+    assert profile["os_version"] == "16"
+    assert profile["technical_model"] == "SM-S911B"
+    assert profile["architecture_raw"] == "arm64-v8a"
+    assert profile["architecture_family"] == "arm64"
+    assert profile["collection_status"] == "current"
+
+
+def test_agent_profile_collection_failure_publishes_sanitized_evidence(monkeypatch, capsys):
+    _import_profile_module()
+    import pocketlab_node_agent as agent_module
+
+    monkeypatch.setattr(
+        agent_module,
+        "collect_system_profile",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("secret path should not escape")),
+    )
+    agent = agent_module.PocketLabNodeAgent()
+    profile = agent.refresh_system_profile(force=True)
+    captured = capsys.readouterr()
+
+    assert profile["collection_status"] == "unavailable"
+    assert profile["collection_error_type"] == "RuntimeError"
+    assert profile["profile_fingerprint"]
+    assert "secret path should not escape" not in captured.err
+    assert "error_type=RuntimeError" in captured.err
