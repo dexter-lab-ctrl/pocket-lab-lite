@@ -494,6 +494,12 @@ def test_lite_fleet_defaults_to_server_host_only_when_no_remote_devices(monkeypa
     assert device["role_label"] == "Server Host"
     assert device["status"] == "healthy"
     assert device["last_seen"]
+    assert device["restart_agent_assessment"]["allowed"] is False
+    assert device["restart_agent_assessment"]["reason_code"] == "server_host_protected"
+    assert [service["service_id"] for service in device["runtime_services"]] == [
+        "node_agent",
+        "agent_supervisor",
+    ]
 
 
 def test_lite_fleet_filters_dummy_and_deduplicates_invited_devices(monkeypatch):
@@ -676,6 +682,10 @@ def test_lite_fleet_stale_agent_renders_offline_connection(tmp_path, monkeypatch
     payload = response.json()
     device = next(item for item in payload["devices"] if item["id"] == "stale-phone")
     assert device["connection"] == "offline"
+    assert device["restart_agent_assessment"]["allowed"] is False
+    assert device["restart_agent_assessment"]["reason_code"] == "device_unreachable"
+    assert device["runtime_services"][0]["restart_supported"] is False
+    assert device["runtime_services"][1]["freshness"] == "stale"
 
 
 def test_lite_restart_agent_endpoint_queues_command(tmp_path, monkeypatch):
