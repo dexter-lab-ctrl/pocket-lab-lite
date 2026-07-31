@@ -369,6 +369,8 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
   const capabilities = capabilityRows(device);
   const capabilitySummary = deviceCapabilitySummary(device);
+  const runtimeServices = Array.isArray(device?.runtime_services) ? device.runtime_services : [];
+  const restartAssessment = device?.restart_agent_assessment || {};
   const dependencies = device?.dependencies || {};
   const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
@@ -611,6 +613,24 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
           </ul>
         </section>
 
+        <section className="lite-device-awareness-section" aria-label="Runtime services">
+          <span>Services</span>
+          <strong>{runtimeServices.length ? `${runtimeServices.length} reported` : 'Not reported'}</strong>
+          {runtimeServices.length ? (
+            <ul className="lite-device-capability-list">
+              {runtimeServices.map((service) => (
+                <li key={service.service_id}>
+                  <span>{service.label || titleCase(service.service_id)}</span>
+                  <strong className={`is-${String(service.freshness || 'unknown').toLowerCase()}`}>
+                    {String(service.freshness || '').toLowerCase() === 'stale' ? `Last reported ${titleCase(service.state)}` : titleCase(service.state)}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          ) : <p>Service status will appear after the next supervisor report.</p>}
+          {!restartAssessment.allowed ? <p>{restartAssessment.summary || 'Restart actions are unavailable until the device reports a safe recovery state.'}</p> : null}
+        </section>
+
         <section className="lite-device-awareness-section" aria-label="Device dependencies">
           <span>Dependencies</span>
           <strong>{Number(dependencies.hosted_app_count || 0) + Number(dependencies.backup_set_count || 0)} responsibilities</strong>
@@ -649,7 +669,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             backend_only: true,
             summary: 'Device events and troubleshooting records stay backend-owned and protected.',
           }}
-          next_step={deviceAttention(device).length ? 'Use Restart agent only when Pocket Lab shows it is safe, or check the device locally.' : 'No action is needed right now.'}
+          next_step={deviceAttention(device).length ? (restartAssessment.allowed ? 'Restart the device agent through Pocket Lab.' : restartAssessment.summary || 'Check power, network, Tailscale, and the local supervisor on the device.') : 'No action is needed right now.'}
           technicalDetails={technicalRows(device)}
           history={{
             title: 'Device history',

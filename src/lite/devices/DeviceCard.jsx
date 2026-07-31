@@ -151,7 +151,7 @@ function DeviceCard({
         <div>
           <span>System</span>
           <strong>{device?.system_profile?.display_model || device?.system_profile?.technical_model || 'Not reported'}</strong>
-          <small>{[[device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' '), runtimeLabel].filter(Boolean).join(' · ') || 'System profile pending'}</small>
+          <small>{[device?.system_profile?.manufacturer ? String(device.system_profile.manufacturer).replace(/\b\w/g, (letter) => letter.toUpperCase()) : '', [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' '), runtimeLabel].filter(Boolean).join(' · ') || 'System profile pending'}</small>
         </div>
         <div>
           <Cpu className="h-4 w-4" />
@@ -168,7 +168,7 @@ function DeviceCard({
       <div className="lite-device-card-meta">
         <span><strong>{stalenessLabel(device)}</strong></span>
         <span>Last seen <strong>{formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}</strong></span>
-        <span><strong>{capabilitySummary.verified}</strong> verified capabilities</span>
+        <span><strong>{capabilitySummary.label}</strong></span>
       </div>
 
       {proactiveHealth ? (
