@@ -20,6 +20,7 @@ from . import (
     lite_invites,
     lite_security as lite_security_service,
 )
+from .lite_device_recovery import guarded_recovery_contract
 
 LITE_MODE = "lite"
 
@@ -1181,68 +1182,8 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _guarded_recovery_contract(device: dict[str, Any]) -> dict[str, Any]:
-    connection = str(device.get("connection") or "unknown").strip().lower()
-    role = str(device.get("role") or "").strip().lower()
-    is_server = role == "server_host" or bool(device.get("is_current"))
-    agent_state = str(device.get("agent_process_status") or device.get("agent_status") or "unknown").strip().lower()
-    supervisor_state = str(device.get("supervisor_status") or "unknown").strip().lower()
-    supervisor_freshness = str(device.get("supervisor_status_freshness") or "unknown").strip().lower()
-    supervisor_fresh = supervisor_freshness == "fresh" or (is_server and supervisor_freshness == "saved")
-    command_deliverable = connection == "online" and not is_server
-    restart_needed = agent_state in {"stopped", "offline", "errored", "error", "failed", "unhealthy", "unknown"}
-
-    if is_server:
-        reason_code = "server_host_protected"
-        summary = "The protected server host uses local guarded recovery."
-    elif connection != "online":
-        reason_code = "device_unreachable"
-        summary = "Reconnect the device before Pocket Lab can send a restart command."
-    elif not supervisor_fresh:
-        reason_code = "supervisor_report_stale"
-        summary = "Wait for a fresh supervisor report before starting recovery."
-    elif not restart_needed:
-        reason_code = "agent_already_running"
-        summary = "The device agent is already reporting as running."
-    else:
-        reason_code = "allowed"
-        summary = "Pocket Lab can request a guarded device-agent restart."
-
-    allowed = reason_code == "allowed"
-    reported_at = device.get("last_supervisor_heartbeat_at") or device.get("last_supervisor_at")
-    freshness = "fresh" if supervisor_fresh and connection == "online" else "stale"
-    services = [
-        {
-            "service_id": "node_agent",
-            "label": "Device agent",
-            "manager": "pm2",
-            "state": agent_state,
-            "reported_at": device.get("last_heartbeat_at") or device.get("last_seen_at") or device.get("last_seen"),
-            "freshness": "fresh" if connection == "online" else "stale",
-            "restart_supported": allowed,
-            "restart_reason": reason_code,
-        },
-        {
-            "service_id": "agent_supervisor",
-            "label": "Recovery supervisor",
-            "manager": "pm2",
-            "state": supervisor_state,
-            "reported_at": reported_at,
-            "freshness": freshness,
-            "restart_supported": False,
-            "restart_reason": "not_remotely_restartable",
-        },
-    ]
-    return {
-        "restart_agent_assessment": {
-            "allowed": allowed,
-            "reason_code": reason_code,
-            "summary": summary,
-            "command_deliverable": command_deliverable,
-            "supervisor_fresh": supervisor_fresh,
-            "agent_state": agent_state,
-        },
-        "runtime_services": services,
-    }
+    """Compatibility wrapper for the shared guarded-recovery contract."""
+    return guarded_recovery_contract(device)
 
 def _lite_device_merge_key(device: dict[str, Any]) -> str:
     role = str(device.get("role") or "")
