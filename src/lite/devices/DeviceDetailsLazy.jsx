@@ -11,6 +11,8 @@ import {
   LiteButton,
   backendBadgeStatus,
   deviceCapabilityLabels,
+  deviceCapabilitySummary,
+  canonicalDevicePresentation,
   deviceConnectionLabel,
   deviceLinkState,
   deviceStatusLabel,
@@ -36,35 +38,7 @@ function normalizeStatus(value) {
 }
 
 function effectiveDeviceStatus(device) {
-  const status = normalizeStatus(device?.status);
-  const connection = normalizeStatus(device?.connection);
-  const role = normalizeStatus(device?.role);
-
-  if (['ready', 'healthy', 'active', 'online'].includes(status)) return 'online';
-  if (
-    ['repairing', 'supervisor_repairing'].includes(status)
-    || connection === 'repairing'
-  ) return 'repairing';
-  if (
-    ['agent_stopped', 'stopped'].includes(status)
-    || connection === 'stopped'
-  ) return 'agent_stopped';
-  if (
-    ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)
-    || connection === 'offline'
-  ) return 'offline';
-
-  if (
-    connection === 'online'
-    || role === 'server_host'
-    || device?.is_current
-    || device?.isCurrent
-  ) return 'online';
-
-  if (connection === 'joining') return 'joining';
-  if (connection === 'waiting') return 'waiting';
-
-  return status || connection || 'status_pending';
+  return canonicalDevicePresentation(device).state;
 }
 
 function formatDeviceTime(value, fallback = 'No report received') {
@@ -89,12 +63,13 @@ function supervisorStatusLabel(device) {
   return 'No supervisor status reported';
 }
 
-function capabilityStatusLabel(value) {
+function capabilityStatusLabel(value, reasonCode = '') {
   const status = normalizeStatus(value);
-  if (['verified', 'ready'].includes(status)) return 'Verified';
-  if (['verification_pending', 'available'].includes(status)) return 'Verification pending';
-  if (['unavailable', 'not_ready'].includes(status)) return 'Unavailable';
-  if (status === 'not_advertised') return 'Not advertised';
+  const reason = normalizeStatus(reasonCode);
+  if (status === 'ready') return 'Verified';
+  if (status === 'available') return 'Verification pending';
+  if (reason === 'capability_not_advertised' || status === 'unknown') return 'Not advertised';
+  if (status === 'not_ready') return 'Not ready';
   return 'Verification pending';
 }
 
@@ -285,7 +260,7 @@ function technicalRows(device) {
     { label: 'Operating system', value: [device?.system_profile?.os_name, device?.system_profile?.os_version].filter(Boolean).join(' ') },
     { label: 'Android API', value: device?.system_profile?.android_api_level },
     { label: 'Security patch', value: device?.system_profile?.security_patch },
-    { label: 'Manufacturer', value: device?.system_profile?.manufacturer },
+    { label: 'Manufacturer', value: titleCase(device?.system_profile?.manufacturer, '') },
     { label: 'Technical model', value: device?.system_profile?.technical_model },
     { label: 'Friendly model', value: device?.system_profile?.consumer_model_name || 'Using detected technical model' },
     { label: 'Internal codename', value: device?.system_profile?.device_codename },
@@ -393,6 +368,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     ? historyQuery.data.items
     : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
   const capabilities = capabilityRows(device);
+  const capabilitySummary = deviceCapabilitySummary(device);
   const dependencies = device?.dependencies || {};
   const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
@@ -622,13 +598,13 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
         <section className="lite-device-awareness-section" aria-label="Device capabilities">
           <span>Capabilities</span>
-          <strong>{capabilities.filter((item) => ['ready', 'available'].includes(String(item.status).toLowerCase())).length} available</strong>
+          <strong>{capabilitySummary.label}</strong>
           <ul className="lite-device-capability-list">
             {capabilities.map((item) => (
               <li key={item.id}>
                 <span>{item.label || titleCase(item.id)}</span>
                 <strong className={`is-${String(item.status || 'unknown').toLowerCase()}`}>
-                  {capabilityStatusLabel(item.status)}
+                  {capabilityStatusLabel(item.status, item.reason_code)}
                 </strong>
               </li>
             ))}

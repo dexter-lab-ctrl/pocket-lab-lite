@@ -10,6 +10,8 @@ import {
   deviceConnectionLabel,
   deviceStatusLabel,
   deviceCapabilityLabels,
+  deviceCapabilitySummary,
+  canonicalDevicePresentation,
   deviceLinkState,
   canRestartDeviceAgent,
   canRemoveDevice,
@@ -97,7 +99,8 @@ function DeviceCard({
   onOpenDetails,
   detailsButtonRef = null,
 }) {
-  const online = String(device?.connection || '').toLowerCase() === 'online';
+  const presentation = canonicalDevicePresentation(device);
+  const online = presentation.state === 'online';
   const linkState = deviceLinkState(device);
   const role = String(device?.role || '').toLowerCase();
   const isServerCard = role === 'server_host' || device?.is_current || device?.isCurrent;
@@ -107,6 +110,7 @@ function DeviceCard({
   const deviceName = device?.name || 'Unnamed device';
   const runtimeLabel = String(device?.system_profile?.runtime_type || '').replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
   const capabilities = deviceCapabilityLabels(device);
+  const capabilitySummary = deviceCapabilitySummary(device);
   const canRestart = canRestartDeviceAgent(device);
   const canRemove = canRemoveDevice(device);
   const showStorage = hasMeaningfulStorage(device);
@@ -121,8 +125,8 @@ function DeviceCard({
           <span className={online ? 'lite-device-pulse' : 'lite-device-pulse lite-device-pulse-muted'} />
           <Network className="h-5 w-5" />
         </div>
-        <StatusBadge status={backendBadgeStatus(device?.status)}>
-          {deviceStatusLabel(device?.status)}
+        <StatusBadge status={backendBadgeStatus(presentation.state)}>
+          {presentation.label}
         </StatusBadge>
       </div>
 
@@ -164,7 +168,7 @@ function DeviceCard({
       <div className="lite-device-card-meta">
         <span><strong>{stalenessLabel(device)}</strong></span>
         <span>Last seen <strong>{formatLiteTime(device?.last_seen_state?.last_seen_at || device?.last_seen)}</strong></span>
-        {capabilities.length ? <span><strong>{capabilities.length}</strong> verified capabilities</span> : null}
+        <span><strong>{capabilitySummary.verified}</strong> verified capabilities</span>
       </div>
 
       {proactiveHealth ? (

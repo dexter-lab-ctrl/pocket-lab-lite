@@ -88,6 +88,12 @@ def _public_system_profile(value: Any) -> dict[str, Any]:
         profile["freshness"] = "unavailable"
     profile["consumer_model_name"] = consumer
     profile["display_model"] = consumer or technical or codename or "Device"
+    meaningful_identity = bool(technical and profile.get("os_name") and (profile.get("architecture_family") or profile.get("architecture") or profile.get("android_abi")))
+    if meaningful_identity and collected_at:
+        # Status belongs to the selected canonical profile as a whole. Do not
+        # retain a weaker historical unavailable marker after identity recovery.
+        profile["collection_status"] = "current" if profile.get("freshness") == "current" else "stale"
+        profile["profile_status"] = profile["collection_status"]
     return profile
 
 
