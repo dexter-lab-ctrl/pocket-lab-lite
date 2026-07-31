@@ -265,7 +265,9 @@ function technicalRows(device) {
     {
       label: 'Badge state',
       value: titleCase(
-        backendBadgeStatus(effectiveDeviceStatus(device)),
+        device?.proactive_health?.status
+          || device?.health_status
+          || backendBadgeStatus(effectiveDeviceStatus(device)),
         'Status pending',
       ),
     },

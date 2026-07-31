@@ -434,3 +434,34 @@ def test_prepared_server_host_prefers_fresh_sqlite_supervisor_evidence(tmp_path,
     assert server["convergence"]["profile_ready"] is True
     assert server["convergence"]["supervisor_ready"] is True
     assert server["convergence"]["state"] == "ready"
+
+
+def test_system_profile_merge_preserves_last_good_truth_against_empty_live_fallback():
+    from api_fastapi.services.lite_status import _merge_system_profile_truth
+
+    merged = _merge_system_profile_truth(
+        {
+            "technical_model": "SM-S911B",
+            "os_name": "Android",
+            "os_version": "16",
+            "architecture": "arm64",
+            "architecture_raw": "arm64-v8a",
+            "runtime_type": "termux",
+            "collection_status": "current",
+            "collected_at": "2026-07-31T11:00:00Z",
+        },
+        {
+            "technical_model": "",
+            "os_name": "",
+            "architecture": "",
+            "runtime_type": "unknown",
+            "collection_status": "unavailable",
+        },
+    )
+
+    assert merged["technical_model"] == "SM-S911B"
+    assert merged["os_name"] == "Android"
+    assert merged["architecture"] == "arm64"
+    assert merged["architecture_raw"] == "arm64-v8a"
+    assert merged["runtime_type"] == "termux"
+    assert merged["collection_status"] == "current"
