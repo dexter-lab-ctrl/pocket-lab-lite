@@ -5,6 +5,7 @@ import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Sequence
@@ -43,13 +44,26 @@ def sanitize_public_text(value: Any, *, limit: int = MAX_PROFILE_TEXT) -> str:
     return text[: max(1, int(limit))]
 
 
+def _resolve_command(command: Sequence[str]) -> tuple[str, ...]:
+    safe = tuple(str(part) for part in command)
+    if not safe:
+        return safe
+    executable = safe[0]
+    if executable == "getprop":
+        android_getprop = "/system/bin/getprop"
+        if os.path.isfile(android_getprop) and os.access(android_getprop, os.X_OK):
+            return (android_getprop, *safe[1:])
+    resolved = shutil.which(executable)
+    return ((resolved or executable), *safe[1:])
+
+
 def run_bounded_command(
     command: Sequence[str],
     *,
     timeout_seconds: float = DEFAULT_COMMAND_TIMEOUT_SECONDS,
     max_output_bytes: int = MAX_COMMAND_OUTPUT_BYTES,
 ) -> dict[str, Any]:
-    safe_command = tuple(str(part) for part in command)
+    safe_command = _resolve_command(command)
     try:
         result = subprocess.run(
             safe_command,
@@ -73,10 +87,23 @@ def run_bounded_command(
     return {"status": "available", "value": value, "failure_code": ""}
 
 
+def _android_runtime_detected(env: Mapping[str, str] | None = None) -> bool:
+    values = env or os.environ
+    if values.get("ANDROID_ROOT") or values.get("ANDROID_DATA"):
+        return True
+    return any(
+        os.path.exists(candidate)
+        for candidate in ("/system/bin/getprop", "/system/build.prop", "/system/etc/prop.default")
+    )
+
+
 def detect_runtime_type(env: Mapping[str, str] | None = None) -> str:
     values = env or os.environ
     prefix = str(values.get("PREFIX") or "")
-    if values.get("TERMUX_VERSION") or "com.termux" in prefix or prefix.endswith("/com.termux/files/usr"):
+    home = str(values.get("HOME") or "")
+    executable = str(getattr(__import__("sys"), "executable", "") or "")
+    termux_path = any("com.termux" in value for value in (prefix, home, executable))
+    if values.get("TERMUX_VERSION") or termux_path or (_android_runtime_detected(values) and os.path.isdir("/data/data/com.termux/files/usr")):
         return "termux"
     if values.get("container") or values.get("CONTAINER"):
         return "container"
@@ -204,6 +231,35 @@ def normalize_architecture(value: Any) -> tuple[str, str]:
     return raw, aliases.get(raw, raw or "unknown")
 
 
+def unavailable_system_profile(*, agent_version: str, error_type: str = "") -> dict[str, Any]:
+    profile: dict[str, Any] = {
+        "schema_version": PROFILE_SCHEMA_VERSION,
+        "os_family": "android" if _android_runtime_detected() else sanitize_public_text(platform.system().lower(), limit=32) or "unknown",
+        "os_name": "Android" if _android_runtime_detected() else sanitize_public_text(platform.system(), limit=64) or "Unknown",
+        "os_version": "",
+        "android_api_level": None,
+        "security_patch": "",
+        "manufacturer": "",
+        "technical_model": "",
+        "device_codename": "",
+        "architecture": "unknown",
+        "architecture_raw": sanitize_public_text(platform.machine(), limit=80).lower(),
+        "architecture_family": normalize_architecture(platform.machine())[1],
+        "android_abi": "",
+        "kernel": sanitize_public_text(platform.release()),
+        "runtime_type": detect_runtime_type(),
+        "termux_version": "",
+        "python_version": sanitize_public_text(platform.python_version(), limit=40),
+        "agent_version": sanitize_public_text(agent_version, limit=80),
+        "collection_status": "unavailable",
+        "unavailable_fields": ["system_profile"],
+        "collection_error_type": sanitize_public_text(error_type, limit=64),
+        "collected_at": now_iso(),
+    }
+    profile["profile_fingerprint"] = _profile_fingerprint(profile)
+    return profile
+
+
 def collect_system_profile(
     *,
     agent_version: str,
@@ -214,7 +270,7 @@ def collect_system_profile(
     runtime_type = detect_runtime_type(env)
     values: dict[str, str] = {}
     unavailable: list[str] = []
-    android_runtime = runtime_type == "termux" or bool(env.get("ANDROID_ROOT") or env.get("ANDROID_DATA"))
+    android_runtime = runtime_type == "termux" or _android_runtime_detected(env)
     if android_runtime:
         for field, command in _PROPERTY_COMMANDS.items():
             result = dict(command_runner(command))

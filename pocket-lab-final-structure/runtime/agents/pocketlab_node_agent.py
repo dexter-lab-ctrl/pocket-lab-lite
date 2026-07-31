@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
-from lite_system_profile import collect_system_health, collect_system_profile
+from lite_system_profile import collect_system_health, collect_system_profile, unavailable_system_profile
 
 try:
     import nats  # type: ignore
@@ -233,10 +233,20 @@ class PocketLabNodeAgent:
         )
         if due:
             try:
-                self.system_profile = collect_system_profile(agent_version=AGENT_VERSION)
-            except Exception:
+                collected = collect_system_profile(agent_version=AGENT_VERSION)
+                if collected:
+                    self.system_profile = collected
+            except Exception as exc:
+                error_type = type(exc).__name__[:64]
                 if not self.system_profile:
-                    self.system_profile = {}
+                    self.system_profile = unavailable_system_profile(
+                        agent_version=AGENT_VERSION,
+                        error_type=error_type,
+                    )
+                print(
+                    f"Pocket Lab node agent profile_collection_failed: error_type={error_type}",
+                    file=sys.stderr,
+                )
             self.system_profile_collected_epoch = now
         return self.system_profile
 
