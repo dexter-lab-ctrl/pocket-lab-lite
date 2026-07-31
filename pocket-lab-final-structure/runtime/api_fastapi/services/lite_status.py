@@ -1454,6 +1454,15 @@ def lite_fleet() -> dict[str, Any]:
     merged_devices = lite_device_awareness.enrich_devices(
         merged_devices, remote_access=remote_access, commands=commands
     )
+    # Apply guarded recovery contracts only after awareness enrichment because
+    # enrichment may rebuild/sanitize device dictionaries. Centralizing this
+    # final overlay guarantees every returned device receives the same
+    # backend-owned restart assessment and sanitized service inventory.
+    merged_devices = [
+        {**item, **_guarded_recovery_contract(item)}
+        for item in merged_devices
+        if isinstance(item, dict)
+    ]
 
     try:
         from .lite_control_plane_store import CONTROL_PLANE
