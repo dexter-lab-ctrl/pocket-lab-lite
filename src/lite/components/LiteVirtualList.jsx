@@ -111,6 +111,11 @@ function LiteVirtualListContent({
     [domain, getItemKey, items],
   );
   const { rows, keys, duplicateCount, fallbackCount, fallbackCollisionCount } = normalized;
+  const hasReportedTotal = totalCount !== null && totalCount !== undefined && totalCount !== ''
+    && Number.isFinite(Number(totalCount));
+  const normalizedTotalCount = hasReportedTotal
+    ? Math.max(rows.length, Number(totalCount))
+    : rows.length;
   const virtualModeRef = useRef(false);
   const shouldVirtualize = selectLiteVirtualMode({
     count: rows.length,
@@ -257,7 +262,7 @@ function LiteVirtualListContent({
   });
   const listDescription = savedState
     ? `Showing ${rows.length} saved row${rows.length === 1 ? '' : 's'}. The saved list may be incomplete.`
-    : `Showing ${rows.length}${Number.isFinite(Number(totalCount)) ? ` of ${Number(totalCount)}` : ''} row${rows.length === 1 ? '' : 's'}.${hasMore ? ' More rows are available.' : ''}`;
+    : `Showing ${rows.length} of ${normalizedTotalCount} row${rows.length === 1 ? '' : 's'}.${hasMore ? ' More rows are available.' : ''}`;
   const footer = hasMore ? (
     <button
       type="button"
@@ -339,7 +344,7 @@ function LiteVirtualListContent({
                   className="lite-virtual-list__item"
                   role="listitem"
                   aria-posinset={virtualRow.index + 1}
-                  aria-setsize={Number.isFinite(Number(totalCount)) ? Number(totalCount) : hasMore ? -1 : rows.length}
+                  aria-setsize={hasMore && !hasReportedTotal ? -1 : normalizedTotalCount}
                   data-index={virtualRow.index}
                   data-lite-virtual-index={virtualRow.index}
                   data-lite-row-key-kind={keys[virtualRow.index].includes('fallback') ? 'fallback' : 'stable'}

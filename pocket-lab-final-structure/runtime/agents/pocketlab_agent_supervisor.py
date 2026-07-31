@@ -12,6 +12,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import logging
+import random
 import re
 import shlex
 import signal
@@ -30,6 +32,10 @@ except Exception:  # pragma: no cover - optional dependency fallback
 SUPERVISOR_VERSION = "1.0.0-lite-agent-supervisor"
 DEFAULT_INTERVAL_SECONDS = 20
 DEFAULT_NATS_TIMEOUT_SECONDS = 4
+SUPERVISOR_EVIDENCE_SCHEMA_VERSION = 1
+MAX_NATS_BACKOFF_SECONDS = 30.0
+
+logging.getLogger("nats").setLevel(logging.CRITICAL)
 
 _STOP = False
 
@@ -109,6 +115,12 @@ class LiteAgentSupervisor:
         ).expanduser()
         self.repair_count = 0
         self.last_repair_at = ""
+        self.nc = None
+        self.next_nats_attempt_epoch = 0.0
+        self.nats_backoff_seconds = 1.0
+        self.publish_sequence = 0
+        self.last_publish_at = ""
+        self.last_publish_reason = "not_attempted"
 
     def _process_env(self) -> Dict[str, str]:
         env = {**os.environ, **self.env_data}
@@ -190,28 +202,100 @@ class LiteAgentSupervisor:
         tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
         tmp.replace(self.state_file)
 
-    async def _publish_status(self, payload: Dict[str, Any]) -> None:
+    def _nats_kwargs(self) -> Dict[str, Any]:
+        kwargs: Dict[str, Any] = {
+            "servers": [self.nats_url],
+            "name": self.supervisor_process,
+            "connect_timeout": 4,
+            "max_reconnect_attempts": 0,
+            "error_cb": self._on_nats_error,
+            "disconnected_cb": self._on_nats_disconnected,
+            "closed_cb": self._on_nats_closed,
+        }
+        if self.env_data.get("POCKETLAB_NATS_TOKEN"):
+            kwargs["token"] = self.env_data["POCKETLAB_NATS_TOKEN"]
+        elif self.env_data.get("POCKETLAB_NATS_USER") and self.env_data.get("POCKETLAB_NATS_PASSWORD"):
+            kwargs["user"] = self.env_data["POCKETLAB_NATS_USER"]
+            kwargs["password"] = self.env_data["POCKETLAB_NATS_PASSWORD"]
+        return kwargs
+
+    async def _on_nats_error(self, exc: Exception) -> None:
+        self.last_publish_reason = self._error_reason(exc)
+
+    async def _on_nats_disconnected(self) -> None:
+        self.last_publish_reason = "disconnected"
+
+    async def _on_nats_closed(self) -> None:
+        self.nc = None
+
+    @staticmethod
+    def _error_reason(exc: Exception) -> str:
+        message = str(exc).lower()
+        if "network is unreachable" in message:
+            return "network_unreachable"
+        if "timeout" in message:
+            return "timeout"
+        if "abort" in message or "reset" in message:
+            return "connection_interrupted"
+        return re.sub(r"[^a-z0-9_]+", "_", type(exc).__name__.lower()).strip("_")[:64] or "nats_error"
+
+    def _schedule_nats_retry(self, reason: str) -> None:
+        self.last_publish_reason = reason
+        jitter = random.uniform(0.0, min(1.0, self.nats_backoff_seconds * 0.2))
+        self.next_nats_attempt_epoch = time.time() + self.nats_backoff_seconds + jitter
+        self.nats_backoff_seconds = min(MAX_NATS_BACKOFF_SECONDS, self.nats_backoff_seconds * 2.0)
+
+    async def _close_nats(self) -> None:
+        current = self.nc
+        self.nc = None
+        if current is not None:
+            try:
+                await current.close()
+            except Exception:
+                pass
+
+    async def _ensure_nats_connection(self) -> bool:
         if nats is None or not self.nats_url:
-            return
+            self.last_publish_reason = "nats_unavailable"
+            return False
+        if self.nc is not None and not bool(getattr(self.nc, "is_closed", False)):
+            return True
+        if time.time() < self.next_nats_attempt_epoch:
+            return False
         try:
-            kwargs: Dict[str, Any] = {"servers": [self.nats_url], "connect_timeout": 4, "max_reconnect_attempts": 1}
-            if self.env_data.get("POCKETLAB_NATS_TOKEN"):
-                kwargs["token"] = self.env_data["POCKETLAB_NATS_TOKEN"]
-            elif self.env_data.get("POCKETLAB_NATS_USER") and self.env_data.get("POCKETLAB_NATS_PASSWORD"):
-                kwargs["user"] = self.env_data["POCKETLAB_NATS_USER"]
-                kwargs["password"] = self.env_data["POCKETLAB_NATS_PASSWORD"]
-            nc = await nats.connect(**kwargs)  # type: ignore[union-attr]
-            await nc.publish(
+            self.nc = await nats.connect(**self._nats_kwargs())  # type: ignore[union-attr]
+            self.nats_backoff_seconds = 1.0
+            self.next_nats_attempt_epoch = 0.0
+            self.last_publish_reason = "connected"
+            return True
+        except Exception as exc:
+            await self._close_nats()
+            self._schedule_nats_retry(self._error_reason(exc))
+            return False
+
+    async def _publish_status(self, payload: Dict[str, Any]) -> bool:
+        if not await self._ensure_nats_connection():
+            return False
+        try:
+            assert self.nc is not None
+            await self.nc.publish(
                 "pocketlab.events.fleet.node_supervisor",
                 json.dumps({
                     "type": "fleet.node_supervisor",
                     "time": payload.get("checked_at") or _now_iso(),
+                    "source": f"pocketlab-agent-supervisor/{self.node_id}",
                     "data": payload,
-                }).encode("utf-8"),
+                }, separators=(",", ":")).encode("utf-8"),
             )
-            await nc.drain()
-        except Exception:
-            return
+            self.publish_sequence += 1
+            self.last_publish_at = str(payload.get("checked_at") or _now_iso())
+            self.last_publish_reason = "published"
+            return True
+        except Exception as exc:
+            reason = self._error_reason(exc)
+            await self._close_nats()
+            self._schedule_nats_retry(reason)
+            return False
 
     async def tick(self) -> Dict[str, Any]:
         process_status = self._agent_process_status()
@@ -243,6 +327,7 @@ class LiteAgentSupervisor:
             agent_status = "unknown"
 
         payload: Dict[str, Any] = {
+            "evidence_schema_version": SUPERVISOR_EVIDENCE_SCHEMA_VERSION,
             "node_id": self.node_id,
             "id": self.node_id,
             "name": self.node_name,
@@ -253,6 +338,7 @@ class LiteAgentSupervisor:
             "agent_process": self.agent_process,
             "agent_process_status": process_status,
             "supervisor_process": self.supervisor_process,
+            "supervisor_process_status": "online",
             "supervisor_status": supervisor_status,
             "supervisor_version": SUPERVISOR_VERSION,
             "repair_attempted": repair_attempted,
@@ -263,12 +349,20 @@ class LiteAgentSupervisor:
             "repair_count": self.repair_count,
             "last_repair_at": self.last_repair_at,
             "nats_reachable": nats_reachable,
+            "nats_connection_status": "reachable" if nats_reachable else "unreachable",
             "checked_at": _now_iso(),
+            "reported_at": _now_iso(),
             "seen_at": _now_iso(),
+            "publish_sequence": self.publish_sequence + 1,
             "capabilities": ["agent-supervisor", "agent-repair"],
         }
+        published = await self._publish_status(payload)
+        payload.update({
+            "evidence_delivery_status": "published" if published else "saved_locally",
+            "last_evidence_published_at": self.last_publish_at or None,
+            "last_publish_reason_code": self.last_publish_reason,
+        })
         self._write_state(payload)
-        await self._publish_status(payload)
         return payload
 
     async def run(self) -> None:
@@ -288,6 +382,7 @@ class LiteAgentSupervisor:
                 except Exception:
                     pass
             await asyncio.sleep(self.interval)
+        await self._close_nats()
 
 
 def _handle_stop(_signum: int, _frame: Any) -> None:

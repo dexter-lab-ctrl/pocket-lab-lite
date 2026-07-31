@@ -445,10 +445,12 @@ def evaluate_device_health(
             "ignored_out_of_order": True,
         }
     heartbeat_state = freshness["heartbeat"]["state"]
+    # Operational health is based on live connection and telemetry. Profile and
+    # supervisor freshness are independent dimensions and must not turn a healthy
+    # device into "Health pending".
     required_freshness = (
         freshness["heartbeat"]["state"],
         freshness["telemetry"]["state"],
-        freshness["system_profile"]["state"],
     )
     if "missing" in required_freshness:
         freshness["state"] = "missing"
@@ -458,9 +460,10 @@ def evaluate_device_health(
         freshness["state"] = "current"
     else:
         freshness["state"] = "partial"
-    freshness["optional_state"] = (
-        "current" if freshness["supervisor"]["state"] == "current" else "unavailable"
-    )
+    freshness["optional_state"] = {
+        "system_profile": freshness["system_profile"]["state"],
+        "supervisor": freshness["supervisor"]["state"],
+    }
 
     previous_resources = previous.get("resources") if isinstance(previous.get("resources"), dict) else {}
     resources = (
@@ -638,7 +641,7 @@ def evaluate_device_health(
     if freshness["system_profile"]["state"] == "stale":
         reason_codes.append("profile_stale")
 
-    dependency_stale = freshness["state"] in {"missing", "stale"}
+    dependency_stale = freshness["heartbeat"]["state"] in {"missing", "stale"}
     hosted_apps = dependencies.get("hosted_apps") if isinstance(dependencies.get("hosted_apps"), list) else []
     material_risk = any(code in reason_codes for code in {"storage_pressure", "memory_pressure", "high_load", "temperature_high", "heartbeat_stale", "agent_stopped", "repeated_recovery", "repair_failed"})
     affected_apps = [
@@ -684,15 +687,49 @@ def evaluate_device_health(
     elif not reason_codes and freshness["state"] != "current":
         overall_status = "unknown"
         summary = "Device health is waiting for fresh reports."
-    elif not reason_codes and versions["status"] == "unknown":
-        overall_status = "unknown"
-        summary = "Device software posture is not available yet."
     elif connection_status == "stable" and heartbeat_state == "current":
         overall_status = "healthy"
         summary = "No immediate action is needed."
     else:
         overall_status = "unknown"
         summary = "Device health is not available yet."
+
+    profile_fields = ("technical_model", "architecture", "architecture_family", "os_name")
+    profile_present = [field for field in profile_fields if profile.get(field)]
+    profile_completeness = {
+        "status": "complete" if len(profile_present) >= 3 else "partial" if profile_present else "verification_pending",
+        "present_fields": profile_present,
+        "freshness": freshness["system_profile"]["state"],
+        "summary": (
+            "System identity is available." if len(profile_present) >= 3
+            else "Some system identity fields are still converging." if profile_present
+            else "System identity verification is pending."
+        ),
+    }
+    software_posture = {
+        "status": versions["status"] if versions["status"] != "unknown" else "verification_pending",
+        "verification_pending": versions["status"] == "unknown",
+        "summary": (
+            "Device software is current." if versions["status"] == "current"
+            else "Agent software update is recommended." if versions["status"] == "behind"
+            else "Device software is incompatible." if versions["status"] == "incompatible"
+            else "Software verification is pending."
+        ),
+        "parts": version_parts,
+    }
+    recovery_posture = {
+        "status": recovery_status,
+        "summary": recovery.get("summary"),
+        "automatic_recovery_available": recovery.get("automatic_recovery_available"),
+        "supervisor_freshness": freshness["supervisor"]["state"],
+    }
+    operational_health = {
+        "status": overall_status,
+        "severity": severity,
+        "summary": summary,
+        "connection_status": connection_status,
+        "freshness": freshness["state"],
+    }
 
     recommendation, recommendation_target = _recommendation(reason_codes, recovery, dependency_impact)
     material = {
@@ -707,6 +744,12 @@ def evaluate_device_health(
         "versions": {key: value.get("status") if isinstance(value, dict) else value for key, value in versions.items()},
         "dependency": {key: dependency_impact.get(key) for key in ("status", "impact_severity", "source_stale")},
         "recommendation": [recommendation, recommendation_target],
+        "dimensions": {
+            "operational": operational_health["status"],
+            "software": software_posture["status"],
+            "recovery": recovery_posture["status"],
+            "profile": profile_completeness["status"],
+        },
         "freshness": {key: value.get("state") if isinstance(value, dict) else value for key, value in freshness.items()},
     }
     health_revision = hashlib.sha256(json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()[:20]
@@ -762,5 +805,15 @@ def evaluate_device_health(
         "recovery": recovery if not unchanged else previous.get("recovery", recovery),
         "versions": versions if not unchanged else previous.get("versions", versions),
         "dependency_impact": dependency_impact if not unchanged else previous.get("dependency_impact", dependency_impact),
+        "operational_health": operational_health,
+        "software_posture": software_posture,
+        "recovery_posture": recovery_posture,
+        "profile_completeness": profile_completeness,
+        "field_freshness": {
+            "heartbeat": freshness["heartbeat"],
+            "telemetry": freshness["telemetry"],
+            "system_profile": freshness["system_profile"],
+            "supervisor": freshness["supervisor"],
+        },
         "sanitized": True,
     }

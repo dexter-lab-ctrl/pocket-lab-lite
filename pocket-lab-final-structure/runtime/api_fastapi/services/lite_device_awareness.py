@@ -201,16 +201,16 @@ def _capability(
     unavailable_reason: str = "",
 ) -> dict[str, Any]:
     if not advertised:
-        status = "unknown"
+        status = "not_advertised"
         reason = "capability_not_advertised"
     elif runtime_ready is True:
-        status = "ready"
+        status = "verified"
         reason = ready_reason or "verified"
     elif runtime_ready is False:
-        status = "not_ready"
+        status = "unavailable"
         reason = unavailable_reason or "runtime_unavailable"
     else:
-        status = "available"
+        status = "verification_pending"
         reason = "advertised_not_runtime_verified"
     return {
         "id": capability_id,
@@ -498,7 +498,7 @@ def enrich_device(
         enrollment_status = "join_blocked"
     elif device.get("repair_required"):
         enrollment_status = "repair_required"
-    elif online and identity_status == "verified":
+    elif identity_status == "verified" and (online or first_heartbeat):
         enrollment_status = "ready"
     elif accepted_at:
         enrollment_status = "waiting_for_heartbeat"
@@ -552,7 +552,7 @@ def enrich_device(
         delivery_status = "agent_stopped"
     elif supervisor_status == "repairing" or status == "repairing":
         delivery_status = "repairing"
-    elif online and capability_by_id.get("receive_commands", {}).get("status") == "ready":
+    elif online and capability_by_id.get("receive_commands", {}).get("status") in {"verified", "ready"}:
         delivery_status = "deliverable"
     elif enrollment_status in {"invite_pending", "waiting_for_heartbeat"}:
         delivery_status = "waiting_for_agent"
@@ -566,8 +566,18 @@ def enrich_device(
     recommended_actions: list[str] = []
     if protected:
         blockers.append({"code": "protected_server_host", "summary": "This protected server host cannot be removed."})
+    if not protected and enrollment_status in {
+        "invite_pending", "waiting_for_heartbeat", "join_blocked", "repair_required"
+    }:
+        blockers.append({
+            "code": "enrollment_incomplete",
+            "summary": "Finish or cancel the current join flow before removing this device record.",
+        })
     if online and not protected:
-        blockers.append({"code": "device_online", "summary": "Online devices are protected. Disconnect or move its responsibilities before removal."})
+        warnings.append({
+            "code": "device_online",
+            "summary": "This device is online. Removing it retires the saved enrollment but does not stop or uninstall the remote agent.",
+        })
     for app in hosted_apps:
         blockers.append({"code": "hosts_active_app", "summary": f"{app.get('label') or 'An app'} runs on this device."})
     if backup.get("stores_only_verified_copy"):
@@ -578,8 +588,8 @@ def enrich_device(
         blockers.append({"code": "pending_commands", "summary": "A device command is still active."})
     if status == "repairing" or supervisor_status == "repairing":
         blockers.append({"code": "active_recovery", "summary": "Device recovery is still in progress."})
-    if staleness["state"] not in {"stale", "review_recommended"} and not blockers and not protected:
-        warnings.append({"code": "not_stale", "summary": "Only old offline device records should normally be removed."})
+    if staleness["state"] not in {"stale", "review_recommended"} and not blockers and not protected and not online:
+        warnings.append({"code": "recent_device", "summary": "This device reported recently. Confirm that you intend to retire its enrollment."})
     if hosted_apps:
         recommended_actions.append("Move the app")
     if backup.get("stores_only_verified_copy"):
@@ -602,7 +612,13 @@ def enrich_device(
         separators=(",", ":"),
     )
     assessment_revision = hashlib.sha256(assessment_revision_material.encode("utf-8")).hexdigest()[:20]
-    safe_to_remove = bool(not blockers and not protected and staleness["state"] in {"stale", "review_recommended"})
+    safe_to_remove = bool(not blockers and not protected)
+    removal_policy = (
+        "protected" if protected
+        else "blocked" if blockers
+        else "confirmation_required" if online or staleness["state"] not in {"stale", "review_recommended"}
+        else "ready"
+    )
 
     identity = {
         "status": identity_status,
@@ -678,7 +694,7 @@ def enrich_device(
         "latest_verified_backup_at": backup.get("latest_verified_backup_at"),
         "stores_only_verified_copy": bool(backup.get("stores_only_verified_copy")),
         "restore_target_status": capability_by_id.get("restore_target", {}).get("status", "unknown"),
-        "storage_dependency_count": int(capability_by_id.get("provide_storage", {}).get("status") in {"ready", "available"}),
+        "storage_dependency_count": int(capability_by_id.get("provide_storage", {}).get("status") in {"verified", "ready"}),
         "storage_available_bytes": storage_available_bytes,
         "storage_pressure_state": storage_pressure_state,
         "tailscale_installed": bool((remote_access or {}).get("running") or device.get("tailscale_installed")) if protected else bool(device.get("tailscale_installed")),
@@ -695,14 +711,17 @@ def enrich_device(
         "active_command_count": pending_count,
         "supervisor_status": supervisor_status or "unknown",
         "agent_process_status": process_status or "unknown",
-        "recovery_available": capability_by_id.get("supervisor_recovery", {}).get("status") in {"ready", "available"},
+        "recovery_available": capability_by_id.get("supervisor_recovery", {}).get("status") in {"verified", "ready"},
         "recovery_in_progress": status == "repairing" or supervisor_status == "repairing",
         "last_recovery_result": _safe_text(device.get("last_recovery_result"), 80),
     }
     removal = {
         "node_id": device_id,
         "safe_to_remove": safe_to_remove,
-        "confirmation_required": True,
+        "allowed": safe_to_remove,
+        "protected": protected,
+        "policy": removal_policy,
+        "confirmation_required": safe_to_remove,
         "assessment_revision": assessment_revision,
         "blockers": blockers[:16],
         "warnings": warnings[:16],
@@ -717,7 +736,7 @@ def enrich_device(
         "capability_states": capabilities,
         "capability_labels": list(dict.fromkeys(
             [str(item) for item in (device.get("capability_labels") or []) if str(item).strip()]
-            + [item["label"] for item in capabilities if item["status"] in {"ready", "available"}]
+            + [item["label"] for item in capabilities if item["status"] in {"verified", "ready"}]
         ))[:32],
         "enrollment": enrollment,
         "enrollment_status": enrollment_status,

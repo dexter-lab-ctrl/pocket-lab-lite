@@ -360,14 +360,14 @@ export default function DevicesScreen() {
 
   async function removeOldDevice() {
     const nodeId = removeCandidate?.id;
-    if (!nodeId || !removeAssessment?.safe_to_remove) return;
+    if (!nodeId || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)) return;
     removalFlow.submit();
     setRemoveBusy(true);
     setActionError(null);
     setResult(null);
     try {
       const response = await liteApi.removeDevice(nodeId, {
-        reason: 'Old device cleanup from Lite Devices tab',
+        reason: 'Confirmed device retirement from Lite Devices tab',
         assessment_revision: removeAssessment.assessment_revision || '',
         expected_awareness_revision: Number(removeAssessment.awareness_revision || 0),
       });
@@ -724,14 +724,14 @@ export default function DevicesScreen() {
 
               <div className="lite-device-remove-actions">
                 {removalFlow.isConfirming ? (
-                  <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !removeAssessment?.safe_to_remove}>
+                  <LiteButton tone="danger" onClick={removeOldDevice} disabled={removeBusy || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove)}>
                     {removeBusy ? 'Removing...' : 'Confirm removal'}
                   </LiteButton>
                 ) : (
                   <LiteButton
                     tone="danger"
                     onClick={removalFlow.confirm}
-                    disabled={removeAssessmentLoading || !removeAssessment?.safe_to_remove || removeBusy || savedStateOnly || backendReachable === false}
+                    disabled={removeAssessmentLoading || !(removeAssessment?.allowed ?? removeAssessment?.safe_to_remove) || removeBusy || savedStateOnly || backendReachable === false}
                   >
                     Continue to confirmation
                   </LiteButton>

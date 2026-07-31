@@ -39,6 +39,7 @@ export default function LiteHistorySection({
   hasMore = false,
   loadingMore = false,
   onLoadMore,
+  totalCount = null,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const safeItems = useMemo(() => safeHistoryItems(items), [items]);
@@ -89,6 +90,7 @@ export default function LiteHistorySection({
               hasMore={boundedHasMore}
               loadingMore={loadingMore}
               onLoadMore={onLoadMore}
+              totalCount={totalCount}
               emptyState={<p>{emptyMessage}</p>}
               endState={(wasTruncated || (hasMore && count >= LITE_HISTORY_SECTION_ROW_LIMIT)) ? <p className="lite-virtual-list__end">Loaded history limit reached.</p> : null}
               renderItem={(item, _index, context) => context.virtual ? (

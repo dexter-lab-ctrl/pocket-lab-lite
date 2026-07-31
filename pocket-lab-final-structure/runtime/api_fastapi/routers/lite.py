@@ -2682,8 +2682,8 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         )
         fleet_registry.append_device_lifecycle_event(
             device_id, "removal_requested",
-            reason_code="confirmed_stale_device_cleanup",
-            summary="Saved device record removal was requested after dependency review.",
+            reason_code="confirmed_device_retirement",
+            summary="Device retirement was requested after dependency review and explicit confirmation.",
             status="requested", occurred_at=deps.now_utc_iso(),
             command_id=removal_generation,
             dedupe_key=f"{device_id}:removal_requested:{removal_generation}",
@@ -2691,7 +2691,7 @@ async def remove_lite_device(payload: LiteRemoveDeviceRequest, request: Request)
         )
         retirement = CONTROL_PLANE.retire_enrolled_device(
             device_id,
-            reason_code=payload.reason or "confirmed_stale_device_cleanup",
+            reason_code=payload.reason or "confirmed_device_retirement",
             assessment_revision=str(current_assessment.get("assessment_revision") or ""),
             awareness_revision=int(current_assessment.get("awareness_revision") or 0),
             requested_by=(payload.requested_by or "authenticated_operator").strip() or "authenticated_operator",

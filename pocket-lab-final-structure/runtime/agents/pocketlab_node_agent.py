@@ -7,6 +7,8 @@ import json
 import os
 import platform
 import ssl
+import random
+import logging
 import re
 import signal
 import shutil
@@ -29,6 +31,10 @@ except Exception:  # pragma: no cover
 AGENT_VERSION = "2.5.0-lite-trust-capability-awareness"
 SYSTEM_PROFILE_REFRESH_SECONDS = 12 * 60 * 60
 SYSTEM_HEALTH_REFRESH_SECONDS = 5 * 60
+PROFILE_REPUBLISH_SECONDS = 6 * 60 * 60
+RECONNECT_MAX_SECONDS = 30.0
+
+logging.getLogger("nats").setLevel(logging.CRITICAL)
 
 
 def env(name: str, default: str = "") -> str:
@@ -208,6 +214,17 @@ class PocketLabNodeAgent:
         self.system_profile_collected_epoch = 0.0
         self.system_health_collected_epoch = 0.0
         self.last_published_profile_fingerprint = ""
+        self.last_profile_publish_epoch = 0.0
+        self.profile_revision = 0
+        self.profile_republish_seconds = max(3600, int(env("POCKETLAB_AGENT_PROFILE_REPUBLISH_SECONDS", str(PROFILE_REPUBLISH_SECONDS))))
+        self.connection_ready = asyncio.Event()
+        self.disconnected_event = asyncio.Event()
+        self.connection_lock = asyncio.Lock()
+        self.publish_lock = asyncio.Lock()
+        self.reconnect_sync_lock = asyncio.Lock()
+        self.connection_generation = 0
+        self.last_error_signature = ""
+        self.last_error_logged_epoch = 0.0
 
     def refresh_system_profile(self, *, force: bool = False) -> Dict[str, Any]:
         now = time.time()
@@ -242,15 +259,55 @@ class PocketLabNodeAgent:
 
     def system_profile_update(self, *, force_publish: bool = False) -> Dict[str, Any]:
         previous_collected_epoch = self.system_profile_collected_epoch
-        profile = self.refresh_system_profile(force=False)
+        profile = dict(self.refresh_system_profile(force=force_publish))
         fingerprint = str(profile.get("profile_fingerprint") or "")
         if not fingerprint:
             return {}
         refreshed = self.system_profile_collected_epoch != previous_collected_epoch
-        if not force_publish and fingerprint == self.last_published_profile_fingerprint and not refreshed:
+        periodic_due = time.time() - self.last_profile_publish_epoch >= self.profile_republish_seconds
+        changed = fingerprint != self.last_published_profile_fingerprint
+        if not force_publish and not refreshed and not periodic_due and not changed:
             return {}
-        self.last_published_profile_fingerprint = fingerprint
+        self.profile_revision += 1
+        profile.update({
+            "revision": self.profile_revision,
+            "profile_fingerprint": fingerprint,
+            "profile_schema_version": int(profile.get("schema_version") or 1),
+        })
         return {"system_profile": profile}
+
+    def _mark_profile_published(self, data: Dict[str, Any]) -> None:
+        profile = data.get("system_profile") if isinstance(data.get("system_profile"), dict) else {}
+        fingerprint = str(profile.get("profile_fingerprint") or "")
+        if fingerprint:
+            self.last_published_profile_fingerprint = fingerprint
+            self.last_profile_publish_epoch = time.time()
+
+    def _error_reason(self, exc: Exception) -> str:
+        name = type(exc).__name__.lower()
+        message = str(exc).lower()
+        if "network is unreachable" in message:
+            return "network_unreachable"
+        if "timeout" in message:
+            return "timeout"
+        if "abort" in message or "reset" in message:
+            return "connection_interrupted"
+        return re.sub(r"[^a-z0-9_]+", "_", name).strip("_")[:64] or "nats_error"
+
+    def _log_connection_error(self, exc: Exception, *, context: str) -> None:
+        reason = self._error_reason(exc)
+        signature = f"{context}:{reason}"
+        now = time.time()
+        if signature == self.last_error_signature and now - self.last_error_logged_epoch < 30:
+            return
+        self.last_error_signature = signature
+        self.last_error_logged_epoch = now
+        print(f"Pocket Lab node agent {context}: reason={reason}", file=sys.stderr)
+
+    @staticmethod
+    def reconnect_delay(attempt: int) -> float:
+        base = min(RECONNECT_MAX_SECONDS, float(2 ** max(0, min(attempt, 5))))
+        return min(RECONNECT_MAX_SECONDS, base + random.uniform(0.0, min(1.0, base * 0.2)))
 
     def base_payload(self) -> Dict[str, Any]:
         return {
@@ -272,14 +329,20 @@ class PocketLabNodeAgent:
         }
 
     async def safe_publish(
-        self, subject: str, event_type: str, data: Dict[str, Any]
+        self, subject: str, event_type: str, data: Dict[str, Any], *, critical: bool = False
     ) -> bool:
+        if not self.connection_ready.is_set() or self.nc is None:
+            return False
         try:
-            await self.publish(subject, event_type, data)
+            async with self.publish_lock:
+                await self.publish(subject, event_type, data, critical=critical)
             self.last_publish_success_epoch = time.time()
+            self._mark_profile_published(data)
             return True
         except Exception as exc:
-            print(f"Pocket Lab node agent publish failed: {exc}", file=sys.stderr)
+            self._log_connection_error(exc, context="publish_failed")
+            self.connection_ready.clear()
+            self.disconnected_event.set()
             await self.maybe_self_heal_after_publish_failure()
             return False
 
@@ -291,7 +354,7 @@ class PocketLabNodeAgent:
         if now - last_success < max(60, self.self_heal_seconds):
             return
         print(
-            "Pocket Lab node agent has not published successfully after reconnect window; restarting self.",
+            "Pocket Lab node agent publish watchdog requested a supervised restart.",
             file=sys.stderr,
         )
         self.restarting = True
@@ -309,51 +372,28 @@ class PocketLabNodeAgent:
                 start_new_session=True,
             )
             return
-
-        # Without PM2 there is no guaranteed external supervisor. Exit cleanly so
-        # a wrapper/supervisor can restart the process if one exists.
         self.stop_event.set()
 
     async def on_disconnected(self) -> None:
         self.last_disconnect_epoch = time.time()
-        print("Pocket Lab node agent disconnected from NATS; waiting for reconnect.", file=sys.stderr)
+        self.connection_ready.clear()
+        self.disconnected_event.set()
+        print("Pocket Lab node agent disconnected from NATS; reconnect is scheduled.", file=sys.stderr)
 
     async def on_reconnected(self) -> None:
-        self.reconnect_count += 1
-        self.connected_at = now_iso()
-        print("Pocket Lab node agent reconnected to NATS; publishing fresh heartbeat.", file=sys.stderr)
-        self.refresh_system_profile(force=True)
-        await self.safe_publish(
-            "pocketlab.events.fleet.node_reconnected",
-            "fleet.node_reconnected",
-            {
-                **self.base_payload(),
-                "reconnected_at": now_iso(),
-                "reconnect_count": self.reconnect_count,
-                "last_disconnect_epoch": self.last_disconnect_epoch,
-                "last_nats_disconnected_at": datetime.fromtimestamp(self.last_disconnect_epoch, tz=timezone.utc).isoformat().replace("+00:00", "Z") if self.last_disconnect_epoch else None,
-            },
-        )
-        await self.register()
-        await self.safe_publish(
-            "pocketlab.events.fleet.node_heartbeat",
-            "fleet.node_heartbeat",
-            {
-                **self.base_payload(),
-                "system_health": self.refresh_system_health(force=True),
-                "heartbeat_at": now_iso(),
-                "reason": "nats-reconnected",
-            },
-        )
+        # Manual connection ownership is used; this callback is retained for nats-py
+        # compatibility and only signals state. It never starts a second recovery path.
+        self.connection_ready.set()
 
     async def on_closed(self) -> None:
-        print("Pocket Lab node agent NATS connection closed.", file=sys.stderr)
+        self.connection_ready.clear()
+        self.disconnected_event.set()
 
     async def on_error(self, exc: Exception) -> None:
-        print(f"Pocket Lab node agent NATS error: {exc}", file=sys.stderr)
+        self._log_connection_error(exc, context="nats_error")
 
     async def publish(
-        self, subject: str, event_type: str, data: Dict[str, Any]
+        self, subject: str, event_type: str, data: Dict[str, Any], *, critical: bool = False
     ) -> None:
         event = {
             "id": uuid.uuid4().hex,
@@ -364,23 +404,139 @@ class PocketLabNodeAgent:
             "trace_id": data.get("command_id") or data.get("trace_id"),
             "data": data,
         }
-        assert self.nc is not None
-        await self.nc.publish(
-            subject, json.dumps(event, separators=(",", ":")).encode("utf-8")
-        )
-        await self.nc.flush(timeout=1)
+        if self.nc is None or not self.connection_ready.is_set():
+            raise ConnectionError("nats_not_connected")
+        await self.nc.publish(subject, json.dumps(event, separators=(",", ":")).encode("utf-8"))
+        if critical:
+            await self.nc.flush(timeout=2)
 
-    async def register(self) -> None:
-        await self.publish(
+    async def register(self) -> bool:
+        return await self.safe_publish(
             "pocketlab.events.fleet.node_seen",
             "fleet.node_seen",
             {
                 **self.base_payload(),
-                **self.system_profile_update(force_publish=True),
-                "system_health": self.refresh_system_health(force=True),
+                "system_health": self.refresh_system_health(force=False),
                 "seen_at": now_iso(),
             },
+            critical=True,
         )
+
+    async def publish_profile(self, *, force: bool = False) -> bool:
+        profile = self.system_profile_update(force_publish=force)
+        if not profile:
+            return True
+        return await self.safe_publish(
+            "pocketlab.events.fleet.node_profile",
+            "fleet.node_profile",
+            {**self.base_payload(), **profile, "profile_reported_at": now_iso()},
+            critical=force,
+        )
+
+    async def publish_capabilities(self, *, critical: bool = False) -> bool:
+        return await self.safe_publish(
+            "pocketlab.events.fleet.node_capabilities",
+            "fleet.node_capabilities",
+            {
+                **self.base_payload(),
+                "capabilities": self.capabilities,
+                "advertised_capabilities": self.capabilities,
+                "capability_schema_version": 1,
+                "capabilities_reported_at": now_iso(),
+            },
+            critical=critical,
+        )
+
+    async def synchronize_after_connect(self, *, reason: str) -> None:
+        async with self.reconnect_sync_lock:
+            self.reconnect_count += int(reason == "nats-reconnected")
+            self.connection_generation += 1
+            self.connected_at = now_iso()
+            self.refresh_system_health(force=True)
+            await self.register()
+            await self.publish_profile(force=True)
+            await self.publish_capabilities(critical=True)
+            await self.safe_publish(
+                "pocketlab.events.fleet.node_heartbeat",
+                "fleet.node_heartbeat",
+                {
+                    **self.base_payload(),
+                    "system_health": self.refresh_system_health(force=False),
+                    "heartbeat_at": now_iso(),
+                    "reason": reason,
+                    "connection_generation": self.connection_generation,
+                },
+                critical=True,
+            )
+
+    def _connect_kwargs(self) -> Dict[str, Any]:
+        connect_kwargs: Dict[str, Any] = {
+            "servers": [self.nats_url],
+            "name": f"pocketlab-agent-{self.node_id}",
+            "max_reconnect_attempts": 0,
+            "disconnected_cb": self.on_disconnected,
+            "reconnected_cb": self.on_reconnected,
+            "closed_cb": self.on_closed,
+            "error_cb": self.on_error,
+            "connect_timeout": 5,
+        }
+        if self.nats_user:
+            connect_kwargs["user"] = self.nats_user
+        if self.nats_password:
+            connect_kwargs["password"] = self.nats_password
+        if self.nats_token:
+            connect_kwargs["token"] = self.nats_token
+        if self.nats_tls or self.nats_tls_ca or self.nats_tls_cert:
+            context = ssl.create_default_context(cafile=self.nats_tls_ca or None)
+            if self.nats_tls_cert and self.nats_tls_key:
+                context.load_cert_chain(self.nats_tls_cert, self.nats_tls_key)
+            connect_kwargs["tls"] = context
+        return connect_kwargs
+
+    async def connection_manager(self) -> None:
+        attempt = 0
+        connected_once = False
+        while not self.stop_event.is_set():
+            try:
+                async with self.connection_lock:
+                    self.disconnected_event.clear()
+                    self.nc = await nats.connect(**self._connect_kwargs())
+                    self.connection_ready.set()
+                    for subject in (f"pocketlab.commands.node.{self.node_id}.>", "pocketlab.commands.node.all.>"):
+                        await self.nc.subscribe(subject, cb=self.handle_command)
+                    await self.synchronize_after_connect(
+                        reason="nats-reconnected" if connected_once else "agent-started"
+                    )
+                    connected_once = True
+                    attempt = 0
+                stop_task = asyncio.create_task(self.stop_event.wait())
+                disconnect_task = asyncio.create_task(self.disconnected_event.wait())
+                done, pending = await asyncio.wait(
+                    {stop_task, disconnect_task}, return_when=asyncio.FIRST_COMPLETED
+                )
+                for task in pending:
+                    task.cancel()
+                if self.stop_event.is_set():
+                    break
+            except Exception as exc:
+                self._log_connection_error(exc, context="connect_failed")
+            finally:
+                self.connection_ready.clear()
+                current = self.nc
+                self.nc = None
+                if current is not None:
+                    try:
+                        await current.close()
+                    except Exception:
+                        pass
+            if self.stop_event.is_set():
+                break
+            delay = self.reconnect_delay(attempt)
+            attempt += 1
+            try:
+                await asyncio.wait_for(self.stop_event.wait(), timeout=delay)
+            except asyncio.TimeoutError:
+                pass
 
     async def heartbeat_loop(self) -> None:
         while not self.stop_event.is_set():
@@ -389,14 +545,22 @@ class PocketLabNodeAgent:
                 "fleet.node_heartbeat",
                 {
                     **self.base_payload(),
-                    **self.system_profile_update(),
                     "heartbeat_at": now_iso(),
+                    "connection_generation": self.connection_generation,
                 },
             )
             try:
                 await asyncio.wait_for(
                     self.stop_event.wait(), timeout=max(5, self.heartbeat_seconds)
                 )
+            except asyncio.TimeoutError:
+                continue
+
+    async def profile_loop(self) -> None:
+        while not self.stop_event.is_set():
+            await self.publish_profile(force=False)
+            try:
+                await asyncio.wait_for(self.stop_event.wait(), timeout=60)
             except asyncio.TimeoutError:
                 continue
 
@@ -466,7 +630,7 @@ class PocketLabNodeAgent:
             else:
                 result = {"message": f"Unsupported node command: {command_name}"}
                 status = "unsupported"
-            await self.publish(
+            await self.safe_publish(
                 "pocketlab.events.fleet.node_command_result",
                 "fleet.node_command_result",
                 {
@@ -477,9 +641,10 @@ class PocketLabNodeAgent:
                     "result": result,
                     "finished_at": now_iso(),
                 },
+                critical=True,
             )
         except Exception as exc:
-            await self.publish(
+            await self.safe_publish(
                 "pocketlab.events.fleet.node_command_result",
                 "fleet.node_command_result",
                 {
@@ -487,59 +652,36 @@ class PocketLabNodeAgent:
                     "command_id": command_id or uuid.uuid4().hex,
                     "command": command_name,
                     "status": "failed",
-                    "error": str(exc),
+                    "error_type": type(exc).__name__,
+                    "error_reason": "command_execution_failed",
                     "finished_at": now_iso(),
                 },
+                critical=True,
             )
 
     async def run(self) -> int:
         if nats is None:
             print("nats-py is required for pocketlab_node_agent.py", file=sys.stderr)
             return 2
-        connect_kwargs = {
-            "servers": [self.nats_url],
-            "name": f"pocketlab-agent-{self.node_id}",
-            "reconnect_time_wait": 2,
-            "max_reconnect_attempts": -1,
-            "disconnected_cb": self.on_disconnected,
-            "reconnected_cb": self.on_reconnected,
-            "closed_cb": self.on_closed,
-            "error_cb": self.on_error,
-        }
-        if self.nats_user:
-            connect_kwargs["user"] = self.nats_user
-        if self.nats_password:
-            connect_kwargs["password"] = self.nats_password
-        if self.nats_token:
-            connect_kwargs["token"] = self.nats_token
-        if self.nats_tls or self.nats_tls_ca or self.nats_tls_cert:
-            context = ssl.create_default_context(cafile=self.nats_tls_ca or None)
-            if self.nats_tls_cert and self.nats_tls_key:
-                context.load_cert_chain(self.nats_tls_cert, self.nats_tls_key)
-            connect_kwargs["tls"] = context
         self.refresh_system_profile(force=True)
         self.refresh_system_health(force=True)
-        self.nc = await nats.connect(**connect_kwargs)
-        await self.register()
-        subjects = [
-            f"pocketlab.commands.node.{self.node_id}.>",
-            "pocketlab.commands.node.all.>",
-        ]
-        for subject in subjects:
-            await self.nc.subscribe(subject, cb=self.handle_command)
         tasks = [
+            asyncio.create_task(self.connection_manager()),
             asyncio.create_task(self.heartbeat_loop()),
             asyncio.create_task(self.telemetry_loop()),
+            asyncio.create_task(self.profile_loop()),
         ]
         await self.stop_event.wait()
+        if self.connection_ready.is_set():
+            await self.safe_publish(
+                "pocketlab.events.fleet.node_left",
+                "fleet.node_left",
+                {**self.base_payload(), "status": "offline", "left_at": now_iso()},
+                critical=True,
+            )
         for task in tasks:
             task.cancel()
-        await self.publish(
-            "pocketlab.events.fleet.node_left",
-            "fleet.node_left",
-            {**self.base_payload(), "status": "offline", "left_at": now_iso()},
-        )
-        await self.nc.drain()
+        await asyncio.gather(*tasks, return_exceptions=True)
         return 0
 
 
@@ -559,7 +701,8 @@ def main() -> int:
     except KeyboardInterrupt:
         return 0
     except Exception as exc:
-        print(f"Pocket Lab node agent failed: {exc}", file=sys.stderr)
+        reason = PocketLabNodeAgent._error_reason(exc)
+        print(f"Pocket Lab node agent failed: reason={reason}", file=sys.stderr)
         return 1
 
 

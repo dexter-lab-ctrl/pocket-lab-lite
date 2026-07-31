@@ -939,7 +939,7 @@ export function selectDeviceIdentitySummaryView(device = {}) {
   return {
     display_model: systemProfile.display_model,
     platform_label: [systemProfile.os_name, systemProfile.os_version].filter(Boolean).join(' ') || systemProfile.runtime_type || 'System details unavailable',
-    architecture_label: systemProfile.android_abi || systemProfile.architecture || 'Architecture unavailable',
+    architecture_label: systemProfile.architecture_family || systemProfile.android_abi || systemProfile.architecture_raw || systemProfile.architecture || 'Architecture unavailable',
     uptime_label: systemHealth.uptime_label || 'Uptime unavailable',
     system_profile: systemProfile,
     system_health: systemHealth,
@@ -989,7 +989,7 @@ function normalizeDeviceRemovalAssessment(value) {
   if (!isObject(value)) return null;
   return {
     ...copySafeKeys(value, [
-      'node_id', 'safe_to_remove', 'confirmation_required', 'assessment_revision',
+      'node_id', 'safe_to_remove', 'allowed', 'protected', 'policy', 'confirmation_required', 'assessment_revision',
       'assessed_at', 'staleness_state', 'source_revision', 'awareness_revision', 'summary',
     ]),
     blockers: Array.isArray(value.blockers) ? value.blockers.slice(0, 16).map((item) => isObject(item) ? copySafeKeys(item, ['code', 'summary']) : null).filter(Boolean) : [],
@@ -1079,6 +1079,20 @@ export function selectDeviceProactiveHealthView(value = {}) {
     recovery,
     versions,
     dependency_impact: dependency,
+    operational_health: isObject(value.operational_health) ? copySafeKeys(value.operational_health, [
+      'status', 'severity', 'summary', 'connection_status', 'freshness',
+    ]) : {},
+    software_posture: isObject(value.software_posture) ? copySafeKeys(value.software_posture, [
+      'status', 'verification_pending', 'summary',
+    ]) : {},
+    recovery_posture: isObject(value.recovery_posture) ? copySafeKeys(value.recovery_posture, [
+      'status', 'summary', 'automatic_recovery_available', 'supervisor_freshness',
+    ]) : {},
+    profile_completeness: isObject(value.profile_completeness) ? {
+      ...copySafeKeys(value.profile_completeness, ['status', 'freshness', 'summary']),
+      present_fields: Array.isArray(value.profile_completeness.present_fields)
+        ? value.profile_completeness.present_fields.slice(0, 12).map(safeString).filter(Boolean) : [],
+    } : {},
     sanitized: value.sanitized !== false,
   };
 }

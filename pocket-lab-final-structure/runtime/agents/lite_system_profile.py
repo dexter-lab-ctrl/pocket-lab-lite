@@ -188,6 +188,22 @@ def _termux_version(
     return sanitize_public_text(match.group(1), limit=80) if match else ""
 
 
+def normalize_architecture(value: Any) -> tuple[str, str]:
+    raw = sanitize_public_text(value, limit=80).lower()
+    aliases = {
+        "aarch64": "arm64",
+        "arm64": "arm64",
+        "arm64-v8a": "arm64",
+        "armeabi-v7a": "arm32",
+        "armv7l": "arm32",
+        "x86_64": "x86_64",
+        "amd64": "x86_64",
+        "x86": "x86",
+        "i686": "x86",
+    }
+    return raw, aliases.get(raw, raw or "unknown")
+
+
 def collect_system_profile(
     *,
     agent_version: str,
@@ -221,6 +237,9 @@ def collect_system_profile(
         security_patch = ""
         unavailable.append("security_patch")
 
+    architecture_raw, architecture_family = normalize_architecture(
+        values.get("android_abi") or values.get("architecture") or platform.machine()
+    )
     profile: dict[str, Any] = {
         "schema_version": PROFILE_SCHEMA_VERSION,
         "os_family": "android" if android else sanitize_public_text(platform.system().lower(), limit=32) or "unknown",
@@ -231,7 +250,9 @@ def collect_system_profile(
         "manufacturer": values.get("manufacturer", ""),
         "technical_model": values.get("technical_model", ""),
         "device_codename": values.get("device_codename", ""),
-        "architecture": values.get("architecture", "") or sanitize_public_text(platform.machine()),
+        "architecture": architecture_family,
+        "architecture_raw": architecture_raw,
+        "architecture_family": architecture_family,
         "android_abi": values.get("android_abi", ""),
         "kernel": values.get("kernel", "") or sanitize_public_text(platform.release()),
         "runtime_type": runtime_type,

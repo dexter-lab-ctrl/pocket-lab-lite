@@ -185,7 +185,7 @@ function DeviceCard({
         {responsibilitySummary(device) ? <small>{responsibilitySummary(device)}</small> : <small>No active dependencies reported.</small>}
         {device?.removal_assessment ? (
           <small className={device.removal_assessment.safe_to_remove ? 'is-ready' : 'is-review'}>
-            {device.removal_assessment.safe_to_remove ? 'Safe to remove after confirmation' : 'Not safe to remove'}
+            {device.removal_assessment.protected ? 'Protected server host' : (device.removal_assessment.allowed ?? device.removal_assessment.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}
           </small>
         ) : null}
       </div>
@@ -226,7 +226,7 @@ function DeviceCard({
             disabled={removeBusy}
           >
             <Trash2 className="h-4 w-4" />
-            {device?.removal_assessment?.safe_to_remove ? 'Remove old device' : 'Review'}
+            {(device?.removal_assessment?.allowed ?? device?.removal_assessment?.safe_to_remove) ? 'Remove device' : 'Review'}
           </LiteButton>
         ) : null}
       </div>

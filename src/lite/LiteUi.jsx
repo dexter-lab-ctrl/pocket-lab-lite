@@ -184,7 +184,7 @@ export function deviceCapabilityLabels(device) {
     ? capabilitySource.map((item) => {
       if (item && typeof item === 'object') {
         const status = String(item.status || 'unknown').toLowerCase();
-        if (!['ready', 'available'].includes(status)) return '';
+        if (!['verified', 'ready'].includes(status)) return '';
         return item.label || DEVICE_CAPABILITY_LABELS[item.id] || String(item.id || '').replace(/_/g, ' ');
       }
       return DEVICE_CAPABILITY_LABELS[item] || String(item || '').replace(/_/g, ' ');
@@ -231,7 +231,7 @@ export function canRemoveDevice(device) {
 
   const assessment = device?.removal_assessment;
   const staleness = String(device?.staleness_state || device?.last_seen_state?.staleness_state || '').toLowerCase();
-  if (assessment && typeof assessment === 'object' && assessment.safe_to_remove) return true;
+  if (assessment && typeof assessment === 'object' && (assessment.allowed ?? assessment.safe_to_remove)) return true;
   return ['joining', 'waiting', 'offline', 'stale'].includes(connection)
     || ['joining', 'pending', 'invited', 'offline', 'stale', 'agent_stopped'].includes(status)
     || ['stale', 'review_recommended'].includes(staleness);

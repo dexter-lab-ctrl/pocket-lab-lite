@@ -23,7 +23,8 @@ _LIFECYCLE_EXPORT_EXECUTOR = concurrent.futures.ThreadPoolExecutor(
 )
 _PROFILE_TEXT_FIELDS = (
     "os_family", "os_name", "os_version", "security_patch", "manufacturer",
-    "technical_model", "device_codename", "architecture", "android_abi", "kernel",
+    "technical_model", "device_codename", "architecture", "architecture_raw",
+    "architecture_family", "android_abi", "kernel",
     "runtime_type", "termux_version", "python_version", "agent_version",
     "profile_fingerprint", "collection_status", "collected_at",
 )
@@ -511,7 +512,12 @@ def _event_timestamp_fields(event_type: str, data: Dict[str, Any], now: str) -> 
     if normalized.endswith("node_health"):
         result["last_health_at"] = data.get("sampled_at") or data.get("checked_at") or now
     if normalized.endswith("node_supervisor"):
-        result["last_supervisor_heartbeat_at"] = data.get("checked_at") or data.get("seen_at") or now
+        result["last_supervisor_heartbeat_at"] = data.get("checked_at") or data.get("reported_at") or data.get("seen_at") or now
+    if normalized.endswith("node_profile"):
+        profile = data.get("system_profile") if isinstance(data.get("system_profile"), dict) else {}
+        result["last_system_profile_at"] = profile.get("collected_at") or data.get("profile_reported_at") or now
+    if normalized.endswith("node_capabilities"):
+        result["last_capabilities_at"] = data.get("capabilities_reported_at") or now
     if normalized.endswith("node_reconnected") or data.get("nats_connected_at"):
         result["last_nats_connected_at"] = data.get("nats_connected_at") or data.get("reconnected_at") or now
     if normalized.endswith("node_left") or data.get("last_nats_disconnected_at"):
@@ -604,6 +610,12 @@ def _upsert_agent_unlocked(
         return existing
 
     event_fields = _event_timestamp_fields(event_type, data, now)
+    requested_role = str(data.get("role") or existing.get("role") or "compute").strip().lower().replace("-", "_")
+    effective_role = (
+        "server_host" if control_plane_claim
+        else "compute" if requested_role in {"server_host", "server", "control_plane", "control_plane_host"}
+        else requested_role or "compute"
+    )
     normalized_event = str(event_type or "").lower()
     is_heartbeat = normalized_event.endswith("node_heartbeat") or normalized_event.endswith("node_seen")
     is_join_start = normalized_event.endswith("agent_join_started")
@@ -647,7 +659,7 @@ def _upsert_agent_unlocked(
         or data.get("name")
         or existing.get("hostname")
         or node_id,
-        "role": "server_host" if control_plane_claim else (data.get("role") or existing.get("role") or "compute"),
+        "role": effective_role,
         "ip": data.get("ip") or data.get("tailnet_ip") or existing.get("ip") or "",
         "tailnet_ip": data.get("tailnet_ip")
         or data.get("ip")
@@ -728,6 +740,9 @@ def _upsert_agent_unlocked(
     )
     if supervisor_seen:
         merged["supervisor_status"] = data.get("supervisor_status") or existing.get("supervisor_status") or "unknown"
+        merged["supervisor_process_status"] = data.get("supervisor_process_status") or existing.get("supervisor_process_status") or "unknown"
+        merged["supervisor_evidence_schema_version"] = int(data.get("evidence_schema_version") or existing.get("supervisor_evidence_schema_version") or 1)
+        merged["supervisor_evidence_delivery_status"] = data.get("evidence_delivery_status") or existing.get("supervisor_evidence_delivery_status") or "unknown"
         merged["agent_process"] = data.get("agent_process") or existing.get("agent_process")
         merged["agent_process_status"] = data.get("agent_process_status") or existing.get("agent_process_status") or "unknown"
         merged["supervisor_process"] = data.get("supervisor_process") or existing.get("supervisor_process")
@@ -784,6 +799,16 @@ def _upsert_agent_unlocked(
     agents[node_id] = merged
     payload["updated_at"] = now
     _write(_state_path("fleet_agents.json"), payload)
+
+    if is_supervisor:
+        try:
+            from .lite_control_plane_store import CONTROL_PLANE
+
+            CONTROL_PLANE.record_supervisor_evidence({**data, "node_id": node_id})
+        except Exception:
+            # The sanitized JSON registry remains a last-good fallback; a failed
+            # SQLite evidence write must not block heartbeat ingestion.
+            pass
 
     if is_invited and previous_status not in {"invited", "pending"}:
         append_device_lifecycle_event(
@@ -905,6 +930,8 @@ def handle_agent_event(event: Dict[str, Any]) -> None:
         "node_health",
         "node_left",
         "node_supervisor",
+        "node_profile",
+        "node_capabilities",
         "node_reconnected",
     )
     if not subject.endswith(agent_event_suffixes):
@@ -1031,6 +1058,9 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "storage_available_gb": agent.get("storage_available_gb"),
                 "supervisor_status": agent.get("supervisor_status"),
                 "supervisor_version": agent.get("supervisor_version"),
+                "supervisor_process_status": agent.get("supervisor_process_status"),
+                "supervisor_evidence_schema_version": agent.get("supervisor_evidence_schema_version"),
+                "supervisor_evidence_delivery_status": agent.get("supervisor_evidence_delivery_status"),
                 "agent_process": agent.get("agent_process"),
                 "agent_process_status": agent.get("agent_process_status"),
                 "last_supervisor_at": agent.get("last_supervisor_at"),
@@ -1041,6 +1071,7 @@ def agent_fleet_nodes() -> List[Dict[str, Any]]:
                 "last_heartbeat_at": agent.get("last_heartbeat_at"),
                 "last_telemetry_at": agent.get("last_telemetry_at"),
                 "last_system_profile_at": agent.get("last_system_profile_at"),
+                "last_capabilities_at": agent.get("last_capabilities_at"),
                 "last_supervisor_heartbeat_at": agent.get("last_supervisor_heartbeat_at"),
                 "last_command_received_at": agent.get("last_command_received_at"),
                 "last_command_completed_at": agent.get("last_command_completed_at"),
