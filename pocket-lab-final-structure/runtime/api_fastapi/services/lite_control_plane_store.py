@@ -4154,6 +4154,7 @@ class ControlPlaneProjectionStore:
         profiles = self.device_profile_map()
         awareness = self.device_awareness_map()
         health = self.device_health_map()
+        supervisors = self.supervisor_state_map()
         devices: list[dict[str, Any]] = []
         for base in enrolled[:256]:
             device_id = str(base.get("id") or base.get("node_id") or "")
@@ -4167,6 +4168,55 @@ class ControlPlaneProjectionStore:
             if device_id in health:
                 item["proactive_health"] = health[device_id]
                 item["health_status"] = health[device_id].get("status")
+            supervisor = supervisors.get(device_id)
+            if supervisor:
+                # Canonical SQLite evidence is newer and more authoritative than
+                # the protected-host process fallback captured in last_valid_state_json.
+                # Apply it on every prepared read so a fresh supervisor cycle does
+                # not have to wait for an unrelated fleet projection rebuild.
+                item.update({
+                    "supervisor_status": supervisor.get("supervisor_status") or item.get("supervisor_status") or "unknown",
+                    "supervisor_version": supervisor.get("supervisor_version") or item.get("supervisor_version") or "",
+                    "supervisor_process_status": supervisor.get("supervisor_process_status") or item.get("supervisor_process_status") or "unknown",
+                    "agent_process_status": supervisor.get("agent_process_status") or item.get("agent_process_status") or "unknown",
+                    "supervisor_status_source": supervisor.get("source") or "sqlite_supervisor_evidence",
+                    "supervisor_status_freshness": supervisor.get("freshness") or "stale",
+                    "supervisor_evidence_schema_version": supervisor.get("evidence_schema_version"),
+                    "last_supervisor_heartbeat_at": supervisor.get("checked_at") or item.get("last_supervisor_heartbeat_at"),
+                    "recovery_available": bool(
+                        supervisor.get("freshness") == "fresh"
+                        and supervisor.get("supervisor_status") in {"healthy", "online", "available", "repairing"}
+                    ),
+                })
+                convergence = item.get("convergence") if isinstance(item.get("convergence"), dict) else {}
+                profile_value = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
+                profile_ready = bool(
+                    convergence.get("profile_ready")
+                    or profile_value.get("technical_model")
+                    or profile_value.get("architecture_family")
+                    or profile_value.get("architecture")
+                )
+                supervisor_ready = bool(
+                    item.get("supervisor_status_freshness") == "fresh"
+                    and item.get("supervisor_status") in {"healthy", "online", "available", "repairing"}
+                )
+                item["convergence"] = {
+                    **convergence,
+                    "state": "ready" if profile_ready and supervisor_ready else "waiting_for_details",
+                    "profile_ready": profile_ready,
+                    "supervisor_ready": supervisor_ready,
+                    "last_good_projection": True,
+                    "target_seconds": int(convergence.get("target_seconds") or 45),
+                }
+                field_freshness = item.get("field_freshness") if isinstance(item.get("field_freshness"), dict) else {}
+                item["field_freshness"] = {
+                    **field_freshness,
+                    "supervisor": {
+                        "reported_at": supervisor.get("checked_at"),
+                        "state": supervisor.get("freshness") or "stale",
+                        "source": supervisor.get("source") or "sqlite_supervisor_evidence",
+                    },
+                }
             if str(item.get("connection") or "").lower() != "online" and not item.get("protected_server_host"):
                 item.update({
                     "status": "Offline",
