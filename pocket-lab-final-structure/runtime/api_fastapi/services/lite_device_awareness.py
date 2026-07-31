@@ -20,6 +20,9 @@ STALE_SECONDS = max(
 REVIEW_SECONDS = max(
     STALE_SECONDS, min(int(os.environ.get("POCKETLAB_FLEET_REVIEW_SECONDS", str(30 * 24 * 60 * 60))), 365 * 24 * 60 * 60)
 )
+CONNECTION_HEARTBEAT_SECONDS = max(30, min(int(os.environ.get("POCKETLAB_FLEET_CONNECTION_HEARTBEAT_SECONDS", "90")), 15 * 60))
+SERVER_SUPERVISOR_FALLBACK_SECONDS = max(30, min(int(os.environ.get("POCKETLAB_FLEET_SERVER_SUPERVISOR_SECONDS", "120")), 15 * 60))
+
 MAX_LIFECYCLE_EVENTS = max(
     20, min(int(os.environ.get("POCKETLAB_FLEET_LIFECYCLE_EVENT_LIMIT", "200")), 1000)
 )
@@ -475,7 +478,19 @@ def enrich_device(
     mismatch_events = [item for item in recent_events if item["event_type"] == "identity_mismatch_blocked"]
 
     status = str(device.get("status") or device.get("connection") or "").lower()
-    online = status in {"healthy", "active", "online", "ready"}
+    now_epoch_ms = int(time.time() * 1000)
+    heartbeat_at = device.get("last_heartbeat_at") or device.get("last_seen_at") or device.get("last_seen")
+    supervisor_at = device.get("last_supervisor_heartbeat_at") or device.get("last_supervisor_at")
+    heartbeat_epoch = _epoch_ms(heartbeat_at)
+    supervisor_epoch = _epoch_ms(supervisor_at)
+    heartbeat_age_seconds = max(0, int((now_epoch_ms - heartbeat_epoch) / 1000)) if heartbeat_epoch else None
+    supervisor_age_seconds = max(0, int((now_epoch_ms - supervisor_epoch) / 1000)) if supervisor_epoch else None
+    heartbeat_fresh = heartbeat_age_seconds is not None and heartbeat_age_seconds <= CONNECTION_HEARTBEAT_SECONDS
+    supervisor_fresh = supervisor_age_seconds is not None and supervisor_age_seconds <= SERVER_SUPERVISOR_FALLBACK_SECONDS
+    # Joined-device connectivity is heartbeat-authoritative. A supervisor report
+    # proves recovery ownership, not command-channel reachability. The protected
+    # local server may use fresh local supervisor evidence as a bounded fallback.
+    online = bool(heartbeat_fresh or (protected and supervisor_fresh))
     first_heartbeat = device.get("first_heartbeat_at")
     accepted_at = invite.get("accepted_at") or device.get("accepted_at")
     identity_status = str(device.get("identity_status") or "").lower()
@@ -524,7 +539,8 @@ def enrich_device(
             ("recovery", device.get("last_recovery_at") or device.get("last_supervisor_repair_at")),
         )
     )
-    staleness = _staleness(last_seen_at, online)
+    connection_seen_at = last_seen_at if protected else heartbeat_at
+    staleness = _staleness(connection_seen_at, online)
 
     hosted_apps = context.get("hosted_apps", {}).get(device_id, [])
     backup = context.get("backup_dependencies", {}).get(device_id, {})
@@ -660,12 +676,13 @@ def enrich_device(
         "last_nats_disconnected_at": device.get("last_nats_disconnected_at"),
         "last_tailnet_ready_at": device.get("last_tailnet_ready_at"),
         "last_recovery_at": device.get("last_recovery_at") or device.get("last_supervisor_repair_at"),
-        "heartbeat_age_seconds": staleness["age_seconds"],
-        "supervisor_age_seconds": (
-            max(0, int((int(time.time() * 1000) - _epoch_ms(device.get("last_supervisor_at"))) / 1000))
-            if _epoch_ms(device.get("last_supervisor_at")) else None
-        ),
-        "connection_age_seconds": staleness["age_seconds"],
+        "heartbeat_age_seconds": heartbeat_age_seconds,
+        "supervisor_age_seconds": supervisor_age_seconds,
+        "connection_age_seconds": heartbeat_age_seconds if not protected else min(
+            value for value in (heartbeat_age_seconds, supervisor_age_seconds) if value is not None
+        ) if any(value is not None for value in (heartbeat_age_seconds, supervisor_age_seconds)) else None,
+        "connection_source": "heartbeat" if heartbeat_fresh else "local_supervisor" if protected and supervisor_fresh else "heartbeat_stale",
+        "connection_fresh": online,
         "staleness_state": staleness["state"],
         "stale_since": staleness["stale_since"],
         "review_recommended": staleness["review_recommended"],
@@ -729,8 +746,32 @@ def enrich_device(
         "staleness_state": staleness["state"],
     }
 
+    canonical_status = status
+    if status not in {"joining", "accepted", "pending", "invited", "invite_sent", "repairing", "supervisor_repairing", "agent_stopped"}:
+        canonical_status = "healthy" if online else "offline"
+    canonical_connection = (
+        "repairing" if status in {"repairing", "supervisor_repairing"}
+        else "stopped" if status == "agent_stopped"
+        else "joining" if status in {"joining", "accepted", "setup_started"}
+        else "waiting" if status in {"pending", "invited", "invite_sent"}
+        else "online" if online
+        else "offline"
+    )
+
     return {
         **device,
+        "status": canonical_status,
+        "connection": canonical_connection,
+        "last_heartbeat_at": heartbeat_at,
+        "last_supervisor_heartbeat_at": supervisor_at,
+        "connection_truth": {
+            "state": canonical_connection,
+            "source": "heartbeat" if heartbeat_fresh else "local_supervisor" if protected and supervisor_fresh else "heartbeat_timeout",
+            "heartbeat_age_seconds": heartbeat_age_seconds,
+            "supervisor_age_seconds": supervisor_age_seconds,
+            "heartbeat_timeout_seconds": CONNECTION_HEARTBEAT_SECONDS,
+            "server_supervisor_timeout_seconds": SERVER_SUPERVISOR_FALLBACK_SECONDS if protected else None,
+        },
         "advertised_capabilities": sorted(_normalized_advertised_capabilities(device)),
         "capabilities": [item for item in (device.get("capabilities") or []) if isinstance(item, str)][:32],
         "capability_states": capabilities,

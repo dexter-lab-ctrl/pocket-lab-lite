@@ -196,21 +196,39 @@ export function deviceCapabilityLabels(device) {
   return [...new Set(labels)].slice(0, 5);
 }
 
-export function deviceConnectionLabel(device) {
-  const connection = String(device?.connection || '').toLowerCase();
-  const role = String(device?.role || '').toLowerCase();
+
+export function deviceCapabilitySummary(device) {
+  const states = Array.isArray(device?.capability_states) ? device.capability_states : [];
+  const counts = { verified: 0, pending: 0, unavailable: 0, notAdvertised: 0, total: states.length };
+  states.forEach((item) => {
+    const status = String(item?.status || 'unknown').toLowerCase();
+    const reason = String(item?.reason_code || '').toLowerCase();
+    if (status === 'ready') counts.verified += 1;
+    else if (status === 'available') counts.pending += 1;
+    else if (reason === 'capability_not_advertised' || status === 'unknown') counts.notAdvertised += 1;
+    else counts.unavailable += 1;
+  });
+  const parts = [];
+  if (counts.verified) parts.push(`${counts.verified} verified`);
+  if (counts.pending) parts.push(`${counts.pending} pending`);
+  if (counts.unavailable) parts.push(`${counts.unavailable} unavailable`);
+  return { ...counts, label: parts.join(' · ') || 'No verified capabilities yet' };
+}
+
+export function canonicalDevicePresentation(device) {
+  const connection = String(device?.connection_truth?.state || device?.connection || '').toLowerCase();
   const status = String(device?.status || '').toLowerCase();
+  if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return { state: 'repairing', label: 'Repairing' };
+  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return { state: 'agent_stopped', label: 'Agent stopped' };
+  if (connection === 'offline' || ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)) return { state: 'offline', label: 'Offline' };
+  if (connection === 'online') return { state: 'online', label: 'Online' };
+  if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return { state: 'joining', label: 'Joining' };
+  if (connection === 'waiting' || ['pending', 'invited', 'invite_sent'].includes(status)) return { state: 'waiting', label: 'Waiting' };
+  return { state: 'unknown', label: 'Checking' };
+}
 
-  if (role === 'server_host') return 'Online';
-  if (connection === 'stopped' || ['agent_stopped', 'stopped'].includes(status)) return 'Stopped';
-  if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return 'Repairing';
-  if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) return 'Online';
-  if (connection === 'joining' || ['joining', 'accepted', 'setup_started'].includes(status)) return 'Joining';
-  if (connection === 'waiting' || ['pending', 'invited', 'invite_sent'].includes(status)) return 'Waiting';
-  if (connection === 'offline' || ['offline', 'failed', 'unhealthy', 'degraded', 'stale'].includes(status)) return 'Offline';
-  if (connection === 'unknown' && (device?.last_seen || device?.last_seen_at)) return 'Offline';
-
-  return device?.remote_access ? 'Online' : 'Not setup yet';
+export function deviceConnectionLabel(device) {
+  return canonicalDevicePresentation(device).label;
 }
 
 export function canRestartDeviceAgent(device) {
@@ -862,12 +880,10 @@ export function friendlyOverallLabel(overall) {
 
 export function deviceLinkState(device) {
   const role = String(device?.role || '').toLowerCase();
-  const status = String(device?.status || '').toLowerCase();
-  const connection = String(device?.connection || '').toLowerCase();
-
   if (role === 'server_host' || device?.is_current || device?.isCurrent) return 'server';
-  if (connection === 'online' || ['healthy', 'active', 'online', 'ready'].includes(status)) return 'joined';
-  if (connection === 'repairing' || ['repairing', 'supervisor_repairing'].includes(status)) return 'repairing';
+  const state = canonicalDevicePresentation(device).state;
+  if (state === 'online') return 'joined';
+  if (state === 'repairing') return 'repairing';
   return 'disconnected';
 }
 

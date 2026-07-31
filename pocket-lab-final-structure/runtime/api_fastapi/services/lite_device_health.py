@@ -484,12 +484,24 @@ def evaluate_device_health(
     )
     staleness = _status(device.get("staleness_state") or last_seen.get("staleness_state"))
     reconnect_count = _integer(signals.get("reconnect_count") or device.get("reconnect_count")) or 0
+    # Cumulative reconnect counts include planned NATS, agent, supervisor and
+    # control-plane restarts. Only explicit unplanned evidence may lower health.
+    unplanned_reconnect_count = _integer(
+        signals.get("unplanned_reconnect_count")
+        or device.get("unplanned_reconnect_count")
+    ) or 0
+    maintenance_active = bool(
+        signals.get("maintenance_active")
+        or device.get("maintenance_active")
+        or device.get("maintenance_window_active")
+    )
     dependencies = device.get("dependencies") if isinstance(device.get("dependencies"), dict) else {}
     command_delivery = _status(dependencies.get("command_delivery_status"))
     last_connected_at = last_seen.get("last_nats_connected_at")
     reconnect_age = _age_seconds(last_connected_at, now_epoch)
     reconnects_in_window = bool(
-        reconnect_count >= 4
+        not maintenance_active
+        and unplanned_reconnect_count >= 4
         and reconnect_age is not None
         and reconnect_age <= int(policy["reconnect_window_seconds"])
     )
@@ -505,7 +517,7 @@ def evaluate_device_health(
         connection_summary = "The device has stopped reporting."
     elif reconnects_in_window:
         connection_status = "intermittent"
-        connection_summary = f"The device reconnected {reconnect_count} times during the recent connection window."
+        connection_summary = f"The device had {unplanned_reconnect_count} unplanned reconnects during the recent connection window."
     elif dependencies.get("remote_access_status") in {"not_ready", "unavailable", "remote_access_not_ready"}:
         connection_status = "remote_access_not_ready"
         connection_summary = "The local device connection is available, but remote access is not ready."
@@ -519,6 +531,8 @@ def evaluate_device_health(
         "status": connection_status,
         "summary": connection_summary,
         "reconnect_count": reconnect_count,
+        "unplanned_reconnect_count": unplanned_reconnect_count,
+        "maintenance_active": maintenance_active,
         "command_delivery_status": command_delivery or "unknown",
         "remote_access_status": _status(dependencies.get("remote_access_status")) or "unknown",
         "last_connected_at": _safe_text(last_connected_at, 64) or None,

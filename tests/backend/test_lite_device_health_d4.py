@@ -189,6 +189,7 @@ def test_d4_connection_recovery_versions_and_dependency_impact_are_truthful():
     signals = _signals(
         telemetry={**_signals()["telemetry"], "free_space_mb": 2_000},
         reconnect_count=5,
+        unplanned_reconnect_count=5,
         supervisor_repair_count=5,
         agent_version="2.4.0",
     )
@@ -661,7 +662,7 @@ def test_d4_reconnect_window_boundary_avoids_stale_session_alarm(monkeypatch):
     monkeypatch.setenv("POCKETLAB_DEVICE_HEALTH_RECONNECT_WINDOW_SECONDS", "3600")
     recent = evaluate_device_health(
         _device(),
-        signals=_signals(reconnect_count=4),
+        signals=_signals(reconnect_count=4, unplanned_reconnect_count=4),
         now_epoch=NOW_EPOCH,
     )
     assert recent["connection"]["status"] == "intermittent"

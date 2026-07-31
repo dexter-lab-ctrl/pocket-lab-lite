@@ -668,6 +668,7 @@ def test_lite_fleet_stale_agent_renders_offline_connection(tmp_path, monkeypatch
     assert "agents" in state
     state["agents"]["stale-phone"]["last_seen_epoch"] = 1
     state["agents"]["stale-phone"]["last_seen_at"] = "2026-01-01T00:00:00Z"
+    state["agents"]["stale-phone"]["last_heartbeat_at"] = "2026-01-01T00:00:00Z"
     deps.core.write_json_file(state_path, state)
 
     response = client().get("/api/lite/fleet")
