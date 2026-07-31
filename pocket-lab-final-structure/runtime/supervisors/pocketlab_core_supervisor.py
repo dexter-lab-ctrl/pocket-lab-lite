@@ -16,6 +16,7 @@ import re
 import signal
 import socket
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -205,12 +206,73 @@ class LiteCoreSupervisor:
             "POCKETLAB_CORE_SUPERVISOR_MAX_RESTART_BACKOFF_SECONDS", "1800"
         )))
         self.restart_history, self.restart_generations = self._load_restart_state()
+        self.server_node_id = self._canonical_server_node_id()
 
     def _state_root(self) -> Path:
         configured = os.environ.get("POCKETLAB_STATE_DIR") or os.environ.get("STATE_DIR")
         if configured:
             return Path(configured).expanduser()
         return Path.home() / ".pocket_lab"
+
+    def _canonical_server_node_id(self) -> str:
+        raw = (
+            os.environ.get("POCKETLAB_SERVER_NODE_ID")
+            or os.environ.get("POCKETLAB_NODE_ID")
+            or "pocket-lab-lite-server"
+        )
+        normalized = re.sub(r"[^a-z0-9]+", "-", str(raw).strip().lower()).strip("-")
+        return normalized or "pocket-lab-lite-server"
+
+    def _persist_canonical_evidence(self, payload: Dict[str, Any]) -> None:
+        """Persist bounded Server Host supervisor truth through the canonical store.
+
+        This path is deliberately independent from PM2 discovery in the API process and
+        from NATS availability. The supervisor owns the observation, while the existing
+        SQLite writer owns serialization, ordering fences, and projection invalidation.
+        """
+        observed = payload.get("observed_after") if isinstance(payload.get("observed_after"), dict) else {}
+        if not observed:
+            observed = payload.get("observed_before") if isinstance(payload.get("observed_before"), dict) else {}
+        services = observed.get("services") if isinstance(observed.get("services"), dict) else {}
+        checks = observed.get("checks") if isinstance(observed.get("checks"), dict) else {}
+        processes = load_pm2_processes()
+        supervisor_process_status = process_status(processes, "pocketlab-core-supervisor")
+        agent_process_status = process_status(processes, "pocket-node-agent")
+        if supervisor_process_status == "missing":
+            supervisor_process_status = "online"
+        repair_actions = payload.get("actions") if isinstance(payload.get("actions"), list) else []
+        repair_count = sum(1 for item in repair_actions if isinstance(item, dict) and item.get("acted") is not False)
+        evidence = {
+            "node_id": self.server_node_id,
+            "evidence_schema_version": 1,
+            "supervisor_status": str(payload.get("supervisor_status") or "unknown").lower(),
+            "supervisor_version": SUPERVISOR_VERSION,
+            "supervisor_process_status": supervisor_process_status,
+            "agent_process_status": agent_process_status,
+            "nats_reachable": bool(checks.get("nats_tcp_reachable")),
+            "repair_result": "repairing" if repair_count else "not_needed",
+            "repair_reason_code": "core_service_repair" if repair_count else "",
+            "repair_count": repair_count,
+            "checked_at": payload.get("checked_at") or now_iso(),
+        }
+        try:
+            runtime_root = str(Path(__file__).resolve().parents[1])
+            if runtime_root not in sys.path:
+                sys.path.insert(0, runtime_root)
+            from api_fastapi.services.lite_control_plane_store import CONTROL_PLANE
+
+            CONTROL_PLANE.record_supervisor_evidence(evidence)
+        except Exception as exc:
+            self._append_event({
+                "event": "canonical_supervisor_evidence_write_failed",
+                "error_type": type(exc).__name__,
+                "acted": False,
+            })
+
+    def _finalize_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        self._write_json(self.state_file, payload)
+        self._persist_canonical_evidence(payload)
+        return payload
 
     def _load_last_actions(self) -> Dict[str, float]:
         try:
@@ -452,7 +514,7 @@ class LiteCoreSupervisor:
                 "restart_policy": self.restart_diagnostics(),
                 "capabilities": ["core-service-supervision", "maintenance-aware", "restore-recovery-aware", "pm2-repair", "restart-budgets"],
             }
-            self._write_json(self.state_file, payload)
+            self._finalize_payload(payload)
             self._append_event({
                 "event": "maintenance_restart_suppressed",
                 "operation_id": maintenance.get("operation_id"),
@@ -471,7 +533,7 @@ class LiteCoreSupervisor:
                 "restart_generations": self.restart_generations,
                 "restart_policy": self.restart_diagnostics(),
             }
-            self._write_json(self.state_file, payload)
+            self._finalize_payload(payload)
             self._append_event({"event": "pm2_missing", "severity": "warning"})
             return payload
 
@@ -584,7 +646,7 @@ class LiteCoreSupervisor:
             },
             "capabilities": ["core-service-supervision", "nats-client-recovery", "pm2-repair", "anti-flap-proxy-health", "restart-budgets", "restart-generation-evidence"],
         }
-        self._write_json(self.state_file, payload)
+        self._finalize_payload(payload)
         if actions:
             self._append_event({"event": "tick_actions", "status": supervisor_status, "actions": actions})
         return payload

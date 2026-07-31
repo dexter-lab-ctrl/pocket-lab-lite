@@ -111,6 +111,38 @@ def _uptime_label(value: Any) -> str:
     return ", ".join(parts[:2])
 
 
+def _effective_command_records(
+    registry_commands: list[dict[str, Any]],
+    lifecycle_by_id: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Overlay delivery records with authoritative SQLite lifecycle truth.
+
+    Fleet registry files can retain an old queued/published state after SQLite has
+    reconciled the same command to a terminal state. Removal policy must never
+    treat that stale delivery record as an active command.
+    """
+    effective_records: list[dict[str, Any]] = []
+    seen_command_ids: set[str] = set()
+    for raw in registry_commands:
+        if not isinstance(raw, dict):
+            continue
+        command_id = _public_text(raw.get("command_id") or raw.get("id"), 120)
+        authoritative = lifecycle_by_id.get(command_id) if command_id else None
+        effective_records.append(
+            {**raw, **authoritative} if isinstance(authoritative, dict) else dict(raw)
+        )
+        if command_id:
+            seen_command_ids.add(command_id)
+    for command_id, authoritative in lifecycle_by_id.items():
+        if command_id in seen_command_ids or not isinstance(authoritative, dict):
+            continue
+        if str(authoritative.get("status") or "").lower() in {
+            "queued", "published", "received", "accepted", "running"
+        }:
+            effective_records.append(dict(authoritative))
+    return effective_records
+
+
 def _public_system_health(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
         return {}
@@ -1325,7 +1357,9 @@ def lite_fleet() -> dict[str, Any]:
 
     try:
         CONTROL_PLANE.reconcile_command_lifecycle(limit=100)
-        commands = list_commands(limit=500)
+        registry_commands = list_commands(limit=500)
+        lifecycle_by_id = CONTROL_PLANE.command_lifecycle_status_map(limit=1000)
+        commands = _effective_command_records(registry_commands, lifecycle_by_id)
     except Exception:
         commands = []
     merged_devices = lite_device_awareness.enrich_devices(

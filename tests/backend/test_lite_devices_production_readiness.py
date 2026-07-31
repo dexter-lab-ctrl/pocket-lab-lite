@@ -278,3 +278,84 @@ def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, mo
     assert server["supervisor_evidence_schema_version"] == 1
     assert server["removal_assessment"]["policy"] == "protected"
     assert server["capability_states"][0]["status"] == "verified"
+
+
+def test_core_supervisor_persists_canonical_server_host_evidence():
+    root = Path(__file__).resolve().parents[2]
+    source = (
+        root
+        / "pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py"
+    ).read_text(encoding="utf-8")
+    assert '"node_id": self.server_node_id' in source
+    assert '"supervisor_version": SUPERVISOR_VERSION' in source
+    assert 'CONTROL_PLANE.record_supervisor_evidence(evidence)' in source
+    assert '"event": "canonical_supervisor_evidence_write_failed"' in source
+    assert '"error_type": type(exc).__name__' in source
+
+
+def test_command_lifecycle_terminal_truth_overrides_stale_registry_blocker():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_device_awareness import enrich_device
+    from api_fastapi.services.lite_status import _effective_command_records
+
+    commands = _effective_command_records(
+        [{
+            "command_id": "cmd-1",
+            "node_id": "phone-two",
+            "status": "queued",
+        }],
+        {
+            "cmd-1": {
+                "command_id": "cmd-1",
+                "entity_type": "device",
+                "entity_id": "phone-two",
+                "node_id": "phone-two",
+                "status": "succeeded",
+                "source": "sqlite_command_lifecycle",
+            }
+        },
+    )
+    context = {"invites": [], "events": [], "hosted_apps": {}, "backup_dependencies": {}}
+    enriched = enrich_device({
+        "id": "phone-two",
+        "node_id": "phone-two",
+        "name": "Phone Two",
+        "role": "compute",
+        "status": "online",
+        "connection": "online",
+        "identity_status": "verified",
+        "first_heartbeat_at": _iso(-60),
+        "last_heartbeat_at": _iso(),
+        "last_seen_at": _iso(),
+        "agent_process_status": "online",
+        "supervisor_status": "healthy",
+        "advertised_capabilities": ["receive_commands"],
+    }, context=context, commands=commands)
+    removal = enriched["removal_assessment"]
+    assert all(item["code"] != "pending_commands" for item in removal["blockers"])
+    assert removal["policy"] == "confirmation_required"
+    assert removal["allowed"] is True
+
+
+def test_command_lifecycle_active_sqlite_truth_is_included_without_registry_record():
+    ensure_runtime_path()
+    from api_fastapi.services.lite_status import _effective_command_records
+
+    commands = _effective_command_records([], {
+        "cmd-2": {
+            "command_id": "cmd-2",
+            "entity_type": "device",
+            "entity_id": "phone-two",
+            "node_id": "phone-two",
+            "status": "running",
+            "source": "sqlite_command_lifecycle",
+        }
+    })
+    assert commands == [{
+        "command_id": "cmd-2",
+        "entity_type": "device",
+        "entity_id": "phone-two",
+        "node_id": "phone-two",
+        "status": "running",
+        "source": "sqlite_command_lifecycle",
+    }]

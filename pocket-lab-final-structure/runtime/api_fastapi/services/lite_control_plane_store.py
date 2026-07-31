@@ -5637,6 +5637,43 @@ class ControlPlaneProjectionStore:
             wait_ms=wait_ms, query_ms=query_ms,
         )
 
+    def command_lifecycle_status_map(self, *, limit: int = 1000) -> dict[str, dict[str, Any]]:
+        """Return the authoritative bounded command lifecycle state by command id.
+
+        Registry command files are delivery evidence and may lag terminal SQLite
+        reconciliation. Removal policy must therefore use this canonical map before
+        treating a command as active.
+        """
+        self.initialize()
+        bounded = max(1, min(int(limit), 2000))
+
+        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+            return list(conn.execute(
+                "SELECT command_id,entity_type,entity_id,operation_type,status,"
+                "created_at,updated_at,deadline_at,summary "
+                "FROM command_lifecycle "
+                "ORDER BY updated_at_epoch_ms DESC, command_id DESC LIMIT ?",
+                (bounded,),
+            ))
+
+        rows, _, _ = self._read(read)
+        return {
+            str(row["command_id"]): {
+                "command_id": str(row["command_id"]),
+                "entity_type": _safe_text(row["entity_type"], 40),
+                "entity_id": _safe_text(row["entity_id"], 120),
+                "node_id": _safe_text(row["entity_id"], 120) if _safe_text(row["entity_type"], 40) == "device" else "",
+                "operation_type": _safe_text(row["operation_type"], 80),
+                "status": _safe_text(row["status"], 32).lower(),
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"],
+                "deadline_at": row["deadline_at"],
+                "summary": _safe_text(row["summary"], 240),
+                "source": "sqlite_command_lifecycle",
+            }
+            for row in rows
+        }
+
     def command_history(
         self, *, entity_type: str = "", entity_id: str = "", limit: int = 20, cursor: str = ""
     ) -> dict[str, Any]:
