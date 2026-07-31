@@ -32,7 +32,8 @@ def _text(value: Any, default: str = "") -> str:
 
 _PUBLIC_PROFILE_TEXT_FIELDS = (
     "os_family", "os_name", "os_version", "security_patch", "manufacturer",
-    "technical_model", "device_codename", "architecture", "android_abi", "kernel",
+    "technical_model", "device_codename", "architecture", "architecture_raw",
+    "architecture_family", "android_abi", "kernel",
     "runtime_type", "termux_version", "python_version", "agent_version",
     "supervisor_version", "collection_status", "profile_status", "collected_at",
     "profile_updated_at", "freshness",
@@ -725,16 +726,36 @@ _DUMMY_DEVICE_IDS = {
 
 
 def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build the protected host from canonical identity plus last-good projections."""
     now = deps.now_utc_iso()
     name = os.environ.get("POCKETLAB_DEVICE_NAME", "Pocket Lab Lite Server")
-    node_id = normalize_node_id(os.environ.get("POCKETLAB_NODE_ID") or "pocket-lab-lite-server")
+    node_id = normalize_node_id(
+        os.environ.get("POCKETLAB_SERVER_NODE_ID")
+        or os.environ.get("POCKETLAB_NODE_ID")
+        or "pocket-lab-lite-server"
+    )
     role_info = lite_invites.role_metadata("server_host")
     remote_access = remote_access or lite_remote_access_status()
     ready = bool(remote_access.get("ready"))
 
-    # Read only worker-prepared, sanitized local process projections here. Fresh
-    # supervisor/agent events are merged later and take precedence; no remote
-    # device ever receives local PM2 evidence.
+    profile_record: dict[str, Any] = {}
+    supervisor_record: dict[str, Any] = {}
+    try:
+        from .lite_control_plane_store import CONTROL_PLANE
+
+        profiles = CONTROL_PLANE.device_profile_map()
+        supervisors = CONTROL_PLANE.supervisor_state_map()
+        profile_record = profiles.get(node_id) or profiles.get("pocket-lab-lite-server") or {}
+        supervisor_record = supervisors.get(node_id) or supervisors.get("pocket-lab-lite-server") or {}
+    except Exception:
+        # Prepared fleet reads retain their last-good snapshot when this transient
+        # lookup fails; do not fabricate fresh profile timestamps.
+        pass
+
+    system_profile = _public_system_profile(profile_record.get("system_profile"))
+    system_health = _public_system_health(profile_record.get("system_health"))
+    profile_at = _public_text(system_profile.get("collected_at") or system_profile.get("profile_updated_at"), 64) or None
+
     process_snapshot: dict[str, Any] = {}
     agent_snapshot: dict[str, Any] = {}
     supervisor_snapshot: dict[str, Any] = {}
@@ -752,37 +773,46 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         for item in (process_snapshot.get("items") or [])
         if isinstance(item, dict)
     }
-    agent_item = next(
-        (
-            item for item in (agent_snapshot.get("items") or [])
-            if isinstance(item, dict) and normalize_node_id(item.get("device_id")) == node_id
-        ),
-        {},
-    )
-    supervisor_item = next(
-        (
-            item for item in (supervisor_snapshot.get("items") or [])
-            if isinstance(item, dict) and normalize_node_id(item.get("device_id")) == node_id
-        ),
-        {},
-    )
-    agent_pm2 = _public_text(
-        (process_items.get("pocket-node-agent") or {}).get("status"), 32
-    ) or _public_text(agent_item.get("process_status"), 32) or "unknown"
-    supervisor_pm2 = _public_text(
-        (process_items.get("pocketlab-core-supervisor") or {}).get("status"), 32
-    ) or "unknown"
-    projected_supervisor = _public_text(supervisor_item.get("supervisor_status"), 32)
-    supervisor_status = projected_supervisor or supervisor_pm2 or "unknown"
-    process_updated_at = _public_text(
-        process_snapshot.get("updated_at")
-        or supervisor_snapshot.get("updated_at")
-        or agent_snapshot.get("updated_at"),
-        64,
+    agent_item = next((
+        item for item in (agent_snapshot.get("items") or [])
+        if isinstance(item, dict) and normalize_node_id(item.get("device_id")) == node_id
+    ), {})
+    supervisor_item = next((
+        item for item in (supervisor_snapshot.get("items") or [])
+        if isinstance(item, dict) and normalize_node_id(item.get("device_id")) == node_id
+    ), {})
+
+    agent_pm2 = _public_text((process_items.get("pocket-node-agent") or {}).get("status"), 32) \
+        or _public_text(agent_item.get("process_status"), 32) or "unknown"
+    supervisor_pm2 = _public_text((process_items.get("pocketlab-core-supervisor") or {}).get("status"), 32) or "unknown"
+    evidence_status = _public_text(supervisor_record.get("supervisor_status"), 32)
+    projected_status = _public_text(supervisor_item.get("supervisor_status"), 32)
+    supervisor_status = evidence_status or projected_status or "unknown"
+    supervisor_process_status = _public_text(
+        supervisor_record.get("supervisor_process_status"), 32
+    ) or supervisor_pm2
+    supervisor_at = _public_text(
+        supervisor_record.get("checked_at") or supervisor_item.get("checked_at")
+        or supervisor_snapshot.get("updated_at"), 64
     ) or None
+    supervisor_freshness = _public_text(supervisor_record.get("freshness"), 24) or ("saved" if supervisor_at else "unavailable")
+    agent_version = _public_text(system_profile.get("agent_version"), 80)
+    supervisor_version = _public_text(supervisor_record.get("supervisor_version") or system_profile.get("supervisor_version"), 80)
+    profile_ready = bool(system_profile.get("technical_model") or system_profile.get("architecture_family") or system_profile.get("architecture"))
+    supervisor_ready = bool(supervisor_status in {"healthy", "online", "available"} and supervisor_freshness == "fresh")
+
+    field_freshness = {
+        "heartbeat": {"state": "current", "reported_at": now, "source": "protected_host_runtime"},
+        "telemetry": {"state": "current", "reported_at": now, "source": "protected_host_runtime"},
+        "system_profile": {"state": system_profile.get("freshness") or "unavailable", "reported_at": profile_at, "source": "sqlite_last_good_profile" if profile_at else "unavailable"},
+        "supervisor": {"state": supervisor_freshness, "reported_at": supervisor_at, "source": supervisor_record.get("source") or "prepared_process_projection"},
+        "capabilities": {"state": "current", "reported_at": now, "source": "protected_host_policy"},
+        "remote_access": {"state": "current" if remote_access.get("checked_at") else "saved", "reported_at": remote_access.get("checked_at"), "source": "tailscale_runtime"},
+    }
 
     return {
         "id": node_id,
+        "node_id": node_id,
         "name": name,
         "status": "healthy",
         "last_seen": now,
@@ -804,37 +834,49 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
             "supervisor_recovery", "remote_access", "serve_control_plane",
             "access_phone_media",
         ],
-        "capability_labels": lite_device_capabilities.labels_for_capabilities(lite_device_capabilities.capability_ids_for_role("server_host")),
+        "capability_schema_version": 1,
+        "capability_labels": lite_device_capabilities.labels_for_capabilities(
+            lite_device_capabilities.capability_ids_for_role("server_host")
+        ),
         "identity_status": "protected_server_host",
+        "identity_owner": "durable_enrollment_registry",
         "enrollment_status": "ready",
         "identity_verified_at": now,
         "enrolled_at": now,
         "first_ready_at": now,
         "last_heartbeat_at": now,
-        "last_system_profile_at": now,
+        "last_system_profile_at": profile_at,
+        "last_capabilities_at": now,
         "last_nats_connected_at": now,
         "last_tailnet_ready_at": now if ready else None,
+        "agent_version": agent_version,
+        "agent_version_source": "last_valid_system_profile" if agent_version else "unknown",
+        "agent_version_freshness": system_profile.get("freshness") or "unknown",
         "agent_process_status": agent_pm2,
-        "agent_process_status_source": (
-            "protected_host_pm2_projection" if agent_pm2 != "unknown" else "unknown"
-        ),
-        "agent_process_status_freshness": "saved" if process_updated_at else "unknown",
+        "agent_process_status_source": "protected_host_pm2_projection" if agent_pm2 != "unknown" else "unknown",
+        "agent_process_status_freshness": "saved" if process_snapshot.get("updated_at") else "unknown",
         "supervisor_status": supervisor_status,
-        "supervisor_status_source": (
-            "protected_host_supervisor_projection"
-            if projected_supervisor
-            else "protected_host_pm2_projection"
-            if supervisor_pm2 != "unknown"
-            else "unknown"
-        ),
-        "supervisor_status_freshness": "saved" if process_updated_at else "unknown",
-        "last_supervisor_heartbeat_at": process_updated_at,
-        "recovery_available": supervisor_status in {"healthy", "online", "available", "repairing", "recovering"}
-            or supervisor_pm2 == "online",
+        "supervisor_version": supervisor_version,
+        "supervisor_process_status": supervisor_process_status,
+        "supervisor_status_source": supervisor_record.get("source") or ("protected_host_supervisor_projection" if projected_status else "unknown"),
+        "supervisor_status_freshness": supervisor_freshness,
+        "supervisor_evidence_schema_version": supervisor_record.get("evidence_schema_version"),
+        "last_supervisor_heartbeat_at": supervisor_at,
+        "recovery_available": supervisor_ready,
+        "system_profile": system_profile,
+        "system_health": system_health,
+        "field_freshness": field_freshness,
+        "convergence": {
+            "state": "ready" if profile_ready and supervisor_ready else "waiting_for_details",
+            "profile_ready": profile_ready,
+            "supervisor_ready": supervisor_ready,
+            "last_good_projection": bool(profile_record or supervisor_record),
+            "target_seconds": 45,
+        },
         "is_current": True,
-        "source": "lite-server",
+        "protected_server_host": True,
+        "source": "lite-server-canonical",
     }
-
 
 def _device_identity(item: dict[str, Any]) -> str:
     return normalize_node_id(str(item.get("id") or item.get("node_id") or item.get("hostname") or item.get("name") or ""))
@@ -981,7 +1023,10 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "advertised_capabilities": item.get("advertised_capabilities") if isinstance(item.get("advertised_capabilities"), list) else item.get("capabilities") if isinstance(item.get("capabilities"), list) else [],
         "source": item.get("source") or "fleet",
         "agent_process_status": item.get("agent_process_status"),
+        "supervisor_process_status": item.get("supervisor_process_status"),
         "supervisor_status": item.get("supervisor_status"),
+        "supervisor_evidence_schema_version": item.get("supervisor_evidence_schema_version"),
+        "supervisor_evidence_delivery_status": item.get("supervisor_evidence_delivery_status"),
         "last_supervisor_at": item.get("last_supervisor_at"),
         "supervisor_repair_count": item.get("supervisor_repair_count"),
         "last_supervisor_repair_at": item.get("last_supervisor_repair_at"),
@@ -1052,7 +1097,7 @@ def _lite_device_from_node(item: dict[str, Any]) -> dict[str, Any] | None:
         "last_identity_mismatch_at", "last_identity_reason_code",
         "blocked_join_count", "last_blocked_join_at", "repair_required",
         "repair_reason_code", "last_heartbeat_at", "last_telemetry_at",
-        "last_system_profile_at", "last_supervisor_heartbeat_at",
+        "last_system_profile_at", "last_capabilities_at", "last_supervisor_heartbeat_at",
         "last_command_received_at", "last_command_completed_at",
         "last_nats_connected_at", "last_nats_disconnected_at",
         "last_tailnet_ready_at", "last_recovery_at", "last_recovery_result",
@@ -1084,6 +1129,14 @@ def _merge_lite_device(existing: dict[str, Any], incoming: dict[str, Any]) -> di
         merged = {**existing, **incoming}
     else:
         merged = {**incoming, **existing}
+    existing_profile = existing.get("system_profile") if isinstance(existing.get("system_profile"), dict) else {}
+    incoming_profile = incoming.get("system_profile") if isinstance(incoming.get("system_profile"), dict) else {}
+    existing_health = existing.get("system_health") if isinstance(existing.get("system_health"), dict) else {}
+    incoming_health = incoming.get("system_health") if isinstance(incoming.get("system_health"), dict) else {}
+    if existing_profile or incoming_profile:
+        merged["system_profile"] = _public_system_profile({**existing_profile, **incoming_profile})
+    if existing_health or incoming_health:
+        merged["system_health"] = _public_system_health({**existing_health, **incoming_health})
     merged["last_seen"] = incoming.get("last_seen") or existing.get("last_seen")
     merged["last_seen_at"] = incoming.get("last_seen_at") or existing.get("last_seen_at")
     merged["remote_access"] = bool(existing.get("remote_access") or incoming.get("remote_access"))
@@ -1164,8 +1217,10 @@ def lite_fleet() -> dict[str, Any]:
         from .lite_control_plane_store import CONTROL_PLANE
 
         profile_map = CONTROL_PLANE.device_profile_map()
+        supervisor_map = CONTROL_PLANE.supervisor_state_map()
     except Exception:
         profile_map = {}
+        supervisor_map = {}
 
     merged_devices = []
     for item in devices_by_id.values():
@@ -1189,9 +1244,45 @@ def lite_fleet() -> dict[str, Any]:
                 "system_profile": merged_profile,
                 "system_health": _public_system_health({**projected_health, **live_health}),
             }
+        supervisor = supervisor_map.get(str(item.get("id") or ""))
+        if supervisor:
+            item = {
+                **item,
+                "supervisor_status": supervisor.get("supervisor_status") or item.get("supervisor_status") or "unknown",
+                "supervisor_version": supervisor.get("supervisor_version") or item.get("supervisor_version") or "",
+                "supervisor_process_status": supervisor.get("supervisor_process_status") or item.get("supervisor_process_status") or "unknown",
+                "agent_process_status": supervisor.get("agent_process_status") or item.get("agent_process_status") or "unknown",
+                "supervisor_status_source": supervisor.get("source") or "sqlite_supervisor_evidence",
+                "supervisor_status_freshness": supervisor.get("freshness") or "stale",
+                "supervisor_evidence_schema_version": supervisor.get("evidence_schema_version"),
+                "last_supervisor_heartbeat_at": supervisor.get("checked_at") or item.get("last_supervisor_heartbeat_at"),
+                "recovery_available": bool(
+                    supervisor.get("freshness") == "fresh"
+                    and supervisor.get("supervisor_status") in {"healthy", "online", "available", "repairing"}
+                ),
+            }
+        profile_value = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
+        profile_ready = bool(profile_value.get("technical_model") or profile_value.get("architecture_family") or profile_value.get("architecture"))
+        supervisor_ready = bool(item.get("supervisor_status_freshness") == "fresh" and item.get("supervisor_status") in {"healthy", "online", "available", "repairing"})
+        item["convergence"] = {
+            "state": "ready" if profile_ready and supervisor_ready else "waiting_for_details",
+            "profile_ready": profile_ready,
+            "supervisor_ready": supervisor_ready,
+            "last_good_projection": bool(profile or supervisor),
+            "target_seconds": 45,
+        }
+        item["field_freshness"] = {
+            "heartbeat": {"reported_at": item.get("last_heartbeat_at") or item.get("last_seen_at"), "source": "agent_heartbeat"},
+            "telemetry": {"reported_at": item.get("last_telemetry_at"), "source": "agent_telemetry"},
+            "system_profile": {"reported_at": item.get("last_system_profile_at") or profile_value.get("collected_at"), "source": "sqlite_last_good_profile" if profile else "agent_profile"},
+            "supervisor": {"reported_at": item.get("last_supervisor_heartbeat_at"), "state": item.get("supervisor_status_freshness") or "unavailable", "source": item.get("supervisor_status_source") or "unknown"},
+            "capabilities": {"reported_at": item.get("last_capabilities_at"), "source": "agent_capabilities"},
+            "remote_access": {"reported_at": item.get("last_tailnet_ready_at"), "source": "agent_private_connection"},
+        }
         merged_devices.append(item)
 
     try:
+        CONTROL_PLANE.reconcile_command_lifecycle(limit=100)
         commands = list_commands(limit=500)
     except Exception:
         commands = []

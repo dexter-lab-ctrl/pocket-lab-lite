@@ -95,10 +95,10 @@ def test_d3_capabilities_are_verified_not_inferred_from_role():
     }, context={"invites": [], "events": [], "hosted_apps": {}, "backup_dependencies": {}}, commands=[])
     capabilities = {item["id"]: item for item in device["capability_states"]}
 
-    assert capabilities["receive_commands"]["status"] == "ready"
-    assert capabilities["run_safety_checks"]["status"] == "available"
-    assert capabilities["host_apps"]["status"] == "unknown"
-    assert capabilities["provide_storage"]["status"] == "unknown"
+    assert capabilities["receive_commands"]["status"] == "verified"
+    assert capabilities["run_safety_checks"]["status"] == "verification_pending"
+    assert capabilities["host_apps"]["status"] == "not_advertised"
+    assert capabilities["provide_storage"]["status"] == "not_advertised"
     assert all("token" not in json.dumps(item).lower() for item in device["capability_states"])
 
 
@@ -171,6 +171,7 @@ def test_d2_d3_projection_is_change_only_bounded_and_revision_fenced(tmp_path, m
 
     history = store.device_lifecycle_history("old-phone", limit=10)
     assert history["items"]
+    assert history["total_count"] == len(history["items"])
     assert all(item["sanitized"] for item in history["items"])
     assert "token" not in json.dumps(history).lower()
 
@@ -202,6 +203,7 @@ def test_d2_d3_focused_device_reads_support_etag_and_304(tmp_path, monkeypatch):
 
     history = client().get("/api/lite/devices/old-phone/history?limit=20")
     assert history.status_code == 200
+    assert history.json()["total_count"] >= history.json()["count"]
     assert history.headers.get("etag")
     history_304 = client().get(
         "/api/lite/devices/old-phone/history?limit=20",

@@ -555,7 +555,8 @@ def test_d4_unknown_version_is_safe_and_schema_incompatibility_is_explicit():
     assert unknown["versions"]["node_agent"]["status"] == "unknown"
     assert unknown["versions"]["status"] == "unknown"
     assert "schema_incompatible" not in unknown["reason_codes"]
-    assert unknown["status"] == "unknown"
+    assert unknown["status"] == "healthy"
+    assert unknown["software_posture"]["status"] == "verification_pending"
 
     incompatible = evaluate_device_health(
         _device(),
@@ -800,7 +801,10 @@ def test_d4_missing_optional_supervisor_does_not_block_current_device_health():
 
     assert health["source_freshness"]["supervisor"]["state"] == "missing"
     assert health["source_freshness"]["state"] == "current"
-    assert health["source_freshness"]["optional_state"] == "unavailable"
+    assert health["source_freshness"]["optional_state"] == {
+        "system_profile": "current",
+        "supervisor": "missing",
+    }
     assert health["versions"]["supervisor"]["status"] == "unknown"
     assert health["versions"]["status"] == "current"
     assert health["status"] == "healthy"

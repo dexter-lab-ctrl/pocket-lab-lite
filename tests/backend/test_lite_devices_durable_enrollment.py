@@ -27,7 +27,7 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     prepare_sqlite_test_database(target, monkeypatch)
     from api_fastapi.db.migrations import apply_migrations
 
-    assert apply_migrations() == list(range(1, 23))
+    assert apply_migrations() == list(range(1, 24))
     return target
 
 
@@ -361,7 +361,7 @@ def test_protected_host_uses_prepared_local_process_truth_only(monkeypatch):
     assert server["agent_process_status_source"] == "protected_host_pm2_projection"
     assert server["supervisor_status"] == "healthy"
     assert server["supervisor_status_source"] == "protected_host_supervisor_projection"
-    assert server["recovery_available"] is True
+    assert server["recovery_available"] is False
     assert server["last_supervisor_heartbeat_at"] == "2026-07-30T10:00:00Z"
 
 

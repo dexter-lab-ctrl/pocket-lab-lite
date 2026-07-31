@@ -91,9 +91,10 @@ function supervisorStatusLabel(device) {
 
 function capabilityStatusLabel(value) {
   const status = normalizeStatus(value);
-  if (status === 'ready') return 'Ready';
-  if (status === 'available') return 'Advertised';
-  if (status === 'not_ready') return 'Not ready';
+  if (['verified', 'ready'].includes(status)) return 'Verified';
+  if (['verification_pending', 'available'].includes(status)) return 'Verification pending';
+  if (['unavailable', 'not_ready'].includes(status)) return 'Unavailable';
+  if (status === 'not_advertised') return 'Not advertised';
   return 'Verification pending';
 }
 
@@ -644,10 +645,10 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
 
         <section className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
           <span>Removal</span>
-          <strong>{removal.safe_to_remove ? 'Safe to remove after confirmation' : 'Not safe to remove'}</strong>
+          <strong>{removal.protected ? 'Protected server host' : (removal.allowed ?? removal.safe_to_remove) ? 'Remove after confirmation' : 'Removal blocked'}</strong>
           {Array.isArray(removal.blockers) && removal.blockers.length ? (
             <ul>{removal.blockers.map((item) => <li key={item.code}>{item.summary}</li>)}</ul>
-          ) : <p>No dependency blockers are currently reported.</p>}
+          ) : <p>{removal.protected ? 'This control device cannot be removed.' : 'No dependency blockers are currently reported.'}</p>}
         </section>
       </div>
 
@@ -678,6 +679,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             datasetKey: `device:${device?.id || device?.name || device?.hostname || 'unknown'}`,
             summary: historyQuery.loading ? 'Loading recent device activity…' : historyItems.length ? `${historyItems.length} safe event${historyItems.length === 1 ? '' : 's'} available.` : 'No device history has been reported yet.',
             items: historyItems,
+            totalCount: Math.max(historyItems.length, Number(historyQuery.data?.total_count || historyQuery.data?.total || 0)),
             enabled: true,
             emptyMessage: 'No device history has been reported yet.',
           }}

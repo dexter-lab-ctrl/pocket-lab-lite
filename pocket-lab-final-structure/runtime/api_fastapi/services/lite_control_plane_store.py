@@ -80,7 +80,8 @@ _COMMAND_LIFECYCLE_STAGES = frozenset({
 })
 _DEVICE_PROFILE_FIELDS = (
     "os_family", "os_name", "os_version", "security_patch", "manufacturer",
-    "technical_model", "device_codename", "architecture", "android_abi", "kernel",
+    "technical_model", "device_codename", "architecture", "architecture_raw",
+    "architecture_family", "android_abi", "kernel",
     "runtime_type", "termux_version", "python_version", "agent_version",
     "profile_fingerprint", "profile_status",
 )
@@ -230,10 +231,24 @@ def _normalized_device_profile(item: dict[str, Any]) -> dict[str, Any]:
     profile_collected_at = _safe_text(profile.get("collected_at") or profile.get("profile_updated_at"), 64)
     health_collected_at = _safe_text(health.get("collected_at") or health.get("health_updated_at"), 64)
     load_average = health.get("load_average") if isinstance(health.get("load_average"), list) else []
+    architecture_raw = _safe_text(
+        profile.get("architecture_raw") or profile.get("android_abi") or profile.get("architecture"), 80
+    ).lower()
+    architecture_aliases = {
+        "aarch64": "arm64", "arm64": "arm64", "arm64-v8a": "arm64",
+        "armeabi-v7a": "arm32", "armv7l": "arm32",
+        "amd64": "x86_64", "x86_64": "x86_64", "i686": "x86", "x86": "x86",
+    }
+    architecture_family = _safe_text(
+        profile.get("architecture_family") or architecture_aliases.get(architecture_raw, architecture_raw), 80
+    ).lower()
     result = {
         "profile_schema_version": _optional_int(profile.get("schema_version"), minimum=1, maximum=100) or 1,
         **{field: _safe_text(profile.get(field), 160) for field in _DEVICE_PROFILE_FIELDS},
         "android_api_level": _optional_int(profile.get("android_api_level"), minimum=1, maximum=999),
+        "architecture_raw": architecture_raw,
+        "architecture_family": architecture_family,
+        "architecture": architecture_family or _safe_text(profile.get("architecture"), 80),
         "supervisor_version": _safe_text(item.get("supervisor_version"), 80),
         "uptime_seconds": _optional_int(health.get("uptime_seconds"), minimum=0, maximum=20 * 365 * 86400),
         "load_average_1m": _optional_float(health.get("load_average_1m") if health.get("load_average_1m") is not None else (load_average[0] if len(load_average) > 0 else None)),
@@ -2340,7 +2355,8 @@ class ControlPlaneProjectionStore:
         columns = (
             "profile_schema_version", "os_family", "os_name", "os_version",
             "android_api_level", "security_patch", "manufacturer", "technical_model",
-            "device_codename", "architecture", "android_abi", "kernel", "runtime_type",
+            "device_codename", "architecture", "architecture_raw", "architecture_family",
+            "android_abi", "kernel", "runtime_type",
             "termux_version", "python_version", "agent_version", "supervisor_version",
             "profile_fingerprint", "profile_status", "uptime_seconds", "load_average_1m",
             "load_average_5m", "load_average_15m", "load_status", "uptime_status", "profile_collected_at",
@@ -2422,7 +2438,9 @@ class ControlPlaneProjectionStore:
                     "generic_fallback"
                 ),
                 "technical_identity_source": "agent",
-                "architecture": _safe_text(row.get("architecture"), 80),
+                "architecture": _safe_text(row.get("architecture_family") or row.get("architecture"), 80),
+                "architecture_raw": _safe_text(row.get("architecture_raw") or row.get("android_abi") or row.get("architecture"), 80),
+                "architecture_family": _safe_text(row.get("architecture_family") or row.get("architecture"), 80),
                 "android_abi": _safe_text(row.get("android_abi"), 80),
                 "kernel": _safe_text(row.get("kernel"), 160),
                 "runtime_type": _safe_text(row.get("runtime_type") or "unknown", 40),
@@ -2509,6 +2527,7 @@ class ControlPlaneProjectionStore:
             "recovery": ControlPlaneProjectionStore._json_value(row.get("recovery_json"), {}),
             "versions": ControlPlaneProjectionStore._json_value(row.get("versions_json"), {}),
             "dependency_impact": ControlPlaneProjectionStore._json_value(row.get("dependency_impact_json"), {}),
+            **ControlPlaneProjectionStore._json_value(row.get("dimensions_json"), {}),
             "sanitized": True,
         }
 
@@ -2580,6 +2599,13 @@ class ControlPlaneProjectionStore:
             "recovery_json": _safe_json(recovery, max_bytes=8192),
             "versions_json": _safe_json(versions, max_bytes=8192),
             "dependency_impact_json": _safe_json(dependency, max_bytes=12288),
+            "dimensions_json": _safe_json({
+                "operational_health": health.get("operational_health") or {},
+                "software_posture": health.get("software_posture") or {},
+                "recovery_posture": health.get("recovery_posture") or {},
+                "profile_completeness": health.get("profile_completeness") or {},
+                "field_freshness": health.get("field_freshness") or {},
+            }, max_bytes=16384),
             "summary": _safe_text(health.get("summary") or "Device health is not available yet.", 240),
             "last_evaluated_at": evaluated_at,
             "last_evaluated_at_epoch_ms": _epoch_ms(evaluated_at),
@@ -3106,6 +3132,9 @@ class ControlPlaneProjectionStore:
             "role": role,
             "protected_server_host": protected,
         }
+        previous_valid = self._json_value(existing.get("last_valid_state_json"), {})
+        if not isinstance(previous_valid, dict):
+            previous_valid = {}
         last_valid = {
             key: item.get(key)
             for key in (
@@ -3113,8 +3142,7 @@ class ControlPlaneProjectionStore:
                 # Do not copy raw/volatile health or storage samples into the
                 # enrollment hash, otherwise same-bucket telemetry drift creates
                 # false fleet projection revisions.
-                "system_profile", "capabilities", "capability_labels",
-                "capability_states", "dependencies",
+                "capabilities", "capability_labels", "capability_states", "dependencies",
                 "agent_version", "supervisor_version", "agent_process_status",
                 "supervisor_status", "last_supervisor_at", "remote_access_status",
                 "removal_assessment", "enrollment", "identity", "last_seen_state",
@@ -3122,9 +3150,33 @@ class ControlPlaneProjectionStore:
             )
             if item.get(key) not in (None, "", [], {})
         }
-        previous_valid = self._json_value(existing.get("last_valid_state_json"), {})
-        if isinstance(previous_valid, dict):
-            last_valid = {**previous_valid, **last_valid}
+        incoming_profile = item.get("system_profile") if isinstance(item.get("system_profile"), dict) else {}
+        if incoming_profile:
+            normalized_profile = _normalized_device_profile(item)
+            previous_profile = (
+                previous_valid.get("system_profile")
+                if isinstance(previous_valid.get("system_profile"), dict)
+                else {}
+            )
+            canonical_profile = {
+                "schema_version": normalized_profile.get("profile_schema_version") or 1,
+                **{
+                    field: normalized_profile.get(field)
+                    for field in _DEVICE_PROFILE_FIELDS
+                    if normalized_profile.get(field) not in (None, "")
+                },
+                "android_api_level": normalized_profile.get("android_api_level"),
+                "collection_status": normalized_profile.get("profile_status") or "unavailable",
+                "collected_at": normalized_profile.get("profile_collected_at"),
+            }
+            # Public projections intentionally omit the private fingerprint. Preserve
+            # the last canonical value so a UI-safe round trip cannot create a
+            # spurious enrollment revision. Presentation-only model labels, freshness,
+            # and profile revision fields are never durable identity facts.
+            if not canonical_profile.get("profile_fingerprint") and previous_profile.get("profile_fingerprint"):
+                canonical_profile["profile_fingerprint"] = previous_profile.get("profile_fingerprint")
+            last_valid["system_profile"] = _strip_empty_projection_value(canonical_profile) or {}
+        last_valid = {**previous_valid, **last_valid}
         material = {
             "identity": canonical_identity,
             "enrollment_status": enrollment_status,
@@ -3320,11 +3372,10 @@ class ControlPlaneProjectionStore:
                     (normalized,),
                 ).fetchone()
                 return {"changed": False, "receipt": dict(prior) if prior else {}, "device": registry}
-            current = conn.execute(
-                "SELECT connection_state FROM device_current_state WHERE device_id=?", (normalized,)
-            ).fetchone()
-            if current and str(current["connection_state"] or "").lower() == "online":
-                raise DeviceAwarenessError(409, "Healthy online devices cannot be removed casually.")
+            # Online state is a warning handled by the explicit assessment and
+            # confirmation fence. It is not a permanent prohibition for a joined
+            # secondary device. Protected hosts, active responsibilities, recovery,
+            # and nonterminal commands remain blockers before this transaction.
             conn.execute(
                 """UPDATE device_enrollment_registry SET
                        enrollment_status='retired', last_known_state='removed',
@@ -3418,6 +3469,101 @@ class ControlPlaneProjectionStore:
         )
         return {str(row["node_id"]): self._public_device_profile(row) for row in rows}
 
+    def record_supervisor_evidence(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Persist sanitized supervisor truth independently from PM2 discovery."""
+        self.initialize()
+        device_id = _safe_text(payload.get("node_id") or payload.get("device_id") or payload.get("id"), 120)
+        if not device_id:
+            raise ValueError("Supervisor evidence requires a device id")
+        checked_at = _safe_text(payload.get("checked_at") or payload.get("reported_at") or _utc_now(), 64)
+        checked_ms = _epoch_ms(checked_at)
+        normalized = {
+            "device_id": device_id,
+            "evidence_schema_version": _optional_int(payload.get("evidence_schema_version"), minimum=1, maximum=100) or 1,
+            "supervisor_status": _safe_text(payload.get("supervisor_status") or "unknown", 32).lower(),
+            "supervisor_version": _safe_text(payload.get("supervisor_version"), 80),
+            "supervisor_process_status": _safe_text(payload.get("supervisor_process_status") or "unknown", 32).lower(),
+            "agent_process_status": _safe_text(payload.get("agent_process_status") or "unknown", 32).lower(),
+            "nats_reachable": int(bool(payload.get("nats_reachable"))),
+            "repair_status": _safe_text(payload.get("repair_result") or "not_needed", 32).lower(),
+            "repair_reason_code": _safe_text(payload.get("repair_reason_code"), 80),
+            "repair_count": max(0, int(payload.get("repair_count") or 0)),
+            "checked_at": checked_at,
+            "checked_at_epoch_ms": checked_ms,
+        }
+        canonical = hashlib.sha256(json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+        now = _utc_now()
+        now_ms = _epoch_ms(now)
+
+        def write(conn: sqlite3.Connection) -> dict[str, Any]:
+            prior = conn.execute("SELECT * FROM device_supervisor_state WHERE device_id=?", (device_id,)).fetchone()
+            if prior is not None:
+                previous = dict(prior)
+                if checked_ms < int(previous.get("checked_at_epoch_ms") or 0):
+                    return {"changed": False, "ignored_out_of_order": True, **previous}
+                if canonical == str(previous.get("canonical_hash") or ""):
+                    return {"changed": False, **previous}
+            conn.execute(
+                """INSERT INTO device_supervisor_state(
+                       device_id,evidence_schema_version,supervisor_status,supervisor_version,
+                       supervisor_process_status,agent_process_status,nats_reachable,repair_status,
+                       repair_reason_code,repair_count,checked_at,checked_at_epoch_ms,canonical_hash,
+                       updated_at,updated_at_epoch_ms
+                   ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                   ON CONFLICT(device_id) DO UPDATE SET
+                       evidence_schema_version=excluded.evidence_schema_version,
+                       supervisor_status=excluded.supervisor_status,
+                       supervisor_version=excluded.supervisor_version,
+                       supervisor_process_status=excluded.supervisor_process_status,
+                       agent_process_status=excluded.agent_process_status,
+                       nats_reachable=excluded.nats_reachable,
+                       repair_status=excluded.repair_status,
+                       repair_reason_code=excluded.repair_reason_code,
+                       repair_count=excluded.repair_count,
+                       checked_at=excluded.checked_at,
+                       checked_at_epoch_ms=excluded.checked_at_epoch_ms,
+                       canonical_hash=excluded.canonical_hash,
+                       updated_at=excluded.updated_at,
+                       updated_at_epoch_ms=excluded.updated_at_epoch_ms""",
+                (device_id, normalized["evidence_schema_version"], normalized["supervisor_status"],
+                 normalized["supervisor_version"], normalized["supervisor_process_status"],
+                 normalized["agent_process_status"], normalized["nats_reachable"],
+                 normalized["repair_status"], normalized["repair_reason_code"], normalized["repair_count"],
+                 checked_at, checked_ms, canonical, now, now_ms),
+            )
+            revision = _bump_revision(conn, "fleet", now, changed_ids=[device_id], reason="device_supervisor_truth_changed", projection_version=4)
+            return {"changed": True, "revision": revision, **normalized, "canonical_hash": canonical}
+
+        result = SQLITE_WRITER.submit("fleet.supervisor.evidence", write, deadline_seconds=1.0)
+        self.invalidate_domain("fleet")
+        return dict(result)
+
+    def supervisor_state_map(self) -> dict[str, dict[str, Any]]:
+        self.initialize()
+        rows, _, _ = self._read(lambda conn: [dict(row) for row in conn.execute(
+            "SELECT * FROM device_supervisor_state ORDER BY device_id"
+        )])
+        now_ms = _epoch_ms()
+        result: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            age_seconds = max(0, int((now_ms - int(row.get("checked_at_epoch_ms") or 0)) / 1000))
+            result[str(row["device_id"])] = {
+                "evidence_schema_version": int(row.get("evidence_schema_version") or 1),
+                "supervisor_status": _safe_text(row.get("supervisor_status"), 32) or "unknown",
+                "supervisor_version": _safe_text(row.get("supervisor_version"), 80),
+                "supervisor_process_status": _safe_text(row.get("supervisor_process_status"), 32) or "unknown",
+                "agent_process_status": _safe_text(row.get("agent_process_status"), 32) or "unknown",
+                "nats_reachable": bool(row.get("nats_reachable")),
+                "repair_status": _safe_text(row.get("repair_status"), 32) or "not_needed",
+                "repair_reason_code": _safe_text(row.get("repair_reason_code"), 80),
+                "repair_count": int(row.get("repair_count") or 0),
+                "checked_at": row.get("checked_at"),
+                "age_seconds": age_seconds,
+                "freshness": "fresh" if age_seconds <= 180 else "stale",
+                "source": "sqlite_supervisor_evidence",
+            }
+        return result
+
     def device_details(self, device_id: str) -> dict[str, Any]:
         self.initialize()
         normalized = _safe_text(device_id, 120)
@@ -3426,7 +3572,7 @@ class ControlPlaneProjectionStore:
 
         def read(conn: sqlite3.Connection) -> tuple[
             sqlite3.Row | None, sqlite3.Row | None, sqlite3.Row | None,
-            sqlite3.Row | None, list[sqlite3.Row]
+            sqlite3.Row | None, sqlite3.Row | None, list[sqlite3.Row]
         ]:
             current = conn.execute(
                 "SELECT * FROM device_current_state WHERE device_id=?", (normalized,)
@@ -3440,15 +3586,18 @@ class ControlPlaneProjectionStore:
             health = conn.execute(
                 "SELECT * FROM device_health_current WHERE device_id=?", (normalized,)
             ).fetchone()
+            supervisor = conn.execute(
+                "SELECT * FROM device_supervisor_state WHERE device_id=?", (normalized,)
+            ).fetchone()
             attention = list(conn.execute(
                 "SELECT * FROM device_health_attention "
                 "WHERE device_id=? AND status IN ('active','acknowledged') "
                 "ORDER BY updated_at_epoch_ms DESC, attention_id DESC LIMIT 64",
                 (normalized,),
             ))
-            return current, profile, awareness, health, attention
+            return current, profile, awareness, health, supervisor, attention
 
-        (current_row, profile_row, awareness_row, health_row, attention_rows), wait_ms, query_ms = self._read(read)
+        (current_row, profile_row, awareness_row, health_row, supervisor_row, attention_rows), wait_ms, query_ms = self._read(read)
         if not current_row:
             raise DeviceAwarenessError(404, "Device was not found.")
         current = dict(current_row)
@@ -3470,6 +3619,19 @@ class ControlPlaneProjectionStore:
         }
         if profile_row:
             payload.update(self._public_device_profile(dict(profile_row)))
+        if supervisor_row:
+            supervisor = dict(supervisor_row)
+            age_seconds = max(0, int((_epoch_ms() - int(supervisor.get("checked_at_epoch_ms") or 0)) / 1000))
+            payload.update({
+                "supervisor_status": supervisor.get("supervisor_status") or "unknown",
+                "supervisor_version": supervisor.get("supervisor_version") or "",
+                "supervisor_process_status": supervisor.get("supervisor_process_status") or "unknown",
+                "agent_process_status": supervisor.get("agent_process_status") or payload.get("agent_process_status") or "unknown",
+                "last_supervisor_heartbeat_at": supervisor.get("checked_at"),
+                "supervisor_status_source": "sqlite_supervisor_evidence",
+                "supervisor_status_freshness": "fresh" if age_seconds <= 180 else "stale",
+                "supervisor_evidence_schema_version": int(supervisor.get("evidence_schema_version") or 1),
+            })
         if awareness_row:
             payload.update(self._public_awareness(dict(awareness_row)))
         if health_row:
@@ -3500,7 +3662,11 @@ class ControlPlaneProjectionStore:
         bounded_limit = max(1, min(int(limit), 100))
         decoded = _decode_cursor(cursor)
 
-        def read(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+        def read(conn: sqlite3.Connection) -> tuple[list[sqlite3.Row], int]:
+            total_count = int(conn.execute(
+                "SELECT COUNT(*) FROM device_lifecycle_events WHERE device_id=?",
+                (normalized,),
+            ).fetchone()[0])
             params: list[Any] = [normalized]
             cursor_clause = ""
             if decoded is not None:
@@ -3510,7 +3676,7 @@ class ControlPlaneProjectionStore:
                 )
                 params.extend([decoded[0], decoded[0], decoded[1]])
             params.append(bounded_limit + 1)
-            return list(conn.execute(
+            rows = list(conn.execute(
                 "SELECT event_id,device_id AS node_id,event_type,reason_code,status,"
                 "occurred_at,occurred_at_epoch_ms,summary,sanitized "
                 "FROM device_lifecycle_events WHERE device_id=?"
@@ -3518,13 +3684,16 @@ class ControlPlaneProjectionStore:
                 + " ORDER BY occurred_at_epoch_ms DESC,event_id DESC LIMIT ?",
                 tuple(params),
             ))
+            return rows, total_count
 
-        rows, wait_ms, query_ms = self._read(read)
-        return self._history_result(
+        (rows, total_count), wait_ms, query_ms = self._read(read)
+        result = self._history_result(
             rows, limit=bounded_limit, epoch_key="occurred_at_epoch_ms",
             id_key="event_id", revision=self.domain_revision("fleet"),
             wait_ms=wait_ms, query_ms=query_ms,
         )
+        result["total_count"] = total_count
+        return result
 
     def device_removal_assessment(self, device_id: str) -> dict[str, Any]:
         details = self.device_details(device_id)

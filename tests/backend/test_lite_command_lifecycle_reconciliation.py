@@ -26,7 +26,7 @@ def _configure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     prepare_sqlite_test_database(target, monkeypatch)
     from api_fastapi.db.migrations import apply_migrations
 
-    assert apply_migrations() == list(range(1, 23))
+    assert apply_migrations() == list(range(1, 24))
     return target
 
 

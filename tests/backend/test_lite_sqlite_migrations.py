@@ -37,10 +37,10 @@ def test_lite_sqlite_migrations_are_idempotent_and_complete(tmp_path, monkeypatc
         migration_rows,
     )
 
-    assert apply_migrations() == list(range(1, 23))
+    assert apply_migrations() == list(range(1, 24))
     assert apply_migrations() == []
-    assert current_schema_version() == 22
-    assert [row["version"] for row in migration_rows()] == list(range(1, 23))
+    assert current_schema_version() == 23
+    assert [row["version"] for row in migration_rows()] == list(range(1, 24))
     with read_connection() as conn:
         tables = {
             row[0]
@@ -227,8 +227,8 @@ def test_lite_sqlite_concurrent_initializers_are_safe(tmp_path):
         assert process.exitcode == 0
     results = [queue.get(timeout=5), queue.get(timeout=5)]
     assert all(result[0] is True for result in results)
-    assert all(result[2] == 22 for result in results)
-    assert sorted(len(result[1]) for result in results) == [0, 22]
+    assert all(result[2] == 23 for result in results)
+    assert sorted(len(result[1]) for result in results) == [0, 23]
 
 
 def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
@@ -268,8 +268,8 @@ def test_lite_sqlite_migration_5_upgrades_schema_4_without_data_loss(
             """
         )
 
-    assert apply_migrations() == list(range(5, 23))
-    assert current_schema_version() == 22
+    assert apply_migrations() == list(range(5, 24))
+    assert current_schema_version() == 23
     with connection() as conn:
         assert conn.execute(
             "SELECT summary FROM security_scan_runs WHERE run_id = ?",
@@ -331,8 +331,8 @@ def test_lite_sqlite_migration_14_upgrades_schema_13_without_data_loss(
             ),
         )
 
-    assert apply_migrations() == list(range(14, 23))
-    assert current_schema_version() == 22
+    assert apply_migrations() == list(range(14, 24))
+    assert current_schema_version() == 23
     with connection() as conn:
         preserved = conn.execute(
             "SELECT event_id,dedupe_key,generation_key,state_revision,database_instance,payload_checksum "
@@ -399,7 +399,7 @@ with sqlite3.connect(sys.argv[1]) as conn:
         ),
     )
     conn.commit()
-assert apply_migrations() == [17, 18, 19, 20, 21, 22]
+assert apply_migrations() == [17, 18, 19, 20, 21, 22, 23]
 with sqlite3.connect(sys.argv[1]) as conn:
     row = conn.execute(
         """

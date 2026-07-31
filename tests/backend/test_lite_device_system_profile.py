@@ -173,6 +173,7 @@ def test_agent_profile_publication_is_startup_reconnect_and_change_only(monkeypa
     agent = agent_module.PocketLabNodeAgent()
     first = agent.system_profile_update(force_publish=True)
     assert first["system_profile"]["profile_fingerprint"] == "a" * 64
+    agent._mark_profile_published(first)
     assert agent.system_profile_update() == {}
     agent.system_profile_collected_epoch = 0
     periodic = agent.system_profile_update()
@@ -182,8 +183,11 @@ def test_agent_profile_publication_is_startup_reconnect_and_change_only(monkeypa
     assert changed["system_profile"]["profile_fingerprint"] == "b" * 64
 
     source = Path(agent_module.__file__).read_text(encoding="utf-8")
-    assert "await self.register()" in source and "system_profile_update(force_publish=True)" in source
-    assert "self.refresh_system_profile(force=True)" in source
+    assert "await self.register()" in source
+    assert "await self.publish_profile(force=True)" in source
+    assert "await self.publish_capabilities(critical=True)" in source
+    assert "async def connection_manager" in source
+    assert "if critical:" in source and "await self.nc.flush(timeout=2)" in source
     assert "ro.product.marketname" not in source
 
 
@@ -494,7 +498,7 @@ def test_agent_event_invalidates_only_fleet_prepared_snapshot(monkeypatch):
 
     calls = []
     monkeypatch.setattr(fleet_registry, "upsert_agent", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(CONTROL_PLANE, "invalidate_domain", lambda domain: calls.append(domain))
+    monkeypatch.setattr(CONTROL_PLANE, "invalidate_domain", lambda domain, **_kwargs: calls.append(domain))
 
     fleet_registry.handle_agent_event({
         "subject": "pocketlab.events.fleet.node_heartbeat",
@@ -540,6 +544,10 @@ def test_canonical_server_profile_and_health_merge_into_lite_fleet(monkeypatch):
         },
     }])
     monkeypatch.setattr(CONTROL_PLANE, "device_profile_map", lambda: {})
+    monkeypatch.setattr(CONTROL_PLANE, "durable_enrolled_devices", lambda: [])
+    monkeypatch.setattr(CONTROL_PLANE, "supervisor_state_map", lambda: {})
+    monkeypatch.setattr(CONTROL_PLANE, "reconcile_command_lifecycle", lambda **_kwargs: {})
+    monkeypatch.setattr(lite_status.lite_invites, "enrolled_invite_nodes", lambda: [])
 
     payload = lite_status.lite_fleet()
     server = payload["devices"][0]

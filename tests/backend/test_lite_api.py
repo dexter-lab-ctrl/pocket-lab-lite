@@ -857,7 +857,7 @@ def test_lite_remove_is_current_device_is_blocked(tmp_path):
     assert "current" in response.text.lower()
 
 
-def test_lite_remove_online_healthy_device_is_protected(tmp_path):
+def test_lite_remove_online_secondary_requires_guarded_confirmation_not_prohibition(tmp_path):
     from api_fastapi.services import fleet_registry
 
     _use_isolated_runtime_state(tmp_path)
@@ -867,17 +867,33 @@ def test_lite_remove_online_healthy_device_is_protected(tmp_path):
             "hostname": "Online Phone",
             "role": "compute",
             "status": "online",
+            "capabilities": ["receive_commands"],
         },
         event_type="fleet.node_heartbeat",
     )
 
-    response = client().post(
+    api = client()
+    assessment_response = api.get("/api/lite/devices/online-phone/removal-assessment")
+    assert assessment_response.status_code == 200
+    assessment = assessment_response.json()
+    assert assessment["allowed"] is True
+    assert assessment["protected"] is False
+    assert assessment["policy"] == "confirmation_required"
+    assert any(item["code"] == "device_online" for item in assessment["warnings"])
+
+    response = api.post(
         "/api/lite/fleet/remove-device",
-        json={"device_id": "online-phone", "confirm": True},
+        json={
+            "device_id": "online-phone",
+            "confirm": True,
+            "assessment_revision": assessment["assessment_revision"],
+            "expected_awareness_revision": assessment["awareness_revision"],
+        },
     )
 
-    assert response.status_code == 409
-    assert "Online devices are protected" in response.text
+    assert response.status_code == 200
+    assert response.json()["status"] == "removed"
+    assert response.json()["removal_receipt"]["device_id"] == "online-phone"
 
 
 def test_lite_remove_device_writes_audit_evidence(tmp_path):
