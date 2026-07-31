@@ -443,7 +443,17 @@ class PocketLabEventBus:
             try:
                 payload = json.loads(msg.data.decode("utf-8"))
                 if isinstance(payload, dict):
-                    self._record(payload)
+                    # External agents publish compact envelopes and historically
+                    # omitted the subject field because NATS already carries it.
+                    # The in-process fleet router requires the subject for safe
+                    # admission and event-type dispatch, so canonicalize it at
+                    # the transport boundary instead of requiring every agent
+                    # implementation to duplicate transport metadata.
+                    event = dict(payload)
+                    event.setdefault("subject", str(getattr(msg, "subject", "") or ""))
+                    event.setdefault("type", str(event.get("event_type") or ""))
+                    event.setdefault("id", str(event.get("event_id") or ""))
+                    self._record(event)
                     self.received += 1
             except Exception:
                 return

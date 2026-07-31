@@ -786,16 +786,28 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         or _public_text(agent_item.get("process_status"), 32) or "unknown"
     supervisor_pm2 = _public_text((process_items.get("pocketlab-core-supervisor") or {}).get("status"), 32) or "unknown"
     evidence_status = _public_text(supervisor_record.get("supervisor_status"), 32)
-    projected_status = _public_text(supervisor_item.get("supervisor_status"), 32)
+    projected_status = _public_text(
+        supervisor_item.get("supervisor_status")
+        or supervisor_snapshot.get("supervisor_status"), 32
+    )
     supervisor_status = evidence_status or projected_status or "unknown"
     supervisor_process_status = _public_text(
         supervisor_record.get("supervisor_process_status"), 32
     ) or supervisor_pm2
     supervisor_at = _public_text(
-        supervisor_record.get("checked_at") or supervisor_item.get("checked_at")
+        supervisor_record.get("checked_at")
+        or supervisor_item.get("checked_at")
+        or supervisor_snapshot.get("checked_at")
         or supervisor_snapshot.get("updated_at"), 64
     ) or None
-    supervisor_freshness = _public_text(supervisor_record.get("freshness"), 24) or ("saved" if supervisor_at else "unavailable")
+    supervisor_freshness = _public_text(supervisor_record.get("freshness"), 24)
+    if not supervisor_freshness and supervisor_at:
+        try:
+            observed = datetime.fromisoformat(supervisor_at.replace("Z", "+00:00"))
+            age_seconds = max(0, int((datetime.now(timezone.utc) - observed).total_seconds()))
+            supervisor_freshness = "fresh" if age_seconds <= 180 else "stale"
+        except (TypeError, ValueError):
+            supervisor_freshness = "saved"
     agent_version = _public_text(system_profile.get("agent_version"), 80)
     supervisor_version = _public_text(supervisor_record.get("supervisor_version") or system_profile.get("supervisor_version"), 80)
     profile_ready = bool(system_profile.get("technical_model") or system_profile.get("architecture_family") or system_profile.get("architecture"))
@@ -856,7 +868,10 @@ def _server_host_device(remote_access: dict[str, Any] | None = None) -> dict[str
         "agent_process_status_source": "protected_host_pm2_projection" if agent_pm2 != "unknown" else "unknown",
         "agent_process_status_freshness": "saved" if process_snapshot.get("updated_at") else "unknown",
         "supervisor_status": supervisor_status,
-        "supervisor_version": supervisor_version,
+        "supervisor_version": supervisor_version or _public_text(
+            supervisor_item.get("supervisor_version")
+            or supervisor_snapshot.get("version"), 80
+        ),
         "supervisor_process_status": supervisor_process_status,
         "supervisor_status_source": supervisor_record.get("source") or ("protected_host_supervisor_projection" if projected_status else "unknown"),
         "supervisor_status_freshness": supervisor_freshness,
@@ -1137,8 +1152,35 @@ def _merge_lite_device(existing: dict[str, Any], incoming: dict[str, Any]) -> di
         merged["system_profile"] = _public_system_profile({**existing_profile, **incoming_profile})
     if existing_health or incoming_health:
         merged["system_health"] = _public_system_health({**existing_health, **incoming_health})
-    merged["last_seen"] = incoming.get("last_seen") or existing.get("last_seen")
-    merged["last_seen_at"] = incoming.get("last_seen_at") or existing.get("last_seen_at")
+    def freshest_timestamp(*values: Any) -> Any:
+        candidates: list[tuple[float, Any]] = []
+        for value in values:
+            if not value:
+                continue
+            try:
+                parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+                candidates.append((parsed.timestamp(), value))
+            except (TypeError, ValueError):
+                continue
+        if candidates:
+            return max(candidates, key=lambda item: item[0])[1]
+        return next((value for value in values if value), None)
+
+    merged["last_seen"] = freshest_timestamp(
+        incoming.get("last_seen"), existing.get("last_seen")
+    )
+    merged["last_seen_at"] = freshest_timestamp(
+        incoming.get("last_seen_at"), existing.get("last_seen_at")
+    )
+    for timestamp_key in (
+        "last_heartbeat_at", "last_telemetry_at", "last_health_at",
+        "last_system_profile_at", "last_supervisor_heartbeat_at",
+        "last_capabilities_at", "last_nats_connected_at",
+        "last_tailnet_ready_at",
+    ):
+        merged[timestamp_key] = freshest_timestamp(
+            incoming.get(timestamp_key), existing.get(timestamp_key)
+        )
     merged["remote_access"] = bool(existing.get("remote_access") or incoming.get("remote_access"))
     merged["connection"] = _connection_label(str(merged.get("status") or "unknown"))
     return merged
