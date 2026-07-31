@@ -198,3 +198,83 @@ def test_supervisor_persistence_failures_are_not_silently_swallowed():
     assert 'merged["supervisor_evidence_persisted"] = False' in source
     assert 'merged["supervisor_evidence_error_type"] = type(exc).__name__[:80]' in source
     assert "raise\n" in source
+
+
+def test_prepared_fleet_projection_preserves_runtime_truth_contract(tmp_path, monkeypatch):
+    store = _configure_store(tmp_path, monkeypatch)
+    now = _iso()
+    payload = {
+        "status": "healthy",
+        "updated_at": now,
+        "remote_access": {"ready": True, "status": "ready"},
+        "devices": [
+            {
+                "id": "pocket-lab-lite-server",
+                "node_id": "pocket-lab-lite-server",
+                "name": "Pocket Lab Lite Server",
+                "role": "server_host",
+                "status": "online",
+                "connection": "online",
+                "is_current": True,
+                "protected_server_host": True,
+                "identity_owner": "durable_enrollment_registry",
+                "last_seen_at": now,
+                "last_heartbeat_at": now,
+                "last_system_profile_at": now,
+                "last_supervisor_heartbeat_at": now,
+                "system_profile": {
+                    "schema_version": 1,
+                    "technical_model": "SM-S911B",
+                    "architecture": "arm64",
+                    "architecture_family": "arm64",
+                    "architecture_raw": "arm64-v8a",
+                    "collected_at": now,
+                },
+                "supervisor_status": "healthy",
+                "supervisor_version": "1.0.0-lite-agent-supervisor",
+                "supervisor_status_source": "protected_host_supervisor_projection",
+                "supervisor_status_freshness": "fresh",
+                "supervisor_evidence_schema_version": 1,
+                "convergence": {
+                    "state": "ready",
+                    "profile_ready": True,
+                    "supervisor_ready": True,
+                    "last_good_projection": True,
+                    "target_seconds": 45,
+                },
+                "field_freshness": {
+                    "heartbeat": {"reported_at": now, "source": "agent_heartbeat"},
+                    "system_profile": {"reported_at": now, "source": "sqlite_last_good_profile"},
+                    "supervisor": {
+                        "reported_at": now,
+                        "state": "fresh",
+                        "source": "protected_host_supervisor_projection",
+                    },
+                },
+                "capability_states": [
+                    {"id": "receive_commands", "status": "verified"}
+                ],
+                "removal_assessment": {
+                    "allowed": False,
+                    "protected": True,
+                    "policy": "protected",
+                    "confirmation_required": False,
+                    "blockers": [{"code": "protected_server_host"}],
+                    "warnings": [],
+                },
+            }
+        ],
+    }
+
+    store.project_fleet(payload)
+    prepared = store.fleet_projection_snapshot()
+    assert prepared is not None
+    server = next(item for item in prepared["devices"] if item["id"] == "pocket-lab-lite-server")
+    assert server["identity_owner"] == "durable_enrollment_registry"
+    assert server["convergence"] == payload["devices"][0]["convergence"]
+    assert server["field_freshness"] == payload["devices"][0]["field_freshness"]
+    assert server["supervisor_status_source"] == "protected_host_supervisor_projection"
+    assert server["supervisor_status_freshness"] == "fresh"
+    assert server["supervisor_evidence_schema_version"] == 1
+    assert server["removal_assessment"]["policy"] == "protected"
+    assert server["capability_states"][0]["status"] == "verified"

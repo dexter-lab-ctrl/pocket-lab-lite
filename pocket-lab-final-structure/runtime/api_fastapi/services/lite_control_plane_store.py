@@ -3146,7 +3146,10 @@ class ControlPlaneProjectionStore:
                 "agent_version", "supervisor_version", "agent_process_status",
                 "supervisor_status", "last_supervisor_at", "remote_access_status",
                 "removal_assessment", "enrollment", "identity", "last_seen_state",
-                "role_label", "source",
+                "role_label", "source", "identity_owner",
+                "convergence", "field_freshness",
+                "supervisor_status_source", "supervisor_status_freshness",
+                "supervisor_evidence_schema_version",
             )
             if item.get(key) not in (None, "", [], {})
         }
