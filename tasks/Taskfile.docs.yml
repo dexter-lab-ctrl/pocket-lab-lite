@@ -23,7 +23,7 @@ tasks:
       - '{{.PYTHON}} scripts/docs/lite/generate_docs.py check --audience development'
 
   lite:docs:production:generate:
-    desc: Generate verified deployable Production/operator documentation
+    desc: Generate verified deployable Production user documentation
     cmds:
       - '{{.PYTHON}} scripts/docs/lite/generate_docs.py generate --audience production'
 
@@ -45,9 +45,15 @@ tasks:
       - task: lite:contracts:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check
-      - mkdocs build --strict
+      - '{{.PYTHON}} -m mkdocs build --strict'
+
+  lite:test:docs:
+    desc: Validate the MkDocs portal in external Chrome on desktop and mobile
+    deps: [lite:playwright:preflight]
+    cmds:
+      - npm run test:docs
 
   lite:docs:serve:
     desc: Serve combined Development and Production docs locally
     cmds:
-      - mkdocs serve -a 127.0.0.1:8001
+      - '{{.PYTHON}} -m mkdocs serve --strict --dev-addr 127.0.0.1:8001'

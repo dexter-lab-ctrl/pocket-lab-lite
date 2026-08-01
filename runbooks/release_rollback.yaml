@@ -30,7 +30,7 @@ spec:
   prerequisites:
   - Failed release correlation ID is available.
   - Previous known-good release or backup reference is known.
-  - Operator has reviewed release evidence.
+  - User has reviewed release evidence.
   steps:
   - name: check_release_state
     title: Check Release State

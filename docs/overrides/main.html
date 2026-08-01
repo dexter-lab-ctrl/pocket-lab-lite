@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block announce %}
+  <div class="pl-announcement" role="status">
+    Repository-owned Pocket Lab Lite documentation · Development and Production guidance are maintained separately.
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  <meta name="theme-color" content="#0b1220">
+  <meta name="application-name" content="Pocket Lab Lite Documentation">
+  <meta name="color-scheme" content="light dark">
+  {{ super() }}
+{% endblock %}

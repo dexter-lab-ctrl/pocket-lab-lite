@@ -1,0 +1,82 @@
+.pl-hero {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  margin-bottom: 2rem;
+  border: 1px solid var(--pl-border);
+  border-radius: 1rem;
+  background: radial-gradient(circle at top right, color-mix(in srgb, var(--pl-accent-500) 15%, transparent), transparent 42%), var(--md-default-bg-color);
+}
+.pl-hero h1 { max-width: 18ch; margin-top: 0; }
+.pl-hero p { max-width: 65ch; font-size: 1.05rem; }
+.pl-card-grid { width: 100%; max-width: 100%; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; margin: 1.25rem 0 2rem; }
+.pl-card { box-sizing: border-box; min-width: 0; max-width: 100%; padding: 1.15rem 1.2rem; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-lg); background: var(--md-default-bg-color); box-shadow: var(--pl-shadow); }
+.pl-card > :first-child { margin-top: 0; }
+.pl-card > :last-child { margin-bottom: 0; }
+.pl-status { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.55rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.72rem; font-weight: 700; line-height: 1.25; letter-spacing: 0.02em; }
+.pl-status::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
+.pl-status--verified { color: var(--pl-success); background: color-mix(in srgb, var(--pl-success) 8%, transparent); }
+.pl-status--inferred, .pl-status--patch-provided, .pl-status--planned, .pl-status--unvalidated { color: var(--pl-warning); background: color-mix(in srgb, var(--pl-warning) 8%, transparent); }
+.pl-status--missing, .pl-status--blocked { color: var(--pl-danger); background: color-mix(in srgb, var(--pl-danger) 8%, transparent); }
+.pl-page-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: -0.5rem 0 1.5rem; }
+.md-typeset img, .md-typeset svg, .md-typeset pre { max-width: 100%; }
+.md-typeset table:not([class]) { max-width: 100%; display: table; width: 100%; border: 1px solid var(--pl-border); border-radius: var(--pl-radius-md); overflow: hidden; box-shadow: none; }
+.md-typeset table:not([class]) th { background: color-mix(in srgb, var(--md-primary-fg-color) 7%, var(--md-default-bg-color)); font-weight: 700; }
+.md-typeset table:not([class]) td, .md-typeset table:not([class]) th { padding: 0.75rem 0.9rem; border-color: var(--pl-border); }
+.md-typeset pre > code { border-radius: var(--pl-radius-md); }
+.md-typeset code { border-radius: 0.3rem; }
+.md-typeset .admonition, .md-typeset details { border-width: 0 0 0 0.24rem; border-radius: var(--pl-radius-md); box-shadow: none; }
+.md-typeset .md-button { border-radius: var(--pl-radius-md); font-weight: 700; }
+@media screen and (max-width: 44.9844em) {
+  .md-content__inner { box-sizing: border-box; width: 100%; padding-inline: 0.25rem; }
+  .pl-hero, .pl-card, .pl-announcement { overflow-wrap: anywhere; }
+  .pl-card-grid { grid-template-columns: 1fr; }
+  .md-typeset table:not([class]) { display: block; max-width: 100%; overflow-x: auto; }
+  .md-typeset .highlight,
+  .md-typeset .highlighttable,
+  .md-typeset .highlight > .filename,
+  .md-typeset pre {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+  .md-typeset .highlight pre { margin: 0; }
+}
+
+/* Dark-mode semantic badges use lighter foregrounds to preserve status meaning
+   while meeting WCAG AA on the Pocket Lab dark surfaces. */
+[data-md-color-scheme="pocketlab-dark"] .pl-status--verified {
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.1);
+}
+[data-md-color-scheme="pocketlab-dark"] .pl-status--inferred,
+[data-md-color-scheme="pocketlab-dark"] .pl-status--patch-provided,
+[data-md-color-scheme="pocketlab-dark"] .pl-status--planned,
+[data-md-color-scheme="pocketlab-dark"] .pl-status--unvalidated {
+  color: #fcd34d;
+  background: rgba(252, 211, 77, 0.1);
+}
+[data-md-color-scheme="pocketlab-dark"] .pl-status--missing,
+[data-md-color-scheme="pocketlab-dark"] .pl-status--blocked {
+  color: #fca5a5;
+  background: rgba(252, 165, 165, 0.1);
+}
+
+/* pocketlab-mobile-nav-title-contrast:start */
+/*
+ * Material uses the primary palette as the background for nested mobile
+ * navigation titles. The previous slate background (#64748b) provided only
+ * 3.94:1 contrast with the dark-theme foreground.
+ */
+[data-md-color-scheme="pocketlab-dark"] .md-nav__title {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
+[data-md-color-scheme="pocketlab-dark"] .md-nav__title .md-ellipsis {
+  color: inherit;
+}
+/* pocketlab-mobile-nav-title-contrast:end */

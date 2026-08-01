@@ -149,4 +149,4 @@ task lite:check
 Revert the source commit. Do not delete registry or receipt rows. Migration 0022
 is additive; leaving its tables and deletion fences in place is safer than
 attempting a destructive schema rollback. Restore a pre-change SQLite online
-backup only when an operator has explicitly chosen full database rollback.
+backup only when an user has explicitly chosen full database rollback.

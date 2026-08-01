@@ -144,7 +144,7 @@ def baseline_threats() -> list[dict[str, Any]]:
             "scenario": "A caller modifies operation payloads, catalog data, or NATS command bodies.",
             "affected": ["Typed Operations Catalog", "NATS / JetStream", "Worker"],
             "mitigations": ["typed operation schema validation", "AsyncAPI subject governance", "operation metadata checks"],
-            "residualRisk": "A compromised operator account can still submit authorized destructive changes.",
+            "residualRisk": "A compromised user account can still submit authorized destructive changes.",
             "evidence": ["contracts/operations/pocketlab-typed-operations.json"],
         },
         {

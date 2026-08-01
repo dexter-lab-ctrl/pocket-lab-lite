@@ -16,7 +16,7 @@ export const SIMPLE_MORE_NAV_ITEMS = [
   { id: 'simple-backups', label: 'Backups', description: 'Create or restore from a safe restore point.', target: 'recovery' },
   { id: 'simple-updates', label: 'Updates', description: 'Keep Pocket Lab and installed services current.', target: 'release' },
   { id: 'simple-activity', label: 'Activity', description: 'Review what Pocket Lab has been doing.', target: SIMPLE_ACTIVITY_TARGET },
-  { id: 'simple-advanced', label: 'Advanced Details', description: 'Open settings and operator-level details.', target: 'settings' },
+  { id: 'simple-advanced', label: 'Advanced Details', description: 'Open settings and user-level details.', target: 'settings' },
 ];
 
 export const SIMPLE_PRIMARY_TERMS_TO_AVOID = [

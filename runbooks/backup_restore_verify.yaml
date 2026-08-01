@@ -20,11 +20,11 @@ spec:
   requiresApproval: true
   policy:
     approvalReason: Restore validation can touch backup and recovery paths.
-    minimumRole: operator
+    minimumRole: user
     evidenceRequired: true
   prerequisites:
     - Backup destination has sufficient free space.
-    - Operator has selected the backup reference to verify.
+    - User has selected the backup reference to verify.
     - Restore target is clearly identified.
   steps:
     - name: create_backup

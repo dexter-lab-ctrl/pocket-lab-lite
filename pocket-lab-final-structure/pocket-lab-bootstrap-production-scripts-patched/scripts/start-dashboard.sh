@@ -711,7 +711,7 @@ wait_for_nats_ready(){
 }
 
 configure_lite_runtime_limits(){
-  # Conservative edge defaults. Operators may override every value before
+  # Conservative edge defaults. Users may override every value before
   # bootstrap; no hard CPU throttle is applied to latency-sensitive requests.
   export MALLOC_ARENA_MAX="${MALLOC_ARENA_MAX:-2}"
   export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"

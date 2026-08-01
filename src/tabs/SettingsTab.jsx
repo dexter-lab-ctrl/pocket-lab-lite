@@ -17,14 +17,14 @@ export default function SettingsTab() {
   const enterpriseEnabled = governanceMode === 'enterprise';
 
   return (
-    <PageShell eyebrow="Operator preferences" title="Settings" description="Tune Pocket Lab for everyday self-hosted use, professional operation, or strict enterprise governance without changing the runtime architecture.">
+    <PageShell eyebrow="User preferences" title="Settings" description="Tune Pocket Lab for everyday self-hosted use, professional operation, or strict enterprise governance without changing the runtime architecture.">
       <div className="grid gap-4 lg:grid-cols-2">
         <GlassCard>
           <div className="mb-5 flex items-start gap-3">
             <div className="rounded-2xl border border-indigo-300/25 bg-indigo-500/10 p-3 text-indigo-200"><SettingsIcon className="h-5 w-5" /></div>
             <div>
               <h3 className="text-xl font-black text-white">Experience Mode</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-400">Simple Mode uses plain-language labels. Professional Mode keeps detailed operator language.</p>
+              <p className="mt-1 text-sm leading-6 text-slate-400">Simple Mode uses plain-language labels. Professional Mode keeps detailed user language.</p>
             </div>
           </div>
           <SegmentedControl label="UI language" value={experienceMode} onChange={setExperienceMode} options={[{ value: 'professional', label: 'Professional', description: 'Technical labels and diagnostics' }, { value: 'simple', label: 'Simple', description: 'Plain language for daily use' }]} />

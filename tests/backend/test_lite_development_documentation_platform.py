@@ -186,3 +186,95 @@ def test_visual_suite_waits_for_async_screen_height_to_settle():
     assert "element.scrollHeight" in helper
     assert "document.fonts.ready" in helper
     assert "await waitForLiteScreenToSettle(page, screenId)" in visual
+
+
+def test_enterprise_mkdocs_theme_and_browser_gate_are_source_owned():
+    mkdocs = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+    for token in (
+        "custom_dir: docs/overrides",
+        "navigation.tabs.sticky",
+        "content.code.copy",
+        "stylesheets/brand.css",
+        "stylesheets/components.css",
+        "stylesheets/print.css",
+        "javascripts/docs.js",
+        "documentation-experience.md",
+    ):
+        assert token in mkdocs
+    for path in (
+        "docs/assets/brand/pocket-lab-logo.svg",
+        "docs/overrides/main.html",
+        "docs/stylesheets/brand.css",
+        "docs/stylesheets/components.css",
+        "docs/stylesheets/print.css",
+        "docs/javascripts/docs.js",
+        "playwright.docs.config.ts",
+        "tests/docs/mkdocs.spec.ts",
+    ):
+        assert (ROOT / path).is_file(), path
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    assert "playwright.docs.config.ts" in package["scripts"]["test:docs"]
+    tasks = (ROOT / "tasks/Taskfile.docs.yml").read_text(encoding="utf-8")
+    assert "lite:test:docs:" in tasks
+    assert "task lite:test:docs" in (ROOT / "scripts/dev/lite/run-gate.sh").read_text(encoding="utf-8")
+    assert "task lite:test:docs" in (ROOT / ".github/workflows/lite-quality.yml").read_text(encoding="utf-8")
+
+
+def test_generated_pages_have_enterprise_metadata_and_status_badges():
+    for folder in ("development", "production"):
+        for page in (ROOT / "docs/generated" / folder).glob("*.md"):
+            text = page.read_text(encoding="utf-8")
+            for field in ("title:", "description:", "status:"):
+                assert field in text, page
+            assert 'class="pl-page-meta"' in text, page
+            assert 'class="pl-status ' in text, page
+
+
+def test_user_facing_surfaces_do_not_use_operator_terminology():
+    checked_roots = [ROOT / "docs", ROOT / "src", ROOT / "runbooks", ROOT / "architecture"]
+    pattern = re.compile(r"\boperators?\b", re.I)
+    violations = []
+    for base in checked_roots:
+        for path in base.rglob("*"):
+            if not path.is_file() or path.suffix not in {".md", ".jsx", ".js", ".json", ".yml", ".yaml", ".dsl"}:
+                continue
+            if pattern.search(path.read_text(encoding="utf-8", errors="ignore")):
+                violations.append(path.relative_to(ROOT).as_posix())
+    assert violations == []
+
+
+def test_docs_browser_gate_uses_visible_material_controls_and_site_prefix():
+    config = (ROOT / "playwright.docs.config.ts").read_text(encoding="utf-8")
+    spec = (ROOT / "tests/docs/mkdocs.spec.ts").read_text(encoding="utf-8")
+    brand = (ROOT / "docs/stylesheets/brand.css").read_text(encoding="utf-8")
+    components = (ROOT / "docs/stylesheets/components.css").read_text(encoding="utf-8")
+    assert "http://127.0.0.1:8001/pocket-lab-lite/" in config
+    assert "const DOCS_PREFIX = '/pocket-lab-lite/'" in spec
+    assert "page.goto(DOCS_PREFIX)" in spec
+    assert "page.goto(`${DOCS_PREFIX}generated/development/`)" in spec
+    assert "button.md-code__button" in spec
+    assert ".md-clipboard" not in spec
+    assert "label.md-header__button[for=\"__search\"]" in spec
+    assert "label.md-header__button[for=\"__drawer\"]" in spec
+    assert "Search documentation" in (ROOT / "docs/javascripts/docs.js").read_text(encoding="utf-8")
+    assert "--md-default-fg-color--light: #cbd5e1" in brand
+    assert "--md-code-fg-color: #e2e8f0" in brand
+    assert "color: #86efac" in components
+    assert "color: #fcd34d" in components
+    assert "await expect(searchInput).toBeVisible()" in spec
+    assert "element.focus()" in spec
+    assert "page.keyboard.type('Devices'" in spec
+    assert "searchResult.locator('a').first()" in spec
+    assert "const SURFACE_SELECTOR" in spec
+    assert "const TRANSIENT_LAYER_SELECTOR" in spec
+    assert "surfaceRoots.flatMap" in spec
+    assert "surfaceSelector: SURFACE_SELECTOR" in spec
+    assert "transientLayerSelector: TRANSIENT_LAYER_SELECTOR" in spec
+    assert "!element.closest(transientLayerSelector)" in spec
+    assert "rect.right > 0" in spec and "rect.left < viewportWidth" in spec
+    assert "JSON.stringify(overflow.offenders" in spec
+    assert "box-sizing: border-box" in brand
+    assert ".pl-announcement" in brand and "max-width: 100%" in brand
+    assert ".pl-card-grid" in components and "min-width: 0" in components
+    assert ".md-typeset .highlight > .filename" in components
+    assert ".md-typeset .highlight pre { margin: 0; }" in components

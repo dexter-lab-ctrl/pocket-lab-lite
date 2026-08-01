@@ -23,13 +23,13 @@ spec:
   requiresApproval: true
   policy:
     approvalReason: Failed deployment recovery can change installed state.
-    minimumRole: operator
+    minimumRole: user
     evidenceRequired: true
   prerequisites:
     - FastAPI control API is reachable.
     - NATS / JetStream is healthy.
     - Worker process is running.
-    - Operator has reviewed the failed operation correlation ID.
+    - User has reviewed the failed operation correlation ID.
   steps:
     - name: scan_current_state
       title: Scan Current State

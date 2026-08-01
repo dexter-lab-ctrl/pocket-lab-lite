@@ -12,7 +12,7 @@ DOCS = ROOT / "architecture/structurizr/docs"
 WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for apps, fleet, GitOps, drift, releases, security, telemetry, and disaster recovery." {
 
     model {
-        user = person "Operator / Home Lab Admin" "Uses Pocket Lab to install apps, manage devices, monitor health, run GitOps, rotate secrets, and apply releases."
+        user = person "User / Home Lab Admin" "Uses Pocket Lab to install apps, manage devices, monitor health, run GitOps, rotate secrets, and apply releases."
 
         github = softwareSystem "GitHub Repository" "Source repository for Pocket Lab code, docs, releases, and GitOps state." "External"
         tailscale = softwareSystem "Tailscale / Mesh Network" "Private mesh connectivity for fleet nodes and remote access." "External"
@@ -22,7 +22,7 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         backupStore = softwareSystem "Backup Storage" "Local or remote backup destination for manifests, state snapshots, and restore material." "External"
 
         pocketlab = softwareSystem "Pocket Lab" "FastAPI + NATS/JetStream + Worker + React PWA control plane." {
-            pwa = container "React / Vite PWA" "Operator UI with Professional and Simple Experience modes." "React, Vite, Playwright-tested PWA"
+            pwa = container "React / Vite PWA" "User UI with Professional and Simple Experience modes." "React, Vite, Playwright-tested PWA"
             api = container "FastAPI Control API" "HTTP API, WebSocket event stream, OpenAPI contract, typed operation submission, release endpoints, health endpoints." "Python, FastAPI"
             nats = container "NATS / JetStream" "Durable command, event, audit, telemetry, and DLQ streams." "NATS, JetStream"
             worker = container "Pocket Lab Worker" "Consumes typed commands, executes domain handlers, emits lifecycle events, writes audit records." "Python worker"
@@ -53,7 +53,7 @@ WORKSPACE = r'''workspace "Pocket Lab" "Edge-first self-hosted control plane for
         nats -> dlqSubjects "Routes retry-exhausted messages to dead-letter subjects" "JetStream DLQ"
         dlqSubjects -> auditTrail "Preserves failed command/event evidence for audit and recovery"
         api -> eventStore "Reads operation status, events, and workflow state"
-        api -> auditTrail "Reads audit evidence for reviews and operator status"
+        api -> auditTrail "Reads audit evidence for reviews and user status"
         pwa -> docsPortal "Reads generated documentation"
         docsPortal -> operationRegistry "Documents typed operations"
         docsPortal -> api "Documents OpenAPI contract"
