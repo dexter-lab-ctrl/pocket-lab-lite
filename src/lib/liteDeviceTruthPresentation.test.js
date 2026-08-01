@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   canonicalDevicePresentation,
   deviceCapabilitySummary,
+  deviceCommandDeliveryLabel,
+  deviceRestartAssessment,
+  deviceRuntimeServices,
   canRestartDeviceAgent,
   deviceLinkState,
 } from '../lite/LiteUi.jsx';
@@ -19,6 +22,29 @@ describe('fleet truth presentation', () => {
     expect(deviceLinkState(device)).toBe('disconnected');
   });
 
+
+  it('supports canonical backend capability vocabulary', () => {
+    const summary = deviceCapabilitySummary({
+      capability_states: [
+        { id: 'host_apps', status: 'verified' },
+        { id: 'receive_commands', status: 'verified' },
+        { id: 'supervisor_recovery', status: 'verification_pending' },
+        { id: 'backup_target', status: 'not_advertised', reason_code: 'capability_not_advertised' },
+      ],
+    });
+    expect(summary).toMatchObject({ verified: 2, pending: 1, unavailable: 0, notAdvertised: 1 });
+    expect(summary.label).toBe('2 verified · 1 pending');
+  });
+
+  it('falls back to normalized view-model capabilities', () => {
+    const summary = deviceCapabilitySummary({
+      capabilities: [
+        { id: 'host_apps', status: 'verified' },
+        { id: 'supervisor_recovery', status: 'verification_pending' },
+      ],
+    });
+    expect(summary.label).toBe('1 verified · 1 pending');
+  });
   it('summarizes verified, pending and unavailable capabilities without counting unadvertised', () => {
     const summary = deviceCapabilitySummary({
       capability_states: [
@@ -53,5 +79,35 @@ describe('guarded recovery and capability presentation', () => {
       connection: 'online',
       restart_agent_assessment: { allowed: true, reason_code: 'allowed' },
     })).toBe(true);
+  });
+});
+
+
+describe('frontend guarded-recovery contract convergence', () => {
+  const device = {
+    restart_agent_assessment: {
+      allowed: false,
+      reason_code: 'agent_already_running',
+      summary: 'The device agent is already reporting as running.',
+      command_deliverable: true,
+    },
+    runtime_services: [
+      { service_id: 'node_agent', state: 'online', freshness: 'fresh' },
+      { service_id: 'agent_supervisor', state: 'healthy', freshness: 'fresh' },
+    ],
+    dependencies: { command_delivery_status: 'unknown' },
+  };
+
+  it('uses canonical runtime services and recovery assessment', () => {
+    expect(deviceRuntimeServices(device)).toHaveLength(2);
+    expect(deviceRestartAssessment(device)?.reason_code).toBe('agent_already_running');
+  });
+
+  it('prefers backend-owned command deliverability over legacy dependency state', () => {
+    expect(deviceCommandDeliveryLabel(device)).toBe('Deliverable');
+    expect(deviceCommandDeliveryLabel({
+      restart_agent_assessment: { command_deliverable: false },
+      dependencies: { command_delivery_status: 'deliverable' },
+    })).toBe('Temporarily unreachable');
   });
 });
