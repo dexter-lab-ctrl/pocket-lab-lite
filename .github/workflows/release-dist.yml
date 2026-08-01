@@ -137,6 +137,9 @@ jobs:
           ls -lh dist.zip checksums.txt
           test -z "${RELEASE_TAG:-}" || test -s pocketlab-lite-release.json
 
+      - name: Validate release artifact contract
+        run: python3 scripts/dev/lite/release_artifact_check.py --root .
+
       - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:

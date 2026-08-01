@@ -1,0 +1,10 @@
+import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+export default { title: 'Pocket Lab Lite/Rules', component: LiteStoryFrame, tags: ['autodocs'] };
+export const NoRules = createLiteStory('rules', 'rules-empty', { status: 'partial' });
+export const RulesPresent = createLiteStory('rules', 'rules-present', { status: 'partial' });
+export const RuleEnabled = createLiteStory('rules', 'rules-enabled', { status: 'partial' });
+export const RuleDisabled = createLiteStory('rules', 'rules-disabled', { status: 'partial' });
+export const RuleValidationError = createLiteStory('rules', 'rules-validation-error', { status: 'partial' });
+export const RuleExecutionPending = createLiteStory('rules', 'rules-execution-pending', { status: 'partial', notes: 'Fixture-only; no browser-owned execution.' });
+export const RulesUnavailable = createLiteStory('rules', 'api-unavailable', { status: 'partial' });
+export const FutureApprovalRequired = createLiteStory('rules', 'rules-approval-required', { status: 'partial', notes: 'Future Enterprise-mode contract only.' });

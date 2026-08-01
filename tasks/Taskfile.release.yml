@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+  lite:release:dry-run:
+    desc: Build dist.zip and validate the Lite release manifest/checksum without publishing
+    cmds:
+      - bash scripts/dev/release-dry-run.sh
+      - '{{.PYTHON}} scripts/dev/lite/release_artifact_check.py --root .'
+
+  lite:release:artifact-check:
+    desc: Validate an existing dist.zip, checksums.txt, and optional Lite release manifest
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/release_artifact_check.py --root .'

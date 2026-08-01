@@ -1,0 +1,20 @@
+{
+  "contract": {
+    "notes": "Canonical sanitized documentation/test fixture. It never represents a successful write action.",
+    "reason_codes": [],
+    "safe_read_only": true
+  },
+  "metadata": {
+    "domain": "apps",
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_contracts.py",
+    "implementation_status": "verified-fixture",
+    "msw_scenario": "catalog-installing",
+    "scenario": "catalog-installing",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprint": "800bbf6fc924c59828885057dac0d31434bf29bbe6e1c27f5a2045319f4f8472",
+    "validation_status": "generated"
+  }
+}

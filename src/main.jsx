@@ -31,14 +31,25 @@ if (typeof window !== 'undefined') {
   });
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <ExperienceModeProvider>
-      <GovernanceModeProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </GovernanceModeProvider>
-    </ExperienceModeProvider>
-  </React.StrictMode>,
-);
+async function bootstrapPocketLabLite() {
+  if (import.meta.env.VITE_POCKETLAB_MOCKS === '1') {
+    const { startPocketLabMocks } = await import('./mocks/browser.js');
+    await startPocketLabMocks();
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <ExperienceModeProvider>
+        <GovernanceModeProvider>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </GovernanceModeProvider>
+      </ExperienceModeProvider>
+    </React.StrictMode>,
+  );
+}
+
+bootstrapPocketLabLite().catch((error) => {
+  console.error('[Pocket Lab Lite] startup failed', error);
+});

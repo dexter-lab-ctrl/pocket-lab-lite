@@ -1,59 +1,31 @@
 # Pocket Lab Lite
 
-Pocket Lab Lite is the lightweight variant of Pocket Lab for low-power Android/Termux and small edge devices.
-
-It keeps the core Pocket Lab control-plane architecture while presenting a simpler appliance-style UI and a smaller runtime footprint.
+Pocket Lab Lite is an edge-first, self-hostable local control plane for Android/Termux, ARM64, low-power devices, Ubuntu/WSL2 development, and private self-hosting.
 
 ```text
 React / Vite PWA
-→ FastAPI
-→ NATS / JetStream
-→ Workers
-→ Events
-→ FastAPI
+→ Caddy same-origin proxy
+→ FastAPI /api/lite/*
+→ SQLite + NATS / JetStream
+→ worker / agent / supervisor
+→ events, heartbeats, sanitized evidence
+→ FastAPI prepared reads
 → UI
 ```
 
-## Who it is for
+The frontend never talks directly to NATS, executes shell commands, or stores backend secrets. FastAPI remains the control API; workers, agents, and supervisors own execution and recovery.
 
-Pocket Lab Lite is for users who want to run a local self-hosted control plane on constrained devices, including Android/Termux and small ARM64 edge systems.
+## Current product areas
 
-## How it differs from full Pocket Lab
+- Home
+- Devices
+- Apps / App Catalog
+- Backup & Restore / Recovery
+- Security / Safety
+- Identity
+- Rules
 
-Full Pocket Lab targets stronger edge devices and can include deeper observability, enterprise governance, release workflows, generated evidence, and advanced operator views.
-
-Pocket Lab Lite keeps the core control-plane model but focuses on:
-
-- a simpler UI;
-- fewer default services;
-- built-in health summaries;
-- lower memory usage;
-- core app, identity, security, device, policy, and recovery workflows.
-
-## Included by default
-
-- FastAPI control API
-- NATS / JetStream
-- worker-owned typed operation execution
-- Vault-backed identity and access workflows
-- App Catalog workflows
-- Device/fleet workflows
-- Security and policy summaries
-- Backup and recovery workflows
-- lightweight local telemetry
-- Caddy/static frontend serving where available
-
-## Excluded by default
-
-Pocket Lab Lite does not start the external observability stack by default:
-
-- Prometheus
-- Grafana
-- Gatus
-- Loki
-- Promtail
-
-Lite status should come from built-in service health checks and the `/api/lite/status` API.
+Identity and Rules are present but remain partial where the current repository does not provide complete production behavior. Documentation and fixtures mark those states explicitly rather than inventing routes or execution.
 
 ## Android / Termux quick start
 
@@ -63,30 +35,53 @@ cd pocket-lab-lite/pocket-lab-final-structure/pocket-lab-bootstrap-production-sc
 bash scripts/bootstrap.sh --profile lite
 ```
 
-If the lite profile has not been implemented yet, use this repository as the skeleton baseline and continue with the backend, frontend, and bootstrap lite patches.
+Use backend-generated device bootstrap commands for secondary-device enrollment. Never publish invite material, runtime environment values, or generated secrets.
+
+## Development PC
+
+Daily development should run from the Linux filesystem inside Ubuntu/WSL2.
+
+```bash
+task lite:setup:check
+task lite:playwright:preflight
+task lite:check:quick
+```
+
+The WSL2 browser resolver prefers the verified external Chrome binary and records the actual executable and version. It does not silently fall back to an unusable Playwright-downloaded browser on WSL2.
 
 ## Documentation
 
-Local docs:
+Development and Production documentation are generated independently and built together with MkDocs:
 
 ```bash
-mkdocs build --strict
-mkdocs serve -a 127.0.0.1:8001
+task lite:docs:development:generate
+task lite:docs:production:generate
+task lite:docs:check
+task lite:docs:serve
 ```
 
-## Validation
+Development tooling such as Storybook, Playwright, Redocly, MkDocs, and Allure-compatible result generation is not required on the Android server phone and is not included in `dist.zip`.
 
-Run the Lite validation bundle from the repository root:
+## Validation tiers
 
 ```bash
+# Frequent local work
+task lite:check:quick
+
+# Full Development-PC qualification
 task lite:check
+
+# Explicit live/release qualification
+task lite:check:release
 ```
 
-Fallback without Taskfile:
+The release tier requires a running isolated Lite stack and explicit opt-in for live and Android/Termux checks. It never treats desktop-only measurements as Android production evidence.
+
+## Release artifact
 
 ```bash
-bash scripts/dev/check-lite.sh
+task lite:release:dry-run
+task lite:release:artifact-check
 ```
 
-The validation checks the Lite bootstrap profile, `/api/lite/*` API surface, frontend production build, and MkDocs strict build.
-
+The validated release assets are `dist.zip`, `checksums.txt`, and the optional Pocket Lab Lite release manifest. Development documentation, state databases, raw HARs, traces, and secrets are excluded.

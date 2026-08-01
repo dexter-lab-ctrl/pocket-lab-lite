@@ -1,0 +1,12 @@
+import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+export default { title: 'Pocket Lab Lite/Apps', component: LiteStoryFrame, tags: ['autodocs'] };
+export const CatalogReady = createLiteStory('catalog', 'catalog-ready');
+export const AppInstalledRunning = createLiteStory('catalog', 'healthy');
+export const AppStopped = createLiteStory('catalog', 'app-stopped');
+export const InstallAvailable = createLiteStory('catalog', 'catalog-install-available');
+export const ActionInProgress = createLiteStory('catalog', 'catalog-installing');
+export const ActionFailed = createLiteStory('catalog', 'app-action-failed');
+export const MediaNotReady = createLiteStory('catalog', 'app-media-not-ready');
+export const RouteNotReady = createLiteStory('catalog', 'app-route-not-ready');
+export const PreparedProjectionStale = createLiteStory('catalog', 'app-projection-stale');
+export const SavedOfflineSnapshot = createLiteStory('catalog', 'offline-saved');

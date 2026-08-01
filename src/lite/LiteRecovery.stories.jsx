@@ -1,0 +1,14 @@
+import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+export default { title: 'Pocket Lab Lite/Recovery', component: LiteStoryFrame, tags: ['autodocs'] };
+export const RecoveryReady = createLiteStory('recovery', 'recovery-ready');
+export const ProjectionTooOld = createLiteStory('recovery', 'recovery-projection-too-old');
+export const NoBackupsYet = createLiteStory('recovery', 'recovery-no-backups');
+export const LatestBackupVerified = createLiteStory('recovery', 'recovery-verified');
+export const BackupRunning = createLiteStory('recovery', 'recovery-backup-running');
+export const BackupFailed = createLiteStory('recovery', 'recovery-backup-failed');
+export const RestorePreviewReady = createLiteStory('recovery', 'recovery-preview-ready');
+export const RestoreBlocked = createLiteStory('recovery', 'recovery-restore-blocked');
+export const CheckpointReady = createLiteStory('recovery', 'recovery-checkpoint-ready');
+export const NoStorageNodeConfigured = createLiteStory('recovery', 'recovery-no-storage-node');
+export const RepositoryUnavailable = createLiteStory('recovery', 'recovery-repository-unavailable');
+export const SavedOfflineSnapshot = createLiteStory('recovery', 'offline-saved');

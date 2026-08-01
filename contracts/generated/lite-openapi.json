@@ -1,0 +1,5621 @@
+{
+  "components": {
+    "schemas": {
+      "GovernanceSettingsRequest": {
+        "properties": {
+          "enterpriseModeEnabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enterprisemodeenabled"
+          },
+          "governanceMode": {
+            "default": "personal",
+            "pattern": "^(personal|enterprise)$",
+            "title": "Governancemode",
+            "type": "string"
+          }
+        },
+        "title": "GovernanceSettingsRequest",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "LiteAddDeviceRequest": {
+        "properties": {
+          "hostname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hostname"
+          },
+          "role": {
+            "default": "compute",
+            "description": "Lite device role: compute for App Host or storage for Storage Node",
+            "enum": [
+              "compute",
+              "storage"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "title": "LiteAddDeviceRequest",
+        "type": "object"
+      },
+      "LiteAppActionRequest": {
+        "properties": {
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "preserve_backups": {
+            "default": true,
+            "title": "Preserve Backups",
+            "type": "boolean"
+          },
+          "preserve_evidence": {
+            "default": true,
+            "title": "Preserve Evidence",
+            "type": "boolean"
+          },
+          "preserve_media": {
+            "default": true,
+            "title": "Preserve Media",
+            "type": "boolean"
+          },
+          "preserve_storage_mappings": {
+            "default": true,
+            "title": "Preserve Storage Mappings",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "target_device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Device Id"
+          }
+        },
+        "title": "LiteAppActionRequest",
+        "type": "object"
+      },
+      "LiteAppBackupRequest": {
+        "properties": {
+          "mode": {
+            "default": "config_only",
+            "enum": [
+              "config_only",
+              "config_and_index",
+              "full_with_media"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteAppBackupRequest",
+        "type": "object"
+      },
+      "LiteAppRestorePreviewRequest": {
+        "properties": {
+          "backup_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteAppRestorePreviewRequest",
+        "type": "object"
+      },
+      "LiteAppRestoreRequest": {
+        "properties": {
+          "backup_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup Id"
+          },
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "preview_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Id"
+          }
+        },
+        "title": "LiteAppRestoreRequest",
+        "type": "object"
+      },
+      "LiteAppSecurityCheckRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteAppSecurityCheckRequest",
+        "type": "object"
+      },
+      "LiteAppUpdateRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteAppUpdateRequest",
+        "type": "object"
+      },
+      "LiteBackupRequest": {
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "include_app_data": {
+            "default": false,
+            "title": "Include App Data",
+            "type": "boolean"
+          },
+          "include_event_journal": {
+            "default": true,
+            "title": "Include Event Journal",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteBackupRequest",
+        "type": "object"
+      },
+      "LiteBackupVerifyRequest": {
+        "properties": {
+          "backup_id": {
+            "default": "latest",
+            "title": "Backup Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteBackupVerifyRequest",
+        "type": "object"
+      },
+      "LiteCatalogInstallRequest": {
+        "properties": {
+          "app_id": {
+            "default": "",
+            "description": "Catalog app id",
+            "title": "App Id",
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "requested_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested By"
+          },
+          "target_node_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Target Lite device id. PhotoPrism is server-host only in this release.",
+            "title": "Target Node Id"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "title": "LiteCatalogInstallRequest",
+        "type": "object"
+      },
+      "LiteCatalogRemoveRequest": {
+        "properties": {
+          "app_id": {
+            "default": "",
+            "description": "Catalog app or blueprint id",
+            "title": "App Id",
+            "type": "string"
+          },
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "requested_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested By"
+          }
+        },
+        "title": "LiteCatalogRemoveRequest",
+        "type": "object"
+      },
+      "LiteCheckpointRequest": {
+        "properties": {
+          "confirm_controlled": {
+            "default": false,
+            "title": "Confirm Controlled",
+            "type": "boolean"
+          },
+          "mode": {
+            "default": "passive",
+            "enum": [
+              "passive",
+              "truncate"
+            ],
+            "title": "Mode",
+            "type": "string"
+          }
+        },
+        "title": "LiteCheckpointRequest",
+        "type": "object"
+      },
+      "LiteDatabaseBackupRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteDatabaseBackupRequest",
+        "type": "object"
+      },
+      "LiteDatabaseRestoreRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "backup_id": {
+            "title": "Backup Id",
+            "type": "string"
+          },
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "preview_id": {
+            "title": "Preview Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "backup_id",
+          "preview_id"
+        ],
+        "title": "LiteDatabaseRestoreRequest",
+        "type": "object"
+      },
+      "LiteDeviceDisplayModelRequest": {
+        "properties": {
+          "consumer_model_name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional display-only consumer device model; clear with null or an empty value.",
+            "title": "Consumer Model Name"
+          },
+          "expected_consumer_model_name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional display-label value originally shown to the user; empty string means no friendly label.",
+            "title": "Expected Consumer Model Name"
+          },
+          "expected_profile_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deprecated compatibility revision; display-label concurrency uses the expected label when provided.",
+            "title": "Expected Profile Revision"
+          }
+        },
+        "title": "LiteDeviceDisplayModelRequest",
+        "type": "object"
+      },
+      "LiteIdentityRotateRequest": {
+        "properties": {
+          "lease_duration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Duration"
+          },
+          "target": {
+            "default": "default",
+            "title": "Target",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "title": "LiteIdentityRotateRequest",
+        "type": "object"
+      },
+      "LiteInviteRevokeRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 220,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteInviteRevokeRequest",
+        "type": "object"
+      },
+      "LiteLifecycleDiagnosticsRequest": {
+        "properties": {
+          "challenge_id": {
+            "default": "",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "report": {
+            "additionalProperties": true,
+            "title": "Report",
+            "type": "object"
+          }
+        },
+        "title": "LiteLifecycleDiagnosticsRequest",
+        "type": "object"
+      },
+      "LitePhotoPrismStorageMappingRequest": {
+        "properties": {
+          "device_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Id"
+          },
+          "device_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Name"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "mode": {
+            "default": "read_only",
+            "enum": [
+              "read_only",
+              "read_write"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "source_path": {
+            "default": "",
+            "description": "Approved Pocket Lab media folder path",
+            "title": "Source Path",
+            "type": "string"
+          },
+          "source_type": {
+            "default": "phone_media",
+            "enum": [
+              "phone_media",
+              "managed_media",
+              "storage_device"
+            ],
+            "title": "Source Type",
+            "type": "string"
+          },
+          "target": {
+            "default": "import",
+            "enum": [
+              "import",
+              "originals"
+            ],
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "title": "LitePhotoPrismStorageMappingRequest",
+        "type": "object"
+      },
+      "LitePolicyApplyRequest": {
+        "properties": {
+          "protection_enabled": {
+            "default": false,
+            "title": "Protection Enabled",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LitePolicyApplyRequest",
+        "type": "object"
+      },
+      "LiteRemoveDeviceRequest": {
+        "properties": {
+          "assessment_revision": {
+            "default": "",
+            "maxLength": 80,
+            "title": "Assessment Revision",
+            "type": "string"
+          },
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "device_id": {
+            "default": "",
+            "description": "Lite device id to remove from saved records",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "expected_awareness_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Awareness Revision"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "requested_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested By"
+          }
+        },
+        "title": "LiteRemoveDeviceRequest",
+        "type": "object"
+      },
+      "LiteRestorePreviewRequest": {
+        "properties": {
+          "backup_id": {
+            "default": "latest",
+            "title": "Backup Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "LiteRestorePreviewRequest",
+        "type": "object"
+      },
+      "LiteRestoreRequest": {
+        "properties": {
+          "backup_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup Id"
+          },
+          "backup_ref": {
+            "default": "latest",
+            "title": "Backup Ref",
+            "type": "string"
+          },
+          "confirm": {
+            "default": false,
+            "title": "Confirm",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "preview_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Id"
+          }
+        },
+        "title": "LiteRestoreRequest",
+        "type": "object"
+      },
+      "LiteRetentionRequest": {
+        "properties": {
+          "dry_run": {
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "max_batches": {
+            "default": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Batches",
+            "type": "integer"
+          }
+        },
+        "title": "LiteRetentionRequest",
+        "type": "object"
+      },
+      "LiteSecurityScanRequest": {
+        "properties": {
+          "app_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Id"
+          },
+          "profile": {
+            "default": "quick",
+            "title": "Profile",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "scope": {
+            "default": "local",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "LiteSecurityScanRequest",
+        "type": "object"
+      },
+      "OperationRequest": {
+        "properties": {
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "operation": {
+            "default": "",
+            "description": "Typed Pocket Lab operation name",
+            "title": "Operation",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "target": {
+            "additionalProperties": true,
+            "title": "Target",
+            "type": "object"
+          }
+        },
+        "title": "OperationRequest",
+        "type": "object"
+      },
+      "PublishEventRequest": {
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "subject": {
+            "default": "pocketlab.events.manual",
+            "title": "Subject",
+            "type": "string"
+          },
+          "trace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trace Id"
+          },
+          "type": {
+            "default": "manual",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "PublishEventRequest",
+        "type": "object"
+      },
+      "RunbookApprovalRequest": {
+        "properties": {
+          "approval_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Role"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "RunbookApprovalRequest",
+        "type": "object"
+      },
+      "RunbookExecuteRequest": {
+        "properties": {
+          "approved": {
+            "default": false,
+            "title": "Approved",
+            "type": "boolean"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "requested_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested By"
+          }
+        },
+        "title": "RunbookExecuteRequest",
+        "type": "object"
+      },
+      "RunbookRejectionRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "rejected_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejected By"
+          }
+        },
+        "title": "RunbookRejectionRequest",
+        "type": "object"
+      },
+      "TargetsRequest": {
+        "properties": {
+          "targets": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targets"
+          }
+        },
+        "title": "TargetsRequest",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Authoritative FastAPI/NATS control plane for the Pocket Lab React PWA. Tier 13 serves existing /api contracts, publishes command/event traffic over NATS/JetStream, keeps event-sourced workflows, and adds bounded runtime observability health status through FastAPI.",
+    "title": "Pocket Lab FastAPI/NATS Control API",
+    "version": "2.4.0-tier13",
+    "x-pocketlab-audience": "development-contract",
+    "x-pocketlab-source-commit": "uncommitted"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/lite/apps/lifecycle": {
+      "get": {
+        "operationId": "get_lite_app_lifecycle_profiles_api_lite_apps_lifecycle_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite App Lifecycle Profiles",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/lifecycle/{app_id}": {
+      "get": {
+        "operationId": "get_lite_app_lifecycle_profile_api_lite_apps_lifecycle__app_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Lifecycle Profile",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/photoprism/storage-mappings": {
+      "get": {
+        "operationId": "get_photoprism_storage_mappings_api_lite_apps_photoprism_storage_mappings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Photoprism Storage Mappings Api Lite Apps Photoprism Storage Mappings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Photoprism Storage Mappings",
+        "tags": [
+          "lite"
+        ]
+      },
+      "post": {
+        "operationId": "create_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LitePhotoPrismStorageMappingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Photoprism Storage Mapping Api Lite Apps Photoprism Storage Mappings Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Photoprism Storage Mapping",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/photoprism/storage-mappings/{mapping_id}": {
+      "delete": {
+        "operationId": "delete_photoprism_storage_mapping_api_lite_apps_photoprism_storage_mappings__mapping_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mapping_id",
+            "required": true,
+            "schema": {
+              "title": "Mapping Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Photoprism Storage Mapping Api Lite Apps Photoprism Storage Mappings  Mapping Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Photoprism Storage Mapping",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/photoprism/storage-preview": {
+      "get": {
+        "operationId": "get_photoprism_storage_preview_api_lite_apps_photoprism_storage_preview_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Photoprism Storage Preview Api Lite Apps Photoprism Storage Preview Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Photoprism Storage Preview",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/action-history": {
+      "get": {
+        "operationId": "get_lite_app_action_history_api_lite_apps__app_id__action_history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 512,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Action History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/actions": {
+      "get": {
+        "operationId": "get_lite_app_actions_api_lite_apps__app_id__actions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Actions",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/actions/{action_id}": {
+      "post": {
+        "operationId": "run_lite_app_action_api_lite_apps__app_id__actions__action_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "title": "Action Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Lite App Action Api Lite Apps  App Id  Actions  Action Id  Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Lite App Action",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/backup": {
+      "get": {
+        "operationId": "get_lite_app_backup_status_api_lite_apps__app_id__backup_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Backup Status",
+        "tags": [
+          "lite"
+        ]
+      },
+      "post": {
+        "operationId": "start_lite_app_backup_api_lite_apps__app_id__backup_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppBackupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Lite App Backup Api Lite Apps  App Id  Backup Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Lite App Backup",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/backup/storage-device": {
+      "post": {
+        "operationId": "start_lite_app_backup_to_storage_device_api_lite_apps__app_id__backup_storage_device_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Lite App Backup To Storage Device Api Lite Apps  App Id  Backup Storage Device Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Lite App Backup To Storage Device",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/backups": {
+      "get": {
+        "operationId": "list_lite_app_backups_api_lite_apps__app_id__backups_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Lite App Backups Api Lite Apps  App Id  Backups Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Lite App Backups",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/backups/{backup_id}/receipt": {
+      "get": {
+        "operationId": "get_lite_app_backup_receipt_api_lite_apps__app_id__backups__backup_id__receipt_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Backup Receipt Api Lite Apps  App Id  Backups  Backup Id  Receipt Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Backup Receipt",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/evidence": {
+      "get": {
+        "operationId": "get_lite_app_evidence_api_lite_apps__app_id__evidence_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Evidence Api Lite Apps  App Id  Evidence Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Evidence",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/restore/preview": {
+      "post": {
+        "operationId": "start_lite_app_restore_preview_api_lite_apps__app_id__restore_preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppRestorePreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Lite App Restore Preview Api Lite Apps  App Id  Restore Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Lite App Restore Preview",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/restore/previews/{preview_id}": {
+      "get": {
+        "operationId": "get_lite_app_restore_preview_api_lite_apps__app_id__restore_previews__preview_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "preview_id",
+            "required": true,
+            "schema": {
+              "title": "Preview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Restore Preview Api Lite Apps  App Id  Restore Previews  Preview Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Restore Preview",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/update": {
+      "get": {
+        "operationId": "get_lite_app_update_status_api_lite_apps__app_id__update_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Update Status",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/update/apply": {
+      "post": {
+        "operationId": "apply_lite_app_update_api_lite_apps__app_id__update_apply_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Apply Lite App Update Api Lite Apps  App Id  Update Apply Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Lite App Update",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/apps/{app_id}/update/receipts/{operation_id}": {
+      "get": {
+        "operationId": "get_lite_app_update_receipt_api_lite_apps__app_id__update_receipts__operation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "schema": {
+              "title": "Operation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite App Update Receipt Api Lite Apps  App Id  Update Receipts  Operation Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite App Update Receipt",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/catalog": {
+      "get": {
+        "operationId": "get_lite_catalog_api_lite_catalog_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Catalog",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/catalog/install": {
+      "post": {
+        "operationId": "install_lite_catalog_item_api_lite_catalog_install_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteCatalogInstallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Install Lite Catalog Item Api Lite Catalog Install Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Install Lite Catalog Item",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/catalog/remove": {
+      "post": {
+        "operationId": "remove_lite_catalog_item_api_lite_catalog_remove_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteCatalogRemoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove Lite Catalog Item Api Lite Catalog Remove Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Remove Lite Catalog Item",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/commands/history": {
+      "get": {
+        "operationId": "get_lite_command_history_api_lite_commands_history_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "entity_type",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 40,
+              "title": "Entity Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "entity_id",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 120,
+              "title": "Entity Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 512,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Command History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/devices/{device_id}": {
+      "get": {
+        "operationId": "get_lite_device_details_api_lite_devices__device_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Device Details",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/devices/{device_id}/health": {
+      "get": {
+        "operationId": "get_lite_device_health_api_lite_devices__device_id__health_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Device Health",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/devices/{device_id}/health/history": {
+      "get": {
+        "operationId": "get_lite_device_health_history_api_lite_devices__device_id__health_history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 512,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Device Health History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/devices/{device_id}/history": {
+      "get": {
+        "operationId": "get_lite_device_lifecycle_history_api_lite_devices__device_id__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 512,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Device Lifecycle History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/devices/{device_id}/removal-assessment": {
+      "get": {
+        "operationId": "get_lite_device_removal_assessment_api_lite_devices__device_id__removal_assessment_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Device Removal Assessment",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/diagnostics/frontend-lifecycle": {
+      "post": {
+        "operationId": "record_frontend_lifecycle_diagnostics_api_lite_diagnostics_frontend_lifecycle_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteLifecycleDiagnosticsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Frontend Lifecycle Diagnostics Api Lite Diagnostics Frontend Lifecycle Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Frontend Lifecycle Diagnostics",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/diagnostics/frontend-lifecycle/challenge": {
+      "get": {
+        "operationId": "get_frontend_lifecycle_diagnostics_challenge_api_lite_diagnostics_frontend_lifecycle_challenge_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Frontend Lifecycle Diagnostics Challenge Api Lite Diagnostics Frontend Lifecycle Challenge Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Frontend Lifecycle Diagnostics Challenge",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/diagnostics/runtime": {
+      "get": {
+        "operationId": "get_lite_runtime_diagnostics_api_lite_diagnostics_runtime_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Runtime Diagnostics",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/diagnostics/runtime/full": {
+      "get": {
+        "operationId": "get_lite_runtime_diagnostics_full_api_lite_diagnostics_runtime_full_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Runtime Diagnostics Full Api Lite Diagnostics Runtime Full Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Runtime Diagnostics Full",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/events": {
+      "get": {
+        "operationId": "get_lite_revision_events_api_lite_events_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Revision Events",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet": {
+      "get": {
+        "operationId": "get_lite_fleet_api_lite_fleet_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Fleet",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/add-device": {
+      "post": {
+        "operationId": "add_lite_device_api_lite_fleet_add_device_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAddDeviceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Add Lite Device Api Lite Fleet Add Device Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Lite Device",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/agent/bootstrap-blocked": {
+      "post": {
+        "description": "Record a token-gated audit event when a device refuses a mismatched invite.",
+        "operationId": "lite_fleet_agent_bootstrap_blocked_api_lite_fleet_agent_bootstrap_blocked_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lite Fleet Agent Bootstrap Blocked",
+        "tags": [
+          "fleet"
+        ]
+      }
+    },
+    "/api/lite/fleet/agent/bootstrap.env": {
+      "post": {
+        "description": "Consume a Lite invite only after the joining device passes local identity checks.",
+        "operationId": "lite_fleet_agent_bootstrap_env_api_lite_fleet_agent_bootstrap_env_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lite Fleet Agent Bootstrap Env",
+        "tags": [
+          "fleet"
+        ]
+      }
+    },
+    "/api/lite/fleet/agent/bootstrap.sh": {
+      "get": {
+        "description": "Lite-friendly token-gated device bootstrap script.\n\nThe script performs a local identity guard before the invite is consumed.\nThis prevents an already-enrolled phone from accidentally overwriting its\nlocal agent identity with a different invite.",
+        "operationId": "lite_fleet_agent_bootstrap_script_api_lite_fleet_agent_bootstrap_sh_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "default": "compute",
+              "title": "Role",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lite Fleet Agent Bootstrap Script",
+        "tags": [
+          "fleet"
+        ]
+      }
+    },
+    "/api/lite/fleet/devices/{device_id}/display-model": {
+      "put": {
+        "operationId": "update_lite_device_display_model_api_lite_fleet_devices__device_id__display_model_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteDeviceDisplayModelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Lite Device Display Model Api Lite Fleet Devices  Device Id  Display Model Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Lite Device Display Model",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/devices/{device_id}/recovery-history": {
+      "get": {
+        "operationId": "get_lite_device_recovery_history_api_lite_fleet_devices__device_id__recovery_history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "title": "Device Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 512,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Device Recovery History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/devices/{node_id}/restart-agent": {
+      "post": {
+        "description": "Request a supervised restart of a Lite fleet agent.\n\nThe UI never executes PM2 or shell commands. This endpoint records an auditable\ncommand and publishes it over the node-agent NATS command subject. If the node\nis offline, the command remains visible as queued; delivery requires the agent\nto reconnect to NATS.",
+        "operationId": "restart_lite_fleet_agent_api_lite_fleet_devices__node_id__restart_agent_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restart Lite Fleet Agent Api Lite Fleet Devices  Node Id  Restart Agent Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restart Lite Fleet Agent",
+        "tags": [
+          "fleet"
+        ]
+      }
+    },
+    "/api/lite/fleet/devices/{node_id}/restart-agent/status": {
+      "get": {
+        "operationId": "lite_fleet_agent_restart_status_api_lite_fleet_devices__node_id__restart_agent_status_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "command_id",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Command Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Lite Fleet Agent Restart Status Api Lite Fleet Devices  Node Id  Restart Agent Status Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lite Fleet Agent Restart Status",
+        "tags": [
+          "fleet"
+        ]
+      }
+    },
+    "/api/lite/fleet/health-summary": {
+      "get": {
+        "operationId": "get_lite_fleet_health_summary_api_lite_fleet_health_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Fleet Health Summary",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/invites/latest": {
+      "get": {
+        "operationId": "get_latest_lite_fleet_invite_api_lite_fleet_invites_latest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Latest Lite Fleet Invite Api Lite Fleet Invites Latest Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Latest Lite Fleet Invite",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/invites/{invite_id}/revoke": {
+      "post": {
+        "operationId": "revoke_lite_fleet_invite_api_lite_fleet_invites__invite_id__revoke_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "title": "Invite Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteInviteRevokeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Revoke Lite Fleet Invite Api Lite Fleet Invites  Invite Id  Revoke Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Lite Fleet Invite",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/fleet/remove-device": {
+      "post": {
+        "operationId": "remove_lite_device_api_lite_fleet_remove_device_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteRemoveDeviceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove Lite Device Api Lite Fleet Remove Device Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Lite Device",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/identity": {
+      "get": {
+        "operationId": "get_lite_identity_api_lite_identity_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Identity Api Lite Identity Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Identity",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/identity/rotate": {
+      "post": {
+        "operationId": "rotate_lite_identity_api_lite_identity_rotate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteIdentityRotateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Rotate Lite Identity Api Lite Identity Rotate Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rotate Lite Identity",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/policy": {
+      "get": {
+        "operationId": "get_lite_policy_api_lite_policy_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Policy Api Lite Policy Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Policy",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/policy/apply": {
+      "post": {
+        "operationId": "apply_lite_policy_api_lite_policy_apply_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LitePolicyApplyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Apply Lite Policy Api Lite Policy Apply Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Lite Policy",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery": {
+      "get": {
+        "operationId": "get_lite_recovery_api_lite_recovery_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Recovery",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps": {
+      "get": {
+        "operationId": "get_lite_recovery_apps_api_lite_recovery_apps_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Recovery Apps Api Lite Recovery Apps Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Recovery Apps",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps/{app_id}": {
+      "get": {
+        "operationId": "get_lite_recovery_app_api_lite_recovery_apps__app_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Recovery App Api Lite Recovery Apps  App Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Recovery App",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps/{app_id}/backup": {
+      "post": {
+        "operationId": "backup_lite_app_api_lite_recovery_apps__app_id__backup_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppBackupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Backup Lite App Api Lite Recovery Apps  App Id  Backup Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backup Lite App",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps/{app_id}/backup-targets": {
+      "get": {
+        "operationId": "get_lite_recovery_app_backup_targets_api_lite_recovery_apps__app_id__backup_targets_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Recovery App Backup Targets Api Lite Recovery Apps  App Id  Backup Targets Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Recovery App Backup Targets",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps/{app_id}/backup-to-target": {
+      "post": {
+        "operationId": "backup_lite_app_to_target_api_lite_recovery_apps__app_id__backup_to_target_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Backup Lite App To Target Api Lite Recovery Apps  App Id  Backup To Target Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backup Lite App To Target",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps/{app_id}/restore": {
+      "post": {
+        "operationId": "restore_lite_app_api_lite_recovery_apps__app_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppRestoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restore Lite App Api Lite Recovery Apps  App Id  Restore Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Restore Lite App",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/apps/{app_id}/restore/preview": {
+      "post": {
+        "operationId": "preview_lite_app_restore_api_lite_recovery_apps__app_id__restore_preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteAppRestorePreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Preview Lite App Restore Api Lite Recovery Apps  App Id  Restore Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Lite App Restore",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/backup": {
+      "post": {
+        "operationId": "backup_lite_api_lite_recovery_backup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteBackupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Backup Lite Api Lite Recovery Backup Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backup Lite",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/backup-targets": {
+      "get": {
+        "operationId": "get_lite_backup_targets_api_lite_recovery_backup_targets_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Backup Targets Api Lite Recovery Backup Targets Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Backup Targets",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/backups": {
+      "get": {
+        "operationId": "list_lite_backups_api_lite_recovery_backups_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 120,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Lite Backups Api Lite Recovery Backups Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Lite Backups",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/backups/{backup_id}": {
+      "get": {
+        "operationId": "get_lite_backup_api_lite_recovery_backups__backup_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Backup Api Lite Recovery Backups  Backup Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Backup",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/backups/{backup_id}/verify": {
+      "post": {
+        "operationId": "verify_lite_backup_api_lite_recovery_backups__backup_id__verify_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteBackupVerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Verify Lite Backup Api Lite Recovery Backups  Backup Id  Verify Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Lite Backup",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database": {
+      "get": {
+        "operationId": "get_lite_database_recovery_api_lite_recovery_database_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Database Recovery Api Lite Recovery Database Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Database Recovery",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/backup": {
+      "post": {
+        "operationId": "backup_lite_database_api_lite_recovery_database_backup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteDatabaseBackupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Backup Lite Database Api Lite Recovery Database Backup Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backup Lite Database",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/backups": {
+      "get": {
+        "operationId": "list_lite_database_backups_api_lite_recovery_database_backups_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Lite Database Backups Api Lite Recovery Database Backups Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Lite Database Backups",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/backups/{backup_id}": {
+      "get": {
+        "operationId": "get_lite_database_backup_api_lite_recovery_database_backups__backup_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Database Backup Api Lite Recovery Database Backups  Backup Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Database Backup",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/backups/{backup_id}/preview": {
+      "post": {
+        "operationId": "preview_lite_database_restore_api_lite_recovery_database_backups__backup_id__preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Preview Lite Database Restore Api Lite Recovery Database Backups  Backup Id  Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Lite Database Restore",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/backups/{backup_id}/restore": {
+      "post": {
+        "operationId": "restore_lite_database_api_lite_recovery_database_backups__backup_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteDatabaseRestoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restore Lite Database Api Lite Recovery Database Backups  Backup Id  Restore Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Lite Database",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/backups/{backup_id}/verify": {
+      "post": {
+        "operationId": "verify_lite_database_backup_api_lite_recovery_database_backups__backup_id__verify_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Verify Lite Database Backup Api Lite Recovery Database Backups  Backup Id  Verify Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Lite Database Backup",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/restore/previews/{preview_id}": {
+      "get": {
+        "operationId": "get_lite_database_restore_preview_api_lite_recovery_database_restore_previews__preview_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "preview_id",
+            "required": true,
+            "schema": {
+              "title": "Preview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Database Restore Preview Api Lite Recovery Database Restore Previews  Preview Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Database Restore Preview",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/database/restore/{restore_id}": {
+      "get": {
+        "operationId": "get_lite_database_restore_run_api_lite_recovery_database_restore__restore_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "restore_id",
+            "required": true,
+            "schema": {
+              "title": "Restore Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Database Restore Run Api Lite Recovery Database Restore  Restore Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Database Restore Run",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/details": {
+      "get": {
+        "operationId": "get_lite_recovery_details_api_lite_recovery_details_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Recovery Details",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/maintenance": {
+      "get": {
+        "operationId": "get_lite_recovery_maintenance_api_lite_recovery_maintenance_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Recovery Maintenance Api Lite Recovery Maintenance Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Recovery Maintenance",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/maintenance/checkpoint": {
+      "post": {
+        "operationId": "run_lite_recovery_checkpoint_api_lite_recovery_maintenance_checkpoint_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteCheckpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Lite Recovery Checkpoint Api Lite Recovery Maintenance Checkpoint Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Lite Recovery Checkpoint",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/maintenance/retention": {
+      "post": {
+        "operationId": "run_lite_recovery_retention_api_lite_recovery_maintenance_retention_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteRetentionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Lite Recovery Retention Api Lite Recovery Maintenance Retention Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Lite Recovery Retention",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/operations": {
+      "get": {
+        "operationId": "get_lite_recovery_operation_history_api_lite_recovery_operations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 512,
+              "title": "Cursor",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Recovery Operation History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/receipts/{backup_id}": {
+      "get": {
+        "operationId": "get_lite_backup_receipt_api_lite_recovery_receipts__backup_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "backup_id",
+            "required": true,
+            "schema": {
+              "title": "Backup Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Backup Receipt Api Lite Recovery Receipts  Backup Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Backup Receipt",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/restore": {
+      "post": {
+        "operationId": "restore_lite_api_lite_recovery_restore_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteRestoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restore Lite Api Lite Recovery Restore Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Lite",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/restore/checkpoints/{checkpoint_id}": {
+      "get": {
+        "operationId": "get_lite_restore_checkpoint_api_lite_recovery_restore_checkpoints__checkpoint_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "checkpoint_id",
+            "required": true,
+            "schema": {
+              "title": "Checkpoint Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Restore Checkpoint Api Lite Recovery Restore Checkpoints  Checkpoint Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Restore Checkpoint",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/restore/preview": {
+      "post": {
+        "operationId": "preview_lite_restore_api_lite_recovery_restore_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiteRestorePreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Preview Lite Restore Api Lite Recovery Restore Preview Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Lite Restore",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/restore/previews/{preview_id}": {
+      "get": {
+        "operationId": "get_lite_restore_preview_api_lite_recovery_restore_previews__preview_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "preview_id",
+            "required": true,
+            "schema": {
+              "title": "Preview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Restore Preview Api Lite Recovery Restore Previews  Preview Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Restore Preview",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/restore/runs/{restore_id}": {
+      "get": {
+        "operationId": "get_lite_restore_run_api_lite_recovery_restore_runs__restore_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "restore_id",
+            "required": true,
+            "schema": {
+              "title": "Restore Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Restore Run Api Lite Recovery Restore Runs  Restore Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Restore Run",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/recovery/summary": {
+      "get": {
+        "operationId": "get_lite_recovery_summary_api_lite_recovery_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Recovery Summary",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/release": {
+      "get": {
+        "operationId": "release_status_api_lite_release_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Release Status Api Lite Release Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Release Status",
+        "tags": [
+          "release"
+        ]
+      }
+    },
+    "/api/lite/release/apply": {
+      "post": {
+        "operationId": "release_apply_api_lite_release_apply_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Release Apply Api Lite Release Apply Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Release Apply",
+        "tags": [
+          "release"
+        ]
+      }
+    },
+    "/api/lite/release/check": {
+      "post": {
+        "operationId": "release_check_api_lite_release_check_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Release Check Api Lite Release Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Release Check",
+        "tags": [
+          "release"
+        ]
+      }
+    },
+    "/api/lite/remote-access/readiness": {
+      "get": {
+        "operationId": "get_lite_remote_access_readiness_api_lite_remote_access_readiness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Remote Access Readiness",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/revisions": {
+      "get": {
+        "operationId": "get_lite_domain_revisions_api_lite_revisions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Domain Revisions",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security": {
+      "get": {
+        "operationId": "get_lite_security_api_lite_security_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Security Api Lite Security Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Security",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/apps": {
+      "get": {
+        "operationId": "get_lite_security_apps_api_lite_security_apps_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Security Apps Api Lite Security Apps Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Security Apps",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/apps/{app_id}": {
+      "get": {
+        "operationId": "get_lite_security_app_api_lite_security_apps__app_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Security App Api Lite Security Apps  App Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security App",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/apps/{app_id}/check": {
+      "post": {
+        "operationId": "check_lite_security_app_api_lite_security_apps__app_id__check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/LiteAppSecurityCheckRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Check Lite Security App Api Lite Security Apps  App Id  Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check Lite Security App",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/check": {
+      "post": {
+        "operationId": "check_lite_security_api_lite_security_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/LiteSecurityScanRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Check Lite Security Api Lite Security Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check Lite Security",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/details/{run_id}": {
+      "get": {
+        "operationId": "get_lite_security_details_api_lite_security_details__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security Details",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/events": {
+      "get": {
+        "operationId": "get_lite_security_events_api_lite_security_events_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Security Events",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/evidence/{run_id}": {
+      "get": {
+        "operationId": "get_lite_security_evidence_api_lite_security_evidence__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Security Evidence Api Lite Security Evidence  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security Evidence",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/evidence/{run_id}/summary": {
+      "get": {
+        "operationId": "get_lite_security_evidence_summary_api_lite_security_evidence__run_id__summary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security Evidence Summary",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/freshness": {
+      "get": {
+        "operationId": "get_lite_security_freshness_api_lite_security_freshness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Security Freshness",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/history": {
+      "get": {
+        "operationId": "get_lite_security_history_api_lite_security_history_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security History",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/profiles/{profile}": {
+      "get": {
+        "operationId": "get_lite_security_profile_api_lite_security_profiles__profile__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile",
+            "required": true,
+            "schema": {
+              "title": "Profile",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "app_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "App Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security Profile",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/progress": {
+      "get": {
+        "operationId": "get_lite_security_progress_api_lite_security_progress_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Security Progress",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/runs/{run_id}": {
+      "get": {
+        "operationId": "get_lite_security_run_api_lite_security_runs__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Lite Security Run Api Lite Security Runs  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Lite Security Run",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/scan": {
+      "post": {
+        "operationId": "scan_lite_security_api_lite_security_scan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/LiteSecurityScanRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Scan Lite Security Api Lite Security Scan Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scan Lite Security",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/security/summary": {
+      "get": {
+        "operationId": "get_lite_security_summary_api_lite_security_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Security Summary",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/status": {
+      "get": {
+        "operationId": "get_lite_status_api_lite_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Status",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/activity-summary": {
+      "get": {
+        "operationId": "get_lite_activity_summary_api_lite_system_activity_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Activity Summary",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/agent": {
+      "get": {
+        "operationId": "get_lite_system_agent_api_lite_system_agent_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite System Agent",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/health": {
+      "get": {
+        "operationId": "get_lite_system_health_api_lite_system_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite System Health",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/nats-readiness": {
+      "get": {
+        "operationId": "get_lite_nats_readiness_api_lite_system_nats_readiness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Nats Readiness",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/processes": {
+      "get": {
+        "operationId": "get_lite_system_processes_api_lite_system_processes_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite System Processes",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/sqlite-health": {
+      "get": {
+        "operationId": "get_lite_sqlite_health_api_lite_system_sqlite_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Sqlite Health",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/storage-pressure": {
+      "get": {
+        "operationId": "get_lite_storage_pressure_api_lite_system_storage_pressure_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Storage Pressure",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/supervisor": {
+      "get": {
+        "operationId": "get_lite_system_supervisor_api_lite_system_supervisor_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite System Supervisor",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/api/lite/system/telemetry-thresholds": {
+      "get": {
+        "operationId": "get_lite_telemetry_thresholds_api_lite_system_telemetry_thresholds_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Lite Telemetry Thresholds",
+        "tags": [
+          "lite"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "prefixItems": [
+                        {
+                          "additionalProperties": true,
+                          "type": "object"
+                        },
+                        {
+                          "type": "integer"
+                        }
+                      ],
+                      "type": "array"
+                    },
+                    {
+                      "additionalProperties": true,
+                      "type": "object"
+                    }
+                  ],
+                  "title": "Response Ready Ready Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ready",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  }
+}

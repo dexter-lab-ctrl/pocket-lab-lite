@@ -1,8 +1,9 @@
 import { http, HttpResponse } from 'msw';
 import { controlPlaneHealthy, controlPlaneNatsDown, workerDown } from './fixtures/controlPlane.js';
 import { telemetryNormal, healthAllGreen, healthVaultSealed, fleetAgents, driftDetected, releaseWorkflowRunning, recentEvents, observabilityRuntimeHealthy, observabilityRuntimeDegraded } from './fixtures/pocketlab.js';
+import { resolveGeneratedLiteScenario } from '../test/fixtures/generated/lite-fixtures.js';
 
-const scenario = () => (typeof window !== 'undefined' ? (window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'healthy') : 'healthy');
+const scenario = () => resolveGeneratedLiteScenario(typeof window !== 'undefined' ? (window.localStorage.getItem('POCKETLAB_MOCK_SCENARIO') || 'healthy') : 'healthy');
 const controlPlane = () => {
   if (scenario() === 'nats-down') return controlPlaneNatsDown;
   if (scenario() === 'worker-down') return workerDown;
@@ -559,6 +560,33 @@ export const handlers = [
       meta: { matched_count: values.length, query_time_ms: 12, query: url.searchParams.get('query') || '' }
     });
   }),
+  http.get('/api/lite/revisions', () => HttpResponse.json({
+    database_instance: 'pocketlab-lite-msw',
+    last_event_id: 1,
+    revisions: { status: 1, apps: 1, fleet: 1, security: 1, recovery: 1, identity: 1, rules: 1 },
+    projection_version: 1,
+    checked_at: new Date().toISOString(),
+  })),
+  http.get('/api/lite/events', () => new HttpResponse('', {
+    status: 204,
+    headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+  })),
+  http.get('/api/lite/release', () => HttpResponse.json({
+    status: 'current',
+    summary: 'Pocket Lab Lite is up to date.',
+    install_mode: 'release',
+    current_tag: 'lite-mock-current',
+    installed_release_tag: 'lite-mock-current',
+    comparison: 'equal',
+    update_available: false,
+    auto_apply: false,
+    checked_at: new Date().toISOString(),
+  })),
+  http.get('/api/lite/diagnostics/frontend-lifecycle/challenge', () => HttpResponse.json({
+    active: false,
+    challenge_id: '',
+    expires_at: '',
+  })),
   http.get('/api/lite/status', () => HttpResponse.json({
     overall: 'healthy',
     checked_at: new Date().toISOString(),
@@ -694,6 +722,20 @@ export const handlers = [
   }),
   http.delete('/api/lite/apps/photoprism/storage-mappings/:mappingId', ({ params }) => HttpResponse.json({ status: 'deleted', accepted: true, app_id: 'photoprism', mapping_id: params.mappingId, summary: 'Media folder disconnected.' })),
   http.get('/api/lite/identity', () => HttpResponse.json({ status: 'healthy', summary: 'Vault is initialized and unsealed', actions: ['change_password'] })),
+  http.get('/api/lite/security/summary', () => HttpResponse.json(mockLiteSecurityPayload())),
+  http.get('/api/lite/security/freshness', () => {
+    const payload = mockLiteSecurityPayload();
+    return HttpResponse.json({
+      status: payload.status || 'healthy',
+      active_scan: Boolean(payload.active_scan),
+      latest_run_id: payload.last_run?.run_id || '',
+      summary_revision: 1,
+      history_revision: 1,
+      progress_revision: 1,
+      profile_revisions: { quick: 1, full: 1, app: 1 },
+      updated_at: new Date().toISOString(),
+    });
+  }),
   http.get('/api/lite/security', () => HttpResponse.json(mockLiteSecurityPayload())),
   http.get('/api/lite/fleet', () => HttpResponse.json({
     status: 'healthy',
@@ -715,6 +757,20 @@ export const handlers = [
     updated_at: new Date().toISOString(),
   })),
   http.get('/api/lite/policy', () => HttpResponse.json({ status: 'healthy', summary: 'Protection rules are available in advisory mode', protection_enabled: false, requires_confirmation: true, allowed_actions: ['install_app', 'add_device', 'run_safety_check', 'backup_now'] })),
+  http.get('/api/lite/recovery/summary', () => HttpResponse.json({
+    status: scenario() === 'nats-down' ? 'degraded' : 'healthy',
+    summary: scenario() === 'nats-down' ? 'Showing saved Recovery state while the backend reconnects.' : 'Recovery Ready',
+    projection_status: scenario() === 'nats-down' ? 'stale' : 'fresh',
+    saved_state: scenario() === 'nats-down',
+    checked_at: new Date().toISOString(),
+    repository_readiness: { ready: true, engine: 'restic', repository_initialized: true },
+    last_backup: { backup_id: 'backup-mock-001', verification_status: 'verified', created_at: new Date(Date.now() - 3600000).toISOString() },
+    latest_restore_preview: { status: 'ready', restore_allowed: true, preview_id: 'preview-mock-001' },
+    pre_restore_checkpoint: { status: 'created', checkpoint_id: 'checkpoint-mock-001' },
+    last_restore: null,
+    active_operation: null,
+    revision: 1,
+  })),
   http.get('/api/lite/recovery', () => HttpResponse.json({
     status: 'healthy',
     summary: 'Recovery Ready',

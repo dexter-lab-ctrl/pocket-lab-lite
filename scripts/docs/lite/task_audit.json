@@ -1,0 +1,41 @@
+{
+  "verified_lite_ready": [
+    "lite:check", "lite:api:check", "lite:docs:check", "lite:bootstrap:check",
+    "android:smoke", "release:dry-run", "dev:up", "dev:down", "dev:status",
+    "dev:backend", "dev:worker", "dev:frontend", "dev:nats"
+  ],
+  "adapted_to_lite": [
+    "setup", "check", "test:frontend", "test:backend", "test:e2e", "test:storybook",
+    "test:visual", "test:lighthouse", "test:a11y", "test:redaction", "check:api-contract",
+    "check:schemas", "docs:api", "docs:events", "docs:build", "docs:serve",
+    "docs:check", "storybook:screenshots", "windows:host:check", "windows:vscode:check",
+    "windows:wsl:check"
+  ],
+  "removed_full_version_only": [
+    "check:iac", "test:iac", "test:websockets", "test:golden", "trace:operation",
+    "docs:operations", "docs:operations:seed", "docs:operations:metadata:check",
+    "docs:architecture:serve", "docs:architecture:export", "threatdragon:pull",
+    "threatdragon:serve", "threatdragon:stop", "threatdragon:logs",
+    "docs:threat-model", "docs:threat-model:check", "docs:operations:security:enrich",
+    "docs:threat-model:drift:seal", "docs:threat-model:drift",
+    "docs:threat-model:drift:docs", "docs:threat-model:sync",
+    "docs:threat-model:sync:check", "docs:security:policies",
+    "docs:security:policies:check", "docs:security:controls",
+    "docs:security:controls:check", "docs:security:full-check",
+    "docs:runbooks:catalog", "docs:runbooks", "docs:runbooks:check",
+    "docs:runbooks:docs", "docs:runbooks:docs:check", "docs:runbooks:gates",
+    "docs:runbooks:gates:check", "docs:runbooks:full-check", "test:runbooks:execution",
+    "docs:deployment:ansible", "docs:deployment:ansible:check"
+  ],
+  "removed_duplicate_or_legacy": [
+    "check:frontend", "check:backend", "check:bootstrap", "check:contracts",
+    "check:supply-chain", "build:pwa", "dev:nats:down", "dev:observe",
+    "observability:status", "docs:observability:runtime-snapshot",
+    "dev:reset", "test:network", "test:flakes", "docs:ui:evidence",
+    "docs:ui:evidence:check"
+  ],
+  "optional_release_only": [
+    "test:nats", "test:nats-permissions", "test:faults", "test:performance",
+    "lite:security:s8:gate:termux", "lite:security:s8:gate:ubuntu"
+  ]
+}

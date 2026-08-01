@@ -1,0 +1,13 @@
+import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+export default { title: 'Pocket Lab Lite/Security', component: LiteStoryFrame, tags: ['autodocs'] };
+export const QuickCheckHealthy = createLiteStory('security', 'security-quick-healthy');
+export const QuickCheckReviewRecommended = createLiteStory('security', 'security-action-needed');
+export const FullCheckRunning = createLiteStory('security', 'security-full-running');
+export const AppCheckHealthy = createLiteStory('security', 'security-app-check-healthy');
+export const UrgentFinding = createLiteStory('security', 'security-urgent');
+export const NoScanHistory = createLiteStory('security', 'security-first-run');
+export const ProfileDataStale = createLiteStory('security', 'security-profile-stale');
+export const ProgressStages = createLiteStory('security', 'security-progress');
+export const ScannerUnavailable = createLiteStory('security', 'security-scanner-unavailable');
+export const UnsupportedAppProfileRoute = createLiteStory('security', 'security-unsupported-app-route');
+export const SavedOfflineSnapshot = createLiteStory('security', 'offline-saved');

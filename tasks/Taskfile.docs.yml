@@ -1,0 +1,53 @@
+version: '3'
+
+tasks:
+  lite:contracts:generate:
+    desc: Export the FastAPI Lite OpenAPI contract and generate sanitized canonical fixtures
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_contracts.py generate'
+
+  lite:contracts:check:
+    desc: Check OpenAPI/fixture/frontend route compatibility without modifying source
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_contracts.py check'
+      - npx redocly lint contracts/generated/lite-openapi.json
+
+  lite:docs:development:generate:
+    desc: Generate source-grounded Development documentation
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_docs.py generate --audience development'
+
+  lite:docs:development:check:
+    desc: Check Development documentation drift and safety
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_docs.py check --audience development'
+
+  lite:docs:production:generate:
+    desc: Generate verified deployable Production/operator documentation
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_docs.py generate --audience production'
+
+  lite:docs:production:check:
+    desc: Check Production documentation drift and ensure partial/planned behavior is not presented as deployable
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_docs.py check --audience production'
+
+  lite:docs:generate:
+    desc: Generate contracts plus independent Development and Production documentation tracks
+    cmds:
+      - task: lite:contracts:generate
+      - task: lite:docs:development:generate
+      - task: lite:docs:production:generate
+
+  lite:docs:check:
+    desc: Compatibility alias and strict combined documentation gate
+    cmds:
+      - task: lite:contracts:check
+      - task: lite:docs:development:check
+      - task: lite:docs:production:check
+      - mkdocs build --strict
+
+  lite:docs:serve:
+    desc: Serve combined Development and Production docs locally
+    cmds:
+      - mkdocs serve -a 127.0.0.1:8001
