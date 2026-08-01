@@ -66,14 +66,20 @@ function supervisorStatusLabel(device) {
   return 'No supervisor status reported';
 }
 
-function capabilityStatusLabel(value, reasonCode = '') {
+export function capabilityStatusLabel(value, reasonCode = '') {
   const status = normalizeStatus(value);
   const reason = normalizeStatus(reasonCode);
-  if (status === 'ready') return 'Verified';
-  if (status === 'available') return 'Verification pending';
-  if (reason === 'capability_not_advertised' || status === 'unknown') return 'Not advertised';
-  if (status === 'not_ready') return 'Not ready';
-  return 'Verification pending';
+
+  if (['verified', 'ready'].includes(status)) return 'Verified';
+  if (['verification_pending', 'available'].includes(status)) {
+    return 'Verification pending';
+  }
+  if (['unavailable', 'not_ready'].includes(status)) return 'Unavailable';
+  if (
+    status === 'not_advertised'
+    || reason === 'capability_not_advertised'
+  ) return 'Not advertised';
+  return 'Unknown';
 }
 
 function safeList(items) {
