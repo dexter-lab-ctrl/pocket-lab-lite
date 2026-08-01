@@ -197,22 +197,63 @@ export function deviceCapabilityLabels(device) {
 }
 
 
+export function normalizeDeviceCapabilityStatus(value, reasonCode = '') {
+  const status = String(value || 'unknown').trim().toLowerCase();
+  const reason = String(reasonCode || '').trim().toLowerCase();
+  if (['verified', 'ready'].includes(status)) return 'verified';
+  if (['verification_pending', 'available'].includes(status)) return 'pending';
+  if (['unavailable', 'not_ready'].includes(status)) return 'unavailable';
+  if (status === 'not_advertised' || reason === 'capability_not_advertised') return 'not_advertised';
+  return 'unknown';
+}
+
 export function deviceCapabilitySummary(device) {
-  const states = Array.isArray(device?.capability_states) ? device.capability_states : [];
-  const counts = { verified: 0, pending: 0, unavailable: 0, notAdvertised: 0, total: states.length };
-  states.forEach((item) => {
-    const status = String(item?.status || 'unknown').toLowerCase();
-    const reason = String(item?.reason_code || '').toLowerCase();
-    if (status === 'ready') counts.verified += 1;
-    else if (status === 'available') counts.pending += 1;
-    else if (reason === 'capability_not_advertised' || status === 'unknown') counts.notAdvertised += 1;
-    else counts.unavailable += 1;
+  const source = Array.isArray(device?.capability_states)
+    ? device.capability_states
+    : Array.isArray(device?.capabilities)
+      ? device.capabilities
+      : [];
+  const counts = { verified: 0, pending: 0, unavailable: 0, notAdvertised: 0, unknown: 0, total: source.length };
+  source.forEach((item) => {
+    const state = item && typeof item === 'object'
+      ? normalizeDeviceCapabilityStatus(item.status, item.reason_code)
+      : 'unknown';
+    if (state === 'verified') counts.verified += 1;
+    else if (state === 'pending') counts.pending += 1;
+    else if (state === 'unavailable') counts.unavailable += 1;
+    else if (state === 'not_advertised') counts.notAdvertised += 1;
+    else counts.unknown += 1;
   });
   const parts = [];
   if (counts.verified) parts.push(`${counts.verified} verified`);
   if (counts.pending) parts.push(`${counts.pending} pending`);
   if (counts.unavailable) parts.push(`${counts.unavailable} unavailable`);
   return { ...counts, label: parts.join(' · ') || 'No verified capabilities yet' };
+}
+
+export function deviceRuntimeServices(device) {
+  return Array.isArray(device?.runtime_services) ? device.runtime_services : [];
+}
+
+export function deviceRestartAssessment(device) {
+  return device?.restart_agent_assessment && typeof device.restart_agent_assessment === 'object'
+    ? device.restart_agent_assessment
+    : null;
+}
+
+export function deviceCommandDeliveryLabel(device) {
+  const assessment = deviceRestartAssessment(device);
+  if (assessment && typeof assessment.command_deliverable === 'boolean') {
+    return assessment.command_deliverable ? 'Deliverable' : 'Temporarily unreachable';
+  }
+  const status = String(
+    device?.dependencies?.command_delivery_status
+      || device?.command_delivery_status
+      || '',
+  ).trim().toLowerCase();
+  if (['deliverable', 'available', 'ready', 'online'].includes(status)) return 'Deliverable';
+  if (['temporarily_unreachable', 'unreachable', 'offline', 'blocked'].includes(status)) return 'Temporarily unreachable';
+  return 'Unknown';
 }
 
 export function canonicalDevicePresentation(device) {

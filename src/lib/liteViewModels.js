@@ -1137,6 +1137,7 @@ export function selectLiteDeviceCard(device = {}) {
     tailscale: isObject(device.tailscale) ? copySafeKeys(device.tailscale, ['ready', 'status', 'summary', 'ip', 'updated_at']) : null,
     storage: normalizeDeviceStorage(device.storage),
     capabilities: normalizeDeviceCapabilityState(device.capability_states || device.capabilities),
+    capability_states: normalizeDeviceCapabilityState(device.capability_states || device.capabilities),
     capability_ids: Array.isArray(device.capabilities) ? device.capabilities.filter((item) => typeof item === 'string').slice(0, 32).map(safeString).filter(Boolean) : [],
     capability_labels: Array.isArray(device.capability_labels) ? device.capability_labels.slice(0, 12).map(safeString).filter(Boolean) : [],
     advertised_capabilities: Array.isArray(device.advertised_capabilities) ? device.advertised_capabilities.slice(0, 32).map(safeString).filter(Boolean) : [],

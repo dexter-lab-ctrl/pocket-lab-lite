@@ -12,6 +12,9 @@ import {
   backendBadgeStatus,
   deviceCapabilityLabels,
   deviceCapabilitySummary,
+  deviceCommandDeliveryLabel,
+  deviceRestartAssessment,
+  deviceRuntimeServices,
   canonicalDevicePresentation,
   deviceConnectionLabel,
   deviceLinkState,
@@ -369,8 +372,8 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
     : deviceHistoryItems({ ...device, recent_events: device?.recent_lifecycle });
   const capabilities = capabilityRows(device);
   const capabilitySummary = deviceCapabilitySummary(device);
-  const runtimeServices = Array.isArray(device?.runtime_services) ? device.runtime_services : [];
-  const restartAssessment = device?.restart_agent_assessment || {};
+  const runtimeServices = deviceRuntimeServices(device);
+  const restartAssessment = deviceRestartAssessment(device) || {};
   const dependencies = device?.dependencies || {};
   const removal = device?.removal_assessment || {};
   const isProtectedServer = String(device?.role || '').toLowerCase() === 'server_host' || device?.is_current || device?.isCurrent;
@@ -638,7 +641,7 @@ export default function DeviceDetailsLazy({ device, onClose, onChooseModel }) {
             <ul>{dependencies.hosted_apps.map((app) => <li key={app.app_id}><strong>{app.label}</strong> · {titleCase(app.status)}</li>)}</ul>
           ) : <p>No hosted apps reported.</p>}
           {Number(dependencies.backup_set_count || 0) > 0 ? <p>Stores {dependencies.backup_set_count} verified backup set{Number(dependencies.backup_set_count) === 1 ? '' : 's'}.</p> : null}
-          <p>Command delivery: {titleCase(dependencies.command_delivery_status)}</p>
+          <p>Command delivery: {deviceCommandDeliveryLabel(device)}</p>
         </section>
 
         <section className="lite-device-awareness-section lite-device-awareness-removal" aria-label="Removal impact">
