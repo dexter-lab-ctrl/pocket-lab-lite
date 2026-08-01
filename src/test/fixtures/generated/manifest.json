@@ -1,0 +1,416 @@
+{
+  "aliases": {
+    "api-unavailable": "nats-down",
+    "app-action-failed": "lifecycle-attention",
+    "app-media-not-ready": "lifecycle-attention",
+    "app-projection-stale": "lifecycle-attention",
+    "app-route-not-ready": "lifecycle-attention",
+    "app-stopped": "lifecycle-attention",
+    "catalog-install-available": "catalog-ready",
+    "catalog-installing": "catalog-installing",
+    "catalog-ready": "catalog-ready",
+    "devices-agent-stopped": "worker-down",
+    "devices-capability-missing": "healthy",
+    "devices-capability-pending": "healthy",
+    "devices-capability-verified": "healthy",
+    "devices-invite-expired": "healthy",
+    "devices-invite-mismatch": "healthy",
+    "devices-invite-ready": "healthy",
+    "devices-offline": "worker-down",
+    "devices-online": "healthy",
+    "devices-protected-host": "healthy",
+    "devices-remote-not-ready": "nats-down",
+    "devices-repairing": "worker-down",
+    "devices-server-online": "healthy",
+    "healthy": "healthy",
+    "identity-password-change-required": "healthy",
+    "identity-password-configured": "healthy",
+    "identity-role-aware-fixture": "healthy",
+    "identity-summary": "healthy",
+    "offline-saved": "nats-down",
+    "recovery-backup-failed": "worker-down",
+    "recovery-backup-running": "healthy",
+    "recovery-checkpoint-ready": "healthy",
+    "recovery-no-backups": "healthy",
+    "recovery-no-storage-node": "healthy",
+    "recovery-preview-ready": "healthy",
+    "recovery-projection-too-old": "nats-down",
+    "recovery-ready": "healthy",
+    "recovery-repository-unavailable": "nats-down",
+    "recovery-restore-blocked": "healthy",
+    "recovery-verified": "healthy",
+    "release-available": "healthy",
+    "release-current": "healthy",
+    "release-failed": "nats-down",
+    "review-recommended": "lifecycle-attention",
+    "rules-approval-required": "healthy",
+    "rules-disabled": "healthy",
+    "rules-empty": "healthy",
+    "rules-enabled": "healthy",
+    "rules-execution-pending": "healthy",
+    "rules-present": "healthy",
+    "rules-validation-error": "healthy",
+    "security-action-needed": "security-action-needed",
+    "security-app-check-healthy": "healthy",
+    "security-first-run": "security-first-run",
+    "security-full-running": "security-partial",
+    "security-profile-stale": "security-partial",
+    "security-progress": "security-partial",
+    "security-quick-healthy": "healthy",
+    "security-scanner-unavailable": "worker-down",
+    "security-unsupported-app-route": "security-action-needed",
+    "security-urgent": "security-action-needed",
+    "slow-response": "healthy"
+  },
+  "inventory": [
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/healthy.json",
+      "scenario": "healthy"
+    },
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/review-recommended.json",
+      "scenario": "review-recommended"
+    },
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/release-current.json",
+      "scenario": "release-current"
+    },
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/release-available.json",
+      "scenario": "release-available"
+    },
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/release-failed.json",
+      "scenario": "release-failed"
+    },
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/offline-saved.json",
+      "scenario": "offline-saved"
+    },
+    {
+      "domain": "home",
+      "path": "src/test/fixtures/generated/home/api-unavailable.json",
+      "scenario": "api-unavailable"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-server-online.json",
+      "scenario": "devices-server-online"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-online.json",
+      "scenario": "devices-online"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-offline.json",
+      "scenario": "devices-offline"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-agent-stopped.json",
+      "scenario": "devices-agent-stopped"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-repairing.json",
+      "scenario": "devices-repairing"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-remote-not-ready.json",
+      "scenario": "devices-remote-not-ready"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-protected-host.json",
+      "scenario": "devices-protected-host"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-capability-verified.json",
+      "scenario": "devices-capability-verified"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-capability-pending.json",
+      "scenario": "devices-capability-pending"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-capability-missing.json",
+      "scenario": "devices-capability-missing"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-invite-ready.json",
+      "scenario": "devices-invite-ready"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-invite-expired.json",
+      "scenario": "devices-invite-expired"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/devices-invite-mismatch.json",
+      "scenario": "devices-invite-mismatch"
+    },
+    {
+      "domain": "devices",
+      "path": "src/test/fixtures/generated/devices/offline-saved.json",
+      "scenario": "offline-saved"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/catalog-ready.json",
+      "scenario": "catalog-ready"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/healthy.json",
+      "scenario": "healthy"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/app-stopped.json",
+      "scenario": "app-stopped"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/catalog-install-available.json",
+      "scenario": "catalog-install-available"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/catalog-installing.json",
+      "scenario": "catalog-installing"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/app-action-failed.json",
+      "scenario": "app-action-failed"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/app-media-not-ready.json",
+      "scenario": "app-media-not-ready"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/app-route-not-ready.json",
+      "scenario": "app-route-not-ready"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/app-projection-stale.json",
+      "scenario": "app-projection-stale"
+    },
+    {
+      "domain": "apps",
+      "path": "src/test/fixtures/generated/apps/offline-saved.json",
+      "scenario": "offline-saved"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-ready.json",
+      "scenario": "recovery-ready"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-projection-too-old.json",
+      "scenario": "recovery-projection-too-old"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-no-backups.json",
+      "scenario": "recovery-no-backups"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-verified.json",
+      "scenario": "recovery-verified"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-backup-running.json",
+      "scenario": "recovery-backup-running"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-backup-failed.json",
+      "scenario": "recovery-backup-failed"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-preview-ready.json",
+      "scenario": "recovery-preview-ready"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-restore-blocked.json",
+      "scenario": "recovery-restore-blocked"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-checkpoint-ready.json",
+      "scenario": "recovery-checkpoint-ready"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-no-storage-node.json",
+      "scenario": "recovery-no-storage-node"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/recovery-repository-unavailable.json",
+      "scenario": "recovery-repository-unavailable"
+    },
+    {
+      "domain": "recovery",
+      "path": "src/test/fixtures/generated/recovery/offline-saved.json",
+      "scenario": "offline-saved"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-quick-healthy.json",
+      "scenario": "security-quick-healthy"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-action-needed.json",
+      "scenario": "security-action-needed"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-full-running.json",
+      "scenario": "security-full-running"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-app-check-healthy.json",
+      "scenario": "security-app-check-healthy"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-urgent.json",
+      "scenario": "security-urgent"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-first-run.json",
+      "scenario": "security-first-run"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-profile-stale.json",
+      "scenario": "security-profile-stale"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-progress.json",
+      "scenario": "security-progress"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-scanner-unavailable.json",
+      "scenario": "security-scanner-unavailable"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/security-unsupported-app-route.json",
+      "scenario": "security-unsupported-app-route"
+    },
+    {
+      "domain": "security",
+      "path": "src/test/fixtures/generated/security/offline-saved.json",
+      "scenario": "offline-saved"
+    },
+    {
+      "domain": "identity",
+      "path": "src/test/fixtures/generated/identity/identity-summary.json",
+      "scenario": "identity-summary"
+    },
+    {
+      "domain": "identity",
+      "path": "src/test/fixtures/generated/identity/identity-password-configured.json",
+      "scenario": "identity-password-configured"
+    },
+    {
+      "domain": "identity",
+      "path": "src/test/fixtures/generated/identity/identity-password-change-required.json",
+      "scenario": "identity-password-change-required"
+    },
+    {
+      "domain": "identity",
+      "path": "src/test/fixtures/generated/identity/slow-response.json",
+      "scenario": "slow-response"
+    },
+    {
+      "domain": "identity",
+      "path": "src/test/fixtures/generated/identity/api-unavailable.json",
+      "scenario": "api-unavailable"
+    },
+    {
+      "domain": "identity",
+      "path": "src/test/fixtures/generated/identity/identity-role-aware-fixture.json",
+      "scenario": "identity-role-aware-fixture"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-empty.json",
+      "scenario": "rules-empty"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-present.json",
+      "scenario": "rules-present"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-enabled.json",
+      "scenario": "rules-enabled"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-disabled.json",
+      "scenario": "rules-disabled"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-validation-error.json",
+      "scenario": "rules-validation-error"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-execution-pending.json",
+      "scenario": "rules-execution-pending"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/api-unavailable.json",
+      "scenario": "api-unavailable"
+    },
+    {
+      "domain": "rules",
+      "path": "src/test/fixtures/generated/rules/rules-approval-required.json",
+      "scenario": "rules-approval-required"
+    }
+  ],
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_contracts.py",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprint": "800bbf6fc924c59828885057dac0d31434bf29bbe6e1c27f5a2045319f4f8472",
+    "validation_status": "generated"
+  }
+}

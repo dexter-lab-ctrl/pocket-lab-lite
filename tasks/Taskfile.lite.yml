@@ -1,0 +1,165 @@
+version: '3'
+
+tasks:
+  lite:setup:
+    desc: Install only missing repository development dependencies without upgrading protected tools
+    cmds:
+      - bash scripts/dev/lite/setup.sh
+
+  lite:setup:check:
+    desc: Verify repository dependencies and protected development-tool versions
+    cmds:
+      - bash scripts/dev/lite/setup-check.sh
+
+  lite:setup:system:
+    desc: Explain optional system packages; never installs or invokes sudo silently
+    cmds:
+      - bash scripts/dev/lite/setup-system.sh
+
+  lite:browser:detect:
+    desc: Resolve and print the supported browser used by WSL2 development tasks
+    cmds:
+      - node scripts/dev/lite/resolve-browser.mjs --json
+
+  lite:playwright:preflight:
+    desc: Validate the external WSL2 browser and record path/version evidence
+    cmds:
+      - node scripts/dev/lite/resolve-browser.mjs --write-evidence "{{.VALIDATION_DIR}}/browser.json"
+
+  lite:dev:up:
+    desc: Start the existing Lite NATS, FastAPI, worker, and Vite development stack
+    cmds:
+      - bash scripts/dev/up.sh
+
+  lite:dev:down:
+    desc: Stop the Lite development stack
+    cmds:
+      - bash scripts/dev/down.sh
+
+  lite:dev:status:
+    desc: Show Lite development stack status
+    cmds:
+      - bash scripts/dev/status.sh
+
+  lite:dev:logs:
+    desc: Tail Lite development stack logs
+    cmds:
+      - bash scripts/dev/logs.sh
+
+  lite:dev:frontend:
+    desc: Start Vite on the configured development URL
+    cmds:
+      - npm run dev -- --host 127.0.0.1
+
+  lite:dev:frontend:mocked:
+    desc: Start Vite with deterministic Lite MSW scenarios
+    cmds:
+      - npm run dev:mock
+
+  lite:dev:backend:
+    desc: Start FastAPI directly for development
+    cmds:
+      - bash scripts/dev/run-fastapi-dev.sh
+
+  lite:dev:worker:
+    desc: Start the Lite worker directly for development
+    cmds:
+      - bash scripts/dev/run-worker-dev.sh
+
+  lite:dev:nats:
+    desc: Start the Lite NATS/JetStream development service
+    cmds:
+      - bash scripts/dev/run-nats-dev.sh
+
+  lite:check:quick:
+    desc: 'Fast developer gate: compile, shell syntax, focused tests, contracts, PWA build, and cheap doc drift'
+    cmds:
+      - bash scripts/dev/lite/run-gate.sh quick
+
+  lite:check:
+    desc: Full local Lite gate including backend/frontend, Storybook, mocked browser, redaction, contracts, and strict docs
+    cmds:
+      - bash scripts/dev/lite/run-gate.sh full
+
+  lite:check:release:
+    desc: Release qualification gate; requires an explicitly running live Lite stack
+    cmds:
+      - bash scripts/dev/lite/run-gate.sh release
+
+  lite:test:backend:
+    desc: Run the focused Lite backend API, Recovery, and Security suites
+    cmds:
+      - PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_api.py tests/backend/test_lite_recovery.py tests/backend/test_lite_security.py
+
+  lite:test:frontend:
+    desc: Run all frontend unit tests
+    cmds:
+      - npm run test:unit
+
+  lite:test:contracts:
+    desc: Export and validate Lite OpenAPI, fixtures, frontend routes, reason codes, and compatibility
+    cmds:
+      - bash scripts/dev/lite/check-contracts.sh
+
+  lite:test:redaction:
+    desc: Check generated docs, fixtures, HARs, traces, and validation evidence for forbidden secret material
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated "{{.VALIDATION_DIR}}"'
+
+  lite:test:runtime:
+    desc: Run non-destructive Lite runtime and prepared-projection contract tests
+    cmds:
+      - PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/backend/test_lite_fastapi_runtime_diagnostics.py tests/backend/test_lite_projection_semantic_hardening.py tests/backend/test_nats_required.py
+
+  lite:test:android:
+    desc: Run the existing Android/Termux smoke helper; requires explicit SSH/device configuration
+    cmds:
+      - bash scripts/dev/android-termux-smoke.sh
+
+  lite:api:check:
+    desc: Compatibility alias for the established Lite API check
+    cmds:
+      - bash scripts/dev/check-lite-api.sh
+
+  lite:bootstrap:check:
+    desc: Validate Lite bootstrap profile selection and dry-run behavior
+    cmds:
+      - bash scripts/dev/check-lite-bootstrap.sh
+
+  lite:har:sanitize:
+    desc: 'Sanitize a Playwright HAR. Usage: task lite:har:sanitize INPUT=path.har OUTPUT=path.sanitized.har'
+    requires:
+      vars: [INPUT]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/har_tool.py sanitize --input "{{.INPUT}}" {{if .OUTPUT}}--output "{{.OUTPUT}}"{{end}}'
+
+  lite:har:inspect:
+    desc: Inspect a sanitized HAR for sync, duplicates, failures, and heavy first-paint requests
+    requires:
+      vars: [INPUT]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/har_tool.py inspect --input "{{.INPUT}}"'
+
+  lite:validation:record:
+    desc: 'Record one bounded validation command. Usage: task lite:validation:record NAME=gate COMMAND="command args"'
+    requires:
+      vars: [NAME, COMMAND]
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/validation_evidence.py run --name "{{.NAME}}" --validation-dir "{{.VALIDATION_DIR}}" -- bash -lc "{{.COMMAND}}"'
+
+  lite:validation:evidence:
+    desc: Generate Allure-compatible results, validation manifest, readiness matrix, and artifact index
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/validation_evidence.py allure --validation-dir "{{.VALIDATION_DIR}}" --output allure-results'
+
+  lite:validation:check:
+    desc: Verify validation evidence is sanitized and contains no unrecorded PASS claims
+    cmds:
+      - '{{.PYTHON}} scripts/dev/lite/redaction_check.py --paths "{{.VALIDATION_DIR}}" allure-results allure-report'
+      - '{{.PYTHON}} -c "import json,pathlib; p=pathlib.Path(\"{{.VALIDATION_DIR}}/readiness-matrix.json\"); d=json.loads(p.read_text()); assert d[\"status\"] in {\"passed\",\"failed\",\"not_run\"}; print(\"PASS validation evidence index is coherent\")"'
+
+  lite:allure:
+    desc: Generate Allure-compatible results plus a bounded local HTML evidence index
+    cmds:
+      - task: lite:validation:evidence
+      - '{{.PYTHON}} scripts/dev/lite/validation_evidence.py html --validation-dir "{{.VALIDATION_DIR}}" --output allure-report'

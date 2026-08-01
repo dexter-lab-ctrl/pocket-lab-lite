@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  lite:windows:host:check:
+    desc: Run the existing Windows host WSL2 preflight
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/check-wsl2-host.ps1
+
+  lite:windows:vscode:check:
+    desc: Validate VS Code workspace files without installing extensions
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/configure-vscode.ps1 -SkipExtensionInstall
+
+  lite:windows:wsl:check:
+    desc: Validate the established Ubuntu/WSL2 Lite development environment
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/windows/bootstrap-wsl2-ubuntu.ps1 -CheckOnly

@@ -1,0 +1,16 @@
+import LiteStoryFrame, { createLiteStory } from './stories/LiteStoryFrame.jsx';
+export default { title: 'Pocket Lab Lite/Devices', component: LiteStoryFrame, tags: ['autodocs'] };
+export const ServerHostOnline = createLiteStory('devices', 'devices-server-online');
+export const JoinedDeviceOnline = createLiteStory('devices', 'devices-online');
+export const JoinedDeviceOffline = createLiteStory('devices', 'devices-offline');
+export const AgentStopped = createLiteStory('devices', 'devices-agent-stopped');
+export const Repairing = createLiteStory('devices', 'devices-repairing');
+export const RemoteAccessNotReady = createLiteStory('devices', 'devices-remote-not-ready');
+export const ProtectedServerHost = createLiteStory('devices', 'devices-protected-host');
+export const CapabilityVerified = createLiteStory('devices', 'devices-capability-verified');
+export const CapabilityPending = createLiteStory('devices', 'devices-capability-pending');
+export const CapabilityNotAdvertised = createLiteStory('devices', 'devices-capability-missing');
+export const InviteReady = createLiteStory('devices', 'devices-invite-ready');
+export const InviteExpired = createLiteStory('devices', 'devices-invite-expired');
+export const InviteIdentityMismatch = createLiteStory('devices', 'devices-invite-mismatch');
+export const SavedOfflineSnapshot = createLiteStory('devices', 'offline-saved');

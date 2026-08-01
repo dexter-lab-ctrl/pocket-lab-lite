@@ -1,0 +1,64 @@
+name: Pocket Lab Lite quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quick-and-docs:
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      PUPPETEER_SKIP_DOWNLOAD: '1'
+      SOURCE_COMMIT: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record deterministic source generation timestamp
+        run: echo "SOURCE_GENERATED_AT=$(git show -s --format=%cI HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.16.0'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14.4'
+          cache: pip
+      - uses: arduino/setup-task@v2
+        with:
+          version: '3.50.0'
+      - name: Install locked development dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade-strategy only-if-needed -r requirements-dev.txt
+          npm ci
+      - name: Generate and check contracts and docs
+        run: |
+          task lite:docs:generate
+          task lite:docs:check
+      - name: Quick Lite gate and Storybook
+        run: |
+          task lite:check:quick
+          task lite:test:storybook
+      - name: Install CI Chromium and run mocked integration
+        run: |
+          npx playwright install --with-deps chromium
+          VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
+      - name: Redaction and evidence
+        run: |
+          .venv/bin/python scripts/dev/lite/redaction_check.py --paths contracts/generated src/test/fixtures/generated docs/generated .pocketlab-dev/validation
+          .venv/bin/python scripts/dev/lite/validation_evidence.py allure --validation-dir .pocketlab-dev/validation --output allure-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pocket-lab-lite-validation
+          path: |
+            .pocketlab-dev/validation
+            .pocketlab-dev/playwright-report
+            allure-results
+            site
+          if-no-files-found: warn
+          retention-days: 14

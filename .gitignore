@@ -56,3 +56,13 @@ Thumbs.db
 .pocket_lab/tailscale-certs/
 *.ts.net.crt
 *.ts.net.key
+
+# Lite development documentation platform
+.pocketlab-dev/test-results/
+.pocketlab-dev/playwright-report/
+.pocketlab-dev/validation/raw/
+*.har
+!*.sanitized.har
+playwright-report/
+test-results/
+docs/assets/lite-ui/*.png

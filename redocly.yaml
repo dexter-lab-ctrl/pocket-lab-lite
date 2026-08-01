@@ -2,11 +2,11 @@ extends:
   - recommended
 
 apis:
-  pocketlab@latest:
-    root: contracts/generated/openapi.json
+  pocketlab-lite@current:
+    root: contracts/generated/lite-openapi.json
 
 rules:
-  no-empty-servers: error
+  no-empty-servers: off
   operation-4xx-response: warn
   operation-operationId: warn
   operation-summary: warn

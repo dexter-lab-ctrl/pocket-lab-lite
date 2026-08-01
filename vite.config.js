@@ -21,6 +21,11 @@ export default defineConfig({
   build: {
     manifest: true,
   },
+  test: {
+    // Keep runner ownership explicit: Vitest owns source unit/component tests only.
+    // Playwright owns tests/e2e and node --test owns tests/dev.
+    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+  },
   plugins: [
     react(),
     VitePWA({
