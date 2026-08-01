@@ -1,15 +1,23 @@
 ---
+title: "Lite task reference"
+description: "The root Taskfile uses included Lite task files and separates quick, full, release, UI, docs, and Windows/WSL2 workflows."
+status: verified
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 8937f6e2e2ba4f68e0af975279bf8bf383342aff03d7c9c0e4a5c4a564aea291
+source_fingerprint: 9c85652565724d5d11b3040bd5fba4bf44d565f5e4593ba7967518e620081b6b
 schema_revision: 1
 validation_status: generated
 ---
 
 # Lite task reference
+
+<div class="pl-page-meta" markdown>
+<span class="pl-status pl-status--verified">Verified</span>
+<span class="pl-status pl-status--patch-provided">Development guidance</span>
+</div>
 
 The root Taskfile uses included Lite task files and separates quick, full, release, UI, docs, and Windows/WSL2 workflows.
 
@@ -53,6 +61,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:android`
 - `lite:test:backend`
 - `lite:test:contracts`
+- `lite:test:docs`
 - `lite:test:e2e:live`
 - `lite:test:e2e:mocked`
 - `lite:test:frontend`
@@ -80,6 +89,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:production:generate`
 - `lite:storybook:screenshots` → `lite:playwright:preflight`
 - `lite:test:a11y` → `lite:playwright:preflight`
+- `lite:test:docs` → `lite:playwright:preflight`
 - `lite:test:e2e:live` → `lite:playwright:preflight`
 - `lite:test:e2e:mocked` → `lite:playwright:preflight`
 - `lite:test:lighthouse` → `lite:playwright:preflight`

@@ -205,7 +205,7 @@ The importer:
 - normalizes profiles, app ids, statuses, timestamps, findings, tools, and evidence paths;
 - records bounded provenance;
 - can be previewed and rerun;
-- skips an unchanged source checksum unless an operator explicitly requests a forced re-import;
+- skips an unchanged source checksum unless an user explicitly requests a forced re-import;
 - hashes only explicitly requested small evidence files.
 
 Optional shadow mode independently compares bounded JSON and SQLite projections, records only checksums and mismatch field names, and never changes the JSON-backed API response.

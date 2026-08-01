@@ -31,7 +31,7 @@ REQUIRED_EVIDENCE = {"operation_events", "audit_events", "workflow_journal"}
 HIGH_IMPACT = {"high", "critical"}
 APPROVAL_ROLES = {
     "admin",
-    "operator",
+    "user",
     "owner",
     "platform_admin",
     "release_manager",
@@ -522,7 +522,7 @@ def gate_rollback_safety(runbooks: list[dict[str, Any]]) -> GateResult:
             "warn",
             "Some high-impact runbooks need stronger rollback or safety metadata.",
             findings,
-            "Add spec.rollback.operation where possible and keep spec.safety.notes explicit for operator review.",
+            "Add spec.rollback.operation where possible and keep spec.safety.notes explicit for user review.",
         )
     return result(
         "RB-GATE-010",

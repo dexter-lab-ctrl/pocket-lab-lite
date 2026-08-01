@@ -1,9 +1,11 @@
 site_name: Pocket Lab Lite
-site_description: Edge-first Android/Termux control plane documentation
-site_author: Pocket Lab
+site_description: Edge-first, self-hosted control plane documentation
+site_author: Pocket Lab Lite
 site_url: https://dexter-lab-ctrl.github.io/pocket-lab-lite/
 repo_name: dexter-lab-ctrl/pocket-lab-lite
 repo_url: https://github.com/dexter-lab-ctrl/pocket-lab-lite
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; Pocket Lab Lite. Documentation generated from repository-owned sources.
 
 docs_dir: docs
 site_dir: site
@@ -11,88 +13,158 @@ site_dir: site
 theme:
   name: material
   language: en
+  custom_dir: docs/overrides
+  logo: assets/brand/pocket-lab-logo.svg
+  favicon: assets/brand/pocket-lab-logo.svg
+  font: false
+  icon:
+    repo: fontawesome/brands/github
+    previous: material/arrow-left
+    next: material/arrow-right
+    edit: material/pencil
+    view: material/eye
   features:
-    - navigation.sections
     - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.action.edit
+    - content.action.view
     - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
   palette:
-    - scheme: slate
+    - media: "(prefers-color-scheme: light)"
+      scheme: pocketlab-light
       primary: indigo
       accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: pocketlab-dark
+      primary: black
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
 
 plugins:
   - search
 
 markdown_extensions:
+  - abbr
   - admonition
   - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
   - tables
   - toc:
       permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.snippets
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra_css:
+  - stylesheets/brand.css
+  - stylesheets/components.css
+  - stylesheets/print.css
+
+extra_javascript:
+  - javascripts/docs.js
 
 nav:
-  - Overview: index.md
+  - Home: index.md
   - Development:
-      - Start here: generated/development/index.md
-      - Repository and WSL2 setup: generated/development/repository-setup.md
-      - Task ownership audit: generated/development/task-audit.md
-      - Task reference: generated/development/task-reference.md
-      - Architecture: generated/development/architecture.md
-      - Local services: generated/development/local-services.md
-      - Coding standards: generated/development/coding-standards.md
-      - HTTP API: generated/development/api.md
-      - API contract detail: generated/development/api-contract.md
-      - API compatibility: generated/development/api-compatibility.md
-      - Frontend API usage: generated/development/frontend-api-usage.md
-      - NATS and events: generated/development/events.md
-      - SQLite and projections: generated/development/sqlite-projections.md
-      - Fixtures and schemas: generated/development/fixtures-schemas.md
-      - Storybook UI states: generated/development/ui-storybook.md
-      - Playwright and browser: generated/development/browser-testing.md
-      - Testing matrix: generated/development/testing.md
-      - Accessibility and visual gates: generated/development/accessibility-visual.md
-      - HAR sanitization: generated/development/har-sanitization.md
-      - Allure-compatible evidence: generated/development/allure-evidence.md
-      - Configuration and services: generated/development/configuration-services.md
-      - Bootstrap source: generated/development/bootstrap.md
-      - Reason codes: generated/development/reason-codes.md
-      - Validation and release: generated/development/validation-release.md
-      - CI workflows: generated/development/ci-workflows.md
-      - Release engineering: generated/development/release-engineering.md
-      - Contribution and review: generated/development/contribution-review.md
-      - Identity and Rules partial contracts: generated/development/partial-surfaces.md
+      - Overview: generated/development/index.md
+      - Setup:
+          - Repository and WSL2: generated/development/repository-setup.md
+          - Local services: generated/development/local-services.md
+          - Coding standards: generated/development/coding-standards.md
+      - Architecture and contracts:
+          - Architecture: generated/development/architecture.md
+          - HTTP API: generated/development/api.md
+          - API contract detail: generated/development/api-contract.md
+          - API compatibility: generated/development/api-compatibility.md
+          - Frontend API usage: generated/development/frontend-api-usage.md
+          - NATS and events: generated/development/events.md
+          - SQLite and projections: generated/development/sqlite-projections.md
+      - UI and testing:
+          - Fixtures and schemas: generated/development/fixtures-schemas.md
+          - Storybook UI states: generated/development/ui-storybook.md
+          - Playwright and browser: generated/development/browser-testing.md
+          - Testing matrix: generated/development/testing.md
+          - Accessibility and visual gates: generated/development/accessibility-visual.md
+          - Documentation experience: generated/development/documentation-experience.md
+      - Validation and release:
+          - Task ownership audit: generated/development/task-audit.md
+          - Task reference: generated/development/task-reference.md
+          - HAR sanitization: generated/development/har-sanitization.md
+          - Allure-compatible evidence: generated/development/allure-evidence.md
+          - Configuration and services: generated/development/configuration-services.md
+          - Bootstrap source: generated/development/bootstrap.md
+          - Reason codes: generated/development/reason-codes.md
+          - Validation and release: generated/development/validation-release.md
+          - CI workflows: generated/development/ci-workflows.md
+          - Release engineering: generated/development/release-engineering.md
+          - Contribution and review: generated/development/contribution-review.md
+          - Identity and Rules partial contracts: generated/development/partial-surfaces.md
   - Production:
-      - Start here: generated/production/index.md
-      - Installation: generated/production/installation.md
-      - Upgrade and release verification: generated/production/upgrade.md
-      - Android and Termux: generated/production/android-termux.md
-      - Architecture: generated/production/architecture.md
-      - Caddy and same-origin access: generated/production/caddy-access.md
-      - Current tabs: generated/production/tabs.md
-      - Devices and onboarding: generated/production/devices.md
-      - Apps and PhotoPrism: generated/production/apps.md
-      - Security and Safety: generated/production/security.md
-      - Security boundaries: generated/production/security-boundaries.md
-      - Backup and restore: generated/production/recovery.md
-      - Identity: generated/production/identity.md
-      - Rules: generated/production/rules.md
-      - Remote access: generated/production/remote-access.md
-      - Bootstrap and install: generated/production/bootstrap.md
-      - Services and PM2: generated/production/services-pm2.md
-      - Health and diagnostics: generated/production/health-diagnostics.md
-      - Incident runbooks: generated/production/incident-runbooks.md
-      - Data retention: generated/production/data-retention.md
-      - Release and dist.zip: generated/production/release.md
-      - Rollback: generated/production/rollback.md
-      - Troubleshooting: generated/production/troubleshooting.md
-      - Current limitations: generated/production/limitations.md
-  - Existing operator references:
+      - Overview: generated/production/index.md
+      - Install and access:
+          - Installation: generated/production/installation.md
+          - Upgrade and release verification: generated/production/upgrade.md
+          - Android and Termux: generated/production/android-termux.md
+          - Caddy and same-origin access: generated/production/caddy-access.md
+          - Remote access: generated/production/remote-access.md
+      - Use Pocket Lab Lite:
+          - Current tabs: generated/production/tabs.md
+          - Devices and onboarding: generated/production/devices.md
+          - Apps and PhotoPrism: generated/production/apps.md
+          - Security and Safety: generated/production/security.md
+          - Backup and restore: generated/production/recovery.md
+          - Identity: generated/production/identity.md
+          - Rules: generated/production/rules.md
+      - Operate and recover:
+          - Architecture: generated/production/architecture.md
+          - Security boundaries: generated/production/security-boundaries.md
+          - Bootstrap and install: generated/production/bootstrap.md
+          - Services and PM2: generated/production/services-pm2.md
+          - Health and diagnostics: generated/production/health-diagnostics.md
+          - Incident runbooks: generated/production/incident-runbooks.md
+          - Data retention: generated/production/data-retention.md
+          - Release and dist.zip: generated/production/release.md
+          - Rollback: generated/production/rollback.md
+          - Troubleshooting: generated/production/troubleshooting.md
+          - Current limitations: generated/production/limitations.md
+  - Reference:
       - Android / Termux: getting-started/android-termux.md
       - Lite architecture: architecture/lite-architecture.md
       - Security SQLite design lock: architecture/lite-security-sqlite-design-lock.md

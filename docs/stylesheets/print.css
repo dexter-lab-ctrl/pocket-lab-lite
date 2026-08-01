@@ -1,0 +1,7 @@
+@media print {
+  .md-header, .md-tabs, .md-sidebar, .md-footer, .md-content__button, .md-banner { display: none !important; }
+  .md-main__inner, .md-content, .md-content__inner { max-width: none; margin: 0; padding: 0; }
+  .md-typeset a { color: inherit; text-decoration: none; }
+  .md-typeset pre { white-space: pre-wrap; break-inside: avoid; }
+  .pl-card, .admonition, table { break-inside: avoid; box-shadow: none; }
+}

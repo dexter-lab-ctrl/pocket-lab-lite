@@ -102,9 +102,12 @@ def source_fingerprint() -> str:
     return digest.hexdigest()
 
 
-def generated_frontmatter(audience: str, commit: str) -> str:
+def generated_frontmatter(audience: str, commit: str, title: str, description: str, status: str = "verified") -> str:
     return (
         "---\n"
+        f"title: {json.dumps(title)}\n"
+        f"description: {json.dumps(description)}\n"
+        f"status: {status}\n"
         "generated: true\n"
         f"audience: {audience.lower()}\n"
         f"source_commit: {commit}\n"
@@ -263,7 +266,12 @@ def contract_docs(schema: dict[str, Any], commit: str) -> dict[Path, str]:
         len([method for method in value if method.lower() in {"get", "post", "put", "patch", "delete"}])
         for value in schema.get("paths", {}).values()
     )
-    api = generated_frontmatter("development", commit) + f"""# Lite HTTP API contract
+    api = generated_frontmatter("development", commit, "Lite HTTP API contract", "Canonical FastAPI Lite OpenAPI contract and validation summary.") + f"""# Lite HTTP API contract
+
+<div class="pl-page-meta" markdown>
+<span class="pl-status pl-status--verified">Verified</span>
+<span class="pl-status pl-status--patch-provided">Development guidance</span>
+</div>
 
 FastAPI OpenAPI is the canonical HTTP contract. This generated Lite view contains **{len(backend)} paths** and **{operations} operations**.
 
@@ -280,7 +288,12 @@ Write actions remain FastAPI-owned. Browser tests do not invoke internal Python 
         baseline = "A previous released contract is present."
     else:
         added, removed, baseline = sorted(backend), [], "No previous released Lite contract is committed; this run establishes the current baseline."
-    compat = generated_frontmatter("development", commit) + f"""# Lite API compatibility
+    compat = generated_frontmatter("development", commit, "Lite API compatibility", "Added and removed Lite API paths compared with the released baseline.") + f"""# Lite API compatibility
+
+<div class="pl-page-meta" markdown>
+<span class="pl-status pl-status--verified">Verified</span>
+<span class="pl-status pl-status--patch-provided">Development guidance</span>
+</div>
 
 {baseline}
 
@@ -292,7 +305,12 @@ Write actions remain FastAPI-owned. Browser tests do not invoke internal Python 
 
 Removal, required-field, nullable, and enum changes must be reviewed before replacing `lite-openapi.previous.json`.
 """
-    usage = generated_frontmatter("development", commit) + f"""# Frontend API usage
+    usage = generated_frontmatter("development", commit, "Frontend API usage", "Frontend Lite route usage compared with the generated FastAPI contract.") + f"""# Frontend API usage
+
+<div class="pl-page-meta" markdown>
+<span class="pl-status pl-status--verified">Verified</span>
+<span class="pl-status pl-status--patch-provided">Development guidance</span>
+</div>
 
 ## Unsupported frontend route references
 {chr(10).join(f'- `{path}`' for path in unsupported) or '- None'}
@@ -300,7 +318,7 @@ Removal, required-field, nullable, and enum changes must be reviewed before repl
 ## Backend Lite routes with no detected frontend consumer
 {chr(10).join(f'- `{path}`' for path in unused[:120]) or '- None'}
 
-The second list is informational: worker callbacks, diagnostics, compatibility aliases, and operator-only endpoints may intentionally have no normal UI consumer.
+The second list is informational: worker callbacks, diagnostics, compatibility aliases, and user-only endpoints may intentionally have no normal UI consumer.
 """
     return {API_DOC: api, COMPAT_DOC: compat, FRONTEND_DOC: usage}
 

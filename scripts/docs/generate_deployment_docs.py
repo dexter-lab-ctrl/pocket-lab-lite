@@ -78,7 +78,7 @@ task docs:deployment:check
 mkdocs build --strict
 ```
 
-## Operator deployment flow
+## User deployment flow
 
 1. Prepare the platform using the documented Android / Termux, Ubuntu, WSL2, or host-specific bootstrap scripts.
 2. Start and validate Docker/NATS where applicable.

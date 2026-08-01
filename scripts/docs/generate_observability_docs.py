@@ -191,7 +191,7 @@ def gatus_page(m: dict[str, Any]) -> str:
 ## Operating notes
 
 - Gatus status is consumed by FastAPI health aggregation when reachable.
-- Fallback behavior must remain explicit in operator-facing responses; generated documentation distinguishes `source=gatus` from fallback behavior.
+- Fallback behavior must remain explicit in user-facing responses; generated documentation distinguishes `source=gatus` from fallback behavior.
 - Static source inspection does not prove that Gatus is currently running. Use `curl -fsS http://127.0.0.1:8081/health` for live validation.
 """
     return page("Gatus Health Reference", body)
@@ -246,7 +246,7 @@ React / Vite PWA
 - Every write workflow should remain traceable through API request, NATS command, worker logs, operation events, audit events, and UI event panels.
 - Lifecycle events must remain observable and auditable.
 - The frontend must consume runtime observability health through FastAPI only; it must not call Prometheus, Loki, Grafana, Gatus, Promtail, or NATS directly.
-- DLQ and retry subjects should remain visible through generated event contracts and operator diagnostics.
+- DLQ and retry subjects should remain visible through generated event contracts and user diagnostics.
 """
     return page("Telemetry Contract Reference", body)
 
@@ -310,11 +310,11 @@ def runtime_map_page(m: dict[str, Any]) -> str:
     ]
     warnings = m.get("warnings", [])
     missing = m.get("missing_enterprise_features", [])
-    body = f"""This generated map connects operator-facing UI surfaces to FastAPI endpoints, runtime events, and observability components.
+    body = f"""This generated map connects user-facing UI surfaces to FastAPI endpoints, runtime events, and observability components.
 
 ## Runtime map
 
-{md_table(["UI surface", "FastAPI / Route", "Runtime function", "Observability source", "Component", "Operator-facing page", "Related runbook"], rows)}
+{md_table(["UI surface", "FastAPI / Route", "Runtime function", "Observability source", "Component", "User-facing page", "Related runbook"], rows)}
 
 ## Source inventory
 

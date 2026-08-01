@@ -21,11 +21,11 @@ spec:
   requiresApproval: true
   policy:
     approvalReason: Drift remediation changes desired or runtime state.
-    minimumRole: operator
+    minimumRole: user
     evidenceRequired: true
   prerequisites:
     - Desired state has been reviewed.
-    - Operator understands the proposed remediation.
+    - User understands the proposed remediation.
   steps:
     - name: scan_drift
       title: Scan Drift
@@ -58,7 +58,7 @@ spec:
   rollback:
     operation: drift_ignore
     requiresApproval: true
-    description: Mark or ignore remediation only after operator review if apply is not safe.
+    description: Mark or ignore remediation only after user review if apply is not safe.
   evidence:
     - operation_events
     - audit_events

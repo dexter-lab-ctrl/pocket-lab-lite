@@ -72,7 +72,7 @@ def default_security(name: str, tags: list[str]) -> dict[str, Any]:
         "operation_audit_events",
     ]
     residual_risks = [
-        "Authorized operators can still trigger high-impact changes if policy or approval controls are incomplete."
+        "Authorized users can still trigger high-impact changes if policy or approval controls are incomplete."
     ]
 
     if classification in {"secret", "policy"}:

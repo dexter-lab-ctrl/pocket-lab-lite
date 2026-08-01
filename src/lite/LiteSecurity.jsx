@@ -1172,7 +1172,7 @@ export function buildSecurityRemediation(finding, context = {}) {
     title: 'Review item',
     action,
     happened: 'Pocket Lab found an item that needs review.',
-    means: 'The check needs operator review before it should be considered resolved.',
+    means: 'The check needs user review before it should be considered resolved.',
     recommended: 'Review the finding details and run another safety check after making changes.',
     risk: action.label === 'Action needed' ? 'Action needed.' : 'Review recommended.',
   };

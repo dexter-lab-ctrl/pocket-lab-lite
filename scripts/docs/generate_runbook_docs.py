@@ -314,7 +314,7 @@ def write_simple_mode_guide(catalog: dict[str, Any]) -> Path:
     parts = ["# Simple Mode Runbook Guide\n"]
     parts.append(
         '!!! note "Generated Simple Mode guide"\n'
-        "    This page preserves Pocket Lab's non-technical Simple Mode language while keeping Professional Mode labels available for operators.\n"
+        "    This page preserves Pocket Lab's non-technical Simple Mode language while keeping Professional Mode labels available for users.\n"
     )
     parts.append("## Simple Mode Label Rules\n")
     parts.append("- Runbook Automation → Guided Fixes")

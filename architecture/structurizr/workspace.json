@@ -96,7 +96,7 @@
           "linkedRelationshipId" : "38",
           "sourceId" : "80"
         }, {
-          "description" : "Reads audit evidence for reviews and operator status",
+          "description" : "Reads audit evidence for reviews and user status",
           "destinationId" : "91",
           "id" : "92",
           "linkedRelationshipId" : "39",
@@ -282,7 +282,7 @@
           "linkedRelationshipId" : "38",
           "sourceId" : "104"
         }, {
-          "description" : "Reads audit evidence for reviews and operator status",
+          "description" : "Reads audit evidence for reviews and user status",
           "destinationId" : "115",
           "id" : "116",
           "linkedRelationshipId" : "39",
@@ -419,7 +419,7 @@
     "people" : [ {
       "description" : "Uses Pocket Lab to install apps, manage devices, monitor health, run GitOps, rotate secrets, and apply releases.",
       "id" : "1",
-      "name" : "Operator / Home Lab Admin",
+      "name" : "User / Home Lab Admin",
       "properties" : {
         "structurizr.dsl.identifier" : "user"
       },
@@ -494,7 +494,7 @@
       "tags" : "Element,Software System,External"
     }, {
       "containers" : [ {
-        "description" : "Operator UI with Professional and Simple Experience modes.",
+        "description" : "User UI with Professional and Simple Experience modes.",
         "documentation" : { },
         "id" : "9",
         "name" : "React / Vite PWA",
@@ -546,7 +546,7 @@
           "sourceId" : "10",
           "tags" : "Relationship"
         }, {
-          "description" : "Reads audit evidence for reviews and operator status",
+          "description" : "Reads audit evidence for reviews and user status",
           "destinationId" : "14",
           "id" : "39",
           "sourceId" : "10",

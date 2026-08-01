@@ -39,6 +39,7 @@ record backend-full task lite:test:backend
 record storybook task lite:test:storybook
 record e2e-mocked task lite:test:e2e:mocked
 record accessibility task lite:test:a11y
+record docs-browser task lite:test:docs
 record redaction task lite:test:redaction
 record docs-strict task lite:docs:check
 

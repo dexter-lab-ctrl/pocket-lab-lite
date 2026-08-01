@@ -1,15 +1,23 @@
 ---
+title: "Frontend API usage"
+description: "Frontend Lite route usage compared with the generated FastAPI contract."
+status: verified
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_contracts.py
-source_fingerprint: 800bbf6fc924c59828885057dac0d31434bf29bbe6e1c27f5a2045319f4f8472
+source_fingerprint: 726211e0090a05fc2beefe776d8ca40541097700e3dd99a2af1cf1e5ed1914fa
 schema_revision: 1
 validation_status: generated
 ---
 
 # Frontend API usage
+
+<div class="pl-page-meta" markdown>
+<span class="pl-status pl-status--verified">Verified</span>
+<span class="pl-status pl-status--patch-provided">Development guidance</span>
+</div>
 
 ## Unsupported frontend route references
 - None
@@ -29,4 +37,4 @@ validation_status: generated
 - `/api/lite/security/evidence/{run_id}`
 - `/api/lite/security/scan`
 
-The second list is informational: worker callbacks, diagnostics, compatibility aliases, and operator-only endpoints may intentionally have no normal UI consumer.
+The second list is informational: worker callbacks, diagnostics, compatibility aliases, and user-only endpoints may intentionally have no normal UI consumer.

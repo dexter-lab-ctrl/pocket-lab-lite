@@ -1,0 +1,107 @@
+:root {
+  --pl-brand-950: #0b1220;
+  --pl-brand-900: #111a2e;
+  --pl-brand-800: #18243d;
+  --pl-brand-700: #223355;
+  --pl-accent-600: #0891b2;
+  --pl-accent-500: #06b6d4;
+  --pl-accent-400: #22d3ee;
+  --pl-success: #15803d;
+  --pl-warning: #b45309;
+  --pl-danger: #b91c1c;
+  --pl-info: #0369a1;
+  --pl-border: rgba(15, 23, 42, 0.13);
+  --pl-radius-sm: 0.375rem;
+  --pl-radius-md: 0.625rem;
+  --pl-radius-lg: 0.875rem;
+  --pl-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+[data-md-color-scheme="pocketlab-light"] {
+  --md-primary-fg-color: var(--pl-brand-900);
+  --md-primary-fg-color--light: var(--pl-brand-700);
+  --md-primary-fg-color--dark: var(--pl-brand-950);
+  --md-accent-fg-color: var(--pl-accent-600);
+  --md-default-bg-color: #f8fafc;
+  --md-default-fg-color: #172033;
+  --md-code-bg-color: #eef2f7;
+}
+
+[data-md-color-scheme="pocketlab-dark"] {
+  --md-primary-fg-color: var(--pl-brand-950);
+  --md-primary-fg-color--light: var(--pl-brand-800);
+  --md-primary-fg-color--dark: #060b14;
+  --md-accent-fg-color: var(--pl-accent-400);
+  --md-default-bg-color: #0d1422;
+  --md-default-fg-color: #e5eaf3;
+  --md-code-bg-color: #111b2d;
+  --pl-border: rgba(226, 232, 240, 0.14);
+}
+
+html { box-sizing: border-box; max-width: 100%; scroll-behavior: smooth; }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  max-width: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+code, kbd, pre, samp { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+.md-grid { max-width: 92rem; }
+.md-main__inner { margin-top: 1.5rem; }
+.md-main, .md-main__inner, .md-content, .md-content__inner { min-width: 0; max-width: 100%; }
+.md-content__inner { max-width: 72rem; margin-inline: auto; }
+.md-typeset h1 { margin-bottom: 1.25rem; font-weight: 750; letter-spacing: -0.035em; }
+.md-typeset h2 { margin-top: 2.5rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--pl-border); font-weight: 700; letter-spacing: -0.02em; }
+.md-typeset h3 { font-weight: 680; }
+.md-header { box-shadow: 0 1px 0 var(--pl-border); }
+.md-tabs { border-bottom: 1px solid var(--pl-border); }
+.md-sidebar__scrollwrap { scrollbar-width: thin; }
+.md-search__form { border: 1px solid rgba(255, 255, 255, 0.16); border-radius: var(--pl-radius-md); }
+.md-nav__link--active { font-weight: 700; }
+.md-footer { border-top: 1px solid var(--pl-border); }
+.pl-announcement { box-sizing: border-box; width: 100%; max-width: 100%; padding: 0.45rem 1rem; text-align: center; font-size: 0.75rem; font-weight: 650; letter-spacing: 0.01em; }
+
+/* WCAG AA dark-scheme tokens. Material derives navigation, body, code, and
+   footer colors from the foreground variants, so define the complete set. */
+[data-md-color-scheme="pocketlab-dark"] {
+  --md-default-fg-color: #e5eaf3;
+  --md-default-fg-color--light: #cbd5e1;
+  --md-default-fg-color--lighter: #94a3b8;
+  --md-default-fg-color--lightest: #64748b;
+  --md-typeset-color: #e5eaf3;
+  --md-typeset-a-color: #67e8f9;
+  --md-code-fg-color: #e2e8f0;
+  --md-code-bg-color: #111b2d;
+  --md-footer-fg-color: #e5e7eb;
+  --md-footer-fg-color--light: #cbd5e1;
+  --md-footer-fg-color--lighter: #94a3b8;
+  --md-footer-bg-color: #0b1220;
+  --md-footer-bg-color--dark: #060b14;
+}
+
+[data-md-color-scheme="pocketlab-dark"] .md-typeset,
+[data-md-color-scheme="pocketlab-dark"] .md-typeset h1,
+[data-md-color-scheme="pocketlab-dark"] .md-typeset h2,
+[data-md-color-scheme="pocketlab-dark"] .md-typeset h3,
+[data-md-color-scheme="pocketlab-dark"] .md-nav__title,
+[data-md-color-scheme="pocketlab-dark"] .md-nav__link {
+  color: #e5eaf3;
+}
+
+[data-md-color-scheme="pocketlab-dark"] .md-nav__link--active,
+[data-md-color-scheme="pocketlab-dark"] .md-nav__link:focus,
+[data-md-color-scheme="pocketlab-dark"] .md-nav__link:hover {
+  color: #67e8f9;
+}
+
+[data-md-color-scheme="pocketlab-dark"] .md-typeset code,
+[data-md-color-scheme="pocketlab-dark"] .md-typeset pre code,
+[data-md-color-scheme="pocketlab-dark"] .md-code__content {
+  color: #e2e8f0;
+}
+
+[data-md-color-scheme="pocketlab-dark"] .md-copyright,
+[data-md-color-scheme="pocketlab-dark"] .md-footer-meta {
+  color: #cbd5e1;
+}

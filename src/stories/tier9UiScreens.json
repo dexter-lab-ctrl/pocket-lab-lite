@@ -190,7 +190,7 @@
         "success": "Successful rotate_secret and secret_read_dynamic responses show task references and lease metadata.",
         "degraded": "Write actions are blocked when readiness is degraded.",
         "simple_mode": "Identity & Vault becomes Passwords & Access and Rotate Secret becomes Change Password.",
-        "professional_mode": "Secret version, lease duration, and task ids remain visible for operators.",
+        "professional_mode": "Secret version, lease duration, and task ids remain visible for users.",
         "button_action_behavior": "Change Password/Rotate Secret calls rotate_secret; temporary access calls secret_read_dynamic.",
         "operation_status_behavior": "Task references and lease status summarize queued/succeeded/failed outcomes.",
         "backend_sync_behavior": "Writes through /api/operations/execute; reads live events through the shared event panel."

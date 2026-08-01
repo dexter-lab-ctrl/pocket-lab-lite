@@ -249,7 +249,7 @@ def gates() -> list[GateDefinition]:
                 ".pocketlab-dev/playwright-report/index.html",
                 ".pocketlab-dev/test-results",
             ),
-            coverage=("PWA operator journeys", "Simple/Professional mode", "backend sync behavior"),
+            coverage=("PWA user journeys", "Simple/Professional mode", "backend sync behavior"),
         ),
         GateDefinition(
             id="playwright-visual",

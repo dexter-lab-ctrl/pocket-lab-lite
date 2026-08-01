@@ -326,7 +326,7 @@ function runtimeUse(k) {
   if (k === "command") return "Durable command submitted by FastAPI and consumed by the worker.";
   if (k === "event") return "Runtime event emitted for UI updates, workflow recovery, telemetry, or observability.";
   if (k === "audit") return "Security-relevant event retained for auditability.";
-  return "Dead-letter record for failed command handling and operator investigation.";
+  return "Dead-letter record for failed command handling and user investigation.";
 }
 
 function escapeHtml(v) {

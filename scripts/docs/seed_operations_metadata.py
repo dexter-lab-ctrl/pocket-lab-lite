@@ -137,7 +137,7 @@ OPERATIONS = [
             "failureEvents": ["pocketlab.events.operation.failed"],
             "backendOwner": "drift service",
             "targetShape": {"type": "drift", "ref": "drift-id"},
-            "paramsShape": {"approved_by": "operator"},
+            "paramsShape": {"approved_by": "user"},
             "safety": "Approval action. Must be auditable.",
             "notes": "Separates approval from apply.",
         },
