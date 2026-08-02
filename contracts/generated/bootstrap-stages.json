@@ -1,0 +1,469 @@
+{
+  "bootstrap_stages": [
+    {
+      "android_termux": true,
+      "description": "Install Termux packages, base CLI tools, Node, PM2, MariaDB, Gitea, Caddy, and build dependencies",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 1/install_termux_packages",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 1,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": false,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_termux_packages",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Install and prepare the proot Ubuntu compatibility layer",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 2/install_proot_ubuntu",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 2,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": false,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_proot_ubuntu",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Install Vault, act_runner, Python runtime packages, NATS tooling, and profile-selected optional binaries",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 3/install_binaries",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 3,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh",
+      "required_environment": [
+        "POCKETLAB_REQUIRE_PROOT_OBSERVABILITY"
+      ],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": false,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_binaries",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Start and initialize Vault, unseal it, enable engines, and seed initial platform secrets",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 4/init_vault",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 4,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "init_vault",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Initialize MariaDB, create Pocket Lab service users, and register Vault database integration",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 5/init_mariadb",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 5,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "init_mariadb",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Start Gitea and act_runner, create the admin user, and prepare GitOps repositories",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 6/start_gitea",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 6,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [
+        [
+          "gitea",
+          ""
+        ],
+        [
+          "gitea-runner",
+          ""
+        ]
+      ],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "start_gitea",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Seed or refresh the GitOps/IaC repository in local Gitea",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 7/seed_gitops_repo",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 7,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "seed_gitops_repo",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Install or prepare Tailscale connectivity for fleet access",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 8/install_tailscale",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 8,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_tailscale",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Install the production React/Vite PWA assets",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 9/install_pwa_ui",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 9,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh",
+      "required_environment": [
+        "POCKETLAB_LITE_PWA_CURRENT_LINK",
+        "POCKETLAB_LITE_PWA_RELEASES_DIR",
+        "POCKETLAB_LITE_RELEASE_REPO",
+        "POCKETLAB_LOCAL_DIST_ZIP"
+      ],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": false,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_pwa_ui",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Start NATS/JetStream, FastAPI, worker, node agent, Caddy, and profile-selected services",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 10/start_dashboard",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 10,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+      "required_environment": [
+        "POCKETLAB_AGENT_NATS_PASSWORD",
+        "POCKETLAB_AGENT_NATS_USER",
+        "POCKETLAB_API_MAX_MEMORY_RESTART",
+        "POCKETLAB_AUTO_RELEASE_APPLY",
+        "POCKETLAB_BASE_DIR",
+        "POCKETLAB_CADDYFILE",
+        "POCKETLAB_COMMAND_ACK_WAIT_SECONDS",
+        "POCKETLAB_COMMAND_MAX_DELIVER",
+        "POCKETLAB_CORE_SUPERVISOR_COOLDOWN_SECONDS",
+        "POCKETLAB_CORE_SUPERVISOR_INTERVAL_SECONDS",
+        "POCKETLAB_DEVICE_HEALTH_IDLE_SECONDS",
+        "POCKETLAB_DEVICE_NAME",
+        "POCKETLAB_DISABLE_FLEET_AGENT",
+        "POCKETLAB_DISABLE_WORKER",
+        "POCKETLAB_FLEET_IDLE_SECONDS",
+        "POCKETLAB_FLEET_SAMPLE_SECONDS",
+        "POCKETLAB_HEALTH_IDLE_SECONDS",
+        "POCKETLAB_HEALTH_SAMPLE_SECONDS",
+        "POCKETLAB_IS_CONTROL_PLANE",
+        "POCKETLAB_LITE",
+        "POCKETLAB_LITE_APP_ROUTES",
+        "POCKETLAB_LITE_DB_PATH",
+        "POCKETLAB_LITE_DB_PROGRESS_READ_TIMEOUT_MS",
+        "POCKETLAB_LITE_GC_TUNING_ENABLED",
+        "POCKETLAB_LITE_IDLE_GOVERNOR_ENABLED",
+        "POCKETLAB_LITE_NATS_PORT",
+        "POCKETLAB_LITE_PROJECTION_CPU_WORKERS",
+        "POCKETLAB_LITE_PROJECTION_IDLE_WAIT_SECONDS",
+        "POCKETLAB_LITE_PROJECTION_IO_WORKERS",
+        "POCKETLAB_LITE_PWA_CURRENT_LINK",
+        "POCKETLAB_LITE_PWA_RELEASES_DIR",
+        "POCKETLAB_LITE_RELEASE_API_HEALTH_URL",
+        "POCKETLAB_LITE_RELEASE_API_PREPARED_URL",
+        "POCKETLAB_LITE_RELEASE_HEALTH_BASE_URL",
+        "POCKETLAB_LITE_RELEASE_REPO",
+        "POCKETLAB_LITE_SECURITY_ACCEPTED_STALE_SECONDS",
+        "POCKETLAB_LITE_SECURITY_PUBLISHED_STALE_SECONDS",
+        "POCKETLAB_LITE_SECURITY_RECEIVED_STALE_SECONDS",
+        "POCKETLAB_LITE_SECURITY_SQLITE_COMPACT_READS",
+        "POCKETLAB_LITE_SECURITY_STORE_MODE",
+        "POCKETLAB_LIVE_STATUS_MAX_IDLE_SECONDS",
+        "POCKETLAB_NATS_AGENT_PASSWORD",
+        "POCKETLAB_NATS_AGENT_USER",
+        "POCKETLAB_NATS_API_PASSWORD",
+        "POCKETLAB_NATS_API_USER",
+        "POCKETLAB_NATS_CONFIG",
+        "POCKETLAB_NATS_DURABLE_STALE_SECONDS",
+        "POCKETLAB_NATS_EVENT_FANOUT",
+        "POCKETLAB_NATS_JETSTREAM",
+        "POCKETLAB_NATS_NAME",
+        "POCKETLAB_NATS_PASSWORD",
+        "POCKETLAB_NATS_REQUIRED",
+        "POCKETLAB_NATS_REQUIRE_JETSTREAM",
+        "POCKETLAB_NATS_USER",
+        "POCKETLAB_NATS_WORKER_PASSWORD",
+        "POCKETLAB_NATS_WORKER_USER",
+        "POCKETLAB_NODE_ID",
+        "POCKETLAB_NODE_NAME",
+        "POCKETLAB_NODE_ROLE",
+        "POCKETLAB_PROFILE",
+        "POCKETLAB_PUBLIC_NATS_PORT",
+        "POCKETLAB_RELEASE_STABLE_INTERVAL_SECONDS",
+        "POCKETLAB_RENDER_CADDY_ONLY",
+        "POCKETLAB_SERVER_NODE_ID",
+        "POCKETLAB_STATE_DIR",
+        "POCKETLAB_TAILNET_IP",
+        "POCKETLAB_TELEMETRY_IDLE_SECONDS",
+        "POCKETLAB_TELEMETRY_SAMPLE_SECONDS",
+        "POCKETLAB_WORKER_ACCEPTED_RECOVERY_GRACE_SECONDS",
+        "POCKETLAB_WORKER_EXECUTION",
+        "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
+        "POCKETLAB_WORKER_RECOVERY_SECONDS",
+        "POCKETLAB_WORKFLOW_BATCH_CPU_MS",
+        "POCKETLAB_WORKFLOW_BATCH_MAX_EVENTS",
+        "POCKETLAB_WORKFLOW_BATCH_WALL_MS",
+        "POCKETLAB_WORKFLOW_MAILBOX_CAPACITY",
+        "POCKETLAB_WORKFLOW_MEMORY_MIN_AVAILABLE_PERCENT",
+        "POCKETLAB_WORKFLOW_PROCESS_OWNER",
+        "POCKETLAB_WORKFLOW_PROJECTION_ITEM_MAX",
+        "POCKETLAB_WORKFLOW_RECONCILE_MAX_ROWS",
+        "POCKETLAB_WORKFLOW_RECONCILE_WORKFLOW_MAX",
+        "POCKETLAB_WORKFLOW_RECYCLE_BATCH_COUNT",
+        "POCKETLAB_WORKFLOW_RECYCLE_EVENT_COUNT",
+        "POCKETLAB_WORKFLOW_RECYCLE_RSS_BYTES",
+        "POCKETLAB_WORKFLOW_SERIALIZED_BYTES_MAX",
+        "POCKETLAB_WORKFLOW_SQLITE_DEADLINE_SECONDS",
+        "POCKETLAB_WORKFLOW_UPDATES_PER_WORKFLOW_BATCH",
+        "POCKETLAB_WORKFLOW_WRITER_QUEUE_SIZE"
+      ],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [
+        [
+          "caddy-proxy",
+          ""
+        ],
+        [
+          "grafana-ui",
+          ""
+        ],
+        [
+          "loki-kms",
+          ""
+        ],
+        [
+          "pocket-api",
+          ""
+        ],
+        [
+          "pocket-gatus",
+          ""
+        ],
+        [
+          "pocket-nats",
+          ""
+        ],
+        [
+          "pocket-node-agent",
+          ""
+        ],
+        [
+          "pocket-telemetry",
+          ""
+        ],
+        [
+          "pocket-worker",
+          ""
+        ],
+        [
+          "pocketlab-core-supervisor",
+          ""
+        ],
+        [
+          "prometheus-db",
+          ""
+        ],
+        [
+          "promtail-agent",
+          ""
+        ]
+      ],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "start_dashboard",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Install the local NATS-backed fleet agent wrapper using generated NATS credentials",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 11/install_fleet_agent",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 11,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh",
+      "required_environment": [
+        "POCKETLAB_AGENT_HEARTBEAT_SECONDS",
+        "POCKETLAB_AGENT_PATH",
+        "POCKETLAB_AGENT_TELEMETRY_SECONDS",
+        "POCKETLAB_AGENT_TOKEN",
+        "POCKETLAB_NATS_AGENT_PASSWORD",
+        "POCKETLAB_NATS_AGENT_USER",
+        "POCKETLAB_NATS_PASSWORD",
+        "POCKETLAB_NATS_URL",
+        "POCKETLAB_NATS_USER",
+        "POCKETLAB_NODE_ID",
+        "POCKETLAB_NODE_NAME",
+        "POCKETLAB_NODE_ROLE",
+        "POCKETLAB_START_AGENT"
+      ],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": true,
+      "services_affected": [
+        [
+          "pocket-node-agent",
+          ""
+        ]
+      ],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "install_fleet_agent",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    },
+    {
+      "android_termux": true,
+      "description": "Run Day-0 smoke tests against Vault, Gitea, FastAPI, NATS, workflows, telemetry, MariaDB, and profile health",
+      "evidence_generated": [
+        "bootstrap stage marker and logs"
+      ],
+      "expected_output": "Completed stage 12/smoke_test",
+      "failure_behavior": "fail closed; later stages do not run",
+      "files_written": "source-defined; no paths executed during documentation generation",
+      "idempotency": "completion marker and stage-owned checks",
+      "index": 12,
+      "owning_script": "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh",
+      "required_environment": [],
+      "rollback": "stage-specific manual recovery; do not clear evidence",
+      "safe_retry": true,
+      "secrets_handled": false,
+      "services_affected": [],
+      "side_effects": "source-defined system/runtime changes; generation does not execute the stage",
+      "stage": "smoke_test",
+      "supported_platform": "Android/Termux; selected syntax and dry-run checks on Ubuntu/WSL2",
+      "wsl2": "validation only unless explicitly allowed"
+    }
+  ],
+  "metadata": {
+    "aggregate_fingerprint": "65b4439a958ab30e4448cf7e5b66e017b46bbeece93b8b71dcf91ae62695ec68",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "bootstrap_stages",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/bootstrap.sh": "6b3e8daab4aa74b8ba88b6da30d1e2325c9168ed809226352831f2a33a1b76be",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh": "f9ff241fc75b02991c0ed2b2fd6e65fb46dc3e9b0c2b4269b3bc36314c37f225",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh": "8115b6377276346c1263879b9b5e2b96e97f5ab6e8c18329b1af9359e783ca52",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-binaries.sh": "a8dbeb3e58a4ebff537e0f473ba5593f5c3da831c7c411dc42510ecbaa090a7c",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "bbaf13b2ddc1fc624e27b8bd36e1bced0bb6f04fa92ada489407cbc54a60b3ef",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-proot-ubuntu.sh": "60baae5ced355da335e711167eb356ba930b1c339d5378d71b204d822fc0c245",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh": "32b789b732bee5784a4b154550bc79ded6ad4c3ec14fe98c905eb2f864a2d37b",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-tailscale.sh": "3e6a5ddcef8cb4cb3fbeae9daf381051fcbefc24686c08452723f06429605ba3",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh": "46c23f9497e9e268ab06b16bb1dd49bcb1e148de5611f4546c83857cf2e35af4",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh": "1905104bdba9ea90b6828be3e3b518bae8aabb2b57c08d6f880b4788984834ed",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/smoke-test.sh": "ccb0edb3a71afb5be693f06c0041810cdb9116239e97438e5f1d4ffa8389f2ec",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "258e96b36e430044e7a522ddb0462e856f5e27ebe3adef57db911f42604455cb",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-gitea.sh": "129b2a066ceb0c10c67a29938cc9b06b901f6b31923415db1684782a2460d805",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  }
+}

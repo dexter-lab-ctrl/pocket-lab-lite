@@ -1,16 +1,127 @@
 version: '3'
 
 tasks:
+  lite:docs:tools:check:
+    desc: Verify pinned development-only documentation tools without changing the host
+    cmds:
+      - bash scripts/dev/lite/setup-documentation-tools.sh --check
+
   lite:contracts:generate:
     desc: Export the FastAPI Lite OpenAPI contract and generate sanitized canonical fixtures
     cmds:
       - '{{.PYTHON}} scripts/docs/lite/generate_contracts.py generate'
 
   lite:contracts:check:
-    desc: Check OpenAPI/fixture/frontend route compatibility without modifying source
+    desc: Check OpenAPI and fixture drift without modifying source
     cmds:
       - '{{.PYTHON}} scripts/docs/lite/generate_contracts.py check'
       - npx redocly lint contracts/generated/lite-openapi.json
+
+  lite:docs:openapi:
+    desc: Export OpenAPI, generate the detailed Lite API reference, and run Redocly
+    cmds:
+      - task: lite:contracts:generate
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section openapi'
+      - npx redocly lint contracts/generated/lite-openapi.json
+
+  lite:docs:events:
+    desc: Generate the Lite NATS and AsyncAPI event catalog
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section events'
+
+  lite:docs:frontend-api:
+    desc: Generate frontend/API ownership and field-level compatibility reports
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section frontend-api'
+
+  lite:docs:capabilities:
+    desc: Generate canonical device capability and role catalogs
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section capabilities'
+
+  lite:docs:reason-codes:
+    desc: Generate and validate the canonical reason-code registry
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section reason-codes'
+
+  lite:docs:sqlite:
+    desc: Generate data-free SQLite metadata and normalized SchemaSpy documentation
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section sqlite'
+      - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate'
+
+  lite:docs:sqlite:check:
+    desc: Check data-free SQLite metadata and SchemaSpy drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section sqlite'
+      - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
+
+  lite:docs:projections:
+    desc: Generate the prepared-projection ownership and freshness catalog
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section projections'
+
+  lite:docs:bootstrap:
+    desc: Generate bootstrap-stage documentation without executing any stage
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section bootstrap'
+
+  lite:docs:services:
+    desc: Generate the approved PM2 service catalog
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section services'
+
+  lite:docs:ui:
+    desc: Generate the canonical Storybook UI-state catalog
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section ui'
+
+  lite:docs:ui:screenshots:
+    desc: Build Storybook once and capture bounded mobile and desktop documentation screenshots
+    deps: [lite:playwright:preflight]
+    cmds:
+      - npm run build-storybook
+      - node scripts/docs/lite/capture-storybook.mjs
+
+  lite:docs:recovery:
+    desc: Generate Recovery contract and state-machine references
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section recovery'
+
+  lite:docs:security:
+    desc: Generate canonical Security profile documentation
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section security'
+
+  lite:docs:configuration:
+    desc: Generate sanitized environment-variable documentation
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section configuration'
+
+  lite:docs:validation:
+    desc: Generate readiness documentation only from recorded validation evidence
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section validation'
+
+  lite:docs:release-evidence:
+    desc: Generate release documents only from verified release manifests
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section release'
+
+  lite:docs:redaction:
+    desc: Generate consolidated redaction and secret-safety coverage
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section redaction'
+
+  lite:docs:diagrams:generate:
+    desc: Generate linked light and dark Graphviz architecture diagrams
+    cmds:
+      - '{{.PYTHON}} scripts/docs/graphviz/generate_lite_diagrams.py generate'
+
+  lite:docs:diagrams:check:
+    desc: Check Graphviz source and SVG drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/graphviz/generate_lite_diagrams.py check'
 
   lite:docs:development:generate:
     desc: Generate source-grounded Development documentation
@@ -28,23 +139,41 @@ tasks:
       - '{{.PYTHON}} scripts/docs/lite/generate_docs.py generate --audience production'
 
   lite:docs:production:check:
-    desc: Check Production documentation drift and ensure partial/planned behavior is not presented as deployable
+    desc: Check Production documentation drift and partial/planned boundaries
     cmds:
       - '{{.PYTHON}} scripts/docs/lite/generate_docs.py check --audience production'
 
-  lite:docs:generate:
-    desc: Generate contracts plus independent Development and Production documentation tracks
+  lite:docs:platform:generate:
+    desc: Generate all lightweight source-derived catalogs in one bounded process
     cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section all'
+
+  lite:docs:platform:check:
+    desc: Check all lightweight source-derived catalog drift and safety
+    cmds:
+      - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all'
+
+  lite:docs:generate:
+    desc: Generate contracts, Development/Production docs, catalogs, SchemaSpy, and diagrams
+    cmds:
+      - task: lite:docs:tools:check
       - task: lite:contracts:generate
       - task: lite:docs:development:generate
       - task: lite:docs:production:generate
+      - task: lite:docs:platform:generate
+      - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate'
+      - task: lite:docs:diagrams:generate
 
   lite:docs:check:
-    desc: Compatibility alias and strict combined documentation gate
+    desc: Strict combined documentation, schema, diagram, contract, safety, and MkDocs gate
     cmds:
+      - task: lite:docs:tools:check
       - task: lite:contracts:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check
+      - task: lite:docs:platform:check
+      - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
+      - task: lite:docs:diagrams:check
       - '{{.PYTHON}} -m mkdocs build --strict'
 
   lite:test:docs:

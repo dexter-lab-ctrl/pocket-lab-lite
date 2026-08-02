@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 9c85652565724d5d11b3040bd5fba4bf44d565f5e4593ba7967518e620081b6b
+source_fingerprint: 6a7576a6242d285a8943d05aeb402cd27f1ee0cd4264c592d29b8dfebad04409
 schema_revision: 1
 validation_status: generated
 ---
@@ -22,7 +22,7 @@ validation_status: generated
 Development runs from the Linux filesystem under WSL2. Repository setup restores the committed lockfiles and does not search for or install newer tool versions.
 
 ```bash
-cd /home/dj/pocket-lab-lite
+cd ~/pocket-lab-lite
 task lite:setup
 task lite:setup:check
 ```

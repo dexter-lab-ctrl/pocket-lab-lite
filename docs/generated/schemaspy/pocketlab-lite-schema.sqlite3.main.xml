@@ -1,0 +1,1599 @@
+<?xml version="1.0" encoding="UTF-8"?><database name="<temporary-schema.sqlite3>" schema="main" type="SQLite - 3.46.1">
+   <tables>
+      <table name="app_action_lifecycle" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="app_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="action_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="source_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="9" name="metadata_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="operation_id" sequenceNumberInPK="1"/>
+         <index name="app_action_lifecycle_s_pk" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_app_actions_active" unique="false">
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_app_actions_history" unique="false">
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_phase3c_app_actions_status_latest" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="sqlite_autoindex_app_action_lifecycle_1" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+      </table>
+      <table name="app_current_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="app_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_action_lifecycle"/>
+            <child column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="security_scan_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="app_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="2" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="installed" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="health_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="latest_action_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="latest_action_status" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="latest_backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="12" name="catalog_state_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="13" name="media_state_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="14" name="operation_state_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="15" name="update_state_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="16" name="backup_profile_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="17" name="projection_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="18" name="security_profile_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="19" name="backup_targets_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="app_id" sequenceNumberInPK="1"/>
+         <index name="app_current_state_s_pk" unique="true">
+            <column ascending="true" name="app_id"/>
+         </index>
+         <index name="idx_app_current_order" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="app_name"/>
+            <column ascending="true" name="app_id"/>
+         </index>
+         <index name="idx_app_current_updated" unique="false">
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="app_id"/>
+         </index>
+         <index name="sqlite_autoindex_app_current_state_1" unique="true">
+            <column ascending="true" name="app_id"/>
+         </index>
+      </table>
+      <table name="audit_evidence_index" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="evidence_index_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="entity_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="entity_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="operation_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="5" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="evidence_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="evidence_index_id" sequenceNumberInPK="1"/>
+         <index name="audit_evidence_index_s_pk" unique="true">
+            <column ascending="true" name="evidence_index_id"/>
+         </index>
+         <index name="idx_audit_entity_created" unique="false">
+            <column ascending="true" name="entity_type"/>
+            <column ascending="true" name="entity_id"/>
+            <column ascending="true" name="created_at_epoch_ms"/>
+            <column ascending="true" name="evidence_index_id"/>
+         </index>
+         <index name="idx_audit_operation_created" unique="false">
+            <column ascending="true" name="operation_id"/>
+            <column ascending="true" name="created_at_epoch_ms"/>
+            <column ascending="true" name="evidence_index_id"/>
+         </index>
+         <index name="idx_phase3c_audit_latest" unique="false">
+            <column ascending="true" name="created_at_epoch_ms"/>
+            <column ascending="true" name="evidence_index_id"/>
+         </index>
+         <index name="sqlite_autoindex_audit_evidence_index_1" unique="true">
+            <column ascending="true" name="event_type"/>
+            <column ascending="true" name="entity_type"/>
+            <column ascending="true" name="entity_id"/>
+            <column ascending="true" name="operation_id"/>
+            <column ascending="true" name="evidence_ref"/>
+         </index>
+      </table>
+      <table name="backup_manifest_index" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'lite'" digits="0" id="1" name="backup_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="2" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="3" name="verification_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="verified_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="size_bytes" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="source_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="backup_id" sequenceNumberInPK="1"/>
+         <index name="backup_manifest_index_s_pk" unique="true">
+            <column ascending="true" name="backup_id"/>
+         </index>
+         <index name="idx_backup_manifest_created" unique="false">
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="backup_id"/>
+         </index>
+         <index name="sqlite_autoindex_backup_manifest_index_1" unique="true">
+            <column ascending="true" name="backup_id"/>
+         </index>
+      </table>
+      <table name="command_lifecycle" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="command_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="entity_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="entity_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="operation_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="deadline_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="source_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="11" name="metadata_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'accepted'" digits="0" id="12" name="lifecycle_stage" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="terminal_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="ignored_redelivery" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="recovery_action" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'none'" digits="0" id="16" name="attention_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="attention_updated_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="18" name="attention_updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="command_id" sequenceNumberInPK="1"/>
+         <index name="command_lifecycle_s_pk" unique="true">
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_attention_latest" unique="false">
+            <column ascending="true" name="attention_status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_entity_active" unique="false">
+            <column ascending="true" name="entity_type"/>
+            <column ascending="true" name="entity_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_entity_active_latest" unique="false">
+            <column ascending="true" name="entity_type"/>
+            <column ascending="true" name="entity_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_entity_history" unique="false">
+            <column ascending="true" name="entity_type"/>
+            <column ascending="true" name="entity_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_lifecycle_stage" unique="false">
+            <column ascending="true" name="lifecycle_stage"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_nonterminal_age" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_commands_status_updated" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="sqlite_autoindex_command_lifecycle_1" unique="true">
+            <column ascending="true" name="command_id"/>
+         </index>
+      </table>
+      <table name="device_awareness_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'not_enrolled'" digits="0" id="1" name="enrollment_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'pending'" digits="0" id="2" name="identity_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="identity_verified_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="identity_verified_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="identity_mismatch_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="last_identity_mismatch_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="last_identity_mismatch_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="blocked_join_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="last_blocked_join_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="repair_required" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="last_seen_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="last_seen_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="13" name="last_seen_source" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="14" name="staleness_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="15" name="command_delivery_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="16" name="supervisor_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="17" name="recovery_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="18" name="hosted_app_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="19" name="backup_dependency_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="20" name="storage_dependency_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="21" name="capability_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="22" name="capabilities_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="23" name="dependencies_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="24" name="removal_safe" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="25" name="removal_assessment_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="26" name="removal_assessment_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="27" name="trust_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="28" name="enrollment_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="29" name="last_seen_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="32" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="device_id" sequenceNumberInPK="1"/>
+         <index name="device_awareness_state_s_pk" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_awareness_identity" unique="false">
+            <column ascending="true" name="identity_status"/>
+            <column ascending="true" name="repair_required"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_awareness_removal" unique="false">
+            <column ascending="true" name="removal_safe"/>
+            <column ascending="true" name="last_seen_at_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_awareness_staleness" unique="false">
+            <column ascending="true" name="staleness_state"/>
+            <column ascending="true" name="last_seen_at_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_awareness_state_1" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+      </table>
+      <table name="device_current_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_awareness_state"/>
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_health_attention"/>
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_health_current"/>
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_health_transitions"/>
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_lifecycle_events"/>
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_lifecycle_transactions"/>
+            <child column="node_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_system_profiles"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'compute'" digits="0" id="2" name="role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'Waiting'" digits="0" id="3" name="ui_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="connection_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="5" name="agent_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="6" name="supervisor_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="7" name="pm2_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="remote_access_ready" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="protected_server_host" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="source_heartbeat_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="latest_command_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="latest_invite_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="invite_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_invite_lifecycle"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="latest_recovery_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="recovery_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_recovery_history"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="last_seen_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="16" name="last_seen_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="19" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="device_id" sequenceNumberInPK="1"/>
+         <index name="device_current_state_s_pk" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_current_fleet_order" unique="false">
+            <column ascending="true" name="protected_server_host"/>
+            <column ascending="true" name="device_name"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_current_stale" unique="false">
+            <column ascending="true" name="connection_state"/>
+            <column ascending="true" name="last_seen_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_current_stale_order" unique="false">
+            <column ascending="true" name="last_seen_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_current_state_1" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+      </table>
+      <table name="device_enrollment_registry" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="device_id" foreignKey="" implied="false" onDeleteCascade="false" table="device_removal_receipts"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="normalized_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'compute'" digits="0" id="3" name="role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'enrolled'" digits="0" id="4" name="enrollment_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'pending'" digits="0" id="5" name="identity_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="enrolled_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="enrolled_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'offline'" digits="0" id="8" name="last_known_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="last_seen_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="last_seen_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="retired_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="retired_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'active'" digits="0" id="13" name="removal_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="removal_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="15" name="protected_server_host" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="16" name="canonical_identity_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="17" name="last_valid_state_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="18" name="registry_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="19" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="21" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="device_id" sequenceNumberInPK="1"/>
+         <index name="device_enrollment_registry_s_pk" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_enrollment_active_order" unique="false">
+            <column ascending="true" name="removal_status"/>
+            <column ascending="true" name="protected_server_host"/>
+            <column ascending="true" name="device_name"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_enrollment_last_seen" unique="false">
+            <column ascending="true" name="removal_status"/>
+            <column ascending="true" name="last_seen_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_enrollment_name" unique="false">
+            <column ascending="true" name="normalized_name"/>
+            <column ascending="true" name="removal_status"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_enrollment_registry_1" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+      </table>
+      <table name="device_health_attention" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="attention_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="category" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="severity" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'active'" digits="0" id="5" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="recommendation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'review_device'" digits="0" id="8" name="recommendation_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="created_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="resolved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="resolved_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="15" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="attention_id" sequenceNumberInPK="1"/>
+         <index name="device_health_attention_s_pk" unique="true">
+            <column ascending="true" name="attention_id"/>
+         </index>
+         <index name="idx_device_health_attention_active_reason" unique="true">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="reason_code"/>
+         </index>
+         <index name="idx_device_health_attention_active_time" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="attention_id"/>
+         </index>
+         <index name="idx_device_health_attention_device_status" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="attention_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_health_attention_1" unique="true">
+            <column ascending="true" name="attention_id"/>
+         </index>
+      </table>
+      <table name="device_health_current" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="1" name="health_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'none'" digits="0" id="2" name="health_severity" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="3" name="resource_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="connection_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="5" name="recovery_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="6" name="version_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="7" name="dependency_impact_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="8" name="reason_codes_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'review_device'" digits="0" id="9" name="recommendation_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="recommendation_target" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="11" name="attention_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="health_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="13" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="14" name="source_freshness_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="15" name="resources_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="16" name="connection_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="17" name="recovery_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="18" name="versions_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="19" name="dependency_impact_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="20" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="last_evaluated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="last_evaluated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="25" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="26" name="dimensions_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="device_id" sequenceNumberInPK="1"/>
+         <index name="device_health_current_s_pk" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_health_attention" unique="false">
+            <column ascending="true" name="attention_count"/>
+            <column ascending="true" name="health_severity"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_health_status" unique="false">
+            <column ascending="true" name="health_status"/>
+            <column ascending="true" name="health_severity"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_health_current_1" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+      </table>
+      <table name="device_health_transitions" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="transition_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="event_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="event_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="workflow_event_index"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="previous_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="new_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="5" name="reason_codes_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="occurred_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="resolved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="transition_row_id" sequenceNumberInPK="1"/>
+         <index name="device_health_transitions_s_pk" unique="true">
+            <column ascending="true" name="transition_row_id"/>
+         </index>
+         <index name="idx_device_health_transitions_device_time" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_health_transitions_1" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+      <table name="device_heartbeats" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="heartbeat_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="heartbeat_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="connection_state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="5" name="agent_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="6" name="supervisor_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="7" name="pm2_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="remote_access_ready" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="protected_server_host" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="observed_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="observed_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="heartbeat_row_id" sequenceNumberInPK="1"/>
+         <index name="device_heartbeats_s_pk" unique="true">
+            <column ascending="true" name="heartbeat_row_id"/>
+         </index>
+         <index name="idx_device_heartbeats_latest" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="observed_at_epoch_ms"/>
+            <column ascending="true" name="heartbeat_row_id"/>
+         </index>
+         <index name="idx_device_heartbeats_stale" unique="false">
+            <column ascending="true" name="observed_at_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_heartbeats_1" unique="true">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="heartbeat_id"/>
+         </index>
+      </table>
+      <table name="device_identity_guards" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="identity_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="normalized_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="protected_server_host" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'fleet-projection'" digits="0" id="4" name="source" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="identity_key" sequenceNumberInPK="1"/>
+         <index name="device_identity_guards_s_pk" unique="true">
+            <column ascending="true" name="identity_key"/>
+         </index>
+         <index name="sqlite_autoindex_device_identity_guards_1" unique="true">
+            <column ascending="true" name="identity_key"/>
+         </index>
+      </table>
+      <table name="device_invite_lifecycle" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="invite_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="latest_invite_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="device_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="role" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="expires_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="invite_id" sequenceNumberInPK="1"/>
+         <index name="device_invite_lifecycle_s_pk" unique="true">
+            <column ascending="true" name="invite_id"/>
+         </index>
+         <index name="idx_device_invites_active_latest" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="invite_id"/>
+         </index>
+         <index name="idx_device_invites_identity" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="idx_device_invites_status" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="invite_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_invite_lifecycle_1" unique="true">
+            <column ascending="true" name="invite_id"/>
+         </index>
+      </table>
+      <table name="device_lifecycle_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="event_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="event_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_lifecycle_transactions"/>
+            <parent column="event_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="workflow_event_index"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'recorded'" digits="0" id="5" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="occurred_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="9" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="dedupe_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="generation_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="13" name="state_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="payload_checksum" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_row_id" sequenceNumberInPK="1"/>
+         <index name="device_lifecycle_events_s_pk" unique="true">
+            <column ascending="true" name="event_row_id"/>
+         </index>
+         <index name="idx_device_lifecycle_device_time" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_device_lifecycle_events_dedupe" unique="true">
+            <column ascending="true" name="dedupe_key"/>
+         </index>
+         <index name="idx_device_lifecycle_generation" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="event_type"/>
+            <column ascending="true" name="generation_key"/>
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+         </index>
+         <index name="idx_device_lifecycle_type_time" unique="false">
+            <column ascending="true" name="event_type"/>
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_lifecycle_events_1" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+      <table name="device_lifecycle_transactions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="transaction_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="event_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="event_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_lifecycle_events"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="dedupe_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="generation_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="state_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'committed'" digits="0" id="8" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'pending'" digits="0" id="9" name="export_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="export_attempts" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="occurred_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="transaction_id" sequenceNumberInPK="1"/>
+         <index name="device_lifecycle_transactions_s_pk" unique="true">
+            <column ascending="true" name="transaction_id"/>
+         </index>
+         <index name="idx_device_lifecycle_transactions_device" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+            <column ascending="true" name="transaction_id"/>
+         </index>
+         <index name="idx_device_lifecycle_transactions_export" unique="false">
+            <column ascending="true" name="export_status"/>
+            <column ascending="true" name="updated_at"/>
+            <column ascending="true" name="transaction_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_lifecycle_transactions_1" unique="true">
+            <column ascending="true" name="transaction_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_lifecycle_transactions_2" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_lifecycle_transactions_3" unique="true">
+            <column ascending="true" name="dedupe_key"/>
+         </index>
+      </table>
+      <table name="device_recovery_history" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="recovery_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="latest_recovery_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="action" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="command_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="source_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="recovery_id" sequenceNumberInPK="1"/>
+         <index name="device_recovery_history_s_pk" unique="true">
+            <column ascending="true" name="recovery_id"/>
+         </index>
+         <index name="idx_device_recovery_history" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="created_at_epoch_ms"/>
+            <column ascending="true" name="recovery_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_recovery_history_1" unique="true">
+            <column ascending="true" name="recovery_id"/>
+         </index>
+      </table>
+      <table name="device_removal_receipts" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="receipt_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="device_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="false" table="device_enrollment_registry"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="device_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="removal_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'explicit_operator_removal'" digits="0" id="4" name="reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="assessment_revision" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="awareness_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'authenticated_operator'" digits="0" id="7" name="requested_by" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="11" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="receipt_id" sequenceNumberInPK="1"/>
+         <index name="device_removal_receipts_s_pk" unique="true">
+            <column ascending="true" name="receipt_id"/>
+         </index>
+         <index name="idx_device_removal_receipts_device_time" unique="false">
+            <column ascending="true" name="device_id"/>
+            <column ascending="true" name="created_at_epoch_ms"/>
+            <column ascending="true" name="receipt_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_removal_receipts_1" unique="true">
+            <column ascending="true" name="receipt_id"/>
+         </index>
+      </table>
+      <table name="device_supervisor_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="device_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="evidence_schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="2" name="supervisor_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="supervisor_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="supervisor_process_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="5" name="agent_process_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="nats_reachable" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'not_needed'" digits="0" id="7" name="repair_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="repair_reason_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="repair_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="checked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="11" name="checked_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="device_id" sequenceNumberInPK="1"/>
+         <index name="device_supervisor_state_s_pk" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="idx_device_supervisor_freshness" unique="false">
+            <column ascending="true" name="checked_at_epoch_ms"/>
+            <column ascending="true" name="device_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_supervisor_state_1" unique="true">
+            <column ascending="true" name="device_id"/>
+         </index>
+      </table>
+      <table name="device_system_profiles" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="node_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="device_id" foreignKey="" implied="false" onDeleteCascade="true" table="device_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="profile_schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="os_family" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="os_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="4" name="os_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="android_api_level" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="security_patch" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="manufacturer" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="technical_model" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="device_codename" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="consumer_model_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="architecture" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="12" name="android_abi" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="kernel" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="14" name="runtime_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="termux_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="16" name="python_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="17" name="agent_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="18" name="supervisor_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="19" name="profile_fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unavailable'" digits="0" id="20" name="profile_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="uptime_seconds" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="10" id="22" name="load_average_1m" nullable="true" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="null" digits="10" id="23" name="load_average_5m" nullable="true" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="null" digits="10" id="24" name="load_average_15m" nullable="true" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="'unavailable'" digits="0" id="25" name="load_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unavailable'" digits="0" id="26" name="uptime_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="profile_collected_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="28" name="profile_collected_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="health_collected_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="30" name="health_collected_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="33" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="34" name="architecture_raw" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="35" name="architecture_family" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="node_id" sequenceNumberInPK="1"/>
+         <index name="device_system_profiles_s_pk" unique="true">
+            <column ascending="true" name="node_id"/>
+         </index>
+         <index name="idx_device_system_profiles_updated" unique="false">
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="node_id"/>
+         </index>
+         <index name="sqlite_autoindex_device_system_profiles_1" unique="true">
+            <column ascending="true" name="node_id"/>
+         </index>
+      </table>
+      <table name="domain_revisions" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="domain" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="domain" sequenceNumberInPK="1"/>
+         <index name="domain_revisions_s_pk" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+         <index name="sqlite_autoindex_domain_revisions_1" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+      </table>
+      <table name="lite_installed_release_identity" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="owner" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="identity_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'pocket-lab-lite'" digits="0" id="3" name="product" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="install_mode" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="source_repository" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="source_commit" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="release_tag" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="artifact_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="artifact_sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="installed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="11" name="installer_schema" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="verified" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="13" name="migration_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="owner" sequenceNumberInPK="1"/>
+         <index name="lite_installed_release_identity_s_pk" unique="true">
+            <column ascending="true" name="owner"/>
+         </index>
+         <index name="idx_lite_installed_release_identity_mode" unique="false">
+            <column ascending="true" name="install_mode"/>
+            <column ascending="true" name="verified"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="sqlite_autoindex_lite_installed_release_identity_1" unique="true">
+            <column ascending="true" name="owner"/>
+         </index>
+      </table>
+      <table name="lite_revision_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="domain" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="4" name="changed_ids_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'domain_state_changed'" digits="0" id="5" name="reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="6" name="projection_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="occurred_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="9" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="lite_revision_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_lite_revision_events_domain_revision" unique="true">
+            <column ascending="true" name="database_instance"/>
+            <column ascending="true" name="domain"/>
+            <column ascending="true" name="revision"/>
+         </index>
+         <index name="idx_lite_revision_events_replay" unique="false">
+            <column ascending="true" name="database_instance"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_lite_revision_events_retention" unique="false">
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+      <table name="phase3b_current_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="domain" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="1" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="projection_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="5" name="payload_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="item_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="10" id="7" name="collector_duration_ms" nullable="false" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="10" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="11" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="domain" sequenceNumberInPK="1"/>
+         <index name="phase3b_current_state_s_pk" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+         <index name="idx_phase3b_current_state_revision" unique="false">
+            <column ascending="true" name="domain"/>
+            <column ascending="true" name="projection_revision"/>
+         </index>
+         <index name="idx_phase3b_current_state_status" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="domain"/>
+         </index>
+         <index name="sqlite_autoindex_phase3b_current_state_1" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+      </table>
+      <table name="phase3b_revision_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="domain" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projection_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'semantic_state_changed'" digits="0" id="5" name="reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="occurred_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="occurred_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="8" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="previous_semantic_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="new_semantic_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'[]'" digits="0" id="11" name="changed_paths_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="12" name="source_revision_before" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="13" name="source_revision_after" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="scheduler_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="15" name="execution_owner" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="phase3b_revision_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_phase3b_revision_events_domain_recent" unique="false">
+            <column ascending="true" name="domain"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_phase3b_revision_events_replay" unique="false">
+            <column ascending="true" name="database_instance"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_phase3b_revision_events_retention" unique="false">
+            <column ascending="true" name="occurred_at_epoch_ms"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="sqlite_autoindex_phase3b_revision_events_1" unique="true">
+            <column ascending="true" name="database_instance"/>
+            <column ascending="true" name="domain"/>
+            <column ascending="true" name="projection_revision"/>
+         </index>
+      </table>
+      <table name="projection_dirty_signals" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="domain" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="1" name="signal_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="claimed_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'event'" digits="0" id="3" name="trigger_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="4" name="requested_by" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="domain" sequenceNumberInPK="1"/>
+         <index name="projection_dirty_signals_s_pk" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+         <index name="idx_projection_dirty_signals_pending" unique="false">
+            <column ascending="true" name="claimed_generation"/>
+            <column ascending="true" name="signal_generation"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="sqlite_autoindex_projection_dirty_signals_1" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+      </table>
+      <table name="projection_refresh_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="domain" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="1" name="generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="committed_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="dirty" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="active" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="50" digits="0" id="5" name="priority" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'io'" digits="0" id="6" name="work_class" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="failure_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="next_retry_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="coalesced_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="10" name="late_result_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="11" name="stale_generation_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="last_started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="last_completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="last_error_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="15" name="last_pressure_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="16" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="-1" digits="0" id="18" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="10" id="19" name="last_duration_ms" nullable="false" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="20" name="execution_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="21" name="committed_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="22" name="unchanged_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="23" name="dirty_mark_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="24" name="followup_requested" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'event'" digits="0" id="25" name="trigger_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="26" name="last_trigger_reason" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="27" name="execution_owner" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unavailable'" digits="0" id="28" name="executor_build_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="29" name="executor_process_generation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="domain" sequenceNumberInPK="1"/>
+         <index name="projection_refresh_state_s_pk" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+         <index name="idx_projection_refresh_ready" unique="false">
+            <column ascending="true" name="dirty"/>
+            <column ascending="true" name="active"/>
+            <column ascending="true" name="next_retry_epoch_ms"/>
+            <column ascending="true" name="priority"/>
+            <column ascending="true" name="domain"/>
+         </index>
+         <index name="sqlite_autoindex_projection_refresh_state_1" unique="true">
+            <column ascending="true" name="domain"/>
+         </index>
+      </table>
+      <table name="recovery_current_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="singleton_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="1" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="active_operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="latest_backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="latest_preview_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="latest_restore_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="restore_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="security_database_restores"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'idle'" digits="0" id="6" name="maintenance_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="source_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="singleton_id" sequenceNumberInPK="1"/>
+         <index name="recovery_current_state_s_pk" unique="true">
+            <column ascending="true" name="singleton_id"/>
+         </index>
+      </table>
+      <table name="recovery_operations" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="operation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="operation_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="preview_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="source_ref" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="10" name="metadata_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="operation_id" sequenceNumberInPK="1"/>
+         <index name="recovery_operations_s_pk" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_phase3c_recovery_status_latest" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_recovery_operations_history" unique="false">
+            <column ascending="true" name="operation_type"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="idx_recovery_operations_updated" unique="false">
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="operation_id"/>
+         </index>
+         <index name="sqlite_autoindex_recovery_operations_1" unique="true">
+            <column ascending="true" name="operation_id"/>
+         </index>
+      </table>
+      <table name="release_runtime_projection" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="owner" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="1" name="schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="2" name="projection_revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="3" name="operation_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="active_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="active_operation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="active_command_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="lease_expires_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="worker_generation" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="9" name="phase" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'degraded'" digits="0" id="10" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="11" name="current_tag" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="12" name="latest_tag" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="13" name="update_available" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="14" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="15" name="payload_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="2" digits="0" id="16" name="payload_bytes" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="last_checked_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="last_success_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="last_failure_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="20" name="last_failure_code" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="21" name="last_terminal_command_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="22" name="last_terminal_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="23" name="last_terminal_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="24" name="checks_started" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="25" name="checks_completed" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="26" name="applies_started" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="27" name="applies_completed" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="28" name="unchanged_results" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="29" name="writes_skipped" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="30" name="writes_committed" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="31" name="coalesced_requests" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="32" name="deduplicated_requests" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="33" name="pressure_deferred" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="34" name="deadline_exceeded" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="35" name="stale_results_rejected" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="36" name="subprocess_restarts" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="37" name="subprocess_recycles" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="38" name="last_subprocess_pid" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="last_subprocess_exit_code" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="10" id="40" name="last_cpu_ms" nullable="false" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="0" digits="10" id="41" name="last_wall_ms" nullable="false" remarks="" size="2000000000" type="REAL" typeCode="6"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="42" name="last_peak_rss_bytes" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="43" name="last_bytes_read" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="44" name="last_files_examined" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="45" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="46" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="47" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="48" name="configured_repository" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="49" name="verified_repository" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="50" name="repository_match" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="51" name="install_mode" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="52" name="installed_release_tag" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="53" name="installed_source_commit" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown_installed_identity'" digits="0" id="54" name="comparison" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="55" name="manifest_verified" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="56" name="artifact_verified" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'idle'" digits="0" id="57" name="staging_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'idle'" digits="0" id="58" name="promotion_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="59" name="rollback_available" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="60" name="last_failure_stage" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="61" name="last_rollback_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="62" name="next_check_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="43200" digits="0" id="63" name="stable_interval_seconds" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="owner" sequenceNumberInPK="1"/>
+         <index name="release_runtime_projection_s_pk" unique="true">
+            <column ascending="true" name="owner"/>
+         </index>
+         <index name="idx_release_runtime_active_lease" unique="false">
+            <column ascending="true" name="active_generation"/>
+            <column ascending="true" name="lease_expires_epoch_ms"/>
+         </index>
+         <index name="idx_release_runtime_status_updated" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="sqlite_autoindex_release_runtime_projection_1" unique="true">
+            <column ascending="true" name="owner"/>
+         </index>
+      </table>
+      <table name="schema_migrations" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="version" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_current_state"/>
+            <child column="evidence_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_supervisor_state"/>
+            <child column="profile_schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_system_profiles"/>
+            <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_installed_release_identity"/>
+            <child column="projection_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="lite_revision_events"/>
+            <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="release_runtime_projection"/>
+            <child column="schema_version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="security_database_backups"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="applied_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="checksum" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="version" sequenceNumberInPK="1"/>
+         <index name="schema_migrations_s_pk" unique="true">
+            <column ascending="true" name="version"/>
+         </index>
+      </table>
+      <table name="security_database_backups" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="backup_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="backup_id" foreignKey="" implied="false" onDeleteCascade="false" table="security_database_restores"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="verified_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="file_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="5" name="size_bytes" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="sha256" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="schema_version" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4">
+            <parent column="version" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="schema_migrations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="sqlite_version" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="9" name="manifest_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="10" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="backup_id" sequenceNumberInPK="1"/>
+         <index name="security_database_backups_s_pk" unique="true">
+            <column ascending="true" name="backup_id"/>
+         </index>
+         <index name="idx_security_database_backups_created" unique="false">
+            <column ascending="true" name="created_at"/>
+         </index>
+         <index name="sqlite_autoindex_security_database_backups_1" unique="true">
+            <column ascending="true" name="backup_id"/>
+         </index>
+      </table>
+      <table name="security_database_restores" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="restore_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="latest_restore_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="recovery_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="backup_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="backup_id" foreignKey="" implied="false" onDeleteCascade="false" table="security_database_backups"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="preview_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="state" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="requested_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="rollback_file_name" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'{}'" digits="0" id="8" name="metadata_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="9" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="restore_id" sequenceNumberInPK="1"/>
+         <index name="security_database_restores_s_pk" unique="true">
+            <column ascending="true" name="restore_id"/>
+         </index>
+         <index name="idx_security_database_restores_requested" unique="false">
+            <column ascending="true" name="requested_at"/>
+         </index>
+         <index name="sqlite_autoindex_security_database_restores_1" unique="true">
+            <column ascending="true" name="restore_id"/>
+         </index>
+      </table>
+      <table name="security_maintenance_runs" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="maintenance_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'apply'" digits="0" id="2" name="mode" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="requested_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="metadata_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="8" name="sanitized" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="maintenance_id" sequenceNumberInPK="1"/>
+         <index name="security_maintenance_runs_s_pk" unique="true">
+            <column ascending="true" name="maintenance_id"/>
+         </index>
+         <index name="idx_phase3c_maintenance_status_latest" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="requested_at"/>
+            <column ascending="true" name="maintenance_id"/>
+         </index>
+         <index name="idx_security_maintenance_kind_requested" unique="false">
+            <column ascending="true" name="kind"/>
+            <column ascending="true" name="requested_at"/>
+         </index>
+         <index name="sqlite_autoindex_security_maintenance_runs_1" unique="true">
+            <column ascending="true" name="maintenance_id"/>
+         </index>
+      </table>
+      <table name="security_profile_snapshots" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="profile" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="1" name="app_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="latest_run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="false" table="security_scan_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="latest_status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="latest_score" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="5" name="latest_summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="latest_completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="latest_evidence_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="9" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="profile" sequenceNumberInPK="1"/>
+         <primaryKey column="app_id" sequenceNumberInPK="2"/>
+         <index name="security_profile_snapshots_s_pk" unique="true">
+            <column ascending="true" name="profile"/>
+            <column ascending="true" name="app_id"/>
+         </index>
+         <index name="sqlite_autoindex_security_profile_snapshots_1" unique="true">
+            <column ascending="true" name="profile"/>
+            <column ascending="true" name="app_id"/>
+         </index>
+      </table>
+      <table name="security_scan_evidence_refs" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="evidence_ref_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="kind" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="relative_path" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="sha256" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="size_bytes" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="metadata_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="evidence_ref_id" sequenceNumberInPK="1"/>
+         <index name="security_scan_evidence_refs_s_pk" unique="true">
+            <column ascending="true" name="evidence_ref_id"/>
+         </index>
+         <index name="idx_security_evidence_run_kind" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="kind"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_evidence_refs_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="relative_path"/>
+         </index>
+      </table>
+      <table name="security_scan_findings" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="finding_row_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="finding_key" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="source" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="severity" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="title" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="7" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="component" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'present'" digits="0" id="9" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="first_seen_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="last_seen_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="resolved_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="remediation_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="technical_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="finding_row_id" sequenceNumberInPK="1"/>
+         <index name="security_scan_findings_s_pk" unique="true">
+            <column ascending="true" name="finding_row_id"/>
+         </index>
+         <index name="idx_security_findings_fingerprint" unique="false">
+            <column ascending="true" name="fingerprint"/>
+         </index>
+         <index name="idx_security_findings_run_severity" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="severity"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_findings_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="finding_key"/>
+         </index>
+      </table>
+      <table name="security_scan_progress_events" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence_no" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="stage" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="percent" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="message" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="tool" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="created_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="payload_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="fingerprint" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="security_scan_progress_events_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_security_progress_created" unique="false">
+            <column ascending="true" name="created_at_epoch_ms"/>
+         </index>
+         <index name="idx_security_progress_run_event" unique="false">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_progress_events_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="sequence_no"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_progress_events_2" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="fingerprint"/>
+         </index>
+      </table>
+      <table name="security_scan_runs" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="run_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="latest_run_id" foreignKey="" implied="false" onDeleteCascade="false" table="security_profile_snapshots"/>
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_evidence_refs"/>
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_findings"/>
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_progress_events"/>
+            <child column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_tool_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="profile" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="app_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="app_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="app_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="app_label" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="active_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="6" name="summary" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="score" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="partial_results" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="requested_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="accepted_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="requested_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="started_at_epoch_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="completed_at_epoch_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="current_stage" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="current_percent" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="current_message" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="current_tool" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="22" name="checks_reviewed" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="23" name="items_to_review" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="24" name="critical_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="25" name="high_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="26" name="medium_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="27" name="low_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="28" name="info_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="timeout_reason" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="failure_code" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="failure_message" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="command_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="33" name="correlation_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'security-worker'" digits="0" id="34" name="source" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="35" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="36" name="evidence_saved" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="37" name="metadata_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="38" name="command_published_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="39" name="command_published_at_epoch_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="40" name="command_received_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="41" name="command_received_at_epoch_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="42" name="execution_started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="43" name="execution_started_at_epoch_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="44" name="last_progress_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="45" name="last_progress_at_epoch_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="46" name="delivery_attempt" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <primaryKey column="run_id" sequenceNumberInPK="1"/>
+         <index name="security_scan_runs_s_pk" unique="true">
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="idx_security_runs_app_updated_latest" unique="false">
+            <column ascending="true" name="profile"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="idx_security_runs_delivery_state" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="command_received_at_epoch_ms"/>
+            <column ascending="true" name="execution_started_at_epoch_ms"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="idx_security_runs_history_cursor" unique="false">
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="idx_security_runs_profile_completed" unique="false">
+            <column ascending="true" name="profile"/>
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="completed_at_epoch_ms"/>
+         </index>
+         <index name="idx_security_runs_profile_history_cursor" unique="false">
+            <column ascending="true" name="profile"/>
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="idx_security_runs_profile_updated_latest" unique="false">
+            <column ascending="true" name="profile"/>
+            <column ascending="true" name="app_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="idx_security_runs_progress_latest" unique="false">
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="idx_security_runs_status_updated" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_runs_1" unique="true">
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_runs_2" unique="true">
+            <column ascending="true" name="active_key"/>
+         </index>
+      </table>
+      <table name="security_scan_tool_runs" remarks="" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="tool_run_id" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="run_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="run_id" foreignKey="" implied="false" onDeleteCascade="true" table="security_scan_runs"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="tool_name" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="started_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="completed_at" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="duration_ms" nullable="true" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="finding_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="timed_out" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="timeout_reason" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="metadata_json" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="tool_run_id" sequenceNumberInPK="1"/>
+         <index name="security_scan_tool_runs_s_pk" unique="true">
+            <column ascending="true" name="tool_run_id"/>
+         </index>
+         <index name="idx_security_tool_runs_run" unique="false">
+            <column ascending="true" name="run_id"/>
+         </index>
+         <index name="sqlite_autoindex_security_scan_tool_runs_1" unique="true">
+            <column ascending="true" name="run_id"/>
+            <column ascending="true" name="tool_name"/>
+         </index>
+      </table>
+      <table name="security_store_metadata" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="metadata_key" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="value_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="metadata_key" sequenceNumberInPK="1"/>
+         <index name="security_store_metadata_s_pk" unique="true">
+            <column ascending="true" name="metadata_key"/>
+         </index>
+         <index name="sqlite_autoindex_security_store_metadata_1" unique="true">
+            <column ascending="true" name="metadata_key"/>
+         </index>
+      </table>
+      <table name="workflow_command_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="command_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="workflow_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="workflow_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="workflow_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="subject" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="command_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="created_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="process_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="9" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="command_id" sequenceNumberInPK="1"/>
+         <index name="workflow_command_state_s_pk" unique="true">
+            <column ascending="true" name="command_id"/>
+         </index>
+         <index name="idx_workflow_command_workflow" unique="false">
+            <column ascending="true" name="workflow_id"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="sqlite_autoindex_workflow_command_state_1" unique="true">
+            <column ascending="true" name="command_id"/>
+         </index>
+      </table>
+      <table name="workflow_current_state" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="workflow_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="workflow_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="workflow_command_state"/>
+            <child column="workflow_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="workflow_event_index"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="projection_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="canonical_hash" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'unknown'" digits="0" id="3" name="status" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="terminal" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="1" digits="0" id="5" name="revision" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="6" name="semantic_event_count" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="updated_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="updated_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="9" name="process_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="10" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="workflow_id" sequenceNumberInPK="1"/>
+         <index name="workflow_current_state_s_pk" unique="true">
+            <column ascending="true" name="workflow_id"/>
+         </index>
+         <index name="idx_workflow_current_status_updated" unique="false">
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="idx_workflow_current_terminal_updated" unique="false">
+            <column ascending="true" name="terminal"/>
+            <column ascending="true" name="updated_at_epoch_ms"/>
+         </index>
+         <index name="sqlite_autoindex_workflow_current_state_1" unique="true">
+            <column ascending="true" name="workflow_id"/>
+         </index>
+      </table>
+      <table name="workflow_event_index" remarks="" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="event_id" nullable="true" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <child column="event_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_health_transitions"/>
+            <child column="event_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="device_lifecycle_events"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="workflow_id" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12">
+            <parent column="workflow_id" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="workflow_current_state"/>
+         </column>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="2" name="event_type" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="3" name="subject" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="event_json" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="observed_at" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="observed_at_epoch_ms" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="process_generation" nullable="false" remarks="" size="2000000000" type="INTEGER" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="''" digits="0" id="8" name="database_instance" nullable="false" remarks="" size="2000000000" type="TEXT" typeCode="12"/>
+         <primaryKey column="event_id" sequenceNumberInPK="1"/>
+         <index name="workflow_event_index_s_pk" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="idx_workflow_event_workflow_time" unique="false">
+            <column ascending="true" name="workflow_id"/>
+            <column ascending="true" name="observed_at_epoch_ms"/>
+            <column ascending="true" name="event_id"/>
+         </index>
+         <index name="sqlite_autoindex_workflow_event_index_1" unique="true">
+            <column ascending="true" name="event_id"/>
+         </index>
+      </table>
+   </tables>
+</database>

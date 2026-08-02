@@ -1,0 +1,89 @@
+{
+  "device_roles": [
+    {
+      "health_dependencies": [
+        "Caddy",
+        "FastAPI",
+        "NATS",
+        "worker",
+        "node agent",
+        "core supervisor"
+      ],
+      "label": "Protected server host",
+      "optional_capabilities": [
+        "backup_target"
+      ],
+      "readiness_requirements": [
+        "FastAPI ready",
+        "NATS reachable",
+        "node agent heartbeat",
+        "supervisor status"
+      ],
+      "required_capabilities": [
+        "app_host",
+        "compute",
+        "security_scanner"
+      ],
+      "role": "server_host",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    },
+    {
+      "health_dependencies": [
+        "node agent",
+        "agent supervisor",
+        "NATS"
+      ],
+      "label": "Device",
+      "optional_capabilities": [],
+      "readiness_requirements": [
+        "accepted enrollment identity",
+        "NATS connection",
+        "fresh heartbeat"
+      ],
+      "required_capabilities": [
+        "app_host",
+        "compute"
+      ],
+      "role": "compute",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    },
+    {
+      "health_dependencies": [
+        "node agent",
+        "agent supervisor",
+        "NATS",
+        "storage availability"
+      ],
+      "label": "Storage device",
+      "optional_capabilities": [],
+      "readiness_requirements": [
+        "accepted enrollment identity",
+        "fresh heartbeat",
+        "sanitized storage readiness"
+      ],
+      "required_capabilities": [
+        "media_storage",
+        "backup_target"
+      ],
+      "role": "storage",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    }
+  ],
+  "metadata": {
+    "aggregate_fingerprint": "6f70b0db52fe9e4128675b9a6d98bde0966dc2d2449772a1842373a2929aaac5",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "device_roles",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py": "fc7e7986e493bb50be088dac214d6d317dad5014544f2886c19e013cd13a78ee",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  }
+}

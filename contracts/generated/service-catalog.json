@@ -1,0 +1,183 @@
+{
+  "metadata": {
+    "aggregate_fingerprint": "0dd39246a1d879ee9022629fe91498e7b0fe60f9276667ce1f87bab3df446668",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "service_catalog",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh": "bbaf13b2ddc1fc624e27b8bd36e1bced0bb6f04fa92ada489407cbc54a60b3ef",
+      "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh": "258e96b36e430044e7a522ddb0462e856f5e27ebe3adef57db911f42604455cb",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  },
+  "service_catalog": [
+    {
+      "environment_source": "generated runtime environment",
+      "health_evidence": [
+        "/health",
+        "/ready"
+      ],
+      "heartbeat_evidence": [],
+      "log_policy": "bounded PM2 logs; no secrets",
+      "memory_limit": "POCKETLAB_API_MAX_MEMORY_RESTART",
+      "nats_dependency": "required for write paths",
+      "owner": "FastAPI control API",
+      "pattern": "pocket-api",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Serve /api/lite/* and safe prepared reads",
+      "recovery": "verify NATS and SQLite before restarting",
+      "related_api": [
+        "/api/lite/*"
+      ],
+      "related_events": [],
+      "restart_policy": "PM2 exponential backoff and bounded memory restart",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "generated runtime environment",
+      "health_evidence": [
+        "durable consumer health"
+      ],
+      "heartbeat_evidence": [
+        "worker heartbeat"
+      ],
+      "log_policy": "structured sanitized lifecycle only",
+      "memory_limit": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
+      "nats_dependency": "required",
+      "owner": "worker execution plane",
+      "pattern": "pocket-worker",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Consume durable commands and own backend execution",
+      "recovery": "consumer re-enrollment before process restart",
+      "related_api": [],
+      "related_events": [
+        "pocketlab.commands.*",
+        "pocketlab.events.*"
+      ],
+      "restart_policy": "PM2 plus durable-consumer watchdog",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "generated NATS config",
+      "health_evidence": [
+        "NATS monitor and JetStream status"
+      ],
+      "heartbeat_evidence": [],
+      "log_policy": "never print credentials",
+      "memory_limit": "bounded by NATS configuration",
+      "nats_dependency": "self",
+      "owner": "NATS/JetStream service",
+      "pattern": "pocket-nats",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Command and event backbone",
+      "recovery": "verify listener, storage, and credentials before restart",
+      "related_api": [],
+      "related_events": [
+        "all Lite subjects"
+      ],
+      "restart_policy": "PM2",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "~/.pocketlab-lite-agent.env",
+      "health_evidence": [
+        "fleet agent status"
+      ],
+      "heartbeat_evidence": [
+        "fresh device heartbeat"
+      ],
+      "log_policy": "sanitized evidence only",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "required",
+      "owner": "server-host node agent",
+      "pattern": "pocket-node-agent",
+      "platform": [
+        "Android/Termux"
+      ],
+      "purpose": "Publish heartbeat/telemetry and execute device commands",
+      "recovery": "reconnect watchdog then supervisor recovery",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "related_events": [
+        "device heartbeat",
+        "device command result"
+      ],
+      "restart_policy": "PM2 and core supervisor",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "~/.pocketlab-lite-agent.env",
+      "health_evidence": [
+        "fleet connection and PM2 status"
+      ],
+      "heartbeat_evidence": [
+        "fresh device heartbeat"
+      ],
+      "log_policy": "no invite or NATS secrets",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "required",
+      "owner": "joined-device node agent",
+      "pattern": "pocketlab-agent-<node_id>",
+      "platform": [
+        "Android/Termux",
+        "Linux ARM64"
+      ],
+      "purpose": "Publish heartbeat/telemetry and execute device commands",
+      "recovery": "explicit repair/rejoin on identity mismatch",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "related_events": [
+        "device heartbeat",
+        "device command result"
+      ],
+      "restart_policy": "PM2 supervised",
+      "startup": "backend-generated bootstrap command"
+    },
+    {
+      "environment_source": "~/.pocketlab-lite-agent.env",
+      "health_evidence": [
+        "supervisor status"
+      ],
+      "heartbeat_evidence": [
+        "sanitized recovery evidence"
+      ],
+      "log_policy": "never expose environment secrets",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "optional for local recovery; required for evidence publish",
+      "owner": "joined-device supervisor",
+      "pattern": "pocketlab-agent-supervisor-<node_id>",
+      "platform": [
+        "Android/Termux",
+        "Linux ARM64"
+      ],
+      "purpose": "Watch and recover the node agent as a separate process",
+      "recovery": "starts/restarts failed agent without overwriting identity",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "related_events": [
+        "agent recovery evidence"
+      ],
+      "restart_policy": "PM2 supervised",
+      "startup": "backend-generated bootstrap command"
+    }
+  ]
+}

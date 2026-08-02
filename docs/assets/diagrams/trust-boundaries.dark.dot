@@ -1,0 +1,44 @@
+digraph trust_boundaries {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#101827",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Trust boundaries",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  "browser" [label="Browser trust boundary", shape="box", fillcolor="#1e293b", tooltip="Browser trust boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/security-boundaries/", target="_top", style="rounded,dashed,filled"];
+  "proxy" [label="Caddy boundary", shape="box", fillcolor="#312e81", tooltip="Caddy boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/caddy-access/", target="_top"];
+  "control" [label="FastAPI control boundary", shape="box", fillcolor="#312e81", tooltip="FastAPI control boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../reference/api/lite-api/", target="_top"];
+  "execution" [label="Worker / agent execution boundary", shape="component", fillcolor="#14532d", tooltip="Worker / agent execution boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/development/service-catalog/", target="_top"];
+  "secrets" [label="Backend secret boundary", shape="cylinder", fillcolor="#78350f", tooltip="Backend secret boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/development/redaction-coverage/", target="_top"];
+  "tailnet" [label="Private Tailnet / LAN", shape="ellipse", fillcolor="#1e293b", tooltip="Private Tailnet / LAN. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/remote-access/", target="_top"];
+  "browser" -> "proxy" [label="same-origin HTTPS", tooltip="same-origin HTTPS"];
+  "proxy" -> "control" [label="/api/lite/*", tooltip="/api/lite/*"];
+  "control" -> "execution" [label="validated command", tooltip="validated command"];
+  "execution" -> "secrets" [label="runtime-only access", tooltip="runtime-only access"];
+  "tailnet" -> "proxy" [label="private ingress", tooltip="private ingress"];
+}

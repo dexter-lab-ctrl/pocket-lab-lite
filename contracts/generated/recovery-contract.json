@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "aggregate_fingerprint": "4eee46500ca9440705ffb97c5a7176947fcd1252a30ae3910454ada3461cfd7b",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "recovery_contract",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/generated/lite-openapi.json": "6854b6b4a7afd5d579568891473c4a6b6189f0041eddc5c87015ee1e715e4bf3",
+      "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "79dcdae8da41327babcbe408cfe7912e02ccc2823bd7929419979ac65ae5d73c",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py": "16171c44e96581755494034508fc1f0a69a118ed2166e83431bc14d662c80aa8",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_planner.py": "d582006b8a4fc9e5123952e3e2f3334c8661d1720f54934e8c434daf95cb0d7e",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_restore_transaction.py": "d0a294500be7a76d0d4ec8ebd1e6b076eedc45264146cce754892b6568285b31",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  },
+  "recovery_contract": {
+    "api_ownership": "FastAPI validates and publishes commands",
+    "backup": [
+      "queued",
+      "running",
+      "succeeded",
+      "degraded",
+      "failed"
+    ],
+    "checkpoint": [
+      "not_created",
+      "creating",
+      "created",
+      "failed"
+    ],
+    "confirmation_required": [
+      "restore_latest",
+      "destructive replacement"
+    ],
+    "endpoints": [
+      "/api/lite/fleet/devices/{device_id}/recovery-history",
+      "/api/lite/recovery",
+      "/api/lite/recovery/apps",
+      "/api/lite/recovery/apps/{app_id}",
+      "/api/lite/recovery/apps/{app_id}/backup",
+      "/api/lite/recovery/apps/{app_id}/backup-targets",
+      "/api/lite/recovery/apps/{app_id}/backup-to-target",
+      "/api/lite/recovery/apps/{app_id}/restore",
+      "/api/lite/recovery/apps/{app_id}/restore/preview",
+      "/api/lite/recovery/backup",
+      "/api/lite/recovery/backup-targets",
+      "/api/lite/recovery/backups",
+      "/api/lite/recovery/backups/{backup_id}",
+      "/api/lite/recovery/backups/{backup_id}/verify",
+      "/api/lite/recovery/database",
+      "/api/lite/recovery/database/backup",
+      "/api/lite/recovery/database/backups",
+      "/api/lite/recovery/database/backups/{backup_id}",
+      "/api/lite/recovery/database/backups/{backup_id}/preview",
+      "/api/lite/recovery/database/backups/{backup_id}/restore",
+      "/api/lite/recovery/database/backups/{backup_id}/verify",
+      "/api/lite/recovery/database/restore/previews/{preview_id}",
+      "/api/lite/recovery/database/restore/{restore_id}",
+      "/api/lite/recovery/details",
+      "/api/lite/recovery/maintenance",
+      "/api/lite/recovery/maintenance/checkpoint",
+      "/api/lite/recovery/maintenance/retention",
+      "/api/lite/recovery/operations",
+      "/api/lite/recovery/receipts/{backup_id}",
+      "/api/lite/recovery/restore",
+      "/api/lite/recovery/restore/checkpoints/{checkpoint_id}",
+      "/api/lite/recovery/restore/preview",
+      "/api/lite/recovery/restore/previews/{preview_id}",
+      "/api/lite/recovery/restore/runs/{restore_id}",
+      "/api/lite/recovery/summary"
+    ],
+    "evidence": [
+      "backup manifest",
+      "verification receipt",
+      "restore preview",
+      "checkpoint receipt",
+      "restore run",
+      "health result"
+    ],
+    "projection_freshness": "prepared Recovery summary revision and stale metadata",
+    "restore": [
+      "queued",
+      "running",
+      "validating",
+      "succeeded",
+      "rolled_back",
+      "failed"
+    ],
+    "restore_preview": [
+      "not_ready",
+      "running",
+      "ready",
+      "blocked",
+      "failed"
+    ],
+    "verification": [
+      "not_run",
+      "running",
+      "verified",
+      "failed"
+    ],
+    "worker_ownership": "workers own backup, verification, checkpoint, restore, validation, and rollback"
+  }
+}

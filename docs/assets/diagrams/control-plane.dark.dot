@@ -1,0 +1,49 @@
+digraph control_plane {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#101827",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Pocket Lab Lite control plane",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  "ui" [label="React / Vite PWA", shape="box", fillcolor="#0c4a6e", tooltip="React / Vite PWA. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../generated/production/architecture/", target="_top"];
+  "caddy" [label="Caddy same-origin proxy", shape="box", fillcolor="#312e81", tooltip="Caddy same-origin proxy. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../generated/production/caddy-access/", target="_top"];
+  "api" [label="FastAPI /api/lite/*", shape="box", fillcolor="#312e81", tooltip="FastAPI /api/lite/*. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../reference/api/lite-api/", target="_top"];
+  "nats" [label="NATS / JetStream", shape="parallelogram", fillcolor="#831843", tooltip="NATS / JetStream. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../generated/development/lite-events/", target="_top"];
+  "worker" [label="Worker / agent / supervisor", shape="component", fillcolor="#14532d", tooltip="Worker / agent / supervisor. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../generated/development/service-catalog/", target="_top"];
+  "sqlite" [label="SQLite / prepared projections", shape="cylinder", fillcolor="#78350f", tooltip="SQLite / prepared projections. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+  "evidence" [label="Sanitized events and evidence", shape="parallelogram", fillcolor="#831843", tooltip="Sanitized events and evidence. Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.", URL="../../generated/development/redaction-coverage/", target="_top"];
+  "ui" -> "caddy" [label="HTTPS / same origin", tooltip="HTTPS / same origin"];
+  "caddy" -> "api" [label="HTTP API", tooltip="HTTP API"];
+  "api" -> "nats" [label="validated command", tooltip="validated command"];
+  "nats" -> "worker" [label="durable delivery", tooltip="durable delivery"];
+  "worker" -> "sqlite" [label="canonical state", tooltip="canonical state"];
+  "worker" -> "evidence" [label="lifecycle evidence", tooltip="lifecycle evidence"];
+  "sqlite" -> "api" [label="prepared read", tooltip="prepared read"];
+  "evidence" -> "api" [label="sanitized summary", tooltip="sanitized summary"];
+  "api" -> "ui" [label="truthful state", tooltip="truthful state"];
+}

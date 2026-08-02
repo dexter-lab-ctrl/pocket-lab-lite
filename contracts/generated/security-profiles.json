@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "aggregate_fingerprint": "ee091f6630a4113fdb91436d344673b0879bb9919a4f89a8daa099d2db7683bd",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "security_profiles",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security.py": "7cc0e25e120d19c2131ece46ef672323e89b78f160d950044884288637337b8c",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py": "63f7aeb898fe2d8f15ca609fa190192a543ff8e03649e6099b9bdbab3c0f1caf",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  },
+  "security_profiles": {
+    "profiles": [
+      {
+        "api": [
+          "POST /api/lite/security/check",
+          "GET /api/lite/security/summary"
+        ],
+        "default": true,
+        "freshness_seconds": 180,
+        "id": "quick",
+        "label": "Quick Safety Check",
+        "platforms": [
+          "Android/Termux",
+          "Ubuntu/WSL2"
+        ],
+        "scanner_unavailable": "degraded result with coverage gaps",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
+        "stale_behavior": "latest completed or saved summary is labeled stale",
+        "targets_checked": [
+          "Termux host posture",
+          "Pocket Lab Lite source/runtime metadata",
+          "safe configuration posture"
+        ],
+        "targets_skipped": [
+          "photos and media",
+          "backup payloads",
+          "scanner caches",
+          "PROot rootfs",
+          "generated runtime history"
+        ],
+        "tools": [
+          "Lynis",
+          "Trivy"
+        ]
+      },
+      {
+        "api": [
+          "POST /api/lite/security/check",
+          "GET /api/lite/security/profiles/full"
+        ],
+        "default": false,
+        "freshness_seconds": 900,
+        "id": "full",
+        "label": "Full Local Check",
+        "platforms": [
+          "Android/Termux"
+        ],
+        "scanner_unavailable": "partial/degraded target status",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
+        "stale_behavior": "profile-specific latest completed result is preserved",
+        "targets_checked": [
+          "Termux host",
+          "Pocket Lab Lite",
+          "runtime config",
+          "selected PROot Ubuntu areas",
+          "PhotoPrism app/config/runtime",
+          "backup metadata"
+        ],
+        "targets_skipped": [
+          "photos and media",
+          "Android shared storage",
+          "backup payloads",
+          "restore checkpoints",
+          "logs and caches"
+        ],
+        "tools": [
+          "Lynis",
+          "Trivy"
+        ]
+      },
+      {
+        "api": [
+          "POST /api/lite/security/check",
+          "GET /api/lite/security/profiles/app"
+        ],
+        "default": false,
+        "freshness_seconds": 300,
+        "id": "app",
+        "label": "App Check",
+        "platforms": [
+          "Android/Termux"
+        ],
+        "scanner_unavailable": "partial/degraded app result",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
+        "stale_behavior": "app-scoped latest completed result is preserved",
+        "supported_apps": [
+          "photoprism"
+        ],
+        "targets_checked": [
+          "PhotoPrism route",
+          "app files",
+          "settings",
+          "backup metadata",
+          "action state"
+        ],
+        "targets_skipped": [
+          "photos and media",
+          "PhotoPrism originals/import/cache/sidecars/index database"
+        ],
+        "tools": [
+          "Trivy",
+          "route/config posture checks"
+        ],
+        "unsupported_app_behavior": "safe 404 with no scanner execution"
+      }
+    ],
+    "severity_model": [
+      "critical",
+      "high",
+      "medium",
+      "low",
+      "info"
+    ],
+    "summary_semantics": {
+      "main_summary": "latest completed Security posture with active-progress overlay where present",
+      "partial_degraded": "coverage gaps and scanner availability remain explicit",
+      "saved_state": "read-only safe snapshot explicitly marked saved/stale",
+      "source": "security compact summary and canonical SQLite run state"
+    }
+  }
+}

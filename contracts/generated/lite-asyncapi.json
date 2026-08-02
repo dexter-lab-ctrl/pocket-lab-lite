@@ -1,0 +1,3441 @@
+{
+  "asyncapi": "2.6.0",
+  "channels": {
+    "pocketlab.commands": {
+      "description": "unknown telemetry subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "unknown",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "workflow_engine.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:134",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:29",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:540",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:643",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:695",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1174",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:251",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:277",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:284",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:830",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:302",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1279",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:42",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:564"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.catalog.refresh": {
+      "description": "catalog command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "catalog",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py:29",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1363"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.apply": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1370"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.approve": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1367"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.ignore": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1373"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.preview": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:92",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1366"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.rescan": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1365"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.scan": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:81",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1364"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.drift.{action}": {
+      "description": "drift command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:85",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/drift.py:99"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.fleet.join": {
+      "description": "fleet command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "lite_invites.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:582",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:72",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1376",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:902"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.fleet.save_tailscale_key": {
+      "description": "fleet command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1377"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.health.check": {
+      "description": "health command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "health",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/health.py:74",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1380"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.backup.create": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1387",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:18"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.backup.transfer": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup_targets.py:12"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.media": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1390",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_photoprism_media.py:22"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.repair": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1392",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:24"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.restore.preview": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1388",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:19"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.safety": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1391",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py:23"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.app.update.check": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1389",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_update.py:19"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.backup.create": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3348",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1386"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.backup.verify": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3420",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1393"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.catalog.install": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1362",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py:16"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.database.backup": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3053",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1396"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.database.backup.verify": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3096",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1397"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.database.restore": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3154",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1399"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.database.restore.preview": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3114",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1398"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.device.restart": {
+      "description": "devices command subject",
+      "x-pocketlab-consumer": [
+        "node agent"
+      ],
+      "x-pocketlab-delivery": "JetStream durable command",
+      "x-pocketlab-domain": "devices",
+      "x-pocketlab-durable": null,
+      "x-pocketlab-publisher": [
+        "FastAPI"
+      ],
+      "x-pocketlab-redacted-fields": [
+        "credentials",
+        "environment"
+      ],
+      "x-pocketlab-retry": "bounded command lifecycle",
+      "x-pocketlab-security-classification": "restricted metadata",
+      "x-pocketlab-source": [],
+      "x-pocketlab-stream": null
+    },
+    "pocketlab.commands.lite.maintenance.checkpoint": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3222",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1401"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.maintenance.retention": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3196",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1400"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.restore.apply": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3534",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1395"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.restore.preview": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:3440",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1394"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.security.app_scan": {
+      "description": "lite command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_profiles.py:13"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.lite.security.scan": {
+      "description": "security command subject",
+      "x-pocketlab-consumer": [
+        "pocket-worker"
+      ],
+      "x-pocketlab-delivery": "JetStream durable pull",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "pocketlab_command_worker_v1",
+      "x-pocketlab-publisher": [
+        "FastAPI"
+      ],
+      "x-pocketlab-redacted-fields": [
+        "credentials",
+        "environment",
+        "raw scanner payload"
+      ],
+      "x-pocketlab-retry": "bounded max-deliver and stale-run recovery",
+      "x-pocketlab-security-classification": "restricted metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1382",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py:11",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:473"
+      ],
+      "x-pocketlab-stream": "POCKETLAB_COMMANDS"
+    },
+    "pocketlab.commands.node": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:136",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1256",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:507"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.node.all": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:515",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:137"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.node.all.{command.replace": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "fleet.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:473"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.node.{node_id}": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1591"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.node.{node_id}.{command.replace": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "fleet.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:288"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.node.{normalized_node_id}.agent.restart": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:364"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.node.{self.node_id}": {
+      "description": "node command subject",
+      "x-pocketlab-consumer": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "node",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:515"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.operation.execute": {
+      "description": "operation command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py",
+        "pocketlab_worker.py",
+        "reliability.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:213",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:223",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:162",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:231",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1193",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1201",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1255",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1277",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:535",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:562"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.release.apply": {
+      "description": "release command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:53",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1379"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.release.check": {
+      "description": "release command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/release.py:42",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1378"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.runbook.approve": {
+      "description": "runbook command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py",
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:541",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:552",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1269",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:533",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:554"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.runbook.execute": {
+      "description": "runbook command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:482",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:493",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1265",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:532",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:550"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.runbook.reject": {
+      "description": "runbook command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py",
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:571",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:582",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1273",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:534",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:558"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.security.configure_opa": {
+      "description": "security command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:2768",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1383"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.security.scan": {
+      "description": "security command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:68",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1381"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.unknown": {
+      "description": "unknown command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "unknown",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:906",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_projection_process.py:381"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.vault.dynamic_secret": {
+      "description": "vault command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "vault",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:101",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1385"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.commands.vault.rotate": {
+      "description": "vault command subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "vault",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py:1773",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:91",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1384"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events": {
+      "description": "unknown telemetry subject",
+      "x-pocketlab-consumer": [
+        "nats_bus.py"
+      ],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "unknown",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:30",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:461"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.api.started": {
+      "description": "api event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "api",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "main.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:95"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.api.stopped": {
+      "description": "api event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "api",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "main.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/main.py:167"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.catalog.refresh_started": {
+      "description": "catalog event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "catalog",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:100"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.catalog.refreshed": {
+      "description": "catalog event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "catalog",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:115"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.dead_lettered": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "nats_bus.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:1084"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.deferred": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:376"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.failed": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:357",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:404",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:600"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.queued": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:251",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:412"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.received": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:526"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.retry_scheduled": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:646"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.running": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:347",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:545"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.succeeded": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:392",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:575"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.command.worker_claimed": {
+      "description": "command event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "command",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:341",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:539"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.drift.detected": {
+      "description": "drift event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:162"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.drift.previewed": {
+      "description": "drift event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:197"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.drift.scan_completed": {
+      "description": "drift event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:168"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.drift.scan_started": {
+      "description": "drift event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:130"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.drift.{action}": {
+      "description": "drift event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:216"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.drift.{action}_started": {
+      "description": "drift event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "drift",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:208"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.bootstrap_blocked": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:403",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:698",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:714"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.config_updated": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:279"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.device_health_sampled": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:627"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.device_removed": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "fleet_registry.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1562"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.health_changed": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:598"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.health_sampled": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:594"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.invite_accepted": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:402",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:874"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.invite_created": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py",
+        "lite_invites.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:251",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_awareness.py:401",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:454",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:908"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.invite_revoked": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py:600"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.invite_started": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:229"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:1590",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/fleet_registry.py:931",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:732"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_capabilities": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:448"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_command_queued": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "fleet.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:296",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:381",
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py:481"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_command_result": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:644",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:658"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_health": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:589"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_heartbeat": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:470",
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:554"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_left": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:687"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_profile": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:440"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_seen": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:425"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_supervisor": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_agent_supervisor.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py:282"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.fleet.node_telemetry": {
+      "description": "fleet event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "fleet",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_node_agent.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py:580"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.health.changed": {
+      "description": "health event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "health",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:547"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.health.check_completed": {
+      "description": "health event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "health",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:313"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.health.checked": {
+      "description": "health event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "health",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:543"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.health.service_changed": {
+      "description": "health event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "health",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:552"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.backup.completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:546",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:332"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.backup.failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:532"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.backup.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:521",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_backup.py:331"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.media.completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1136"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.media.failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1110"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.media.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1098"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.media.updated": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1136"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.restore.preview_created": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:597"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.restore.preview_failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:583"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.restore.preview_started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:572"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.update.check_completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:648"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.update.check_failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:634"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.update.check_started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:623"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.{event_prefix}.completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1077"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.{event_prefix}.failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1057"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.{event_prefix}.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1045"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.app.{event_prefix}.updated": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1077"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.backup.failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:692"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.backup.snapshot_created": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:705",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1271"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.backup.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:681",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1270"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.backup.verified": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:755"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.backup.verify_failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:748"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.backup.verify_started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:733"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.catalog.install_completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:494"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.catalog.install_failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:480",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:494"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.catalog.install_started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:469"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.database.backup.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1155"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.database.backup.verified": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1164",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1197"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.database.restore.preview_ready": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1214"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.database.restore.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1232"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.database.restore.{event_suffix}": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1242"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.database.restore.{rollback_status}": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1257"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.checkpoint_created": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:850",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1100"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:884",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1103"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:836"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.health_validated": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:873",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1102"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.preview_created": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:800"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.preview_failed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:793"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.preview_started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:778"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.service_restart_checked": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:862",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1101"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.restore.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:825",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/lite_backup.py:1099"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.security.critical_found": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:992"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.security.scan.completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:1017"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.security.scan.started": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:918"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.security.tool_missing": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:970"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.lite.security.{tool}.completed": {
+      "description": "lite event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "lite",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:977"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.live_status.started": {
+      "description": "live_status event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "live_status",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:297"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.live_status.stopped": {
+      "description": "live_status event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "live_status",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:314"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.live_status.{name}_error": {
+      "description": "live_status event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "live_status",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:431"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.manual": {
+      "description": "manual event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "manual",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "events.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/schemas/events.py:18"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.created": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:207"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.failed": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:300",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:320"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.log": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py:36",
+        "pocket-lab-final-structure/runtime/core/operations/service.py:57"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.log.error": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py:33"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.log.warning": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/operation_events.py:35"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.previewed": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "operations.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/operations.py:120"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.snapshot": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py:64"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.status": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "websocket.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py:74"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.succeeded": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:298"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.operation.worker_claimed": {
+      "description": "operation event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "operation",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:286"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.applied": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:554"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.available": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:294",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:771"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.check_degraded": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:752"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.current": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py",
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:296",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:773"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.stage.completed": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:145"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.stage.failed": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:169"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.stage.started": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:109"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.workflow.completed": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:322"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.workflow.failed": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:263",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:622"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.release.workflow.started": {
+      "description": "release event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "release",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "release_orchestrator.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:193",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_orchestrator.py:357"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.approval_queued": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:534"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.approval_required": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:110"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.approved": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:176"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.auto_approved": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:47"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.failed": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:141",
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:274",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:134",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:169",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:249",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:293"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.queued": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:476"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.rejected": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/runbook_commands.py:250"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.rejection_queued": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "action_queue.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/action_queue.py:564"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.resumed": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:217"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.started": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:89"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.step_failed": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:381"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.step_started": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:343"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.step_succeeded": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:372"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.runbook.succeeded": {
+      "description": "runbook event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "runbook",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:148",
+        "pocket-lab-final-structure/runtime/core/runbooks/engine.py:264"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.security.evaluated": {
+      "description": "security event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "security.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:17"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.security.finding": {
+      "description": "security event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:355"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.security.log_query": {
+      "description": "security event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "security.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/security.py:47"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.security.policy_updated": {
+      "description": "security event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:388"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.security.scan_completed": {
+      "description": "security event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:361"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.security.scan_started": {
+      "description": "security event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "security",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:329"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.telemetry": {
+      "description": "telemetry event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "telemetry",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py:32"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.telemetry.changed": {
+      "description": "telemetry event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "telemetry",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:495"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.telemetry.sampled": {
+      "description": "telemetry event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "telemetry",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "live_status.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py:491"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.vault.lease_created": {
+      "description": "vault event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "vault",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:457"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.vault.secret_rotated": {
+      "description": "vault event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "vault",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "domain_commands.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/domain_commands.py:425"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.websocket.heartbeat": {
+      "description": "websocket event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "websocket",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/websocket.py:38"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.worker.error": {
+      "description": "worker event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "worker",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:110",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:632"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.worker.heartbeat": {
+      "description": "worker event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "worker",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:107",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:852"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.worker.ignored": {
+      "description": "worker event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "worker",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1258",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:488",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:512"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.worker.maintenance_deferred": {
+      "description": "worker event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "worker",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:455"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.worker.started": {
+      "description": "worker event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "worker",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/routers/events.py:109",
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:139"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.worker.stopped": {
+      "description": "worker event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "worker",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "pocketlab_worker.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/workers/pocketlab_worker.py:1338"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.workflow.dead_letter_replayed": {
+      "description": "workflow event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "workflow",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "reliability.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:187"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.workflow.recovery_completed": {
+      "description": "workflow event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "workflow",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "reliability.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/reliability.py:247"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    },
+    "pocketlab.events.workflow.replay_requested": {
+      "description": "workflow event subject",
+      "x-pocketlab-consumer": [],
+      "x-pocketlab-delivery": "incomplete",
+      "x-pocketlab-domain": "workflow",
+      "x-pocketlab-durable": "incomplete",
+      "x-pocketlab-publisher": [
+        "workflow_engine.py"
+      ],
+      "x-pocketlab-redacted-fields": [],
+      "x-pocketlab-retry": "incomplete",
+      "x-pocketlab-security-classification": "internal metadata",
+      "x-pocketlab-source": [
+        "pocket-lab-final-structure/runtime/api_fastapi/services/workflow_engine.py:1218"
+      ],
+      "x-pocketlab-stream": "incomplete"
+    }
+  },
+  "defaultContentType": "application/json",
+  "info": {
+    "description": "Source-derived Lite-only NATS/JetStream subject catalog.",
+    "title": "Pocket Lab Lite events",
+    "version": "1.0.0"
+  },
+  "x-pocketlab-metadata": {}
+}

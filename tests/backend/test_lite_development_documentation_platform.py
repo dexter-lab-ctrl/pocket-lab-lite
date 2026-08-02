@@ -79,7 +79,7 @@ def test_openapi_and_frontend_route_usage_outputs_exist():
     assert schema["paths"]
     assert all(path.startswith("/api/lite/") or path in {"/health", "/ready"} for path in schema["paths"])
     usage = (ROOT / "docs/generated/development/frontend-api-usage.md").read_text()
-    assert "Unsupported frontend route references\n- None" in usage
+    assert re.search(r"Unsupported frontend route references\s+- None", usage)
 
 
 def test_development_and_production_docs_are_independent_and_mark_partial_surfaces():

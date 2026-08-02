@@ -1,0 +1,238 @@
+{
+  "metadata": {
+    "aggregate_fingerprint": "a9c9b68e3665eeaec66c8c8e0f99fc18a86659b9f06d4753fee19db92505785d",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "projection_catalog",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_core_projections.py": "109e9996248fbb021cc3ef7004e1e3299fc53efa6568b11f6f2fe1ff905e591b",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/projection_scheduler.py": "ccdfe91871ba20ff32e3875c7aba5fa68ce731158a479e8bd90bf5909c9ea1d8",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  },
+  "projection_catalog": [
+    {
+      "cache_owner": "FastAPI prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "durable enrollment plus live heartbeat/runtime truth",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "preserve enrolled devices and show Offline/Stale",
+      "diagnostics": "projection_refresh_state and fleet diagnostics",
+      "domain": "fleet",
+      "freshness_seconds": 30,
+      "frontend_consumer": "src/lite/LiteDevices.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "heartbeat",
+        "enrollment",
+        "restart result",
+        "retirement"
+      ],
+      "offline_behavior": "safe snapshot may render read-only",
+      "pressure_behavior": "serve last committed prepared read",
+      "reader_endpoint": "GET /api/lite/fleet",
+      "reconciliation": "enrollment registry plus runtime truth",
+      "retry_behavior": "bounded scheduler retry",
+      "source_events": [
+        "device heartbeat",
+        "agent lifecycle",
+        "invite lifecycle"
+      ],
+      "stale_seconds": 90,
+      "storage_owner": "device_current_state / enrolled_devices",
+      "writer_owner": "lite_control_plane_store"
+    },
+    {
+      "cache_owner": "prepared SQLite reads and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "backup manifests, restore plans, checkpoints, and worker lifecycle",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "show last valid summary with stale reason",
+      "diagnostics": "recovery projection freshness and action progress",
+      "domain": "recovery",
+      "freshness_seconds": 60,
+      "frontend_consumer": "src/lite/LiteRecovery.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "backup",
+        "verify",
+        "preview",
+        "restore",
+        "checkpoint"
+      ],
+      "offline_behavior": "safe snapshot is read-only",
+      "pressure_behavior": "defer heavy detail rebuild",
+      "reader_endpoint": "GET /api/lite/recovery/summary",
+      "reconciliation": "manifest and operation-state reconciliation",
+      "retry_behavior": "worker-owned bounded retry",
+      "source_events": [
+        "backup lifecycle",
+        "verification lifecycle",
+        "restore lifecycle"
+      ],
+      "stale_seconds": 300,
+      "storage_owner": "recovery_current_state / recovery_operations",
+      "writer_owner": "lite_control_plane_store and recovery worker"
+    },
+    {
+      "cache_owner": "FastAPI compact cache and TanStack Query",
+      "canonical_hash": "ETag/revision digest",
+      "canonical_source": "security_scan_runs and sanitized compact state",
+      "committed_generation_field": "revision",
+      "degraded_behavior": "show latest completed or saved partial state truthfully",
+      "diagnostics": "freshness, progress, durable consumer health",
+      "domain": "security",
+      "freshness_seconds": 180,
+      "frontend_consumer": "src/lite/LiteSecurity.jsx",
+      "generation_field": "revision",
+      "invalidation_triggers": [
+        "Quick Check",
+        "Full Check",
+        "App Check",
+        "maintenance"
+      ],
+      "offline_behavior": "safe summary snapshot only",
+      "pressure_behavior": "split reads and TTL cache",
+      "reader_endpoint": "GET /api/lite/security/summary",
+      "reconciliation": "SQLite run state to compact read model",
+      "retry_behavior": "explicit retry after terminal recovery",
+      "source_events": [
+        "scan accepted",
+        "scan progress",
+        "scan terminal",
+        "maintenance"
+      ],
+      "stale_seconds": 900,
+      "storage_owner": "security_scan_runs and compact security files",
+      "writer_owner": "Security worker and lite_security_store"
+    },
+    {
+      "cache_owner": "prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "catalog definitions plus live route/runtime resolver",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "show last valid catalog and disable unsafe actions",
+      "diagnostics": "apps.catalog projection state",
+      "domain": "apps.catalog",
+      "freshness_seconds": 60,
+      "frontend_consumer": "src/lite/LiteCatalog.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "catalog refresh",
+        "install",
+        "repair",
+        "remove",
+        "route change"
+      ],
+      "offline_behavior": "safe snapshot may render read-only",
+      "pressure_behavior": "bounded deterministic discovery",
+      "reader_endpoint": "GET /api/lite/catalog",
+      "reconciliation": "authoritative app runtime resolver",
+      "retry_behavior": "bounded refresh retry",
+      "source_events": [
+        "catalog refresh",
+        "app lifecycle",
+        "route health"
+      ],
+      "stale_seconds": 180,
+      "storage_owner": "app_catalog_current",
+      "writer_owner": "catalog projection worker"
+    },
+    {
+      "cache_owner": "prepared SQLite read",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "app runtime resolver and worker lifecycle",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "retain last canonical state and mark stale",
+      "diagnostics": "apps.lifecycle projection state",
+      "domain": "apps.lifecycle",
+      "freshness_seconds": 30,
+      "frontend_consumer": "src/lite/LiteCatalog.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "app lifecycle event",
+        "route health change"
+      ],
+      "offline_behavior": "safe snapshot only",
+      "pressure_behavior": "reuse canonical current state",
+      "reader_endpoint": "GET /api/lite/apps/{app_id}/lifecycle",
+      "reconciliation": "runtime, PM2, route, and stored lifecycle truth",
+      "retry_behavior": "bounded worker retry",
+      "source_events": [
+        "install",
+        "start",
+        "stop",
+        "repair",
+        "remove",
+        "update readiness"
+      ],
+      "stale_seconds": 120,
+      "storage_owner": "app_lifecycle_current",
+      "writer_owner": "app lifecycle worker"
+    },
+    {
+      "cache_owner": "prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "normalized action readiness and action lifecycle",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "disable delivery-dependent actions",
+      "diagnostics": "apps.actions projection state",
+      "domain": "apps.actions",
+      "freshness_seconds": 15,
+      "frontend_consumer": "src/lite/LiteCatalog.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "action mutation",
+        "media mapping",
+        "security result",
+        "backup result"
+      ],
+      "offline_behavior": "read-only action state",
+      "pressure_behavior": "compact prepared action projection",
+      "reader_endpoint": "GET /api/lite/apps/{app_id}/actions",
+      "reconciliation": "action state plus dependent domain readiness",
+      "retry_behavior": "explicit user retry where safe",
+      "source_events": [
+        "action accepted",
+        "action progress",
+        "action result"
+      ],
+      "stale_seconds": 90,
+      "storage_owner": "app_action_current / app_action_lifecycle",
+      "writer_owner": "app operation worker"
+    },
+    {
+      "cache_owner": "prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "prepared summaries from system, fleet, apps, security, recovery, and release",
+      "committed_generation_field": "projection_revision",
+      "degraded_behavior": "show last valid summary and review guidance",
+      "diagnostics": "system current-state projection diagnostics",
+      "domain": "home",
+      "freshness_seconds": 60,
+      "frontend_consumer": "src/lite/LiteHome.jsx",
+      "generation_field": "projection_revision",
+      "invalidation_triggers": [
+        "dependent domain revision"
+      ],
+      "offline_behavior": "safe snapshot may render read-only",
+      "pressure_behavior": "serve compact summary",
+      "reader_endpoint": "GET /api/lite/status",
+      "reconciliation": "prepared cross-domain summary",
+      "retry_behavior": "adaptive scheduler cadence",
+      "source_events": [
+        "domain revision changes"
+      ],
+      "stale_seconds": 180,
+      "storage_owner": "phase3b_current_state and domain revisions",
+      "writer_owner": "projection scheduler"
+    }
+  ]
+}

@@ -1,145 +1,28 @@
 ---
 title: "Lite API compatibility"
-description: "Added and removed Lite API paths compared with the released baseline."
-status: verified
+description: "Field-level compatibility against the explicitly configured released baseline."
+status: unvalidated
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
-generator: scripts/docs/lite/generate_contracts.py
-source_fingerprint: 726211e0090a05fc2beefe776d8ca40541097700e3dd99a2af1cf1e5ed1914fa
+generator: scripts/docs/lite/generate_platform_catalogs.py
+generator_version: 1
+source_fingerprint: 186df0ab429626f135f35f34e6c898363dd48d27e5393906c2ec1de62bee6a33
 schema_revision: 1
 validation_status: generated
 ---
 
-# Lite API compatibility
-
 <div class="pl-page-meta" markdown>
-<span class="pl-status pl-status--verified">Verified</span>
-<span class="pl-status pl-status--patch-provided">Development guidance</span>
+<span class="pl-status pl-status--unvalidated">Unvalidated</span>
+<span class="pl-status pl-status--patch-provided">Source generated</span>
 </div>
 
-No previous released Lite contract is committed; this run establishes the current baseline.
+# Lite API compatibility
 
-## Added paths
-- `/api/lite/apps/lifecycle`
-- `/api/lite/apps/lifecycle/{app_id}`
-- `/api/lite/apps/photoprism/storage-mappings`
-- `/api/lite/apps/photoprism/storage-mappings/{mapping_id}`
-- `/api/lite/apps/photoprism/storage-preview`
-- `/api/lite/apps/{app_id}/action-history`
-- `/api/lite/apps/{app_id}/actions`
-- `/api/lite/apps/{app_id}/actions/{action_id}`
-- `/api/lite/apps/{app_id}/backup`
-- `/api/lite/apps/{app_id}/backup/storage-device`
-- `/api/lite/apps/{app_id}/backups`
-- `/api/lite/apps/{app_id}/backups/{backup_id}/receipt`
-- `/api/lite/apps/{app_id}/evidence`
-- `/api/lite/apps/{app_id}/restore/preview`
-- `/api/lite/apps/{app_id}/restore/previews/{preview_id}`
-- `/api/lite/apps/{app_id}/update`
-- `/api/lite/apps/{app_id}/update/apply`
-- `/api/lite/apps/{app_id}/update/receipts/{operation_id}`
-- `/api/lite/catalog`
-- `/api/lite/catalog/install`
-- `/api/lite/catalog/remove`
-- `/api/lite/commands/history`
-- `/api/lite/devices/{device_id}`
-- `/api/lite/devices/{device_id}/health`
-- `/api/lite/devices/{device_id}/health/history`
-- `/api/lite/devices/{device_id}/history`
-- `/api/lite/devices/{device_id}/removal-assessment`
-- `/api/lite/diagnostics/frontend-lifecycle`
-- `/api/lite/diagnostics/frontend-lifecycle/challenge`
-- `/api/lite/diagnostics/runtime`
-- `/api/lite/diagnostics/runtime/full`
-- `/api/lite/events`
-- `/api/lite/fleet`
-- `/api/lite/fleet/add-device`
-- `/api/lite/fleet/agent/bootstrap-blocked`
-- `/api/lite/fleet/agent/bootstrap.env`
-- `/api/lite/fleet/agent/bootstrap.sh`
-- `/api/lite/fleet/devices/{device_id}/display-model`
-- `/api/lite/fleet/devices/{device_id}/recovery-history`
-- `/api/lite/fleet/devices/{node_id}/restart-agent`
-- `/api/lite/fleet/devices/{node_id}/restart-agent/status`
-- `/api/lite/fleet/health-summary`
-- `/api/lite/fleet/invites/latest`
-- `/api/lite/fleet/invites/{invite_id}/revoke`
-- `/api/lite/fleet/remove-device`
-- `/api/lite/identity`
-- `/api/lite/identity/rotate`
-- `/api/lite/policy`
-- `/api/lite/policy/apply`
-- `/api/lite/recovery`
-- `/api/lite/recovery/apps`
-- `/api/lite/recovery/apps/{app_id}`
-- `/api/lite/recovery/apps/{app_id}/backup`
-- `/api/lite/recovery/apps/{app_id}/backup-targets`
-- `/api/lite/recovery/apps/{app_id}/backup-to-target`
-- `/api/lite/recovery/apps/{app_id}/restore`
-- `/api/lite/recovery/apps/{app_id}/restore/preview`
-- `/api/lite/recovery/backup`
-- `/api/lite/recovery/backup-targets`
-- `/api/lite/recovery/backups`
-- `/api/lite/recovery/backups/{backup_id}`
-- `/api/lite/recovery/backups/{backup_id}/verify`
-- `/api/lite/recovery/database`
-- `/api/lite/recovery/database/backup`
-- `/api/lite/recovery/database/backups`
-- `/api/lite/recovery/database/backups/{backup_id}`
-- `/api/lite/recovery/database/backups/{backup_id}/preview`
-- `/api/lite/recovery/database/backups/{backup_id}/restore`
-- `/api/lite/recovery/database/backups/{backup_id}/verify`
-- `/api/lite/recovery/database/restore/previews/{preview_id}`
-- `/api/lite/recovery/database/restore/{restore_id}`
-- `/api/lite/recovery/details`
-- `/api/lite/recovery/maintenance`
-- `/api/lite/recovery/maintenance/checkpoint`
-- `/api/lite/recovery/maintenance/retention`
-- `/api/lite/recovery/operations`
-- `/api/lite/recovery/receipts/{backup_id}`
-- `/api/lite/recovery/restore`
-- `/api/lite/recovery/restore/checkpoints/{checkpoint_id}`
-- `/api/lite/recovery/restore/preview`
-- `/api/lite/recovery/restore/previews/{preview_id}`
-- `/api/lite/recovery/restore/runs/{restore_id}`
-- `/api/lite/recovery/summary`
-- `/api/lite/release`
-- `/api/lite/release/apply`
-- `/api/lite/release/check`
-- `/api/lite/remote-access/readiness`
-- `/api/lite/revisions`
-- `/api/lite/security`
-- `/api/lite/security/apps`
-- `/api/lite/security/apps/{app_id}`
-- `/api/lite/security/apps/{app_id}/check`
-- `/api/lite/security/check`
-- `/api/lite/security/details/{run_id}`
-- `/api/lite/security/events`
-- `/api/lite/security/evidence/{run_id}`
-- `/api/lite/security/evidence/{run_id}/summary`
-- `/api/lite/security/freshness`
-- `/api/lite/security/history`
-- `/api/lite/security/profiles/{profile}`
-- `/api/lite/security/progress`
-- `/api/lite/security/runs/{run_id}`
-- `/api/lite/security/scan`
-- `/api/lite/security/summary`
-- `/api/lite/status`
-- `/api/lite/system/activity-summary`
-- `/api/lite/system/agent`
-- `/api/lite/system/health`
-- `/api/lite/system/nats-readiness`
-- `/api/lite/system/processes`
-- `/api/lite/system/sqlite-health`
-- `/api/lite/system/storage-pressure`
-- `/api/lite/system/supervisor`
-- `/api/lite/system/telemetry-thresholds`
-- `/health`
-- `/ready`
+- Status: **unresolved**
+- Baseline type: `released-contract`
+- Baseline path: `contracts/generated/lite-openapi.previous.json`
+- Baseline checksum: `missing`
 
-## Removed paths
-- None
-
-Removal, required-field, nullable, and enum changes must be reviewed before replacing `lite-openapi.previous.json`.
+No released baseline contract is present. Release readiness must not claim compatibility until a verified baseline is supplied.

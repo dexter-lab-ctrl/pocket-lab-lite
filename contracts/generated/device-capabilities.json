@@ -1,0 +1,123 @@
+{
+  "device_capabilities": {
+    "canonical_states": [
+      "verified",
+      "pending",
+      "unavailable",
+      "not_advertised",
+      "expired",
+      "stale"
+    ],
+    "capabilities": [
+      {
+        "degraded_behavior": "app actions remain visible but blocked when delivery is unsafe",
+        "expiry_behavior": "stale",
+        "freshness_seconds": 60,
+        "label": "App Host",
+        "name": "app_host",
+        "related_api": [
+          "GET /api/lite/fleet",
+          "GET /api/lite/catalog"
+        ],
+        "runtime_evidence": "fleet prepared projection",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "ui_states": [
+          "Online",
+          "Offline",
+          "Agent stopped"
+        ],
+        "verification_source": "device profile and heartbeat capability advertisement"
+      },
+      {
+        "degraded_behavior": "media connection actions are blocked",
+        "expiry_behavior": "stale",
+        "freshness_seconds": 60,
+        "label": "Storage Node",
+        "name": "media_storage",
+        "related_api": [
+          "GET /api/lite/fleet",
+          "GET /api/lite/catalog"
+        ],
+        "runtime_evidence": "fleet prepared projection",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "ui_states": [
+          "Online",
+          "Offline",
+          "Remote access not ready"
+        ],
+        "verification_source": "device role and sanitized storage summary"
+      },
+      {
+        "degraded_behavior": "storage backup remains unavailable",
+        "expiry_behavior": "stale",
+        "freshness_seconds": 60,
+        "label": "Backup Target",
+        "name": "backup_target",
+        "related_api": [
+          "GET /api/lite/recovery/summary",
+          "GET /api/lite/fleet"
+        ],
+        "runtime_evidence": "Recovery and fleet prepared projections",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "ui_states": [
+          "Recovery ready",
+          "No storage device ready"
+        ],
+        "verification_source": "device role and backup target readiness"
+      },
+      {
+        "degraded_behavior": "saved Security state remains read-only and new checks are blocked",
+        "expiry_behavior": "stale",
+        "freshness_seconds": 300,
+        "label": "Security Scanner",
+        "name": "security_scanner",
+        "related_api": [
+          "GET /api/lite/security/summary",
+          "POST /api/lite/security/check"
+        ],
+        "runtime_evidence": "Security compact summary",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "ui_states": [
+          "No urgent safety issues",
+          "Scanner unavailable"
+        ],
+        "verification_source": "server role and scanner tool posture"
+      },
+      {
+        "degraded_behavior": "commands remain undeliverable until the agent reconnects",
+        "expiry_behavior": "stale",
+        "freshness_seconds": 60,
+        "label": "Compute",
+        "name": "compute",
+        "related_api": [
+          "GET /api/lite/fleet"
+        ],
+        "runtime_evidence": "fleet prepared projection",
+        "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+        "ui_states": [
+          "Online",
+          "Offline",
+          "Repairing"
+        ],
+        "verification_source": "device role"
+      }
+    ]
+  },
+  "metadata": {
+    "aggregate_fingerprint": "6f70b0db52fe9e4128675b9a6d98bde0966dc2d2449772a1842373a2929aaac5",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "device_capabilities",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py": "fc7e7986e493bb50be088dac214d6d317dad5014544f2886c19e013cd13a78ee",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  }
+}

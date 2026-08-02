@@ -1,0 +1,700 @@
+{
+  "diagrams": {
+    "agent-supervisor-recovery": {
+      "description": "Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.",
+      "edges": [
+        [
+          "online",
+          "disconnected",
+          "NATS outage"
+        ],
+        [
+          "disconnected",
+          "watchdog",
+          "retry"
+        ],
+        [
+          "watchdog",
+          "online",
+          "fresh heartbeat"
+        ],
+        [
+          "online",
+          "stopped",
+          "process exit"
+        ],
+        [
+          "stopped",
+          "supervisor",
+          "supervisor present"
+        ],
+        [
+          "supervisor",
+          "online",
+          "restart"
+        ],
+        [
+          "stopped",
+          "guidance",
+          "no supervisor"
+        ]
+      ],
+      "nodes": [
+        [
+          "online",
+          "Agent online",
+          "process",
+          "../../generated/production/devices/"
+        ],
+        [
+          "disconnected",
+          "Running but disconnected",
+          "decision",
+          "../../generated/production/troubleshooting/"
+        ],
+        [
+          "watchdog",
+          "Reconnect watchdog",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "stopped",
+          "Agent stopped",
+          "decision",
+          "../../generated/production/devices/"
+        ],
+        [
+          "supervisor",
+          "Separate supervisor",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "guidance",
+          "Recovery guidance",
+          "event",
+          "../../generated/production/troubleshooting/"
+        ]
+      ],
+      "title": "Agent and supervisor recovery"
+    },
+    "control-plane": {
+      "description": "Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.",
+      "edges": [
+        [
+          "ui",
+          "caddy",
+          "HTTPS / same origin"
+        ],
+        [
+          "caddy",
+          "api",
+          "HTTP API"
+        ],
+        [
+          "api",
+          "nats",
+          "validated command"
+        ],
+        [
+          "nats",
+          "worker",
+          "durable delivery"
+        ],
+        [
+          "worker",
+          "sqlite",
+          "canonical state"
+        ],
+        [
+          "worker",
+          "evidence",
+          "lifecycle evidence"
+        ],
+        [
+          "sqlite",
+          "api",
+          "prepared read"
+        ],
+        [
+          "evidence",
+          "api",
+          "sanitized summary"
+        ],
+        [
+          "api",
+          "ui",
+          "truthful state"
+        ]
+      ],
+      "nodes": [
+        [
+          "ui",
+          "React / Vite PWA",
+          "ui",
+          "../../generated/production/architecture/"
+        ],
+        [
+          "caddy",
+          "Caddy same-origin proxy",
+          "service",
+          "../../generated/production/caddy-access/"
+        ],
+        [
+          "api",
+          "FastAPI /api/lite/*",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "nats",
+          "NATS / JetStream",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "worker",
+          "Worker / agent / supervisor",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "sqlite",
+          "SQLite / prepared projections",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "evidence",
+          "Sanitized events and evidence",
+          "event",
+          "../../generated/development/redaction-coverage/"
+        ]
+      ],
+      "title": "Pocket Lab Lite control plane"
+    },
+    "device-onboarding": {
+      "description": "Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.",
+      "edges": [
+        [
+          "invite",
+          "audit",
+          "record"
+        ],
+        [
+          "audit",
+          "command",
+          "approved artifact"
+        ],
+        [
+          "command",
+          "guard",
+          "consume invite"
+        ],
+        [
+          "guard",
+          "env",
+          "match"
+        ],
+        [
+          "guard",
+          "audit",
+          "mismatch / blocked"
+        ],
+        [
+          "env",
+          "agent",
+          "start"
+        ],
+        [
+          "env",
+          "supervisor",
+          "start"
+        ],
+        [
+          "agent",
+          "heartbeat",
+          "publish"
+        ],
+        [
+          "supervisor",
+          "agent",
+          "recover"
+        ]
+      ],
+      "nodes": [
+        [
+          "invite",
+          "Create invite",
+          "service",
+          "../../generated/production/devices/"
+        ],
+        [
+          "audit",
+          "Audit evidence",
+          "event",
+          "../../generated/development/redaction-coverage/"
+        ],
+        [
+          "command",
+          "Copy bootstrap command",
+          "event",
+          "../../generated/development/bootstrap-stages/"
+        ],
+        [
+          "guard",
+          "Identity guard",
+          "decision",
+          "../../generated/development/reason-codes/"
+        ],
+        [
+          "env",
+          "Safe env write",
+          "service",
+          "../../generated/development/configuration-reference/"
+        ],
+        [
+          "agent",
+          "Node agent",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "supervisor",
+          "Agent supervisor",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "heartbeat",
+          "Heartbeats in Devices",
+          "event",
+          "../../generated/production/devices/"
+        ]
+      ],
+      "title": "Device onboarding lifecycle"
+    },
+    "prepared-projection-flow": {
+      "description": "Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.",
+      "edges": [
+        [
+          "event",
+          "admission",
+          "signal"
+        ],
+        [
+          "admission",
+          "scheduler",
+          "accepted/coalesced"
+        ],
+        [
+          "scheduler",
+          "canonical",
+          "rebuild affected domain"
+        ],
+        [
+          "canonical",
+          "prepared",
+          "semantic change"
+        ],
+        [
+          "canonical",
+          "api",
+          "unchanged"
+        ],
+        [
+          "prepared",
+          "api",
+          "bounded read"
+        ],
+        [
+          "api",
+          "ui",
+          "revision + ETag"
+        ]
+      ],
+      "nodes": [
+        [
+          "event",
+          "Compact domain event",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "admission",
+          "Bounded admission",
+          "decision",
+          "../../generated/development/projection-catalog/"
+        ],
+        [
+          "scheduler",
+          "Projection scheduler",
+          "process",
+          "../../generated/development/projection-catalog/"
+        ],
+        [
+          "canonical",
+          "Canonical hash check",
+          "decision",
+          "../../generated/development/projection-catalog/"
+        ],
+        [
+          "prepared",
+          "Prepared SQLite projection",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "api",
+          "FastAPI safe read",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "ui",
+          "TanStack Query / safe snapshot",
+          "ui",
+          "../../generated/development/projection-catalog/"
+        ]
+      ],
+      "title": "Prepared projection flow"
+    },
+    "recovery-state-machine": {
+      "description": "Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.",
+      "edges": [
+        [
+          "idle",
+          "backup",
+          "Backup Now"
+        ],
+        [
+          "backup",
+          "verify",
+          "snapshot complete"
+        ],
+        [
+          "verify",
+          "preview",
+          "verified"
+        ],
+        [
+          "preview",
+          "confirm",
+          "safe plan"
+        ],
+        [
+          "confirm",
+          "checkpoint",
+          "confirmed"
+        ],
+        [
+          "checkpoint",
+          "restore",
+          "saved"
+        ],
+        [
+          "restore",
+          "health",
+          "files applied"
+        ],
+        [
+          "health",
+          "idle",
+          "passed"
+        ],
+        [
+          "health",
+          "rollback",
+          "failed"
+        ],
+        [
+          "rollback",
+          "idle",
+          "recovered"
+        ]
+      ],
+      "nodes": [
+        [
+          "idle",
+          "Recovery ready",
+          "service",
+          "../../generated/development/recovery-contract/"
+        ],
+        [
+          "backup",
+          "Backup running",
+          "process",
+          "../../generated/development/recovery-contract/"
+        ],
+        [
+          "verify",
+          "Verification",
+          "process",
+          "../../generated/development/recovery-contract/"
+        ],
+        [
+          "preview",
+          "Restore preview",
+          "service",
+          "../../generated/development/recovery-state-machine/"
+        ],
+        [
+          "confirm",
+          "Confirmation guard",
+          "decision",
+          "../../generated/development/recovery-state-machine/"
+        ],
+        [
+          "checkpoint",
+          "Checkpoint",
+          "database",
+          "../../generated/development/recovery-contract/"
+        ],
+        [
+          "restore",
+          "Restore running",
+          "process",
+          "../../generated/development/recovery-contract/"
+        ],
+        [
+          "health",
+          "Health validation",
+          "decision",
+          "../../generated/production/health-diagnostics/"
+        ],
+        [
+          "rollback",
+          "Rollback",
+          "process",
+          "../../generated/production/rollback/"
+        ]
+      ],
+      "title": "Backup and restore state machine"
+    },
+    "release-flow": {
+      "description": "Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.",
+      "edges": [
+        [
+          "main",
+          "tag",
+          "validated commit"
+        ],
+        [
+          "tag",
+          "build",
+          "workflow"
+        ],
+        [
+          "build",
+          "manifest",
+          "inventory"
+        ],
+        [
+          "manifest",
+          "release",
+          "publish"
+        ],
+        [
+          "release",
+          "stage",
+          "verified download"
+        ],
+        [
+          "stage",
+          "health",
+          "switch"
+        ],
+        [
+          "health",
+          "lkg",
+          "failure"
+        ],
+        [
+          "health",
+          "stage",
+          "success"
+        ]
+      ],
+      "nodes": [
+        [
+          "main",
+          "Clean main branch",
+          "service",
+          "../../generated/development/release-engineering/"
+        ],
+        [
+          "tag",
+          "Annotated Lite tag",
+          "event",
+          "../../generated/development/release-engineering/"
+        ],
+        [
+          "build",
+          "Build dist.zip",
+          "process",
+          "../../generated/development/release-engineering/"
+        ],
+        [
+          "manifest",
+          "Manifest + checksums",
+          "database",
+          "../../generated/development/release-inventory/"
+        ],
+        [
+          "release",
+          "GitHub release",
+          "cloud",
+          "../../generated/development/release-inventory/"
+        ],
+        [
+          "stage",
+          "Stage PWA atomically",
+          "process",
+          "../../generated/production/upgrade/"
+        ],
+        [
+          "health",
+          "Post-switch health",
+          "decision",
+          "../../generated/production/health-diagnostics/"
+        ],
+        [
+          "lkg",
+          "Last-known-good rollback",
+          "process",
+          "../../generated/production/rollback/"
+        ]
+      ],
+      "title": "Lite release flow"
+    },
+    "runtime-deployment": {
+      "description": "Development documentation tools remain outside the Android/Termux production runtime.",
+      "edges": [
+        [
+          "browser",
+          "server",
+          "Tailnet/LAN HTTPS"
+        ],
+        [
+          "server",
+          "services",
+          "local processes"
+        ],
+        [
+          "services",
+          "devices",
+          "NATS over private network"
+        ],
+        [
+          "dev",
+          "server",
+          "release artifact / validation only"
+        ]
+      ],
+      "nodes": [
+        [
+          "browser",
+          "Browser / installed PWA",
+          "ui",
+          "../../generated/production/installation/"
+        ],
+        [
+          "server",
+          "Android / Termux server",
+          "boundary",
+          "../../generated/production/android-termux/"
+        ],
+        [
+          "services",
+          "Caddy + API + NATS + worker",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "devices",
+          "Joined ARM64 devices",
+          "cloud",
+          "../../generated/production/devices/"
+        ],
+        [
+          "dev",
+          "WSL2 Development PC tools",
+          "boundary",
+          "../../generated/development/repository-setup/"
+        ]
+      ],
+      "title": "Runtime deployment"
+    },
+    "trust-boundaries": {
+      "description": "The browser cannot execute shell commands, access NATS directly, or hold backend secrets.",
+      "edges": [
+        [
+          "browser",
+          "proxy",
+          "same-origin HTTPS"
+        ],
+        [
+          "proxy",
+          "control",
+          "/api/lite/*"
+        ],
+        [
+          "control",
+          "execution",
+          "validated command"
+        ],
+        [
+          "execution",
+          "secrets",
+          "runtime-only access"
+        ],
+        [
+          "tailnet",
+          "proxy",
+          "private ingress"
+        ]
+      ],
+      "nodes": [
+        [
+          "browser",
+          "Browser trust boundary",
+          "boundary",
+          "../../generated/production/security-boundaries/"
+        ],
+        [
+          "proxy",
+          "Caddy boundary",
+          "service",
+          "../../generated/production/caddy-access/"
+        ],
+        [
+          "control",
+          "FastAPI control boundary",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "execution",
+          "Worker / agent execution boundary",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "secrets",
+          "Backend secret boundary",
+          "database",
+          "../../generated/development/redaction-coverage/"
+        ],
+        [
+          "tailnet",
+          "Private Tailnet / LAN",
+          "cloud",
+          "../../generated/production/remote-access/"
+        ]
+      ],
+      "title": "Trust boundaries"
+    }
+  },
+  "schema_revision": 1
+}
