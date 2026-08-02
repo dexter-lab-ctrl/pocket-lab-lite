@@ -66,3 +66,6 @@ Thumbs.db
 playwright-report/
 test-results/
 docs/assets/lite-ui/*.png
+
+# Local documentation tool configuration and caches
+/.pocketlab-dev/

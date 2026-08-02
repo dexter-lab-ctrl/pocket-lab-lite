@@ -1,0 +1,42 @@
+digraph runtime_deployment {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#101827",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Runtime deployment",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  "browser" [label="Browser / installed PWA", shape="box", fillcolor="#0c4a6e", tooltip="Browser / installed PWA. Development documentation tools remain outside the Android/Termux production runtime.", URL="../../generated/production/installation/", target="_top"];
+  "server" [label="Android / Termux server", shape="box", fillcolor="#1e293b", tooltip="Android / Termux server. Development documentation tools remain outside the Android/Termux production runtime.", URL="../../generated/production/android-termux/", target="_top", style="rounded,dashed,filled"];
+  "services" [label="Caddy + API + NATS + worker", shape="component", fillcolor="#14532d", tooltip="Caddy + API + NATS + worker. Development documentation tools remain outside the Android/Termux production runtime.", URL="../../generated/development/service-catalog/", target="_top"];
+  "devices" [label="Joined ARM64 devices", shape="ellipse", fillcolor="#1e293b", tooltip="Joined ARM64 devices. Development documentation tools remain outside the Android/Termux production runtime.", URL="../../generated/production/devices/", target="_top"];
+  "dev" [label="WSL2 Development PC tools", shape="box", fillcolor="#1e293b", tooltip="WSL2 Development PC tools. Development documentation tools remain outside the Android/Termux production runtime.", URL="../../generated/development/repository-setup/", target="_top", style="rounded,dashed,filled"];
+  "browser" -> "server" [label="Tailnet/LAN HTTPS", tooltip="Tailnet/LAN HTTPS"];
+  "server" -> "services" [label="local processes", tooltip="local processes"];
+  "services" -> "devices" [label="NATS over private network", tooltip="NATS over private network"];
+  "dev" -> "server" [label="release artifact / validation only", tooltip="release artifact / validation only"];
+}

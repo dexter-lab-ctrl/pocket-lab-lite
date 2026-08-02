@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 9c85652565724d5d11b3040bd5fba4bf44d565f5e4593ba7967518e620081b6b
+source_fingerprint: 6a7576a6242d285a8943d05aeb402cd27f1ee0cd4264c592d29b8dfebad04409
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,7 +21,7 @@ validation_status: generated
 
 Only variable names and safe defaults are documented. Runtime values and private paths are excluded.
 
-## Environment variables (239)
+## Environment variables (248)
 
 - `CHROME_PATH`
 - `LITE_ANDROID_GATE`
@@ -32,6 +32,10 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `LITE_E2E_LIVE`
 - `LITE_E2E_MODE`
 - `LITE_FRONTEND_URL`
+- `LITE_JDBC_JAR`
+- `LITE_JDBC_SHA256`
+- `LITE_JDBC_URL`
+- `LITE_JDBC_VERSION`
 - `LITE_STORYBOOK_URL`
 - `NATS_CONTAINER`
 - `NATS_HARDENING_REPORT`
@@ -55,6 +59,7 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_DLQ`
 - `POCKETLAB_DOCKER_CHECK_CLEANUP`
 - `POCKETLAB_DOCKER_COMPOSE_FILE`
+- `POCKETLAB_DOCS_TOOLS_CACHE`
 - `POCKETLAB_E2E_WORKERS`
 - `POCKETLAB_EMERGENCY_RESERVE_BYTES`
 - `POCKETLAB_ENFORCE_PROTECTED_VERSIONS`
@@ -238,11 +243,15 @@ Only variable names and safe defaults are documented. Runtime values and private
 - `POCKETLAB_S8_GATE_WORKER_NAME`
 - `POCKETLAB_S8_GATE_WORKER_PM2_BIN`
 - `POCKETLAB_S8_GATE_WORKER_PM2_HOME`
+- `POCKETLAB_SCHEMASPY_JAR`
+- `POCKETLAB_SCHEMASPY_VERSION`
 - `POCKETLAB_SECURITY_PROGRESS_MAX_ROWS`
 - `POCKETLAB_SECURITY_PROGRESS_MIN_PER_ACTIVE_RUN`
 - `POCKETLAB_SECURITY_PROGRESS_PRUNE_BATCH_SIZE`
 - `POCKETLAB_SECURITY_PROGRESS_RETENTION_DAYS`
 - `POCKETLAB_SKIP_WEB_SERVER`
+- `POCKETLAB_SQLITE_JDBC_JAR`
+- `POCKETLAB_SQLITE_JDBC_VERSION`
 - `POCKETLAB_STATE_DIR`
 - `POCKETLAB_TASK_VERSION`
 - `POCKETLAB_TEST_MODE`

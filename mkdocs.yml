@@ -110,14 +110,23 @@ nav:
           - Coding standards: generated/development/coding-standards.md
       - Architecture and contracts:
           - Architecture: generated/development/architecture.md
-          - HTTP API: generated/development/api.md
+          - Detailed Lite API reference: reference/api/lite-api.md
+          - HTTP API summary: generated/development/api.md
           - API contract detail: generated/development/api-contract.md
           - API compatibility: generated/development/api-compatibility.md
           - Frontend API usage: generated/development/frontend-api-usage.md
-          - NATS and events: generated/development/events.md
-          - SQLite and projections: generated/development/sqlite-projections.md
+          - Lite NATS and events: generated/development/lite-events.md
+          - Device capabilities: generated/development/device-capabilities.md
+          - Device roles: generated/development/device-roles.md
+          - SQLite schema: generated/development/lite-sqlite-schema.md
+          - Prepared projections: generated/development/projection-catalog.md
+          - Recovery contract: generated/development/recovery-contract.md
+          - Recovery state machine: generated/development/recovery-state-machine.md
+          - Security profiles: generated/development/security-profiles.md
+          - Existing SQLite and projection guide: generated/development/sqlite-projections.md
       - UI and testing:
           - Fixtures and schemas: generated/development/fixtures-schemas.md
+          - Canonical UI state catalog: generated/development/ui-state-catalog.md
           - Storybook UI states: generated/development/ui-storybook.md
           - Playwright and browser: generated/development/browser-testing.md
           - Testing matrix: generated/development/testing.md
@@ -128,14 +137,21 @@ nav:
           - Task reference: generated/development/task-reference.md
           - HAR sanitization: generated/development/har-sanitization.md
           - Allure-compatible evidence: generated/development/allure-evidence.md
-          - Configuration and services: generated/development/configuration-services.md
-          - Bootstrap source: generated/development/bootstrap.md
+          - Configuration reference: generated/development/configuration-reference.md
+          - Service catalog: generated/development/service-catalog.md
+          - Existing configuration and services guide: generated/development/configuration-services.md
+          - Bootstrap stage catalog: generated/development/bootstrap-stages.md
+          - Bootstrap source guide: generated/development/bootstrap.md
           - Reason codes: generated/development/reason-codes.md
+          - Readiness evidence: generated/development/lite-readiness.md
+          - Redaction coverage: generated/development/redaction-coverage.md
           - Validation and release: generated/development/validation-release.md
           - CI workflows: generated/development/ci-workflows.md
           - Release engineering: generated/development/release-engineering.md
           - Contribution and review: generated/development/contribution-review.md
           - Identity and Rules partial contracts: generated/development/partial-surfaces.md
+          - Events: generated/development/events.md
+          - Release inventory: generated/development/release-inventory.md
   - Production:
       - Overview: generated/production/index.md
       - Install and access:

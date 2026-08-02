@@ -1,0 +1,36 @@
+{
+  "api_compatibility": {
+    "baseline": {
+      "checksum": null,
+      "path": "contracts/generated/lite-openapi.previous.json",
+      "source_type": "released-contract",
+      "status": "missing"
+    },
+    "changes": [],
+    "status": "unresolved",
+    "unapproved_breaking_changes": []
+  },
+  "metadata": {
+    "aggregate_fingerprint": "a0cdc2d2b5aa8ae9acd0a603383c5634dcaeefbe6f2f5ae04d5871bbecdc6045",
+    "baseline_identity": {
+      "checksum": null,
+      "path": "contracts/generated/lite-openapi.previous.json",
+      "source_type": "released-contract",
+      "status": "missing"
+    },
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "api_compatibility",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/generated/lite-openapi.json": "6854b6b4a7afd5d579568891473c4a6b6189f0041eddc5c87015ee1e715e4bf3",
+      "contracts/metadata/api-compatibility-exceptions.json": "cba7d99f8dc8a225a8b0fb0c07d8f4ec120b293edafce10b91e8593992843a2b",
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "unresolved"
+  }
+}

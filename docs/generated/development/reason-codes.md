@@ -1,325 +1,58 @@
 ---
 title: "Reason-code registry"
-description: "Reason codes are scanned from backend source to keep Storybook, Playwright, docs, and frontend presentation aligned with backend truth."
+description: "Canonical cross-domain Lite reason codes and user/audit mappings."
 status: verified
 generated: true
 audience: development
 source_commit: uncommitted
 generated_at: uncommitted
-generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 9c85652565724d5d11b3040bd5fba4bf44d565f5e4593ba7967518e620081b6b
+generator: scripts/docs/lite/generate_platform_catalogs.py
+generator_version: 1
+source_fingerprint: e31808c607a866ae138b0b452160dc110819ee4e568f9e0875ddb9e369b331d7
 schema_revision: 1
 validation_status: generated
 ---
 
-# Reason-code registry
-
 <div class="pl-page-meta" markdown>
 <span class="pl-status pl-status--verified">Verified</span>
-<span class="pl-status pl-status--patch-provided">Development guidance</span>
+<span class="pl-status pl-status--patch-provided">Source generated</span>
 </div>
 
-Reason codes are scanned from backend source to keep Storybook, Playwright, docs, and frontend presentation aligned with backend truth.
+# Reason-code registry
 
-## Detected codes (300)
-
-- `abandon_before_promotion`
-- `absolute_no_follow`
-- `absolute_percent`
-- `accept_payload_arg`
-- `accept_url`
-- `accepted_at`
-- `accepted_epoch`
-- `accepted_events`
-- `accepted_pending`
-- `access_message`
-- `access_phone_media`
-- `access_state`
-- `access_status`
-- `ack_done`
-- `ack_message`
-- `ack_wait_ms`
-- `ack_wait_seconds`
-- `acknowledge_command_attention`
-- `acquire_lock`
-- `acquire_timeout`
-- `acquire_timeout_seconds`
-- `acquire_workload`
-- `acquired_global`
-- `acquired_workload`
-- `action_enabled`
-- `action_groups`
-- `action_id`
-- `action_ids`
-- `action_label`
-- `action_list`
-- `action_order`
-- `action_payload`
-- `action_profile`
-- `action_queue`
-- `action_readiness`
-- `action_receipts`
-- `action_ref`
-- `action_state_items`
-- `action_state_running`
-- `action_summary`
-- `action_updated`
-- `actions_payload`
-- `activation_path`
-- `active_candidates`
-- `active_children`
-- `active_command`
-- `active_command_count`
-- `active_command_id`
-- `active_commands`
-- `active_count`
-- `active_count_locked`
-- `active_counts`
-- `active_cpu`
-- `active_domains`
-- `active_done`
-- `active_entries_removed`
-- `active_event_rows_preserved`
-- `active_event_source_count`
-- `active_futures`
-- `active_generation`
-- `active_hash`
-- `active_hashes`
-- `active_hint`
-- `active_id`
-- `active_ids`
-- `active_index`
-- `active_interval`
-- `active_interval_seconds`
-- `active_invite_device_keys`
-- `active_invite_keys`
-- `active_io`
-- `active_key`
-- `active_lookup_ms`
-- `active_media_operation`
-- `active_operation`
-- `active_operation_artifact_verified`
-- `active_operation_id`
-- `active_operations`
-- `active_parity`
-- `active_poll_seconds`
-- `active_poll_timer_count`
-- `active_recovery`
-- `active_restore`
-- `active_scan`
-- `active_scan_blocked`
-- `active_scan_state`
-- `active_security_operation`
-- `active_security_scan`
-- `active_started`
-- `active_targets`
-- `active_transition`
-- `active_transition_seconds`
-- `active_until`
-- `active_validation`
-- `active_values`
-- `active_worker`
-- `activity_current`
-- `activity_current_committed`
-- `activity_current_semantic_material`
-- `activity_current_source_revision`
-- `activity_domain_rows`
-- `activity_history`
-- `activity_history_semantic_material`
-- `activity_history_source_revision`
-- `activity_operation_ids`
-- `activity_semantic_material`
-- `activity_source_revision`
-- `activity_summary`
-- `actual_artifacts`
-- `actual_checksum`
-- `actual_hash`
-- `actual_role`
-- `adaptive_deferred_count`
-- `adaptive_interval`
-- `adaptive_reason`
-- `adaptive_reconcile`
-- `adaptive_runtime`
-- `add_device`
-- `add_done_callback`
-- `add_lite_device`
-- `add_middleware`
-- `add_stream`
-- `add_task`
-- `address_space`
-- `admin_password`
-- `admission_class`
-- `admission_started`
-- `admission_state`
-- `admission_timeout_seconds`
-- `admission_wait_count`
-- `admission_wait_ms`
-- `admit_event`
-- `advertised_capabilities`
-- `advertised_not_runtime_verified`
-- `affected_apps`
-- `affected_backup_sets`
-- `affected_capabilities`
-- `affected_domains`
-- `affected_recovery_paths`
-- `after_checkpoint`
-- `after_first_promotion`
-- `after_frozen`
-- `after_ready`
-- `after_rollback_promotion`
-- `after_sqlite_promotion`
-- `after_staged_validation`
-- `after_staging`
-- `age_bucket`
-- `age_candidates`
-- `age_ms`
-- `age_seconds`
-- `age_text`
-- `agent_advertisement`
-- `agent_already_running`
-- `agent_and_runtime`
-- `agent_capabilities`
-- `agent_event_suffixes`
-- `agent_fleet_nodes`
-- `agent_freshness`
-- `agent_heartbeat`
-- `agent_id`
-- `agent_invite_match`
-- `agent_invited`
-- `agent_item`
-- `agent_join_started`
-- `agent_keys_to_remove`
-- `agent_pm2`
-- `agent_private_connection`
-- `agent_process`
-- `agent_process_status`
-- `agent_process_status_freshness`
-- `agent_process_status_source`
-- `agent_profile`
-- `agent_received_command`
-- `agent_reported_at`
-- `agent_snapshot`
-- `agent_source`
-- `agent_source_revision`
-- `agent_state`
-- `agent_status`
-- `agent_stopped`
-- `agent_stopped_without_supervisor`
-- `agent_supervisor`
-- `agent_telemetry`
-- `agent_telemetry_event`
-- `agent_token`
-- `agent_token_hash`
-- `agent_ttl_seconds`
-- `agent_version`
-- `agent_version_behind`
-- `agent_version_freshness`
-- `agent_version_source`
-- `agents_payload`
-- `aggregate_row_count`
-- `all_action_items`
-- `all_counts`
-- `all_read_only`
-- `all_terminal_steps`
-- `allocation_budget_bytes`
-- `allocation_budget_exceeded`
-- `allocation_bytes`
-- `allocation_estimate_bytes`
-- `allow_credentials`
-- `allow_headers`
-- `allow_insecure`
-- `allow_local_write`
-- `allow_methods`
-- `allow_origins`
-- `allow_prerelease`
-- `allowed_actions`
-- `allowed_exact`
-- `allowed_host`
-- `allowed_names`
-- `allowed_origins`
-- `allowed_scan_root`
-- `allowed_sources`
-- `already_completed`
-- `already_connected`
-- `already_current`
-- `already_installed`
-- `already_installed_response`
-- `already_rolled_back`
-- `already_running`
-- `already_tuned`
-- `android_abi`
-- `android_api_level`
-- `api_backup`
-- `api_fastapi`
-- `api_health_url`
-- `api_index`
-- `api_key`
-- `api_level`
-- `api_local_fallback`
-- `api_manifest`
-- `api_name`
-- `api_pending_backup`
-- `api_prepared_url`
-- `api_process_local`
-- `api_process_local_fallback`
-- `api_receipt`
-- `api_thread_started`
-- `api_token`
-- `api_worker_restart_allowed`
-- `app_action`
-- `app_action_history`
-- `app_action_lifecycle`
-- `app_action_lifecycle_cleanup`
-- `app_action_state`
-- `app_actions`
-- `app_actions_payload`
-- `app_actions_photoprism`
-- `app_actions_projection_snapshot`
-- `app_actions_snapshot`
-- `app_backup`
-- `app_backup_command`
-- `app_backup_metadata`
-- `app_backup_mode`
-- `app_backup_profile`
-- `app_backup_profiles`
-- `app_backup_queue_unavailable`
-- `app_backup_receipt`
-- `app_backup_status`
-- `app_backup_subprojection`
-- `app_backup_targets`
-- `app_backups`
-- `app_binary`
-- `app_catalog_projection_snapshot`
-- `app_check`
-- `app_check_target`
-- `app_command_rows`
-- `app_config`
-- `app_current_rows`
-- `app_current_state`
-- `app_current_subprojections`
-- `app_evidence`
-- `app_execution_timeline_for_phase`
-- `app_files`
-- `app_files_running`
-- `app_finding_count`
-- `app_health`
-- `app_health_checked`
-- `app_host`
-- `app_ids`
-- `app_installed`
-- `app_label`
-- `app_lifecycle`
-- `app_lifecycle_profile`
-- `app_lifecycle_profiles`
-- `app_lifecycle_projection_snapshot`
-- `app_login_changed`
-- `app_manifests`
-- `app_meta`
-- `app_metadata`
-- `app_name`
-- `app_not_installed`
-- `app_operation`
-- `app_operation_status`
-- `app_operations_write_rejected`
-- `app_output_hidden`
-- `app_overall`
+| Code | Domain | Meaning | Retryable | Terminal | HTTP | Severity | Source |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `already_tuned` | validation | No additional tuning was required. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `cold_start_validation` | validation | Cold-start validation is in progress. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `diagnostics_not_active` | validation | Diagnostics are not active. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `disabled` | system | The requested capability is disabled. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `generation_changed` | projections | The source generation changed during work. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `insufficient_storage` | system | There is not enough safe storage for the operation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `interrupted` | system | The operation was interrupted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `invalid_domain` | projections | The requested projection domain is invalid. | yes | no | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `invite_identity_mismatch` | devices | The invite identity does not match the enrolled device. | no | yes | 409 | high | structured reason/failure fields in Lite backend or contracts metadata |
+| `lease_active` | projections | Another bounded owner currently holds the lease. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `legacy_multiple_active_runs` | system | Legacy state contains multiple active runs. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `metadata_only` | validation | Only metadata was evaluated. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `no_active_generation` | projections | There is no active generation. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `not_found_in_restored_snapshot` | system | The record is not present in the restored snapshot. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `payload_too_large` | validation | The bounded payload limit was exceeded. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `projection_unavailable` | projections | The prepared projection is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `queue_full` | projections | The bounded queue cannot accept more work. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `release_projection_unavailable` | release | The release prepared projection is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `shutdown` | system | The process is shutting down. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `shutdown_during_mailbox_backpressure` | projections | Shutdown occurred while the bounded mailbox was under pressure. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `submit_failed` | system | The work request could not be admitted. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `target_not_allowed` | validation | The requested target is outside the approved scope. | no | yes | 400 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `unregistered_domain` | projections | The requested domain is not registered. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `worker_failed` | security | The worker reported a terminal failure. | yes | yes | 200 | high | structured reason/failure fields in Lite backend or contracts metadata |
+| `worker_start_timeout` | security | The worker did not start the accepted work within the recovery window. | yes | yes | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `projection_too_old` | projections | The last committed projection is too old for a safe write. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `read_degraded` | system | A safe last-known read is shown while refresh is unavailable. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `identity_mismatch` | devices | The local identity does not match the requested enrollment. | no | yes | 409 | high | structured reason/failure fields in Lite backend or contracts metadata |
+| `remote_access_not_ready` | devices | Private remote access is not ready. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `service_unavailable` | system | A required backend service is unavailable. | yes | no | 503 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `command_undeliverable` | devices | The target agent cannot currently receive the command. | yes | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `invite_expired` | devices | The device invite is no longer valid. | yes | yes | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `duplicate_device` | devices | A matching device or invite already exists. | yes | no | 409 | warning | structured reason/failure fields in Lite backend or contracts metadata |
+| `protected_server_host` | devices | The protected server host cannot use this destructive action. | no | no | 200 | warning | structured reason/failure fields in Lite backend or contracts metadata |

@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "aggregate_fingerprint": "16ebd9e9dfd92cef495ccdd01094b100b17d1adcf03ea6a041aec593eb56c269",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "release_inventory",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "unvalidated"
+  },
+  "release_inventory": {
+    "releases": [],
+    "status": "no verified release manifest present in the repository"
+  }
+}

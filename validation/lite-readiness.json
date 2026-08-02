@@ -1,0 +1,465 @@
+{
+  "lite_readiness": {
+    "commit": "uncommitted",
+    "gates": [
+      {
+        "artifact": ".pocketlab-dev/validation/browser.json",
+        "browser": "Google Chrome",
+        "checksum": "20909df632f9b8de08e24449c20389190baaa41ddb1f19c9e8e0f55524871433",
+        "command": null,
+        "commit": null,
+        "completed_at": null,
+        "current": true,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "auto-detected",
+        "platform": null,
+        "result": null,
+        "started_at": null
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/allure-results.json",
+        "browser": null,
+        "checksum": "426a67bf79bfeb1f38a2019a13c0b97cb48baa012b99ad1304cb7e5a07915f8d",
+        "command": [
+          ".venv/bin/python",
+          "scripts/dev/lite/validation_evidence.py",
+          "allure",
+          "--validation-dir",
+          ".pocketlab-dev/validation",
+          "--output",
+          "allure-results"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.062,
+        "failure_reason": null,
+        "gate": "allure-results",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:49:04.728411Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/browser-resolver.json",
+        "browser": null,
+        "checksum": "d55336906af0ab9602f5d4b2d49118963ec2ee0bb2597ae7465ab311eec93f17",
+        "command": [
+          "node",
+          "--test",
+          "tests/dev/browser-resolver.test.mjs"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.12,
+        "failure_reason": null,
+        "gate": "browser-resolver",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:39.913790Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/contracts.json",
+        "browser": null,
+        "checksum": "f4451f0b4287cf0b38a23e2bd70be6baf8921b83910840c2014dd928aeacb66b",
+        "command": [
+          "bash",
+          "scripts/dev/lite/check-contracts.sh"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 3.848,
+        "failure_reason": null,
+        "gate": "contracts",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:51.841179Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/diff-check.json",
+        "browser": null,
+        "checksum": "09cd5ad5efb0fef27b2db3ec401f8295acaedc5994301992a51d7f7e76365428",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.006,
+        "failure_reason": null,
+        "gate": "diff-check",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:49:03.624191Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/docs-development-drift.json",
+        "browser": null,
+        "checksum": "10c30ac54d52dd502a98900b87790f77140d0d31091e8115e3507a4940cbd5ca",
+        "command": [
+          ".venv/bin/python",
+          "scripts/docs/lite/generate_docs.py",
+          "check",
+          "--audience",
+          "development"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.538,
+        "failure_reason": null,
+        "gate": "docs-development-drift",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:49:03.690813Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/docs-production-drift.json",
+        "browser": null,
+        "checksum": "7f0539554e7455338a8baae5f0c9edc8930afb575fa7142b96773c641fa4dc65",
+        "command": [
+          ".venv/bin/python",
+          "scripts/docs/lite/generate_docs.py",
+          "check",
+          "--audience",
+          "production"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.361,
+        "failure_reason": null,
+        "gate": "docs-production-drift",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:49:04.290114Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/focused-backend.json",
+        "browser": null,
+        "checksum": "e67bb8de292bd71815b39e4b3033c68119d25889d22939083cb944cd7ddca0f5",
+        "command": [
+          "bash",
+          "-lc",
+          "PYTHONPATH=tests:pocket-lab-final-structure/runtime PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 '.venv/bin/python' -m pytest -q tests/backend/test_lite_api.py -k 'status or catalog or fleet or security or recovery or identity or policy'"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 7.533,
+        "failure_reason": null,
+        "gate": "focused-backend",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:40.240418Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/frontend-unit.json",
+        "browser": null,
+        "checksum": "9d447aa1d8d058fdfda680620860bcac3c7580ae5ba0e4c247c8e0619415c75e",
+        "command": [
+          "npm",
+          "run",
+          "test:unit"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 3.942,
+        "failure_reason": null,
+        "gate": "frontend-unit",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:47.834959Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/protected-versions.json",
+        "browser": null,
+        "checksum": "20a5a9d5b4c7fdd4556a81256acd18f6ff29b4325e2117121fff30cba2392b2b",
+        "command": [
+          "bash",
+          "scripts/dev/lite/setup-check.sh"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 18.599,
+        "failure_reason": null,
+        "gate": "protected-versions",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:21.184271Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/pwa-build.json",
+        "browser": null,
+        "checksum": "4ecbf2a94095bdfacddeaaa4d03cd8dddfa263b44f7b0016f9231935de67db5e",
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 7.78,
+        "failure_reason": null,
+        "gate": "pwa-build",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:55.755928Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/python-compile.json",
+        "browser": null,
+        "checksum": "c92336353bfcfd6aa1253b8c23b8be45223b0cb5720804954728176da6d5b3c4",
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "py_compile",
+          "scripts/docs/lite/generate_contracts.py",
+          "scripts/docs/lite/generate_docs.py",
+          "scripts/dev/lite/har_tool.py",
+          "scripts/dev/lite/redaction_check.py",
+          "scripts/dev/lite/validation_evidence.py",
+          "scripts/dev/lite/release_artifact_check.py"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.055,
+        "failure_reason": null,
+        "gate": "python-compile",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:40.128042Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/commands/shell-syntax.json",
+        "browser": null,
+        "checksum": "da1860971e6d0668d3b36b0fec11fa38147a6ec75fa6f598754c9a8b2fc22cd2",
+        "command": [
+          "bash",
+          "-lc",
+          "find scripts/dev/lite -maxdepth 1 -type f -name \"*.sh\" -print0 | xargs -0 -r -n1 bash -n"
+        ],
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": 0.024,
+        "failure_reason": null,
+        "gate": "shell-syntax",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": "passed",
+        "started_at": "2026-08-01T21:48:39.833295Z"
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/playwright-browser.json",
+        "browser": "Google Chrome",
+        "checksum": "87ea0c7e380794e8ec6c4f3a93adf990034f33218263bccb8f8fd0fe8badee5c",
+        "command": null,
+        "commit": null,
+        "completed_at": null,
+        "current": true,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "auto-detected",
+        "platform": null,
+        "result": null,
+        "started_at": null
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/playwright-results.json",
+        "browser": null,
+        "checksum": "cea7941f57e40708dd9c4e2c88a9680f4c68c410b8f776bc57a582c09548c7e1",
+        "command": null,
+        "commit": null,
+        "completed_at": null,
+        "current": true,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "playwright-results",
+        "platform": null,
+        "result": null,
+        "started_at": null
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/protected-tool-versions.json",
+        "browser": null,
+        "checksum": "54e2e7f0869f26ecb6eefa73abf14ba31076377e210c428128b7c462ff2dc0fe",
+        "command": null,
+        "commit": null,
+        "completed_at": null,
+        "current": true,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "protected-tool-versions",
+        "platform": null,
+        "result": null,
+        "started_at": null
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/readiness-matrix.json",
+        "browser": null,
+        "checksum": "e4d9abd9531bea4d8277f5e463854790a0b0f0c2baca5fcc39a62e9f69429302",
+        "command": null,
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "readiness-matrix",
+        "platform": null,
+        "result": "passed",
+        "started_at": null
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/test-artifact-index.json",
+        "browser": null,
+        "checksum": "abacd295829bb214a7b367556512205fa058f2c07d974ffb1c46c037076b0c82",
+        "command": null,
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "test-artifact-index",
+        "platform": null,
+        "result": null,
+        "started_at": null
+      },
+      {
+        "artifact": ".pocketlab-dev/validation/validation-manifest.json",
+        "browser": null,
+        "checksum": "987a05522ea8a3d2e7ab07c0177bddf9db14f8bf00701a4dda9db58c860c0e8e",
+        "command": null,
+        "commit": "d327d75308a9af03b57f44411b22aef1819cee45",
+        "completed_at": null,
+        "current": false,
+        "duration": null,
+        "failure_reason": null,
+        "gate": "validation-manifest",
+        "platform": {
+          "machine": "x86_64",
+          "python": "3.14.4",
+          "release": "6.18.33.1-microsoft-standard-WSL2",
+          "system": "Linux",
+          "wsl": "true"
+        },
+        "result": null,
+        "started_at": null
+      }
+    ],
+    "status": "recorded evidence"
+  },
+  "metadata": {
+    "aggregate_fingerprint": "297fe43577022cb43ec262065a0ca12fd63a5dfede820424244c73d6c4e8e44e",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "lite_readiness",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      ".pocketlab-dev/validation/browser.json": "20909df632f9b8de08e24449c20389190baaa41ddb1f19c9e8e0f55524871433",
+      ".pocketlab-dev/validation/commands/allure-results.json": "426a67bf79bfeb1f38a2019a13c0b97cb48baa012b99ad1304cb7e5a07915f8d",
+      ".pocketlab-dev/validation/commands/browser-resolver.json": "d55336906af0ab9602f5d4b2d49118963ec2ee0bb2597ae7465ab311eec93f17",
+      ".pocketlab-dev/validation/commands/contracts.json": "f4451f0b4287cf0b38a23e2bd70be6baf8921b83910840c2014dd928aeacb66b",
+      ".pocketlab-dev/validation/commands/diff-check.json": "09cd5ad5efb0fef27b2db3ec401f8295acaedc5994301992a51d7f7e76365428",
+      ".pocketlab-dev/validation/commands/docs-development-drift.json": "10c30ac54d52dd502a98900b87790f77140d0d31091e8115e3507a4940cbd5ca",
+      ".pocketlab-dev/validation/commands/docs-production-drift.json": "7f0539554e7455338a8baae5f0c9edc8930afb575fa7142b96773c641fa4dc65",
+      ".pocketlab-dev/validation/commands/focused-backend.json": "e67bb8de292bd71815b39e4b3033c68119d25889d22939083cb944cd7ddca0f5",
+      ".pocketlab-dev/validation/commands/frontend-unit.json": "9d447aa1d8d058fdfda680620860bcac3c7580ae5ba0e4c247c8e0619415c75e",
+      ".pocketlab-dev/validation/commands/protected-versions.json": "20a5a9d5b4c7fdd4556a81256acd18f6ff29b4325e2117121fff30cba2392b2b",
+      ".pocketlab-dev/validation/commands/pwa-build.json": "4ecbf2a94095bdfacddeaaa4d03cd8dddfa263b44f7b0016f9231935de67db5e",
+      ".pocketlab-dev/validation/commands/python-compile.json": "c92336353bfcfd6aa1253b8c23b8be45223b0cb5720804954728176da6d5b3c4",
+      ".pocketlab-dev/validation/commands/shell-syntax.json": "da1860971e6d0668d3b36b0fec11fa38147a6ec75fa6f598754c9a8b2fc22cd2",
+      ".pocketlab-dev/validation/playwright-browser.json": "87ea0c7e380794e8ec6c4f3a93adf990034f33218263bccb8f8fd0fe8badee5c",
+      ".pocketlab-dev/validation/playwright-results.json": "cea7941f57e40708dd9c4e2c88a9680f4c68c410b8f776bc57a582c09548c7e1",
+      ".pocketlab-dev/validation/protected-tool-versions.json": "54e2e7f0869f26ecb6eefa73abf14ba31076377e210c428128b7c462ff2dc0fe",
+      ".pocketlab-dev/validation/readiness-matrix.json": "e4d9abd9531bea4d8277f5e463854790a0b0f0c2baca5fcc39a62e9f69429302",
+      ".pocketlab-dev/validation/test-artifact-index.json": "abacd295829bb214a7b367556512205fa058f2c07d974ffb1c46c037076b0c82",
+      ".pocketlab-dev/validation/validation-manifest.json": "987a05522ea8a3d2e7ab07c0177bddf9db14f8bf00701a4dda9db58c860c0e8e",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "recorded"
+  }
+}

@@ -1,0 +1,49 @@
+digraph release_flow {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#101827",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Lite release flow",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  "main" [label="Clean main branch", shape="box", fillcolor="#312e81", tooltip="Clean main branch. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
+  "tag" [label="Annotated Lite tag", shape="parallelogram", fillcolor="#831843", tooltip="Annotated Lite tag. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
+  "build" [label="Build dist.zip", shape="component", fillcolor="#14532d", tooltip="Build dist.zip. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
+  "manifest" [label="Manifest + checksums", shape="cylinder", fillcolor="#78350f", tooltip="Manifest + checksums. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-inventory/", target="_top"];
+  "release" [label="GitHub release", shape="ellipse", fillcolor="#1e293b", tooltip="GitHub release. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-inventory/", target="_top"];
+  "stage" [label="Stage PWA atomically", shape="component", fillcolor="#14532d", tooltip="Stage PWA atomically. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/upgrade/", target="_top"];
+  "health" [label="Post-switch health", shape="diamond", fillcolor="#7c2d12", tooltip="Post-switch health. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/health-diagnostics/", target="_top", style="filled"];
+  "lkg" [label="Last-known-good rollback", shape="component", fillcolor="#14532d", tooltip="Last-known-good rollback. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/rollback/", target="_top"];
+  "main" -> "tag" [label="validated commit", tooltip="validated commit"];
+  "tag" -> "build" [label="workflow", tooltip="workflow"];
+  "build" -> "manifest" [label="inventory", tooltip="inventory"];
+  "manifest" -> "release" [label="publish", tooltip="publish"];
+  "release" -> "stage" [label="verified download", tooltip="verified download"];
+  "stage" -> "health" [label="switch", tooltip="switch"];
+  "health" -> "lkg" [label="failure", tooltip="failure"];
+  "health" -> "stage" [label="success", tooltip="success"];
+}

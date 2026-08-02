@@ -1,0 +1,1778 @@
+{
+  "documentation_links": {
+    "entities": {
+      "bootstrap:init_mariadb": {
+        "title": "init_mariadb",
+        "url": "../../docs/generated/development/bootstrap-stages.md#init-mariadb"
+      },
+      "bootstrap:init_vault": {
+        "title": "init_vault",
+        "url": "../../docs/generated/development/bootstrap-stages.md#init-vault"
+      },
+      "bootstrap:install_binaries": {
+        "title": "install_binaries",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-binaries"
+      },
+      "bootstrap:install_fleet_agent": {
+        "title": "install_fleet_agent",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-fleet-agent"
+      },
+      "bootstrap:install_proot_ubuntu": {
+        "title": "install_proot_ubuntu",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-proot-ubuntu"
+      },
+      "bootstrap:install_pwa_ui": {
+        "title": "install_pwa_ui",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-pwa-ui"
+      },
+      "bootstrap:install_tailscale": {
+        "title": "install_tailscale",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-tailscale"
+      },
+      "bootstrap:install_termux_packages": {
+        "title": "install_termux_packages",
+        "url": "../../docs/generated/development/bootstrap-stages.md#install-termux-packages"
+      },
+      "bootstrap:seed_gitops_repo": {
+        "title": "seed_gitops_repo",
+        "url": "../../docs/generated/development/bootstrap-stages.md#seed-gitops-repo"
+      },
+      "bootstrap:smoke_test": {
+        "title": "smoke_test",
+        "url": "../../docs/generated/development/bootstrap-stages.md#smoke-test"
+      },
+      "bootstrap:start_dashboard": {
+        "title": "start_dashboard",
+        "url": "../../docs/generated/development/bootstrap-stages.md#start-dashboard"
+      },
+      "bootstrap:start_gitea": {
+        "title": "start_gitea",
+        "url": "../../docs/generated/development/bootstrap-stages.md#start-gitea"
+      },
+      "endpoint:DELETE:/api/lite/apps/photoprism/storage-mappings/{mapping_id}": {
+        "title": "DELETE /api/lite/apps/photoprism/storage-mappings/{mapping_id}",
+        "url": "../../docs/reference/api/lite-api.md#delete-api-lite-apps-photoprism-storage-mappings-mapping-id"
+      },
+      "endpoint:GET:/api/lite/apps/lifecycle": {
+        "title": "GET /api/lite/apps/lifecycle",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-lifecycle"
+      },
+      "endpoint:GET:/api/lite/apps/lifecycle/{app_id}": {
+        "title": "GET /api/lite/apps/lifecycle/{app_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-lifecycle-app-id"
+      },
+      "endpoint:GET:/api/lite/apps/photoprism/storage-mappings": {
+        "title": "GET /api/lite/apps/photoprism/storage-mappings",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-photoprism-storage-mappings"
+      },
+      "endpoint:GET:/api/lite/apps/photoprism/storage-preview": {
+        "title": "GET /api/lite/apps/photoprism/storage-preview",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-photoprism-storage-preview"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/action-history": {
+        "title": "GET /api/lite/apps/{app_id}/action-history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-action-history"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/actions": {
+        "title": "GET /api/lite/apps/{app_id}/actions",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-actions"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/backup": {
+        "title": "GET /api/lite/apps/{app_id}/backup",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-backup"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/backups": {
+        "title": "GET /api/lite/apps/{app_id}/backups",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-backups"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/backups/{backup_id}/receipt": {
+        "title": "GET /api/lite/apps/{app_id}/backups/{backup_id}/receipt",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-backups-backup-id-receipt"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/evidence": {
+        "title": "GET /api/lite/apps/{app_id}/evidence",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-evidence"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/restore/previews/{preview_id}": {
+        "title": "GET /api/lite/apps/{app_id}/restore/previews/{preview_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-restore-previews-preview-id"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/update": {
+        "title": "GET /api/lite/apps/{app_id}/update",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-update"
+      },
+      "endpoint:GET:/api/lite/apps/{app_id}/update/receipts/{operation_id}": {
+        "title": "GET /api/lite/apps/{app_id}/update/receipts/{operation_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-apps-app-id-update-receipts-operation-id"
+      },
+      "endpoint:GET:/api/lite/catalog": {
+        "title": "GET /api/lite/catalog",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-catalog"
+      },
+      "endpoint:GET:/api/lite/commands/history": {
+        "title": "GET /api/lite/commands/history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-commands-history"
+      },
+      "endpoint:GET:/api/lite/devices/{device_id}": {
+        "title": "GET /api/lite/devices/{device_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-device-id"
+      },
+      "endpoint:GET:/api/lite/devices/{device_id}/health": {
+        "title": "GET /api/lite/devices/{device_id}/health",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-device-id-health"
+      },
+      "endpoint:GET:/api/lite/devices/{device_id}/health/history": {
+        "title": "GET /api/lite/devices/{device_id}/health/history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-device-id-health-history"
+      },
+      "endpoint:GET:/api/lite/devices/{device_id}/history": {
+        "title": "GET /api/lite/devices/{device_id}/history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-device-id-history"
+      },
+      "endpoint:GET:/api/lite/devices/{device_id}/removal-assessment": {
+        "title": "GET /api/lite/devices/{device_id}/removal-assessment",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-devices-device-id-removal-assessment"
+      },
+      "endpoint:GET:/api/lite/diagnostics/frontend-lifecycle/challenge": {
+        "title": "GET /api/lite/diagnostics/frontend-lifecycle/challenge",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-diagnostics-frontend-lifecycle-challenge"
+      },
+      "endpoint:GET:/api/lite/diagnostics/runtime": {
+        "title": "GET /api/lite/diagnostics/runtime",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-diagnostics-runtime"
+      },
+      "endpoint:GET:/api/lite/diagnostics/runtime/full": {
+        "title": "GET /api/lite/diagnostics/runtime/full",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-diagnostics-runtime-full"
+      },
+      "endpoint:GET:/api/lite/events": {
+        "title": "GET /api/lite/events",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-events"
+      },
+      "endpoint:GET:/api/lite/fleet": {
+        "title": "GET /api/lite/fleet",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet"
+      },
+      "endpoint:GET:/api/lite/fleet/agent/bootstrap.sh": {
+        "title": "GET /api/lite/fleet/agent/bootstrap.sh",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-agent-bootstrap-sh"
+      },
+      "endpoint:GET:/api/lite/fleet/devices/{device_id}/recovery-history": {
+        "title": "GET /api/lite/fleet/devices/{device_id}/recovery-history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-devices-device-id-recovery-history"
+      },
+      "endpoint:GET:/api/lite/fleet/devices/{node_id}/restart-agent/status": {
+        "title": "GET /api/lite/fleet/devices/{node_id}/restart-agent/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-devices-node-id-restart-agent-status"
+      },
+      "endpoint:GET:/api/lite/fleet/health-summary": {
+        "title": "GET /api/lite/fleet/health-summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-health-summary"
+      },
+      "endpoint:GET:/api/lite/fleet/invites/latest": {
+        "title": "GET /api/lite/fleet/invites/latest",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-fleet-invites-latest"
+      },
+      "endpoint:GET:/api/lite/identity": {
+        "title": "GET /api/lite/identity",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-identity"
+      },
+      "endpoint:GET:/api/lite/policy": {
+        "title": "GET /api/lite/policy",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-policy"
+      },
+      "endpoint:GET:/api/lite/recovery": {
+        "title": "GET /api/lite/recovery",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery"
+      },
+      "endpoint:GET:/api/lite/recovery/apps": {
+        "title": "GET /api/lite/recovery/apps",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-apps"
+      },
+      "endpoint:GET:/api/lite/recovery/apps/{app_id}": {
+        "title": "GET /api/lite/recovery/apps/{app_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-apps-app-id"
+      },
+      "endpoint:GET:/api/lite/recovery/apps/{app_id}/backup-targets": {
+        "title": "GET /api/lite/recovery/apps/{app_id}/backup-targets",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-apps-app-id-backup-targets"
+      },
+      "endpoint:GET:/api/lite/recovery/backup-targets": {
+        "title": "GET /api/lite/recovery/backup-targets",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-backup-targets"
+      },
+      "endpoint:GET:/api/lite/recovery/backups": {
+        "title": "GET /api/lite/recovery/backups",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-backups"
+      },
+      "endpoint:GET:/api/lite/recovery/backups/{backup_id}": {
+        "title": "GET /api/lite/recovery/backups/{backup_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-backups-backup-id"
+      },
+      "endpoint:GET:/api/lite/recovery/database": {
+        "title": "GET /api/lite/recovery/database",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-database"
+      },
+      "endpoint:GET:/api/lite/recovery/database/backups": {
+        "title": "GET /api/lite/recovery/database/backups",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-database-backups"
+      },
+      "endpoint:GET:/api/lite/recovery/database/backups/{backup_id}": {
+        "title": "GET /api/lite/recovery/database/backups/{backup_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-database-backups-backup-id"
+      },
+      "endpoint:GET:/api/lite/recovery/database/restore/previews/{preview_id}": {
+        "title": "GET /api/lite/recovery/database/restore/previews/{preview_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-database-restore-previews-preview-id"
+      },
+      "endpoint:GET:/api/lite/recovery/database/restore/{restore_id}": {
+        "title": "GET /api/lite/recovery/database/restore/{restore_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-database-restore-restore-id"
+      },
+      "endpoint:GET:/api/lite/recovery/details": {
+        "title": "GET /api/lite/recovery/details",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-details"
+      },
+      "endpoint:GET:/api/lite/recovery/maintenance": {
+        "title": "GET /api/lite/recovery/maintenance",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-maintenance"
+      },
+      "endpoint:GET:/api/lite/recovery/operations": {
+        "title": "GET /api/lite/recovery/operations",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-operations"
+      },
+      "endpoint:GET:/api/lite/recovery/receipts/{backup_id}": {
+        "title": "GET /api/lite/recovery/receipts/{backup_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-receipts-backup-id"
+      },
+      "endpoint:GET:/api/lite/recovery/restore/checkpoints/{checkpoint_id}": {
+        "title": "GET /api/lite/recovery/restore/checkpoints/{checkpoint_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-restore-checkpoints-checkpoint-id"
+      },
+      "endpoint:GET:/api/lite/recovery/restore/previews/{preview_id}": {
+        "title": "GET /api/lite/recovery/restore/previews/{preview_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-restore-previews-preview-id"
+      },
+      "endpoint:GET:/api/lite/recovery/restore/runs/{restore_id}": {
+        "title": "GET /api/lite/recovery/restore/runs/{restore_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-restore-runs-restore-id"
+      },
+      "endpoint:GET:/api/lite/recovery/summary": {
+        "title": "GET /api/lite/recovery/summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-recovery-summary"
+      },
+      "endpoint:GET:/api/lite/release": {
+        "title": "GET /api/lite/release",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-release"
+      },
+      "endpoint:GET:/api/lite/remote-access/readiness": {
+        "title": "GET /api/lite/remote-access/readiness",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-remote-access-readiness"
+      },
+      "endpoint:GET:/api/lite/revisions": {
+        "title": "GET /api/lite/revisions",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-revisions"
+      },
+      "endpoint:GET:/api/lite/security": {
+        "title": "GET /api/lite/security",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security"
+      },
+      "endpoint:GET:/api/lite/security/apps": {
+        "title": "GET /api/lite/security/apps",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-apps"
+      },
+      "endpoint:GET:/api/lite/security/apps/{app_id}": {
+        "title": "GET /api/lite/security/apps/{app_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-apps-app-id"
+      },
+      "endpoint:GET:/api/lite/security/details/{run_id}": {
+        "title": "GET /api/lite/security/details/{run_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-details-run-id"
+      },
+      "endpoint:GET:/api/lite/security/events": {
+        "title": "GET /api/lite/security/events",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-events"
+      },
+      "endpoint:GET:/api/lite/security/evidence/{run_id}": {
+        "title": "GET /api/lite/security/evidence/{run_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-evidence-run-id"
+      },
+      "endpoint:GET:/api/lite/security/evidence/{run_id}/summary": {
+        "title": "GET /api/lite/security/evidence/{run_id}/summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-evidence-run-id-summary"
+      },
+      "endpoint:GET:/api/lite/security/freshness": {
+        "title": "GET /api/lite/security/freshness",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-freshness"
+      },
+      "endpoint:GET:/api/lite/security/history": {
+        "title": "GET /api/lite/security/history",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-history"
+      },
+      "endpoint:GET:/api/lite/security/profiles/{profile}": {
+        "title": "GET /api/lite/security/profiles/{profile}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-profiles-profile"
+      },
+      "endpoint:GET:/api/lite/security/progress": {
+        "title": "GET /api/lite/security/progress",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-progress"
+      },
+      "endpoint:GET:/api/lite/security/runs/{run_id}": {
+        "title": "GET /api/lite/security/runs/{run_id}",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-runs-run-id"
+      },
+      "endpoint:GET:/api/lite/security/summary": {
+        "title": "GET /api/lite/security/summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-security-summary"
+      },
+      "endpoint:GET:/api/lite/status": {
+        "title": "GET /api/lite/status",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-status"
+      },
+      "endpoint:GET:/api/lite/system/activity-summary": {
+        "title": "GET /api/lite/system/activity-summary",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-activity-summary"
+      },
+      "endpoint:GET:/api/lite/system/agent": {
+        "title": "GET /api/lite/system/agent",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-agent"
+      },
+      "endpoint:GET:/api/lite/system/health": {
+        "title": "GET /api/lite/system/health",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-health"
+      },
+      "endpoint:GET:/api/lite/system/nats-readiness": {
+        "title": "GET /api/lite/system/nats-readiness",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-nats-readiness"
+      },
+      "endpoint:GET:/api/lite/system/processes": {
+        "title": "GET /api/lite/system/processes",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-processes"
+      },
+      "endpoint:GET:/api/lite/system/sqlite-health": {
+        "title": "GET /api/lite/system/sqlite-health",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-sqlite-health"
+      },
+      "endpoint:GET:/api/lite/system/storage-pressure": {
+        "title": "GET /api/lite/system/storage-pressure",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-storage-pressure"
+      },
+      "endpoint:GET:/api/lite/system/supervisor": {
+        "title": "GET /api/lite/system/supervisor",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-supervisor"
+      },
+      "endpoint:GET:/api/lite/system/telemetry-thresholds": {
+        "title": "GET /api/lite/system/telemetry-thresholds",
+        "url": "../../docs/reference/api/lite-api.md#get-api-lite-system-telemetry-thresholds"
+      },
+      "endpoint:GET:/health": {
+        "title": "GET /health",
+        "url": "../../docs/reference/api/lite-api.md#get-health"
+      },
+      "endpoint:GET:/ready": {
+        "title": "GET /ready",
+        "url": "../../docs/reference/api/lite-api.md#get-ready"
+      },
+      "endpoint:POST:/api/lite/apps/photoprism/storage-mappings": {
+        "title": "POST /api/lite/apps/photoprism/storage-mappings",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-photoprism-storage-mappings"
+      },
+      "endpoint:POST:/api/lite/apps/{app_id}/actions/{action_id}": {
+        "title": "POST /api/lite/apps/{app_id}/actions/{action_id}",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-actions-action-id"
+      },
+      "endpoint:POST:/api/lite/apps/{app_id}/backup": {
+        "title": "POST /api/lite/apps/{app_id}/backup",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-backup"
+      },
+      "endpoint:POST:/api/lite/apps/{app_id}/backup/storage-device": {
+        "title": "POST /api/lite/apps/{app_id}/backup/storage-device",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-backup-storage-device"
+      },
+      "endpoint:POST:/api/lite/apps/{app_id}/restore/preview": {
+        "title": "POST /api/lite/apps/{app_id}/restore/preview",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-restore-preview"
+      },
+      "endpoint:POST:/api/lite/apps/{app_id}/update/apply": {
+        "title": "POST /api/lite/apps/{app_id}/update/apply",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-apps-app-id-update-apply"
+      },
+      "endpoint:POST:/api/lite/catalog/install": {
+        "title": "POST /api/lite/catalog/install",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-catalog-install"
+      },
+      "endpoint:POST:/api/lite/catalog/remove": {
+        "title": "POST /api/lite/catalog/remove",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-catalog-remove"
+      },
+      "endpoint:POST:/api/lite/diagnostics/frontend-lifecycle": {
+        "title": "POST /api/lite/diagnostics/frontend-lifecycle",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-diagnostics-frontend-lifecycle"
+      },
+      "endpoint:POST:/api/lite/fleet/add-device": {
+        "title": "POST /api/lite/fleet/add-device",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-add-device"
+      },
+      "endpoint:POST:/api/lite/fleet/agent/bootstrap-blocked": {
+        "title": "POST /api/lite/fleet/agent/bootstrap-blocked",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-agent-bootstrap-blocked"
+      },
+      "endpoint:POST:/api/lite/fleet/agent/bootstrap.env": {
+        "title": "POST /api/lite/fleet/agent/bootstrap.env",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-agent-bootstrap-env"
+      },
+      "endpoint:POST:/api/lite/fleet/devices/{node_id}/restart-agent": {
+        "title": "POST /api/lite/fleet/devices/{node_id}/restart-agent",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-devices-node-id-restart-agent"
+      },
+      "endpoint:POST:/api/lite/fleet/invites/{invite_id}/revoke": {
+        "title": "POST /api/lite/fleet/invites/{invite_id}/revoke",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-invites-invite-id-revoke"
+      },
+      "endpoint:POST:/api/lite/fleet/remove-device": {
+        "title": "POST /api/lite/fleet/remove-device",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-fleet-remove-device"
+      },
+      "endpoint:POST:/api/lite/identity/rotate": {
+        "title": "POST /api/lite/identity/rotate",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-identity-rotate"
+      },
+      "endpoint:POST:/api/lite/policy/apply": {
+        "title": "POST /api/lite/policy/apply",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-policy-apply"
+      },
+      "endpoint:POST:/api/lite/recovery/apps/{app_id}/backup": {
+        "title": "POST /api/lite/recovery/apps/{app_id}/backup",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-apps-app-id-backup"
+      },
+      "endpoint:POST:/api/lite/recovery/apps/{app_id}/backup-to-target": {
+        "title": "POST /api/lite/recovery/apps/{app_id}/backup-to-target",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-apps-app-id-backup-to-target"
+      },
+      "endpoint:POST:/api/lite/recovery/apps/{app_id}/restore": {
+        "title": "POST /api/lite/recovery/apps/{app_id}/restore",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-apps-app-id-restore"
+      },
+      "endpoint:POST:/api/lite/recovery/apps/{app_id}/restore/preview": {
+        "title": "POST /api/lite/recovery/apps/{app_id}/restore/preview",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-apps-app-id-restore-preview"
+      },
+      "endpoint:POST:/api/lite/recovery/backup": {
+        "title": "POST /api/lite/recovery/backup",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-backup"
+      },
+      "endpoint:POST:/api/lite/recovery/backups/{backup_id}/verify": {
+        "title": "POST /api/lite/recovery/backups/{backup_id}/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-backups-backup-id-verify"
+      },
+      "endpoint:POST:/api/lite/recovery/database/backup": {
+        "title": "POST /api/lite/recovery/database/backup",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-database-backup"
+      },
+      "endpoint:POST:/api/lite/recovery/database/backups/{backup_id}/preview": {
+        "title": "POST /api/lite/recovery/database/backups/{backup_id}/preview",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-database-backups-backup-id-preview"
+      },
+      "endpoint:POST:/api/lite/recovery/database/backups/{backup_id}/restore": {
+        "title": "POST /api/lite/recovery/database/backups/{backup_id}/restore",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-database-backups-backup-id-restore"
+      },
+      "endpoint:POST:/api/lite/recovery/database/backups/{backup_id}/verify": {
+        "title": "POST /api/lite/recovery/database/backups/{backup_id}/verify",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-database-backups-backup-id-verify"
+      },
+      "endpoint:POST:/api/lite/recovery/maintenance/checkpoint": {
+        "title": "POST /api/lite/recovery/maintenance/checkpoint",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-maintenance-checkpoint"
+      },
+      "endpoint:POST:/api/lite/recovery/maintenance/retention": {
+        "title": "POST /api/lite/recovery/maintenance/retention",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-maintenance-retention"
+      },
+      "endpoint:POST:/api/lite/recovery/restore": {
+        "title": "POST /api/lite/recovery/restore",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-restore"
+      },
+      "endpoint:POST:/api/lite/recovery/restore/preview": {
+        "title": "POST /api/lite/recovery/restore/preview",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-recovery-restore-preview"
+      },
+      "endpoint:POST:/api/lite/release/apply": {
+        "title": "POST /api/lite/release/apply",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-release-apply"
+      },
+      "endpoint:POST:/api/lite/release/check": {
+        "title": "POST /api/lite/release/check",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-release-check"
+      },
+      "endpoint:POST:/api/lite/security/apps/{app_id}/check": {
+        "title": "POST /api/lite/security/apps/{app_id}/check",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-security-apps-app-id-check"
+      },
+      "endpoint:POST:/api/lite/security/check": {
+        "title": "POST /api/lite/security/check",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-security-check"
+      },
+      "endpoint:POST:/api/lite/security/scan": {
+        "title": "POST /api/lite/security/scan",
+        "url": "../../docs/reference/api/lite-api.md#post-api-lite-security-scan"
+      },
+      "endpoint:PUT:/api/lite/fleet/devices/{device_id}/display-model": {
+        "title": "PUT /api/lite/fleet/devices/{device_id}/display-model",
+        "url": "../../docs/reference/api/lite-api.md#put-api-lite-fleet-devices-device-id-display-model"
+      },
+      "event:pocketlab.commands": {
+        "title": "pocketlab.commands",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands"
+      },
+      "event:pocketlab.commands.catalog.refresh": {
+        "title": "pocketlab.commands.catalog.refresh",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-catalog-refresh"
+      },
+      "event:pocketlab.commands.drift.apply": {
+        "title": "pocketlab.commands.drift.apply",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-apply"
+      },
+      "event:pocketlab.commands.drift.approve": {
+        "title": "pocketlab.commands.drift.approve",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-approve"
+      },
+      "event:pocketlab.commands.drift.ignore": {
+        "title": "pocketlab.commands.drift.ignore",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-ignore"
+      },
+      "event:pocketlab.commands.drift.preview": {
+        "title": "pocketlab.commands.drift.preview",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-preview"
+      },
+      "event:pocketlab.commands.drift.rescan": {
+        "title": "pocketlab.commands.drift.rescan",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-rescan"
+      },
+      "event:pocketlab.commands.drift.scan": {
+        "title": "pocketlab.commands.drift.scan",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-scan"
+      },
+      "event:pocketlab.commands.drift.{action}": {
+        "title": "pocketlab.commands.drift.{action}",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-drift-action"
+      },
+      "event:pocketlab.commands.fleet.join": {
+        "title": "pocketlab.commands.fleet.join",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-fleet-join"
+      },
+      "event:pocketlab.commands.fleet.save_tailscale_key": {
+        "title": "pocketlab.commands.fleet.save_tailscale_key",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-fleet-save-tailscale-key"
+      },
+      "event:pocketlab.commands.health.check": {
+        "title": "pocketlab.commands.health.check",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-health-check"
+      },
+      "event:pocketlab.commands.lite.app.backup.create": {
+        "title": "pocketlab.commands.lite.app.backup.create",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-backup-create"
+      },
+      "event:pocketlab.commands.lite.app.backup.transfer": {
+        "title": "pocketlab.commands.lite.app.backup.transfer",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-backup-transfer"
+      },
+      "event:pocketlab.commands.lite.app.media": {
+        "title": "pocketlab.commands.lite.app.media",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-media"
+      },
+      "event:pocketlab.commands.lite.app.repair": {
+        "title": "pocketlab.commands.lite.app.repair",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-repair"
+      },
+      "event:pocketlab.commands.lite.app.restore.preview": {
+        "title": "pocketlab.commands.lite.app.restore.preview",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-restore-preview"
+      },
+      "event:pocketlab.commands.lite.app.safety": {
+        "title": "pocketlab.commands.lite.app.safety",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-safety"
+      },
+      "event:pocketlab.commands.lite.app.update.check": {
+        "title": "pocketlab.commands.lite.app.update.check",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-app-update-check"
+      },
+      "event:pocketlab.commands.lite.backup.create": {
+        "title": "pocketlab.commands.lite.backup.create",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-backup-create"
+      },
+      "event:pocketlab.commands.lite.backup.verify": {
+        "title": "pocketlab.commands.lite.backup.verify",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-backup-verify"
+      },
+      "event:pocketlab.commands.lite.catalog.install": {
+        "title": "pocketlab.commands.lite.catalog.install",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-catalog-install"
+      },
+      "event:pocketlab.commands.lite.database.backup": {
+        "title": "pocketlab.commands.lite.database.backup",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-database-backup"
+      },
+      "event:pocketlab.commands.lite.database.backup.verify": {
+        "title": "pocketlab.commands.lite.database.backup.verify",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-database-backup-verify"
+      },
+      "event:pocketlab.commands.lite.database.restore": {
+        "title": "pocketlab.commands.lite.database.restore",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-database-restore"
+      },
+      "event:pocketlab.commands.lite.database.restore.preview": {
+        "title": "pocketlab.commands.lite.database.restore.preview",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-database-restore-preview"
+      },
+      "event:pocketlab.commands.lite.device.restart": {
+        "title": "pocketlab.commands.lite.device.restart",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-device-restart"
+      },
+      "event:pocketlab.commands.lite.maintenance.checkpoint": {
+        "title": "pocketlab.commands.lite.maintenance.checkpoint",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-maintenance-checkpoint"
+      },
+      "event:pocketlab.commands.lite.maintenance.retention": {
+        "title": "pocketlab.commands.lite.maintenance.retention",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-maintenance-retention"
+      },
+      "event:pocketlab.commands.lite.restore.apply": {
+        "title": "pocketlab.commands.lite.restore.apply",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-restore-apply"
+      },
+      "event:pocketlab.commands.lite.restore.preview": {
+        "title": "pocketlab.commands.lite.restore.preview",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-restore-preview"
+      },
+      "event:pocketlab.commands.lite.security.app_scan": {
+        "title": "pocketlab.commands.lite.security.app_scan",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-security-app-scan"
+      },
+      "event:pocketlab.commands.lite.security.scan": {
+        "title": "pocketlab.commands.lite.security.scan",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-lite-security-scan"
+      },
+      "event:pocketlab.commands.node": {
+        "title": "pocketlab.commands.node",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node"
+      },
+      "event:pocketlab.commands.node.all": {
+        "title": "pocketlab.commands.node.all",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-all"
+      },
+      "event:pocketlab.commands.node.all.{command.replace": {
+        "title": "pocketlab.commands.node.all.{command.replace",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-all-command-replace"
+      },
+      "event:pocketlab.commands.node.{node_id}": {
+        "title": "pocketlab.commands.node.{node_id}",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-node-id"
+      },
+      "event:pocketlab.commands.node.{node_id}.{command.replace": {
+        "title": "pocketlab.commands.node.{node_id}.{command.replace",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-node-id-command-replace"
+      },
+      "event:pocketlab.commands.node.{normalized_node_id}.agent.restart": {
+        "title": "pocketlab.commands.node.{normalized_node_id}.agent.restart",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-normalized-node-id-agent-restart"
+      },
+      "event:pocketlab.commands.node.{self.node_id}": {
+        "title": "pocketlab.commands.node.{self.node_id}",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-node-self-node-id"
+      },
+      "event:pocketlab.commands.operation.execute": {
+        "title": "pocketlab.commands.operation.execute",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-operation-execute"
+      },
+      "event:pocketlab.commands.release.apply": {
+        "title": "pocketlab.commands.release.apply",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-release-apply"
+      },
+      "event:pocketlab.commands.release.check": {
+        "title": "pocketlab.commands.release.check",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-release-check"
+      },
+      "event:pocketlab.commands.runbook.approve": {
+        "title": "pocketlab.commands.runbook.approve",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-runbook-approve"
+      },
+      "event:pocketlab.commands.runbook.execute": {
+        "title": "pocketlab.commands.runbook.execute",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-runbook-execute"
+      },
+      "event:pocketlab.commands.runbook.reject": {
+        "title": "pocketlab.commands.runbook.reject",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-runbook-reject"
+      },
+      "event:pocketlab.commands.security.configure_opa": {
+        "title": "pocketlab.commands.security.configure_opa",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-security-configure-opa"
+      },
+      "event:pocketlab.commands.security.scan": {
+        "title": "pocketlab.commands.security.scan",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-security-scan"
+      },
+      "event:pocketlab.commands.unknown": {
+        "title": "pocketlab.commands.unknown",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-unknown"
+      },
+      "event:pocketlab.commands.vault.dynamic_secret": {
+        "title": "pocketlab.commands.vault.dynamic_secret",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-vault-dynamic-secret"
+      },
+      "event:pocketlab.commands.vault.rotate": {
+        "title": "pocketlab.commands.vault.rotate",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-commands-vault-rotate"
+      },
+      "event:pocketlab.events": {
+        "title": "pocketlab.events",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events"
+      },
+      "event:pocketlab.events.api.started": {
+        "title": "pocketlab.events.api.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-api-started"
+      },
+      "event:pocketlab.events.api.stopped": {
+        "title": "pocketlab.events.api.stopped",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-api-stopped"
+      },
+      "event:pocketlab.events.catalog.refresh_started": {
+        "title": "pocketlab.events.catalog.refresh_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-catalog-refresh-started"
+      },
+      "event:pocketlab.events.catalog.refreshed": {
+        "title": "pocketlab.events.catalog.refreshed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-catalog-refreshed"
+      },
+      "event:pocketlab.events.command.dead_lettered": {
+        "title": "pocketlab.events.command.dead_lettered",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-dead-lettered"
+      },
+      "event:pocketlab.events.command.deferred": {
+        "title": "pocketlab.events.command.deferred",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-deferred"
+      },
+      "event:pocketlab.events.command.failed": {
+        "title": "pocketlab.events.command.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-failed"
+      },
+      "event:pocketlab.events.command.queued": {
+        "title": "pocketlab.events.command.queued",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-queued"
+      },
+      "event:pocketlab.events.command.received": {
+        "title": "pocketlab.events.command.received",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-received"
+      },
+      "event:pocketlab.events.command.retry_scheduled": {
+        "title": "pocketlab.events.command.retry_scheduled",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-retry-scheduled"
+      },
+      "event:pocketlab.events.command.running": {
+        "title": "pocketlab.events.command.running",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-running"
+      },
+      "event:pocketlab.events.command.succeeded": {
+        "title": "pocketlab.events.command.succeeded",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-succeeded"
+      },
+      "event:pocketlab.events.command.worker_claimed": {
+        "title": "pocketlab.events.command.worker_claimed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-command-worker-claimed"
+      },
+      "event:pocketlab.events.drift.detected": {
+        "title": "pocketlab.events.drift.detected",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-detected"
+      },
+      "event:pocketlab.events.drift.previewed": {
+        "title": "pocketlab.events.drift.previewed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-previewed"
+      },
+      "event:pocketlab.events.drift.scan_completed": {
+        "title": "pocketlab.events.drift.scan_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-scan-completed"
+      },
+      "event:pocketlab.events.drift.scan_started": {
+        "title": "pocketlab.events.drift.scan_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-scan-started"
+      },
+      "event:pocketlab.events.drift.{action}": {
+        "title": "pocketlab.events.drift.{action}",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-action"
+      },
+      "event:pocketlab.events.drift.{action}_started": {
+        "title": "pocketlab.events.drift.{action}_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-drift-action-started"
+      },
+      "event:pocketlab.events.fleet.bootstrap_blocked": {
+        "title": "pocketlab.events.fleet.bootstrap_blocked",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-bootstrap-blocked"
+      },
+      "event:pocketlab.events.fleet.config_updated": {
+        "title": "pocketlab.events.fleet.config_updated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-config-updated"
+      },
+      "event:pocketlab.events.fleet.device_health_sampled": {
+        "title": "pocketlab.events.fleet.device_health_sampled",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-device-health-sampled"
+      },
+      "event:pocketlab.events.fleet.device_removed": {
+        "title": "pocketlab.events.fleet.device_removed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-device-removed"
+      },
+      "event:pocketlab.events.fleet.health_changed": {
+        "title": "pocketlab.events.fleet.health_changed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-health-changed"
+      },
+      "event:pocketlab.events.fleet.health_sampled": {
+        "title": "pocketlab.events.fleet.health_sampled",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-health-sampled"
+      },
+      "event:pocketlab.events.fleet.invite_accepted": {
+        "title": "pocketlab.events.fleet.invite_accepted",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-invite-accepted"
+      },
+      "event:pocketlab.events.fleet.invite_created": {
+        "title": "pocketlab.events.fleet.invite_created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-invite-created"
+      },
+      "event:pocketlab.events.fleet.invite_revoked": {
+        "title": "pocketlab.events.fleet.invite_revoked",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-invite-revoked"
+      },
+      "event:pocketlab.events.fleet.invite_started": {
+        "title": "pocketlab.events.fleet.invite_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-invite-started"
+      },
+      "event:pocketlab.events.fleet.node_": {
+        "title": "pocketlab.events.fleet.node_",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node"
+      },
+      "event:pocketlab.events.fleet.node_capabilities": {
+        "title": "pocketlab.events.fleet.node_capabilities",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-capabilities"
+      },
+      "event:pocketlab.events.fleet.node_command_queued": {
+        "title": "pocketlab.events.fleet.node_command_queued",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-command-queued"
+      },
+      "event:pocketlab.events.fleet.node_command_result": {
+        "title": "pocketlab.events.fleet.node_command_result",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-command-result"
+      },
+      "event:pocketlab.events.fleet.node_health": {
+        "title": "pocketlab.events.fleet.node_health",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-health"
+      },
+      "event:pocketlab.events.fleet.node_heartbeat": {
+        "title": "pocketlab.events.fleet.node_heartbeat",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-heartbeat"
+      },
+      "event:pocketlab.events.fleet.node_left": {
+        "title": "pocketlab.events.fleet.node_left",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-left"
+      },
+      "event:pocketlab.events.fleet.node_profile": {
+        "title": "pocketlab.events.fleet.node_profile",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-profile"
+      },
+      "event:pocketlab.events.fleet.node_seen": {
+        "title": "pocketlab.events.fleet.node_seen",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-seen"
+      },
+      "event:pocketlab.events.fleet.node_supervisor": {
+        "title": "pocketlab.events.fleet.node_supervisor",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-supervisor"
+      },
+      "event:pocketlab.events.fleet.node_telemetry": {
+        "title": "pocketlab.events.fleet.node_telemetry",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-fleet-node-telemetry"
+      },
+      "event:pocketlab.events.health.changed": {
+        "title": "pocketlab.events.health.changed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-health-changed"
+      },
+      "event:pocketlab.events.health.check_completed": {
+        "title": "pocketlab.events.health.check_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-health-check-completed"
+      },
+      "event:pocketlab.events.health.checked": {
+        "title": "pocketlab.events.health.checked",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-health-checked"
+      },
+      "event:pocketlab.events.health.service_changed": {
+        "title": "pocketlab.events.health.service_changed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-health-service-changed"
+      },
+      "event:pocketlab.events.lite.app.backup.completed": {
+        "title": "pocketlab.events.lite.app.backup.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-backup-completed"
+      },
+      "event:pocketlab.events.lite.app.backup.failed": {
+        "title": "pocketlab.events.lite.app.backup.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-backup-failed"
+      },
+      "event:pocketlab.events.lite.app.backup.started": {
+        "title": "pocketlab.events.lite.app.backup.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-backup-started"
+      },
+      "event:pocketlab.events.lite.app.media.completed": {
+        "title": "pocketlab.events.lite.app.media.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-media-completed"
+      },
+      "event:pocketlab.events.lite.app.media.failed": {
+        "title": "pocketlab.events.lite.app.media.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-media-failed"
+      },
+      "event:pocketlab.events.lite.app.media.started": {
+        "title": "pocketlab.events.lite.app.media.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-media-started"
+      },
+      "event:pocketlab.events.lite.app.media.updated": {
+        "title": "pocketlab.events.lite.app.media.updated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-media-updated"
+      },
+      "event:pocketlab.events.lite.app.restore.preview_created": {
+        "title": "pocketlab.events.lite.app.restore.preview_created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-restore-preview-created"
+      },
+      "event:pocketlab.events.lite.app.restore.preview_failed": {
+        "title": "pocketlab.events.lite.app.restore.preview_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-restore-preview-failed"
+      },
+      "event:pocketlab.events.lite.app.restore.preview_started": {
+        "title": "pocketlab.events.lite.app.restore.preview_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-restore-preview-started"
+      },
+      "event:pocketlab.events.lite.app.update.check_completed": {
+        "title": "pocketlab.events.lite.app.update.check_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-update-check-completed"
+      },
+      "event:pocketlab.events.lite.app.update.check_failed": {
+        "title": "pocketlab.events.lite.app.update.check_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-update-check-failed"
+      },
+      "event:pocketlab.events.lite.app.update.check_started": {
+        "title": "pocketlab.events.lite.app.update.check_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-update-check-started"
+      },
+      "event:pocketlab.events.lite.app.{event_prefix}.completed": {
+        "title": "pocketlab.events.lite.app.{event_prefix}.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-event-prefix-completed"
+      },
+      "event:pocketlab.events.lite.app.{event_prefix}.failed": {
+        "title": "pocketlab.events.lite.app.{event_prefix}.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-event-prefix-failed"
+      },
+      "event:pocketlab.events.lite.app.{event_prefix}.started": {
+        "title": "pocketlab.events.lite.app.{event_prefix}.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-event-prefix-started"
+      },
+      "event:pocketlab.events.lite.app.{event_prefix}.updated": {
+        "title": "pocketlab.events.lite.app.{event_prefix}.updated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-app-event-prefix-updated"
+      },
+      "event:pocketlab.events.lite.backup.failed": {
+        "title": "pocketlab.events.lite.backup.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-failed"
+      },
+      "event:pocketlab.events.lite.backup.snapshot_created": {
+        "title": "pocketlab.events.lite.backup.snapshot_created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-snapshot-created"
+      },
+      "event:pocketlab.events.lite.backup.started": {
+        "title": "pocketlab.events.lite.backup.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-started"
+      },
+      "event:pocketlab.events.lite.backup.verified": {
+        "title": "pocketlab.events.lite.backup.verified",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-verified"
+      },
+      "event:pocketlab.events.lite.backup.verify_failed": {
+        "title": "pocketlab.events.lite.backup.verify_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-verify-failed"
+      },
+      "event:pocketlab.events.lite.backup.verify_started": {
+        "title": "pocketlab.events.lite.backup.verify_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-backup-verify-started"
+      },
+      "event:pocketlab.events.lite.catalog.install_completed": {
+        "title": "pocketlab.events.lite.catalog.install_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-catalog-install-completed"
+      },
+      "event:pocketlab.events.lite.catalog.install_failed": {
+        "title": "pocketlab.events.lite.catalog.install_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-catalog-install-failed"
+      },
+      "event:pocketlab.events.lite.catalog.install_started": {
+        "title": "pocketlab.events.lite.catalog.install_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-catalog-install-started"
+      },
+      "event:pocketlab.events.lite.database.backup.started": {
+        "title": "pocketlab.events.lite.database.backup.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-backup-started"
+      },
+      "event:pocketlab.events.lite.database.backup.verified": {
+        "title": "pocketlab.events.lite.database.backup.verified",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-backup-verified"
+      },
+      "event:pocketlab.events.lite.database.restore.preview_ready": {
+        "title": "pocketlab.events.lite.database.restore.preview_ready",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-restore-preview-ready"
+      },
+      "event:pocketlab.events.lite.database.restore.started": {
+        "title": "pocketlab.events.lite.database.restore.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-restore-started"
+      },
+      "event:pocketlab.events.lite.database.restore.{event_suffix}": {
+        "title": "pocketlab.events.lite.database.restore.{event_suffix}",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-restore-event-suffix"
+      },
+      "event:pocketlab.events.lite.database.restore.{rollback_status}": {
+        "title": "pocketlab.events.lite.database.restore.{rollback_status}",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-database-restore-rollback-status"
+      },
+      "event:pocketlab.events.lite.restore.checkpoint_created": {
+        "title": "pocketlab.events.lite.restore.checkpoint_created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-checkpoint-created"
+      },
+      "event:pocketlab.events.lite.restore.completed": {
+        "title": "pocketlab.events.lite.restore.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-completed"
+      },
+      "event:pocketlab.events.lite.restore.failed": {
+        "title": "pocketlab.events.lite.restore.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-failed"
+      },
+      "event:pocketlab.events.lite.restore.health_validated": {
+        "title": "pocketlab.events.lite.restore.health_validated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-health-validated"
+      },
+      "event:pocketlab.events.lite.restore.preview_created": {
+        "title": "pocketlab.events.lite.restore.preview_created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-preview-created"
+      },
+      "event:pocketlab.events.lite.restore.preview_failed": {
+        "title": "pocketlab.events.lite.restore.preview_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-preview-failed"
+      },
+      "event:pocketlab.events.lite.restore.preview_started": {
+        "title": "pocketlab.events.lite.restore.preview_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-preview-started"
+      },
+      "event:pocketlab.events.lite.restore.service_restart_checked": {
+        "title": "pocketlab.events.lite.restore.service_restart_checked",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-service-restart-checked"
+      },
+      "event:pocketlab.events.lite.restore.started": {
+        "title": "pocketlab.events.lite.restore.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-restore-started"
+      },
+      "event:pocketlab.events.lite.security.critical_found": {
+        "title": "pocketlab.events.lite.security.critical_found",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-critical-found"
+      },
+      "event:pocketlab.events.lite.security.scan.completed": {
+        "title": "pocketlab.events.lite.security.scan.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-scan-completed"
+      },
+      "event:pocketlab.events.lite.security.scan.started": {
+        "title": "pocketlab.events.lite.security.scan.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-scan-started"
+      },
+      "event:pocketlab.events.lite.security.tool_missing": {
+        "title": "pocketlab.events.lite.security.tool_missing",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-tool-missing"
+      },
+      "event:pocketlab.events.lite.security.{tool}.completed": {
+        "title": "pocketlab.events.lite.security.{tool}.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-lite-security-tool-completed"
+      },
+      "event:pocketlab.events.live_status.started": {
+        "title": "pocketlab.events.live_status.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-live-status-started"
+      },
+      "event:pocketlab.events.live_status.stopped": {
+        "title": "pocketlab.events.live_status.stopped",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-live-status-stopped"
+      },
+      "event:pocketlab.events.live_status.{name}_error": {
+        "title": "pocketlab.events.live_status.{name}_error",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-live-status-name-error"
+      },
+      "event:pocketlab.events.manual": {
+        "title": "pocketlab.events.manual",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-manual"
+      },
+      "event:pocketlab.events.operation.created": {
+        "title": "pocketlab.events.operation.created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-created"
+      },
+      "event:pocketlab.events.operation.failed": {
+        "title": "pocketlab.events.operation.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-failed"
+      },
+      "event:pocketlab.events.operation.log": {
+        "title": "pocketlab.events.operation.log",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-log"
+      },
+      "event:pocketlab.events.operation.log.error": {
+        "title": "pocketlab.events.operation.log.error",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-log-error"
+      },
+      "event:pocketlab.events.operation.log.warning": {
+        "title": "pocketlab.events.operation.log.warning",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-log-warning"
+      },
+      "event:pocketlab.events.operation.previewed": {
+        "title": "pocketlab.events.operation.previewed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-previewed"
+      },
+      "event:pocketlab.events.operation.snapshot": {
+        "title": "pocketlab.events.operation.snapshot",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-snapshot"
+      },
+      "event:pocketlab.events.operation.status": {
+        "title": "pocketlab.events.operation.status",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-status"
+      },
+      "event:pocketlab.events.operation.succeeded": {
+        "title": "pocketlab.events.operation.succeeded",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-succeeded"
+      },
+      "event:pocketlab.events.operation.worker_claimed": {
+        "title": "pocketlab.events.operation.worker_claimed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-operation-worker-claimed"
+      },
+      "event:pocketlab.events.release.applied": {
+        "title": "pocketlab.events.release.applied",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-applied"
+      },
+      "event:pocketlab.events.release.available": {
+        "title": "pocketlab.events.release.available",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-available"
+      },
+      "event:pocketlab.events.release.check_degraded": {
+        "title": "pocketlab.events.release.check_degraded",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-check-degraded"
+      },
+      "event:pocketlab.events.release.current": {
+        "title": "pocketlab.events.release.current",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-current"
+      },
+      "event:pocketlab.events.release.stage.completed": {
+        "title": "pocketlab.events.release.stage.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-stage-completed"
+      },
+      "event:pocketlab.events.release.stage.failed": {
+        "title": "pocketlab.events.release.stage.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-stage-failed"
+      },
+      "event:pocketlab.events.release.stage.started": {
+        "title": "pocketlab.events.release.stage.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-stage-started"
+      },
+      "event:pocketlab.events.release.workflow.completed": {
+        "title": "pocketlab.events.release.workflow.completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-workflow-completed"
+      },
+      "event:pocketlab.events.release.workflow.failed": {
+        "title": "pocketlab.events.release.workflow.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-workflow-failed"
+      },
+      "event:pocketlab.events.release.workflow.started": {
+        "title": "pocketlab.events.release.workflow.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-release-workflow-started"
+      },
+      "event:pocketlab.events.runbook.approval_queued": {
+        "title": "pocketlab.events.runbook.approval_queued",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-approval-queued"
+      },
+      "event:pocketlab.events.runbook.approval_required": {
+        "title": "pocketlab.events.runbook.approval_required",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-approval-required"
+      },
+      "event:pocketlab.events.runbook.approved": {
+        "title": "pocketlab.events.runbook.approved",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-approved"
+      },
+      "event:pocketlab.events.runbook.auto_approved": {
+        "title": "pocketlab.events.runbook.auto_approved",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-auto-approved"
+      },
+      "event:pocketlab.events.runbook.failed": {
+        "title": "pocketlab.events.runbook.failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-failed"
+      },
+      "event:pocketlab.events.runbook.queued": {
+        "title": "pocketlab.events.runbook.queued",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-queued"
+      },
+      "event:pocketlab.events.runbook.rejected": {
+        "title": "pocketlab.events.runbook.rejected",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-rejected"
+      },
+      "event:pocketlab.events.runbook.rejection_queued": {
+        "title": "pocketlab.events.runbook.rejection_queued",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-rejection-queued"
+      },
+      "event:pocketlab.events.runbook.resumed": {
+        "title": "pocketlab.events.runbook.resumed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-resumed"
+      },
+      "event:pocketlab.events.runbook.started": {
+        "title": "pocketlab.events.runbook.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-started"
+      },
+      "event:pocketlab.events.runbook.step_failed": {
+        "title": "pocketlab.events.runbook.step_failed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-step-failed"
+      },
+      "event:pocketlab.events.runbook.step_started": {
+        "title": "pocketlab.events.runbook.step_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-step-started"
+      },
+      "event:pocketlab.events.runbook.step_succeeded": {
+        "title": "pocketlab.events.runbook.step_succeeded",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-step-succeeded"
+      },
+      "event:pocketlab.events.runbook.succeeded": {
+        "title": "pocketlab.events.runbook.succeeded",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-runbook-succeeded"
+      },
+      "event:pocketlab.events.security.evaluated": {
+        "title": "pocketlab.events.security.evaluated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-security-evaluated"
+      },
+      "event:pocketlab.events.security.finding": {
+        "title": "pocketlab.events.security.finding",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-security-finding"
+      },
+      "event:pocketlab.events.security.log_query": {
+        "title": "pocketlab.events.security.log_query",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-security-log-query"
+      },
+      "event:pocketlab.events.security.policy_updated": {
+        "title": "pocketlab.events.security.policy_updated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-security-policy-updated"
+      },
+      "event:pocketlab.events.security.scan_completed": {
+        "title": "pocketlab.events.security.scan_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-security-scan-completed"
+      },
+      "event:pocketlab.events.security.scan_started": {
+        "title": "pocketlab.events.security.scan_started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-security-scan-started"
+      },
+      "event:pocketlab.events.telemetry": {
+        "title": "pocketlab.events.telemetry",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-telemetry"
+      },
+      "event:pocketlab.events.telemetry.changed": {
+        "title": "pocketlab.events.telemetry.changed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-telemetry-changed"
+      },
+      "event:pocketlab.events.telemetry.sampled": {
+        "title": "pocketlab.events.telemetry.sampled",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-telemetry-sampled"
+      },
+      "event:pocketlab.events.vault.lease_created": {
+        "title": "pocketlab.events.vault.lease_created",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-vault-lease-created"
+      },
+      "event:pocketlab.events.vault.secret_rotated": {
+        "title": "pocketlab.events.vault.secret_rotated",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-vault-secret-rotated"
+      },
+      "event:pocketlab.events.websocket.heartbeat": {
+        "title": "pocketlab.events.websocket.heartbeat",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-websocket-heartbeat"
+      },
+      "event:pocketlab.events.worker.error": {
+        "title": "pocketlab.events.worker.error",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-worker-error"
+      },
+      "event:pocketlab.events.worker.heartbeat": {
+        "title": "pocketlab.events.worker.heartbeat",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-worker-heartbeat"
+      },
+      "event:pocketlab.events.worker.ignored": {
+        "title": "pocketlab.events.worker.ignored",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-worker-ignored"
+      },
+      "event:pocketlab.events.worker.maintenance_deferred": {
+        "title": "pocketlab.events.worker.maintenance_deferred",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-worker-maintenance-deferred"
+      },
+      "event:pocketlab.events.worker.started": {
+        "title": "pocketlab.events.worker.started",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-worker-started"
+      },
+      "event:pocketlab.events.worker.stopped": {
+        "title": "pocketlab.events.worker.stopped",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-worker-stopped"
+      },
+      "event:pocketlab.events.workflow.dead_letter_replayed": {
+        "title": "pocketlab.events.workflow.dead_letter_replayed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-workflow-dead-letter-replayed"
+      },
+      "event:pocketlab.events.workflow.recovery_completed": {
+        "title": "pocketlab.events.workflow.recovery_completed",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-workflow-recovery-completed"
+      },
+      "event:pocketlab.events.workflow.replay_requested": {
+        "title": "pocketlab.events.workflow.replay_requested",
+        "url": "../../docs/generated/development/lite-events.md#pocketlab-events-workflow-replay-requested"
+      },
+      "projection:apps.actions": {
+        "title": "apps.actions",
+        "url": "../../docs/generated/development/projection-catalog.md#apps-actions"
+      },
+      "projection:apps.catalog": {
+        "title": "apps.catalog",
+        "url": "../../docs/generated/development/projection-catalog.md#apps-catalog"
+      },
+      "projection:apps.lifecycle": {
+        "title": "apps.lifecycle",
+        "url": "../../docs/generated/development/projection-catalog.md#apps-lifecycle"
+      },
+      "projection:fleet": {
+        "title": "fleet",
+        "url": "../../docs/generated/development/projection-catalog.md#fleet"
+      },
+      "projection:home": {
+        "title": "home",
+        "url": "../../docs/generated/development/projection-catalog.md#home"
+      },
+      "projection:recovery": {
+        "title": "recovery",
+        "url": "../../docs/generated/development/projection-catalog.md#recovery"
+      },
+      "projection:security": {
+        "title": "security",
+        "url": "../../docs/generated/development/projection-catalog.md#security"
+      },
+      "reason:already_tuned": {
+        "title": "already_tuned",
+        "url": "../../docs/generated/development/reason-codes.md#already-tuned"
+      },
+      "reason:cold_start_validation": {
+        "title": "cold_start_validation",
+        "url": "../../docs/generated/development/reason-codes.md#cold-start-validation"
+      },
+      "reason:command_undeliverable": {
+        "title": "command_undeliverable",
+        "url": "../../docs/generated/development/reason-codes.md#command-undeliverable"
+      },
+      "reason:diagnostics_not_active": {
+        "title": "diagnostics_not_active",
+        "url": "../../docs/generated/development/reason-codes.md#diagnostics-not-active"
+      },
+      "reason:disabled": {
+        "title": "disabled",
+        "url": "../../docs/generated/development/reason-codes.md#disabled"
+      },
+      "reason:duplicate_device": {
+        "title": "duplicate_device",
+        "url": "../../docs/generated/development/reason-codes.md#duplicate-device"
+      },
+      "reason:generation_changed": {
+        "title": "generation_changed",
+        "url": "../../docs/generated/development/reason-codes.md#generation-changed"
+      },
+      "reason:identity_mismatch": {
+        "title": "identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#identity-mismatch"
+      },
+      "reason:insufficient_storage": {
+        "title": "insufficient_storage",
+        "url": "../../docs/generated/development/reason-codes.md#insufficient-storage"
+      },
+      "reason:interrupted": {
+        "title": "interrupted",
+        "url": "../../docs/generated/development/reason-codes.md#interrupted"
+      },
+      "reason:invalid_domain": {
+        "title": "invalid_domain",
+        "url": "../../docs/generated/development/reason-codes.md#invalid-domain"
+      },
+      "reason:invite_expired": {
+        "title": "invite_expired",
+        "url": "../../docs/generated/development/reason-codes.md#invite-expired"
+      },
+      "reason:invite_identity_mismatch": {
+        "title": "invite_identity_mismatch",
+        "url": "../../docs/generated/development/reason-codes.md#invite-identity-mismatch"
+      },
+      "reason:lease_active": {
+        "title": "lease_active",
+        "url": "../../docs/generated/development/reason-codes.md#lease-active"
+      },
+      "reason:legacy_multiple_active_runs": {
+        "title": "legacy_multiple_active_runs",
+        "url": "../../docs/generated/development/reason-codes.md#legacy-multiple-active-runs"
+      },
+      "reason:metadata_only": {
+        "title": "metadata_only",
+        "url": "../../docs/generated/development/reason-codes.md#metadata-only"
+      },
+      "reason:no_active_generation": {
+        "title": "no_active_generation",
+        "url": "../../docs/generated/development/reason-codes.md#no-active-generation"
+      },
+      "reason:not_found_in_restored_snapshot": {
+        "title": "not_found_in_restored_snapshot",
+        "url": "../../docs/generated/development/reason-codes.md#not-found-in-restored-snapshot"
+      },
+      "reason:payload_too_large": {
+        "title": "payload_too_large",
+        "url": "../../docs/generated/development/reason-codes.md#payload-too-large"
+      },
+      "reason:projection_too_old": {
+        "title": "projection_too_old",
+        "url": "../../docs/generated/development/reason-codes.md#projection-too-old"
+      },
+      "reason:projection_unavailable": {
+        "title": "projection_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#projection-unavailable"
+      },
+      "reason:protected_server_host": {
+        "title": "protected_server_host",
+        "url": "../../docs/generated/development/reason-codes.md#protected-server-host"
+      },
+      "reason:queue_full": {
+        "title": "queue_full",
+        "url": "../../docs/generated/development/reason-codes.md#queue-full"
+      },
+      "reason:read_degraded": {
+        "title": "read_degraded",
+        "url": "../../docs/generated/development/reason-codes.md#read-degraded"
+      },
+      "reason:release_projection_unavailable": {
+        "title": "release_projection_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#release-projection-unavailable"
+      },
+      "reason:remote_access_not_ready": {
+        "title": "remote_access_not_ready",
+        "url": "../../docs/generated/development/reason-codes.md#remote-access-not-ready"
+      },
+      "reason:service_unavailable": {
+        "title": "service_unavailable",
+        "url": "../../docs/generated/development/reason-codes.md#service-unavailable"
+      },
+      "reason:shutdown": {
+        "title": "shutdown",
+        "url": "../../docs/generated/development/reason-codes.md#shutdown"
+      },
+      "reason:shutdown_during_mailbox_backpressure": {
+        "title": "shutdown_during_mailbox_backpressure",
+        "url": "../../docs/generated/development/reason-codes.md#shutdown-during-mailbox-backpressure"
+      },
+      "reason:submit_failed": {
+        "title": "submit_failed",
+        "url": "../../docs/generated/development/reason-codes.md#submit-failed"
+      },
+      "reason:target_not_allowed": {
+        "title": "target_not_allowed",
+        "url": "../../docs/generated/development/reason-codes.md#target-not-allowed"
+      },
+      "reason:unregistered_domain": {
+        "title": "unregistered_domain",
+        "url": "../../docs/generated/development/reason-codes.md#unregistered-domain"
+      },
+      "reason:worker_failed": {
+        "title": "worker_failed",
+        "url": "../../docs/generated/development/reason-codes.md#worker-failed"
+      },
+      "reason:worker_start_timeout": {
+        "title": "worker_start_timeout",
+        "url": "../../docs/generated/development/reason-codes.md#worker-start-timeout"
+      },
+      "service:pocket-api": {
+        "title": "pocket-api",
+        "url": "../../docs/generated/development/service-catalog.md#pocket-api"
+      },
+      "service:pocket-nats": {
+        "title": "pocket-nats",
+        "url": "../../docs/generated/development/service-catalog.md#pocket-nats"
+      },
+      "service:pocket-node-agent": {
+        "title": "pocket-node-agent",
+        "url": "../../docs/generated/development/service-catalog.md#pocket-node-agent"
+      },
+      "service:pocket-worker": {
+        "title": "pocket-worker",
+        "url": "../../docs/generated/development/service-catalog.md#pocket-worker"
+      },
+      "service:pocketlab-agent-<node_id>": {
+        "title": "pocketlab-agent-<node_id>",
+        "url": "../../docs/generated/development/service-catalog.md#pocketlab-agent-node-id"
+      },
+      "service:pocketlab-agent-supervisor-<node_id>": {
+        "title": "pocketlab-agent-supervisor-<node_id>",
+        "url": "../../docs/generated/development/service-catalog.md#pocketlab-agent-supervisor-node-id"
+      },
+      "table:app_action_lifecycle": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#app-action-lifecycle",
+        "schema_url": "../../docs/generated/schemaspy/tables/app_action_lifecycle.html",
+        "title": "app_action_lifecycle"
+      },
+      "table:app_current_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#app-current-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/app_current_state.html",
+        "title": "app_current_state"
+      },
+      "table:audit_evidence_index": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#audit-evidence-index",
+        "schema_url": "../../docs/generated/schemaspy/tables/audit_evidence_index.html",
+        "title": "audit_evidence_index"
+      },
+      "table:backup_manifest_index": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#backup-manifest-index",
+        "schema_url": "../../docs/generated/schemaspy/tables/backup_manifest_index.html",
+        "title": "backup_manifest_index"
+      },
+      "table:command_lifecycle": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#command-lifecycle",
+        "schema_url": "../../docs/generated/schemaspy/tables/command_lifecycle.html",
+        "title": "command_lifecycle"
+      },
+      "table:device_awareness_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-awareness-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_awareness_state.html",
+        "title": "device_awareness_state"
+      },
+      "table:device_current_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-current-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_current_state.html",
+        "title": "device_current_state"
+      },
+      "table:device_enrollment_registry": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-enrollment-registry",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_enrollment_registry.html",
+        "title": "device_enrollment_registry"
+      },
+      "table:device_health_attention": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-health-attention",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_health_attention.html",
+        "title": "device_health_attention"
+      },
+      "table:device_health_current": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-health-current",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_health_current.html",
+        "title": "device_health_current"
+      },
+      "table:device_health_transitions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-health-transitions",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_health_transitions.html",
+        "title": "device_health_transitions"
+      },
+      "table:device_heartbeats": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-heartbeats",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_heartbeats.html",
+        "title": "device_heartbeats"
+      },
+      "table:device_identity_guards": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-identity-guards",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_identity_guards.html",
+        "title": "device_identity_guards"
+      },
+      "table:device_invite_lifecycle": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-invite-lifecycle",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_invite_lifecycle.html",
+        "title": "device_invite_lifecycle"
+      },
+      "table:device_lifecycle_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-lifecycle-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_lifecycle_events.html",
+        "title": "device_lifecycle_events"
+      },
+      "table:device_lifecycle_transactions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-lifecycle-transactions",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_lifecycle_transactions.html",
+        "title": "device_lifecycle_transactions"
+      },
+      "table:device_recovery_history": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-recovery-history",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_recovery_history.html",
+        "title": "device_recovery_history"
+      },
+      "table:device_removal_receipts": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-removal-receipts",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_removal_receipts.html",
+        "title": "device_removal_receipts"
+      },
+      "table:device_supervisor_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-supervisor-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_supervisor_state.html",
+        "title": "device_supervisor_state"
+      },
+      "table:device_system_profiles": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#device-system-profiles",
+        "schema_url": "../../docs/generated/schemaspy/tables/device_system_profiles.html",
+        "title": "device_system_profiles"
+      },
+      "table:domain_revisions": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#domain-revisions",
+        "schema_url": "../../docs/generated/schemaspy/tables/domain_revisions.html",
+        "title": "domain_revisions"
+      },
+      "table:lite_installed_release_identity": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-installed-release-identity",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_installed_release_identity.html",
+        "title": "lite_installed_release_identity"
+      },
+      "table:lite_revision_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#lite-revision-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/lite_revision_events.html",
+        "title": "lite_revision_events"
+      },
+      "table:phase3b_current_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#phase3b-current-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/phase3b_current_state.html",
+        "title": "phase3b_current_state"
+      },
+      "table:phase3b_revision_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#phase3b-revision-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/phase3b_revision_events.html",
+        "title": "phase3b_revision_events"
+      },
+      "table:projection_dirty_signals": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#projection-dirty-signals",
+        "schema_url": "../../docs/generated/schemaspy/tables/projection_dirty_signals.html",
+        "title": "projection_dirty_signals"
+      },
+      "table:projection_refresh_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#projection-refresh-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/projection_refresh_state.html",
+        "title": "projection_refresh_state"
+      },
+      "table:recovery_current_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-current-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/recovery_current_state.html",
+        "title": "recovery_current_state"
+      },
+      "table:recovery_operations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#recovery-operations",
+        "schema_url": "../../docs/generated/schemaspy/tables/recovery_operations.html",
+        "title": "recovery_operations"
+      },
+      "table:release_runtime_projection": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#release-runtime-projection",
+        "schema_url": "../../docs/generated/schemaspy/tables/release_runtime_projection.html",
+        "title": "release_runtime_projection"
+      },
+      "table:schema_migrations": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#schema-migrations",
+        "schema_url": "../../docs/generated/schemaspy/tables/schema_migrations.html",
+        "title": "schema_migrations"
+      },
+      "table:security_database_backups": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-database-backups",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_database_backups.html",
+        "title": "security_database_backups"
+      },
+      "table:security_database_restores": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-database-restores",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_database_restores.html",
+        "title": "security_database_restores"
+      },
+      "table:security_maintenance_runs": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-maintenance-runs",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_maintenance_runs.html",
+        "title": "security_maintenance_runs"
+      },
+      "table:security_profile_snapshots": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-profile-snapshots",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_profile_snapshots.html",
+        "title": "security_profile_snapshots"
+      },
+      "table:security_scan_evidence_refs": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-scan-evidence-refs",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_scan_evidence_refs.html",
+        "title": "security_scan_evidence_refs"
+      },
+      "table:security_scan_findings": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-scan-findings",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_scan_findings.html",
+        "title": "security_scan_findings"
+      },
+      "table:security_scan_progress_events": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-scan-progress-events",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_scan_progress_events.html",
+        "title": "security_scan_progress_events"
+      },
+      "table:security_scan_runs": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-scan-runs",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_scan_runs.html",
+        "title": "security_scan_runs"
+      },
+      "table:security_scan_tool_runs": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-scan-tool-runs",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_scan_tool_runs.html",
+        "title": "security_scan_tool_runs"
+      },
+      "table:security_store_metadata": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#security-store-metadata",
+        "schema_url": "../../docs/generated/schemaspy/tables/security_store_metadata.html",
+        "title": "security_store_metadata"
+      },
+      "table:workflow_command_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#workflow-command-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/workflow_command_state.html",
+        "title": "workflow_command_state"
+      },
+      "table:workflow_current_state": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#workflow-current-state",
+        "schema_url": "../../docs/generated/schemaspy/tables/workflow_current_state.html",
+        "title": "workflow_current_state"
+      },
+      "table:workflow_event_index": {
+        "catalog_url": "../../docs/generated/development/lite-sqlite-schema.md#workflow-event-index",
+        "schema_url": "../../docs/generated/schemaspy/tables/workflow_event_index.html",
+        "title": "workflow_event_index"
+      }
+    }
+  },
+  "metadata": {
+    "aggregate_fingerprint": "06af3df2d1feae21b6e3935a9bde3b053a3edd8efa6f74301854d309d16b4806",
+    "baseline_identity": null,
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/lite/generate_platform_catalogs.py",
+    "generator_version": 1,
+    "kind": "documentation_links",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "source_fingerprints": {
+      "contracts/generated/lite-openapi.json": "6854b6b4a7afd5d579568891473c4a6b6189f0041eddc5c87015ee1e715e4bf3",
+      "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0001_security_store.sql": "515a92f95d514ca001502d916eef117704933efbdf2e252a442c409dce06fc3f",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0002_security_delivery_lifecycle.sql": "4bd90ce24827810900642f810df31e8024a2e22c9b414554869c59ba6964f004",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0003_security_progress_lookup.sql": "ed62cdf82efe5ba87649c85975707d19716db5d8b96448b2662ac29737991bbf",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0004_security_maintenance.sql": "2cd552efee0cb696e635731869c1b4c9d95435c83773f2357f5a63d9614b1f65",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0005_security_read_performance.sql": "02e9e3e38da2f10b8e3f320e054c4fe75dd6c68dd1b1996bbfac5cc6d5e7ed57",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0006_control_plane_projections.sql": "8bbdea807993dc849bfaaa024bb67a4818c1a3184c85972f6a3e3f4bd5b900d1",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0007_app_current_subprojections.sql": "e2900d3e92c7464f76ea9da4a236fb7779b4950ad1977f573a882faf27001663",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0008_app_current_hot_subprojections.sql": "f5894d65c76571388d3c834a71b93318ec1dc00f43f7f89f8c8e2d179631b9c5",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0009_lite_revision_events.sql": "08abde8f1ec493d74577a1920a73b686dfac7f90bb1f613a61b5c5f41bf44cf2",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0010_device_system_profiles.sql": "1cecf5d22cf12a354ab0f0c78e2cd3aaddf6d206ead509b890c9811d815c93d6",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0011_device_trust_capability_awareness.sql": "cefb045871e81afcbffb53ce02997d4e71c4c00ca10faba45f5e26e1ed3d5da3",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0012_device_proactive_health.sql": "ee5fe0a68353cdb96fb8d8496ab0921cf932c6afef018054427070abbd8eec7b",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0013_device_lifecycle_idempotency.sql": "22debd67018f8c1c1a7741ee95040b780e86ef8a30177f500c8dba7d748e9318",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0014_transactional_lifecycle_projection_scheduler.sql": "9d185e029f421f9ab432069bbcba3c90f5208243531074938798853c8f357c8a",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0015_phase3b_system_current_state.sql": "878b925eede6393ffcdacd682f43f780e56e90482213b24c4d3ad5aacba22e91",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0016_phase3c_system_aggregates.sql": "db1e5d0046be31174601d38c83e428f6c67e327090c3687b949577a24aebcbe8",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0017_command_lifecycle_reconciliation.sql": "5a733ec0c804aca2af52141fb322dab4bfd50bdbdf601358727f38c18f538624",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0018_projection_semantic_hardening.sql": "380a026fcf06552faa81c8819f0e0647235e096f006ce0810d11fa052a906a34",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0019_workflow_projection_process.sql": "9ab77ee1621a47ab29ad76c01b8e466a0d14a2d7bbb156e618c32b8fab3bfade",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0020_release_runtime_process.sql": "e68d69668e67cf753f102317fdda5b1787c2051ed0ab0a74261ad4c47c3451af",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0021_lite_native_release.sql": "6b7ccaf3fc0a3d4bc38cbbb3ddcde13494b9f77531e4aac2bb3532834982d6f9",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0022_device_durable_enrollment.sql": "c5c8bdc2f1c3ad764862fd6f034a67287fffdc1dc6ced852f602137a3480165c",
+      "pocket-lab-final-structure/runtime/api_fastapi/db/schema/0023_device_runtime_truth.sql": "d899f26031fa69a11de0166b99e5fb3c7fa6d3feaaaf0d346268ec0a2650fd54",
+      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+    },
+    "validation_state": "generated"
+  }
+}

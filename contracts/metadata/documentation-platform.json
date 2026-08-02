@@ -1,0 +1,1300 @@
+{
+  "api_baseline": {
+    "exceptions_path": "contracts/metadata/api-compatibility-exceptions.json",
+    "path": "contracts/generated/lite-openapi.previous.json",
+    "required_for_release": true,
+    "source_type": "released-contract"
+  },
+  "capabilities": [
+    {
+      "degraded_behavior": "app actions remain visible but blocked when delivery is unsafe",
+      "expiry_behavior": "stale",
+      "freshness_seconds": 60,
+      "label": "App Host",
+      "name": "app_host",
+      "related_api": [
+        "GET /api/lite/fleet",
+        "GET /api/lite/catalog"
+      ],
+      "runtime_evidence": "fleet prepared projection",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+      "ui_states": [
+        "Online",
+        "Offline",
+        "Agent stopped"
+      ],
+      "verification_source": "device profile and heartbeat capability advertisement"
+    },
+    {
+      "degraded_behavior": "media connection actions are blocked",
+      "expiry_behavior": "stale",
+      "freshness_seconds": 60,
+      "label": "Storage Node",
+      "name": "media_storage",
+      "related_api": [
+        "GET /api/lite/fleet",
+        "GET /api/lite/catalog"
+      ],
+      "runtime_evidence": "fleet prepared projection",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+      "ui_states": [
+        "Online",
+        "Offline",
+        "Remote access not ready"
+      ],
+      "verification_source": "device role and sanitized storage summary"
+    },
+    {
+      "degraded_behavior": "storage backup remains unavailable",
+      "expiry_behavior": "stale",
+      "freshness_seconds": 60,
+      "label": "Backup Target",
+      "name": "backup_target",
+      "related_api": [
+        "GET /api/lite/recovery/summary",
+        "GET /api/lite/fleet"
+      ],
+      "runtime_evidence": "Recovery and fleet prepared projections",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+      "ui_states": [
+        "Recovery ready",
+        "No storage device ready"
+      ],
+      "verification_source": "device role and backup target readiness"
+    },
+    {
+      "degraded_behavior": "saved Security state remains read-only and new checks are blocked",
+      "expiry_behavior": "stale",
+      "freshness_seconds": 300,
+      "label": "Security Scanner",
+      "name": "security_scanner",
+      "related_api": [
+        "GET /api/lite/security/summary",
+        "POST /api/lite/security/check"
+      ],
+      "runtime_evidence": "Security compact summary",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+      "ui_states": [
+        "No urgent safety issues",
+        "Scanner unavailable"
+      ],
+      "verification_source": "server role and scanner tool posture"
+    },
+    {
+      "degraded_behavior": "commands remain undeliverable until the agent reconnects",
+      "expiry_behavior": "stale",
+      "freshness_seconds": 60,
+      "label": "Compute",
+      "name": "compute",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "runtime_evidence": "fleet prepared projection",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py",
+      "ui_states": [
+        "Online",
+        "Offline",
+        "Repairing"
+      ],
+      "verification_source": "device role"
+    }
+  ],
+  "capability_states": [
+    "verified",
+    "pending",
+    "unavailable",
+    "not_advertised",
+    "expired",
+    "stale"
+  ],
+  "event_overrides": {
+    "pocketlab.commands.lite.device.restart": {
+      "consumer": "node agent",
+      "delivery": "JetStream durable command",
+      "domain": "devices",
+      "lifecycle_evidence": "command lifecycle and device event",
+      "publisher": "FastAPI",
+      "redacted_fields": [
+        "credentials",
+        "environment"
+      ],
+      "retry": "bounded command lifecycle",
+      "security_classification": "restricted metadata",
+      "type": "command"
+    },
+    "pocketlab.commands.lite.security.scan": {
+      "consumer": "pocket-worker",
+      "delivery": "JetStream durable pull",
+      "domain": "security",
+      "durable": "pocketlab_command_worker_v1",
+      "lifecycle_evidence": "security run and sanitized evidence",
+      "publisher": "FastAPI",
+      "redacted_fields": [
+        "credentials",
+        "environment",
+        "raw scanner payload"
+      ],
+      "retry": "bounded max-deliver and stale-run recovery",
+      "security_classification": "restricted metadata",
+      "stream": "POCKETLAB_COMMANDS",
+      "type": "command"
+    }
+  },
+  "projections": [
+    {
+      "cache_owner": "FastAPI prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "durable enrollment plus live heartbeat/runtime truth",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "preserve enrolled devices and show Offline/Stale",
+      "diagnostics": "projection_refresh_state and fleet diagnostics",
+      "domain": "fleet",
+      "freshness_seconds": 30,
+      "frontend_consumer": "src/lite/LiteDevices.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "heartbeat",
+        "enrollment",
+        "restart result",
+        "retirement"
+      ],
+      "offline_behavior": "safe snapshot may render read-only",
+      "pressure_behavior": "serve last committed prepared read",
+      "reader_endpoint": "GET /api/lite/fleet",
+      "reconciliation": "enrollment registry plus runtime truth",
+      "retry_behavior": "bounded scheduler retry",
+      "source_events": [
+        "device heartbeat",
+        "agent lifecycle",
+        "invite lifecycle"
+      ],
+      "stale_seconds": 90,
+      "storage_owner": "device_current_state / enrolled_devices",
+      "writer_owner": "lite_control_plane_store"
+    },
+    {
+      "cache_owner": "prepared SQLite reads and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "backup manifests, restore plans, checkpoints, and worker lifecycle",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "show last valid summary with stale reason",
+      "diagnostics": "recovery projection freshness and action progress",
+      "domain": "recovery",
+      "freshness_seconds": 60,
+      "frontend_consumer": "src/lite/LiteRecovery.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "backup",
+        "verify",
+        "preview",
+        "restore",
+        "checkpoint"
+      ],
+      "offline_behavior": "safe snapshot is read-only",
+      "pressure_behavior": "defer heavy detail rebuild",
+      "reader_endpoint": "GET /api/lite/recovery/summary",
+      "reconciliation": "manifest and operation-state reconciliation",
+      "retry_behavior": "worker-owned bounded retry",
+      "source_events": [
+        "backup lifecycle",
+        "verification lifecycle",
+        "restore lifecycle"
+      ],
+      "stale_seconds": 300,
+      "storage_owner": "recovery_current_state / recovery_operations",
+      "writer_owner": "lite_control_plane_store and recovery worker"
+    },
+    {
+      "cache_owner": "FastAPI compact cache and TanStack Query",
+      "canonical_hash": "ETag/revision digest",
+      "canonical_source": "security_scan_runs and sanitized compact state",
+      "committed_generation_field": "revision",
+      "degraded_behavior": "show latest completed or saved partial state truthfully",
+      "diagnostics": "freshness, progress, durable consumer health",
+      "domain": "security",
+      "freshness_seconds": 180,
+      "frontend_consumer": "src/lite/LiteSecurity.jsx",
+      "generation_field": "revision",
+      "invalidation_triggers": [
+        "Quick Check",
+        "Full Check",
+        "App Check",
+        "maintenance"
+      ],
+      "offline_behavior": "safe summary snapshot only",
+      "pressure_behavior": "split reads and TTL cache",
+      "reader_endpoint": "GET /api/lite/security/summary",
+      "reconciliation": "SQLite run state to compact read model",
+      "retry_behavior": "explicit retry after terminal recovery",
+      "source_events": [
+        "scan accepted",
+        "scan progress",
+        "scan terminal",
+        "maintenance"
+      ],
+      "stale_seconds": 900,
+      "storage_owner": "security_scan_runs and compact security files",
+      "writer_owner": "Security worker and lite_security_store"
+    },
+    {
+      "cache_owner": "prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "catalog definitions plus live route/runtime resolver",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "show last valid catalog and disable unsafe actions",
+      "diagnostics": "apps.catalog projection state",
+      "domain": "apps.catalog",
+      "freshness_seconds": 60,
+      "frontend_consumer": "src/lite/LiteCatalog.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "catalog refresh",
+        "install",
+        "repair",
+        "remove",
+        "route change"
+      ],
+      "offline_behavior": "safe snapshot may render read-only",
+      "pressure_behavior": "bounded deterministic discovery",
+      "reader_endpoint": "GET /api/lite/catalog",
+      "reconciliation": "authoritative app runtime resolver",
+      "retry_behavior": "bounded refresh retry",
+      "source_events": [
+        "catalog refresh",
+        "app lifecycle",
+        "route health"
+      ],
+      "stale_seconds": 180,
+      "storage_owner": "app_catalog_current",
+      "writer_owner": "catalog projection worker"
+    },
+    {
+      "cache_owner": "prepared SQLite read",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "app runtime resolver and worker lifecycle",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "retain last canonical state and mark stale",
+      "diagnostics": "apps.lifecycle projection state",
+      "domain": "apps.lifecycle",
+      "freshness_seconds": 30,
+      "frontend_consumer": "src/lite/LiteCatalog.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "app lifecycle event",
+        "route health change"
+      ],
+      "offline_behavior": "safe snapshot only",
+      "pressure_behavior": "reuse canonical current state",
+      "reader_endpoint": "GET /api/lite/apps/{app_id}/lifecycle",
+      "reconciliation": "runtime, PM2, route, and stored lifecycle truth",
+      "retry_behavior": "bounded worker retry",
+      "source_events": [
+        "install",
+        "start",
+        "stop",
+        "repair",
+        "remove",
+        "update readiness"
+      ],
+      "stale_seconds": 120,
+      "storage_owner": "app_lifecycle_current",
+      "writer_owner": "app lifecycle worker"
+    },
+    {
+      "cache_owner": "prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "normalized action readiness and action lifecycle",
+      "committed_generation_field": "committed_generation",
+      "degraded_behavior": "disable delivery-dependent actions",
+      "diagnostics": "apps.actions projection state",
+      "domain": "apps.actions",
+      "freshness_seconds": 15,
+      "frontend_consumer": "src/lite/LiteCatalog.jsx",
+      "generation_field": "generation",
+      "invalidation_triggers": [
+        "action mutation",
+        "media mapping",
+        "security result",
+        "backup result"
+      ],
+      "offline_behavior": "read-only action state",
+      "pressure_behavior": "compact prepared action projection",
+      "reader_endpoint": "GET /api/lite/apps/{app_id}/actions",
+      "reconciliation": "action state plus dependent domain readiness",
+      "retry_behavior": "explicit user retry where safe",
+      "source_events": [
+        "action accepted",
+        "action progress",
+        "action result"
+      ],
+      "stale_seconds": 90,
+      "storage_owner": "app_action_current / app_action_lifecycle",
+      "writer_owner": "app operation worker"
+    },
+    {
+      "cache_owner": "prepared SQLite read and TanStack Query",
+      "canonical_hash": "canonical_hash",
+      "canonical_source": "prepared summaries from system, fleet, apps, security, recovery, and release",
+      "committed_generation_field": "projection_revision",
+      "degraded_behavior": "show last valid summary and review guidance",
+      "diagnostics": "system current-state projection diagnostics",
+      "domain": "home",
+      "freshness_seconds": 60,
+      "frontend_consumer": "src/lite/LiteHome.jsx",
+      "generation_field": "projection_revision",
+      "invalidation_triggers": [
+        "dependent domain revision"
+      ],
+      "offline_behavior": "safe snapshot may render read-only",
+      "pressure_behavior": "serve compact summary",
+      "reader_endpoint": "GET /api/lite/status",
+      "reconciliation": "prepared cross-domain summary",
+      "retry_behavior": "adaptive scheduler cadence",
+      "source_events": [
+        "domain revision changes"
+      ],
+      "stale_seconds": 180,
+      "storage_owner": "phase3b_current_state and domain revisions",
+      "writer_owner": "projection scheduler"
+    }
+  ],
+  "reason_codes": [
+    {
+      "audit_severity": "warning",
+      "code": "already_tuned",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "No additional tuning was required.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "No additional tuning was required."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "cold_start_validation",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Cold-start validation is in progress.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Cold-start validation is in progress."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "diagnostics_not_active",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Diagnostics are not active.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Diagnostics are not active."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "disabled",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The requested capability is disabled.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The requested capability is disabled."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "generation_changed",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The source generation changed during work.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The source generation changed during work."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "insufficient_storage",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "There is not enough safe storage for the operation.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "There is not enough safe storage for the operation."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "interrupted",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The operation was interrupted.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The operation was interrupted."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "invalid_domain",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 400,
+      "meaning": "The requested projection domain is invalid.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The requested projection domain is invalid."
+    },
+    {
+      "audit_severity": "high",
+      "code": "invite_identity_mismatch",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "The invite identity does not match the enrolled device.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The invite identity does not match the enrolled device."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "lease_active",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Another bounded owner currently holds the lease.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Another bounded owner currently holds the lease."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "legacy_multiple_active_runs",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Legacy state contains multiple active runs.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Legacy state contains multiple active runs."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "metadata_only",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Only metadata was evaluated.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Only metadata was evaluated."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "no_active_generation",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "There is no active generation.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "There is no active generation."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "not_found_in_restored_snapshot",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The record is not present in the restored snapshot.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The record is not present in the restored snapshot."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "payload_too_large",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The bounded payload limit was exceeded.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The bounded payload limit was exceeded."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "projection_unavailable",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "The prepared projection is unavailable.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The prepared projection is unavailable."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "queue_full",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The bounded queue cannot accept more work.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The bounded queue cannot accept more work."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "release_projection_unavailable",
+      "deprecated_aliases": [],
+      "domain": "release",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "The release prepared projection is unavailable.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The release prepared projection is unavailable."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "shutdown",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The process is shutting down.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The process is shutting down."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "shutdown_during_mailbox_backpressure",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Shutdown occurred while the bounded mailbox was under pressure.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Shutdown occurred while the bounded mailbox was under pressure."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "submit_failed",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The work request could not be admitted.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The work request could not be admitted."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "target_not_allowed",
+      "deprecated_aliases": [],
+      "domain": "validation",
+      "event_mapping": [],
+      "http_status": 400,
+      "meaning": "The requested target is outside the approved scope.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The requested target is outside the approved scope."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "unregistered_domain",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The requested domain is not registered.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The requested domain is not registered."
+    },
+    {
+      "audit_severity": "high",
+      "code": "worker_failed",
+      "deprecated_aliases": [],
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The worker reported a terminal failure.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The worker reported a terminal failure."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "worker_start_timeout",
+      "deprecated_aliases": [],
+      "domain": "security",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "The worker did not start the accepted work within the recovery window.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The worker did not start the accepted work within the recovery window."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "projection_too_old",
+      "deprecated_aliases": [],
+      "domain": "projections",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The last committed projection is too old for a safe write.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The last committed projection is too old for a safe write."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "read_degraded",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "A safe last-known read is shown while refresh is unavailable.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A safe last-known read is shown while refresh is unavailable."
+    },
+    {
+      "audit_severity": "high",
+      "code": "identity_mismatch",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "The local identity does not match the requested enrollment.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The local identity does not match the requested enrollment."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "remote_access_not_ready",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "Private remote access is not ready.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "Private remote access is not ready."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "service_unavailable",
+      "deprecated_aliases": [],
+      "domain": "system",
+      "event_mapping": [],
+      "http_status": 503,
+      "meaning": "A required backend service is unavailable.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A required backend service is unavailable."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "command_undeliverable",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The target agent cannot currently receive the command.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The target agent cannot currently receive the command."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "invite_expired",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The device invite is no longer valid.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": true,
+      "ui_mapping": [],
+      "user_message": "The device invite is no longer valid."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "duplicate_device",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 409,
+      "meaning": "A matching device or invite already exists.",
+      "projection_mapping": [],
+      "retryable": true,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "A matching device or invite already exists."
+    },
+    {
+      "audit_severity": "warning",
+      "code": "protected_server_host",
+      "deprecated_aliases": [],
+      "domain": "devices",
+      "event_mapping": [],
+      "http_status": 200,
+      "meaning": "The protected server host cannot use this destructive action.",
+      "projection_mapping": [],
+      "retryable": false,
+      "source": "structured reason/failure fields in Lite backend or contracts metadata",
+      "terminal": false,
+      "ui_mapping": [],
+      "user_message": "The protected server host cannot use this destructive action."
+    }
+  ],
+  "redaction": {
+    "coverage_sources": [
+      "scripts/dev/lite/redaction_check.py",
+      "scripts/dev/lite/har_tool.py",
+      "tests/backend/test_lite_api.py",
+      "tests/backend/test_lite_security.py"
+    ],
+    "sensitive_key_patterns": [
+      "password",
+      "token",
+      "secret",
+      "credential",
+      "authorization",
+      "cookie",
+      "private_key",
+      "api_key",
+      "nats_url",
+      "restic"
+    ],
+    "sensitive_value_patterns": [
+      "Bearer <token>",
+      "private key PEM",
+      "credentialed NATS URL",
+      "Tailscale auth key",
+      "absolute Android private path"
+    ]
+  },
+  "roles": [
+    {
+      "health_dependencies": [
+        "Caddy",
+        "FastAPI",
+        "NATS",
+        "worker",
+        "node agent",
+        "core supervisor"
+      ],
+      "label": "Protected server host",
+      "optional_capabilities": [
+        "backup_target"
+      ],
+      "readiness_requirements": [
+        "FastAPI ready",
+        "NATS reachable",
+        "node agent heartbeat",
+        "supervisor status"
+      ],
+      "required_capabilities": [
+        "app_host",
+        "compute",
+        "security_scanner"
+      ],
+      "role": "server_host",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    },
+    {
+      "health_dependencies": [
+        "node agent",
+        "agent supervisor",
+        "NATS"
+      ],
+      "label": "Device",
+      "optional_capabilities": [],
+      "readiness_requirements": [
+        "accepted enrollment identity",
+        "NATS connection",
+        "fresh heartbeat"
+      ],
+      "required_capabilities": [
+        "app_host",
+        "compute"
+      ],
+      "role": "compute",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    },
+    {
+      "health_dependencies": [
+        "node agent",
+        "agent supervisor",
+        "NATS",
+        "storage availability"
+      ],
+      "label": "Storage device",
+      "optional_capabilities": [],
+      "readiness_requirements": [
+        "accepted enrollment identity",
+        "fresh heartbeat",
+        "sanitized storage readiness"
+      ],
+      "required_capabilities": [
+        "media_storage",
+        "backup_target"
+      ],
+      "role": "storage",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_device_capabilities.py"
+    }
+  ],
+  "schema_revision": 1,
+  "security_profiles": [
+    {
+      "api": [
+        "POST /api/lite/security/check",
+        "GET /api/lite/security/summary"
+      ],
+      "default": true,
+      "freshness_seconds": 180,
+      "id": "quick",
+      "label": "Quick Safety Check",
+      "platforms": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "scanner_unavailable": "degraded result with coverage gaps",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
+      "stale_behavior": "latest completed or saved summary is labeled stale",
+      "targets_checked": [
+        "Termux host posture",
+        "Pocket Lab Lite source/runtime metadata",
+        "safe configuration posture"
+      ],
+      "targets_skipped": [
+        "photos and media",
+        "backup payloads",
+        "scanner caches",
+        "PROot rootfs",
+        "generated runtime history"
+      ],
+      "tools": [
+        "Lynis",
+        "Trivy"
+      ]
+    },
+    {
+      "api": [
+        "POST /api/lite/security/check",
+        "GET /api/lite/security/profiles/full"
+      ],
+      "default": false,
+      "freshness_seconds": 900,
+      "id": "full",
+      "label": "Full Local Check",
+      "platforms": [
+        "Android/Termux"
+      ],
+      "scanner_unavailable": "partial/degraded target status",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
+      "stale_behavior": "profile-specific latest completed result is preserved",
+      "targets_checked": [
+        "Termux host",
+        "Pocket Lab Lite",
+        "runtime config",
+        "selected PROot Ubuntu areas",
+        "PhotoPrism app/config/runtime",
+        "backup metadata"
+      ],
+      "targets_skipped": [
+        "photos and media",
+        "Android shared storage",
+        "backup payloads",
+        "restore checkpoints",
+        "logs and caches"
+      ],
+      "tools": [
+        "Lynis",
+        "Trivy"
+      ]
+    },
+    {
+      "api": [
+        "POST /api/lite/security/check",
+        "GET /api/lite/security/profiles/app"
+      ],
+      "default": false,
+      "freshness_seconds": 300,
+      "id": "app",
+      "label": "App Check",
+      "platforms": [
+        "Android/Termux"
+      ],
+      "scanner_unavailable": "partial/degraded app result",
+      "source": "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_policy.py",
+      "stale_behavior": "app-scoped latest completed result is preserved",
+      "supported_apps": [
+        "photoprism"
+      ],
+      "targets_checked": [
+        "PhotoPrism route",
+        "app files",
+        "settings",
+        "backup metadata",
+        "action state"
+      ],
+      "targets_skipped": [
+        "photos and media",
+        "PhotoPrism originals/import/cache/sidecars/index database"
+      ],
+      "tools": [
+        "Trivy",
+        "route/config posture checks"
+      ],
+      "unsupported_app_behavior": "safe 404 with no scanner execution"
+    }
+  ],
+  "services": [
+    {
+      "environment_source": "generated runtime environment",
+      "health_evidence": [
+        "/health",
+        "/ready"
+      ],
+      "heartbeat_evidence": [],
+      "log_policy": "bounded PM2 logs; no secrets",
+      "memory_limit": "POCKETLAB_API_MAX_MEMORY_RESTART",
+      "nats_dependency": "required for write paths",
+      "owner": "FastAPI control API",
+      "pattern": "pocket-api",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Serve /api/lite/* and safe prepared reads",
+      "recovery": "verify NATS and SQLite before restarting",
+      "related_api": [
+        "/api/lite/*"
+      ],
+      "related_events": [],
+      "restart_policy": "PM2 exponential backoff and bounded memory restart",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "generated runtime environment",
+      "health_evidence": [
+        "durable consumer health"
+      ],
+      "heartbeat_evidence": [
+        "worker heartbeat"
+      ],
+      "log_policy": "structured sanitized lifecycle only",
+      "memory_limit": "POCKETLAB_WORKER_MAX_MEMORY_RESTART",
+      "nats_dependency": "required",
+      "owner": "worker execution plane",
+      "pattern": "pocket-worker",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Consume durable commands and own backend execution",
+      "recovery": "consumer re-enrollment before process restart",
+      "related_api": [],
+      "related_events": [
+        "pocketlab.commands.*",
+        "pocketlab.events.*"
+      ],
+      "restart_policy": "PM2 plus durable-consumer watchdog",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "generated NATS config",
+      "health_evidence": [
+        "NATS monitor and JetStream status"
+      ],
+      "heartbeat_evidence": [],
+      "log_policy": "never print credentials",
+      "memory_limit": "bounded by NATS configuration",
+      "nats_dependency": "self",
+      "owner": "NATS/JetStream service",
+      "pattern": "pocket-nats",
+      "platform": [
+        "Android/Termux",
+        "Ubuntu/WSL2"
+      ],
+      "purpose": "Command and event backbone",
+      "recovery": "verify listener, storage, and credentials before restart",
+      "related_api": [],
+      "related_events": [
+        "all Lite subjects"
+      ],
+      "restart_policy": "PM2",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "~/.pocketlab-lite-agent.env",
+      "health_evidence": [
+        "fleet agent status"
+      ],
+      "heartbeat_evidence": [
+        "fresh device heartbeat"
+      ],
+      "log_policy": "sanitized evidence only",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "required",
+      "owner": "server-host node agent",
+      "pattern": "pocket-node-agent",
+      "platform": [
+        "Android/Termux"
+      ],
+      "purpose": "Publish heartbeat/telemetry and execute device commands",
+      "recovery": "reconnect watchdog then supervisor recovery",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "related_events": [
+        "device heartbeat",
+        "device command result"
+      ],
+      "restart_policy": "PM2 and core supervisor",
+      "startup": "scripts/start-dashboard.sh"
+    },
+    {
+      "environment_source": "~/.pocketlab-lite-agent.env",
+      "health_evidence": [
+        "fleet connection and PM2 status"
+      ],
+      "heartbeat_evidence": [
+        "fresh device heartbeat"
+      ],
+      "log_policy": "no invite or NATS secrets",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "required",
+      "owner": "joined-device node agent",
+      "pattern": "pocketlab-agent-<node_id>",
+      "platform": [
+        "Android/Termux",
+        "Linux ARM64"
+      ],
+      "purpose": "Publish heartbeat/telemetry and execute device commands",
+      "recovery": "explicit repair/rejoin on identity mismatch",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "related_events": [
+        "device heartbeat",
+        "device command result"
+      ],
+      "restart_policy": "PM2 supervised",
+      "startup": "backend-generated bootstrap command"
+    },
+    {
+      "environment_source": "~/.pocketlab-lite-agent.env",
+      "health_evidence": [
+        "supervisor status"
+      ],
+      "heartbeat_evidence": [
+        "sanitized recovery evidence"
+      ],
+      "log_policy": "never expose environment secrets",
+      "memory_limit": "bounded PM2 process",
+      "nats_dependency": "optional for local recovery; required for evidence publish",
+      "owner": "joined-device supervisor",
+      "pattern": "pocketlab-agent-supervisor-<node_id>",
+      "platform": [
+        "Android/Termux",
+        "Linux ARM64"
+      ],
+      "purpose": "Watch and recover the node agent as a separate process",
+      "recovery": "starts/restarts failed agent without overwriting identity",
+      "related_api": [
+        "GET /api/lite/fleet"
+      ],
+      "related_events": [
+        "agent recovery evidence"
+      ],
+      "restart_policy": "PM2 supervised",
+      "startup": "backend-generated bootstrap command"
+    }
+  ],
+  "sqlite_semantics": {
+    "device_current_state": {
+      "classification": "restricted operational metadata",
+      "domain": "devices",
+      "projection_owner": "fleet",
+      "purpose": "Durable current enrolled-device projection",
+      "readers": [
+        "GET /api/lite/fleet"
+      ],
+      "retention": "until explicit retirement",
+      "sensitive_fields": [
+        "device_id",
+        "identity metadata"
+      ],
+      "writer": "fleet/device projection writer"
+    },
+    "enrolled_devices": {
+      "classification": "restricted identity metadata",
+      "domain": "devices",
+      "projection_owner": "fleet",
+      "purpose": "Durable enrollment registry",
+      "readers": [
+        "GET /api/lite/fleet",
+        "invite duplicate guards"
+      ],
+      "retention": "until explicit retirement; history retained",
+      "sensitive_fields": [
+        "device_id",
+        "identity fingerprint"
+      ],
+      "writer": "device enrollment service"
+    },
+    "projection_refresh_state": {
+      "classification": "internal metadata",
+      "domain": "projections",
+      "projection_owner": "projection scheduler",
+      "purpose": "Bounded projection scheduler state",
+      "readers": [
+        "diagnostics endpoints"
+      ],
+      "retention": "current state",
+      "sensitive_fields": [],
+      "writer": "projection scheduler"
+    },
+    "security_scan_runs": {
+      "classification": "sanitized operational metadata",
+      "domain": "security",
+      "projection_owner": "security",
+      "purpose": "Canonical Security scan lifecycle",
+      "readers": [
+        "Security summary/profile/progress endpoints"
+      ],
+      "retention": "bounded by Security retention policy",
+      "sensitive_fields": [
+        "summary_json",
+        "tool_results_json",
+        "coverage_summary_json"
+      ],
+      "writer": "Security API/worker store"
+    }
+  }
+}

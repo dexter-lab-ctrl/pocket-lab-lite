@@ -1,0 +1,52 @@
+digraph recovery_state_machine {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#101827",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Backup and restore state machine",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  "idle" [label="Recovery ready", shape="box", fillcolor="#312e81", tooltip="Recovery ready. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-contract/", target="_top"];
+  "backup" [label="Backup running", shape="component", fillcolor="#14532d", tooltip="Backup running. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-contract/", target="_top"];
+  "verify" [label="Verification", shape="component", fillcolor="#14532d", tooltip="Verification. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-contract/", target="_top"];
+  "preview" [label="Restore preview", shape="box", fillcolor="#312e81", tooltip="Restore preview. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-state-machine/", target="_top"];
+  "confirm" [label="Confirmation guard", shape="diamond", fillcolor="#7c2d12", tooltip="Confirmation guard. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-state-machine/", target="_top", style="filled"];
+  "checkpoint" [label="Checkpoint", shape="cylinder", fillcolor="#78350f", tooltip="Checkpoint. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-contract/", target="_top"];
+  "restore" [label="Restore running", shape="component", fillcolor="#14532d", tooltip="Restore running. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/development/recovery-contract/", target="_top"];
+  "health" [label="Health validation", shape="diamond", fillcolor="#7c2d12", tooltip="Health validation. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/production/health-diagnostics/", target="_top", style="filled"];
+  "rollback" [label="Rollback", shape="component", fillcolor="#14532d", tooltip="Rollback. Backup, verification, preview, checkpoint, restore, health validation, and rollback remain backend and worker owned.", URL="../../generated/production/rollback/", target="_top"];
+  "idle" -> "backup" [label="Backup Now", tooltip="Backup Now"];
+  "backup" -> "verify" [label="snapshot complete", tooltip="snapshot complete"];
+  "verify" -> "preview" [label="verified", tooltip="verified"];
+  "preview" -> "confirm" [label="safe plan", tooltip="safe plan"];
+  "confirm" -> "checkpoint" [label="confirmed", tooltip="confirmed"];
+  "checkpoint" -> "restore" [label="saved", tooltip="saved"];
+  "restore" -> "health" [label="files applied", tooltip="files applied"];
+  "health" -> "idle" [label="passed", tooltip="passed"];
+  "health" -> "rollback" [label="failed", tooltip="failed"];
+  "rollback" -> "idle" [label="recovered", tooltip="recovered"];
+}
