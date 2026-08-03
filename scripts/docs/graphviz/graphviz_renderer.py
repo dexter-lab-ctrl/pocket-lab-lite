@@ -89,8 +89,8 @@ def _layout_profile(graph_id: str, component_count: int, focus_id: str | None) -
     if graph_id in VERTICAL_VIEW_IDS or component_count <= 7:
         return {"rankdir": "TB", "nodesep": "0.34", "ranksep": "0.58", "ratio": "compress", "splines": "spline"}
     if component_count >= 18:
-        return {"rankdir": "LR", "nodesep": "0.28", "ranksep": "0.54", "ratio": "compress", "splines": "ortho"}
-    return {"rankdir": "LR", "nodesep": "0.34", "ranksep": "0.64", "ratio": "compress", "splines": "ortho"}
+        return {"rankdir": "LR", "nodesep": "0.34", "ranksep": "0.62", "ratio": "compress", "splines": "polyline"}
+    return {"rankdir": "LR", "nodesep": "0.40", "ranksep": "0.72", "ratio": "compress", "splines": "polyline"}
 
 
 class GraphvizRenderError(RuntimeError):
@@ -119,16 +119,17 @@ def _node_label(
     if icon:
         if render_icons:
             cells.append(
-                f'<TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"><IMG SRC="{_html(str(icon.path))}" '
+                f'<TD FIXEDSIZE="TRUE" WIDTH="42" HEIGHT="42"><IMG SRC="{_html(str(icon.path))}" '
                 'SCALE="TRUE"/></TD>'
             )
         else:
-            cells.append('<TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD>')
+            cells.append('<TD FIXEDSIZE="TRUE" WIDTH="42" HEIGHT="42"> </TD>')
     cells.append(
         '<TD ALIGN="LEFT">'
         f'<FONT POINT-SIZE="12"><B>{_html(name).replace(chr(10), "<BR/>")}</B></FONT><BR/>'
         f'<FONT POINT-SIZE="9">{_html(responsibility).replace(chr(10), "<BR/>")}</FONT><BR/>'
-        f'<FONT POINT-SIZE="8">{_html(subtitle).replace(chr(10), "<BR/>")}</FONT>'
+        f'<FONT POINT-SIZE="8"><I>{_html(subtitle).replace(chr(10), "<BR/>")}</I></FONT><BR/>'
+        f'<FONT POINT-SIZE="7.5">{_html(component["category"].replace("-", " ").title())}</FONT>'
         '</TD>'
     )
     return '<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR>' + "".join(cells) + "</TR></TABLE>>"
@@ -152,7 +153,7 @@ def _node_attrs(
         "fillcolor": theme.get(category, theme["cluster"]),
         "color": theme["foreground"] if focus else theme["edge"],
         "fontcolor": theme["foreground"],
-        "penwidth": "2.2" if focus else "1.15",
+        "penwidth": "2.3" if focus else "1.35",
         "tooltip": f"{component['name']}. {component['responsibility']}",
         "URL": component_doc_url(component_id),
         "target": "_top",
@@ -314,7 +315,7 @@ def _inject_icon_references(
         y = float(text_match.group("y")) - 15.5
         image = (
             f'<image href="{public_icon_prefix}/{icon.path.name}" x="{x:.2f}" y="{y:.2f}" '
-            'width="24" height="24" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n'
+            'width="28" height="28" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n'
         )
         insertion = node_start + block.index('<text ', text_match.start())
         svg = svg[:insertion] + image + svg[insertion:]

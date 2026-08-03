@@ -3438,13 +3438,13 @@
     ]
   },
   "metadata": {
-    "architecture_source_fingerprint": "70e1e3dd1be588ab4eada0a05875282ebd5daa117f0b647e4f50d7977fccef16",
+    "architecture_source_fingerprint": "13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2",
     "generated": true,
     "generated_at": "uncommitted",
     "generator": "scripts/docs/graphviz/generate_lite_architecture.py",
-    "generator_sha256": "7301c2f95f2396b49d9c8e8c0dbe1d5ebb0aab160a7bfa19bcdf7019b579e975",
+    "generator_sha256": "7ea7bafe8d93270e45a0041ca3b3a5c2e478a4420ae20f91a4dfab9cb071723a",
     "generator_version": 1,
-    "repository_source_fingerprint": "f7a48d8d77f5c8bdd87b998647924c5f09f66c7825c02d23807fa673c9f705e3",
+    "repository_source_fingerprint": "5c814f7819ce86c7ec8ac8ffa0f743a4e5e88e667dcf6cf2a13879245aa029b4",
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "validation_state": "generated"

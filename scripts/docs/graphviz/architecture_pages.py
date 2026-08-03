@@ -16,6 +16,16 @@ DOC_ROOT = Path("docs/generated/production/architecture")
 INDEX_DIAGRAM_ROOT = "../../../assets/diagrams/production"
 VIEW_DIAGRAM_ROOT = "../../../../assets/diagrams/production"
 COMPONENT_DIAGRAM_ROOT = "../../../../../assets/diagrams/production"
+
+INFRASTRUCTURE_SUMMARY = [
+    ("Experience surface", "Browser, React/Vite PWA, and frontend state provide the self-hosted workspace experience."),
+    ("Control plane", "Caddy fronts FastAPI /api/lite/*, prepared reads, and guarded write surfaces."),
+    ("Event runtime", "NATS / JetStream, worker subprocesses, command lifecycle, and evidence flows coordinate execution."),
+    ("Durable state", "SQLite prepared projections and lifecycle tables preserve truthful, auditable state."),
+    ("Device runtime", "Node agent, supervisor, PM2, and recovery loops run on enrolled Android/Termux or Ubuntu devices."),
+    ("Remote access and apps", "Tailscale, tailscaled, PROot Ubuntu, and PhotoPrism show remote-access and app-hosting boundaries."),
+]
+
 WIDE_DIAGRAMS = {
     "complete-system",
     "request-control",
@@ -106,6 +116,9 @@ def architecture_index_page(
     views = sorted(model["views"].values(), key=lambda item: (item["level"], item["title"]))
     links = "\n".join(f"- [{view['title']}]({view['page']})" for view in views)
     guarantees = _list(model["operational_guarantees"])
+    infrastructure_summary = "\n".join(
+        f"- **{name}** — {description}" for name, description in INFRASTRUCTURE_SUMMARY
+    )
     boundary_summary = "\n".join(
         f"- **{boundary['name']}** — {boundary['description']}"
         for _, boundary in sorted(model["boundaries"].items())
@@ -130,6 +143,10 @@ React/Vite PWA
 → FastAPI prepared projections
 → PWA
 ```
+
+## How to read the infrastructure map
+
+{infrastructure_summary}
 
 ## Generated architecture facts
 
@@ -160,7 +177,7 @@ React/Vite PWA
 
 ## Component catalog
 
-Open the [generated component catalog](component-catalog.md) for ownership, runtime placement, health signals, evidence, source verification, and per-component mini diagrams.
+Open the [generated component catalog](component-catalog.md) for component function, protocols, ownership, runtime placement, health signals, evidence, source verification, and per-component mini diagrams.
 """
 
 
@@ -248,6 +265,16 @@ def component_page(
 
 {diagram}{omitted}
 
+## Function and use
+
+| Field | Value |
+| --- | --- |
+| Function | {component['responsibility']} |
+| Primary inputs | {', '.join(component['inputs'][:3]) or 'None'} |
+| Primary outputs | {', '.join(component['outputs'][:3]) or 'None'} |
+| Protocols / uses | {', '.join(component['protocols'][:3]) or 'None'} |
+| Evidence | {', '.join(component['evidence_produced'][:3]) or 'None'} |
+
 ## Ownership and placement
 
 | Field | Value |
@@ -262,6 +289,7 @@ def component_page(
 | Security boundary | {model['boundaries'][component['security_boundary']]['name']} |
 | Supported platforms | {', '.join(component['supported_platforms'])} |
 | Verification | {component['verification_status']} |
+| Architecture icon | {component['icon']} |
 
 ## Inputs
 

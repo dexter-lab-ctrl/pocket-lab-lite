@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 70e1e3dd1be588ab4eada0a05875282ebd5daa117f0b647e4f50d7977fccef16
+source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -40,6 +40,15 @@ React/Vite PWA
 → PWA
 ```
 
+## How to read the infrastructure map
+
+- **Experience surface** — Browser, React/Vite PWA, and frontend state provide the self-hosted workspace experience.
+- **Control plane** — Caddy fronts FastAPI /api/lite/*, prepared reads, and guarded write surfaces.
+- **Event runtime** — NATS / JetStream, worker subprocesses, command lifecycle, and evidence flows coordinate execution.
+- **Durable state** — SQLite prepared projections and lifecycle tables preserve truthful, auditable state.
+- **Device runtime** — Node agent, supervisor, PM2, and recovery loops run on enrolled Android/Termux or Ubuntu devices.
+- **Remote access and apps** — Tailscale, tailscaled, PROot Ubuntu, and PhotoPrism show remote-access and app-hosting boundaries.
+
 ## Generated architecture facts
 
 | Measure | Count |
@@ -51,9 +60,9 @@ React/Vite PWA
 | Component mini diagrams | 52 |
 | Verified source references | 136 |
 
-**Architecture source fingerprint:** `70e1e3dd1be588ab4eada0a05875282ebd5daa117f0b647e4f50d7977fccef16`
+**Architecture source fingerprint:** `13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2`
 
-**Repository source inventory fingerprint:** `f7a48d8d77f5c8bdd87b998647924c5f09f66c7825c02d23807fa673c9f705e3`
+**Repository source inventory fingerprint:** `5c814f7819ce86c7ec8ac8ffa0f743a4e5e88e667dcf6cf2a13879245aa029b4`
 
 ## Operational guarantees
 
@@ -100,4 +109,4 @@ React/Vite PWA
 
 ## Component catalog
 
-Open the [generated component catalog](component-catalog.md) for ownership, runtime placement, health signals, evidence, source verification, and per-component mini diagrams.
+Open the [generated component catalog](component-catalog.md) for component function, protocols, ownership, runtime placement, health signals, evidence, source verification, and per-component mini diagrams.

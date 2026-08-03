@@ -80,7 +80,7 @@
       "health_signals": [
         "command progress"
       ],
-      "icon": "generic-process",
+      "icon": "infra-agent",
       "id": "agent-command-executor",
       "inputs": [
         "Validated NATS command"
@@ -145,7 +145,7 @@
         "agent connection",
         "supervisor status"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-supervisor",
       "id": "agent-recovery",
       "inputs": [
         "connection state",
@@ -212,7 +212,7 @@
       "health_signals": [
         "signal freshness"
       ],
-      "icon": "generic-event",
+      "icon": "infra-event",
       "id": "agent-signals",
       "inputs": [
         "Local runtime samples"
@@ -273,7 +273,7 @@
       "health_signals": [
         "supervisor status"
       ],
-      "icon": "generic-process",
+      "icon": "infra-supervisor",
       "id": "agent-supervisor",
       "inputs": [
         "PM2 agent status",
@@ -343,7 +343,7 @@
         "domain revisions",
         "projection freshness"
       ],
-      "icon": "generic-service",
+      "icon": "infra-fastapi",
       "id": "api-domain-surfaces",
       "inputs": [
         "User intent",
@@ -422,7 +422,7 @@
       "health_signals": [
         "invite status"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-decision",
       "id": "api-guards",
       "inputs": [
         "Device invite request",
@@ -491,7 +491,7 @@
         "freshness",
         "ETag"
       ],
-      "icon": "generic-service",
+      "icon": "infra-fastapi",
       "id": "api-read-surfaces",
       "inputs": [
         "Prepared projections",
@@ -564,7 +564,7 @@
         "route_ready",
         "lifecycle status"
       ],
-      "icon": "generic-service",
+      "icon": "infra-app",
       "id": "app-catalog",
       "inputs": [
         "App catalog projection"
@@ -632,7 +632,7 @@
         "action progress",
         "route health"
       ],
-      "icon": "generic-process",
+      "icon": "infra-worker",
       "id": "app-lifecycle-worker",
       "inputs": [
         "App command"
@@ -703,7 +703,7 @@
         "backup verified",
         "rollback ready"
       ],
-      "icon": "generic-process",
+      "icon": "infra-backup",
       "id": "app-recovery-update",
       "inputs": [
         "Confirmed action"
@@ -774,7 +774,7 @@
       "health_signals": [
         "state revision"
       ],
-      "icon": "generic-database",
+      "icon": "infra-state",
       "id": "app-workflow-state",
       "inputs": [
         "app lifecycle and workflow events"
@@ -842,7 +842,7 @@
       "health_signals": [
         "active release identity"
       ],
-      "icon": "generic-process",
+      "icon": "infra-release",
       "id": "atomic-promotion",
       "inputs": [
         "Verified stage"
@@ -900,7 +900,7 @@
         "repository readiness",
         "verification status"
       ],
-      "icon": "generic-process",
+      "icon": "infra-backup",
       "id": "backup-engine",
       "inputs": [
         "Backup command"
@@ -969,7 +969,7 @@
         "queue capacity",
         "deadline counters"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-decision",
       "id": "bounded-reconciliation",
       "inputs": [
         "Events",
@@ -1028,7 +1028,7 @@
         "page load",
         "service worker readiness"
       ],
-      "icon": "generic-ui",
+      "icon": "infra-browser",
       "id": "browser",
       "inputs": [
         "HTML, CSS, JavaScript, SVG"
@@ -1083,7 +1083,7 @@
         "Caddy validation",
         "route probes"
       ],
-      "icon": "generic-service",
+      "icon": "infra-caddy",
       "id": "caddy",
       "inputs": [
         "HTTPS requests"
@@ -1148,7 +1148,7 @@
       "health_signals": [
         "retention status"
       ],
-      "icon": "generic-process",
+      "icon": "infra-backup",
       "id": "checkpoints-retention",
       "inputs": [
         "Maintenance command"
@@ -1212,7 +1212,7 @@
         "queue depth",
         "stale command count"
       ],
-      "icon": "generic-event",
+      "icon": "infra-event",
       "id": "command-lifecycle",
       "inputs": [
         "Accepted command",
@@ -1280,7 +1280,7 @@
       "health_signals": [
         "evidence index consistency"
       ],
-      "icon": "generic-event",
+      "icon": "infra-event",
       "id": "completion-evidence",
       "inputs": [
         "Lifecycle results"
@@ -1347,7 +1347,7 @@
         "last seen",
         "health attention"
       ],
-      "icon": "generic-database",
+      "icon": "infra-state",
       "id": "device-state",
       "inputs": [
         "invite acceptance",
@@ -1419,7 +1419,7 @@
         "query freshness",
         "saved-state metadata"
       ],
-      "icon": "generic-ui",
+      "icon": "infra-pwa",
       "id": "frontend-state",
       "inputs": [
         "Safe GET responses",
@@ -1491,7 +1491,7 @@
       "health_signals": [
         "asset manifest validation"
       ],
-      "icon": "generic-external",
+      "icon": "infra-github",
       "id": "github-release",
       "inputs": [
         "Annotated Lite tag"
@@ -1551,7 +1551,7 @@
       "health_signals": [
         "workflow status"
       ],
-      "icon": "generic-external",
+      "icon": "infra-github",
       "id": "github-repository",
       "inputs": [
         "Merged source"
@@ -1607,7 +1607,7 @@
       "health_signals": [
         "pending invite age"
       ],
-      "icon": "generic-database",
+      "icon": "infra-state",
       "id": "invite-state",
       "inputs": [
         "invite creation",
@@ -1663,7 +1663,7 @@
       "health_signals": [
         "route reachability"
       ],
-      "icon": "generic-network",
+      "icon": "infra-network",
       "id": "lan",
       "inputs": [
         "Browser traffic"
@@ -1716,7 +1716,7 @@
       "health_signals": [
         "last_known_good"
       ],
-      "icon": "generic-process",
+      "icon": "infra-release",
       "id": "last-known-good",
       "inputs": [
         "Rollback trigger"
@@ -1781,7 +1781,7 @@
         "GET /health",
         "GET /ready"
       ],
-      "icon": "generic-service",
+      "icon": "infra-fastapi",
       "id": "lite-api",
       "inputs": [
         "Same-origin requests"
@@ -1845,7 +1845,7 @@
       "health_signals": [
         "operational status"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-decision",
       "id": "media-app-health",
       "inputs": [
         "Route/runtime/storage posture"
@@ -1910,7 +1910,7 @@
         "NATS monitor",
         "JetStream status"
       ],
-      "icon": "generic-event",
+      "icon": "infra-nats",
       "id": "nats-jetstream",
       "inputs": [
         "Validated commands",
@@ -1975,7 +1975,7 @@
         "local listener",
         "Tailnet listener reachability"
       ],
-      "icon": "generic-network",
+      "icon": "infra-network",
       "id": "nats-listeners",
       "inputs": [
         "Generated listener config"
@@ -2035,7 +2035,7 @@
         "fresh heartbeat",
         "connection state"
       ],
-      "icon": "generic-process",
+      "icon": "infra-agent",
       "id": "node-agent",
       "inputs": [
         "NATS commands",
@@ -2098,7 +2098,7 @@
       "health_signals": [
         "base-path status probe"
       ],
-      "icon": "generic-external",
+      "icon": "infra-photoprism",
       "id": "photoprism",
       "inputs": [
         "Same-origin app route",
@@ -2157,7 +2157,7 @@
       "health_signals": [
         "pm2 status"
       ],
-      "icon": "generic-process",
+      "icon": "infra-pm2",
       "id": "pm2",
       "inputs": [
         "Generated process definitions"
@@ -2220,7 +2220,7 @@
         "/health",
         "/ready"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-release",
       "id": "post-switch-health",
       "inputs": [
         "Promoted release"
@@ -2286,7 +2286,7 @@
         "dirty",
         "committed_generation"
       ],
-      "icon": "generic-database",
+      "icon": "infra-sqlite",
       "id": "prepared-state",
       "inputs": [
         "domain revisions",
@@ -2359,7 +2359,7 @@
         "generation/committed_generation",
         "queue depth"
       ],
-      "icon": "generic-process",
+      "icon": "infra-worker",
       "id": "projection-subprocesses",
       "inputs": [
         "Compact domain events"
@@ -2423,7 +2423,7 @@
       "health_signals": [
         "process status"
       ],
-      "icon": "generic-process",
+      "icon": "infra-ubuntu",
       "id": "proot-ubuntu",
       "inputs": [
         "Generated app environment"
@@ -2482,7 +2482,7 @@
         "error boundary",
         "frontend lifecycle challenge"
       ],
-      "icon": "generic-ui",
+      "icon": "infra-pwa",
       "id": "pwa",
       "inputs": [
         "Prepared API responses"
@@ -2546,7 +2546,7 @@
         "repository readiness",
         "verification state"
       ],
-      "icon": "generic-database",
+      "icon": "infra-backup",
       "id": "recovery-state",
       "inputs": [
         "backup/verify/preview/restore lifecycle"
@@ -2611,7 +2611,7 @@
       "health_signals": [
         "checksums match"
       ],
-      "icon": "generic-event",
+      "icon": "infra-release",
       "id": "release-artifacts",
       "inputs": [
         "Source commit"
@@ -2675,7 +2675,7 @@
       "health_signals": [
         "artifact_verified"
       ],
-      "icon": "generic-process",
+      "icon": "infra-release",
       "id": "release-staging",
       "inputs": [
         "GitHub release metadata"
@@ -2740,7 +2740,7 @@
         "comparison",
         "artifact verification"
       ],
-      "icon": "generic-database",
+      "icon": "infra-state",
       "id": "release-state",
       "inputs": [
         "verified release lifecycle"
@@ -2804,7 +2804,7 @@
         "subprocess generation",
         "deadline counters"
       ],
-      "icon": "generic-process",
+      "icon": "infra-worker",
       "id": "release-subprocess",
       "inputs": [
         "Release check/apply command"
@@ -2863,7 +2863,7 @@
       "health_signals": [
         "readiness reasons"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-decision",
       "id": "remote-readiness",
       "inputs": [
         "Tailscale and NATS posture"
@@ -2925,7 +2925,7 @@
       "health_signals": [
         "post-restore API health"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-backup",
       "id": "restore-preview",
       "inputs": [
         "Backup selection",
@@ -2997,7 +2997,7 @@
         "dependency assessment",
         "database verification"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-backup",
       "id": "retirement-database-recovery",
       "inputs": [
         "Confirmed retirement/restore"
@@ -3072,7 +3072,7 @@
         "tool status",
         "timeout status"
       ],
-      "icon": "generic-process",
+      "icon": "infra-worker",
       "id": "scanner-adapters",
       "inputs": [
         "Verified scan plan"
@@ -3136,7 +3136,7 @@
         "progress",
         "freshness"
       ],
-      "icon": "generic-service",
+      "icon": "infra-security",
       "id": "security-coordinator",
       "inputs": [
         "Scan request"
@@ -3201,7 +3201,7 @@
       "health_signals": [
         "profile freshness"
       ],
-      "icon": "generic-decision",
+      "icon": "infra-security",
       "id": "security-profiles",
       "inputs": [
         "Profile and optional app id"
@@ -3266,7 +3266,7 @@
         "active key",
         "progress freshness"
       ],
-      "icon": "generic-database",
+      "icon": "infra-state",
       "id": "security-state",
       "inputs": [
         "scanner results"
@@ -3335,7 +3335,7 @@
         "PRAGMA quick_check",
         "WAL pressure"
       ],
-      "icon": "generic-database",
+      "icon": "infra-sqlite",
       "id": "sqlite",
       "inputs": [
         "Transactional lifecycle writes"
@@ -3395,7 +3395,7 @@
         "Tailnet IPv4",
         "peer reachability"
       ],
-      "icon": "generic-network",
+      "icon": "infra-tailscale",
       "id": "tailscale",
       "inputs": [
         "Tailnet identity"
@@ -3453,7 +3453,7 @@
       "health_signals": [
         "daemon state"
       ],
-      "icon": "generic-process",
+      "icon": "infra-tailscale",
       "id": "tailscaled",
       "inputs": [
         "Tailscale configuration"
@@ -3501,7 +3501,7 @@
       "evidence_produced": [],
       "failure_paths": [],
       "health_signals": [],
-      "icon": "generic-ui",
+      "icon": "infra-user",
       "id": "user",
       "inputs": [
         "Pocket Lab Lite status and actions"
@@ -3556,7 +3556,7 @@
         "worker heartbeat",
         "durable consumer health"
       ],
-      "icon": "generic-process",
+      "icon": "infra-worker",
       "id": "worker",
       "inputs": [
         "JetStream commands"
@@ -3622,7 +3622,7 @@
       "health_signals": [
         "projection subprocess health"
       ],
-      "icon": "generic-process",
+      "icon": "infra-worker",
       "id": "workflow-execution",
       "inputs": [
         "Workflow events"

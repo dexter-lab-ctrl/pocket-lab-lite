@@ -313,7 +313,7 @@ def test_mkdocs_tasks_ci_and_browser_contract_are_wired():
         "Pocket Lab Lite Architecture",
         "generated/production/architecture/",
         "generated/production/architecture/component-catalog",
-        "externalAssetRequests",
+        "failedRequests",
     ):
         assert marker in browser_test
 

@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 70e1e3dd1be588ab4eada0a05875282ebd5daa117f0b647e4f50d7977fccef16
+source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -29,6 +29,16 @@ Requires assessment and confirmation for device retirement and provides verified
 </figure>
 
 
+## Function and use
+
+| Field | Value |
+| --- | --- |
+| Function | Requires assessment and confirmation for device retirement and provides verified database backup/preview/restore without coupling command cleanup to device deletion. |
+| Primary inputs | Confirmed retirement/restore |
+| Primary outputs | retirement receipt, database restore |
+| Protocols / uses | HTTP JSON, NATS, SQLite |
+| Evidence | retirement/restore evidence |
+
 ## Ownership and placement
 
 | Field | Value |
@@ -43,6 +53,7 @@ Requires assessment and confirmation for device retirement and provides verified
 | Security boundary | Messaging and execution boundary |
 | Supported platforms | Android/Termux, ARM64, Ubuntu, WSL2 development |
 | Verification | verified |
+| Architecture icon | infra-backup |
 
 ## Inputs
 

@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 70e1e3dd1be588ab4eada0a05875282ebd5daa117f0b647e4f50d7977fccef16
+source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -29,6 +29,16 @@ Tracks pending, accepted, revoked, blocked, and consumed invite/identity state w
 </figure>
 
 
+## Function and use
+
+| Field | Value |
+| --- | --- |
+| Function | Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards. |
+| Primary inputs | invite creation, bootstrap acceptance |
+| Primary outputs | safe onboarding state |
+| Protocols / uses | SQLite |
+| Evidence | blocked consumption, invite state |
+
 ## Ownership and placement
 
 | Field | Value |
@@ -43,6 +53,7 @@ Tracks pending, accepted, revoked, blocked, and consumed invite/identity state w
 | Security boundary | Durable-state boundary |
 | Supported platforms | Android/Termux, ARM64, Ubuntu, WSL2 development |
 | Verification | verified |
+| Architecture icon | infra-state |
 
 ## Inputs
 
