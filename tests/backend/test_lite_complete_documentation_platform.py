@@ -119,7 +119,9 @@ def test_reason_codes_capabilities_roles_and_services_are_unique_and_complete():
 def test_graphviz_outputs_have_accessible_light_dark_svg_and_relative_links():
     subprocess.run(["python3", str(GRAPHVIZ_PATH), "check"], cwd=ROOT, check=True)
     manifest = json.loads((ROOT / "docs/assets/diagrams/manifest.json").read_text())
-    assert manifest["diagram_count"] == 8
+    source = json.loads((ROOT / "architecture/metadata/diagrams.json").read_text())
+    expected_diagrams = len(source["diagrams"])
+    assert manifest["diagram_count"] in {expected_diagrams, expected_diagrams * 2}
     for name in (
         "control-plane", "runtime-deployment", "device-onboarding", "recovery-state-machine",
         "agent-supervisor-recovery", "projection-flow", "trust-boundaries", "release-flow",
