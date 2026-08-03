@@ -18,8 +18,15 @@ validation_status: generated
 
 Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.
 
-![NATS / JetStream mini architecture](../../../../assets/diagrams/production/components/nats-jetstream.light.svg#only-light)
-![NATS / JetStream mini architecture](../../../../assets/diagrams/production/components/nats-jetstream.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/nats-jetstream.light.svg" aria-label="Open full-size NATS / JetStream mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/nats-jetstream.light.svg#only-light" alt="NATS / JetStream mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/nats-jetstream.dark.svg#only-dark" alt="NATS / JetStream mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>NATS / JetStream mini architecture. <a href="../../../../../assets/diagrams/production/components/nats-jetstream.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

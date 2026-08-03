@@ -18,8 +18,15 @@ validation_status: generated
 
 Validates Caddy/FastAPI/PWA health after promotion before declaring the release current.
 
-![Post-switch health validation mini architecture](../../../../assets/diagrams/production/components/post-switch-health.light.svg#only-light)
-![Post-switch health validation mini architecture](../../../../assets/diagrams/production/components/post-switch-health.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/post-switch-health.light.svg" aria-label="Open full-size Post-switch health validation mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/post-switch-health.light.svg#only-light" alt="Post-switch health validation mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/post-switch-health.dark.svg#only-dark" alt="Post-switch health validation mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Post-switch health validation mini architecture. <a href="../../../../../assets/diagrams/production/components/post-switch-health.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

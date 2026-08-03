@@ -18,8 +18,15 @@ validation_status: generated
 
 Hosts verified applications such as PhotoPrism without making documentation tooling or the browser a runtime dependency.
 
-![PROot Ubuntu application container mini architecture](../../../../assets/diagrams/production/components/proot-ubuntu.light.svg#only-light)
-![PROot Ubuntu application container mini architecture](../../../../assets/diagrams/production/components/proot-ubuntu.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/proot-ubuntu.light.svg" aria-label="Open full-size PROot Ubuntu application container mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/proot-ubuntu.light.svg#only-light" alt="PROot Ubuntu application container mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/proot-ubuntu.dark.svg#only-dark" alt="PROot Ubuntu application container mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>PROot Ubuntu application container mini architecture. <a href="../../../../../assets/diagrams/production/components/proot-ubuntu.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

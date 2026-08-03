@@ -18,8 +18,15 @@ validation_status: generated
 
 Creates and verifies local encrypted backups through backend/worker-owned operations.
 
-![Backup and verification engine mini architecture](../../../../assets/diagrams/production/components/backup-engine.light.svg#only-light)
-![Backup and verification engine mini architecture](../../../../assets/diagrams/production/components/backup-engine.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/backup-engine.light.svg" aria-label="Open full-size Backup and verification engine mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/backup-engine.light.svg#only-light" alt="Backup and verification engine mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/backup-engine.dark.svg#only-dark" alt="Backup and verification engine mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Backup and verification engine mini architecture. <a href="../../../../../assets/diagrams/production/components/backup-engine.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

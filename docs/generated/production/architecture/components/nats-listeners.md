@@ -18,8 +18,15 @@ validation_status: generated
 
 Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.
 
-![Primary and secondary NATS listeners mini architecture](../../../../assets/diagrams/production/components/nats-listeners.light.svg#only-light)
-![Primary and secondary NATS listeners mini architecture](../../../../assets/diagrams/production/components/nats-listeners.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/nats-listeners.light.svg" aria-label="Open full-size Primary and secondary NATS listeners mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/nats-listeners.light.svg#only-light" alt="Primary and secondary NATS listeners mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/nats-listeners.dark.svg#only-dark" alt="Primary and secondary NATS listeners mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Primary and secondary NATS listeners mini architecture. <a href="../../../../../assets/diagrams/production/components/nats-listeners.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

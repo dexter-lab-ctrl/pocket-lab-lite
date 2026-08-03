@@ -1,12 +1,13 @@
 digraph component_prepared_state {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#ffffff",
@@ -38,7 +39,7 @@ digraph component_prepared_state {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health, readiness, diagnostics, and evidence APIs</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared projections, health/readiness, compact diagnostics,...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
+    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health,<BR/>readiness,...</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared<BR/>projections, health/readiness,<BR/>compact diagnostics, and sanitized...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
   }
   subgraph "cluster_durable-state" {
     label="Durable-state boundary";
@@ -47,8 +48,8 @@ digraph component_prepared_state {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "prepared-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Audit index, projection refresh, prepared projections, and domain revisions</B></FONT><BR/><FONT POINT-SIZE="9">Indexes audit evidence and tracks dirty signals, generations, committed projections,...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#fef3c7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Audit index, projection refresh, prepared projections, and domain revisions. Indexes audit evidence and tracks dirty signals, generations, committed projections, current-state summaries, and semantic revisions.", URL="../../../../generated/production/architecture/components/prepared-state/", target="_top"];
-    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+    "prepared-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Audit index,<BR/>projection refresh,...</B></FONT><BR/><FONT POINT-SIZE="9">Indexes audit evidence and tracks<BR/>dirty signals, generations,<BR/>committed projections,...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#fef3c7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Audit index, projection refresh, prepared projections, and domain revisions. Indexes audit evidence and tracks dirty signals, generations, committed projections, current-state summaries, and semantic revisions.", URL="../../../../generated/production/architecture/components/prepared-state/", target="_top"];
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane<BR/>store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle<BR/>state and prepared projections;<BR/>the frontend never accesses it...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
   }
   subgraph "cluster_messaging-execution" {
     label="Messaging and execution boundary";
@@ -57,8 +58,8 @@ digraph component_prepared_state {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and completion evidence for commands, devices, apps, secu...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
-    "projection-subprocesses" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Projection subprocesses</B></FONT><BR/><FONT POINT-SIZE="9">Own CPU-heavy projection reconstruction and serialization outside the API process.</FONT><BR/><FONT POINT-SIZE="8">Dedicated subprocesses / scheduler</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Projection subprocesses. Own CPU-heavy projection reconstruction and serialization outside the API process.", URL="../../../../generated/production/architecture/components/projection-subprocesses/", target="_top"];
+    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit<BR/>evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and<BR/>completion evidence for commands,<BR/>devices, apps, security, recovery,...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
+    "projection-subprocesses" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Projection<BR/>subprocesses</B></FONT><BR/><FONT POINT-SIZE="9">Own CPU-heavy projection<BR/>reconstruction and serialization<BR/>outside the API process.</FONT><BR/><FONT POINT-SIZE="8">Dedicated subprocesses /<BR/>scheduler</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Projection subprocesses. Own CPU-heavy projection reconstruction and serialization outside the API process.", URL="../../../../generated/production/architecture/components/projection-subprocesses/", target="_top"];
   }
   "completion-evidence" -> "prepared-state" [label="indexes evidence", tooltip="indexes evidence (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
   "projection-subprocesses" -> "prepared-state" [label="commits generation", tooltip="commits generation (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];

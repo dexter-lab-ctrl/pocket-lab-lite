@@ -18,8 +18,15 @@ validation_status: generated
 
 Same-origin request validation, command admission, durable execution, prepared reads, and truthful UI state.
 
-![Request and control flow](../../../assets/diagrams/production/views/request-control.light.svg#only-light)
-![Request and control flow](../../../assets/diagrams/production/views/request-control.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/request-control.light.svg" aria-label="Open full-size Request and control flow">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/request-control.light.svg#only-light" alt="Request and control flow" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/request-control.dark.svg#only-dark" alt="Request and control flow" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Request and control flow. <a href="../../../../assets/diagrams/production/views/request-control.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

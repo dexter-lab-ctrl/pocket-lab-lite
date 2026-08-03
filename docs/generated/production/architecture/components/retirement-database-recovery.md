@@ -18,8 +18,15 @@ validation_status: generated
 
 Requires assessment and confirmation for device retirement and provides verified database backup/preview/restore without coupling command cleanup to device deletion.
 
-![Explicit retirement and database recovery mini architecture](../../../../assets/diagrams/production/components/retirement-database-recovery.light.svg#only-light)
-![Explicit retirement and database recovery mini architecture](../../../../assets/diagrams/production/components/retirement-database-recovery.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/retirement-database-recovery.light.svg" aria-label="Open full-size Explicit retirement and database recovery mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/retirement-database-recovery.light.svg#only-light" alt="Explicit retirement and database recovery mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/retirement-database-recovery.dark.svg#only-dark" alt="Explicit retirement and database recovery mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Explicit retirement and database recovery mini architecture. <a href="../../../../../assets/diagrams/production/components/retirement-database-recovery.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

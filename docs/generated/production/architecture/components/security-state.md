@@ -18,8 +18,15 @@ validation_status: generated
 
 Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidence references.
 
-![Security findings and run state mini architecture](../../../../assets/diagrams/production/components/security-state.light.svg#only-light)
-![Security findings and run state mini architecture](../../../../assets/diagrams/production/components/security-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/security-state.light.svg" aria-label="Open full-size Security findings and run state mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-state.light.svg#only-light" alt="Security findings and run state mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-state.dark.svg#only-dark" alt="Security findings and run state mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Security findings and run state mini architecture. <a href="../../../../../assets/diagrams/production/components/security-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

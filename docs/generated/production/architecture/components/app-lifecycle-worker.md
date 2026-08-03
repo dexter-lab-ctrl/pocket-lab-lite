@@ -18,8 +18,15 @@ validation_status: generated
 
 Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.
 
-![App lifecycle worker mini architecture](../../../../assets/diagrams/production/components/app-lifecycle-worker.light.svg#only-light)
-![App lifecycle worker mini architecture](../../../../assets/diagrams/production/components/app-lifecycle-worker.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/app-lifecycle-worker.light.svg" aria-label="Open full-size App lifecycle worker mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/app-lifecycle-worker.light.svg#only-light" alt="App lifecycle worker mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/app-lifecycle-worker.dark.svg#only-dark" alt="App lifecycle worker mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>App lifecycle worker mini architecture. <a href="../../../../../assets/diagrams/production/components/app-lifecycle-worker.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **1** additional connections.
 

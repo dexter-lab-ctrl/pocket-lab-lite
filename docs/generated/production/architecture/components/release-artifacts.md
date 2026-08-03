@@ -18,8 +18,15 @@ validation_status: generated
 
 Defines immutable release identity and the exact assets required for a Lite installation.
 
-![Date-based Lite tag, dist.zip, checksums, and release manifest mini architecture](../../../../assets/diagrams/production/components/release-artifacts.light.svg#only-light)
-![Date-based Lite tag, dist.zip, checksums, and release manifest mini architecture](../../../../assets/diagrams/production/components/release-artifacts.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/release-artifacts.light.svg" aria-label="Open full-size Date-based Lite tag, dist.zip, checksums, and release manifest mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-artifacts.light.svg#only-light" alt="Date-based Lite tag, dist.zip, checksums, and release manifest mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-artifacts.dark.svg#only-dark" alt="Date-based Lite tag, dist.zip, checksums, and release manifest mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Date-based Lite tag, dist.zip, checksums, and release manifest mini architecture. <a href="../../../../../assets/diagrams/production/components/release-artifacts.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

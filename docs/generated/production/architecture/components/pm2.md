@@ -18,8 +18,15 @@ validation_status: generated
 
 Starts and supervises approved server-host and joined-device processes with bounded restart policies.
 
-![PM2 process manager mini architecture](../../../../assets/diagrams/production/components/pm2.light.svg#only-light)
-![PM2 process manager mini architecture](../../../../assets/diagrams/production/components/pm2.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/pm2.light.svg" aria-label="Open full-size PM2 process manager mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/pm2.light.svg#only-light" alt="PM2 process manager mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/pm2.dark.svg#only-dark" alt="PM2 process manager mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>PM2 process manager mini architecture. <a href="../../../../../assets/diagrams/production/components/pm2.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

@@ -18,8 +18,15 @@ validation_status: generated
 
 Server-host, subprocess, PM2, node-agent, supervisor, PROot application, and release/projection process ownership.
 
-![Runtime and PM2 process topology](../../../assets/diagrams/production/views/runtime-topology.light.svg#only-light)
-![Runtime and PM2 process topology](../../../assets/diagrams/production/views/runtime-topology.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/runtime-topology.light.svg" aria-label="Open full-size Runtime and PM2 process topology">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/runtime-topology.light.svg#only-light" alt="Runtime and PM2 process topology" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/runtime-topology.dark.svg#only-dark" alt="Runtime and PM2 process topology" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Runtime and PM2 process topology. <a href="../../../../assets/diagrams/production/views/runtime-topology.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

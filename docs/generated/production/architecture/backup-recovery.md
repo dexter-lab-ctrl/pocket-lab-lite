@@ -18,8 +18,15 @@ validation_status: generated
 
 Backup, verification, restore preview, confirmation, checkpoint, health validation, retention, and database recovery.
 
-![Backup and restore](../../../assets/diagrams/production/views/backup-restore.light.svg#only-light)
-![Backup and restore](../../../assets/diagrams/production/views/backup-restore.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/backup-restore.light.svg" aria-label="Open full-size Backup and restore">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/backup-restore.light.svg#only-light" alt="Backup and restore" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/backup-restore.dark.svg#only-dark" alt="Backup and restore" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Backup and restore. <a href="../../../../assets/diagrams/production/views/backup-restore.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

@@ -13,8 +13,16 @@ from architecture_model import ArchitectureIndex, ROOT, fingerprint
 
 GENERATOR = "scripts/docs/graphviz/generate_lite_architecture.py"
 DOC_ROOT = Path("docs/generated/production/architecture")
-DIAGRAM_ROOT = "../../../assets/diagrams/production"
-COMPONENT_DIAGRAM_ROOT = "../../../../assets/diagrams/production"
+INDEX_DIAGRAM_ROOT = "../../../assets/diagrams/production"
+VIEW_DIAGRAM_ROOT = "../../../../assets/diagrams/production"
+COMPONENT_DIAGRAM_ROOT = "../../../../../assets/diagrams/production"
+WIDE_DIAGRAMS = {
+    "complete-system",
+    "request-control",
+    "apps-lifecycle",
+    "audit-evidence",
+    "command-reconciliation",
+}
 
 
 def _frontmatter(title: str, description: str, source_fingerprint: str) -> str:
@@ -37,12 +45,39 @@ def _frontmatter(title: str, description: str, source_fingerprint: str) -> str:
     )
 
 
-def _diagram(name: str, alt: str, *, component: bool = False) -> str:
-    root = COMPONENT_DIAGRAM_ROOT if component else DIAGRAM_ROOT
+def _diagram(
+    name: str,
+    alt: str,
+    *,
+    component: bool = False,
+    nested_page: bool = False,
+) -> str:
+    if component:
+        root = COMPONENT_DIAGRAM_ROOT
+    elif nested_page:
+        root = VIEW_DIAGRAM_ROOT
+    else:
+        root = INDEX_DIAGRAM_ROOT
     folder = "components" if component else "views"
+    kind = "component" if component else "system"
+    width_class = " pl-architecture-diagram--wide" if name in WIDE_DIAGRAMS else ""
+    light = f"{root}/{folder}/{name}.light.svg"
+    dark = f"{root}/{folder}/{name}.dark.svg"
+    safe_alt = html.escape(alt, quote=True)
     return (
-        f"![{alt}]({root}/{folder}/{name}.light.svg#only-light)\n"
-        f"![{alt}]({root}/{folder}/{name}.dark.svg#only-dark)\n"
+        f'<figure class="pl-architecture-diagram pl-architecture-diagram--{kind}{width_class}">\n'
+        '  <div class="pl-architecture-diagram__viewport">\n'
+        f'    <a class="pl-architecture-diagram__link" href="{light}" '
+        f'aria-label="Open full-size {safe_alt}">\n'
+        f'      <img class="pl-architecture-diagram__image" src="{light}#only-light" '
+        f'alt="{safe_alt}" loading="lazy" decoding="async" />\n'
+        f'      <img class="pl-architecture-diagram__image" src="{dark}#only-dark" '
+        f'alt="{safe_alt}" loading="lazy" decoding="async" />\n'
+        '    </a>\n'
+        '  </div>\n'
+        f'  <figcaption>{safe_alt}. '
+        f'<a href="{light}">View full-size diagram</a></figcaption>\n'
+        '</figure>\n'
     )
 
 
@@ -154,7 +189,7 @@ def view_page(
 
 {view['description']}
 
-{_diagram(view_id, view['title'])}
+{_diagram(view_id, view['title'], nested_page=True)}
 
 ## Components
 

@@ -18,8 +18,15 @@ validation_status: generated
 
 Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, and truthful partial/failed states.
 
-![Quick, Full, and App safety checks mini architecture](../../../../assets/diagrams/production/components/security-profiles.light.svg#only-light)
-![Quick, Full, and App safety checks mini architecture](../../../../assets/diagrams/production/components/security-profiles.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/security-profiles.light.svg" aria-label="Open full-size Quick, Full, and App safety checks mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-profiles.light.svg#only-light" alt="Quick, Full, and App safety checks mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-profiles.dark.svg#only-dark" alt="Quick, Full, and App safety checks mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Quick, Full, and App safety checks mini architecture. <a href="../../../../../assets/diagrams/production/components/security-profiles.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

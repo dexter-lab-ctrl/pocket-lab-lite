@@ -18,8 +18,15 @@ validation_status: generated
 
 Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.
 
-![Security scan coordinator mini architecture](../../../../assets/diagrams/production/components/security-coordinator.light.svg#only-light)
-![Security scan coordinator mini architecture](../../../../assets/diagrams/production/components/security-coordinator.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/security-coordinator.light.svg" aria-label="Open full-size Security scan coordinator mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-coordinator.light.svg#only-light" alt="Security scan coordinator mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-coordinator.dark.svg#only-dark" alt="Security scan coordinator mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Security scan coordinator mini architecture. <a href="../../../../../assets/diagrams/production/components/security-coordinator.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **1** additional connections.
 

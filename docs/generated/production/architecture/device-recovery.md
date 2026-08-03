@@ -18,8 +18,15 @@ validation_status: generated
 
 Durable enrollment, signal freshness, command delivery, reconnect watchdog, supervisor recovery, explicit repair, and retirement.
 
-![Devices and offline recovery](../../../assets/diagrams/production/views/device-recovery.light.svg#only-light)
-![Devices and offline recovery](../../../assets/diagrams/production/views/device-recovery.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/device-recovery.light.svg" aria-label="Open full-size Devices and offline recovery">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/device-recovery.light.svg#only-light" alt="Devices and offline recovery" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/device-recovery.dark.svg#only-dark" alt="Devices and offline recovery" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Devices and offline recovery. <a href="../../../../assets/diagrams/production/views/device-recovery.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

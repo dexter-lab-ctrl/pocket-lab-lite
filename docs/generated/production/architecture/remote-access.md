@@ -18,8 +18,15 @@ validation_status: generated
 
 Safe tailscaled startup, Tailnet IPv4, local/Tailnet NATS listeners, joined-agent connectivity, and side-effect-free readiness reporting.
 
-![Tailscale readiness](../../../assets/diagrams/production/views/remote-access.light.svg#only-light)
-![Tailscale readiness](../../../assets/diagrams/production/views/remote-access.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/remote-access.light.svg" aria-label="Open full-size Tailscale readiness">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/remote-access.light.svg#only-light" alt="Tailscale readiness" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/remote-access.dark.svg#only-dark" alt="Tailscale readiness" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Tailscale readiness. <a href="../../../../assets/diagrams/production/views/remote-access.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

@@ -18,8 +18,15 @@ validation_status: generated
 
 Owns Tailscale networking; startup scripts may detect/start it safely while read APIs remain side-effect-free.
 
-![tailscaled daemon mini architecture](../../../../assets/diagrams/production/components/tailscaled.light.svg#only-light)
-![tailscaled daemon mini architecture](../../../../assets/diagrams/production/components/tailscaled.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/tailscaled.light.svg" aria-label="Open full-size tailscaled daemon mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/tailscaled.light.svg#only-light" alt="tailscaled daemon mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/tailscaled.dark.svg#only-dark" alt="tailscaled daemon mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>tailscaled daemon mini architecture. <a href="../../../../../assets/diagrams/production/components/tailscaled.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

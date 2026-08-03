@@ -18,8 +18,15 @@ validation_status: generated
 
 Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.
 
-![Invite and identity lifecycle mini architecture](../../../../assets/diagrams/production/components/invite-state.light.svg#only-light)
-![Invite and identity lifecycle mini architecture](../../../../assets/diagrams/production/components/invite-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/invite-state.light.svg" aria-label="Open full-size Invite and identity lifecycle mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/invite-state.light.svg#only-light" alt="Invite and identity lifecycle mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/invite-state.dark.svg#only-dark" alt="Invite and identity lifecycle mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Invite and identity lifecycle mini architecture. <a href="../../../../../assets/diagrams/production/components/invite-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

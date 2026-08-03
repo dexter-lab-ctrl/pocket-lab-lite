@@ -18,8 +18,15 @@ validation_status: generated
 
 Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, and dead-letter behavior independently from device lifecycle.
 
-![Command admission and lifecycle mini architecture](../../../../assets/diagrams/production/components/command-lifecycle.light.svg#only-light)
-![Command admission and lifecycle mini architecture](../../../../assets/diagrams/production/components/command-lifecycle.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/command-lifecycle.light.svg" aria-label="Open full-size Command admission and lifecycle mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/command-lifecycle.light.svg#only-light" alt="Command admission and lifecycle mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/command-lifecycle.dark.svg#only-dark" alt="Command admission and lifecycle mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Command admission and lifecycle mini architecture. <a href="../../../../../assets/diagrams/production/components/command-lifecycle.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

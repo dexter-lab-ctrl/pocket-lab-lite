@@ -81,28 +81,136 @@
 }
 /* pocketlab-mobile-nav-title-contrast:end */
 
+
+/* Search metadata must meet WCAG AA in the dark documentation palette. */
+[data-md-color-scheme="pocketlab-dark"] .md-search-result__meta {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
 /* Generated Production architecture diagrams and ownership catalog. */
-.md-typeset img[src*="/diagrams/production/"] {
-  display: block;
+.pl-architecture-diagram {
+  box-sizing: border-box;
   width: 100%;
-  height: auto;
-  max-height: 46rem;
-  margin-inline: auto;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  margin: clamp(1.25rem, 2vw, 2rem) auto;
+  padding: clamp(0.5rem, 1.2vw, 0.9rem);
   border: 1px solid var(--pl-border);
   border-radius: var(--pl-radius-lg);
   background: var(--md-default-bg-color);
+  box-shadow: var(--pl-shadow);
 }
-.pl-architecture-table {
+.pl-architecture-diagram--system { max-width: 72rem; }
+.pl-architecture-diagram--component { max-width: 52rem; }
+.pl-architecture-diagram__viewport {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: calc(var(--pl-radius-lg) - 0.25rem);
+  background: color-mix(in srgb, var(--md-default-bg-color) 96%, var(--md-default-fg-color));
+}
+.pl-architecture-diagram__link { display: block; width: 100%; }
+.pl-architecture-diagram--wide .pl-architecture-diagram__viewport {
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
-.pl-architecture-table table {
-  min-width: 76rem;
+.pl-architecture-diagram--wide .pl-architecture-diagram__link {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
+.pl-architecture-diagram__image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: min(72vh, 50rem);
+  margin-inline: auto;
+  object-fit: contain;
+  object-position: center;
+}
+.pl-architecture-diagram--wide .pl-architecture-diagram__image {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.pl-architecture-diagram figcaption {
+  margin-top: 0.65rem;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: center;
+}
+.pl-architecture-diagram figcaption a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+  white-space: nowrap;
+}
+.pl-architecture-diagram figcaption a:hover,
+.pl-architecture-diagram figcaption a:focus-visible {
+  color: var(--md-accent-fg-color);
+  text-decoration-thickness: 0.12em;
+}
+
+.pl-architecture-table,
+.md-typeset .md-typeset__table {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.pl-architecture-table table { min-width: 76rem; }
 @media screen and (max-width: 44.9844em) {
-  .md-typeset img[src*="/diagrams/production/"] {
-    max-height: none;
+  .pl-architecture-diagram {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    padding: 0.45rem;
     border-radius: var(--pl-radius-md);
   }
+  .pl-architecture-diagram__viewport { border-radius: calc(var(--pl-radius-md) - 0.15rem); }
+  .pl-architecture-diagram--wide .pl-architecture-diagram__viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pl-architecture-diagram--wide .pl-architecture-diagram__link {
+    width: clamp(44rem, 220vw, 72rem);
+    min-width: 100%;
+    max-width: none;
+  }
+  .pl-architecture-diagram--wide .pl-architecture-diagram__image {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    max-height: 68vh;
+  }
+  .pl-architecture-diagram--component .pl-architecture-diagram__image {
+    width: 100%;
+    min-width: 0;
+    max-height: 62vh;
+  }
+  .pl-architecture-diagram figcaption { padding-inline: 0.35rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-architecture-diagram__viewport { scroll-behavior: auto; }
 }

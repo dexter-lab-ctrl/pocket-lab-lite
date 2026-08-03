@@ -18,8 +18,15 @@ validation_status: generated
 
 Retains enrolled devices across connectivity loss and separates durable enrollment, current state, health, supervisor state, and recovery history.
 
-![Enrollment and device lifecycle state mini architecture](../../../../assets/diagrams/production/components/device-state.light.svg#only-light)
-![Enrollment and device lifecycle state mini architecture](../../../../assets/diagrams/production/components/device-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/device-state.light.svg" aria-label="Open full-size Enrollment and device lifecycle state mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/device-state.light.svg#only-light" alt="Enrollment and device lifecycle state mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/device-state.dark.svg#only-dark" alt="Enrollment and device lifecycle state mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Enrollment and device lifecycle state mini architecture. <a href="../../../../../assets/diagrams/production/components/device-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

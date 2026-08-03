@@ -18,8 +18,15 @@ validation_status: generated
 
 Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.
 
-![SQLite control-plane store mini architecture](../../../../assets/diagrams/production/components/sqlite.light.svg#only-light)
-![SQLite control-plane store mini architecture](../../../../assets/diagrams/production/components/sqlite.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/sqlite.light.svg" aria-label="Open full-size SQLite control-plane store mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/sqlite.light.svg#only-light" alt="SQLite control-plane store mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/sqlite.dark.svg#only-dark" alt="SQLite control-plane store mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>SQLite control-plane store mini architecture. <a href="../../../../../assets/diagrams/production/components/sqlite.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **6** additional connections.
 

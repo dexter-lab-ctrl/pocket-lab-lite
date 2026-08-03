@@ -18,8 +18,15 @@ validation_status: generated
 
 Admission, durable delivery, claim, execution, acknowledgement, redelivery protection, queue bounds, and lifecycle reconciliation.
 
-![Command acknowledgement and reconciliation](../../../assets/diagrams/production/views/command-reconciliation.light.svg#only-light)
-![Command acknowledgement and reconciliation](../../../assets/diagrams/production/views/command-reconciliation.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/command-reconciliation.light.svg" aria-label="Open full-size Command acknowledgement and reconciliation">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/command-reconciliation.light.svg#only-light" alt="Command acknowledgement and reconciliation" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/command-reconciliation.dark.svg#only-dark" alt="Command acknowledgement and reconciliation" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Command acknowledgement and reconciliation. <a href="../../../../assets/diagrams/production/views/command-reconciliation.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

@@ -18,8 +18,15 @@ validation_status: generated
 
 Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.
 
-![Prepared read, health, readiness, diagnostics, and evidence APIs mini architecture](../../../../assets/diagrams/production/components/api-read-surfaces.light.svg#only-light)
-![Prepared read, health, readiness, diagnostics, and evidence APIs mini architecture](../../../../assets/diagrams/production/components/api-read-surfaces.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/api-read-surfaces.light.svg" aria-label="Open full-size Prepared read, health, readiness, diagnostics, and evidence APIs mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/api-read-surfaces.light.svg#only-light" alt="Prepared read, health, readiness, diagnostics, and evidence APIs mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/api-read-surfaces.dark.svg#only-dark" alt="Prepared read, health, readiness, diagnostics, and evidence APIs mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Prepared read, health, readiness, diagnostics, and evidence APIs mini architecture. <a href="../../../../../assets/diagrams/production/components/api-read-surfaces.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **1** additional connections.
 

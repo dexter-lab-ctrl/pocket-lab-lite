@@ -18,8 +18,15 @@ validation_status: generated
 
 Major deployment zones and the primary request, execution, state, evidence, device, app, remote-access, and release flows.
 
-![Complete Pocket Lab Lite system map](../../../assets/diagrams/production/views/complete-system.light.svg#only-light)
-![Complete Pocket Lab Lite system map](../../../assets/diagrams/production/views/complete-system.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/complete-system.light.svg" aria-label="Open full-size Complete Pocket Lab Lite system map">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/complete-system.light.svg#only-light" alt="Complete Pocket Lab Lite system map" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/complete-system.dark.svg#only-dark" alt="Complete Pocket Lab Lite system map" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Complete Pocket Lab Lite system map. <a href="../../../../assets/diagrams/production/views/complete-system.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

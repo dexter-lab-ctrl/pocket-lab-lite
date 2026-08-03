@@ -18,8 +18,15 @@ validation_status: generated
 
 Profile selection, command delivery, scanner adapters, normalized state, compact reads, sanitized evidence, and recovery.
 
-![Security and safety](../../../assets/diagrams/production/views/security.light.svg#only-light)
-![Security and safety](../../../assets/diagrams/production/views/security.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/security.light.svg" aria-label="Open full-size Security and safety">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/security.light.svg#only-light" alt="Security and safety" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/security.dark.svg#only-dark" alt="Security and safety" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Security and safety. <a href="../../../../assets/diagrams/production/views/security.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

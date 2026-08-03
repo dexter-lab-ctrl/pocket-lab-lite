@@ -18,8 +18,15 @@ validation_status: generated
 
 Stores installed-release identity and release-runtime projection for truthful comparison, staging, apply, rollback, and last-known-good state.
 
-![Installed release and runtime state mini architecture](../../../../assets/diagrams/production/components/release-state.light.svg#only-light)
-![Installed release and runtime state mini architecture](../../../../assets/diagrams/production/components/release-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/release-state.light.svg" aria-label="Open full-size Installed release and runtime state mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-state.light.svg#only-light" alt="Installed release and runtime state mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-state.dark.svg#only-dark" alt="Installed release and runtime state mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Installed release and runtime state mini architecture. <a href="../../../../../assets/diagrams/production/components/release-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

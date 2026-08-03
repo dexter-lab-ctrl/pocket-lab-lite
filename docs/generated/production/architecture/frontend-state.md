@@ -18,8 +18,15 @@ validation_status: generated
 
 PWA, TanStack Query, Dexie safe snapshots, Zustand UI state, XState guided flows, and FastAPI source-of-truth boundaries.
 
-![Frontend state ownership](../../../assets/diagrams/production/views/frontend-state.light.svg#only-light)
-![Frontend state ownership](../../../assets/diagrams/production/views/frontend-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/frontend-state.light.svg" aria-label="Open full-size Frontend state ownership">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/frontend-state.light.svg#only-light" alt="Frontend state ownership" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/frontend-state.dark.svg#only-dark" alt="Frontend state ownership" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Frontend state ownership. <a href="../../../../assets/diagrams/production/views/frontend-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

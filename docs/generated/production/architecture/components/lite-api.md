@@ -18,8 +18,15 @@ validation_status: generated
 
 Validates requests, owns safe read APIs, admits commands, and never delegates browser execution directly to NATS or shell.
 
-![FastAPI /api/lite/* mini architecture](../../../../assets/diagrams/production/components/lite-api.light.svg#only-light)
-![FastAPI /api/lite/* mini architecture](../../../../assets/diagrams/production/components/lite-api.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/lite-api.light.svg" aria-label="Open full-size FastAPI /api/lite/* mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/lite-api.light.svg#only-light" alt="FastAPI /api/lite/* mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/lite-api.dark.svg#only-dark" alt="FastAPI /api/lite/* mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>FastAPI /api/lite/* mini architecture. <a href="../../../../../assets/diagrams/production/components/lite-api.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **1** additional connections.
 
