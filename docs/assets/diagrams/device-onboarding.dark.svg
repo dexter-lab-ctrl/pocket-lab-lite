@@ -8,12 +8,104 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 177.15)">
 <polygon fill="#101827" stroke="none" points="-18,18 -18,-177.15 1941.86,-177.15 1941.86,18 -18,18"/>
 <text xml:space="preserve" text-anchor="middle" x="961.93" y="-136.15" font-family="Arial" font-size="20.00" fill="#f8fafc">Device onboarding lifecycle</text>
-<!-- invite -->
+<!-- agent&#45;&gt;heartbeat -->
+<g id="edge1" class="edge">
+<title>agent&#45;&gt;heartbeat</title>
+<g id="a_edge1"><a xlink:title="publish">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1575.32,-57C1575.32,-57 1674.38,-57 1674.38,-57"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1674.38,-59.63 1681.88,-57 1674.38,-54.38 1674.38,-59.63"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="1615.82" y="-58.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">publish</text>
+</g>
+<!-- audit&#45;&gt;command -->
+<g id="edge2" class="edge">
+<title>audit&#45;&gt;command</title>
+<g id="a_edge2"><a xlink:title="approved artifact">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M351.76,-78.5C351.76,-78.5 473.6,-78.5 473.6,-78.5"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="473.6,-81.13 481.1,-78.5 473.6,-75.88 473.6,-81.13"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="416.12" y="-92.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">approved artifact</text>
+</g>
+<!-- command&#45;&gt;guard -->
+<g id="edge3" class="edge">
+<title>command&#45;&gt;guard</title>
+<g id="a_edge3"><a xlink:title="consume invite">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M726.09,-78.5C726.09,-78.5 951.17,-78.5 951.17,-78.5"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="951.17,-81.13 958.67,-78.5 951.17,-75.88 951.17,-81.13"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="837.37" y="-92.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">consume invite</text>
+</g>
+<!-- env&#45;&gt;agent -->
+<g id="edge4" class="edge">
+<title>env&#45;&gt;agent</title>
+<g id="a_edge4"><a xlink:title="start">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1239.91,-57C1239.91,-57 1485.79,-57 1485.79,-57"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1485.79,-59.63 1493.29,-57 1485.79,-54.38 1485.79,-59.63"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="1360.76" y="-97.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">start</text>
+</g>
+<!-- env&#45;&gt;supervisor -->
+<g id="edge5" class="edge">
+<title>env&#45;&gt;supervisor</title>
+<g id="a_edge5"><a xlink:title="start">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1193.86,-38.75C1193.86,-27.25 1193.86,-14.55 1193.86,-14.55 1193.86,-14.55 1299.24,-14.55 1299.24,-14.55"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1299.24,-17.18 1306.74,-14.55 1299.24,-11.93 1299.24,-17.18"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="1274.11" y="-42.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">start</text>
+</g>
+<!-- guard&#45;&gt;audit -->
+<g id="edge6" class="edge">
+<title>guard&#45;&gt;audit</title>
+<g id="a_edge6"><a xlink:title="mismatch / blocked">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M912.39,-50.6C912.39,-50.6 341.46,-50.6 341.46,-50.6"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="341.46,-47.98 333.96,-50.6 341.46,-53.23 341.46,-47.98"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="628.43" y="-33.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">mismatch / blocked</text>
+</g>
+<!-- guard&#45;&gt;env -->
+<g id="edge7" class="edge">
+<title>guard&#45;&gt;env</title>
+<g id="a_edge7"><a xlink:title="match">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1072.53,-57C1072.53,-57 1137.82,-57 1137.82,-57"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1137.82,-59.63 1145.32,-57 1137.82,-54.38 1137.82,-59.63"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="1109.07" y="-58.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">match</text>
+</g>
+<!-- invite&#45;&gt;audit -->
+<g id="edge8" class="edge">
+<title>invite&#45;&gt;audit</title>
+<g id="a_edge8"><a xlink:title="record">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M84.27,-57C84.27,-57 171.99,-57 171.99,-57"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="171.99,-59.63 179.49,-57 171.99,-54.38 171.99,-59.63"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="122.91" y="-58.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">record</text>
+</g>
+<!-- supervisor&#45;&gt;agent -->
+<g id="edge9" class="edge">
+<title>supervisor&#45;&gt;agent</title>
+<g id="a_edge9"><a xlink:title="recover">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1412.99,-14.55C1464.28,-14.55 1534.86,-14.55 1534.86,-14.55 1534.86,-14.55 1534.86,-29.59 1534.86,-29.59"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1532.24,-29.59 1534.86,-37.09 1537.49,-29.59 1532.24,-29.59"/>
+</a>
+</g>
+<text xml:space="preserve" text-anchor="middle" x="1454.15" y="-42.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">recover</text>
+</g>
+<!-- agent -->
 <g id="node1" class="node">
-<title>invite</title>
-<g id="a_node1"><a xlink:href="../../generated/production/devices/" xlink:title="Create invite. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
-<path fill="#312e81" stroke="#94a3b8" stroke-width="1.2" d="M71.79,-75C71.79,-75 12,-75 12,-75 6,-75 0,-69 0,-63 0,-63 0,-51 0,-51 0,-45 6,-39 12,-39 12,-39 71.79,-39 71.79,-39 77.79,-39 83.79,-45 83.79,-51 83.79,-51 83.79,-63 83.79,-63 83.79,-69 77.79,-75 71.79,-75"/>
-<text xml:space="preserve" text-anchor="middle" x="41.89" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Create invite</text>
+<title>agent</title>
+<g id="a_node1"><a xlink:href="../../generated/development/service-catalog/" xlink:title="Node agent. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
+<polygon fill="#14532d" stroke="#94a3b8" stroke-width="1.2" points="1574.82,-75 1495.53,-75 1495.53,-71 1491.53,-71 1491.53,-67 1495.53,-67 1495.53,-47 1491.53,-47 1491.53,-43 1495.53,-43 1495.53,-39 1574.82,-39 1574.82,-75"/>
+<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="1495.53,-71 1499.53,-71 1499.53,-67 1495.53,-67"/>
+<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="1495.53,-47 1499.53,-47 1499.53,-43 1495.53,-43"/>
+<text xml:space="preserve" text-anchor="middle" x="1535.17" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Node agent</text>
 </a>
 </g>
 </g>
@@ -26,16 +118,6 @@
 </a>
 </g>
 </g>
-<!-- invite&#45;&gt;audit -->
-<g id="edge1" class="edge">
-<title>invite&#45;&gt;audit</title>
-<g id="a_edge1"><a xlink:title="record">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M84.27,-57C84.27,-57 171.99,-57 171.99,-57"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="171.99,-59.63 179.49,-57 171.99,-54.38 171.99,-59.63"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="122.91" y="-58.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">record</text>
-</g>
 <!-- command -->
 <g id="node3" class="node">
 <title>command</title>
@@ -45,134 +127,52 @@
 </a>
 </g>
 </g>
-<!-- audit&#45;&gt;command -->
-<g id="edge2" class="edge">
-<title>audit&#45;&gt;command</title>
-<g id="a_edge2"><a xlink:title="approved artifact">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M351.76,-78.5C351.76,-78.5 473.6,-78.5 473.6,-78.5"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="473.6,-81.13 481.1,-78.5 473.6,-75.88 473.6,-81.13"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="416.12" y="-92.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">approved artifact</text>
-</g>
-<!-- guard -->
-<g id="node4" class="node">
-<title>guard</title>
-<g id="a_node4"><a xlink:href="../../generated/development/reason-codes/" xlink:title="Identity guard. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
-<polygon fill="#7c2d12" stroke="#94a3b8" stroke-width="1.2" points="982.41,-84.9 894.12,-57 982.41,-29.1 1070.7,-57 982.41,-84.9"/>
-<text xml:space="preserve" text-anchor="middle" x="982.41" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Identity guard</text>
-</a>
-</g>
-</g>
-<!-- command&#45;&gt;guard -->
-<g id="edge3" class="edge">
-<title>command&#45;&gt;guard</title>
-<g id="a_edge3"><a xlink:title="consume invite">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M726.09,-78.5C726.09,-78.5 951.17,-78.5 951.17,-78.5"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="951.17,-81.13 958.67,-78.5 951.17,-75.88 951.17,-81.13"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="837.37" y="-92.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">consume invite</text>
-</g>
-<!-- guard&#45;&gt;audit -->
-<g id="edge5" class="edge">
-<title>guard&#45;&gt;audit</title>
-<g id="a_edge5"><a xlink:title="mismatch / blocked">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M912.39,-50.6C912.39,-50.6 341.46,-50.6 341.46,-50.6"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="341.46,-47.98 333.96,-50.6 341.46,-53.23 341.46,-47.98"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="628.43" y="-33.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">mismatch / blocked</text>
-</g>
 <!-- env -->
-<g id="node5" class="node">
+<g id="node4" class="node">
 <title>env</title>
-<g id="a_node5"><a xlink:href="../../generated/development/configuration-reference/" xlink:title="Safe env write. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
+<g id="a_node4"><a xlink:href="../../generated/development/configuration-reference/" xlink:title="Safe env write. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
 <path fill="#312e81" stroke="#94a3b8" stroke-width="1.2" d="M1227.49,-75C1227.49,-75 1159.45,-75 1159.45,-75 1153.45,-75 1147.45,-69 1147.45,-63 1147.45,-63 1147.45,-51 1147.45,-51 1147.45,-45 1153.45,-39 1159.45,-39 1159.45,-39 1227.49,-39 1227.49,-39 1233.49,-39 1239.49,-45 1239.49,-51 1239.49,-51 1239.49,-63 1239.49,-63 1239.49,-69 1233.49,-75 1227.49,-75"/>
 <text xml:space="preserve" text-anchor="middle" x="1193.47" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Safe env write</text>
 </a>
 </g>
 </g>
-<!-- guard&#45;&gt;env -->
-<g id="edge4" class="edge">
-<title>guard&#45;&gt;env</title>
-<g id="a_edge4"><a xlink:title="match">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1072.53,-57C1072.53,-57 1137.82,-57 1137.82,-57"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1137.82,-59.63 1145.32,-57 1137.82,-54.38 1137.82,-59.63"/>
+<!-- guard -->
+<g id="node5" class="node">
+<title>guard</title>
+<g id="a_node5"><a xlink:href="../../generated/development/reason-codes/" xlink:title="Identity guard. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
+<polygon fill="#7c2d12" stroke="#94a3b8" stroke-width="1.2" points="982.41,-84.9 894.12,-57 982.41,-29.1 1070.7,-57 982.41,-84.9"/>
+<text xml:space="preserve" text-anchor="middle" x="982.41" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Identity guard</text>
 </a>
 </g>
-<text xml:space="preserve" text-anchor="middle" x="1109.07" y="-58.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">match</text>
 </g>
-<!-- agent -->
+<!-- heartbeat -->
 <g id="node6" class="node">
-<title>agent</title>
-<g id="a_node6"><a xlink:href="../../generated/development/service-catalog/" xlink:title="Node agent. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
-<polygon fill="#14532d" stroke="#94a3b8" stroke-width="1.2" points="1574.82,-75 1495.53,-75 1495.53,-71 1491.53,-71 1491.53,-67 1495.53,-67 1495.53,-47 1491.53,-47 1491.53,-43 1495.53,-43 1495.53,-39 1574.82,-39 1574.82,-75"/>
-<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="1495.53,-71 1499.53,-71 1499.53,-67 1495.53,-67"/>
-<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="1495.53,-47 1499.53,-47 1499.53,-43 1495.53,-43"/>
-<text xml:space="preserve" text-anchor="middle" x="1535.17" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Node agent</text>
+<title>heartbeat</title>
+<g id="a_node6"><a xlink:href="../../generated/production/devices/" xlink:title="Heartbeats in Devices. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
+<path fill="#831843" stroke="#94a3b8" stroke-width="1.2" d="M1911.86,-84.9C1911.86,-84.9 1723.46,-84.9 1723.46,-84.9 1717.46,-84.9 1707.26,-80.61 1703.06,-76.33 1703.06,-76.33 1665.21,-37.67 1665.21,-37.67 1661.01,-33.39 1662.82,-29.1 1668.82,-29.1 1668.82,-29.1 1857.22,-29.1 1857.22,-29.1 1863.22,-29.1 1873.42,-33.39 1877.62,-37.67 1877.62,-37.67 1915.47,-76.33 1915.47,-76.33 1919.66,-80.61 1917.86,-84.9 1911.86,-84.9"/>
+<text xml:space="preserve" text-anchor="middle" x="1790.34" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Heartbeats in Devices</text>
 </a>
 </g>
 </g>
-<!-- env&#45;&gt;agent -->
-<g id="edge6" class="edge">
-<title>env&#45;&gt;agent</title>
-<g id="a_edge6"><a xlink:title="start">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1239.91,-57C1239.91,-57 1485.79,-57 1485.79,-57"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1485.79,-59.63 1493.29,-57 1485.79,-54.38 1485.79,-59.63"/>
+<!-- invite -->
+<g id="node7" class="node">
+<title>invite</title>
+<g id="a_node7"><a xlink:href="../../generated/production/devices/" xlink:title="Create invite. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
+<path fill="#312e81" stroke="#94a3b8" stroke-width="1.2" d="M71.79,-75C71.79,-75 12,-75 12,-75 6,-75 0,-69 0,-63 0,-63 0,-51 0,-51 0,-45 6,-39 12,-39 12,-39 71.79,-39 71.79,-39 77.79,-39 83.79,-45 83.79,-51 83.79,-51 83.79,-63 83.79,-63 83.79,-69 77.79,-75 71.79,-75"/>
+<text xml:space="preserve" text-anchor="middle" x="41.89" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Create invite</text>
 </a>
 </g>
-<text xml:space="preserve" text-anchor="middle" x="1360.76" y="-97.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">start</text>
 </g>
 <!-- supervisor -->
-<g id="node7" class="node">
+<g id="node8" class="node">
 <title>supervisor</title>
-<g id="a_node7"><a xlink:href="../../generated/development/service-catalog/" xlink:title="Agent supervisor. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
+<g id="a_node8"><a xlink:href="../../generated/development/service-catalog/" xlink:title="Agent supervisor. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
 <polygon fill="#14532d" stroke="#94a3b8" stroke-width="1.2" points="1412.78,-36 1308.74,-36 1308.74,-32 1304.74,-32 1304.74,-28 1308.74,-28 1308.74,-8 1304.74,-8 1304.74,-4 1308.74,-4 1308.74,0 1412.78,0 1412.78,-36"/>
 <polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="1308.74,-32 1312.74,-32 1312.74,-28 1308.74,-28"/>
 <polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="1308.74,-8 1312.74,-8 1312.74,-4 1308.74,-4"/>
 <text xml:space="preserve" text-anchor="middle" x="1360.76" y="-14.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Agent supervisor</text>
 </a>
 </g>
-</g>
-<!-- env&#45;&gt;supervisor -->
-<g id="edge7" class="edge">
-<title>env&#45;&gt;supervisor</title>
-<g id="a_edge7"><a xlink:title="start">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1193.86,-38.75C1193.86,-27.25 1193.86,-14.55 1193.86,-14.55 1193.86,-14.55 1299.24,-14.55 1299.24,-14.55"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1299.24,-17.17 1306.74,-14.55 1299.24,-11.92 1299.24,-17.17"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1274.11" y="-42.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">start</text>
-</g>
-<!-- heartbeat -->
-<g id="node8" class="node">
-<title>heartbeat</title>
-<g id="a_node8"><a xlink:href="../../generated/production/devices/" xlink:title="Heartbeats in Devices. Backend&#45;owned invite creation and fail&#45;closed identity checks lead to agent and supervisor heartbeats." target="_top">
-<path fill="#831843" stroke="#94a3b8" stroke-width="1.2" d="M1911.86,-84.9C1911.86,-84.9 1723.46,-84.9 1723.46,-84.9 1717.46,-84.9 1707.26,-80.61 1703.06,-76.33 1703.06,-76.33 1665.21,-37.67 1665.21,-37.67 1661.01,-33.39 1662.82,-29.1 1668.82,-29.1 1668.82,-29.1 1857.22,-29.1 1857.22,-29.1 1863.22,-29.1 1873.42,-33.39 1877.62,-37.67 1877.62,-37.67 1915.47,-76.33 1915.47,-76.33 1919.66,-80.61 1917.86,-84.9 1911.86,-84.9"/>
-<text xml:space="preserve" text-anchor="middle" x="1790.34" y="-53.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Heartbeats in Devices</text>
-</a>
-</g>
-</g>
-<!-- agent&#45;&gt;heartbeat -->
-<g id="edge8" class="edge">
-<title>agent&#45;&gt;heartbeat</title>
-<g id="a_edge8"><a xlink:title="publish">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1575.32,-57C1575.32,-57 1674.38,-57 1674.38,-57"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1674.38,-59.63 1681.88,-57 1674.38,-54.38 1674.38,-59.63"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1615.82" y="-58.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">publish</text>
-</g>
-<!-- supervisor&#45;&gt;agent -->
-<g id="edge9" class="edge">
-<title>supervisor&#45;&gt;agent</title>
-<g id="a_edge9"><a xlink:title="recover">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M1412.99,-14.55C1464.28,-14.55 1534.86,-14.55 1534.86,-14.55 1534.86,-14.55 1534.86,-29.59 1534.86,-29.59"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="1532.24,-29.59 1534.86,-37.09 1537.49,-29.59 1532.24,-29.59"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1454.15" y="-42.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">recover</text>
 </g>
 </g>
 </svg>

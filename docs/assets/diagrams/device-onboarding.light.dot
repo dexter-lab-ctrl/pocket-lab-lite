@@ -2,6 +2,9 @@ digraph device_onboarding {
   graph [
     rankdir=LR,
     splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
     nodesep=0.42,
     ranksep=0.72,
     pad=0.25,
@@ -30,21 +33,21 @@ digraph device_onboarding {
     arrowsize="0.75",
     penwidth="1.1"
   ];
-  "invite" [label="Create invite", shape="box", fillcolor="#e0e7ff", tooltip="Create invite. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/production/devices/", target="_top"];
+  "agent" [label="Node agent", shape="component", fillcolor="#dcfce7", tooltip="Node agent. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/service-catalog/", target="_top"];
   "audit" [label="Audit evidence", shape="parallelogram", fillcolor="#fce7f3", tooltip="Audit evidence. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/redaction-coverage/", target="_top"];
   "command" [label="Copy bootstrap command", shape="parallelogram", fillcolor="#fce7f3", tooltip="Copy bootstrap command. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/bootstrap-stages/", target="_top"];
-  "guard" [label="Identity guard", shape="diamond", fillcolor="#ffedd5", tooltip="Identity guard. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/reason-codes/", target="_top", style="filled"];
   "env" [label="Safe env write", shape="box", fillcolor="#e0e7ff", tooltip="Safe env write. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/configuration-reference/", target="_top"];
-  "agent" [label="Node agent", shape="component", fillcolor="#dcfce7", tooltip="Node agent. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/service-catalog/", target="_top"];
-  "supervisor" [label="Agent supervisor", shape="component", fillcolor="#dcfce7", tooltip="Agent supervisor. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/service-catalog/", target="_top"];
+  "guard" [label="Identity guard", shape="diamond", fillcolor="#ffedd5", tooltip="Identity guard. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/reason-codes/", target="_top", style="filled"];
   "heartbeat" [label="Heartbeats in Devices", shape="parallelogram", fillcolor="#fce7f3", tooltip="Heartbeats in Devices. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/production/devices/", target="_top"];
-  "invite" -> "audit" [label="record", tooltip="record"];
+  "invite" [label="Create invite", shape="box", fillcolor="#e0e7ff", tooltip="Create invite. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/production/devices/", target="_top"];
+  "supervisor" [label="Agent supervisor", shape="component", fillcolor="#dcfce7", tooltip="Agent supervisor. Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.", URL="../../generated/development/service-catalog/", target="_top"];
+  "agent" -> "heartbeat" [label="publish", tooltip="publish"];
   "audit" -> "command" [label="approved artifact", tooltip="approved artifact"];
   "command" -> "guard" [label="consume invite", tooltip="consume invite"];
-  "guard" -> "env" [label="match", tooltip="match"];
-  "guard" -> "audit" [label="mismatch / blocked", tooltip="mismatch / blocked"];
   "env" -> "agent" [label="start", tooltip="start"];
   "env" -> "supervisor" [label="start", tooltip="start"];
-  "agent" -> "heartbeat" [label="publish", tooltip="publish"];
+  "guard" -> "audit" [label="mismatch / blocked", tooltip="mismatch / blocked"];
+  "guard" -> "env" [label="match", tooltip="match"];
+  "invite" -> "audit" [label="record", tooltip="record"];
   "supervisor" -> "agent" [label="recover", tooltip="recover"];
 }

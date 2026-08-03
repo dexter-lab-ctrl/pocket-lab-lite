@@ -2,6 +2,9 @@ digraph trust_boundaries {
   graph [
     rankdir=LR,
     splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
     nodesep=0.42,
     ranksep=0.72,
     pad=0.25,
@@ -31,14 +34,14 @@ digraph trust_boundaries {
     penwidth="1.1"
   ];
   "browser" [label="Browser trust boundary", shape="box", fillcolor="#f8fafc", tooltip="Browser trust boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/security-boundaries/", target="_top", style="rounded,dashed,filled"];
-  "proxy" [label="Caddy boundary", shape="box", fillcolor="#e0e7ff", tooltip="Caddy boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/caddy-access/", target="_top"];
   "control" [label="FastAPI control boundary", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI control boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../reference/api/lite-api/", target="_top"];
   "execution" [label="Worker / agent execution boundary", shape="component", fillcolor="#dcfce7", tooltip="Worker / agent execution boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/development/service-catalog/", target="_top"];
+  "proxy" [label="Caddy boundary", shape="box", fillcolor="#e0e7ff", tooltip="Caddy boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/caddy-access/", target="_top"];
   "secrets" [label="Backend secret boundary", shape="cylinder", fillcolor="#fef3c7", tooltip="Backend secret boundary. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/development/redaction-coverage/", target="_top"];
   "tailnet" [label="Private Tailnet / LAN", shape="ellipse", fillcolor="#f8fafc", tooltip="Private Tailnet / LAN. The browser cannot execute shell commands, access NATS directly, or hold backend secrets.", URL="../../generated/production/remote-access/", target="_top"];
   "browser" -> "proxy" [label="same-origin HTTPS", tooltip="same-origin HTTPS"];
-  "proxy" -> "control" [label="/api/lite/*", tooltip="/api/lite/*"];
   "control" -> "execution" [label="validated command", tooltip="validated command"];
   "execution" -> "secrets" [label="runtime-only access", tooltip="runtime-only access"];
+  "proxy" -> "control" [label="/api/lite/*", tooltip="/api/lite/*"];
   "tailnet" -> "proxy" [label="private ingress", tooltip="private ingress"];
 }

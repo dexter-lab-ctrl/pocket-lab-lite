@@ -1,0 +1,77 @@
+digraph backup_retention_retirement {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Backup retention and explicit retirement",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_backup {
+    label="Backup lifecycle";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "request" [label="Backup request", shape="box", fillcolor="#e0e7ff", tooltip="Backup request. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/production/recovery/", target="_top"];
+    "retention" [label="Retention policy", shape="component", fillcolor="#dcfce7", tooltip="Retention policy. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/production/data-retention/", target="_top"];
+    "snapshot" [label="Data-free manifest + snapshot", shape="cylinder", fillcolor="#fef3c7", tooltip="Data-free manifest + snapshot. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/development/recovery-contract/", target="_top"];
+    "verify" [label="Integrity verification", shape="diamond", fillcolor="#ffedd5", tooltip="Integrity verification. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/production/recovery/", target="_top", style="filled"];
+  }
+  subgraph cluster_evidence {
+    label="Durable evidence";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "history" [label="Receipts and history retained", shape="cylinder", fillcolor="#fef3c7", tooltip="Receipts and history retained. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+    "ui" [label="Recovery / Devices status", shape="box", fillcolor="#e0f2fe", tooltip="Recovery / Devices status. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/production/recovery/", target="_top"];
+  }
+  subgraph cluster_retirement {
+    label="Explicit retirement";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "assessment" [label="Dependency assessment", shape="diamond", fillcolor="#ffedd5", tooltip="Dependency assessment. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/production/devices/", target="_top", style="filled"];
+    "confirm" [label="Explicit confirmation", shape="box", fillcolor="#e0f2fe", tooltip="Explicit confirmation. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/production/recovery/", target="_top"];
+    "transaction" [label="Transactional retirement", shape="component", fillcolor="#dcfce7", tooltip="Transactional retirement. Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.", URL="../../generated/development/service-catalog/", target="_top"];
+  }
+  "assessment" -> "confirm" [label="safe plan", tooltip="safe plan"];
+  "confirm" -> "transaction" [label="approved", tooltip="approved"];
+  "history" -> "ui" [label="prepared summary", tooltip="prepared summary"];
+  "request" -> "snapshot" [label="create", tooltip="create"];
+  "retention" -> "history" [label="expire safely", tooltip="expire safely"];
+  "snapshot" -> "verify" [label="hash and inspect", tooltip="hash and inspect"];
+  "transaction" -> "history" [label="retirement receipt", tooltip="retirement receipt"];
+  "verify" -> "retention" [label="verified", tooltip="verified"];
+}

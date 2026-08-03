@@ -79,6 +79,410 @@
       ],
       "title": "Agent and supervisor recovery"
     },
+    "app-catalog-lifecycle": {
+      "description": "Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.",
+      "edges": [
+        [
+          "ui",
+          "api",
+          "install / manage"
+        ],
+        [
+          "api",
+          "command",
+          "validate"
+        ],
+        [
+          "command",
+          "nats",
+          "publish"
+        ],
+        [
+          "nats",
+          "worker",
+          "durable delivery"
+        ],
+        [
+          "worker",
+          "projection",
+          "commit state"
+        ],
+        [
+          "worker",
+          "evidence",
+          "record outcome"
+        ],
+        [
+          "projection",
+          "ready",
+          "project readiness"
+        ],
+        [
+          "ready",
+          "ui",
+          "truthful UI"
+        ],
+        [
+          "evidence",
+          "api",
+          "prepared summary"
+        ]
+      ],
+      "groups": [
+        [
+          "experience",
+          "Lite experience",
+          [
+            "ui",
+            "ready"
+          ]
+        ],
+        [
+          "control",
+          "Control plane",
+          [
+            "api",
+            "command",
+            "projection"
+          ]
+        ],
+        [
+          "execution",
+          "Execution and evidence",
+          [
+            "nats",
+            "worker",
+            "evidence"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "ui",
+          "Apps tab",
+          "ui",
+          "../../generated/production/apps/"
+        ],
+        [
+          "api",
+          "FastAPI lifecycle API",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "command",
+          "Validated app command",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "nats",
+          "NATS / JetStream",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "worker",
+          "App lifecycle worker",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "projection",
+          "Canonical app state",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "ready",
+          "Ready / blocked / recovering",
+          "decision",
+          "../../generated/production/apps/"
+        ],
+        [
+          "evidence",
+          "Sanitized lifecycle evidence",
+          "event",
+          "../../generated/development/redaction-coverage/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "App Catalog lifecycle"
+    },
+    "backup-retention-retirement": {
+      "description": "Verified backups follow bounded retention while device or app retirement remains explicit, dependency-aware, transactional, and historically auditable.",
+      "edges": [
+        [
+          "request",
+          "snapshot",
+          "create"
+        ],
+        [
+          "snapshot",
+          "verify",
+          "hash and inspect"
+        ],
+        [
+          "verify",
+          "retention",
+          "verified"
+        ],
+        [
+          "retention",
+          "history",
+          "expire safely"
+        ],
+        [
+          "assessment",
+          "confirm",
+          "safe plan"
+        ],
+        [
+          "confirm",
+          "transaction",
+          "approved"
+        ],
+        [
+          "transaction",
+          "history",
+          "retirement receipt"
+        ],
+        [
+          "history",
+          "ui",
+          "prepared summary"
+        ]
+      ],
+      "groups": [
+        [
+          "backup",
+          "Backup lifecycle",
+          [
+            "request",
+            "snapshot",
+            "verify",
+            "retention"
+          ]
+        ],
+        [
+          "retirement",
+          "Explicit retirement",
+          [
+            "assessment",
+            "confirm",
+            "transaction"
+          ]
+        ],
+        [
+          "evidence",
+          "Durable evidence",
+          [
+            "history",
+            "ui"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "request",
+          "Backup request",
+          "service",
+          "../../generated/production/recovery/"
+        ],
+        [
+          "snapshot",
+          "Data-free manifest + snapshot",
+          "database",
+          "../../generated/development/recovery-contract/"
+        ],
+        [
+          "verify",
+          "Integrity verification",
+          "decision",
+          "../../generated/production/recovery/"
+        ],
+        [
+          "retention",
+          "Retention policy",
+          "process",
+          "../../generated/production/data-retention/"
+        ],
+        [
+          "assessment",
+          "Dependency assessment",
+          "decision",
+          "../../generated/production/devices/"
+        ],
+        [
+          "confirm",
+          "Explicit confirmation",
+          "ui",
+          "../../generated/production/recovery/"
+        ],
+        [
+          "transaction",
+          "Transactional retirement",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "history",
+          "Receipts and history retained",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "ui",
+          "Recovery / Devices status",
+          "ui",
+          "../../generated/production/recovery/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "Backup retention and explicit retirement"
+    },
+    "command-acknowledgement-reconciliation": {
+      "description": "Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.",
+      "edges": [
+        [
+          "api",
+          "command",
+          "admit"
+        ],
+        [
+          "command",
+          "nats",
+          "publish"
+        ],
+        [
+          "nats",
+          "agent",
+          "deliver"
+        ],
+        [
+          "agent",
+          "ack",
+          "acknowledge"
+        ],
+        [
+          "agent",
+          "result",
+          "finish"
+        ],
+        [
+          "ack",
+          "state",
+          "advance"
+        ],
+        [
+          "result",
+          "state",
+          "finalize"
+        ],
+        [
+          "command",
+          "reconciler",
+          "watch deadline"
+        ],
+        [
+          "reconciler",
+          "state",
+          "timeout / orphan reconcile"
+        ],
+        [
+          "state",
+          "ui",
+          "prepared read"
+        ]
+      ],
+      "groups": [
+        [
+          "control",
+          "Command control",
+          [
+            "api",
+            "command",
+            "nats"
+          ]
+        ],
+        [
+          "execution",
+          "Device execution",
+          [
+            "agent",
+            "ack",
+            "result"
+          ]
+        ],
+        [
+          "reconciliation",
+          "Lifecycle reconciliation",
+          [
+            "reconciler",
+            "state",
+            "ui"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "api",
+          "FastAPI command API",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "command",
+          "Command lifecycle record",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "nats",
+          "JetStream delivery",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "agent",
+          "Worker / node agent",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "ack",
+          "Acknowledged / started",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "result",
+          "Completed / failed evidence",
+          "event",
+          "../../generated/development/redaction-coverage/"
+        ],
+        [
+          "reconciler",
+          "Timeout reconciler",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "state",
+          "Canonical command state",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "ui",
+          "Truthful progress in UI",
+          "ui",
+          "../../generated/production/devices/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "Command acknowledgement and reconciliation"
+    },
     "control-plane": {
       "description": "Same-origin UI requests flow through Caddy and FastAPI to NATS, workers, agents, evidence, and prepared reads.",
       "edges": [
@@ -173,6 +577,131 @@
         ]
       ],
       "title": "Pocket Lab Lite control plane"
+    },
+    "device-offline-retention": {
+      "description": "Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.",
+      "edges": [
+        [
+          "registry",
+          "state",
+          "enrolled identity"
+        ],
+        [
+          "profile",
+          "state",
+          "last-valid capabilities"
+        ],
+        [
+          "heartbeat",
+          "runtime",
+          "observe"
+        ],
+        [
+          "runtime",
+          "state",
+          "fresh / missing"
+        ],
+        [
+          "state",
+          "ui",
+          "always project"
+        ],
+        [
+          "ui",
+          "retire",
+          "confirmed action"
+        ],
+        [
+          "retire",
+          "registry",
+          "transactional update"
+        ],
+        [
+          "retire",
+          "history",
+          "audit evidence"
+        ]
+      ],
+      "groups": [
+        [
+          "durable",
+          "Durable identity",
+          [
+            "registry",
+            "profile",
+            "history"
+          ]
+        ],
+        [
+          "runtime",
+          "Live runtime signals",
+          [
+            "heartbeat",
+            "runtime"
+          ]
+        ],
+        [
+          "experience",
+          "Devices lifecycle",
+          [
+            "state",
+            "ui",
+            "retire"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "registry",
+          "Enrollment registry",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "profile",
+          "Last-valid profile",
+          "database",
+          "../../generated/development/device-capabilities/"
+        ],
+        [
+          "heartbeat",
+          "Heartbeat / connection state",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "runtime",
+          "Live runtime observation",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "state",
+          "Online / offline / stale",
+          "decision",
+          "../../generated/production/devices/"
+        ],
+        [
+          "ui",
+          "Devices tab retains device",
+          "ui",
+          "../../generated/production/devices/"
+        ],
+        [
+          "retire",
+          "Explicit repair or retirement",
+          "service",
+          "../../generated/production/recovery/"
+        ],
+        [
+          "history",
+          "Lifecycle evidence retained",
+          "event",
+          "../../generated/development/redaction-coverage/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "Device offline-retention lifecycle"
     },
     "device-onboarding": {
       "description": "Backend-owned invite creation and fail-closed identity checks lead to agent and supervisor heartbeats.",
@@ -274,6 +803,125 @@
         ]
       ],
       "title": "Device onboarding lifecycle"
+    },
+    "frontend-state-ownership": {
+      "description": "TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.",
+      "edges": [
+        [
+          "api",
+          "query",
+          "fetch + revision"
+        ],
+        [
+          "query",
+          "dexie",
+          "persist safe snapshot"
+        ],
+        [
+          "query",
+          "selector",
+          "fresh server state"
+        ],
+        [
+          "dexie",
+          "selector",
+          "offline fallback"
+        ],
+        [
+          "zustand",
+          "selector",
+          "view preferences"
+        ],
+        [
+          "xstate",
+          "selector",
+          "workflow progress"
+        ],
+        [
+          "selector",
+          "screen",
+          "one truthful presentation"
+        ]
+      ],
+      "groups": [
+        [
+          "server",
+          "Server-synchronized state",
+          [
+            "api",
+            "query"
+          ]
+        ],
+        [
+          "offline",
+          "Offline durability",
+          [
+            "dexie"
+          ]
+        ],
+        [
+          "client",
+          "Client-only state",
+          [
+            "zustand",
+            "xstate"
+          ]
+        ],
+        [
+          "presentation",
+          "Presentation contract",
+          [
+            "selector",
+            "screen"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "api",
+          "FastAPI prepared projections",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "query",
+          "TanStack Query cache",
+          "database",
+          "../../generated/development/frontend-api-usage/"
+        ],
+        [
+          "dexie",
+          "Dexie offline snapshots",
+          "database",
+          "../../generated/development/ui-state-catalog/"
+        ],
+        [
+          "zustand",
+          "Zustand UI preferences",
+          "process",
+          "../../generated/development/ui-state-catalog/"
+        ],
+        [
+          "xstate",
+          "XState workflow machines",
+          "process",
+          "../../generated/development/recovery-state-machine/"
+        ],
+        [
+          "selector",
+          "Canonical screen selector",
+          "decision",
+          "../../generated/development/ui-state-catalog/"
+        ],
+        [
+          "screen",
+          "Home / Devices / Apps / Safety / Recovery",
+          "ui",
+          "../../generated/production/tabs/"
+        ]
+      ],
+      "rankdir": "TB",
+      "title": "Frontend state ownership"
     },
     "prepared-projection-flow": {
       "description": "Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.",
@@ -472,6 +1120,143 @@
       ],
       "title": "Backup and restore state machine"
     },
+    "release-atomic-rollback": {
+      "description": "Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.",
+      "edges": [
+        [
+          "api",
+          "admission",
+          "check / apply"
+        ],
+        [
+          "admission",
+          "subprocess",
+          "accepted"
+        ],
+        [
+          "subprocess",
+          "manifest",
+          "verify"
+        ],
+        [
+          "manifest",
+          "stage",
+          "trusted artifact"
+        ],
+        [
+          "stage",
+          "promote",
+          "atomic switch"
+        ],
+        [
+          "promote",
+          "health",
+          "validate"
+        ],
+        [
+          "health",
+          "state",
+          "passed"
+        ],
+        [
+          "health",
+          "rollback",
+          "failed"
+        ],
+        [
+          "rollback",
+          "state",
+          "last known good"
+        ]
+      ],
+      "groups": [
+        [
+          "control",
+          "Release control",
+          [
+            "api",
+            "admission",
+            "subprocess"
+          ]
+        ],
+        [
+          "staging",
+          "Verified staging",
+          [
+            "manifest",
+            "stage",
+            "promote"
+          ]
+        ],
+        [
+          "safety",
+          "Health and rollback",
+          [
+            "health",
+            "rollback",
+            "state"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "api",
+          "FastAPI release API",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "admission",
+          "Bounded release admission",
+          "decision",
+          "../../generated/development/release-inventory/"
+        ],
+        [
+          "subprocess",
+          "Release subprocess",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "manifest",
+          "Tag, manifest, checksums",
+          "decision",
+          "../../generated/production/release/"
+        ],
+        [
+          "stage",
+          "Stage verified dist.zip",
+          "database",
+          "../../generated/production/release/"
+        ],
+        [
+          "promote",
+          "Atomic PWA promotion",
+          "process",
+          "../../generated/production/upgrade/"
+        ],
+        [
+          "health",
+          "Post-switch health gate",
+          "decision",
+          "../../generated/production/health-diagnostics/"
+        ],
+        [
+          "rollback",
+          "Atomic rollback",
+          "process",
+          "../../generated/production/rollback/"
+        ],
+        [
+          "state",
+          "Installed release identity",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "Release subprocess and atomic rollback"
+    },
     "release-flow": {
       "description": "Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.",
       "edges": [
@@ -625,6 +1410,261 @@
         ]
       ],
       "title": "Runtime deployment"
+    },
+    "security-scan-lifecycle": {
+      "description": "Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.",
+      "edges": [
+        [
+          "ui",
+          "api",
+          "Quick / Full check"
+        ],
+        [
+          "api",
+          "admission",
+          "validate"
+        ],
+        [
+          "admission",
+          "queue",
+          "accepted"
+        ],
+        [
+          "queue",
+          "runner",
+          "dispatch"
+        ],
+        [
+          "runner",
+          "findings",
+          "persist"
+        ],
+        [
+          "runner",
+          "evidence",
+          "record"
+        ],
+        [
+          "findings",
+          "summary",
+          "prepared projection"
+        ],
+        [
+          "evidence",
+          "summary",
+          "safe details"
+        ],
+        [
+          "summary",
+          "ui",
+          "truthful status"
+        ]
+      ],
+      "groups": [
+        [
+          "experience",
+          "Security / Safety",
+          [
+            "ui",
+            "summary"
+          ]
+        ],
+        [
+          "control",
+          "Control and scheduling",
+          [
+            "api",
+            "admission",
+            "queue"
+          ]
+        ],
+        [
+          "execution",
+          "Isolated scan execution",
+          [
+            "runner",
+            "findings",
+            "evidence"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "ui",
+          "Security / Safety tab",
+          "ui",
+          "../../generated/production/security/"
+        ],
+        [
+          "api",
+          "FastAPI scan API",
+          "service",
+          "../../reference/api/lite-api/"
+        ],
+        [
+          "admission",
+          "Policy and load guard",
+          "decision",
+          "../../generated/development/security-profiles/"
+        ],
+        [
+          "queue",
+          "Bounded scan queue",
+          "event",
+          "../../generated/development/lite-events/"
+        ],
+        [
+          "runner",
+          "Scanner subprocess / worker",
+          "process",
+          "../../generated/development/service-catalog/"
+        ],
+        [
+          "findings",
+          "Canonical findings",
+          "database",
+          "../../generated/development/lite-sqlite-schema/"
+        ],
+        [
+          "evidence",
+          "Sanitized scan evidence",
+          "event",
+          "../../generated/development/redaction-coverage/"
+        ],
+        [
+          "summary",
+          "Progress and recommendations",
+          "ui",
+          "../../generated/production/security/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "Security scan lifecycle"
+    },
+    "tailscale-remote-readiness": {
+      "description": "Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.",
+      "edges": [
+        [
+          "startup",
+          "daemon",
+          "detect / start safely"
+        ],
+        [
+          "daemon",
+          "tailnet",
+          "verify"
+        ],
+        [
+          "tailnet",
+          "binding",
+          "private route"
+        ],
+        [
+          "binding",
+          "connectivity",
+          "probe"
+        ],
+        [
+          "connectivity",
+          "agent",
+          "reachable"
+        ],
+        [
+          "agent",
+          "readiness",
+          "health evidence"
+        ],
+        [
+          "readiness",
+          "ui",
+          "Tailscale IP only when ready"
+        ],
+        [
+          "readiness",
+          "startup",
+          "repair guidance"
+        ]
+      ],
+      "groups": [
+        [
+          "startup",
+          "Startup-owned side effects",
+          [
+            "startup",
+            "daemon",
+            "tailnet"
+          ]
+        ],
+        [
+          "network",
+          "Private network checks",
+          [
+            "binding",
+            "connectivity"
+          ]
+        ],
+        [
+          "runtime",
+          "Runtime and UI readiness",
+          [
+            "agent",
+            "readiness",
+            "ui"
+          ]
+        ]
+      ],
+      "nodes": [
+        [
+          "startup",
+          "Startup scripts",
+          "process",
+          "../../generated/production/bootstrap/"
+        ],
+        [
+          "daemon",
+          "tailscaled running",
+          "decision",
+          "../../generated/production/remote-access/"
+        ],
+        [
+          "tailnet",
+          "Tailnet IPv4 assigned",
+          "decision",
+          "../../generated/production/remote-access/"
+        ],
+        [
+          "binding",
+          "NATS on safe bind address",
+          "service",
+          "../../generated/production/remote-access/"
+        ],
+        [
+          "connectivity",
+          "Secondary NATS reachable",
+          "decision",
+          "../../generated/production/health-diagnostics/"
+        ],
+        [
+          "agent",
+          "Agent and supervisor healthy",
+          "process",
+          "../../generated/production/services-pm2/"
+        ],
+        [
+          "readiness",
+          "Remote access readiness",
+          "decision",
+          "../../generated/production/remote-access/"
+        ],
+        [
+          "ui",
+          "Ready / not ready",
+          "ui",
+          "../../generated/production/devices/"
+        ]
+      ],
+      "rankdir": "LR",
+      "title": "Tailscale remote-access readiness"
     },
     "trust-boundaries": {
       "description": "The browser cannot execute shell commands, access NATS directly, or hold backend secrets.",

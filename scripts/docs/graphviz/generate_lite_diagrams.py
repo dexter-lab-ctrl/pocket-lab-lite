@@ -17,6 +17,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 METADATA = ROOT / "architecture" / "metadata" / "diagrams.json"
 OUTPUT = ROOT / "docs" / "assets" / "diagrams"
+GALLERY = ROOT / "docs" / "generated" / "development" / "architecture-diagrams.md"
 NAME_MAP = {"prepared-projection-flow": "projection-flow"}
 
 THEMES = {
@@ -70,8 +71,11 @@ def dot_source(key: str, diagram: dict[str, Any], theme_name: str) -> str:
     lines = [
         f"digraph {graph_name} {{",
         "  graph [",
-        "    rankdir=LR,",
+        f"    rankdir={diagram.get('rankdir', 'LR')},",
         "    splines=ortho,",
+        "    compound=true,",
+        "    newrank=true,",
+        "    outputorder=edgesfirst,",
         "    nodesep=0.42,",
         "    ranksep=0.72,",
         "    pad=0.25,",
@@ -101,7 +105,10 @@ def dot_source(key: str, diagram: dict[str, Any], theme_name: str) -> str:
         '    penwidth="1.1"',
         "  ];",
     ]
-    for node in diagram.get("nodes", []):
+    nodes = {node[0]: node for node in diagram.get("nodes", [])}
+    grouped_nodes: set[str] = set()
+
+    def render_node(node: list[str], indent: str = "  ") -> None:
         node_id, label, kind, url = node
         shape = SHAPES.get(kind, "box")
         fill = theme.get(kind, theme["boundary"])
@@ -118,8 +125,32 @@ def dot_source(key: str, diagram: dict[str, Any], theme_name: str) -> str:
         elif kind == "boundary":
             attrs["style"] = "rounded,dashed,filled"
         rendered = ", ".join(f"{name}={quoted(value)}" for name, value in attrs.items())
-        lines.append(f"  {quoted(node_id)} [{rendered}];")
-    for edge in diagram.get("edges", []):
+        lines.append(f"{indent}{quoted(node_id)} [{rendered}];")
+
+    for group_id, group_label, member_ids in sorted(
+        diagram.get("groups", []), key=lambda group: group[0]
+    ):
+        safe_group = re.sub(r"[^A-Za-z0-9_]", "_", group_id)
+        lines.extend([
+            f"  subgraph cluster_{safe_group} {{",
+            f"    label={quoted(group_label)};",
+            '    style="rounded,dashed";',
+            f"    color={quoted(theme['edge'])};",
+            f"    fontcolor={quoted(theme['muted'])};",
+            '    penwidth="1.0";',
+            '    margin="16";',
+        ])
+        for node_id in sorted(member_ids):
+            if node_id not in nodes:
+                raise ValueError(f"Unknown node {node_id!r} in group {group_id!r} for {key}")
+            render_node(nodes[node_id], indent="    ")
+            grouped_nodes.add(node_id)
+        lines.append("  }")
+
+    for node_id in sorted(nodes):
+        if node_id not in grouped_nodes:
+            render_node(nodes[node_id])
+    for edge in sorted(diagram.get("edges", []), key=lambda item: (item[0], item[1], item[2])):
         source, target, label = edge
         lines.append(
             f"  {quoted(source)} -> {quoted(target)} "
@@ -177,6 +208,39 @@ def render_dot(source: str, *, title: str, description: str, key: str, theme: st
     )
 
 
+
+def gallery_source(data: dict[str, Any]) -> str:
+    lines = [
+        "---",
+        'title: "Architecture diagram catalog"',
+        'description: "Generated light and dark architecture diagrams for Pocket Lab Lite."',
+        "status: verified",
+        "generated: true",
+        "audience: development",
+        "generator: scripts/docs/graphviz/generate_lite_diagrams.py",
+        "schema_revision: 1",
+        "validation_status: generated",
+        "---",
+        "",
+        "# Architecture diagram catalog",
+        "",
+        "These diagrams are generated from `architecture/metadata/diagrams.json`. Edit the metadata, then run `task lite:docs:generate`; never hand-edit generated DOT or SVG files.",
+        "",
+    ]
+    for metadata_key, diagram in sorted(data.get("diagrams", {}).items()):
+        output_key = NAME_MAP.get(metadata_key, metadata_key)
+        lines.extend([
+            f"## {diagram['title']}",
+            "",
+            diagram["description"],
+            "",
+            f'![{diagram["title"]}](../../assets/diagrams/{output_key}.light.svg#only-light)',
+            "",
+            f'![{diagram["title"]}](../../assets/diagrams/{output_key}.dark.svg#only-dark)',
+            "",
+        ])
+    return "\n".join(lines).rstrip() + "\n"
+
 def build_outputs() -> dict[Path, str]:
     data = json.loads(METADATA.read_text(encoding="utf-8"))
     outputs: dict[Path, str] = {}
@@ -192,6 +256,7 @@ def build_outputs() -> dict[Path, str]:
                 key=output_key,
                 theme=theme_name,
             )
+    outputs[GALLERY] = gallery_source(data)
     manifest_payload = {
         "schema_revision": 1,
         "generated": True,

@@ -1,0 +1,77 @@
+digraph app_catalog_lifecycle {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="App Catalog lifecycle",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_control {
+    label="Control plane";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "api" [label="FastAPI lifecycle API", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI lifecycle API. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../reference/api/lite-api/", target="_top"];
+    "command" [label="Validated app command", shape="parallelogram", fillcolor="#fce7f3", tooltip="Validated app command. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/development/lite-events/", target="_top"];
+    "projection" [label="Canonical app state", shape="cylinder", fillcolor="#fef3c7", tooltip="Canonical app state. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+  }
+  subgraph cluster_execution {
+    label="Execution and evidence";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "evidence" [label="Sanitized lifecycle evidence", shape="parallelogram", fillcolor="#fce7f3", tooltip="Sanitized lifecycle evidence. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/development/redaction-coverage/", target="_top"];
+    "nats" [label="NATS / JetStream", shape="parallelogram", fillcolor="#fce7f3", tooltip="NATS / JetStream. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/development/lite-events/", target="_top"];
+    "worker" [label="App lifecycle worker", shape="component", fillcolor="#dcfce7", tooltip="App lifecycle worker. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/development/service-catalog/", target="_top"];
+  }
+  subgraph cluster_experience {
+    label="Lite experience";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "ready" [label="Ready / blocked / recovering", shape="diamond", fillcolor="#ffedd5", tooltip="Ready / blocked / recovering. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/production/apps/", target="_top", style="filled"];
+    "ui" [label="Apps tab", shape="box", fillcolor="#e0f2fe", tooltip="Apps tab. Catalog discovery, validated lifecycle actions, worker execution, canonical state, readiness, evidence, and recovery remain backend-owned and auditable.", URL="../../generated/production/apps/", target="_top"];
+  }
+  "api" -> "command" [label="validate", tooltip="validate"];
+  "command" -> "nats" [label="publish", tooltip="publish"];
+  "evidence" -> "api" [label="prepared summary", tooltip="prepared summary"];
+  "nats" -> "worker" [label="durable delivery", tooltip="durable delivery"];
+  "projection" -> "ready" [label="project readiness", tooltip="project readiness"];
+  "ready" -> "ui" [label="truthful UI", tooltip="truthful UI"];
+  "ui" -> "api" [label="install / manage", tooltip="install / manage"];
+  "worker" -> "evidence" [label="record outcome", tooltip="record outcome"];
+  "worker" -> "projection" [label="commit state", tooltip="commit state"];
+}

@@ -1,0 +1,76 @@
+digraph tailscale_remote_readiness {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Tailscale remote-access readiness",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_network {
+    label="Private network checks";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "binding" [label="NATS on safe bind address", shape="box", fillcolor="#e0e7ff", tooltip="NATS on safe bind address. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/remote-access/", target="_top"];
+    "connectivity" [label="Secondary NATS reachable", shape="diamond", fillcolor="#ffedd5", tooltip="Secondary NATS reachable. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/health-diagnostics/", target="_top", style="filled"];
+  }
+  subgraph cluster_runtime {
+    label="Runtime and UI readiness";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "agent" [label="Agent and supervisor healthy", shape="component", fillcolor="#dcfce7", tooltip="Agent and supervisor healthy. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/services-pm2/", target="_top"];
+    "readiness" [label="Remote access readiness", shape="diamond", fillcolor="#ffedd5", tooltip="Remote access readiness. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/remote-access/", target="_top", style="filled"];
+    "ui" [label="Ready / not ready", shape="box", fillcolor="#e0f2fe", tooltip="Ready / not ready. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/devices/", target="_top"];
+  }
+  subgraph cluster_startup {
+    label="Startup-owned side effects";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "daemon" [label="tailscaled running", shape="diamond", fillcolor="#ffedd5", tooltip="tailscaled running. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/remote-access/", target="_top", style="filled"];
+    "startup" [label="Startup scripts", shape="component", fillcolor="#dcfce7", tooltip="Startup scripts. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/bootstrap/", target="_top"];
+    "tailnet" [label="Tailnet IPv4 assigned", shape="diamond", fillcolor="#ffedd5", tooltip="Tailnet IPv4 assigned. Startup-owned Tailscale side effects and safe read APIs verify tailscaled, Tailnet IPv4, NATS binding, secondary connectivity, and agent health before declaring remote access ready.", URL="../../generated/production/remote-access/", target="_top", style="filled"];
+  }
+  "agent" -> "readiness" [label="health evidence", tooltip="health evidence"];
+  "binding" -> "connectivity" [label="probe", tooltip="probe"];
+  "connectivity" -> "agent" [label="reachable", tooltip="reachable"];
+  "daemon" -> "tailnet" [label="verify", tooltip="verify"];
+  "readiness" -> "startup" [label="repair guidance", tooltip="repair guidance"];
+  "readiness" -> "ui" [label="Tailscale IP only when ready", tooltip="Tailscale IP only when ready"];
+  "startup" -> "daemon" [label="detect / start safely", tooltip="detect / start safely"];
+  "tailnet" -> "binding" [label="private route", tooltip="private route"];
+}

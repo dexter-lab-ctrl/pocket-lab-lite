@@ -110,6 +110,7 @@ nav:
           - Coding standards: generated/development/coding-standards.md
       - Architecture and contracts:
           - Architecture: generated/development/architecture.md
+          - Architecture diagram catalog: generated/development/architecture-diagrams.md
           - Detailed Lite API reference: reference/api/lite-api.md
           - HTTP API summary: generated/development/api.md
           - API contract detail: generated/development/api-contract.md

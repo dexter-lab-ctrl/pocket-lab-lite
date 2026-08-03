@@ -2,6 +2,9 @@ digraph agent_supervisor_recovery {
   graph [
     rankdir=LR,
     splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
     nodesep=0.42,
     ranksep=0.72,
     pad=0.25,
@@ -30,17 +33,17 @@ digraph agent_supervisor_recovery {
     arrowsize="0.75",
     penwidth="1.1"
   ];
-  "online" [label="Agent online", shape="component", fillcolor="#14532d", tooltip="Agent online. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/production/devices/", target="_top"];
   "disconnected" [label="Running but disconnected", shape="diamond", fillcolor="#7c2d12", tooltip="Running but disconnected. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/production/troubleshooting/", target="_top", style="filled"];
-  "watchdog" [label="Reconnect watchdog", shape="component", fillcolor="#14532d", tooltip="Reconnect watchdog. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/development/service-catalog/", target="_top"];
+  "guidance" [label="Recovery guidance", shape="parallelogram", fillcolor="#831843", tooltip="Recovery guidance. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/production/troubleshooting/", target="_top"];
+  "online" [label="Agent online", shape="component", fillcolor="#14532d", tooltip="Agent online. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/production/devices/", target="_top"];
   "stopped" [label="Agent stopped", shape="diamond", fillcolor="#7c2d12", tooltip="Agent stopped. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/production/devices/", target="_top", style="filled"];
   "supervisor" [label="Separate supervisor", shape="component", fillcolor="#14532d", tooltip="Separate supervisor. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/development/service-catalog/", target="_top"];
-  "guidance" [label="Recovery guidance", shape="parallelogram", fillcolor="#831843", tooltip="Recovery guidance. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/production/troubleshooting/", target="_top"];
-  "online" -> "disconnected" [label="NATS outage", tooltip="NATS outage"];
+  "watchdog" [label="Reconnect watchdog", shape="component", fillcolor="#14532d", tooltip="Reconnect watchdog. Disconnected agents reconnect; stopped agents are recovered by a separate supervisor; identity mismatch fails closed.", URL="../../generated/development/service-catalog/", target="_top"];
   "disconnected" -> "watchdog" [label="retry", tooltip="retry"];
-  "watchdog" -> "online" [label="fresh heartbeat", tooltip="fresh heartbeat"];
+  "online" -> "disconnected" [label="NATS outage", tooltip="NATS outage"];
   "online" -> "stopped" [label="process exit", tooltip="process exit"];
+  "stopped" -> "guidance" [label="no supervisor", tooltip="no supervisor"];
   "stopped" -> "supervisor" [label="supervisor present", tooltip="supervisor present"];
   "supervisor" -> "online" [label="restart", tooltip="restart"];
-  "stopped" -> "guidance" [label="no supervisor", tooltip="no supervisor"];
+  "watchdog" -> "online" [label="fresh heartbeat", tooltip="fresh heartbeat"];
 }

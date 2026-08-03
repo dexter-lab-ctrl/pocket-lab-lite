@@ -1,0 +1,76 @@
+digraph device_offline_retention {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Device offline-retention lifecycle",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_durable {
+    label="Durable identity";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "history" [label="Lifecycle evidence retained", shape="parallelogram", fillcolor="#fce7f3", tooltip="Lifecycle evidence retained. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/development/redaction-coverage/", target="_top"];
+    "profile" [label="Last-valid profile", shape="cylinder", fillcolor="#fef3c7", tooltip="Last-valid profile. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/development/device-capabilities/", target="_top"];
+    "registry" [label="Enrollment registry", shape="cylinder", fillcolor="#fef3c7", tooltip="Enrollment registry. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+  }
+  subgraph cluster_experience {
+    label="Devices lifecycle";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "retire" [label="Explicit repair or retirement", shape="box", fillcolor="#e0e7ff", tooltip="Explicit repair or retirement. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/production/recovery/", target="_top"];
+    "state" [label="Online / offline / stale", shape="diamond", fillcolor="#ffedd5", tooltip="Online / offline / stale. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/production/devices/", target="_top", style="filled"];
+    "ui" [label="Devices tab retains device", shape="box", fillcolor="#e0f2fe", tooltip="Devices tab retains device. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/production/devices/", target="_top"];
+  }
+  subgraph cluster_runtime {
+    label="Live runtime signals";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "heartbeat" [label="Heartbeat / connection state", shape="parallelogram", fillcolor="#fce7f3", tooltip="Heartbeat / connection state. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/development/lite-events/", target="_top"];
+    "runtime" [label="Live runtime observation", shape="component", fillcolor="#dcfce7", tooltip="Live runtime observation. Enrollment remains durable when live discovery disappears; devices transition to offline or stale until explicit repair, rejoin, retirement, or removal.", URL="../../generated/development/service-catalog/", target="_top"];
+  }
+  "heartbeat" -> "runtime" [label="observe", tooltip="observe"];
+  "profile" -> "state" [label="last-valid capabilities", tooltip="last-valid capabilities"];
+  "registry" -> "state" [label="enrolled identity", tooltip="enrolled identity"];
+  "retire" -> "history" [label="audit evidence", tooltip="audit evidence"];
+  "retire" -> "registry" [label="transactional update", tooltip="transactional update"];
+  "runtime" -> "state" [label="fresh / missing", tooltip="fresh / missing"];
+  "state" -> "ui" [label="always project", tooltip="always project"];
+  "ui" -> "retire" [label="confirmed action", tooltip="confirmed action"];
+}

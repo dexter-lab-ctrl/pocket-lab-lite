@@ -1,0 +1,82 @@
+digraph frontend_state_ownership {
+  graph [
+    rankdir=TB,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Frontend state ownership",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_client {
+    label="Client-only state";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "xstate" [label="XState workflow machines", shape="component", fillcolor="#dcfce7", tooltip="XState workflow machines. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../generated/development/recovery-state-machine/", target="_top"];
+    "zustand" [label="Zustand UI preferences", shape="component", fillcolor="#dcfce7", tooltip="Zustand UI preferences. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../generated/development/ui-state-catalog/", target="_top"];
+  }
+  subgraph cluster_offline {
+    label="Offline durability";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "dexie" [label="Dexie offline snapshots", shape="cylinder", fillcolor="#fef3c7", tooltip="Dexie offline snapshots. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../generated/development/ui-state-catalog/", target="_top"];
+  }
+  subgraph cluster_presentation {
+    label="Presentation contract";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "screen" [label="Home / Devices / Apps / Safety / Recovery", shape="box", fillcolor="#e0f2fe", tooltip="Home / Devices / Apps / Safety / Recovery. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../generated/production/tabs/", target="_top"];
+    "selector" [label="Canonical screen selector", shape="diamond", fillcolor="#ffedd5", tooltip="Canonical screen selector. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../generated/development/ui-state-catalog/", target="_top", style="filled"];
+  }
+  subgraph cluster_server {
+    label="Server-synchronized state";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "api" [label="FastAPI prepared projections", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI prepared projections. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../reference/api/lite-api/", target="_top"];
+    "query" [label="TanStack Query cache", shape="cylinder", fillcolor="#fef3c7", tooltip="TanStack Query cache. TanStack Query owns server synchronization, Dexie owns durable offline snapshots, Zustand owns lightweight UI preferences, and XState owns bounded workflows; selectors merge them into truthful Lite screens.", URL="../../generated/development/frontend-api-usage/", target="_top"];
+  }
+  "api" -> "query" [label="fetch + revision", tooltip="fetch + revision"];
+  "dexie" -> "selector" [label="offline fallback", tooltip="offline fallback"];
+  "query" -> "dexie" [label="persist safe snapshot", tooltip="persist safe snapshot"];
+  "query" -> "selector" [label="fresh server state", tooltip="fresh server state"];
+  "selector" -> "screen" [label="one truthful presentation", tooltip="one truthful presentation"];
+  "xstate" -> "selector" [label="workflow progress", tooltip="workflow progress"];
+  "zustand" -> "selector" [label="view preferences", tooltip="view preferences"];
+}

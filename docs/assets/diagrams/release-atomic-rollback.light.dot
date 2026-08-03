@@ -1,0 +1,78 @@
+digraph release_atomic_rollback {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Release subprocess and atomic rollback",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_control {
+    label="Release control";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "admission" [label="Bounded release admission", shape="diamond", fillcolor="#ffedd5", tooltip="Bounded release admission. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/development/release-inventory/", target="_top", style="filled"];
+    "api" [label="FastAPI release API", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI release API. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../reference/api/lite-api/", target="_top"];
+    "subprocess" [label="Release subprocess", shape="component", fillcolor="#dcfce7", tooltip="Release subprocess. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/development/service-catalog/", target="_top"];
+  }
+  subgraph cluster_safety {
+    label="Health and rollback";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "health" [label="Post-switch health gate", shape="diamond", fillcolor="#ffedd5", tooltip="Post-switch health gate. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/production/health-diagnostics/", target="_top", style="filled"];
+    "rollback" [label="Atomic rollback", shape="component", fillcolor="#dcfce7", tooltip="Atomic rollback. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/production/rollback/", target="_top"];
+    "state" [label="Installed release identity", shape="cylinder", fillcolor="#fef3c7", tooltip="Installed release identity. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+  }
+  subgraph cluster_staging {
+    label="Verified staging";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "manifest" [label="Tag, manifest, checksums", shape="diamond", fillcolor="#ffedd5", tooltip="Tag, manifest, checksums. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/production/release/", target="_top", style="filled"];
+    "promote" [label="Atomic PWA promotion", shape="component", fillcolor="#dcfce7", tooltip="Atomic PWA promotion. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/production/upgrade/", target="_top"];
+    "stage" [label="Stage verified dist.zip", shape="cylinder", fillcolor="#fef3c7", tooltip="Stage verified dist.zip. Release checks and applies run outside the API process, validate identity and artifacts, stage dist.zip, promote atomically, verify health, and roll back to the last known good release on failure.", URL="../../generated/production/release/", target="_top"];
+  }
+  "admission" -> "subprocess" [label="accepted", tooltip="accepted"];
+  "api" -> "admission" [label="check / apply", tooltip="check / apply"];
+  "health" -> "rollback" [label="failed", tooltip="failed"];
+  "health" -> "state" [label="passed", tooltip="passed"];
+  "manifest" -> "stage" [label="trusted artifact", tooltip="trusted artifact"];
+  "promote" -> "health" [label="validate", tooltip="validate"];
+  "rollback" -> "state" [label="last known good", tooltip="last known good"];
+  "stage" -> "promote" [label="atomic switch", tooltip="atomic switch"];
+  "subprocess" -> "manifest" [label="verify", tooltip="verify"];
+}

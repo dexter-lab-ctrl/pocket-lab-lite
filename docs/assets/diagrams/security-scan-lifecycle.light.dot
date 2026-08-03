@@ -1,0 +1,77 @@
+digraph security_scan_lifecycle {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Security scan lifecycle",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_control {
+    label="Control and scheduling";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "admission" [label="Policy and load guard", shape="diamond", fillcolor="#ffedd5", tooltip="Policy and load guard. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/development/security-profiles/", target="_top", style="filled"];
+    "api" [label="FastAPI scan API", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI scan API. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../reference/api/lite-api/", target="_top"];
+    "queue" [label="Bounded scan queue", shape="parallelogram", fillcolor="#fce7f3", tooltip="Bounded scan queue. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/development/lite-events/", target="_top"];
+  }
+  subgraph cluster_execution {
+    label="Isolated scan execution";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "evidence" [label="Sanitized scan evidence", shape="parallelogram", fillcolor="#fce7f3", tooltip="Sanitized scan evidence. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/development/redaction-coverage/", target="_top"];
+    "findings" [label="Canonical findings", shape="cylinder", fillcolor="#fef3c7", tooltip="Canonical findings. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+    "runner" [label="Scanner subprocess / worker", shape="component", fillcolor="#dcfce7", tooltip="Scanner subprocess / worker. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/development/service-catalog/", target="_top"];
+  }
+  subgraph cluster_experience {
+    label="Security / Safety";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "summary" [label="Progress and recommendations", shape="box", fillcolor="#e0f2fe", tooltip="Progress and recommendations. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/production/security/", target="_top"];
+    "ui" [label="Security / Safety tab", shape="box", fillcolor="#e0f2fe", tooltip="Security / Safety tab. Quick and full safety checks progress through bounded admission, isolated execution, canonical findings, sanitized evidence, and truthful UI summaries.", URL="../../generated/production/security/", target="_top"];
+  }
+  "admission" -> "queue" [label="accepted", tooltip="accepted"];
+  "api" -> "admission" [label="validate", tooltip="validate"];
+  "evidence" -> "summary" [label="safe details", tooltip="safe details"];
+  "findings" -> "summary" [label="prepared projection", tooltip="prepared projection"];
+  "queue" -> "runner" [label="dispatch", tooltip="dispatch"];
+  "runner" -> "evidence" [label="record", tooltip="record"];
+  "runner" -> "findings" [label="persist", tooltip="persist"];
+  "summary" -> "ui" [label="truthful status", tooltip="truthful status"];
+  "ui" -> "api" [label="Quick / Full check", tooltip="Quick / Full check"];
+}
