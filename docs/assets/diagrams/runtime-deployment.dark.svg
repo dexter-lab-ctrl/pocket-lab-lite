@@ -8,24 +8,6 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 151.25)">
 <polygon fill="#101827" stroke="none" points="-18,18 -18,-151.25 1133.31,-151.25 1133.31,18 -18,18"/>
 <text xml:space="preserve" text-anchor="middle" x="557.65" y="-110.25" font-family="Arial" font-size="20.00" fill="#f8fafc">Runtime deployment</text>
-<!-- browser -->
-<g id="node1" class="node">
-<title>browser</title>
-<g id="a_node1"><a xlink:href="../../generated/production/installation/" xlink:title="Browser / installed PWA. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
-<path fill="#0c4a6e" stroke="#94a3b8" stroke-width="1.2" d="M139.66,-102C139.66,-102 24.38,-102 24.38,-102 18.38,-102 12.37,-96 12.37,-90 12.37,-90 12.37,-78 12.37,-78 12.37,-72 18.37,-66 24.37,-66 24.37,-66 139.66,-66 139.66,-66 145.66,-66 151.66,-72 151.66,-78 151.66,-78 151.66,-90 151.66,-90 151.66,-96 145.66,-102 139.66,-102"/>
-<text xml:space="preserve" text-anchor="middle" x="82.02" y="-80.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Browser / installed PWA</text>
-</a>
-</g>
-</g>
-<!-- server -->
-<g id="node2" class="node">
-<title>server</title>
-<g id="a_node2"><a xlink:href="../../generated/production/android-termux/" xlink:title="Android / Termux server. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
-<path fill="#1e293b" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,2" d="M467.83,-69C467.83,-69 354.04,-69 354.04,-69 348.04,-69 342.04,-63 342.04,-57 342.04,-57 342.04,-45 342.04,-45 342.04,-39 348.04,-33 354.04,-33 354.04,-33 467.83,-33 467.83,-33 473.83,-33 479.83,-39 479.83,-45 479.83,-45 479.83,-57 479.83,-57 479.83,-63 473.83,-69 467.83,-69"/>
-<text xml:space="preserve" text-anchor="middle" x="410.93" y="-47.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Android / Termux server</text>
-</a>
-</g>
-</g>
 <!-- browser&#45;&gt;server -->
 <g id="edge1" class="edge">
 <title>browser&#45;&gt;server</title>
@@ -36,64 +18,82 @@
 </g>
 <text xml:space="preserve" text-anchor="middle" x="253.04" y="-85.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">Tailnet/LAN HTTPS</text>
 </g>
-<!-- services -->
-<g id="node3" class="node">
-<title>services</title>
-<g id="a_node3"><a xlink:href="../../generated/development/service-catalog/" xlink:title="Caddy + API + NATS + worker. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
-<polygon fill="#14532d" stroke="#94a3b8" stroke-width="1.2" points="767.87,-69 595.58,-69 595.58,-65 591.58,-65 591.58,-61 595.58,-61 595.58,-41 591.58,-41 591.58,-37 595.58,-37 595.58,-33 767.87,-33 767.87,-69"/>
-<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="595.58,-65 599.58,-65 599.58,-61 595.58,-61"/>
-<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="595.58,-41 599.58,-41 599.58,-37 595.58,-37"/>
-<text xml:space="preserve" text-anchor="middle" x="681.72" y="-47.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Caddy + API + NATS + worker</text>
+<!-- dev&#45;&gt;server -->
+<g id="edge2" class="edge">
+<title>dev&#45;&gt;server</title>
+<g id="a_edge2"><a xlink:title="release artifact / validation only">
+<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M158.31,-36.52C158.31,-41.73 158.31,-46 158.31,-46 158.31,-46 332.41,-46 332.41,-46"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="332.41,-48.63 339.91,-46 332.41,-43.38 332.41,-48.63"/>
 </a>
 </g>
+<text xml:space="preserve" text-anchor="middle" x="253.04" y="-19.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">release artifact / validation only</text>
 </g>
 <!-- server&#45;&gt;services -->
-<g id="edge2" class="edge">
+<g id="edge3" class="edge">
 <title>server&#45;&gt;services</title>
-<g id="a_edge2"><a xlink:title="local processes">
+<g id="a_edge3"><a xlink:title="local processes">
 <path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M480.32,-51C480.32,-51 585.89,-51 585.89,-51"/>
 <polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="585.89,-53.63 593.39,-51 585.89,-48.38 585.89,-53.63"/>
 </a>
 </g>
 <text xml:space="preserve" text-anchor="middle" x="537.7" y="-52.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">local processes</text>
 </g>
-<!-- devices -->
-<g id="node4" class="node">
-<title>devices</title>
-<g id="a_node4"><a xlink:href="../../generated/production/devices/" xlink:title="Joined ARM64 devices. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
-<ellipse fill="#1e293b" stroke="#94a3b8" stroke-width="1.2" cx="1021.59" cy="-51" rx="93.72" ry="19.73"/>
-<text xml:space="preserve" text-anchor="middle" x="1021.59" y="-47.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Joined ARM64 devices</text>
-</a>
-</g>
-</g>
 <!-- services&#45;&gt;devices -->
-<g id="edge3" class="edge">
+<g id="edge4" class="edge">
 <title>services&#45;&gt;devices</title>
-<g id="a_edge3"><a xlink:title="NATS over private network">
+<g id="a_edge4"><a xlink:title="NATS over private network">
 <path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M768.37,-51C768.37,-51 918.18,-51 918.18,-51"/>
 <polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="918.18,-53.63 925.68,-51 918.18,-48.38 918.18,-53.63"/>
 </a>
 </g>
 <text xml:space="preserve" text-anchor="middle" x="847.87" y="-52.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">NATS over private network</text>
 </g>
+<!-- browser -->
+<g id="node1" class="node">
+<title>browser</title>
+<g id="a_node1"><a xlink:href="../../generated/production/installation/" xlink:title="Browser / installed PWA. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
+<path fill="#0c4a6e" stroke="#94a3b8" stroke-width="1.2" d="M139.66,-102C139.66,-102 24.38,-102 24.38,-102 18.38,-102 12.37,-96 12.37,-90 12.37,-90 12.37,-78 12.37,-78 12.37,-72 18.37,-66 24.37,-66 24.37,-66 139.66,-66 139.66,-66 145.66,-66 151.66,-72 151.66,-78 151.66,-78 151.66,-90 151.66,-90 151.66,-96 145.66,-102 139.66,-102"/>
+<text xml:space="preserve" text-anchor="middle" x="82.02" y="-80.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Browser / installed PWA</text>
+</a>
+</g>
+</g>
 <!-- dev -->
-<g id="node5" class="node">
+<g id="node2" class="node">
 <title>dev</title>
-<g id="a_node5"><a xlink:href="../../generated/development/repository-setup/" xlink:title="WSL2 Development PC tools. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
+<g id="a_node2"><a xlink:href="../../generated/development/repository-setup/" xlink:title="WSL2 Development PC tools. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
 <path fill="#1e293b" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,2" d="M152.04,-36C152.04,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 152.04,0 152.04,0 158.04,0 164.04,-6 164.04,-12 164.04,-12 164.04,-24 164.04,-24 164.04,-30 158.04,-36 152.04,-36"/>
 <text xml:space="preserve" text-anchor="middle" x="82.02" y="-14.3" font-family="Arial" font-size="11.00" fill="#f8fafc">WSL2 Development PC tools</text>
 </a>
 </g>
 </g>
-<!-- dev&#45;&gt;server -->
-<g id="edge4" class="edge">
-<title>dev&#45;&gt;server</title>
-<g id="a_edge4"><a xlink:title="release artifact / validation only">
-<path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M158.31,-36.52C158.31,-41.73 158.31,-46 158.31,-46 158.31,-46 332.41,-46 332.41,-46"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="332.41,-48.63 339.91,-46 332.41,-43.38 332.41,-48.63"/>
+<!-- devices -->
+<g id="node3" class="node">
+<title>devices</title>
+<g id="a_node3"><a xlink:href="../../generated/production/devices/" xlink:title="Joined ARM64 devices. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
+<ellipse fill="#1e293b" stroke="#94a3b8" stroke-width="1.2" cx="1021.59" cy="-51" rx="93.72" ry="19.73"/>
+<text xml:space="preserve" text-anchor="middle" x="1021.59" y="-47.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Joined ARM64 devices</text>
 </a>
 </g>
-<text xml:space="preserve" text-anchor="middle" x="253.04" y="-19.95" font-family="Arial" font-size="9.00" fill="#cbd5e1">release artifact / validation only</text>
+</g>
+<!-- server -->
+<g id="node4" class="node">
+<title>server</title>
+<g id="a_node4"><a xlink:href="../../generated/production/android-termux/" xlink:title="Android / Termux server. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
+<path fill="#1e293b" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,2" d="M467.83,-69C467.83,-69 354.04,-69 354.04,-69 348.04,-69 342.04,-63 342.04,-57 342.04,-57 342.04,-45 342.04,-45 342.04,-39 348.04,-33 354.04,-33 354.04,-33 467.83,-33 467.83,-33 473.83,-33 479.83,-39 479.83,-45 479.83,-45 479.83,-57 479.83,-57 479.83,-63 473.83,-69 467.83,-69"/>
+<text xml:space="preserve" text-anchor="middle" x="410.93" y="-47.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Android / Termux server</text>
+</a>
+</g>
+</g>
+<!-- services -->
+<g id="node5" class="node">
+<title>services</title>
+<g id="a_node5"><a xlink:href="../../generated/development/service-catalog/" xlink:title="Caddy + API + NATS + worker. Development documentation tools remain outside the Android/Termux production runtime." target="_top">
+<polygon fill="#14532d" stroke="#94a3b8" stroke-width="1.2" points="767.87,-69 595.58,-69 595.58,-65 591.58,-65 591.58,-61 595.58,-61 595.58,-41 591.58,-41 591.58,-37 595.58,-37 595.58,-33 767.87,-33 767.87,-69"/>
+<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="595.58,-65 599.58,-65 599.58,-61 595.58,-61"/>
+<polyline fill="none" stroke="#94a3b8" stroke-width="1.2" points="595.58,-41 599.58,-41 599.58,-37 595.58,-37"/>
+<text xml:space="preserve" text-anchor="middle" x="681.72" y="-47.3" font-family="Arial" font-size="11.00" fill="#f8fafc">Caddy + API + NATS + worker</text>
+</a>
+</g>
 </g>
 </g>
 </svg>

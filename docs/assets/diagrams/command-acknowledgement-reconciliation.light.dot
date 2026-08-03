@@ -1,0 +1,79 @@
+digraph command_acknowledgement_reconciliation {
+  graph [
+    rankdir=LR,
+    splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
+    nodesep=0.42,
+    ranksep=0.72,
+    pad=0.25,
+    margin=0,
+    bgcolor="#ffffff",
+    fontcolor="#182230",
+    fontname="Arial",
+    label="Command acknowledgement and reconciliation",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="11",
+    style="rounded,filled",
+    color="#64748b",
+    fontcolor="#182230",
+    penwidth="1.2",
+    margin="0.16,0.10"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="9",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.75",
+    penwidth="1.1"
+  ];
+  subgraph cluster_control {
+    label="Command control";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "api" [label="FastAPI command API", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI command API. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../reference/api/lite-api/", target="_top"];
+    "command" [label="Command lifecycle record", shape="cylinder", fillcolor="#fef3c7", tooltip="Command lifecycle record. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+    "nats" [label="JetStream delivery", shape="parallelogram", fillcolor="#fce7f3", tooltip="JetStream delivery. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/lite-events/", target="_top"];
+  }
+  subgraph cluster_execution {
+    label="Device execution";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "ack" [label="Acknowledged / started", shape="parallelogram", fillcolor="#fce7f3", tooltip="Acknowledged / started. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/lite-events/", target="_top"];
+    "agent" [label="Worker / node agent", shape="component", fillcolor="#dcfce7", tooltip="Worker / node agent. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/service-catalog/", target="_top"];
+    "result" [label="Completed / failed evidence", shape="parallelogram", fillcolor="#fce7f3", tooltip="Completed / failed evidence. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/redaction-coverage/", target="_top"];
+  }
+  subgraph cluster_reconciliation {
+    label="Lifecycle reconciliation";
+    style="rounded,dashed";
+    color="#64748b";
+    fontcolor="#475569";
+    penwidth="1.0";
+    margin="16";
+    "reconciler" [label="Timeout reconciler", shape="component", fillcolor="#dcfce7", tooltip="Timeout reconciler. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/service-catalog/", target="_top"];
+    "state" [label="Canonical command state", shape="cylinder", fillcolor="#fef3c7", tooltip="Canonical command state. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+    "ui" [label="Truthful progress in UI", shape="box", fillcolor="#e0f2fe", tooltip="Truthful progress in UI. Commands move from validated admission through durable delivery, acknowledgement, execution evidence, timeout reconciliation, and prepared lifecycle reads without deleting devices.", URL="../../generated/production/devices/", target="_top"];
+  }
+  "ack" -> "state" [label="advance", tooltip="advance"];
+  "agent" -> "ack" [label="acknowledge", tooltip="acknowledge"];
+  "agent" -> "result" [label="finish", tooltip="finish"];
+  "api" -> "command" [label="admit", tooltip="admit"];
+  "command" -> "nats" [label="publish", tooltip="publish"];
+  "command" -> "reconciler" [label="watch deadline", tooltip="watch deadline"];
+  "nats" -> "agent" [label="deliver", tooltip="deliver"];
+  "reconciler" -> "state" [label="timeout / orphan reconcile", tooltip="timeout / orphan reconcile"];
+  "result" -> "state" [label="finalize", tooltip="finalize"];
+  "state" -> "ui" [label="prepared read", tooltip="prepared read"];
+}

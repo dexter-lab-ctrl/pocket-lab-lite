@@ -2,6 +2,9 @@ digraph release_flow {
   graph [
     rankdir=LR,
     splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
     nodesep=0.42,
     ranksep=0.72,
     pad=0.25,
@@ -30,20 +33,20 @@ digraph release_flow {
     arrowsize="0.75",
     penwidth="1.1"
   ];
-  "main" [label="Clean main branch", shape="box", fillcolor="#e0e7ff", tooltip="Clean main branch. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
-  "tag" [label="Annotated Lite tag", shape="parallelogram", fillcolor="#fce7f3", tooltip="Annotated Lite tag. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
   "build" [label="Build dist.zip", shape="component", fillcolor="#dcfce7", tooltip="Build dist.zip. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
+  "health" [label="Post-switch health", shape="diamond", fillcolor="#ffedd5", tooltip="Post-switch health. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/health-diagnostics/", target="_top", style="filled"];
+  "lkg" [label="Last-known-good rollback", shape="component", fillcolor="#dcfce7", tooltip="Last-known-good rollback. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/rollback/", target="_top"];
+  "main" [label="Clean main branch", shape="box", fillcolor="#e0e7ff", tooltip="Clean main branch. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
   "manifest" [label="Manifest + checksums", shape="cylinder", fillcolor="#fef3c7", tooltip="Manifest + checksums. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-inventory/", target="_top"];
   "release" [label="GitHub release", shape="ellipse", fillcolor="#f8fafc", tooltip="GitHub release. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-inventory/", target="_top"];
   "stage" [label="Stage PWA atomically", shape="component", fillcolor="#dcfce7", tooltip="Stage PWA atomically. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/upgrade/", target="_top"];
-  "health" [label="Post-switch health", shape="diamond", fillcolor="#ffedd5", tooltip="Post-switch health. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/health-diagnostics/", target="_top", style="filled"];
-  "lkg" [label="Last-known-good rollback", shape="component", fillcolor="#dcfce7", tooltip="Last-known-good rollback. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/production/rollback/", target="_top"];
-  "main" -> "tag" [label="validated commit", tooltip="validated commit"];
-  "tag" -> "build" [label="workflow", tooltip="workflow"];
+  "tag" [label="Annotated Lite tag", shape="parallelogram", fillcolor="#fce7f3", tooltip="Annotated Lite tag. Annotated date-based tags produce verified dist.zip artifacts and atomic PWA promotion with rollback.", URL="../../generated/development/release-engineering/", target="_top"];
   "build" -> "manifest" [label="inventory", tooltip="inventory"];
+  "health" -> "lkg" [label="failure", tooltip="failure"];
+  "health" -> "stage" [label="success", tooltip="success"];
+  "main" -> "tag" [label="validated commit", tooltip="validated commit"];
   "manifest" -> "release" [label="publish", tooltip="publish"];
   "release" -> "stage" [label="verified download", tooltip="verified download"];
   "stage" -> "health" [label="switch", tooltip="switch"];
-  "health" -> "lkg" [label="failure", tooltip="failure"];
-  "health" -> "stage" [label="success", tooltip="success"];
+  "tag" -> "build" [label="workflow", tooltip="workflow"];
 }

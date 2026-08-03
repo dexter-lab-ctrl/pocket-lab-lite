@@ -2,6 +2,9 @@ digraph prepared_projection_flow {
   graph [
     rankdir=LR,
     splines=ortho,
+    compound=true,
+    newrank=true,
+    outputorder=edgesfirst,
     nodesep=0.42,
     ranksep=0.72,
     pad=0.25,
@@ -30,18 +33,18 @@ digraph prepared_projection_flow {
     arrowsize="0.75",
     penwidth="1.1"
   ];
-  "event" [label="Compact domain event", shape="parallelogram", fillcolor="#fce7f3", tooltip="Compact domain event. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/lite-events/", target="_top"];
   "admission" [label="Bounded admission", shape="diamond", fillcolor="#ffedd5", tooltip="Bounded admission. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/projection-catalog/", target="_top", style="filled"];
-  "scheduler" [label="Projection scheduler", shape="component", fillcolor="#dcfce7", tooltip="Projection scheduler. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/projection-catalog/", target="_top"];
-  "canonical" [label="Canonical hash check", shape="diamond", fillcolor="#ffedd5", tooltip="Canonical hash check. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/projection-catalog/", target="_top", style="filled"];
-  "prepared" [label="Prepared SQLite projection", shape="cylinder", fillcolor="#fef3c7", tooltip="Prepared SQLite projection. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
   "api" [label="FastAPI safe read", shape="box", fillcolor="#e0e7ff", tooltip="FastAPI safe read. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../reference/api/lite-api/", target="_top"];
+  "canonical" [label="Canonical hash check", shape="diamond", fillcolor="#ffedd5", tooltip="Canonical hash check. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/projection-catalog/", target="_top", style="filled"];
+  "event" [label="Compact domain event", shape="parallelogram", fillcolor="#fce7f3", tooltip="Compact domain event. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/lite-events/", target="_top"];
+  "prepared" [label="Prepared SQLite projection", shape="cylinder", fillcolor="#fef3c7", tooltip="Prepared SQLite projection. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/lite-sqlite-schema/", target="_top"];
+  "scheduler" [label="Projection scheduler", shape="component", fillcolor="#dcfce7", tooltip="Projection scheduler. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/projection-catalog/", target="_top"];
   "ui" [label="TanStack Query / safe snapshot", shape="box", fillcolor="#e0f2fe", tooltip="TanStack Query / safe snapshot. Canonical events are admitted through bounded schedulers and promoted atomically to prepared SQLite reads.", URL="../../generated/development/projection-catalog/", target="_top"];
-  "event" -> "admission" [label="signal", tooltip="signal"];
   "admission" -> "scheduler" [label="accepted/coalesced", tooltip="accepted/coalesced"];
-  "scheduler" -> "canonical" [label="rebuild affected domain", tooltip="rebuild affected domain"];
-  "canonical" -> "prepared" [label="semantic change", tooltip="semantic change"];
-  "canonical" -> "api" [label="unchanged", tooltip="unchanged"];
-  "prepared" -> "api" [label="bounded read", tooltip="bounded read"];
   "api" -> "ui" [label="revision + ETag", tooltip="revision + ETag"];
+  "canonical" -> "api" [label="unchanged", tooltip="unchanged"];
+  "canonical" -> "prepared" [label="semantic change", tooltip="semantic change"];
+  "event" -> "admission" [label="signal", tooltip="signal"];
+  "prepared" -> "api" [label="bounded read", tooltip="bounded read"];
+  "scheduler" -> "canonical" [label="rebuild affected domain", tooltip="rebuild affected domain"];
 }
