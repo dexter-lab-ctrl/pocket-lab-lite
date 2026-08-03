@@ -1,0 +1,87 @@
+digraph component_caddy {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Caddy same-origin proxy connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_application-container" {
+    label="Application-container boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "photoprism" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PhotoPrism</B></FONT><BR/><FONT POINT-SIZE="9">Provides the verified managed photo application under a same-origin Caddy path.</FONT><BR/><FONT POINT-SIZE="8">PROot Ubuntu on server host</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled", fillcolor="#701a75", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="PhotoPrism. Provides the verified managed photo application under a same-origin Caddy path.", URL="../../../../generated/production/architecture/components/photoprism/", target="_top"];
+  }
+  subgraph "cluster_browser" {
+    label="Browser trust boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#0c4a6e", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "lite-api" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>FastAPI /api/lite/*</B></FONT><BR/><FONT POINT-SIZE="9">Validates requests, owns safe read APIs, admits commands, and never delegates browser...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="FastAPI /api/lite/*. Validates requests, owns safe read APIs, admits commands, and never delegates browser execution directly to NATS or shell.", URL="../../../../generated/production/architecture/components/lite-api/", target="_top"];
+  }
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "atomic-promotion" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Atomic PWA promotion</B></FONT><BR/><FONT POINT-SIZE="9">Promotes a verified staged PWA atomically and keeps the previous release available fo...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Atomic PWA promotion. Promotes a verified staged PWA atomically and keeps the previous release available for rollback.", URL="../../../../generated/production/architecture/components/atomic-promotion/", target="_top"];
+    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes /api/lite/* and managed app paths without exposing backend...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled,bold", fillcolor="#4c1d95", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
+  }
+  subgraph "cluster_tailnet" {
+    label="Private network and Tailnet boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "lan" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Local LAN</B></FONT><BR/><FONT POINT-SIZE="9">Provides local-device access to the same-origin Caddy endpoint without hardcoded addr...</FONT><BR/><FONT POINT-SIZE="8">Private local network</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#155e75", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Local LAN. Provides local-device access to the same-origin Caddy endpoint without hardcoded addresses.", URL="../../../../generated/production/architecture/components/lan/", target="_top"];
+  }
+  "caddy" -> "lite-api" [label="routes /api/lite/*", tooltip="routes /api/lite/* (HTTP)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "caddy" -> "photoprism" [label="same-origin /apps path", tooltip="same-origin /apps path (HTTP)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "lan" -> "caddy" [label="local HTTPS", tooltip="local HTTPS (HTTPS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "atomic-promotion" -> "caddy" [label="serves active PWA", tooltip="serves active PWA (Filesystem/HTTP)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "pwa" -> "caddy" [label="same-origin request", tooltip="same-origin request (HTTPS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "additional_dependencies" [label="Additional dependencies (1)", shape="note", style="dashed,filled", fillcolor="#111827", color="#94a3b8", fontcolor="#f8fafc", tooltip="Additional dependencies (1)"];
+  "caddy" -> "additional_dependencies" [style="dotted", arrowhead="none", color="#cbd5e1"];
+}

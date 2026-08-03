@@ -1,0 +1,73 @@
+digraph component_app_workflow_state {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="App, command, and workflow state connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "app-catalog" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App Catalog</B></FONT><BR/><FONT POINT-SIZE="9">Presents backend-owned app lifecycle and safe action readiness, including same-origin...</FONT><BR/><FONT POINT-SIZE="8">PWA plus FastAPI prepared reads</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App Catalog. Presents backend-owned app lifecycle and safe action readiness, including same-origin Open routes and Manage details.", URL="../../../../generated/production/architecture/components/app-catalog/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app current/action lifecycle and workflow command/current/event state.</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#78350f", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "app-lifecycle-worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App lifecycle worker</B></FONT><BR/><FONT POINT-SIZE="9">Owns install, repair, media import, backup, restore preview, update readiness/apply,...</FONT><BR/><FONT POINT-SIZE="8">pocket-worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App lifecycle worker. Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.", URL="../../../../generated/production/architecture/components/app-lifecycle-worker/", target="_top"];
+    "workflow-execution" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Workflow execution</B></FONT><BR/><FONT POINT-SIZE="9">Coordinates multi-step workflow state through bounded event admission and process-iso...</FONT><BR/><FONT POINT-SIZE="8">Worker / projection subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Workflow execution. Coordinates multi-step workflow state through bounded event admission and process-isolated projection work.", URL="../../../../generated/production/architecture/components/workflow-execution/", target="_top"];
+  }
+  "app-workflow-state" -> "app-catalog" [label="catalog/action projection", tooltip="catalog/action projection (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "app-workflow-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "app-lifecycle-worker" -> "app-workflow-state" [label="updates app state", tooltip="updates app state (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "workflow-execution" -> "app-workflow-state" [label="updates workflow state", tooltip="updates workflow state (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_0" [label="app_current_state", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "app-workflow-state" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_1" [label="app_action_lifecycle", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "app-workflow-state" -> "state_dependency_1" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_2" [label="workflow_current_state", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "app-workflow-state" -> "state_dependency_2" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

@@ -1,0 +1,69 @@
+digraph component_api_guards {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Identity, authentication, and invite guards connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "api-guards" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Identity, authentication, and invite guards</B></FONT><BR/><FONT POINT-SIZE="9">Applies identity guards, duplicate checks, protected-host checks, and fail-closed inv...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled,bold", fillcolor="#e0e7ff", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Identity, authentication, and invite guards. Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.", URL="../../../../generated/production/architecture/components/api-guards/", target="_top"];
+    "lite-api" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>FastAPI /api/lite/*</B></FONT><BR/><FONT POINT-SIZE="9">Validates requests, owns safe read APIs, admits commands, and never delegates browser...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="FastAPI /api/lite/*. Validates requests, owns safe read APIs, admits commands, and never delegates browser execution directly to NATS or shell.", URL="../../../../generated/production/architecture/components/lite-api/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "invite-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Invite and identity lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with d...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Invite and identity lifecycle. Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.", URL="../../../../generated/production/architecture/components/invite-state/", target="_top"];
+  }
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "node-agent" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite node agent</B></FONT><BR/><FONT POINT-SIZE="9">Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and...</FONT><BR/><FONT POINT-SIZE="8">Server host or joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Lite node agent. Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.", URL="../../../../generated/production/architecture/components/node-agent/", target="_top"];
+  }
+  "lite-api" -> "api-guards" [label="validates identity and intent", tooltip="validates identity and intent (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "api-guards" -> "node-agent" [label="backend-generated bootstrap", tooltip="backend-generated bootstrap (Shell artifact)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "api-guards" -> "invite-state" [label="stores invite/identity state", tooltip="stores invite/identity state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_0" [label="device_identity_guards", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "api-guards" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_1" [label="device_invite_lifecycle", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "api-guards" -> "state_dependency_1" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+}

@@ -1,0 +1,67 @@
+digraph component_app_catalog {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="App Catalog connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_browser" {
+    label="Browser trust boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "app-catalog" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App Catalog</B></FONT><BR/><FONT POINT-SIZE="9">Presents backend-owned app lifecycle and safe action readiness, including same-origin...</FONT><BR/><FONT POINT-SIZE="8">PWA plus FastAPI prepared reads</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled,bold", fillcolor="#e0e7ff", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="App Catalog. Presents backend-owned app lifecycle and safe action readiness, including same-origin Open routes and Manage details.", URL="../../../../generated/production/architecture/components/app-catalog/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app current/action lifecycle and workflow command/current/event state.</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
+  }
+  "app-catalog" -> "pwa" [label="app cards and actions", tooltip="app cards and actions (HTTPS)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "app-workflow-state" -> "app-catalog" [label="catalog/action projection", tooltip="catalog/action projection (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_0" [label="app_current_state", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "app-catalog" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_1" [label="app_action_lifecycle", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "app-catalog" -> "state_dependency_1" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+}

@@ -1,0 +1,57 @@
+digraph component_security_profiles {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Quick, Full, and App safety checks connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "security-coordinator" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security scan coordinator</B></FONT><BR/><FONT POINT-SIZE="9">Validates Quick, Full, and App Check requests, tracks active runs, and exposes compac...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Security scan coordinator. Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.", URL="../../../../generated/production/architecture/components/security-coordinator/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "scanner-adapters" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lynis and Trivy scanner adapters</B></FONT><BR/><FONT POINT-SIZE="9">Run bounded backend-owned scanners with target-aware exclusions and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">Security worker subprocesses</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Lynis and Trivy scanner adapters. Run bounded backend-owned scanners with target-aware exclusions and sanitized evidence; the browser never executes scanners.", URL="../../../../generated/production/architecture/components/scanner-adapters/", target="_top"];
+    "security-profiles" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Quick, Full, and App safety checks</B></FONT><BR/><FONT POINT-SIZE="9">Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, a...</FONT><BR/><FONT POINT-SIZE="8">Security worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Quick, Full, and App safety checks. Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, and truthful partial/failed states.", URL="../../../../generated/production/architecture/components/security-profiles/", target="_top"];
+  }
+  "security-profiles" -> "scanner-adapters" [label="defines targets/exclusions", tooltip="defines targets/exclusions (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "security-coordinator" -> "security-profiles" [label="selects Quick/Full/App", tooltip="selects Quick/Full/App (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "state_dependency_0" [label="security_profile_snapshots", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "security-profiles" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

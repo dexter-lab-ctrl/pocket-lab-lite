@@ -1,0 +1,90 @@
+digraph data_projections {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="SQLite and projection architecture",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_browser" {
+    label="Browser trust boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "frontend-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Frontend state ownership</B></FONT><BR/><FONT POINT-SIZE="9">Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state,...</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#0c4a6e", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Frontend state ownership. Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state, XState guided flows, API client, error boundaries, and generated fixtures without owning backend truth.", URL="../../../../generated/production/architecture/components/frontend-state/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health, readiness, diagnostics, and evidence APIs</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared projections, health/readiness, compact diagnostics,...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+    "device-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Enrollment and device lifecycle state</B></FONT><BR/><FONT POINT-SIZE="9">Retains enrolled devices across connectivity loss and separates durable enrollment, c...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Enrollment and device lifecycle state. Retains enrolled devices across connectivity loss and separates durable enrollment, current state, health, supervisor state, and recovery history.", URL="../../../../generated/production/architecture/components/device-state/", target="_top"];
+    "invite-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Invite and identity lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with d...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Invite and identity lifecycle. Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.", URL="../../../../generated/production/architecture/components/invite-state/", target="_top"];
+    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app current/action lifecycle and workflow command/current/event state.</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
+    "security-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security findings and run state</B></FONT><BR/><FONT POINT-SIZE="9">Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">SQLite and compact sanitized files</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Security findings and run state. Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidence references.", URL="../../../../generated/production/architecture/components/security-state/", target="_top"];
+    "recovery-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup, restore, and checkpoint state</B></FONT><BR/><FONT POINT-SIZE="9">Stores backup manifests, recovery operations, current state, database backups/restore...</FONT><BR/><FONT POINT-SIZE="8">SQLite and repository-owned manifests</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Backup, restore, and checkpoint state. Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.", URL="../../../../generated/production/architecture/components/recovery-state/", target="_top"];
+    "release-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Installed release and runtime state</B></FONT><BR/><FONT POINT-SIZE="9">Stores installed-release identity and release-runtime projection for truthful compari...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Installed release and runtime state. Stores installed-release identity and release-runtime projection for truthful comparison, staging, apply, rollback, and last-known-good state.", URL="../../../../generated/production/architecture/components/release-state/", target="_top"];
+    "prepared-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Audit index, projection refresh, prepared projections, and domain revisions</B></FONT><BR/><FONT POINT-SIZE="9">Indexes audit evidence and tracks dirty signals, generations, committed projections,...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Audit index, projection refresh, prepared projections, and domain revisions. Indexes audit evidence and tracks dirty signals, generations, committed projections, current-state summaries, and semantic revisions.", URL="../../../../generated/production/architecture/components/prepared-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "projection-subprocesses" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Projection subprocesses</B></FONT><BR/><FONT POINT-SIZE="9">Own CPU-heavy projection reconstruction and serialization outside the API process.</FONT><BR/><FONT POINT-SIZE="8">Dedicated subprocesses / scheduler</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Projection subprocesses. Own CPU-heavy projection reconstruction and serialization outside the API process.", URL="../../../../generated/production/architecture/components/projection-subprocesses/", target="_top"];
+    "bounded-reconciliation" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Bounded queues and reconciliation</B></FONT><BR/><FONT POINT-SIZE="9">Bounds admission, coalesces low-value work, reconciles queue depth, and prevents unre...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker processes</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Bounded queues and reconciliation. Bounds admission, coalesces low-value work, reconciles queue depth, and prevents unrelated lifecycle deletion.", URL="../../../../generated/production/architecture/components/bounded-reconciliation/", target="_top"];
+  }
+  "invite-state" -> "device-state" [label="accepted enrollment", tooltip="accepted enrollment (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "projection-subprocesses" -> "prepared-state" [label="commits generation", tooltip="commits generation (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "bounded-reconciliation" -> "projection-subprocesses" [label="bounds and schedules", tooltip="bounds and schedules (IPC)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "api-read-surfaces" -> "frontend-state" [label="safe summary", tooltip="safe summary (HTTPS)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "device-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "invite-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "app-workflow-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "security-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "recovery-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "release-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "prepared-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "prepared-state" -> "api-read-surfaces" [label="prepared read", tooltip="prepared read (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+}

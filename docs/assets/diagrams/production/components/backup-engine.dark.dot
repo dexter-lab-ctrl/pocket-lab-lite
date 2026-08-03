@@ -1,0 +1,61 @@
+digraph component_backup_engine {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Backup and verification engine connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "recovery-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup, restore, and checkpoint state</B></FONT><BR/><FONT POINT-SIZE="9">Stores backup manifests, recovery operations, current state, database backups/restore...</FONT><BR/><FONT POINT-SIZE="8">SQLite and repository-owned manifests</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Backup, restore, and checkpoint state. Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.", URL="../../../../generated/production/architecture/components/recovery-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "backup-engine" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup and verification engine</B></FONT><BR/><FONT POINT-SIZE="9">Creates and verifies local encrypted backups through backend/worker-owned operations.</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Backup and verification engine. Creates and verifies local encrypted backups through backend/worker-owned operations.", URL="../../../../generated/production/architecture/components/backup-engine/", target="_top"];
+    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and completion evidence for commands, devices, apps, secu...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
+    "restore-preview" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Restore preview and confirmed restore</B></FONT><BR/><FONT POINT-SIZE="9">Builds a non-destructive preview, requires explicit confirmation, creates a checkpoin...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Restore preview and confirmed restore. Builds a non-destructive preview, requires explicit confirmation, creates a checkpoint, applies restore, and validates health.", URL="../../../../generated/production/architecture/components/restore-preview/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+  }
+  "backup-engine" -> "restore-preview" [label="verified backup input", tooltip="verified backup input (Manifest)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "backup-engine" -> "completion-evidence" [label="records sanitized lifecycle", tooltip="records sanitized lifecycle (SQLite/NATS)", style="dotted", arrowhead="normal", color="#c4b5fd", fontcolor="#c4b5fd"];
+  "backup-engine" -> "recovery-state" [label="updates backup state", tooltip="updates backup state (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "worker" -> "backup-engine" [label="runs backup work", tooltip="runs backup work (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "state_dependency_0" [label="backup_manifest_index", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "backup-engine" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

@@ -26,6 +26,24 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "EDGE_STYLES",
+      "production": false,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/graphviz/graphviz_renderer.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "LITE_ANDROID_GATE",
       "production": true,
       "required": false,
@@ -2255,7 +2273,8 @@
         "Taskfile.yml",
         "scripts/dev/lite/check-contracts.sh",
         "scripts/dev/lite/run-gate.sh",
-        "scripts/dev/lite/run-playwright-mocked.sh"
+        "scripts/dev/lite/run-playwright-mocked.sh",
+        "scripts/dev/lite/setup-architecture-icons.sh"
       ],
       "safe_default": "${PYTHON:-.venv/bin/python",
       "secret_classification": "configuration",
@@ -13426,6 +13445,7 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/dev/lite/validation_evidence.py",
+        "scripts/docs/graphviz/generate_lite_architecture.py",
         "scripts/docs/graphviz/generate_lite_diagrams.py",
         "scripts/docs/lite/generate_contracts.py",
         "scripts/docs/lite/generate_docs.py",
@@ -13484,6 +13504,7 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
+        "scripts/docs/graphviz/generate_lite_architecture.py",
         "scripts/docs/graphviz/generate_lite_diagrams.py",
         "scripts/docs/lite/generate_contracts.py",
         "scripts/docs/lite/generate_docs.py",
@@ -13586,7 +13607,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "e716b58ef4c5ac76cc117f39eae67890847f32d8a0f90dac7ec459076615f64a",
+    "aggregate_fingerprint": "f7bcc790fceabdc4dfbb9f24c44ae1c06594ac6be2fbee7697d42b49044968c7",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -13797,6 +13818,7 @@
       "scripts/dev/lite/check-contracts.sh": "a62c37cc391390c74010ae4ebbda691e3598a93cb004c66c555d1b9fca9566e3",
       "scripts/dev/lite/run-gate.sh": "43bce72d0da69e2eca2b63df3f7a5d83d7df8aa3345bd1414c75c63d5129b546",
       "scripts/dev/lite/run-playwright-mocked.sh": "0a20feb1edc0cc96d07506d08948669c22256f9427964f739e93dba754fc98c8",
+      "scripts/dev/lite/setup-architecture-icons.sh": "2815fdff0268fb6fec6a0440456a7ada7090d1fe3a0e1d1ddafaf324a2c39e94",
       "scripts/dev/lite/setup-check.sh": "ec8e18dd798bccef6094e562cd357cd6447a43f883537b1b7e4dac84d0238485",
       "scripts/dev/lite/setup-documentation-tools.sh": "05cedf7464b691b84bcf4c898e07749db348cfd6da7c60dc171a45bfbd6d2846",
       "scripts/dev/lite/setup-system.sh": "508e775c78b4c328b65b303e9e0989e315b2f1d23f76f53c656252c2ac1942c2",

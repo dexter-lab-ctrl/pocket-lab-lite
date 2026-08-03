@@ -1,0 +1,80 @@
+digraph command_reconciliation {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Command acknowledgement and reconciliation",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "api-domain-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Fleet, Apps, Security, Recovery, and Release APIs</B></FONT><BR/><FONT POINT-SIZE="9">Exposes domain-specific read and command endpoints while preserving backend-owned lif...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Fleet, Apps, Security, Recovery, and Release APIs. Exposes domain-specific read and command endpoints while preserving backend-owned lifecycle execution.", URL="../../../../generated/production/architecture/components/api-domain-surfaces/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app current/action lifecycle and workflow command/current/event state.</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
+  }
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "agent-command-executor" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Device command executor</B></FONT><BR/><FONT POINT-SIZE="9">Executes approved device commands in the node agent and publishes truthful results.</FONT><BR/><FONT POINT-SIZE="8">Node agent</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Device command executor. Executes approved device commands in the node agent and publishes truthful results.", URL="../../../../generated/production/architecture/components/agent-command-executor/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "nats-jetstream" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>NATS / JetStream</B></FONT><BR/><FONT POINT-SIZE="9">Provides the command and event backbone with durable delivery; it is never contacted...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="NATS / JetStream. Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.", URL="../../../../generated/production/architecture/components/nats-jetstream/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+    "command-lifecycle" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Command admission and lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, and dea...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Command admission and lifecycle. Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, and dead-letter behavior independently from device lifecycle.", URL="../../../../generated/production/architecture/components/command-lifecycle/", target="_top"];
+    "bounded-reconciliation" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Bounded queues and reconciliation</B></FONT><BR/><FONT POINT-SIZE="9">Bounds admission, coalesces low-value work, reconciles queue depth, and prevents unre...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker processes</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Bounded queues and reconciliation. Bounds admission, coalesces low-value work, reconciles queue depth, and prevents unrelated lifecycle deletion.", URL="../../../../generated/production/architecture/components/bounded-reconciliation/", target="_top"];
+    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and completion evidence for commands, devices, apps, secu...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
+  }
+  "nats-jetstream" -> "agent-command-executor" [label="delivers device command", tooltip="delivers device command (NATS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "api-domain-surfaces" -> "nats-jetstream" [label="publishes validated command", tooltip="publishes validated command (NATS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "command-lifecycle" -> "completion-evidence" [label="records sanitized lifecycle", tooltip="records sanitized lifecycle (SQLite/NATS)", style="dotted", arrowhead="normal", color="#c4b5fd", fontcolor="#c4b5fd"];
+  "agent-command-executor" -> "completion-evidence" [label="records sanitized lifecycle", tooltip="records sanitized lifecycle (SQLite/NATS)", style="dotted", arrowhead="normal", color="#c4b5fd", fontcolor="#c4b5fd"];
+  "nats-jetstream" -> "worker" [label="durable delivery", tooltip="durable delivery (JetStream)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "worker" -> "command-lifecycle" [label="claims and updates", tooltip="claims and updates (SQLite/NATS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+}

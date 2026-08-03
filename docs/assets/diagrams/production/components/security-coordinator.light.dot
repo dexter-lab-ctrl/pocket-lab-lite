@@ -1,0 +1,71 @@
+digraph component_security_coordinator {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Security scan coordinator connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "security-coordinator" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security scan coordinator</B></FONT><BR/><FONT POINT-SIZE="9">Validates Quick, Full, and App Check requests, tracks active runs, and exposes compac...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled,bold", fillcolor="#e0e7ff", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Security scan coordinator. Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.", URL="../../../../generated/production/architecture/components/security-coordinator/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "security-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security findings and run state</B></FONT><BR/><FONT POINT-SIZE="9">Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">SQLite and compact sanitized files</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Security findings and run state. Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidence references.", URL="../../../../generated/production/architecture/components/security-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "scanner-adapters" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lynis and Trivy scanner adapters</B></FONT><BR/><FONT POINT-SIZE="9">Run bounded backend-owned scanners with target-aware exclusions and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">Security worker subprocesses</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Lynis and Trivy scanner adapters. Run bounded backend-owned scanners with target-aware exclusions and sanitized evidence; the browser never executes scanners.", URL="../../../../generated/production/architecture/components/scanner-adapters/", target="_top"];
+    "security-profiles" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Quick, Full, and App safety checks</B></FONT><BR/><FONT POINT-SIZE="9">Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, a...</FONT><BR/><FONT POINT-SIZE="8">Security worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Quick, Full, and App safety checks. Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, and truthful partial/failed states.", URL="../../../../generated/production/architecture/components/security-profiles/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+  }
+  "security-coordinator" -> "security-profiles" [label="selects Quick/Full/App", tooltip="selects Quick/Full/App (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "security-coordinator" -> "scanner-adapters" [label="runs bounded plan", tooltip="runs bounded plan (Subprocess)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "security-coordinator" -> "security-state" [label="updates scan state", tooltip="updates scan state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "worker" -> "security-coordinator" [label="runs security work", tooltip="runs security work (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "state_dependency_0" [label="security_scan_runs", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "security-coordinator" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "additional_dependencies" [label="Additional dependencies (1)", shape="note", style="dashed,filled", fillcolor="#f8fafc", color="#64748b", fontcolor="#172033", tooltip="Additional dependencies (1)"];
+  "security-coordinator" -> "additional_dependencies" [style="dotted", arrowhead="none", color="#475569"];
+}

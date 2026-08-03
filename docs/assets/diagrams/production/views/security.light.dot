@@ -1,0 +1,86 @@
+digraph security {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Security and safety",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_browser" {
+    label="Browser trust boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "api-domain-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Fleet, Apps, Security, Recovery, and Release APIs</B></FONT><BR/><FONT POINT-SIZE="9">Exposes domain-specific read and command endpoints while preserving backend-owned lif...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Fleet, Apps, Security, Recovery, and Release APIs. Exposes domain-specific read and command endpoints while preserving backend-owned lifecycle execution.", URL="../../../../generated/production/architecture/components/api-domain-surfaces/", target="_top"];
+    "security-coordinator" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security scan coordinator</B></FONT><BR/><FONT POINT-SIZE="9">Validates Quick, Full, and App Check requests, tracks active runs, and exposes compac...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Security scan coordinator. Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.", URL="../../../../generated/production/architecture/components/security-coordinator/", target="_top"];
+    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health, readiness, diagnostics, and evidence APIs</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared projections, health/readiness, compact diagnostics,...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "security-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security findings and run state</B></FONT><BR/><FONT POINT-SIZE="9">Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">SQLite and compact sanitized files</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Security findings and run state. Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidence references.", URL="../../../../generated/production/architecture/components/security-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "nats-jetstream" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>NATS / JetStream</B></FONT><BR/><FONT POINT-SIZE="9">Provides the command and event backbone with durable delivery; it is never contacted...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="NATS / JetStream. Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.", URL="../../../../generated/production/architecture/components/nats-jetstream/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+    "security-profiles" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Quick, Full, and App safety checks</B></FONT><BR/><FONT POINT-SIZE="9">Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, a...</FONT><BR/><FONT POINT-SIZE="8">Security worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Quick, Full, and App safety checks. Defines bounded profile-specific targets, exclusions, timeouts, coverage summaries, and truthful partial/failed states.", URL="../../../../generated/production/architecture/components/security-profiles/", target="_top"];
+    "scanner-adapters" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lynis and Trivy scanner adapters</B></FONT><BR/><FONT POINT-SIZE="9">Run bounded backend-owned scanners with target-aware exclusions and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">Security worker subprocesses</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Lynis and Trivy scanner adapters. Run bounded backend-owned scanners with target-aware exclusions and sanitized evidence; the browser never executes scanners.", URL="../../../../generated/production/architecture/components/scanner-adapters/", target="_top"];
+    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and completion evidence for commands, devices, apps, secu...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
+  }
+  "api-domain-surfaces" -> "nats-jetstream" [label="publishes validated command", tooltip="publishes validated command (NATS)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "security-coordinator" -> "completion-evidence" [label="records sanitized lifecycle", tooltip="records sanitized lifecycle (SQLite/NATS)", style="dotted", arrowhead="normal", color="#7c3aed", fontcolor="#7c3aed"];
+  "completion-evidence" -> "api-read-surfaces" [label="sanitized lookup", tooltip="sanitized lookup (HTTP)", style="dotted", arrowhead="normal", color="#7c3aed", fontcolor="#7c3aed"];
+  "nats-jetstream" -> "worker" [label="durable delivery", tooltip="durable delivery (JetStream)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "security-profiles" -> "scanner-adapters" [label="defines targets/exclusions", tooltip="defines targets/exclusions (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "scanner-adapters" -> "security-state" [label="writes normalized results", tooltip="writes normalized results (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "security-coordinator" -> "security-profiles" [label="selects Quick/Full/App", tooltip="selects Quick/Full/App (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "security-coordinator" -> "scanner-adapters" [label="runs bounded plan", tooltip="runs bounded plan (Subprocess)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "security-coordinator" -> "security-state" [label="updates scan state", tooltip="updates scan state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "worker" -> "security-coordinator" [label="runs security work", tooltip="runs security work (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+}

@@ -113,6 +113,29 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py generate --section redaction'
 
+  lite:docs:architecture:icons:check:
+    desc: Verify pinned repository-owned architecture icons without network access
+    cmds:
+      - bash scripts/dev/lite/setup-architecture-icons.sh --check
+
+  lite:docs:architecture:generate:
+    desc: Generate Production architecture pages, catalogs, and light/dark Graphviz diagrams
+    deps: [lite:docs:architecture:icons:check]
+    cmds:
+      - '{{.PYTHON}} scripts/docs/graphviz/generate_lite_architecture.py generate'
+
+  lite:docs:architecture:validate:
+    desc: Validate canonical architecture metadata, sources, icons, links, and accessibility
+    deps: [lite:docs:architecture:icons:check]
+    cmds:
+      - '{{.PYTHON}} scripts/docs/graphviz/generate_lite_architecture.py validate'
+
+  lite:docs:architecture:check:
+    desc: Check Production architecture model and generated artifact drift
+    deps: [lite:docs:architecture:validate]
+    cmds:
+      - '{{.PYTHON}} scripts/docs/graphviz/generate_lite_architecture.py check'
+
   lite:docs:diagrams:generate:
     desc: Generate linked light and dark Graphviz architecture diagrams
     cmds:
@@ -163,6 +186,7 @@ tasks:
       - task: lite:docs:platform:generate
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate'
       - task: lite:docs:diagrams:generate
+      - task: lite:docs:architecture:generate
 
   lite:docs:check:
     desc: Strict combined documentation, schema, diagram, contract, safety, and MkDocs gate
@@ -174,6 +198,7 @@ tasks:
       - task: lite:docs:platform:check
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
       - task: lite:docs:diagrams:check
+      - task: lite:docs:architecture:check
       - '{{.PYTHON}} -m mkdocs build --strict'
 
   lite:test:docs:
