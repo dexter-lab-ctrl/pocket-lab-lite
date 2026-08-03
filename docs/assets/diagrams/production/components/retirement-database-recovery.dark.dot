@@ -1,0 +1,59 @@
+digraph component_retirement_database_recovery {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Explicit retirement and database recovery connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "checkpoints-retention" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Checkpoints and retention policy</B></FONT><BR/><FONT POINT-SIZE="9">Creates pre-change checkpoints and applies explicit bounded retention without silentl...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Checkpoints and retention policy. Creates pre-change checkpoints and applies explicit bounded retention without silently deleting current state.", URL="../../../../generated/production/architecture/components/checkpoints-retention/", target="_top"];
+    "retirement-database-recovery" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Explicit retirement and database recovery</B></FONT><BR/><FONT POINT-SIZE="9">Requires assessment and confirmation for device retirement and provides verified data...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Explicit retirement and database recovery. Requires assessment and confirmation for device retirement and provides verified database backup/preview/restore without coupling command cleanup to device deletion.", URL="../../../../generated/production/architecture/components/retirement-database-recovery/", target="_top"];
+  }
+  "retirement-database-recovery" -> "sqlite" [label="verified backup/restore", tooltip="verified backup/restore (SQLite/filesystem)", style="dashed", arrowhead="vee", color="#fbbf24", fontcolor="#fbbf24"];
+  "checkpoints-retention" -> "retirement-database-recovery" [label="provides recovery point", tooltip="provides recovery point (SQLite)", style="dashed", arrowhead="vee", color="#fbbf24", fontcolor="#fbbf24"];
+  "state_dependency_0" [label="device_removal_receipts", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "retirement-database-recovery" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_1" [label="security_database_backups", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "retirement-database-recovery" -> "state_dependency_1" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

@@ -1,0 +1,49 @@
+digraph component_checkpoints_retention {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Checkpoints and retention policy connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "checkpoints-retention" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Checkpoints and retention policy</B></FONT><BR/><FONT POINT-SIZE="9">Creates pre-change checkpoints and applies explicit bounded retention without silentl...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Checkpoints and retention policy. Creates pre-change checkpoints and applies explicit bounded retention without silently deleting current state.", URL="../../../../generated/production/architecture/components/checkpoints-retention/", target="_top"];
+    "restore-preview" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Restore preview and confirmed restore</B></FONT><BR/><FONT POINT-SIZE="9">Builds a non-destructive preview, requires explicit confirmation, creates a checkpoin...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Restore preview and confirmed restore. Builds a non-destructive preview, requires explicit confirmation, creates a checkpoint, applies restore, and validates health.", URL="../../../../generated/production/architecture/components/restore-preview/", target="_top"];
+    "retirement-database-recovery" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Explicit retirement and database recovery</B></FONT><BR/><FONT POINT-SIZE="9">Requires assessment and confirmation for device retirement and provides verified data...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Explicit retirement and database recovery. Requires assessment and confirmation for device retirement and provides verified database backup/preview/restore without coupling command cleanup to device deletion.", URL="../../../../generated/production/architecture/components/retirement-database-recovery/", target="_top"];
+  }
+  "restore-preview" -> "checkpoints-retention" [label="creates checkpoint before apply", tooltip="creates checkpoint before apply (NATS)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
+  "checkpoints-retention" -> "retirement-database-recovery" [label="provides recovery point", tooltip="provides recovery point (SQLite)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
+  "state_dependency_0" [label="recovery_operations", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "checkpoints-retention" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+}

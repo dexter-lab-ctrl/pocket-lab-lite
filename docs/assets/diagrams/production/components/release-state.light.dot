@@ -1,0 +1,69 @@
+digraph component_release_state {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Installed release and runtime state connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "release-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Installed release and runtime state</B></FONT><BR/><FONT POINT-SIZE="9">Stores installed-release identity and release-runtime projection for truthful compari...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#fef3c7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Installed release and runtime state. Stores installed-release identity and release-runtime projection for truthful comparison, staging, apply, rollback, and last-known-good state.", URL="../../../../generated/production/architecture/components/release-state/", target="_top"];
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "release-subprocess" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Release subprocess</B></FONT><BR/><FONT POINT-SIZE="9">Owns network, download, verification, staging, apply, and rollback work outside the F...</FONT><BR/><FONT POINT-SIZE="8">Dedicated subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Release subprocess. Owns network, download, verification, staging, apply, and rollback work outside the FastAPI event loop.", URL="../../../../generated/production/architecture/components/release-subprocess/", target="_top"];
+  }
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "post-switch-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Post-switch health validation</B></FONT><BR/><FONT POINT-SIZE="9">Validates Caddy/FastAPI/PWA health after promotion before declaring the release current.</FONT><BR/><FONT POINT-SIZE="8">Release subprocess against local services</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#fef2f2", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Post-switch health validation. Validates Caddy/FastAPI/PWA health after promotion before declaring the release current.", URL="../../../../generated/production/architecture/components/post-switch-health/", target="_top"];
+  }
+  "post-switch-health" -> "release-state" [label="mark current/failed", tooltip="mark current/failed (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "release-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "release-subprocess" -> "release-state" [label="updates release state", tooltip="updates release state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_0" [label="lite_installed_release_identity", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "release-state" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_1" [label="release_runtime_projection", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "release-state" -> "state_dependency_1" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+}

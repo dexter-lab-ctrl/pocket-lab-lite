@@ -1,0 +1,63 @@
+digraph component_media_app_health {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Media readiness and app health probes connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_application-container" {
+    label="Application-container boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "photoprism" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PhotoPrism</B></FONT><BR/><FONT POINT-SIZE="9">Provides the verified managed photo application under a same-origin Caddy path.</FONT><BR/><FONT POINT-SIZE="8">PROot Ubuntu on server host</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled", fillcolor="#701a75", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="PhotoPrism. Provides the verified managed photo application under a same-origin Caddy path.", URL="../../../../generated/production/architecture/components/photoprism/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "media-app-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Media readiness and app health probes</B></FONT><BR/><FONT POINT-SIZE="9">Verifies approved media mapping, base-path route health, and app readiness without sc...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled,bold", fillcolor="#7f1d1d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Media readiness and app health probes. Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.", URL="../../../../generated/production/architecture/components/media-app-health/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "app-lifecycle-worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App lifecycle worker</B></FONT><BR/><FONT POINT-SIZE="9">Owns install, repair, media import, backup, restore preview, update readiness/apply,...</FONT><BR/><FONT POINT-SIZE="8">pocket-worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App lifecycle worker. Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.", URL="../../../../generated/production/architecture/components/app-lifecycle-worker/", target="_top"];
+  }
+  "media-app-health" -> "photoprism" [label="base-path probe", tooltip="base-path probe (HTTP)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];
+  "app-lifecycle-worker" -> "media-app-health" [label="refreshes canonical readiness", tooltip="refreshes canonical readiness (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+}

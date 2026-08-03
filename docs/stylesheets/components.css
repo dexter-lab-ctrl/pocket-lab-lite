@@ -80,3 +80,29 @@
   color: inherit;
 }
 /* pocketlab-mobile-nav-title-contrast:end */
+
+/* Generated Production architecture diagrams and ownership catalog. */
+.md-typeset img[src*="/diagrams/production/"] {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46rem;
+  margin-inline: auto;
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-lg);
+  background: var(--md-default-bg-color);
+}
+.pl-architecture-table {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+.pl-architecture-table table {
+  min-width: 76rem;
+}
+@media screen and (max-width: 44.9844em) {
+  .md-typeset img[src*="/diagrams/production/"] {
+    max-height: none;
+    border-radius: var(--pl-radius-md);
+  }
+}

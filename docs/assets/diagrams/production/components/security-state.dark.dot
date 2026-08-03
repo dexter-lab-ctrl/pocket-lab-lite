@@ -1,0 +1,69 @@
+digraph component_security_state {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Security findings and run state connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "security-coordinator" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security scan coordinator</B></FONT><BR/><FONT POINT-SIZE="9">Validates Quick, Full, and App Check requests, tracks active runs, and exposes compac...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Security scan coordinator. Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.", URL="../../../../generated/production/architecture/components/security-coordinator/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "security-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Security findings and run state</B></FONT><BR/><FONT POINT-SIZE="9">Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">SQLite and compact sanitized files</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#78350f", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Security findings and run state. Stores scan runs, tools, progress, findings, profile snapshots, and sanitized evidence references.", URL="../../../../generated/production/architecture/components/security-state/", target="_top"];
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "scanner-adapters" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lynis and Trivy scanner adapters</B></FONT><BR/><FONT POINT-SIZE="9">Run bounded backend-owned scanners with target-aware exclusions and sanitized evidenc...</FONT><BR/><FONT POINT-SIZE="8">Security worker subprocesses</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Lynis and Trivy scanner adapters. Run bounded backend-owned scanners with target-aware exclusions and sanitized evidence; the browser never executes scanners.", URL="../../../../generated/production/architecture/components/scanner-adapters/", target="_top"];
+  }
+  "scanner-adapters" -> "security-state" [label="writes normalized results", tooltip="writes normalized results (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "security-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "security-coordinator" -> "security-state" [label="updates scan state", tooltip="updates scan state (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_0" [label="security_scan_runs", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "security-state" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_1" [label="security_scan_findings", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "security-state" -> "state_dependency_1" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

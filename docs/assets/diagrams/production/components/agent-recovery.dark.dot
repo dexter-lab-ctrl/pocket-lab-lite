@@ -1,0 +1,50 @@
+digraph component_agent_recovery {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Reconnect watchdog and supervisor recovery connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "agent-recovery" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Reconnect watchdog and supervisor recovery</B></FONT><BR/><FONT POINT-SIZE="9">Separates running-but-disconnected recovery from stopped-agent recovery and exposes t...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Reconnect watchdog and supervisor recovery. Separates running-but-disconnected recovery from stopped-agent recovery and exposes truthful guidance when no supervisor is available.", URL="../../../../generated/production/architecture/components/agent-recovery/", target="_top"];
+    "agent-supervisor" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite agent supervisor</B></FONT><BR/><FONT POINT-SIZE="9">Runs separately from the agent, reads the protected agent environment, and starts or...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Lite agent supervisor. Runs separately from the agent, reads the protected agent environment, and starts or restarts failed agents without overwriting identity.", URL="../../../../generated/production/architecture/components/agent-supervisor/", target="_top"];
+    "node-agent" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite node agent</B></FONT><BR/><FONT POINT-SIZE="9">Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and...</FONT><BR/><FONT POINT-SIZE="8">Server host or joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Lite node agent. Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.", URL="../../../../generated/production/architecture/components/node-agent/", target="_top"];
+  }
+  "node-agent" -> "agent-recovery" [label="connection state", tooltip="connection state (NATS)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];
+  "agent-recovery" -> "node-agent" [label="reconnect/restart", tooltip="reconnect/restart (NATS/process)", style="dashed", arrowhead="vee", color="#fbbf24", fontcolor="#fbbf24"];
+  "agent-supervisor" -> "agent-recovery" [label="stopped-agent recovery", tooltip="stopped-agent recovery (Local process)", style="dashed", arrowhead="vee", color="#fbbf24", fontcolor="#fbbf24"];
+  "state_dependency_0" [label="device_recovery_history", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "agent-recovery" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

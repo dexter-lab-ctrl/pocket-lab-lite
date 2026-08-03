@@ -1,0 +1,59 @@
+digraph component_app_recovery_update {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="App backup, restore preview, and update lifecycle connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "recovery-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup, restore, and checkpoint state</B></FONT><BR/><FONT POINT-SIZE="9">Stores backup manifests, recovery operations, current state, database backups/restore...</FONT><BR/><FONT POINT-SIZE="8">SQLite and repository-owned manifests</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Backup, restore, and checkpoint state. Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.", URL="../../../../generated/production/architecture/components/recovery-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "app-lifecycle-worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App lifecycle worker</B></FONT><BR/><FONT POINT-SIZE="9">Owns install, repair, media import, backup, restore preview, update readiness/apply,...</FONT><BR/><FONT POINT-SIZE="8">pocket-worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App lifecycle worker. Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.", URL="../../../../generated/production/architecture/components/app-lifecycle-worker/", target="_top"];
+    "app-recovery-update" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App backup, restore preview, and update lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Coordinates app backup, safe restore preview, update readiness/apply, verification, a...</FONT><BR/><FONT POINT-SIZE="8">Worker / release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="App backup, restore preview, and update lifecycle. Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.", URL="../../../../generated/production/architecture/components/app-recovery-update/", target="_top"];
+  }
+  "app-recovery-update" -> "recovery-state" [label="stores manifests/operations", tooltip="stores manifests/operations (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "app-lifecycle-worker" -> "app-recovery-update" [label="runs backup/update paths", tooltip="runs backup/update paths (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "state_dependency_0" [label="backup_manifest_index", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "app-recovery-update" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+  "state_dependency_1" [label="app_action_lifecycle", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "app-recovery-update" -> "state_dependency_1" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

@@ -1,0 +1,64 @@
+digraph component_node_agent {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Lite node agent connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "api-guards" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Identity, authentication, and invite guards</B></FONT><BR/><FONT POINT-SIZE="9">Applies identity guards, duplicate checks, protected-host checks, and fail-closed inv...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Identity, authentication, and invite guards. Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.", URL="../../../../generated/production/architecture/components/api-guards/", target="_top"];
+  }
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "agent-command-executor" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Device command executor</B></FONT><BR/><FONT POINT-SIZE="9">Executes approved device commands in the node agent and publishes truthful results.</FONT><BR/><FONT POINT-SIZE="8">Node agent</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Device command executor. Executes approved device commands in the node agent and publishes truthful results.", URL="../../../../generated/production/architecture/components/agent-command-executor/", target="_top"];
+    "agent-recovery" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Reconnect watchdog and supervisor recovery</B></FONT><BR/><FONT POINT-SIZE="9">Separates running-but-disconnected recovery from stopped-agent recovery and exposes t...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Reconnect watchdog and supervisor recovery. Separates running-but-disconnected recovery from stopped-agent recovery and exposes truthful guidance when no supervisor is available.", URL="../../../../generated/production/architecture/components/agent-recovery/", target="_top"];
+    "agent-signals" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Heartbeat, telemetry, and health publishers</B></FONT><BR/><FONT POINT-SIZE="9">Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopped, a...</FONT><BR/><FONT POINT-SIZE="8">Node agent</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Heartbeat, telemetry, and health publishers. Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopped, and Remote access not ready states.", URL="../../../../generated/production/architecture/components/agent-signals/", target="_top"];
+    "node-agent" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite node agent</B></FONT><BR/><FONT POINT-SIZE="9">Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and...</FONT><BR/><FONT POINT-SIZE="8">Server host or joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Lite node agent. Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.", URL="../../../../generated/production/architecture/components/node-agent/", target="_top"];
+  }
+  "node-agent" -> "agent-signals" [label="publishes", tooltip="publishes (NATS)", style="dashed", arrowhead="normal", color="#047857", fontcolor="#047857"];
+  "node-agent" -> "agent-recovery" [label="connection state", tooltip="connection state (NATS)", style="dashed", arrowhead="normal", color="#047857", fontcolor="#047857"];
+  "agent-command-executor" -> "node-agent" [label="executes within", tooltip="executes within (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "api-guards" -> "node-agent" [label="backend-generated bootstrap", tooltip="backend-generated bootstrap (Shell artifact)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "agent-recovery" -> "node-agent" [label="reconnect/restart", tooltip="reconnect/restart (NATS/process)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
+  "state_dependency_0" [label="~/.pocketlab-lite-agent.env (not documented with values)", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "node-agent" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "additional_dependencies" [label="Additional dependencies (1)", shape="note", style="dashed,filled", fillcolor="#f8fafc", color="#64748b", fontcolor="#172033", tooltip="Additional dependencies (1)"];
+  "node-agent" -> "additional_dependencies" [style="dotted", arrowhead="none", color="#475569"];
+}

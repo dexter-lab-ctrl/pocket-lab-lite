@@ -1,0 +1,55 @@
+digraph component_release_artifacts {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Date-based Lite tag, dist.zip, checksums, and release manifest connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_external-release" {
+    label="External release boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "github-release" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>GitHub Release</B></FONT><BR/><FONT POINT-SIZE="9">Publishes the verified Lite release manifest, checksums, and dist.zip assets for the...</FONT><BR/><FONT POINT-SIZE="8">GitHub</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled", fillcolor="#581c87", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="GitHub Release. Publishes the verified Lite release manifest, checksums, and dist.zip assets for the release subprocess.", URL="../../../../generated/production/architecture/components/github-release/", target="_top"];
+    "release-artifacts" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Date-based Lite tag, dist.zip, checksums, and release manifest</B></FONT><BR/><FONT POINT-SIZE="9">Defines immutable release identity and the exact assets required for a Lite installat...</FONT><BR/><FONT POINT-SIZE="8">GitHub Release / staging</FONT></TD></TR></TABLE>>, shape="note", style="rounded,filled,bold", fillcolor="#7c2d12", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Date-based Lite tag, dist.zip, checksums, and release manifest. Defines immutable release identity and the exact assets required for a Lite installation.", URL="../../../../generated/production/architecture/components/release-artifacts/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "release-staging" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Download staging and release verification</B></FONT><BR/><FONT POINT-SIZE="9">Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/asse...</FONT><BR/><FONT POINT-SIZE="8">Release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Download staging and release verification. Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/assets/checksums, and stages without touching the active PWA.", URL="../../../../generated/production/architecture/components/release-staging/", target="_top"];
+  }
+  "release-artifacts" -> "release-staging" [label="download and verify", tooltip="download and verify (HTTPS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "github-release" -> "release-artifacts" [label="publishes assets", tooltip="publishes assets (HTTPS)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+}

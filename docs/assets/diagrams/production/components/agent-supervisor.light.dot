@@ -1,0 +1,55 @@
+digraph component_agent_supervisor {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Lite agent supervisor connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "agent-recovery" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Reconnect watchdog and supervisor recovery</B></FONT><BR/><FONT POINT-SIZE="9">Separates running-but-disconnected recovery from stopped-agent recovery and exposes t...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Reconnect watchdog and supervisor recovery. Separates running-but-disconnected recovery from stopped-agent recovery and exposes truthful guidance when no supervisor is available.", URL="../../../../generated/production/architecture/components/agent-recovery/", target="_top"];
+    "agent-supervisor" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite agent supervisor</B></FONT><BR/><FONT POINT-SIZE="9">Runs separately from the agent, reads the protected agent environment, and starts or...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Lite agent supervisor. Runs separately from the agent, reads the protected agent environment, and starts or restarts failed agents without overwriting identity.", URL="../../../../generated/production/architecture/components/agent-supervisor/", target="_top"];
+  }
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "pm2" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PM2 process manager</B></FONT><BR/><FONT POINT-SIZE="9">Starts and supervises approved server-host and joined-device processes with bounded r...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined devices</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="PM2 process manager. Starts and supervises approved server-host and joined-device processes with bounded restart policies.", URL="../../../../generated/production/architecture/components/pm2/", target="_top"];
+  }
+  "pm2" -> "agent-supervisor" [label="starts/supervises", tooltip="starts/supervises (Local process)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
+  "agent-supervisor" -> "agent-recovery" [label="stopped-agent recovery", tooltip="stopped-agent recovery (Local process)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
+}

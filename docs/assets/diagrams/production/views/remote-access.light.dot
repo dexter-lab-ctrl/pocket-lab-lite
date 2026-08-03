@@ -1,0 +1,102 @@
+digraph remote_access {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Tailscale readiness",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_browser" {
+    label="Browser trust boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health, readiness, diagnostics, and evidence APIs</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared projections, health/readiness, compact diagnostics,...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
+    "remote-readiness" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Remote-access readiness checks</B></FONT><BR/><FONT POINT-SIZE="9">Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor...</FONT><BR/><FONT POINT-SIZE="8">FastAPI read surface</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#fef2f2", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Remote-access readiness checks. Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor status, and safe guidance.", URL="../../../../generated/production/architecture/components/remote-readiness/", target="_top"];
+  }
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "node-agent" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite node agent</B></FONT><BR/><FONT POINT-SIZE="9">Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and...</FONT><BR/><FONT POINT-SIZE="8">Server host or joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Lite node agent. Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.", URL="../../../../generated/production/architecture/components/node-agent/", target="_top"];
+    "agent-supervisor" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite agent supervisor</B></FONT><BR/><FONT POINT-SIZE="9">Runs separately from the agent, reads the protected agent environment, and starts or...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Lite agent supervisor. Runs separately from the agent, reads the protected agent environment, and starts or restarts failed agents without overwriting identity.", URL="../../../../generated/production/architecture/components/agent-supervisor/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "nats-jetstream" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>NATS / JetStream</B></FONT><BR/><FONT POINT-SIZE="9">Provides the command and event backbone with durable delivery; it is never contacted...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="NATS / JetStream. Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.", URL="../../../../generated/production/architecture/components/nats-jetstream/", target="_top"];
+  }
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "tailscaled" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>tailscaled daemon</B></FONT><BR/><FONT POINT-SIZE="9">Owns Tailscale networking; startup scripts may detect/start it safely while read APIs...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="tailscaled daemon. Owns Tailscale networking; startup scripts may detect/start it safely while read APIs remain side-effect-free.", URL="../../../../generated/production/architecture/components/tailscaled/", target="_top"];
+    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes /api/lite/* and managed app paths without exposing backend...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#ede9fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
+    "nats-listeners" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Primary and secondary NATS listeners</B></FONT><BR/><FONT POINT-SIZE="9">Exposes local and verified Tailnet-reachable NATS listeners for agents without hardco...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#cffafe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Primary and secondary NATS listeners. Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.", URL="../../../../generated/production/architecture/components/nats-listeners/", target="_top"];
+  }
+  subgraph "cluster_tailnet" {
+    label="Private network and Tailnet boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "tailscale" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Tailscale remote access</B></FONT><BR/><FONT POINT-SIZE="9">Provides private Tailnet connectivity and HTTPS identity without becoming a browser-h...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined devices</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#cffafe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Tailscale remote access. Provides private Tailnet connectivity and HTTPS identity without becoming a browser-held secret or control owner.", URL="../../../../generated/production/architecture/components/tailscale/", target="_top"];
+    "lan" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Local LAN</B></FONT><BR/><FONT POINT-SIZE="9">Provides local-device access to the same-origin Caddy endpoint without hardcoded addr...</FONT><BR/><FONT POINT-SIZE="8">Private local network</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#cffafe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Local LAN. Provides local-device access to the same-origin Caddy endpoint without hardcoded addresses.", URL="../../../../generated/production/architecture/components/lan/", target="_top"];
+  }
+  "lan" -> "caddy" [label="local HTTPS", tooltip="local HTTPS (HTTPS)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "nats-listeners" -> "nats-jetstream" [label="listener endpoints", tooltip="listener endpoints (NATS)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "pwa" -> "caddy" [label="same-origin request", tooltip="same-origin request (HTTPS)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "remote-readiness" -> "api-read-surfaces" [label="readiness summary", tooltip="readiness summary (HTTP)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "tailscaled" -> "remote-readiness" [label="daemon status", tooltip="daemon status (Local status)", style="dashed", arrowhead="normal", color="#047857", fontcolor="#047857"];
+  "nats-listeners" -> "remote-readiness" [label="listener reachability", tooltip="listener reachability (TCP)", style="dashed", arrowhead="normal", color="#047857", fontcolor="#047857"];
+  "tailscale" -> "caddy" [label="Tailnet HTTPS", tooltip="Tailnet HTTPS (HTTPS)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "tailscale" -> "nats-listeners" [label="Tailnet reachability", tooltip="Tailnet reachability (TCP)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "tailscaled" -> "tailscale" [label="provides interface", tooltip="provides interface (Tailscale)", style="dashed", arrowhead="normal", color="#047857", fontcolor="#047857"];
+}

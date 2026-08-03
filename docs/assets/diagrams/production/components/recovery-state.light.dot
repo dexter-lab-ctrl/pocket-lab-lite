@@ -1,0 +1,63 @@
+digraph component_recovery_state {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Backup, restore, and checkpoint state connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "recovery-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup, restore, and checkpoint state</B></FONT><BR/><FONT POINT-SIZE="9">Stores backup manifests, recovery operations, current state, database backups/restore...</FONT><BR/><FONT POINT-SIZE="8">SQLite and repository-owned manifests</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#fef3c7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Backup, restore, and checkpoint state. Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.", URL="../../../../generated/production/architecture/components/recovery-state/", target="_top"];
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "app-recovery-update" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App backup, restore preview, and update lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Coordinates app backup, safe restore preview, update readiness/apply, verification, a...</FONT><BR/><FONT POINT-SIZE="8">Worker / release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="App backup, restore preview, and update lifecycle. Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.", URL="../../../../generated/production/architecture/components/app-recovery-update/", target="_top"];
+    "backup-engine" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup and verification engine</B></FONT><BR/><FONT POINT-SIZE="9">Creates and verifies local encrypted backups through backend/worker-owned operations.</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Backup and verification engine. Creates and verifies local encrypted backups through backend/worker-owned operations.", URL="../../../../generated/production/architecture/components/backup-engine/", target="_top"];
+    "restore-preview" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Restore preview and confirmed restore</B></FONT><BR/><FONT POINT-SIZE="9">Builds a non-destructive preview, requires explicit confirmation, creates a checkpoin...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Restore preview and confirmed restore. Builds a non-destructive preview, requires explicit confirmation, creates a checkpoint, applies restore, and validates health.", URL="../../../../generated/production/architecture/components/restore-preview/", target="_top"];
+  }
+  "app-recovery-update" -> "recovery-state" [label="stores manifests/operations", tooltip="stores manifests/operations (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "recovery-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "backup-engine" -> "recovery-state" [label="updates backup state", tooltip="updates backup state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "restore-preview" -> "recovery-state" [label="updates restore state", tooltip="updates restore state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_0" [label="backup_manifest_index", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "recovery-state" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_1" [label="recovery_operations", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "recovery-state" -> "state_dependency_1" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+}

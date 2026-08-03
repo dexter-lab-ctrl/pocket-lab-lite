@@ -1,0 +1,73 @@
+digraph component_app_lifecycle_worker {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="App lifecycle worker connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "media-app-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Media readiness and app health probes</B></FONT><BR/><FONT POINT-SIZE="9">Verifies approved media mapping, base-path route health, and app readiness without sc...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#fef2f2", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Media readiness and app health probes. Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.", URL="../../../../generated/production/architecture/components/media-app-health/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app current/action lifecycle and workflow command/current/event state.</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "app-lifecycle-worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App lifecycle worker</B></FONT><BR/><FONT POINT-SIZE="9">Owns install, repair, media import, backup, restore preview, update readiness/apply,...</FONT><BR/><FONT POINT-SIZE="8">pocket-worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="App lifecycle worker. Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.", URL="../../../../generated/production/architecture/components/app-lifecycle-worker/", target="_top"];
+    "app-recovery-update" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App backup, restore preview, and update lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Coordinates app backup, safe restore preview, update readiness/apply, verification, a...</FONT><BR/><FONT POINT-SIZE="8">Worker / release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="App backup, restore preview, and update lifecycle. Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.", URL="../../../../generated/production/architecture/components/app-recovery-update/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+  }
+  "app-lifecycle-worker" -> "app-recovery-update" [label="runs backup/update paths", tooltip="runs backup/update paths (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "app-lifecycle-worker" -> "media-app-health" [label="refreshes canonical readiness", tooltip="refreshes canonical readiness (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "app-lifecycle-worker" -> "app-workflow-state" [label="updates app state", tooltip="updates app state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "worker" -> "app-lifecycle-worker" [label="runs app work", tooltip="runs app work (Python)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "state_dependency_0" [label="app_current_state", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "app-lifecycle-worker" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_1" [label="app_action_lifecycle", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "app-lifecycle-worker" -> "state_dependency_1" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+  "additional_dependencies" [label="Additional dependencies (1)", shape="note", style="dashed,filled", fillcolor="#f8fafc", color="#64748b", fontcolor="#172033", tooltip="Additional dependencies (1)"];
+  "app-lifecycle-worker" -> "additional_dependencies" [style="dotted", arrowhead="none", color="#475569"];
+}

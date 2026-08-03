@@ -1,0 +1,59 @@
+digraph component_restore_preview {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Restore preview and confirmed restore connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "recovery-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup, restore, and checkpoint state</B></FONT><BR/><FONT POINT-SIZE="9">Stores backup manifests, recovery operations, current state, database backups/restore...</FONT><BR/><FONT POINT-SIZE="8">SQLite and repository-owned manifests</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Backup, restore, and checkpoint state. Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.", URL="../../../../generated/production/architecture/components/recovery-state/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "backup-engine" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Backup and verification engine</B></FONT><BR/><FONT POINT-SIZE="9">Creates and verifies local encrypted backups through backend/worker-owned operations.</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Backup and verification engine. Creates and verifies local encrypted backups through backend/worker-owned operations.", URL="../../../../generated/production/architecture/components/backup-engine/", target="_top"];
+    "checkpoints-retention" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Checkpoints and retention policy</B></FONT><BR/><FONT POINT-SIZE="9">Creates pre-change checkpoints and applies explicit bounded retention without silentl...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Checkpoints and retention policy. Creates pre-change checkpoints and applies explicit bounded retention without silently deleting current state.", URL="../../../../generated/production/architecture/components/checkpoints-retention/", target="_top"];
+    "restore-preview" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Restore preview and confirmed restore</B></FONT><BR/><FONT POINT-SIZE="9">Builds a non-destructive preview, requires explicit confirmation, creates a checkpoin...</FONT><BR/><FONT POINT-SIZE="8">Recovery worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Restore preview and confirmed restore. Builds a non-destructive preview, requires explicit confirmation, creates a checkpoint, applies restore, and validates health.", URL="../../../../generated/production/architecture/components/restore-preview/", target="_top"];
+  }
+  "backup-engine" -> "restore-preview" [label="verified backup input", tooltip="verified backup input (Manifest)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "restore-preview" -> "checkpoints-retention" [label="creates checkpoint before apply", tooltip="creates checkpoint before apply (NATS)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
+  "restore-preview" -> "recovery-state" [label="updates restore state", tooltip="updates restore state (SQLite)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];
+  "state_dependency_0" [label="recovery_operations", shape="note", style="filled", fillcolor="#fef3c7", color="#64748b", fontcolor="#172033", tooltip="Durable-state dependency"];
+  "restore-preview" -> "state_dependency_0" [label="state", style="dotted", color="#2563eb", fontcolor="#2563eb"];
+}

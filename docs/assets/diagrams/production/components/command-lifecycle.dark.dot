@@ -1,0 +1,49 @@
+digraph component_command_lifecycle {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Command admission and lifecycle connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "command-lifecycle" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Command admission and lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, and dea...</FONT><BR/><FONT POINT-SIZE="8">FastAPI and worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Command admission and lifecycle. Tracks admission, queued, claimed, running, terminal, acknowledgement, retry, and dead-letter behavior independently from device lifecycle.", URL="../../../../generated/production/architecture/components/command-lifecycle/", target="_top"];
+    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and completion evidence for commands, devices, apps, secu...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+  }
+  "command-lifecycle" -> "completion-evidence" [label="records sanitized lifecycle", tooltip="records sanitized lifecycle (SQLite/NATS)", style="dotted", arrowhead="normal", color="#c4b5fd", fontcolor="#c4b5fd"];
+  "worker" -> "command-lifecycle" [label="claims and updates", tooltip="claims and updates (SQLite/NATS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "state_dependency_0" [label="command_lifecycle", shape="note", style="filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", tooltip="Durable-state dependency"];
+  "command-lifecycle" -> "state_dependency_0" [label="state", style="dotted", color="#60a5fa", fontcolor="#60a5fa"];
+}

@@ -1,0 +1,73 @@
+digraph component_nats_listeners {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#ffffff",
+    fontcolor="#172033",
+    fontname="Arial",
+    label="Primary and secondary NATS listeners connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#64748b",
+    fontcolor="#172033",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "remote-readiness" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Remote-access readiness checks</B></FONT><BR/><FONT POINT-SIZE="9">Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor...</FONT><BR/><FONT POINT-SIZE="8">FastAPI read surface</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#fef2f2", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Remote-access readiness checks. Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor status, and safe guidance.", URL="../../../../generated/production/architecture/components/remote-readiness/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "nats-jetstream" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>NATS / JetStream</B></FONT><BR/><FONT POINT-SIZE="9">Provides the command and event backbone with durable delivery; it is never contacted...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#fce7f3", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="NATS / JetStream. Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.", URL="../../../../generated/production/architecture/components/nats-jetstream/", target="_top"];
+  }
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "nats-listeners" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Primary and secondary NATS listeners</B></FONT><BR/><FONT POINT-SIZE="9">Exposes local and verified Tailnet-reachable NATS listeners for agents without hardco...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled,bold", fillcolor="#cffafe", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="Primary and secondary NATS listeners. Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.", URL="../../../../generated/production/architecture/components/nats-listeners/", target="_top"];
+  }
+  subgraph "cluster_tailnet" {
+    label="Private network and Tailnet boundary";
+    style="rounded,dashed,filled";
+    color="#94a3b8";
+    fillcolor="#f8fafc";
+    fontcolor="#172033";
+    penwidth="1.0";
+    "tailscale" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Tailscale remote access</B></FONT><BR/><FONT POINT-SIZE="9">Provides private Tailnet connectivity and HTTPS identity without becoming a browser-h...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined devices</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#cffafe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Tailscale remote access. Provides private Tailnet connectivity and HTTPS identity without becoming a browser-held secret or control owner.", URL="../../../../generated/production/architecture/components/tailscale/", target="_top"];
+  }
+  "nats-listeners" -> "nats-jetstream" [label="listener endpoints", tooltip="listener endpoints (NATS)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+  "nats-listeners" -> "remote-readiness" [label="listener reachability", tooltip="listener reachability (TCP)", style="dashed", arrowhead="normal", color="#047857", fontcolor="#047857"];
+  "tailscale" -> "nats-listeners" [label="Tailnet reachability", tooltip="Tailnet reachability (TCP)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
+}

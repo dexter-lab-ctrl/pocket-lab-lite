@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 8f8afc8abd2efd3a6fa02fae02e6d916c7afea569468f48225b6a7f96ab99c4e
+source_fingerprint: 62c526bcab11c9b6b994c86c58c10b3205edc38f170b753feb61829852873dd7
 schema_revision: 1
 validation_status: generated
 ---
@@ -39,6 +39,10 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:dev:status`
 - `lite:dev:up`
 - `lite:dev:worker`
+- `lite:docs:architecture:check`
+- `lite:docs:architecture:generate`
+- `lite:docs:architecture:icons:check`
+- `lite:docs:architecture:validate`
 - `lite:docs:bootstrap`
 - `lite:docs:capabilities`
 - `lite:docs:check`
@@ -104,13 +108,18 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 ## Task dependency graph
 
 - `lite:allure` → `lite:validation:evidence`
+- `lite:docs:architecture:check` → `lite:docs:architecture:validate`
+- `lite:docs:architecture:generate` → `lite:docs:architecture:icons:check`
+- `lite:docs:architecture:validate` → `lite:docs:architecture:icons:check`
 - `lite:docs:check` → `lite:contracts:check`
+- `lite:docs:check` → `lite:docs:architecture:check`
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
 - `lite:docs:check` → `lite:docs:platform:check`
 - `lite:docs:check` → `lite:docs:production:check`
 - `lite:docs:check` → `lite:docs:tools:check`
 - `lite:docs:generate` → `lite:contracts:generate`
+- `lite:docs:generate` → `lite:docs:architecture:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
 - `lite:docs:generate` → `lite:docs:platform:generate`

@@ -1,0 +1,22 @@
+{
+  "icon_ids": [
+    "generic-component",
+    "generic-ui",
+    "generic-service",
+    "generic-process",
+    "generic-database",
+    "generic-event",
+    "generic-network",
+    "generic-external",
+    "generic-decision"
+  ],
+  "licenses": {
+    "CC0-1.0": {
+      "attribution_required": false,
+      "name": "Creative Commons CC0 1.0 Universal",
+      "redistribution": "permitted",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    }
+  },
+  "schema_revision": 1
+}

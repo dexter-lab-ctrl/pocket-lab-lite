@@ -155,6 +155,81 @@ nav:
           - Release inventory: generated/development/release-inventory.md
   - Production:
       - Overview: generated/production/index.md
+      - Pocket Lab Lite Architecture:
+          - Architecture overview: generated/production/architecture/index.md
+          - Complete system map: generated/production/architecture/complete-system.md
+          - Request and control flow: generated/production/architecture/request-control.md
+          - Runtime and process topology: generated/production/architecture/runtime-topology.md
+          - Network and trust boundaries: generated/production/architecture/network-boundaries.md
+          - Data and projection architecture: generated/production/architecture/data-projections.md
+          - Device onboarding: generated/production/architecture/device-onboarding.md
+          - Devices and recovery: generated/production/architecture/device-recovery.md
+          - Apps and lifecycle: generated/production/architecture/apps.md
+          - Security and safety: generated/production/architecture/security.md
+          - Backup and restore: generated/production/architecture/backup-recovery.md
+          - Remote access: generated/production/architecture/remote-access.md
+          - Release and rollback: generated/production/architecture/release-rollback.md
+          - Frontend state ownership: generated/production/architecture/frontend-state.md
+          - Audit and evidence flow: generated/production/architecture/audit-evidence.md
+          - Command acknowledgement and reconciliation: generated/production/architecture/command-reconciliation.md
+          - Component catalog: generated/production/architecture/component-catalog.md
+          - Components:
+              - App backup, restore preview, and update lifecycle: generated/production/architecture/components/app-recovery-update.md
+              - App Catalog: generated/production/architecture/components/app-catalog.md
+              - App lifecycle worker: generated/production/architecture/components/app-lifecycle-worker.md
+              - App, command, and workflow state: generated/production/architecture/components/app-workflow-state.md
+              - Atomic PWA promotion: generated/production/architecture/components/atomic-promotion.md
+              - Audit index, projection refresh, prepared projections, and domain revisions: generated/production/architecture/components/prepared-state.md
+              - Backup and verification engine: generated/production/architecture/components/backup-engine.md
+              - Backup, restore, and checkpoint state: generated/production/architecture/components/recovery-state.md
+              - Bounded queues and reconciliation: generated/production/architecture/components/bounded-reconciliation.md
+              - Browser: generated/production/architecture/components/browser.md
+              - Caddy same-origin proxy: generated/production/architecture/components/caddy.md
+              - Checkpoints and retention policy: generated/production/architecture/components/checkpoints-retention.md
+              - Command admission and lifecycle: generated/production/architecture/components/command-lifecycle.md
+              - Completion and audit evidence: generated/production/architecture/components/completion-evidence.md
+              - Date-based Lite tag, dist.zip, checksums, and release manifest: generated/production/architecture/components/release-artifacts.md
+              - Device command executor: generated/production/architecture/components/agent-command-executor.md
+              - Download staging and release verification: generated/production/architecture/components/release-staging.md
+              - Enrollment and device lifecycle state: generated/production/architecture/components/device-state.md
+              - Explicit retirement and database recovery: generated/production/architecture/components/retirement-database-recovery.md
+              - FastAPI /api/lite/*: generated/production/architecture/components/lite-api.md
+              - Fleet, Apps, Security, Recovery, and Release APIs: generated/production/architecture/components/api-domain-surfaces.md
+              - Frontend state ownership: generated/production/architecture/components/frontend-state.md
+              - GitHub Release: generated/production/architecture/components/github-release.md
+              - GitHub repository: generated/production/architecture/components/github-repository.md
+              - Heartbeat, telemetry, and health publishers: generated/production/architecture/components/agent-signals.md
+              - Identity, authentication, and invite guards: generated/production/architecture/components/api-guards.md
+              - Installed release and runtime state: generated/production/architecture/components/release-state.md
+              - Invite and identity lifecycle: generated/production/architecture/components/invite-state.md
+              - Last-known-good state and rollback: generated/production/architecture/components/last-known-good.md
+              - Lite agent supervisor: generated/production/architecture/components/agent-supervisor.md
+              - Lite node agent: generated/production/architecture/components/node-agent.md
+              - Local LAN: generated/production/architecture/components/lan.md
+              - Lynis and Trivy scanner adapters: generated/production/architecture/components/scanner-adapters.md
+              - Media readiness and app health probes: generated/production/architecture/components/media-app-health.md
+              - NATS / JetStream: generated/production/architecture/components/nats-jetstream.md
+              - PhotoPrism: generated/production/architecture/components/photoprism.md
+              - PM2 process manager: generated/production/architecture/components/pm2.md
+              - Post-switch health validation: generated/production/architecture/components/post-switch-health.md
+              - Prepared read, health, readiness, diagnostics, and evidence APIs: generated/production/architecture/components/api-read-surfaces.md
+              - Primary and secondary NATS listeners: generated/production/architecture/components/nats-listeners.md
+              - Projection subprocesses: generated/production/architecture/components/projection-subprocesses.md
+              - PROot Ubuntu application container: generated/production/architecture/components/proot-ubuntu.md
+              - Quick, Full, and App safety checks: generated/production/architecture/components/security-profiles.md
+              - React / Vite PWA: generated/production/architecture/components/pwa.md
+              - Reconnect watchdog and supervisor recovery: generated/production/architecture/components/agent-recovery.md
+              - Release subprocess: generated/production/architecture/components/release-subprocess.md
+              - Remote-access readiness checks: generated/production/architecture/components/remote-readiness.md
+              - Restore preview and confirmed restore: generated/production/architecture/components/restore-preview.md
+              - Security findings and run state: generated/production/architecture/components/security-state.md
+              - Security scan coordinator: generated/production/architecture/components/security-coordinator.md
+              - SQLite control-plane store: generated/production/architecture/components/sqlite.md
+              - Tailscale remote access: generated/production/architecture/components/tailscale.md
+              - tailscaled daemon: generated/production/architecture/components/tailscaled.md
+              - User: generated/production/architecture/components/user.md
+              - Worker process: generated/production/architecture/components/worker.md
+              - Workflow execution: generated/production/architecture/components/workflow-execution.md
       - Install and access:
           - Installation: generated/production/installation.md
           - Upgrade and release verification: generated/production/upgrade.md

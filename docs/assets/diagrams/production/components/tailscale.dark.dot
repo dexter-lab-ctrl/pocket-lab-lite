@@ -1,0 +1,57 @@
+digraph component_tailscale {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Tailscale remote access connections",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes /api/lite/* and managed app paths without exposing backend...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#4c1d95", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
+    "nats-listeners" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Primary and secondary NATS listeners</B></FONT><BR/><FONT POINT-SIZE="9">Exposes local and verified Tailnet-reachable NATS listeners for agents without hardco...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#155e75", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Primary and secondary NATS listeners. Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.", URL="../../../../generated/production/architecture/components/nats-listeners/", target="_top"];
+    "tailscaled" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>tailscaled daemon</B></FONT><BR/><FONT POINT-SIZE="9">Owns Tailscale networking; startup scripts may detect/start it safely while read APIs...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="tailscaled daemon. Owns Tailscale networking; startup scripts may detect/start it safely while read APIs remain side-effect-free.", URL="../../../../generated/production/architecture/components/tailscaled/", target="_top"];
+  }
+  subgraph "cluster_tailnet" {
+    label="Private network and Tailnet boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "tailscale" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Tailscale remote access</B></FONT><BR/><FONT POINT-SIZE="9">Provides private Tailnet connectivity and HTTPS identity without becoming a browser-h...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined devices</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled,bold", fillcolor="#155e75", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Tailscale remote access. Provides private Tailnet connectivity and HTTPS identity without becoming a browser-held secret or control owner.", URL="../../../../generated/production/architecture/components/tailscale/", target="_top"];
+  }
+  "tailscale" -> "caddy" [label="Tailnet HTTPS", tooltip="Tailnet HTTPS (HTTPS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "tailscale" -> "nats-listeners" [label="Tailnet reachability", tooltip="Tailnet reachability (TCP)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "tailscaled" -> "tailscale" [label="provides interface", tooltip="provides interface (Tailscale)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];
+}

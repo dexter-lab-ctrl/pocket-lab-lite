@@ -43,7 +43,8 @@ jobs:
           task lite:docs:check
           PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q \
             tests/backend/test_lite_development_documentation_platform.py \
-            tests/backend/test_lite_complete_documentation_platform.py
+            tests/backend/test_lite_complete_documentation_platform.py \
+            tests/backend/test_lite_production_architecture_platform.py
       - name: Quick Lite gate and Storybook
         run: |
           task lite:check:quick

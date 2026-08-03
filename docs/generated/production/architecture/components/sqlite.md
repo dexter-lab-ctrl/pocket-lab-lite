@@ -1,0 +1,113 @@
+---
+title: "SQLite control-plane store"
+description: "Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly."
+audience: production
+status: verified
+generated: true
+generated_at: uncommitted
+generator: scripts/docs/graphviz/generate_lite_architecture.py
+source_fingerprint: 70e1e3dd1be588ab4eada0a05875282ebd5daa117f0b647e4f50d7977fccef16
+source_commit: uncommitted
+schema_revision: 1
+validation_status: generated
+---
+
+<div class="pl-page-meta"><span class="pl-status pl-status--verified">Source verified</span><span class="pl-status pl-status--patch-provided">Generated from one canonical model</span></div>
+
+# SQLite control-plane store
+
+Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.
+
+![SQLite control-plane store mini architecture](../../../../assets/diagrams/production/components/sqlite.light.svg#only-light)
+![SQLite control-plane store mini architecture](../../../../assets/diagrams/production/components/sqlite.dark.svg#only-dark)
+
+The mini diagram deterministically collapses **6** additional connections.
+
+
+## Ownership and placement
+
+| Field | Value |
+| --- | --- |
+| Category | database |
+| Runs on | Server host |
+| Started / runtime owner | FastAPI and workers |
+| Process owner | SQLite clients |
+| Execution owner | Lite control plane store |
+| Data owner | Pocket Lab Lite |
+| Recovery owner | Database backup/restore |
+| Security boundary | Durable-state boundary |
+| Supported platforms | Android/Termux, ARM64, Ubuntu, WSL2 development |
+| Verification | verified |
+
+## Inputs
+
+- Transactional lifecycle writes
+
+## Outputs
+
+- Canonical state
+- prepared reads
+
+## Protocols
+
+- SQLite
+
+## Durable state
+
+- all Lite tables
+
+## Health and readiness
+
+- PRAGMA quick_check
+- WAL pressure
+
+## Evidence
+
+- schema migrations
+- quick_check
+
+## Failure behavior
+
+- corruption
+- write contention
+
+## Recovery behavior
+
+- checkpoint
+- verified database restore
+
+## Connections
+
+### Incoming
+
+- App, command, and workflow state — stored in
+- Enrollment and device lifecycle state — stored in
+- Invite and identity lifecycle — stored in
+- FastAPI /api/lite/* — transactional read/write
+- Audit index, projection refresh, prepared projections, and domain revisions — stored in
+- Backup, restore, and checkpoint state — stored in
+- Installed release and runtime state — stored in
+- Security findings and run state — stored in
+- Explicit retirement and database recovery — verified backup/restore
+
+### Outgoing
+
+- None declared
+
+## Source verification
+
+- `contract` — `contracts/generated/lite-sqlite-schema.json`
+- `path` — `pocket-lab-final-structure/runtime/api_fastapi/services/lite_control_plane_store.py`
+
+## Existing documentation
+
+- [lite-sqlite-schema.md](../../../development/lite-sqlite-schema.md)
+
+## Related architecture views
+
+- [Backup and restore](../backup-recovery.md)
+- [Complete Pocket Lab Lite system map](../complete-system.md)
+- [Request and control flow](../request-control.md)
+- [SQLite and projection architecture](../data-projections.md)
+
+[Back to component catalog](../component-catalog.md) · [Architecture overview](../index.md)

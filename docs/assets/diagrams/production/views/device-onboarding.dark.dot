@@ -1,0 +1,103 @@
+digraph device_onboarding {
+  graph [
+    rankdir="LR",
+    splines="ortho",
+    compound="true",
+    newrank="true",
+    nodesep="0.38",
+    ranksep="0.72",
+    pad="0.25",
+    margin="0",
+    outputorder="edgesfirst",
+    bgcolor="#0f172a",
+    fontcolor="#f8fafc",
+    fontname="Arial",
+    label="Device onboarding",
+    labelloc="t",
+    fontsize="20"
+  ];
+  node [
+    fontname="Arial",
+    fontsize="10",
+    color="#94a3b8",
+    fontcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+  edge [
+    fontname="Arial",
+    fontsize="8",
+    color="#94a3b8",
+    fontcolor="#cbd5e1",
+    arrowsize="0.72",
+    penwidth="1.15"
+  ];
+  subgraph "cluster_browser" {
+    label="Browser trust boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#0c4a6e", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
+  }
+  subgraph "cluster_control-api" {
+    label="Control API boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "lite-api" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>FastAPI /api/lite/*</B></FONT><BR/><FONT POINT-SIZE="9">Validates requests, owns safe read APIs, admits commands, and never delegates browser...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="FastAPI /api/lite/*. Validates requests, owns safe read APIs, admits commands, and never delegates browser execution directly to NATS or shell.", URL="../../../../generated/production/architecture/components/lite-api/", target="_top"];
+    "api-guards" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Identity, authentication, and invite guards</B></FONT><BR/><FONT POINT-SIZE="9">Applies identity guards, duplicate checks, protected-host checks, and fail-closed inv...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Identity, authentication, and invite guards. Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.", URL="../../../../generated/production/architecture/components/api-guards/", target="_top"];
+  }
+  subgraph "cluster_durable-state" {
+    label="Durable-state boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "invite-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Invite and identity lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with d...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Invite and identity lifecycle. Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.", URL="../../../../generated/production/architecture/components/invite-state/", target="_top"];
+    "device-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Enrollment and device lifecycle state</B></FONT><BR/><FONT POINT-SIZE="9">Retains enrolled devices across connectivity loss and separates durable enrollment, c...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Enrollment and device lifecycle state. Retains enrolled devices across connectivity loss and separates durable enrollment, current state, health, supervisor state, and recovery history.", URL="../../../../generated/production/architecture/components/device-state/", target="_top"];
+  }
+  subgraph "cluster_managed-device" {
+    label="Managed-device boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "node-agent" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite node agent</B></FONT><BR/><FONT POINT-SIZE="9">Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and...</FONT><BR/><FONT POINT-SIZE="8">Server host or joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Lite node agent. Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.", URL="../../../../generated/production/architecture/components/node-agent/", target="_top"];
+    "agent-supervisor" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Lite agent supervisor</B></FONT><BR/><FONT POINT-SIZE="9">Runs separately from the agent, reads the protected agent environment, and starts or...</FONT><BR/><FONT POINT-SIZE="8">Joined device</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Lite agent supervisor. Runs separately from the agent, reads the protected agent environment, and starts or restarts failed agents without overwriting identity.", URL="../../../../generated/production/architecture/components/agent-supervisor/", target="_top"];
+    "agent-signals" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Heartbeat, telemetry, and health publishers</B></FONT><BR/><FONT POINT-SIZE="9">Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopped, a...</FONT><BR/><FONT POINT-SIZE="8">Node agent</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Heartbeat, telemetry, and health publishers. Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopped, and Remote access not ready states.", URL="../../../../generated/production/architecture/components/agent-signals/", target="_top"];
+  }
+  subgraph "cluster_messaging-execution" {
+    label="Messaging and execution boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "completion-evidence" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Completion and audit evidence</B></FONT><BR/><FONT POINT-SIZE="9">Records sanitized lifecycle and completion evidence for commands, devices, apps, secu...</FONT><BR/><FONT POINT-SIZE="8">Worker and FastAPI</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Completion and audit evidence. Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.", URL="../../../../generated/production/architecture/components/completion-evidence/", target="_top"];
+    "nats-jetstream" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>NATS / JetStream</B></FONT><BR/><FONT POINT-SIZE="9">Provides the command and event backbone with durable delivery; it is never contacted...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="parallelogram", style="rounded,filled", fillcolor="#831843", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="NATS / JetStream. Provides the command and event backbone with durable delivery; it is never contacted directly by the frontend.", URL="../../../../generated/production/architecture/components/nats-jetstream/", target="_top"];
+  }
+  subgraph "cluster_server-host" {
+    label="Server-host boundary";
+    style="rounded,dashed,filled";
+    color="#64748b";
+    fillcolor="#111827";
+    fontcolor="#f8fafc";
+    penwidth="1.0";
+    "pm2" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PM2 process manager</B></FONT><BR/><FONT POINT-SIZE="9">Starts and supervises approved server-host and joined-device processes with bounded r...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined devices</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="PM2 process manager. Starts and supervises approved server-host and joined-device processes with bounded restart policies.", URL="../../../../generated/production/architecture/components/pm2/", target="_top"];
+  }
+  "node-agent" -> "agent-signals" [label="publishes", tooltip="publishes (NATS)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];
+  "lite-api" -> "api-guards" [label="validates identity and intent", tooltip="validates identity and intent (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "api-guards" -> "node-agent" [label="backend-generated bootstrap", tooltip="backend-generated bootstrap (Shell artifact)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
+  "invite-state" -> "device-state" [label="accepted enrollment", tooltip="accepted enrollment (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "nats-jetstream" -> "device-state" [label="fleet events projected", tooltip="fleet events projected (NATS/SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "pm2" -> "node-agent" [label="starts/supervises", tooltip="starts/supervises (Local process)", style="dashed", arrowhead="vee", color="#fbbf24", fontcolor="#fbbf24"];
+  "pm2" -> "agent-supervisor" [label="starts/supervises", tooltip="starts/supervises (Local process)", style="dashed", arrowhead="vee", color="#fbbf24", fontcolor="#fbbf24"];
+  "agent-signals" -> "nats-jetstream" [label="heartbeat/telemetry/health", tooltip="heartbeat/telemetry/health (NATS)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];
+  "api-guards" -> "invite-state" [label="stores invite/identity state", tooltip="stores invite/identity state (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+  "agent-signals" -> "device-state" [label="updates device truth", tooltip="updates device truth (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
+}
