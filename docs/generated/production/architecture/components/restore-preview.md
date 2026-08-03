@@ -18,8 +18,15 @@ validation_status: generated
 
 Builds a non-destructive preview, requires explicit confirmation, creates a checkpoint, applies restore, and validates health.
 
-![Restore preview and confirmed restore mini architecture](../../../../assets/diagrams/production/components/restore-preview.light.svg#only-light)
-![Restore preview and confirmed restore mini architecture](../../../../assets/diagrams/production/components/restore-preview.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/restore-preview.light.svg" aria-label="Open full-size Restore preview and confirmed restore mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/restore-preview.light.svg#only-light" alt="Restore preview and confirmed restore mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/restore-preview.dark.svg#only-dark" alt="Restore preview and confirmed restore mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Restore preview and confirmed restore mini architecture. <a href="../../../../../assets/diagrams/production/components/restore-preview.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

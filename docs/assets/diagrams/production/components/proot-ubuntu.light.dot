@@ -1,12 +1,13 @@
 digraph component_proot_ubuntu {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#ffffff",
@@ -38,8 +39,8 @@ digraph component_proot_ubuntu {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "photoprism" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PhotoPrism</B></FONT><BR/><FONT POINT-SIZE="9">Provides the verified managed photo application under a same-origin Caddy path.</FONT><BR/><FONT POINT-SIZE="8">PROot Ubuntu on server host</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled", fillcolor="#fae8ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="PhotoPrism. Provides the verified managed photo application under a same-origin Caddy path.", URL="../../../../generated/production/architecture/components/photoprism/", target="_top"];
-    "proot-ubuntu" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PROot Ubuntu application container</B></FONT><BR/><FONT POINT-SIZE="9">Hosts verified applications such as PhotoPrism without making documentation tooling o...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="PROot Ubuntu application container. Hosts verified applications such as PhotoPrism without making documentation tooling or the browser a runtime dependency.", URL="../../../../generated/production/architecture/components/proot-ubuntu/", target="_top"];
+    "photoprism" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PhotoPrism</B></FONT><BR/><FONT POINT-SIZE="9">Provides the verified managed<BR/>photo application under a<BR/>same-origin Caddy path.</FONT><BR/><FONT POINT-SIZE="8">PROot Ubuntu on server<BR/>host</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled", fillcolor="#fae8ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="PhotoPrism. Provides the verified managed photo application under a same-origin Caddy path.", URL="../../../../generated/production/architecture/components/photoprism/", target="_top"];
+    "proot-ubuntu" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PROot Ubuntu<BR/>application container</B></FONT><BR/><FONT POINT-SIZE="9">Hosts verified applications such<BR/>as PhotoPrism without making<BR/>documentation tooling or the...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#dcfce7", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="PROot Ubuntu application container. Hosts verified applications such as PhotoPrism without making documentation tooling or the browser a runtime dependency.", URL="../../../../generated/production/architecture/components/proot-ubuntu/", target="_top"];
   }
   subgraph "cluster_server-host" {
     label="Server-host boundary";
@@ -48,7 +49,7 @@ digraph component_proot_ubuntu {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "pm2" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PM2 process manager</B></FONT><BR/><FONT POINT-SIZE="9">Starts and supervises approved server-host and joined-device processes with bounded r...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined devices</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="PM2 process manager. Starts and supervises approved server-host and joined-device processes with bounded restart policies.", URL="../../../../generated/production/architecture/components/pm2/", target="_top"];
+    "pm2" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PM2 process manager</B></FONT><BR/><FONT POINT-SIZE="9">Starts and supervises approved<BR/>server-host and joined-device<BR/>processes with bounded restart...</FONT><BR/><FONT POINT-SIZE="8">Server host and joined<BR/>devices</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#dcfce7", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="PM2 process manager. Starts and supervises approved server-host and joined-device processes with bounded restart policies.", URL="../../../../generated/production/architecture/components/pm2/", target="_top"];
   }
   "pm2" -> "proot-ubuntu" [label="starts app process", tooltip="starts app process (Local process)", style="dashed", arrowhead="vee", color="#b45309", fontcolor="#b45309"];
   "proot-ubuntu" -> "photoprism" [label="hosts process", tooltip="hosts process (Local process)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];

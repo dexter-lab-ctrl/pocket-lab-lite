@@ -1,12 +1,13 @@
 digraph component_invite_state {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#0f172a",
@@ -38,7 +39,7 @@ digraph component_invite_state {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "api-guards" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Identity, authentication, and invite guards</B></FONT><BR/><FONT POINT-SIZE="9">Applies identity guards, duplicate checks, protected-host checks, and fail-closed inv...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Identity, authentication, and invite guards. Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.", URL="../../../../generated/production/architecture/components/api-guards/", target="_top"];
+    "api-guards" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Identity,<BR/>authentication, and...</B></FONT><BR/><FONT POINT-SIZE="9">Applies identity guards, duplicate<BR/>checks, protected-host checks, and<BR/>fail-closed invite/bootstrap...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Identity, authentication, and invite guards. Applies identity guards, duplicate checks, protected-host checks, and fail-closed invite/bootstrap acceptance.", URL="../../../../generated/production/architecture/components/api-guards/", target="_top"];
   }
   subgraph "cluster_durable-state" {
     label="Durable-state boundary";
@@ -47,9 +48,9 @@ digraph component_invite_state {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "device-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Enrollment and device lifecycle state</B></FONT><BR/><FONT POINT-SIZE="9">Retains enrolled devices across connectivity loss and separates durable enrollment, c...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Enrollment and device lifecycle state. Retains enrolled devices across connectivity loss and separates durable enrollment, current state, health, supervisor state, and recovery history.", URL="../../../../generated/production/architecture/components/device-state/", target="_top"];
-    "invite-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Invite and identity lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with d...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#78350f", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Invite and identity lifecycle. Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.", URL="../../../../generated/production/architecture/components/invite-state/", target="_top"];
-    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle state and prepared projections; the frontend never ac...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
+    "device-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Enrollment and device<BR/>lifecycle state</B></FONT><BR/><FONT POINT-SIZE="9">Retains enrolled devices across<BR/>connectivity loss and separates<BR/>durable enrollment, current state,...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Enrollment and device lifecycle state. Retains enrolled devices across connectivity loss and separates durable enrollment, current state, health, supervisor state, and recovery history.", URL="../../../../generated/production/architecture/components/device-state/", target="_top"];
+    "invite-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Invite and identity<BR/>lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Tracks pending, accepted, revoked,<BR/>blocked, and consumed<BR/>invite/identity state with...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled,bold", fillcolor="#78350f", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Invite and identity lifecycle. Tracks pending, accepted, revoked, blocked, and consumed invite/identity state with duplicate and mismatch guards.", URL="../../../../generated/production/architecture/components/invite-state/", target="_top"];
+    "sqlite" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>SQLite control-plane<BR/>store</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical Lite lifecycle<BR/>state and prepared projections;<BR/>the frontend never accesses it...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="SQLite control-plane store. Stores canonical Lite lifecycle state and prepared projections; the frontend never accesses it directly.", URL="../../../../generated/production/architecture/components/sqlite/", target="_top"];
   }
   "invite-state" -> "device-state" [label="accepted enrollment", tooltip="accepted enrollment (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
   "invite-state" -> "sqlite" [label="stored in", tooltip="stored in (SQLite)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];

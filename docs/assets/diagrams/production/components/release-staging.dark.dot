@@ -1,12 +1,13 @@
 digraph component_release_staging {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#0f172a",
@@ -38,7 +39,7 @@ digraph component_release_staging {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "release-artifacts" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Date-based Lite tag, dist.zip, checksums, and release manifest</B></FONT><BR/><FONT POINT-SIZE="9">Defines immutable release identity and the exact assets required for a Lite installat...</FONT><BR/><FONT POINT-SIZE="8">GitHub Release / staging</FONT></TD></TR></TABLE>>, shape="note", style="rounded,filled", fillcolor="#7c2d12", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Date-based Lite tag, dist.zip, checksums, and release manifest. Defines immutable release identity and the exact assets required for a Lite installation.", URL="../../../../generated/production/architecture/components/release-artifacts/", target="_top"];
+    "release-artifacts" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Date-based Lite tag,<BR/>dist.zip, checksums,...</B></FONT><BR/><FONT POINT-SIZE="9">Defines immutable release identity<BR/>and the exact assets required for<BR/>a Lite installation.</FONT><BR/><FONT POINT-SIZE="8">GitHub Release / staging</FONT></TD></TR></TABLE>>, shape="note", style="rounded,filled", fillcolor="#7c2d12", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Date-based Lite tag, dist.zip, checksums, and release manifest. Defines immutable release identity and the exact assets required for a Lite installation.", URL="../../../../generated/production/architecture/components/release-artifacts/", target="_top"];
   }
   subgraph "cluster_messaging-execution" {
     label="Messaging and execution boundary";
@@ -47,8 +48,8 @@ digraph component_release_staging {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "release-staging" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Download staging and release verification</B></FONT><BR/><FONT POINT-SIZE="9">Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/asse...</FONT><BR/><FONT POINT-SIZE="8">Release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Download staging and release verification. Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/assets/checksums, and stages without touching the active PWA.", URL="../../../../generated/production/architecture/components/release-staging/", target="_top"];
-    "release-subprocess" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Release subprocess</B></FONT><BR/><FONT POINT-SIZE="9">Owns network, download, verification, staging, apply, and rollback work outside the F...</FONT><BR/><FONT POINT-SIZE="8">Dedicated subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Release subprocess. Owns network, download, verification, staging, apply, and rollback work outside the FastAPI event loop.", URL="../../../../generated/production/architecture/components/release-subprocess/", target="_top"];
+    "release-staging" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Download staging and<BR/>release verification</B></FONT><BR/><FONT POINT-SIZE="9">Downloads on explicit/manual or<BR/>stable cadence, verifies<BR/>repository/tag/manifest/assets/checksums,...</FONT><BR/><FONT POINT-SIZE="8">Release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Download staging and release verification. Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/assets/checksums, and stages without touching the active PWA.", URL="../../../../generated/production/architecture/components/release-staging/", target="_top"];
+    "release-subprocess" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Release subprocess</B></FONT><BR/><FONT POINT-SIZE="9">Owns network, download,<BR/>verification, staging, apply, and<BR/>rollback work outside the FastAPI...</FONT><BR/><FONT POINT-SIZE="8">Dedicated subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Release subprocess. Owns network, download, verification, staging, apply, and rollback work outside the FastAPI event loop.", URL="../../../../generated/production/architecture/components/release-subprocess/", target="_top"];
   }
   "release-artifacts" -> "release-staging" [label="download and verify", tooltip="download and verify (HTTPS)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
   "release-staging" -> "release-subprocess" [label="verified stage", tooltip="verified stage (IPC/filesystem)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];

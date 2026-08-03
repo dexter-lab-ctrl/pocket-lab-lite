@@ -1,12 +1,13 @@
 digraph component_remote_readiness {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#0f172a",
@@ -38,8 +39,8 @@ digraph component_remote_readiness {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health, readiness, diagnostics, and evidence APIs</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared projections, health/readiness, compact diagnostics,...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
-    "remote-readiness" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Remote-access readiness checks</B></FONT><BR/><FONT POINT-SIZE="9">Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor...</FONT><BR/><FONT POINT-SIZE="8">FastAPI read surface</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled,bold", fillcolor="#7f1d1d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Remote-access readiness checks. Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor status, and safe guidance.", URL="../../../../generated/production/architecture/components/remote-readiness/", target="_top"];
+    "api-read-surfaces" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Prepared read, health,<BR/>readiness,...</B></FONT><BR/><FONT POINT-SIZE="9">Serves side-effect-free prepared<BR/>projections, health/readiness,<BR/>compact diagnostics, and sanitized...</FONT><BR/><FONT POINT-SIZE="8">FastAPI process</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#312e81", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Prepared read, health, readiness, diagnostics, and evidence APIs. Serves side-effect-free prepared projections, health/readiness, compact diagnostics, and sanitized evidence lookups.", URL="../../../../generated/production/architecture/components/api-read-surfaces/", target="_top"];
+    "remote-readiness" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Remote-access<BR/>readiness checks</B></FONT><BR/><FONT POINT-SIZE="9">Combines tailscaled state, Tailnet<BR/>IPv4, NATS listener reachability,<BR/>agent/supervisor status, and safe...</FONT><BR/><FONT POINT-SIZE="8">FastAPI read surface</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled,bold", fillcolor="#7f1d1d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="Remote-access readiness checks. Combines tailscaled state, Tailnet IPv4, NATS listener reachability, agent/supervisor status, and safe guidance.", URL="../../../../generated/production/architecture/components/remote-readiness/", target="_top"];
   }
   subgraph "cluster_server-host" {
     label="Server-host boundary";
@@ -48,8 +49,8 @@ digraph component_remote_readiness {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "nats-listeners" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Primary and secondary NATS listeners</B></FONT><BR/><FONT POINT-SIZE="9">Exposes local and verified Tailnet-reachable NATS listeners for agents without hardco...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#155e75", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Primary and secondary NATS listeners. Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.", URL="../../../../generated/production/architecture/components/nats-listeners/", target="_top"];
-    "tailscaled" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>tailscaled daemon</B></FONT><BR/><FONT POINT-SIZE="9">Owns Tailscale networking; startup scripts may detect/start it safely while read APIs...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="tailscaled daemon. Owns Tailscale networking; startup scripts may detect/start it safely while read APIs remain side-effect-free.", URL="../../../../generated/production/architecture/components/tailscaled/", target="_top"];
+    "nats-listeners" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Primary and secondary<BR/>NATS listeners</B></FONT><BR/><FONT POINT-SIZE="9">Exposes local and verified<BR/>Tailnet-reachable NATS listeners<BR/>for agents without hardcoding...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="hexagon", style="rounded,filled", fillcolor="#155e75", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Primary and secondary NATS listeners. Exposes local and verified Tailnet-reachable NATS listeners for agents without hardcoding credentials or addresses.", URL="../../../../generated/production/architecture/components/nats-listeners/", target="_top"];
+    "tailscaled" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>tailscaled daemon</B></FONT><BR/><FONT POINT-SIZE="9">Owns Tailscale networking; startup<BR/>scripts may detect/start it safely<BR/>while read APIs remain...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="tailscaled daemon. Owns Tailscale networking; startup scripts may detect/start it safely while read APIs remain side-effect-free.", URL="../../../../generated/production/architecture/components/tailscaled/", target="_top"];
   }
   "remote-readiness" -> "api-read-surfaces" [label="readiness summary", tooltip="readiness summary (HTTP)", style="solid", arrowhead="normal", color="#60a5fa", fontcolor="#60a5fa"];
   "tailscaled" -> "remote-readiness" [label="daemon status", tooltip="daemon status (Local status)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];

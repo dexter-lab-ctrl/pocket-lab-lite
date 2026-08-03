@@ -18,8 +18,15 @@ validation_status: generated
 
 Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.
 
-![Caddy same-origin proxy mini architecture](../../../../assets/diagrams/production/components/caddy.light.svg#only-light)
-![Caddy same-origin proxy mini architecture](../../../../assets/diagrams/production/components/caddy.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/caddy.light.svg" aria-label="Open full-size Caddy same-origin proxy mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/caddy.light.svg#only-light" alt="Caddy same-origin proxy mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/caddy.dark.svg#only-dark" alt="Caddy same-origin proxy mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Caddy same-origin proxy mini architecture. <a href="../../../../../assets/diagrams/production/components/caddy.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **1** additional connections.
 

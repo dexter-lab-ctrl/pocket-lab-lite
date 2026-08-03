@@ -18,8 +18,15 @@ validation_status: generated
 
 Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.
 
-![Media readiness and app health probes mini architecture](../../../../assets/diagrams/production/components/media-app-health.light.svg#only-light)
-![Media readiness and app health probes mini architecture](../../../../assets/diagrams/production/components/media-app-health.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/media-app-health.light.svg" aria-label="Open full-size Media readiness and app health probes mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/media-app-health.light.svg#only-light" alt="Media readiness and app health probes mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/media-app-health.dark.svg#only-dark" alt="Media readiness and app health probes mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Media readiness and app health probes mini architecture. <a href="../../../../../assets/diagrams/production/components/media-app-health.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

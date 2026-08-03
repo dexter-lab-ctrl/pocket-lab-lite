@@ -1,12 +1,13 @@
 digraph component_pwa {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#ffffff",
@@ -38,9 +39,9 @@ digraph component_pwa {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "browser" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Browser</B></FONT><BR/><FONT POINT-SIZE="9">Hosts the installed or web PWA and enforces browser-origin boundaries.</FONT><BR/><FONT POINT-SIZE="8">User device</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Browser. Hosts the installed or web PWA and enforces browser-origin boundaries.", URL="../../../../generated/production/architecture/components/browser/", target="_top"];
-    "frontend-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Frontend state ownership</B></FONT><BR/><FONT POINT-SIZE="9">Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state,...</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Frontend state ownership. Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state, XState guided flows, API client, error boundaries, and generated fixtures without owning backend truth.", URL="../../../../generated/production/architecture/components/frontend-state/", target="_top"];
-    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled,bold", fillcolor="#e0f2fe", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
+    "browser" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Browser</B></FONT><BR/><FONT POINT-SIZE="9">Hosts the installed or web PWA and<BR/>enforces browser-origin<BR/>boundaries.</FONT><BR/><FONT POINT-SIZE="8">User device</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Browser. Hosts the installed or web PWA and enforces browser-origin boundaries.", URL="../../../../generated/production/architecture/components/browser/", target="_top"];
+    "frontend-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Frontend state<BR/>ownership</B></FONT><BR/><FONT POINT-SIZE="9">Combines service worker, TanStack<BR/>Query, Dexie safe snapshots,<BR/>Zustand UI-only state, XState...</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0f2fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Frontend state ownership. Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state, XState guided flows, API client, error boundaries, and generated fixtures without owning backend truth.", URL="../../../../generated/production/architecture/components/frontend-state/", target="_top"];
+    "pwa" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>React / Vite PWA</B></FONT><BR/><FONT POINT-SIZE="9">Renders Lite screens and sends<BR/>same-origin requests only to<BR/>FastAPI through Caddy.</FONT><BR/><FONT POINT-SIZE="8">Browser / installed PWA</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled,bold", fillcolor="#e0f2fe", color="#172033", fontcolor="#172033", penwidth="2.2", tooltip="React / Vite PWA. Renders Lite screens and sends same-origin requests only to FastAPI through Caddy.", URL="../../../../generated/production/architecture/components/pwa/", target="_top"];
   }
   subgraph "cluster_control-api" {
     label="Control API boundary";
@@ -49,7 +50,7 @@ digraph component_pwa {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "app-catalog" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App Catalog</B></FONT><BR/><FONT POINT-SIZE="9">Presents backend-owned app lifecycle and safe action readiness, including same-origin...</FONT><BR/><FONT POINT-SIZE="8">PWA plus FastAPI prepared reads</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="App Catalog. Presents backend-owned app lifecycle and safe action readiness, including same-origin Open routes and Manage details.", URL="../../../../generated/production/architecture/components/app-catalog/", target="_top"];
+    "app-catalog" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App Catalog</B></FONT><BR/><FONT POINT-SIZE="9">Presents backend-owned app<BR/>lifecycle and safe action<BR/>readiness, including same-origin...</FONT><BR/><FONT POINT-SIZE="8">PWA plus FastAPI prepared<BR/>reads</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#e0e7ff", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="App Catalog. Presents backend-owned app lifecycle and safe action readiness, including same-origin Open routes and Manage details.", URL="../../../../generated/production/architecture/components/app-catalog/", target="_top"];
   }
   subgraph "cluster_server-host" {
     label="Server-host boundary";
@@ -58,7 +59,7 @@ digraph component_pwa {
     fillcolor="#f8fafc";
     fontcolor="#172033";
     penwidth="1.0";
-    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes /api/lite/* and managed app paths without exposing backend...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#ede9fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
+    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin<BR/>proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes<BR/>/api/lite/* and managed app paths<BR/>without exposing backend secrets.</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#ede9fe", color="#64748b", fontcolor="#172033", penwidth="1.15", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
   }
   "browser" -> "pwa" [label="loads and hosts", tooltip="loads and hosts (Browser runtime)", style="solid", arrowhead="normal", color="#475569", fontcolor="#475569"];
   "app-catalog" -> "pwa" [label="app cards and actions", tooltip="app cards and actions (HTTPS)", style="solid", arrowhead="normal", color="#2563eb", fontcolor="#2563eb"];

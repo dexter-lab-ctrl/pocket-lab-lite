@@ -18,8 +18,15 @@ validation_status: generated
 
 Lifecycle producers, sanitized evidence service, durable evidence index, compact lookups, and UI-safe summaries.
 
-![Audit and evidence flow](../../../assets/diagrams/production/views/audit-evidence.light.svg#only-light)
-![Audit and evidence flow](../../../assets/diagrams/production/views/audit-evidence.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/audit-evidence.light.svg" aria-label="Open full-size Audit and evidence flow">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/audit-evidence.light.svg#only-light" alt="Audit and evidence flow" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/audit-evidence.dark.svg#only-dark" alt="Audit and evidence flow" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Audit and evidence flow. <a href="../../../../assets/diagrams/production/views/audit-evidence.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

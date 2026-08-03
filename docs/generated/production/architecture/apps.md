@@ -18,8 +18,15 @@ validation_status: generated
 
 Catalog/action projections, same-origin PhotoPrism access, PROot runtime, worker-owned lifecycle, health/media readiness, backup, restore preview, and update lifecycle.
 
-![App Catalog lifecycle](../../../assets/diagrams/production/views/apps-lifecycle.light.svg#only-light)
-![App Catalog lifecycle](../../../assets/diagrams/production/views/apps-lifecycle.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/apps-lifecycle.light.svg" aria-label="Open full-size App Catalog lifecycle">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/apps-lifecycle.light.svg#only-light" alt="App Catalog lifecycle" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/apps-lifecycle.dark.svg#only-dark" alt="App Catalog lifecycle" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>App Catalog lifecycle. <a href="../../../../assets/diagrams/production/views/apps-lifecycle.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

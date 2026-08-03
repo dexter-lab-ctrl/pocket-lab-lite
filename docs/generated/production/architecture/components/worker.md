@@ -18,8 +18,15 @@ validation_status: generated
 
 Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.
 
-![Worker process mini architecture](../../../../assets/diagrams/production/components/worker.light.svg#only-light)
-![Worker process mini architecture](../../../../assets/diagrams/production/components/worker.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/worker.light.svg" aria-label="Open full-size Worker process mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/worker.light.svg#only-light" alt="Worker process mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/worker.dark.svg#only-dark" alt="Worker process mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Worker process mini architecture. <a href="../../../../../assets/diagrams/production/components/worker.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **3** additional connections.
 

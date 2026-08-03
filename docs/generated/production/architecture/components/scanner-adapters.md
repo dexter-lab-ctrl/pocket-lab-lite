@@ -18,8 +18,15 @@ validation_status: generated
 
 Run bounded backend-owned scanners with target-aware exclusions and sanitized evidence; the browser never executes scanners.
 
-![Lynis and Trivy scanner adapters mini architecture](../../../../assets/diagrams/production/components/scanner-adapters.light.svg#only-light)
-![Lynis and Trivy scanner adapters mini architecture](../../../../assets/diagrams/production/components/scanner-adapters.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/scanner-adapters.light.svg" aria-label="Open full-size Lynis and Trivy scanner adapters mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/scanner-adapters.light.svg#only-light" alt="Lynis and Trivy scanner adapters mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/scanner-adapters.dark.svg#only-dark" alt="Lynis and Trivy scanner adapters mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Lynis and Trivy scanner adapters mini architecture. <a href="../../../../../assets/diagrams/production/components/scanner-adapters.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

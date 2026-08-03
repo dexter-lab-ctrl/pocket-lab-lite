@@ -18,8 +18,15 @@ validation_status: generated
 
 Backend-owned invite creation, identity guards, bootstrap artifact, agent/supervisor start, and first heartbeat.
 
-![Device onboarding](../../../assets/diagrams/production/views/device-onboarding.light.svg#only-light)
-![Device onboarding](../../../assets/diagrams/production/views/device-onboarding.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/device-onboarding.light.svg" aria-label="Open full-size Device onboarding">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/device-onboarding.light.svg#only-light" alt="Device onboarding" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/device-onboarding.dark.svg#only-dark" alt="Device onboarding" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Device onboarding. <a href="../../../../assets/diagrams/production/views/device-onboarding.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

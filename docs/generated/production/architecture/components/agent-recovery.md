@@ -18,8 +18,15 @@ validation_status: generated
 
 Separates running-but-disconnected recovery from stopped-agent recovery and exposes truthful guidance when no supervisor is available.
 
-![Reconnect watchdog and supervisor recovery mini architecture](../../../../assets/diagrams/production/components/agent-recovery.light.svg#only-light)
-![Reconnect watchdog and supervisor recovery mini architecture](../../../../assets/diagrams/production/components/agent-recovery.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/agent-recovery.light.svg" aria-label="Open full-size Reconnect watchdog and supervisor recovery mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-recovery.light.svg#only-light" alt="Reconnect watchdog and supervisor recovery mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-recovery.dark.svg#only-dark" alt="Reconnect watchdog and supervisor recovery mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Reconnect watchdog and supervisor recovery mini architecture. <a href="../../../../../assets/diagrams/production/components/agent-recovery.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

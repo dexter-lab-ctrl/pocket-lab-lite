@@ -1,12 +1,13 @@
 digraph component_photoprism {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#0f172a",
@@ -38,8 +39,8 @@ digraph component_photoprism {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "photoprism" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PhotoPrism</B></FONT><BR/><FONT POINT-SIZE="9">Provides the verified managed photo application under a same-origin Caddy path.</FONT><BR/><FONT POINT-SIZE="8">PROot Ubuntu on server host</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled,bold", fillcolor="#701a75", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="PhotoPrism. Provides the verified managed photo application under a same-origin Caddy path.", URL="../../../../generated/production/architecture/components/photoprism/", target="_top"];
-    "proot-ubuntu" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PROot Ubuntu application container</B></FONT><BR/><FONT POINT-SIZE="9">Hosts verified applications such as PhotoPrism without making documentation tooling o...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="PROot Ubuntu application container. Hosts verified applications such as PhotoPrism without making documentation tooling or the browser a runtime dependency.", URL="../../../../generated/production/architecture/components/proot-ubuntu/", target="_top"];
+    "photoprism" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PhotoPrism</B></FONT><BR/><FONT POINT-SIZE="9">Provides the verified managed<BR/>photo application under a<BR/>same-origin Caddy path.</FONT><BR/><FONT POINT-SIZE="8">PROot Ubuntu on server<BR/>host</FONT></TD></TR></TABLE>>, shape="ellipse", style="rounded,filled,bold", fillcolor="#701a75", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="PhotoPrism. Provides the verified managed photo application under a same-origin Caddy path.", URL="../../../../generated/production/architecture/components/photoprism/", target="_top"];
+    "proot-ubuntu" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>PROot Ubuntu<BR/>application container</B></FONT><BR/><FONT POINT-SIZE="9">Hosts verified applications such<BR/>as PhotoPrism without making<BR/>documentation tooling or the...</FONT><BR/><FONT POINT-SIZE="8">Android/Termux server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="PROot Ubuntu application container. Hosts verified applications such as PhotoPrism without making documentation tooling or the browser a runtime dependency.", URL="../../../../generated/production/architecture/components/proot-ubuntu/", target="_top"];
   }
   subgraph "cluster_control-api" {
     label="Control API boundary";
@@ -48,7 +49,7 @@ digraph component_photoprism {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "media-app-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Media readiness and app health probes</B></FONT><BR/><FONT POINT-SIZE="9">Verifies approved media mapping, base-path route health, and app readiness without sc...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#7f1d1d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Media readiness and app health probes. Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.", URL="../../../../generated/production/architecture/components/media-app-health/", target="_top"];
+    "media-app-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Media readiness and<BR/>app health probes</B></FONT><BR/><FONT POINT-SIZE="9">Verifies approved media mapping,<BR/>base-path route health, and app<BR/>readiness without scanning or...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#7f1d1d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Media readiness and app health probes. Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.", URL="../../../../generated/production/architecture/components/media-app-health/", target="_top"];
   }
   subgraph "cluster_server-host" {
     label="Server-host boundary";
@@ -57,7 +58,7 @@ digraph component_photoprism {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes /api/lite/* and managed app paths without exposing backend...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#4c1d95", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
+    "caddy" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Caddy same-origin<BR/>proxy</B></FONT><BR/><FONT POINT-SIZE="9">Serves the PWA and routes<BR/>/api/lite/* and managed app paths<BR/>without exposing backend secrets.</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="box", style="rounded,filled", fillcolor="#4c1d95", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Caddy same-origin proxy. Serves the PWA and routes /api/lite/* and managed app paths without exposing backend secrets.", URL="../../../../generated/production/architecture/components/caddy/", target="_top"];
   }
   "media-app-health" -> "photoprism" [label="base-path probe", tooltip="base-path probe (HTTP)", style="dashed", arrowhead="normal", color="#6ee7b7", fontcolor="#6ee7b7"];
   "caddy" -> "photoprism" [label="same-origin /apps path", tooltip="same-origin /apps path (HTTP)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];

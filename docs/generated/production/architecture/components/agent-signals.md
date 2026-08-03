@@ -18,8 +18,15 @@ validation_status: generated
 
 Publish fresh runtime signals used to derive Online, Offline, Stale, Agent stopped, and Remote access not ready states.
 
-![Heartbeat, telemetry, and health publishers mini architecture](../../../../assets/diagrams/production/components/agent-signals.light.svg#only-light)
-![Heartbeat, telemetry, and health publishers mini architecture](../../../../assets/diagrams/production/components/agent-signals.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/agent-signals.light.svg" aria-label="Open full-size Heartbeat, telemetry, and health publishers mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-signals.light.svg#only-light" alt="Heartbeat, telemetry, and health publishers mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-signals.dark.svg#only-dark" alt="Heartbeat, telemetry, and health publishers mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Heartbeat, telemetry, and health publishers mini architecture. <a href="../../../../../assets/diagrams/production/components/agent-signals.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

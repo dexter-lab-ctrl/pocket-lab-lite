@@ -199,8 +199,28 @@ def test_graphviz_light_dark_rendering_is_stable_accessible_and_local_only():
         assert '<desc id="' in svg
         assert 'role="img"' in svg
         assert '<image href="../icons/' in svg
+        assert 'preserveAspectRatio="xMidYMid meet"' in svg
+        assert 'width="100%"' in svg
+        assert 'height="auto"' in svg
         assert not re.search(r'(?:src|href|xlink:href)=["\'](?:https?:)?//', svg, re.I)
 
+
+
+def test_architecture_presentation_is_responsive_and_density_aware():
+    pages = (ROOT / "scripts/docs/graphviz/architecture_pages.py").read_text(encoding="utf-8")
+    css = (ROOT / "docs/stylesheets/components.css").read_text(encoding="utf-8")
+    renderer = (ROOT / "scripts/docs/graphviz/graphviz_renderer.py").read_text(encoding="utf-8")
+    assert 'pl-architecture-diagram pl-architecture-diagram--{kind}' in pages
+    assert 'kind = "component" if component else "system"' in pages
+    assert 'WIDE_DIAGRAMS' in pages
+    assert 'pl-architecture-diagram--wide' in css
+    assert 'View full-size diagram' in pages
+    assert 'overflow-x: auto' in css
+    assert 'object-fit: contain' in css
+    assert 'max-width: 72rem' in css
+    assert 'VERTICAL_VIEW_IDS' in renderer
+    assert 'ratio' in renderer and 'compress' in renderer
+    assert '_wrap_label' in renderer
 
 def test_unchanged_committed_svgs_do_not_require_graphviz(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(renderer_module.shutil, "which", lambda _name: None)

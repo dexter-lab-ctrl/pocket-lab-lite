@@ -18,8 +18,15 @@ validation_status: generated
 
 Bounds admission, coalesces low-value work, reconciles queue depth, and prevents unrelated lifecycle deletion.
 
-![Bounded queues and reconciliation mini architecture](../../../../assets/diagrams/production/components/bounded-reconciliation.light.svg#only-light)
-![Bounded queues and reconciliation mini architecture](../../../../assets/diagrams/production/components/bounded-reconciliation.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/bounded-reconciliation.light.svg" aria-label="Open full-size Bounded queues and reconciliation mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/bounded-reconciliation.light.svg#only-light" alt="Bounded queues and reconciliation mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/bounded-reconciliation.dark.svg#only-dark" alt="Bounded queues and reconciliation mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Bounded queues and reconciliation mini architecture. <a href="../../../../../assets/diagrams/production/components/bounded-reconciliation.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

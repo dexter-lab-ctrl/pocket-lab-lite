@@ -18,8 +18,15 @@ validation_status: generated
 
 Provides private Tailnet connectivity and HTTPS identity without becoming a browser-held secret or control owner.
 
-![Tailscale remote access mini architecture](../../../../assets/diagrams/production/components/tailscale.light.svg#only-light)
-![Tailscale remote access mini architecture](../../../../assets/diagrams/production/components/tailscale.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/tailscale.light.svg" aria-label="Open full-size Tailscale remote access mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/tailscale.light.svg#only-light" alt="Tailscale remote access mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/tailscale.dark.svg#only-dark" alt="Tailscale remote access mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Tailscale remote access mini architecture. <a href="../../../../../assets/diagrams/production/components/tailscale.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

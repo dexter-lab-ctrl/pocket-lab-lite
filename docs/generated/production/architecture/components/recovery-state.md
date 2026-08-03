@@ -18,8 +18,15 @@ validation_status: generated
 
 Stores backup manifests, recovery operations, current state, database backups/restores, and restore checkpoints.
 
-![Backup, restore, and checkpoint state mini architecture](../../../../assets/diagrams/production/components/recovery-state.light.svg#only-light)
-![Backup, restore, and checkpoint state mini architecture](../../../../assets/diagrams/production/components/recovery-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/recovery-state.light.svg" aria-label="Open full-size Backup, restore, and checkpoint state mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/recovery-state.light.svg#only-light" alt="Backup, restore, and checkpoint state mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/recovery-state.dark.svg#only-dark" alt="Backup, restore, and checkpoint state mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Backup, restore, and checkpoint state mini architecture. <a href="../../../../../assets/diagrams/production/components/recovery-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

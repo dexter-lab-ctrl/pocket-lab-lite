@@ -18,8 +18,15 @@ validation_status: generated
 
 Browser, same-origin server host, LAN, Tailnet, NATS listeners, joined device, application container, and external release boundaries.
 
-![Network and trust boundaries](../../../assets/diagrams/production/views/network-boundaries.light.svg#only-light)
-![Network and trust boundaries](../../../assets/diagrams/production/views/network-boundaries.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/network-boundaries.light.svg" aria-label="Open full-size Network and trust boundaries">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/network-boundaries.light.svg#only-light" alt="Network and trust boundaries" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/network-boundaries.dark.svg#only-dark" alt="Network and trust boundaries" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Network and trust boundaries. <a href="../../../../assets/diagrams/production/views/network-boundaries.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

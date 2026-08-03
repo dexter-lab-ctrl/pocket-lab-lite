@@ -18,8 +18,15 @@ validation_status: generated
 
 Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.
 
-![App backup, restore preview, and update lifecycle mini architecture](../../../../assets/diagrams/production/components/app-recovery-update.light.svg#only-light)
-![App backup, restore preview, and update lifecycle mini architecture](../../../../assets/diagrams/production/components/app-recovery-update.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/app-recovery-update.light.svg" aria-label="Open full-size App backup, restore preview, and update lifecycle mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/app-recovery-update.light.svg#only-light" alt="App backup, restore preview, and update lifecycle mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/app-recovery-update.dark.svg#only-dark" alt="App backup, restore preview, and update lifecycle mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>App backup, restore preview, and update lifecycle mini architecture. <a href="../../../../../assets/diagrams/production/components/app-recovery-update.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

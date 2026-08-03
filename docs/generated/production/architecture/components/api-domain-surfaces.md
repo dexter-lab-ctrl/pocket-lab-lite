@@ -18,8 +18,15 @@ validation_status: generated
 
 Exposes domain-specific read and command endpoints while preserving backend-owned lifecycle execution.
 
-![Fleet, Apps, Security, Recovery, and Release APIs mini architecture](../../../../assets/diagrams/production/components/api-domain-surfaces.light.svg#only-light)
-![Fleet, Apps, Security, Recovery, and Release APIs mini architecture](../../../../assets/diagrams/production/components/api-domain-surfaces.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/api-domain-surfaces.light.svg" aria-label="Open full-size Fleet, Apps, Security, Recovery, and Release APIs mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/api-domain-surfaces.light.svg#only-light" alt="Fleet, Apps, Security, Recovery, and Release APIs mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/api-domain-surfaces.dark.svg#only-dark" alt="Fleet, Apps, Security, Recovery, and Release APIs mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Fleet, Apps, Security, Recovery, and Release APIs mini architecture. <a href="../../../../../assets/diagrams/production/components/api-domain-surfaces.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

@@ -18,8 +18,15 @@ validation_status: generated
 
 Connects to NATS, publishes heartbeat/telemetry/health, handles device commands, and reconnects after outages.
 
-![Lite node agent mini architecture](../../../../assets/diagrams/production/components/node-agent.light.svg#only-light)
-![Lite node agent mini architecture](../../../../assets/diagrams/production/components/node-agent.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/node-agent.light.svg" aria-label="Open full-size Lite node agent mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/node-agent.light.svg#only-light" alt="Lite node agent mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/node-agent.dark.svg#only-dark" alt="Lite node agent mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Lite node agent mini architecture. <a href="../../../../../assets/diagrams/production/components/node-agent.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **1** additional connections.
 

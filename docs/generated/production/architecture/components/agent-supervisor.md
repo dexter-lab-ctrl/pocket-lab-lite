@@ -18,8 +18,15 @@ validation_status: generated
 
 Runs separately from the agent, reads the protected agent environment, and starts or restarts failed agents without overwriting identity.
 
-![Lite agent supervisor mini architecture](../../../../assets/diagrams/production/components/agent-supervisor.light.svg#only-light)
-![Lite agent supervisor mini architecture](../../../../assets/diagrams/production/components/agent-supervisor.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/agent-supervisor.light.svg" aria-label="Open full-size Lite agent supervisor mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-supervisor.light.svg#only-light" alt="Lite agent supervisor mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-supervisor.dark.svg#only-dark" alt="Lite agent supervisor mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Lite agent supervisor mini architecture. <a href="../../../../../assets/diagrams/production/components/agent-supervisor.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

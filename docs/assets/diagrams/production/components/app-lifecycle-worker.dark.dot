@@ -1,12 +1,13 @@
 digraph component_app_lifecycle_worker {
   graph [
-    rankdir="LR",
-    splines="ortho",
+    rankdir="TB",
+    splines="spline",
     compound="true",
     newrank="true",
-    nodesep="0.38",
-    ranksep="0.72",
-    pad="0.25",
+    nodesep="0.30",
+    ranksep="0.52",
+    ratio="compress",
+    pad="0.20",
     margin="0",
     outputorder="edgesfirst",
     bgcolor="#0f172a",
@@ -38,7 +39,7 @@ digraph component_app_lifecycle_worker {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "media-app-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Media readiness and app health probes</B></FONT><BR/><FONT POINT-SIZE="9">Verifies approved media mapping, base-path route health, and app readiness without sc...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#7f1d1d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Media readiness and app health probes. Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.", URL="../../../../generated/production/architecture/components/media-app-health/", target="_top"];
+    "media-app-health" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Media readiness and<BR/>app health probes</B></FONT><BR/><FONT POINT-SIZE="9">Verifies approved media mapping,<BR/>base-path route health, and app<BR/>readiness without scanning or...</FONT><BR/><FONT POINT-SIZE="8">FastAPI / worker</FONT></TD></TR></TABLE>>, shape="diamond", style="rounded,filled", fillcolor="#7f1d1d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Media readiness and app health probes. Verifies approved media mapping, base-path route health, and app readiness without scanning or exposing user media in documentation.", URL="../../../../generated/production/architecture/components/media-app-health/", target="_top"];
   }
   subgraph "cluster_durable-state" {
     label="Durable-state boundary";
@@ -47,7 +48,7 @@ digraph component_app_lifecycle_worker {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app current/action lifecycle and workflow command/current/event state.</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
+    "app-workflow-state" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App, command, and<BR/>workflow state</B></FONT><BR/><FONT POINT-SIZE="9">Stores canonical app<BR/>current/action lifecycle and<BR/>workflow command/current/event...</FONT><BR/><FONT POINT-SIZE="8">SQLite</FONT></TD></TR></TABLE>>, shape="cylinder", style="rounded,filled", fillcolor="#78350f", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App, command, and workflow state. Stores canonical app current/action lifecycle and workflow command/current/event state.", URL="../../../../generated/production/architecture/components/app-workflow-state/", target="_top"];
   }
   subgraph "cluster_messaging-execution" {
     label="Messaging and execution boundary";
@@ -56,9 +57,9 @@ digraph component_app_lifecycle_worker {
     fillcolor="#111827";
     fontcolor="#f8fafc";
     penwidth="1.0";
-    "app-lifecycle-worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App lifecycle worker</B></FONT><BR/><FONT POINT-SIZE="9">Owns install, repair, media import, backup, restore preview, update readiness/apply,...</FONT><BR/><FONT POINT-SIZE="8">pocket-worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="App lifecycle worker. Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.", URL="../../../../generated/production/architecture/components/app-lifecycle-worker/", target="_top"];
-    "app-recovery-update" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App backup, restore preview, and update lifecycle</B></FONT><BR/><FONT POINT-SIZE="9">Coordinates app backup, safe restore preview, update readiness/apply, verification, a...</FONT><BR/><FONT POINT-SIZE="8">Worker / release subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App backup, restore preview, and update lifecycle. Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.", URL="../../../../generated/production/architecture/components/app-recovery-update/", target="_top"];
-    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns backend execution for apps, security, recovery, re...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
+    "app-lifecycle-worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App lifecycle worker</B></FONT><BR/><FONT POINT-SIZE="9">Owns install, repair, media<BR/>import, backup, restore preview,<BR/>update readiness/apply, and...</FONT><BR/><FONT POINT-SIZE="8">pocket-worker</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled,bold", fillcolor="#14532d", color="#f8fafc", fontcolor="#f8fafc", penwidth="2.2", tooltip="App lifecycle worker. Owns install, repair, media import, backup, restore preview, update readiness/apply, and removal paths only where implemented and safe.", URL="../../../../generated/production/architecture/components/app-lifecycle-worker/", target="_top"];
+    "app-recovery-update" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>App backup, restore<BR/>preview, and update...</B></FONT><BR/><FONT POINT-SIZE="9">Coordinates app backup, safe<BR/>restore preview, update<BR/>readiness/apply, verification, and...</FONT><BR/><FONT POINT-SIZE="8">Worker / release<BR/>subprocess</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="App backup, restore preview, and update lifecycle. Coordinates app backup, safe restore preview, update readiness/apply, verification, and rollback gates without browser-owned execution.", URL="../../../../generated/production/architecture/components/app-recovery-update/", target="_top"];
+    "worker" [label=<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR><TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD><TD ALIGN="LEFT"><FONT POINT-SIZE="12"><B>Worker process</B></FONT><BR/><FONT POINT-SIZE="9">Consumes durable commands and owns<BR/>backend execution for apps,<BR/>security, recovery, releases, and...</FONT><BR/><FONT POINT-SIZE="8">Server host</FONT></TD></TR></TABLE>>, shape="component", style="rounded,filled", fillcolor="#14532d", color="#94a3b8", fontcolor="#f8fafc", penwidth="1.15", tooltip="Worker process. Consumes durable commands and owns backend execution for apps, security, recovery, releases, and lifecycle work.", URL="../../../../generated/production/architecture/components/worker/", target="_top"];
   }
   "app-lifecycle-worker" -> "app-recovery-update" [label="runs backup/update paths", tooltip="runs backup/update paths (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];
   "app-lifecycle-worker" -> "media-app-health" [label="refreshes canonical readiness", tooltip="refreshes canonical readiness (Python)", style="solid", arrowhead="normal", color="#cbd5e1", fontcolor="#cbd5e1"];

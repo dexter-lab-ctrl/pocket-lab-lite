@@ -18,8 +18,15 @@ validation_status: generated
 
 Repository tag and assets, verified staging, process-isolated apply, atomic PWA promotion, post-switch health, last-known-good state, and rollback.
 
-![Release subprocess and atomic rollback](../../../assets/diagrams/production/views/release-rollback.light.svg#only-light)
-![Release subprocess and atomic rollback](../../../assets/diagrams/production/views/release-rollback.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/release-rollback.light.svg" aria-label="Open full-size Release subprocess and atomic rollback">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/release-rollback.light.svg#only-light" alt="Release subprocess and atomic rollback" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/release-rollback.dark.svg#only-dark" alt="Release subprocess and atomic rollback" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Release subprocess and atomic rollback. <a href="../../../../assets/diagrams/production/views/release-rollback.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

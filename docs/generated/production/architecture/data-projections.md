@@ -18,8 +18,15 @@ validation_status: generated
 
 Canonical domain state, revision tracking, process-isolated projection work, prepared reads, and safe frontend snapshots.
 
-![SQLite and projection architecture](../../../assets/diagrams/production/views/data-projections.light.svg#only-light)
-![SQLite and projection architecture](../../../assets/diagrams/production/views/data-projections.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--system">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/data-projections.light.svg" aria-label="Open full-size SQLite and projection architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/data-projections.light.svg#only-light" alt="SQLite and projection architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/data-projections.dark.svg#only-dark" alt="SQLite and projection architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>SQLite and projection architecture. <a href="../../../../assets/diagrams/production/views/data-projections.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Components

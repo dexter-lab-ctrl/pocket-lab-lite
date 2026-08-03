@@ -18,8 +18,15 @@ validation_status: generated
 
 Provides the verified managed photo application under a same-origin Caddy path.
 
-![PhotoPrism mini architecture](../../../../assets/diagrams/production/components/photoprism.light.svg#only-light)
-![PhotoPrism mini architecture](../../../../assets/diagrams/production/components/photoprism.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/photoprism.light.svg" aria-label="Open full-size PhotoPrism mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/photoprism.light.svg#only-light" alt="PhotoPrism mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/photoprism.dark.svg#only-dark" alt="PhotoPrism mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>PhotoPrism mini architecture. <a href="../../../../../assets/diagrams/production/components/photoprism.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

@@ -18,8 +18,15 @@ validation_status: generated
 
 Indexes audit evidence and tracks dirty signals, generations, committed projections, current-state summaries, and semantic revisions.
 
-![Audit index, projection refresh, prepared projections, and domain revisions mini architecture](../../../../assets/diagrams/production/components/prepared-state.light.svg#only-light)
-![Audit index, projection refresh, prepared projections, and domain revisions mini architecture](../../../../assets/diagrams/production/components/prepared-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/prepared-state.light.svg" aria-label="Open full-size Audit index, projection refresh, prepared projections, and domain revisions mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/prepared-state.light.svg#only-light" alt="Audit index, projection refresh, prepared projections, and domain revisions mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/prepared-state.dark.svg#only-dark" alt="Audit index, projection refresh, prepared projections, and domain revisions mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Audit index, projection refresh, prepared projections, and domain revisions mini architecture. <a href="../../../../../assets/diagrams/production/components/prepared-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

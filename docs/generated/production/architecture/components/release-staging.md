@@ -18,8 +18,15 @@ validation_status: generated
 
 Downloads on explicit/manual or stable cadence, verifies repository/tag/manifest/assets/checksums, and stages without touching the active PWA.
 
-![Download staging and release verification mini architecture](../../../../assets/diagrams/production/components/release-staging.light.svg#only-light)
-![Download staging and release verification mini architecture](../../../../assets/diagrams/production/components/release-staging.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/release-staging.light.svg" aria-label="Open full-size Download staging and release verification mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-staging.light.svg#only-light" alt="Download staging and release verification mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-staging.dark.svg#only-dark" alt="Download staging and release verification mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Download staging and release verification mini architecture. <a href="../../../../../assets/diagrams/production/components/release-staging.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

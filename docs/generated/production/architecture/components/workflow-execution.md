@@ -18,8 +18,15 @@ validation_status: generated
 
 Coordinates multi-step workflow state through bounded event admission and process-isolated projection work.
 
-![Workflow execution mini architecture](../../../../assets/diagrams/production/components/workflow-execution.light.svg#only-light)
-![Workflow execution mini architecture](../../../../assets/diagrams/production/components/workflow-execution.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/workflow-execution.light.svg" aria-label="Open full-size Workflow execution mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/workflow-execution.light.svg#only-light" alt="Workflow execution mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/workflow-execution.dark.svg#only-dark" alt="Workflow execution mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Workflow execution mini architecture. <a href="../../../../../assets/diagrams/production/components/workflow-execution.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

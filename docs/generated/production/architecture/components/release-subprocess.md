@@ -18,8 +18,15 @@ validation_status: generated
 
 Owns network, download, verification, staging, apply, and rollback work outside the FastAPI event loop.
 
-![Release subprocess mini architecture](../../../../assets/diagrams/production/components/release-subprocess.light.svg#only-light)
-![Release subprocess mini architecture](../../../../assets/diagrams/production/components/release-subprocess.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/release-subprocess.light.svg" aria-label="Open full-size Release subprocess mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-subprocess.light.svg#only-light" alt="Release subprocess mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/release-subprocess.dark.svg#only-dark" alt="Release subprocess mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Release subprocess mini architecture. <a href="../../../../../assets/diagrams/production/components/release-subprocess.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

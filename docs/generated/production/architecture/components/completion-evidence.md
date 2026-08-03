@@ -18,8 +18,15 @@ validation_status: generated
 
 Records sanitized lifecycle and completion evidence for commands, devices, apps, security, recovery, and releases.
 
-![Completion and audit evidence mini architecture](../../../../assets/diagrams/production/components/completion-evidence.light.svg#only-light)
-![Completion and audit evidence mini architecture](../../../../assets/diagrams/production/components/completion-evidence.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/completion-evidence.light.svg" aria-label="Open full-size Completion and audit evidence mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/completion-evidence.light.svg#only-light" alt="Completion and audit evidence mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/completion-evidence.dark.svg#only-dark" alt="Completion and audit evidence mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Completion and audit evidence mini architecture. <a href="../../../../../assets/diagrams/production/components/completion-evidence.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 The mini diagram deterministically collapses **4** additional connections.
 

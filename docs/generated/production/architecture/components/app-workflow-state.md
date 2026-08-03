@@ -18,8 +18,15 @@ validation_status: generated
 
 Stores canonical app current/action lifecycle and workflow command/current/event state.
 
-![App, command, and workflow state mini architecture](../../../../assets/diagrams/production/components/app-workflow-state.light.svg#only-light)
-![App, command, and workflow state mini architecture](../../../../assets/diagrams/production/components/app-workflow-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/app-workflow-state.light.svg" aria-label="Open full-size App, command, and workflow state mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/app-workflow-state.light.svg#only-light" alt="App, command, and workflow state mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/app-workflow-state.dark.svg#only-dark" alt="App, command, and workflow state mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>App, command, and workflow state mini architecture. <a href="../../../../../assets/diagrams/production/components/app-workflow-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

@@ -18,8 +18,15 @@ validation_status: generated
 
 Executes approved device commands in the node agent and publishes truthful results.
 
-![Device command executor mini architecture](../../../../assets/diagrams/production/components/agent-command-executor.light.svg#only-light)
-![Device command executor mini architecture](../../../../assets/diagrams/production/components/agent-command-executor.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/agent-command-executor.light.svg" aria-label="Open full-size Device command executor mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-command-executor.light.svg#only-light" alt="Device command executor mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/agent-command-executor.dark.svg#only-dark" alt="Device command executor mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Device command executor mini architecture. <a href="../../../../../assets/diagrams/production/components/agent-command-executor.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement

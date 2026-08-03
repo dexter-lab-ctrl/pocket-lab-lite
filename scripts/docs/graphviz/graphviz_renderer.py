@@ -48,7 +48,49 @@ EDGE_STYLES = {
 }
 ABSOLUTE_PATH_PATTERN = re.compile(r"(?:/home/|/mnt/|/tmp/|/data/data/|[A-Za-z]:\\)")
 EXTERNAL_REFERENCE_PATTERN = re.compile(r'(?:href|xlink:href)=["\'](?:https?:)?//', re.I)
-SVG_RENDERER_REVISION = 2
+SVG_RENDERER_REVISION = 3
+
+VERTICAL_VIEW_IDS = {
+    "runtime-topology",
+    "network-boundaries",
+    "data-projections",
+    "frontend-state",
+    "security",
+    "backup-restore",
+}
+
+
+def _wrap_label(value: str, limit: int = 24, max_lines: int = 3) -> str:
+    """Wrap Graphviz labels without changing the source model text."""
+    words = value.split()
+    if not words:
+        return value
+    lines: list[str] = []
+    current: list[str] = []
+    for word in words:
+        candidate = " ".join([*current, word])
+        if current and len(candidate) > limit:
+            lines.append(" ".join(current))
+            current = [word]
+        else:
+            current.append(word)
+    if current:
+        lines.append(" ".join(current))
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+        lines[-1] = lines[-1].rstrip(" .") + "..."
+    return "\n".join(lines)
+
+
+def _layout_profile(graph_id: str, component_count: int, focus_id: str | None) -> dict[str, str]:
+    """Return bounded Graphviz spacing appropriate to the diagram's information density."""
+    if focus_id:
+        return {"rankdir": "TB", "nodesep": "0.30", "ranksep": "0.52", "ratio": "compress", "splines": "spline"}
+    if graph_id in VERTICAL_VIEW_IDS or component_count <= 7:
+        return {"rankdir": "TB", "nodesep": "0.34", "ranksep": "0.58", "ratio": "compress", "splines": "spline"}
+    if component_count >= 18:
+        return {"rankdir": "LR", "nodesep": "0.28", "ranksep": "0.54", "ratio": "compress", "splines": "ortho"}
+    return {"rankdir": "LR", "nodesep": "0.34", "ranksep": "0.64", "ratio": "compress", "splines": "ortho"}
 
 
 class GraphvizRenderError(RuntimeError):
@@ -70,10 +112,9 @@ def component_doc_url(component_id: str) -> str:
 def _node_label(
     component: dict[str, Any], icon: IconRecord | None, *, render_icons: bool
 ) -> str:
-    subtitle = component["runtime_location"]
-    responsibility = component["responsibility"]
-    if len(responsibility) > 88:
-        responsibility = responsibility[:85].rstrip() + "..."
+    subtitle = _wrap_label(component["runtime_location"], limit=26, max_lines=2)
+    responsibility = _wrap_label(component["responsibility"], limit=34, max_lines=3)
+    name = _wrap_label(component["name"], limit=22, max_lines=2)
     cells = []
     if icon:
         if render_icons:
@@ -85,9 +126,9 @@ def _node_label(
             cells.append('<TD FIXEDSIZE="TRUE" WIDTH="38" HEIGHT="38"> </TD>')
     cells.append(
         '<TD ALIGN="LEFT">'
-        f'<FONT POINT-SIZE="12"><B>{_html(component["name"])}</B></FONT><BR/>'
-        f'<FONT POINT-SIZE="9">{_html(responsibility)}</FONT><BR/>'
-        f'<FONT POINT-SIZE="8">{_html(subtitle)}</FONT>'
+        f'<FONT POINT-SIZE="12"><B>{_html(name).replace(chr(10), "<BR/>")}</B></FONT><BR/>'
+        f'<FONT POINT-SIZE="9">{_html(responsibility).replace(chr(10), "<BR/>")}</FONT><BR/>'
+        f'<FONT POINT-SIZE="8">{_html(subtitle).replace(chr(10), "<BR/>")}</FONT>'
         '</TD>'
     )
     return '<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR>' + "".join(cells) + "</TR></TABLE>>"
@@ -142,12 +183,14 @@ def dot_for_graph(
 ) -> str:
     theme = THEMES[theme_name]
     graph_name = re.sub(r"[^A-Za-z0-9_]", "_", graph_id)
+    layout = _layout_profile(graph_id, len(component_ids), focus_id)
     lines = [
         f"digraph {graph_name} {{",
         "  graph [",
-        '    rankdir="LR",', '    splines="ortho",', '    compound="true",',
-        '    newrank="true",', '    nodesep="0.38",', '    ranksep="0.72",',
-        '    pad="0.25",', '    margin="0",', '    outputorder="edgesfirst",',
+        f'    rankdir={q(layout["rankdir"])},', f'    splines={q(layout["splines"])},', '    compound="true",',
+        '    newrank="true",', f'    nodesep={q(layout["nodesep"])},',
+        f'    ranksep={q(layout["ranksep"])},', f'    ratio={q(layout["ratio"])},',
+        '    pad="0.20",', '    margin="0",', '    outputorder="edgesfirst",',
         f"    bgcolor={q(theme['background'])},", f"    fontcolor={q(theme['foreground'])},",
         '    fontname="Arial",', f"    label={q(title)},", '    labelloc="t",',
         '    fontsize="20"', "  ];",
@@ -296,8 +339,11 @@ def _normalize_svg(
     )
     safe_id = re.sub(r"[^a-z0-9-]", "-", graph_id.lower())
     svg_id = f"pocketlab-{safe_id}-{theme_name}"
+    svg = re.sub(r'\s(?:width|height)="[^"]*"', "", svg, count=2)
     svg = re.sub(
-        r"<svg\s+", f'<svg id="{svg_id}" role="img" aria-labelledby="{svg_id}-title {svg_id}-desc" ',
+        r"<svg\s+",
+        f'<svg id="{svg_id}" role="img" aria-labelledby="{svg_id}-title {svg_id}-desc" '
+        'width="100%" height="auto" preserveAspectRatio="xMidYMid meet" focusable="false" ',
         svg, count=1,
     )
     accessible = (

@@ -18,8 +18,15 @@ validation_status: generated
 
 Combines service worker, TanStack Query, Dexie safe snapshots, Zustand UI-only state, XState guided flows, API client, error boundaries, and generated fixtures without owning backend truth.
 
-![Frontend state ownership mini architecture](../../../../assets/diagrams/production/components/frontend-state.light.svg#only-light)
-![Frontend state ownership mini architecture](../../../../assets/diagrams/production/components/frontend-state.dark.svg#only-dark)
+<figure class="pl-architecture-diagram pl-architecture-diagram--component">
+  <div class="pl-architecture-diagram__viewport">
+    <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/frontend-state.light.svg" aria-label="Open full-size Frontend state ownership mini architecture">
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/frontend-state.light.svg#only-light" alt="Frontend state ownership mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/frontend-state.dark.svg#only-dark" alt="Frontend state ownership mini architecture" loading="lazy" decoding="async" />
+    </a>
+  </div>
+  <figcaption>Frontend state ownership mini architecture. <a href="../../../../../assets/diagrams/production/components/frontend-state.light.svg">View full-size diagram</a></figcaption>
+</figure>
 
 
 ## Ownership and placement
