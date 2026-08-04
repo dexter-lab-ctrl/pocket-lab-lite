@@ -18,7 +18,7 @@ from architecture_source_verifier import build_source_inventory, verify_sources
 from graphviz_renderer import render_component, render_view
 from icon_registry import load_registry, validate_icon
 
-GENERATOR_VERSION = 1
+GENERATOR_VERSION = 2
 MODEL_PATH = ROOT / "architecture" / "metadata" / "pocket-lab-architecture.json"
 DOC_OUTPUT = Path("docs/generated/production/architecture")
 DIAGRAM_OUTPUT = Path("docs/assets/diagrams/production")
@@ -132,6 +132,8 @@ def _contract_payload(
             "verification_status": component["verification_status"],
             "generated_page": f"docs/generated/production/architecture/components/{component_id}.md",
             "mini_diagram": component["mini_diagram"],
+            "icon": component["icon"],
+            "technology_icons": component.get("technology_icons", []),
         })
     return {
         "metadata": {
@@ -156,6 +158,10 @@ def _contract_payload(
             "components": components,
             "connections": model["connections"],
             "views": [model["views"][key] for key in sorted(model["views"])],
+            "icon_taxonomy": {
+                "brand": sorted(record.id for record in load_registry().values() if record.icon_class == "brand"),
+                "semantic": sorted(record.id for record in load_registry().values() if record.icon_class == "semantic"),
+            },
             "counts": {
                 "components": len(model["components"]),
                 "connections": len(model["connections"]),
@@ -208,7 +214,7 @@ def build_outputs() -> tuple[dict[Path, bytes], dict[str, Any]]:
             icon_fallbacks.append(f"component:{component_id}")
         for suffix, content in rendered.items():
             outputs[DIAGRAM_OUTPUT / "components" / f"{component_id}.{suffix}"] = _encode(content)
-    pages = build_pages(model, index, mini_graphs, source_report, source_fingerprint)
+    pages = build_pages(model, index, mini_graphs, source_report, source_fingerprint, icons)
     for path, content in pages.items():
         outputs[path] = _encode(content)
     contract = _contract_payload(model, source_report, source_fingerprint, generator_sha)

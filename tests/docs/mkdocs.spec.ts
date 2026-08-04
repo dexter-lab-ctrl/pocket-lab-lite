@@ -105,14 +105,107 @@ test('documentation portal navigation, theme, search, and accessibility', async 
   await expect(page.getByRole('heading', { name: 'Pocket Lab Lite Architecture' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'generated component catalog' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Runtime and PM2 process topology' })).toBeVisible();
+  await expect(page.locator('.pl-architecture-summary-card')).toHaveCount(6);
+  await expect(page.locator('.pl-architecture-icon--brand').first()).toBeVisible();
   const architectureLight = page.locator('img[src*="complete-system.light.svg"]').first();
   const architectureDark = page.locator('img[src*="complete-system.dark.svg"]').first();
   await expect(architectureLight).toBeAttached();
   await expect(architectureDark).toBeAttached();
-  await expect(architectureLight).toHaveAttribute('alt', /Complete Pocket Lab Lite system map/i);
-  await expect(architectureDark).toHaveAttribute('alt', /Complete Pocket Lab Lite system map/i);
+  await expect(architectureLight).toHaveAttribute('alt', /Complete Pocket Lab Lite executive architecture poster/i);
+  await expect(architectureDark).toHaveAttribute('alt', /Complete Pocket Lab Lite executive architecture poster/i);
   const architectureFigure = page.locator('.pl-architecture-diagram--system').first();
   await expect(architectureFigure).toBeVisible();
+
+  // Capture the exact browser and network state if the poster fails to render.
+  // This deliberately keeps the production assertions strict while making the
+  // failure actionable instead of collapsing every cause to a boolean false.
+  type ArchitectureImageState = {
+    className: string;
+    src: string;
+    currentSrc: string;
+    complete: boolean;
+    naturalWidth: number;
+    naturalHeight: number;
+    clientWidth: number;
+    clientHeight: number;
+    rectWidth: number;
+    rectHeight: number;
+    display: string;
+    visibility: string;
+    opacity: string;
+  };
+  type ArchitecturePosterState = {
+    scheme: string | null;
+    readyState: string;
+    figureWidth: number;
+    figureHeight: number;
+    images: ArchitectureImageState[];
+  };
+
+  const readArchitecturePosterState = async (): Promise<ArchitecturePosterState> =>
+    architectureFigure.evaluate((element) => ({
+      scheme:
+        document.documentElement.getAttribute('data-md-color-scheme') ||
+        document.body.getAttribute('data-md-color-scheme'),
+      readyState: document.readyState,
+      figureWidth: element.getBoundingClientRect().width,
+      figureHeight: element.getBoundingClientRect().height,
+      images: [...element.querySelectorAll<HTMLImageElement>('.pl-architecture-diagram__image')].map((image) => {
+        const rect = image.getBoundingClientRect();
+        const style = getComputedStyle(image);
+        return {
+          className: image.className,
+          src: image.getAttribute('src') || '',
+          currentSrc: image.currentSrc,
+          complete: image.complete,
+          naturalWidth: image.naturalWidth,
+          naturalHeight: image.naturalHeight,
+          clientWidth: image.clientWidth,
+          clientHeight: image.clientHeight,
+          rectWidth: rect.width,
+          rectHeight: rect.height,
+          display: style.display,
+          visibility: style.visibility,
+          opacity: style.opacity,
+        };
+      }),
+    }));
+
+  let lastPosterState = await readArchitecturePosterState();
+  try {
+    await expect.poll(async () => {
+      lastPosterState = await readArchitecturePosterState();
+      return lastPosterState.images.some((candidate) =>
+        candidate.complete &&
+        candidate.naturalWidth > 0 &&
+        candidate.naturalHeight > 0 &&
+        candidate.rectWidth > 120 &&
+        candidate.rectHeight > 40 &&
+        candidate.display !== 'none' &&
+        candidate.visibility !== 'hidden'
+      );
+    }, {
+      message: 'architecture poster should finish loading and render one theme image',
+      timeout: 15_000,
+    }).toBe(true);
+  } catch (error) {
+    const responseStates = await Promise.all(lastPosterState.images.map(async (image) => {
+      const response = image.currentSrc ? await page.request.get(image.currentSrc) : null;
+      return {
+        src: image.currentSrc || image.src,
+        status: response?.status() ?? null,
+        ok: response?.ok() ?? false,
+        contentType: response?.headers()['content-type'] || '',
+      };
+    }));
+    throw new Error(
+      `Architecture poster diagnostic:
+${JSON.stringify({ ...lastPosterState, responses: responseStates }, null, 2)}
+
+${String(error)}`
+    );
+  }
+
   const diagramLayout = await architectureFigure.evaluate((element) => {
     const images = [...element.querySelectorAll<HTMLImageElement>('.pl-architecture-diagram__image')];
     const image = images.find((candidate) => {
@@ -186,6 +279,17 @@ test('documentation portal navigation, theme, search, and accessibility', async 
     expect(svg, asset).not.toMatch(/(?:href|xlink:href)=["'](?:https?:)?\/\//i);
   }
 
+  await page.goto(`${DOCS_PREFIX}generated/production/architecture/complete-system/`);
+  await expect(page.getByRole('heading', { name: 'Complete Pocket Lab Lite system map' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Executive summary' })).toBeVisible();
+  await expect(page.locator('.pl-architecture-zone-card')).toHaveCount(6);
+  await expect(page.locator('.pl-architecture-legend')).toBeVisible();
+  await expect(page.getByText('Zone A — Experience')).toBeVisible();
+  await expect(page.getByText('Zone F — Remote access and apps')).toBeVisible();
+  await expect(page.locator('img[src*="icons/fastapi.svg"]').first()).toBeAttached();
+  await expect(page.locator('img[src*="icons/nats.svg"]').first()).toBeAttached();
+  await expect(page.locator('img[src*="icons/caddy.svg"]').first()).toBeAttached();
+
   await page.goto(`${DOCS_PREFIX}generated/production/architecture/runtime-topology/`);
   await expect(page.getByRole('heading', { name: 'Runtime and PM2 process topology' })).toBeVisible();
   await expect(page.locator('img[src*="runtime-topology.light.svg"]')).toBeAttached();
@@ -213,7 +317,16 @@ test('documentation portal navigation, theme, search, and accessibility', async 
   if (!(await architectureSearch.isVisible())) {
     await page.locator('label.md-header__button[for="__search"]').click();
   }
-  await architectureSearch.fill('FastAPI /api/lite');
+  // Material search is worker-backed. Reusing fill() with punctuation after
+  // several full-page navigations can race the worker's query subscription and
+  // leave the result surface empty. Reset the input through real keyboard
+  // events, as above, and use a punctuation-safe token while still asserting
+  // that the canonical FastAPI /api/lite component is returned.
+  await architectureSearch.focus();
+  await architectureSearch.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+  await architectureSearch.press('Backspace');
+  await page.keyboard.type('FastAPI', { delay: 35 });
+  await expect(architectureSearch).toHaveValue('FastAPI');
   const architectureResults = page.locator('[data-md-component="search-result"]');
   await expect(architectureResults.locator('a').first()).toBeVisible({ timeout: 15_000 });
   await expect(architectureResults).toContainText(/FastAPI \/api\/lite/i);

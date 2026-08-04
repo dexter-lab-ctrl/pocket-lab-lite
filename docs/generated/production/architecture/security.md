@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
+source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -18,11 +18,15 @@ validation_status: generated
 
 Profile selection, command delivery, scanner adapters, normalized state, compact reads, sanitized evidence, and recovery.
 
+
+
+## Architecture diagram
+
 <figure class="pl-architecture-diagram pl-architecture-diagram--system">
   <div class="pl-architecture-diagram__viewport">
     <a class="pl-architecture-diagram__link" href="../../../../assets/diagrams/production/views/security.light.svg" aria-label="Open full-size Security and safety">
-      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/security.light.svg#only-light" alt="Security and safety" loading="lazy" decoding="async" />
-      <img class="pl-architecture-diagram__image" src="../../../../assets/diagrams/production/views/security.dark.svg#only-dark" alt="Security and safety" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--light" src="../../../../assets/diagrams/production/views/security.light.svg" alt="Security and safety" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--dark" src="../../../../assets/diagrams/production/views/security.dark.svg" alt="Security and safety" loading="lazy" decoding="async" />
     </a>
   </div>
   <figcaption>Security and safety. <a href="../../../../assets/diagrams/production/views/security.light.svg">View full-size diagram</a></figcaption>

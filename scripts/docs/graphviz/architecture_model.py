@@ -104,6 +104,106 @@ def _validate_source_refs(component_id: str, value: Any) -> None:
             )
 
 
+def _validate_poster_metadata(
+    *, view_id: str, view: dict[str, Any], poster: Any, component_ids: set[str],
+    connection_ids: set[str], boundary_ids: set[str], icon_set: set[str],
+) -> None:
+    if view_id != "complete-system":
+        raise ArchitectureModelError("Poster metadata is only supported on complete-system")
+    if not isinstance(poster, dict) or poster.get("layout_mode") != "executive-poster":
+        raise ArchitectureModelError("Complete-system poster needs layout_mode=executive-poster")
+    for flag in (
+        "show_summary_cards", "show_legend", "show_callouts",
+        "show_trust_boundary_bands", "emphasize_primary_flows",
+    ):
+        if not isinstance(poster.get(flag), bool):
+            raise ArchitectureModelError(f"Complete-system poster {flag} must be boolean")
+    zones = poster.get("zones")
+    if not isinstance(zones, list) or len(zones) != 6:
+        raise ArchitectureModelError("Complete-system poster must define exactly six zones")
+    zone_ids: set[str] = set()
+    assigned: list[str] = []
+    for zone in zones:
+        if not isinstance(zone, dict):
+            raise ArchitectureModelError("Poster zone must be an object")
+        zone_id = _validate_id(zone.get("id"), "poster zone")
+        if zone_id in zone_ids:
+            raise ArchitectureModelError(f"Duplicate poster zone id: {zone_id}")
+        zone_ids.add(zone_id)
+        if not isinstance(zone.get("label"), str) or not zone["label"].strip():
+            raise ArchitectureModelError(f"Poster zone {zone_id} needs a label")
+        if not isinstance(zone.get("summary"), str) or not zone["summary"].strip():
+            raise ArchitectureModelError(f"Poster zone {zone_id} needs a summary")
+        members = _require_string_list(
+            zone.get("components"), f"Poster zone {zone_id} components", allow_empty=False
+        )
+        unknown = sorted(set(members) - component_ids)
+        if unknown:
+            raise ArchitectureModelError(
+                f"Poster zone {zone_id} references unknown components: {', '.join(unknown)}"
+            )
+        assigned.extend(members)
+    view_members = list(view["components"])
+    if len(assigned) != len(set(assigned)):
+        raise ArchitectureModelError("Complete-system poster assigns a component more than once")
+    if set(assigned) != set(view_members):
+        missing = sorted(set(view_members) - set(assigned))
+        extra = sorted(set(assigned) - set(view_members))
+        raise ArchitectureModelError(
+            "Complete-system poster zones must exactly cover the view; "
+            f"missing={missing}, extra={extra}"
+        )
+    cards = poster.get("summary_cards")
+    if not isinstance(cards, list) or not cards:
+        raise ArchitectureModelError("Complete-system poster needs summary_cards")
+    for card in cards:
+        if not isinstance(card, dict) or not all(
+            isinstance(card.get(field), str) and card[field].strip()
+            for field in ("title", "value", "icon")
+        ):
+            raise ArchitectureModelError("Poster summary card needs title, value, and icon")
+        if icon_set and card["icon"] not in icon_set:
+            raise ArchitectureModelError(
+                f"Poster summary card references unknown icon {card['icon']!r}"
+            )
+    flows = poster.get("primary_flows")
+    if not isinstance(flows, list) or not flows:
+        raise ArchitectureModelError("Complete-system poster needs primary_flows")
+    flow_ids: set[str] = set()
+    for flow in flows:
+        if not isinstance(flow, dict):
+            raise ArchitectureModelError("Poster primary flow must be an object")
+        flow_id = _validate_id(flow.get("id"), "poster flow")
+        if flow_id in flow_ids:
+            raise ArchitectureModelError(f"Duplicate poster flow id: {flow_id}")
+        flow_ids.add(flow_id)
+        if not isinstance(flow.get("label"), str) or not flow["label"].strip():
+            raise ArchitectureModelError(f"Poster flow {flow_id} needs a label")
+        refs = _require_string_list(
+            flow.get("connections"), f"Poster flow {flow_id} connections", allow_empty=False
+        )
+        unknown = sorted(set(refs) - connection_ids)
+        if unknown:
+            raise ArchitectureModelError(
+                f"Poster flow {flow_id} references unknown connections: {', '.join(unknown)}"
+            )
+    bands = _require_string_list(
+        poster.get("trust_boundary_bands"), "Poster trust_boundary_bands", allow_empty=False
+    )
+    unknown_bands = sorted(set(bands) - boundary_ids)
+    if unknown_bands:
+        raise ArchitectureModelError(
+            "Poster trust boundary bands reference unknown boundaries: "
+            + ", ".join(unknown_bands)
+        )
+    if len(bands) != len(set(bands)):
+        raise ArchitectureModelError("Poster trust_boundary_bands contains duplicates")
+    for collection_name in ("callouts", "legend"):
+        collection = poster.get(collection_name)
+        if not isinstance(collection, list) or not collection:
+            raise ArchitectureModelError(f"Complete-system poster needs {collection_name}")
+
+
 def validate_model(data: dict[str, Any], *, known_icons: Iterable[str] | None = None) -> None:
     revision = data.get("schema_revision")
     if revision not in SUPPORTED_SCHEMA_REVISIONS:
@@ -185,6 +285,21 @@ def validate_model(data: dict[str, Any], *, known_icons: Iterable[str] | None = 
             raise ArchitectureModelError(
                 f"Component {component_id} references unknown icon {component['icon']!r}"
             )
+        technology_icons = _require_string_list(
+            component.get("technology_icons", []),
+            f"Component {component_id} technology_icons",
+        )
+        if len(technology_icons) != len(set(technology_icons)):
+            raise ArchitectureModelError(
+                f"Component {component_id} contains duplicate technology_icons"
+            )
+        if icon_set:
+            unknown_icons = sorted(set(technology_icons) - icon_set)
+            if unknown_icons:
+                raise ArchitectureModelError(
+                    f"Component {component_id} references unknown technology icons: "
+                    + ", ".join(unknown_icons)
+                )
         _validate_source_refs(component_id, component["source_verification"])
     connection_ids: set[str] = set()
     edge_pairs: set[tuple[str, str, str, str]] = set()
@@ -256,6 +371,12 @@ def validate_model(data: dict[str, Any], *, known_icons: Iterable[str] | None = 
         if not page.endswith(".md") or "/" in page or page in pages:
             raise ArchitectureModelError(f"View {view_id} has invalid or duplicate page {page!r}")
         pages.add(page)
+        poster = view.get("poster")
+        if poster is not None:
+            _validate_poster_metadata(
+                view_id=view_id, view=view, poster=poster, component_ids=component_ids,
+                connection_ids=connection_ids, boundary_ids=boundary_ids, icon_set=icon_set,
+            )
     policy = data.get("mini_diagram_policy")
     if not isinstance(policy, dict):
         raise ArchitectureModelError("mini_diagram_policy must be an object")

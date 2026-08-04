@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
+source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -17,6 +17,8 @@ validation_status: generated
 # User
 
 Uses Pocket Lab Lite through the browser.
+
+<div class="pl-architecture-component-icons"><span class="pl-architecture-icon pl-architecture-icon--component pl-architecture-icon--semantic"><img src="../../../../../assets/diagrams/production/icons/user.svg" alt="" loading="lazy" decoding="async" /><span>User</span></span></div>
 
 > This component is represented in domain diagrams; a dedicated mini diagram is intentionally omitted.
 
@@ -45,7 +47,13 @@ Uses Pocket Lab Lite through the browser.
 | Security boundary | Browser trust boundary |
 | Supported platforms | Browser |
 | Verification | verified |
-| Architecture icon | infra-user |
+| Architecture icon | semantic-user |
+| Icon class | semantic |
+| Icon upstream | Pocket Lab Lite |
+| Icon source revision | semantic-family-2 |
+| Icon license | CC0-1.0 |
+| Icon trademark note | No third-party trademark; locally generated semantic symbol. |
+| Technology markers | None |
 
 ## Inputs
 

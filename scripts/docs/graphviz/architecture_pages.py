@@ -10,12 +10,16 @@ from pathlib import Path
 from typing import Any
 
 from architecture_model import ArchitectureIndex, ROOT, fingerprint
+from icon_registry import IconRecord
 
 GENERATOR = "scripts/docs/graphviz/generate_lite_architecture.py"
 DOC_ROOT = Path("docs/generated/production/architecture")
 INDEX_DIAGRAM_ROOT = "../../../assets/diagrams/production"
 VIEW_DIAGRAM_ROOT = "../../../../assets/diagrams/production"
 COMPONENT_DIAGRAM_ROOT = "../../../../../assets/diagrams/production"
+INDEX_ICON_ROOT = "../../../assets/diagrams/production/icons"
+VIEW_ICON_ROOT = "../../../../assets/diagrams/production/icons"
+COMPONENT_ICON_ROOT = "../../../../../assets/diagrams/production/icons"
 
 INFRASTRUCTURE_SUMMARY = [
     ("Experience surface", "Browser, React/Vite PWA, and frontend state provide the self-hosted workspace experience."),
@@ -71,24 +75,146 @@ def _diagram(
     folder = "components" if component else "views"
     kind = "component" if component else "system"
     width_class = " pl-architecture-diagram--wide" if name in WIDE_DIAGRAMS else ""
+    poster_class = " pl-architecture-diagram--poster" if name == "complete-system" else ""
+    loading = "eager" if name == "complete-system" else "lazy"
     light = f"{root}/{folder}/{name}.light.svg"
     dark = f"{root}/{folder}/{name}.dark.svg"
     safe_alt = html.escape(alt, quote=True)
     return (
-        f'<figure class="pl-architecture-diagram pl-architecture-diagram--{kind}{width_class}">\n'
+        f'<figure class="pl-architecture-diagram pl-architecture-diagram--{kind}{width_class}{poster_class}">\n'
         '  <div class="pl-architecture-diagram__viewport">\n'
         f'    <a class="pl-architecture-diagram__link" href="{light}" '
         f'aria-label="Open full-size {safe_alt}">\n'
-        f'      <img class="pl-architecture-diagram__image" src="{light}#only-light" '
-        f'alt="{safe_alt}" loading="lazy" decoding="async" />\n'
-        f'      <img class="pl-architecture-diagram__image" src="{dark}#only-dark" '
-        f'alt="{safe_alt}" loading="lazy" decoding="async" />\n'
+        f'      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--light" src="{light}" '
+        f'alt="{safe_alt}" loading="{loading}" decoding="async" />\n'
+        f'      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--dark" src="{dark}" '
+        f'alt="{safe_alt}" loading="{loading}" decoding="async" />\n'
         '    </a>\n'
         '  </div>\n'
         f'  <figcaption>{safe_alt}. '
         f'<a href="{light}">View full-size diagram</a></figcaption>\n'
         '</figure>\n'
     )
+
+
+def _icon_img(icon: IconRecord, root: str, *, size: str = "small") -> str:
+    label = html.escape(icon.display_name, quote=True)
+    return (
+        f'<span class="pl-architecture-icon pl-architecture-icon--{size} '
+        f'pl-architecture-icon--{icon.icon_class}">'
+        f'<img src="{root}/{icon.path.name}" alt="" loading="lazy" decoding="async" />'
+        f'<span>{label}</span></span>'
+    )
+
+
+def _poster_banner(poster: dict[str, Any], icons: dict[str, IconRecord], icon_root: str) -> str:
+    cards = []
+    for card in poster["summary_cards"]:
+        icon = icons[card["icon"]]
+        cards.append(
+            '<article class="pl-architecture-summary-card">'
+            f'{_icon_img(icon, icon_root, size="summary")}'
+            f'<h3>{html.escape(card["title"])}</h3>'
+            f'<p>{html.escape(card["value"])}</p>'
+            '</article>'
+        )
+    return '<div class="pl-architecture-summary-grid">' + "".join(cards) + '</div>'
+
+
+def _poster_zone_cards(poster: dict[str, Any], model: dict[str, Any]) -> str:
+    cards = []
+    for zone in poster["zones"]:
+        names = ", ".join(model["components"][item]["name"] for item in zone["components"])
+        cards.append(
+            '<article class="pl-architecture-zone-card">'
+            f'<h3>{html.escape(zone["label"])}</h3>'
+            f'<p>{html.escape(zone["summary"])}</p>'
+            f'<p class="pl-architecture-zone-card__members"><strong>Includes:</strong> {html.escape(names)}</p>'
+            '</article>'
+        )
+    return '<div class="pl-architecture-zone-grid">' + "".join(cards) + '</div>'
+
+
+def _poster_legend(poster: dict[str, Any]) -> str:
+    rows = []
+    for item in poster["legend"]:
+        rows.append(
+            f'<li><span class="pl-architecture-legend__mark pl-architecture-legend__mark--{html.escape(item["key"], quote=True)}" '
+            'aria-hidden="true"></span>'
+            f'<span>{html.escape(item["label"])}</span></li>'
+        )
+    return '<ul class="pl-architecture-legend">' + "".join(rows) + '</ul>'
+
+
+def _poster_flows(poster: dict[str, Any], model: dict[str, Any]) -> str:
+    by_id = {item["id"]: item for item in model["connections"]}
+    rows = []
+    for flow in poster["primary_flows"]:
+        relationships = [by_id[item]["label"] for item in flow["connections"]]
+        rows.append(
+            f'| {html.escape(flow["label"])} | {" → ".join(html.escape(item) for item in relationships)} |'
+        )
+    return "| Primary flow | Canonical relationships |\n| --- | --- |\n" + "\n".join(rows)
+
+
+def _poster_callouts(poster: dict[str, Any]) -> str:
+    cards = []
+    for callout in poster["callouts"]:
+        items = "".join(f'<li>{html.escape(item)}</li>' for item in callout["items"])
+        cards.append(
+            '<article class="pl-architecture-callout">'
+            f'<h3>{html.escape(callout["title"])}</h3><ul>{items}</ul>'
+            '</article>'
+        )
+    return '<div class="pl-architecture-callout-grid">' + "".join(cards) + '</div>'
+
+
+def _poster_sections(
+    model: dict[str, Any], poster: dict[str, Any], icons: dict[str, IconRecord], icon_root: str
+) -> str:
+    boundaries = "\n".join(
+        f'- **{model["boundaries"][item]["name"]}** — {model["boundaries"][item]["description"]}'
+        for item in poster["trust_boundary_bands"]
+    )
+    technology_ids: list[str] = []
+    for component_id in model["views"]["complete-system"]["components"]:
+        component = model["components"][component_id]
+        technology_ids.extend([component["icon"], *component.get("technology_icons", [])])
+    technology = "".join(
+        _icon_img(icons[icon_id], icon_root)
+        for icon_id in dict.fromkeys(technology_ids)
+        if icon_id in icons and icons[icon_id].icon_class == "brand"
+    )
+    return f"""## Executive summary
+
+{_poster_banner(poster, icons, icon_root)}
+
+## Six architecture zones
+
+{_poster_zone_cards(poster, model)}
+
+## Legend and icon key
+
+{_poster_legend(poster)}
+
+The SVG also includes a generated legend. Brand icons identify verified external products; semantic icons identify Pocket Lab Lite roles, state, guards, evidence, recovery, and workflows. Text labels remain authoritative when an icon is unfamiliar or unavailable.
+
+## Primary flows
+
+{_poster_flows(poster, model)}
+
+## Trust boundaries
+
+{boundaries}
+
+## Runtime technology stack
+
+<div class="pl-architecture-icon-key">{technology}</div>
+
+## Architecture callouts
+
+{_poster_callouts(poster)}
+"""
 
 
 def _list(values: list[str], empty: str = "None declared") -> str:
@@ -111,7 +237,8 @@ def _related_views(model: dict[str, Any], component_id: str) -> list[dict[str, s
 
 
 def architecture_index_page(
-    model: dict[str, Any], source_report: dict[str, Any], source_fingerprint: str
+    model: dict[str, Any], source_report: dict[str, Any], source_fingerprint: str,
+    icons: dict[str, IconRecord],
 ) -> str:
     views = sorted(model["views"].values(), key=lambda item: (item["level"], item["title"]))
     links = "\n".join(f"- [{view['title']}]({view['page']})" for view in views)
@@ -123,15 +250,18 @@ def architecture_index_page(
         f"- **{boundary['name']}** — {boundary['description']}"
         for _, boundary in sorted(model["boundaries"].items())
     )
+    poster = model["views"]["complete-system"].get("poster")
     return _frontmatter(
         "Pocket Lab Lite Architecture",
         "Generated Production architecture from one canonical, source-verified model.",
         source_fingerprint,
     ) + f"""# Pocket Lab Lite Architecture
 
+{_poster_banner(poster, icons, INDEX_ICON_ROOT) if poster else ''}
+
 ## Pocket Lab Lite in one view
 
-{_diagram('complete-system', 'Complete Pocket Lab Lite system map')}
+{_diagram('complete-system', 'Complete Pocket Lab Lite executive architecture poster')}
 
 ```text
 React/Vite PWA
@@ -182,7 +312,8 @@ Open the [generated component catalog](component-catalog.md) for component funct
 
 
 def view_page(
-    model: dict[str, Any], index: ArchitectureIndex, view_id: str, source_fingerprint: str
+    model: dict[str, Any], index: ArchitectureIndex, view_id: str, source_fingerprint: str,
+    icons: dict[str, IconRecord],
 ) -> str:
     view = model["views"][view_id]
     members = [model["components"][component_id] for component_id in view["components"]]
@@ -202,9 +333,18 @@ def view_page(
         connection_rows.append(
             f"| {source} | {connection['label']} | {target} | {connection['kind']} | {connection['protocol'] or 'Repository-defined'} |"
         )
+    poster_sections = (
+        _poster_sections(model, view["poster"], icons, VIEW_ICON_ROOT)
+        if view.get("poster") else ""
+    )
+    diagram_heading = "Complete-system hero poster" if view.get("poster") else "Architecture diagram"
     return _frontmatter(view["title"], view["description"], source_fingerprint) + f"""# {view['title']}
 
 {view['description']}
+
+{poster_sections}
+
+## {diagram_heading}
 
 {_diagram(view_id, view['title'], nested_page=True)}
 
@@ -230,9 +370,14 @@ All components and connections on this page are generated from `architecture/met
 
 def component_page(
     model: dict[str, Any], index: ArchitectureIndex, component_id: str,
-    mini: dict[str, Any], source_fingerprint: str,
+    mini: dict[str, Any], source_fingerprint: str, icons: dict[str, IconRecord],
 ) -> str:
     component = model["components"][component_id]
+    primary_icon = icons[component["icon"]]
+    technology_icons = [icons[item] for item in component.get("technology_icons", []) if item in icons]
+    icon_key = _icon_img(primary_icon, COMPONENT_ICON_ROOT, size="component")
+    if technology_icons:
+        icon_key += "".join(_icon_img(item, COMPONENT_ICON_ROOT) for item in technology_icons)
     incoming = [
         f"{model['components'][item['source']]['name']} — {item['label']}"
         for item in index.incoming[component_id]
@@ -263,6 +408,8 @@ def component_page(
 
 {component['responsibility']}
 
+<div class="pl-architecture-component-icons">{icon_key}</div>
+
 {diagram}{omitted}
 
 ## Function and use
@@ -290,6 +437,12 @@ def component_page(
 | Supported platforms | {', '.join(component['supported_platforms'])} |
 | Verification | {component['verification_status']} |
 | Architecture icon | {component['icon']} |
+| Icon class | {primary_icon.icon_class} |
+| Icon upstream | {primary_icon.upstream_project} |
+| Icon source revision | {primary_icon.source_revision} |
+| Icon license | {primary_icon.license} |
+| Icon trademark note | {primary_icon.trademark_note} |
+| Technology markers | {', '.join(item.id for item in technology_icons) or 'None'} |
 
 ## Inputs
 
@@ -349,7 +502,9 @@ def component_page(
 """
 
 
-def component_catalog_page(model: dict[str, Any], source_fingerprint: str) -> str:
+def component_catalog_page(
+    model: dict[str, Any], source_fingerprint: str, icons: dict[str, IconRecord]
+) -> str:
     rows = []
     for component_id, component in sorted(model["components"].items(), key=lambda item: item[1]["name"]):
         outgoing = sorted({
@@ -357,10 +512,11 @@ def component_catalog_page(model: dict[str, Any], source_fingerprint: str) -> st
             for connection in model["connections"] if connection["source"] == component_id
         })
         rows.append(
-            "| [{name}](components/{id}.md) | {category} | {runtime} | {runtime_owner} | "
+            "| [{name}](components/{id}.md) | {icon_class} | {category} | {runtime} | {runtime_owner} | "
             "{owner} | {data_owner} | {recovery_owner} | {communicates} | {stores} | "
             "{evidence} | {health} | {platforms} |".format(
-                name=component["name"], id=component_id, category=component["category"],
+                name=component["name"], id=component_id,
+                icon_class=icons[component["icon"]].icon_class, category=component["category"],
                 runtime=component["runtime_location"], runtime_owner=component["runtime_owner"],
                 owner=component["owner"], data_owner=component["data_owner"],
                 recovery_owner=component["recovery_owner"],
@@ -381,8 +537,8 @@ This catalog is generated from the canonical architecture model. Component names
 
 <div class="pl-architecture-table" markdown>
 
-| Component | Category | Runs on | Started by / runtime owner | Execution owner | Data owner | Recovery owner | Communicates with | Stores data | Produces evidence | Health signal | Supported platforms |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Component | Icon class | Category | Runs on | Started by / runtime owner | Execution owner | Data owner | Recovery owner | Communicates with | Stores data | Produces evidence | Health signal | Supported platforms |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 {chr(10).join(rows)}
 
 </div>
@@ -393,21 +549,21 @@ This catalog is generated from the canonical architecture model. Component names
 
 def build_pages(
     model: dict[str, Any], index: ArchitectureIndex, mini_graphs: dict[str, dict[str, Any]],
-    source_report: dict[str, Any], source_fingerprint: str,
+    source_report: dict[str, Any], source_fingerprint: str, icons: dict[str, IconRecord],
 ) -> dict[Path, str]:
     outputs: dict[Path, str] = {}
     outputs[DOC_ROOT / "index.md"] = architecture_index_page(
-        model, source_report, source_fingerprint
+        model, source_report, source_fingerprint, icons
     )
     for view_id, view in sorted(model["views"].items()):
         outputs[DOC_ROOT / view["page"]] = view_page(
-            model, index, view_id, source_fingerprint
+            model, index, view_id, source_fingerprint, icons
         )
     outputs[DOC_ROOT / "component-catalog.md"] = component_catalog_page(
-        model, source_fingerprint
+        model, source_fingerprint, icons
     )
     for component_id in sorted(model["components"]):
         outputs[DOC_ROOT / "components" / f"{component_id}.md"] = component_page(
-            model, index, component_id, mini_graphs.get(component_id, {}), source_fingerprint
+            model, index, component_id, mini_graphs.get(component_id, {}), source_fingerprint, icons
         )
     return outputs

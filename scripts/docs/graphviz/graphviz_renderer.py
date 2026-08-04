@@ -36,6 +36,11 @@ THEMES = {
     },
 }
 
+POSTER_ZONE_COLORS = {
+    "light": ["#eff6ff", "#eef2ff", "#fdf2f8", "#fffbeb", "#ecfdf5", "#f5f3ff"],
+    "dark": ["#172554", "#1e1b4b", "#500724", "#451a03", "#052e16", "#2e1065"],
+}
+
 SHAPES = {
     "actor": "ellipse", "ui": "box", "proxy": "box", "service": "box",
     "event": "parallelogram", "process": "component", "database": "cylinder",
@@ -48,7 +53,7 @@ EDGE_STYLES = {
 }
 ABSOLUTE_PATH_PATTERN = re.compile(r"(?:/home/|/mnt/|/tmp/|/data/data/|[A-Za-z]:\\)")
 EXTERNAL_REFERENCE_PATTERN = re.compile(r'(?:href|xlink:href)=["\'](?:https?:)?//', re.I)
-SVG_RENDERER_REVISION = 3
+SVG_RENDERER_REVISION = 5
 
 VERTICAL_VIEW_IDS = {
     "runtime-topology",
@@ -119,11 +124,11 @@ def _node_label(
     if icon:
         if render_icons:
             cells.append(
-                f'<TD FIXEDSIZE="TRUE" WIDTH="42" HEIGHT="42"><IMG SRC="{_html(str(icon.path))}" '
-                'SCALE="TRUE"/></TD>'
+                f'<TD FIXEDSIZE="TRUE" WIDTH="52" HEIGHT="48" BGCOLOR="#FFFFFF">'
+                f'<IMG SRC="{_html(str(icon.path))}" SCALE="TRUE"/></TD>'
             )
         else:
-            cells.append('<TD FIXEDSIZE="TRUE" WIDTH="42" HEIGHT="42"> </TD>')
+            cells.append('<TD FIXEDSIZE="TRUE" WIDTH="52" HEIGHT="48" BGCOLOR="#FFFFFF"> </TD>')
     cells.append(
         '<TD ALIGN="LEFT">'
         f'<FONT POINT-SIZE="12"><B>{_html(name).replace(chr(10), "<BR/>")}</B></FONT><BR/>'
@@ -181,10 +186,13 @@ def dot_for_graph(
     state_dependencies: list[str] | None = None,
     omitted_connection_count: int = 0,
     render_icons: bool = True,
+    poster: dict[str, Any] | None = None,
 ) -> str:
     theme = THEMES[theme_name]
     graph_name = re.sub(r"[^A-Za-z0-9_]", "_", graph_id)
     layout = _layout_profile(graph_id, len(component_ids), focus_id)
+    if poster:
+        layout = {"rankdir": "LR", "nodesep": "0.34", "ranksep": "0.78", "ratio": "compress", "splines": "spline"}
     lines = [
         f"digraph {graph_name} {{",
         "  graph [",
@@ -203,27 +211,87 @@ def dot_for_graph(
         '    arrowsize="0.72",', '    penwidth="1.15"', "  ];",
     ]
     selected = set(component_ids)
-    for boundary_id in sorted(model["boundaries"]):
-        members = [
-            component_id for component_id in component_ids
-            if model["components"][component_id]["security_boundary"] == boundary_id
-        ]
-        if not members:
-            continue
-        boundary = model["boundaries"][boundary_id]
-        lines.extend([
-            f"  subgraph {q('cluster_' + boundary_id)} {{",
-            f"    label={q(boundary['name'])};", '    style="rounded,dashed,filled";',
-            f"    color={q(theme['cluster_border'])};", f"    fillcolor={q(theme['cluster'])};",
-            f"    fontcolor={q(theme['foreground'])};", '    penwidth="1.0";',
-        ])
-        for component_id in members:
-            attrs = _node_attrs(
-                component_id, model["components"][component_id], theme, icons,
-                render_icons=render_icons, focus=component_id == focus_id,
-            )
-            lines.append(f"    {q(component_id)} [{attrs}];")
-        lines.append("  }")
+    if poster:
+        zone_colors = POSTER_ZONE_COLORS[theme_name]
+        visible_bands = set(poster.get("trust_boundary_bands", []))
+        for zone_index, zone in enumerate(poster["zones"]):
+            zone_members = [item for item in zone["components"] if item in selected]
+            lines.extend([
+                f"  subgraph {q('cluster_zone_' + zone['id'])} {{",
+                f"    label={q(zone['label'])};",
+                '    style="rounded,filled,bold";',
+                f"    color={q(theme['cluster_border'])};",
+                f"    fillcolor={q(zone_colors[zone_index % len(zone_colors)])};",
+                f"    fontcolor={q(theme['foreground'])};",
+                '    penwidth="1.6";',
+                '    margin="18";',
+            ])
+            for boundary_id in poster.get("trust_boundary_bands", []):
+                members = [
+                    component_id for component_id in zone_members
+                    if model["components"][component_id]["security_boundary"] == boundary_id
+                ]
+                if not members or boundary_id not in visible_bands:
+                    continue
+                boundary = model["boundaries"][boundary_id]
+                lines.extend([
+                    f"    subgraph {q('cluster_' + zone['id'] + '_' + boundary_id)} {{",
+                    f"      label={q(boundary['name'])};",
+                    '      style="rounded,dashed,filled";',
+                    f"      color={q(theme['cluster_border'])};",
+                    f"      fillcolor={q(theme['cluster'])};",
+                    f"      fontcolor={q(theme['foreground'])};",
+                    '      penwidth="1.0";',
+                ])
+                for component_id in members:
+                    attrs = _node_attrs(
+                        component_id, model["components"][component_id], theme, icons,
+                        render_icons=render_icons, focus=component_id == focus_id,
+                    )
+                    lines.append(f"      {q(component_id)} [{attrs}];")
+                lines.append("    }")
+            lines.append("  }")
+        if poster.get("show_legend"):
+            lines.extend([
+                '  subgraph cluster_poster_legend {',
+                f"    label={q('Legend and flow key')};",
+                '    style="rounded,dashed";',
+                f"    color={q(theme['cluster_border'])};",
+                f"    fontcolor={q(theme['foreground'])};",
+                '    rank="sink";',
+                f"    poster_legend_brand [label={q('Brand icon\nVerified external technology')}, shape=box, style={q('rounded,filled')}, fillcolor={q(theme['proxy'])}];",
+                f"    poster_legend_semantic [label={q('Semantic icon\nPocket Lab Lite role')}, shape=box, style={q('rounded,filled')}, fillcolor={q(theme['service'])}];",
+                f"    poster_legend_primary [label={q('Bold solid\nPrimary control flow')}, shape=box, style={q('rounded,filled')}, fillcolor={q(theme['ui'])}];",
+                f"    poster_legend_async [label={q('Dotted / dashed\nEvidence, health, recovery')}, shape=box, style={q('rounded,filled')}, fillcolor={q(theme['event'])}];",
+            ])
+            lines.append("  }")
+    else:
+        for boundary_id in sorted(model["boundaries"]):
+            members = [
+                component_id for component_id in component_ids
+                if model["components"][component_id]["security_boundary"] == boundary_id
+            ]
+            if not members:
+                continue
+            boundary = model["boundaries"][boundary_id]
+            lines.extend([
+                f"  subgraph {q('cluster_' + boundary_id)} {{",
+                f"    label={q(boundary['name'])};", '    style="rounded,dashed,filled";',
+                f"    color={q(theme['cluster_border'])};", f"    fillcolor={q(theme['cluster'])};",
+                f"    fontcolor={q(theme['foreground'])};", '    penwidth="1.0";',
+            ])
+            for component_id in members:
+                attrs = _node_attrs(
+                    component_id, model["components"][component_id], theme, icons,
+                    render_icons=render_icons, focus=component_id == focus_id,
+                )
+                lines.append(f"    {q(component_id)} [{attrs}];")
+            lines.append("  }")
+    primary_flow_map: dict[str, tuple[int, str]] = {}
+    if poster and poster.get("emphasize_primary_flows"):
+        for flow_index, flow in enumerate(poster.get("primary_flows", []), start=1):
+            for connection_id in flow["connections"]:
+                primary_flow_map.setdefault(connection_id, (flow_index, flow["label"]))
     for connection in sorted(connections, key=lambda item: item["id"]):
         if connection["source"] not in selected or connection["target"] not in selected:
             continue
@@ -232,10 +300,29 @@ def dot_for_graph(
         label = connection["label"]
         protocol = connection.get("protocol") or ""
         tooltip = label if not protocol else f"{label} ({protocol})"
+        primary = primary_flow_map.get(connection["id"])
+        if primary:
+            flow_index, flow_label = primary
+            display_label = f"{flow_index} · {label}"
+            color = theme[kind]
+            penwidth = "2.8"
+            arrowsize = "0.92"
+            tooltip = f"{flow_label}: {tooltip}"
+        elif poster:
+            display_label = label
+            color = theme["muted"]
+            penwidth = "0.85"
+            arrowsize = "0.62"
+        else:
+            display_label = label
+            color = theme[kind]
+            penwidth = "1.15"
+            arrowsize = "0.72"
         lines.append(
             f"  {q(connection['source'])} -> {q(connection['target'])} "
-            f"[label={q(label)}, tooltip={q(tooltip)}, style={q(style)}, "
-            f"arrowhead={q(arrowhead)}, color={q(theme[kind])}, fontcolor={q(theme[kind])}];"
+            f"[label={q(display_label)}, tooltip={q(tooltip)}, style={q(style)}, "
+            f"arrowhead={q(arrowhead)}, color={q(color)}, fontcolor={q(color)}, "
+            f"penwidth={q(penwidth)}, arrowsize={q(arrowsize)}];"
         )
     for index, dependency in enumerate(state_dependencies or []):
         node_id = f"state_dependency_{index}"
@@ -270,7 +357,7 @@ def dot_for_graph(
 
 
 def _inject_icon_references(
-    svg: str, *, component_icons: dict[str, IconRecord], public_icon_prefix: str
+    svg: str, *, component_icons: dict[str, tuple[IconRecord, ...]], public_icon_prefix: str
 ) -> str:
     """Inject local icon references into Graphviz node groups across Graphviz versions."""
     cursor = 0
@@ -299,8 +386,8 @@ def _inject_icon_references(
             cursor = node_end
             continue
         component_id = html.unescape(title_match.group("id"))
-        icon = component_icons.get(component_id)
-        if icon is None or re.search(r'<image\b[^>]*(?:href|xlink:href)=', block, re.I):
+        icon_records = component_icons.get(component_id)
+        if not icon_records or re.search(r'<image\b[^>]*(?:href|xlink:href)=', block, re.I):
             cursor = node_end
             continue
         text_match = re.search(
@@ -311,12 +398,25 @@ def _inject_icon_references(
         if text_match is None:
             cursor = node_end
             continue
-        x = float(text_match.group("x")) - 31.0
-        y = float(text_match.group("y")) - 15.5
-        image = (
-            f'<image href="{public_icon_prefix}/{icon.path.name}" x="{x:.2f}" y="{y:.2f}" '
-            'width="28" height="28" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n'
-        )
+        x = float(text_match.group("x")) - 39.0
+        y = float(text_match.group("y")) - 17.0
+        primary = icon_records[0]
+        fragments = [
+            f'<rect x="{x - 3:.2f}" y="{y - 3:.2f}" width="36" height="36" rx="6" '
+            'fill="#ffffff" stroke="#cbd5e1" stroke-width="1" aria-hidden="true"/>\n',
+            f'<image href="{public_icon_prefix}/{primary.path.name}" x="{x:.2f}" y="{y:.2f}" '
+            'width="30" height="30" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n',
+        ]
+        for badge_index, badge in enumerate(icon_records[1:4]):
+            badge_x = x + badge_index * 13.0
+            badge_y = y + 34.0
+            fragments.extend([
+                f'<rect x="{badge_x - 1:.2f}" y="{badge_y - 1:.2f}" width="12" height="12" rx="2" '
+                'fill="#ffffff" stroke="#cbd5e1" stroke-width="0.7" aria-hidden="true"/>\n',
+                f'<image href="{public_icon_prefix}/{badge.path.name}" x="{badge_x:.2f}" y="{badge_y:.2f}" '
+                'width="10" height="10" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n',
+            ])
+        image = "".join(fragments)
         insertion = node_start + block.index('<text ', text_match.start())
         svg = svg[:insertion] + image + svg[insertion:]
         cursor = node_end + len(image)
@@ -326,7 +426,7 @@ def _inject_icon_references(
 def _normalize_svg(
     svg: str, *, graph_id: str, theme_name: str, title: str, description: str,
     icon_paths: list[Path], public_icon_prefix: str,
-    component_icons: dict[str, IconRecord], source_fingerprint: str,
+    component_icons: dict[str, tuple[IconRecord, ...]], source_fingerprint: str,
 ) -> str:
     svg = svg.replace("\r\n", "\n")
     svg = re.sub(r"<!DOCTYPE svg PUBLIC.*?>\n?", "", svg, flags=re.S)
@@ -340,11 +440,23 @@ def _normalize_svg(
     )
     safe_id = re.sub(r"[^a-z0-9-]", "-", graph_id.lower())
     svg_id = f"pocketlab-{safe_id}-{theme_name}"
+    view_box_match = re.search(
+        r'viewBox="(?P<min_x>-?[0-9.]+) (?P<min_y>-?[0-9.]+) '
+        r'(?P<width>[0-9.]+) (?P<height>[0-9.]+)"',
+        svg,
+    )
+    if not view_box_match:
+        raise GraphvizRenderError(
+            f"SVG for {graph_id}/{theme_name} lacks a numeric viewBox"
+        )
+    intrinsic_width = view_box_match.group("width")
+    intrinsic_height = view_box_match.group("height")
     svg = re.sub(r'\s(?:width|height)="[^"]*"', "", svg, count=2)
     svg = re.sub(
         r"<svg\s+",
         f'<svg id="{svg_id}" role="img" aria-labelledby="{svg_id}-title {svg_id}-desc" '
-        'width="100%" height="auto" preserveAspectRatio="xMidYMid meet" focusable="false" ',
+        f'width="{intrinsic_width}" height="{intrinsic_height}" '
+        'preserveAspectRatio="xMidYMid meet" focusable="false" ',
         svg, count=1,
     )
     accessible = (
@@ -366,7 +478,7 @@ def _normalize_svg(
 def render_svg(
     render_dot: str, *, graph_id: str, theme_name: str, title: str, description: str,
     icons: dict[str, IconRecord], public_icon_prefix: str,
-    component_icons: dict[str, IconRecord], source_fingerprint: str,
+    component_icons: dict[str, tuple[IconRecord, ...]], source_fingerprint: str,
 ) -> tuple[str, bool]:
     executable = shutil.which("dot")
     if not executable:
@@ -416,20 +528,24 @@ def render_graph_pair(
     focus_id: str | None = None, state_dependencies: list[str] | None = None,
     omitted_connection_count: int = 0, public_icon_prefix: str = "../icons",
     existing_outputs: dict[str, Path] | None = None,
+    poster: dict[str, Any] | None = None,
 ) -> tuple[dict[str, str], bool]:
     outputs: dict[str, str] = {}
     icon_fallback_used = False
-    component_icons = {
-        component_id: icons[model["components"][component_id]["icon"]]
-        for component_id in component_ids
-        if model["components"][component_id]["icon"] in icons
-    }
+    component_icons: dict[str, tuple[IconRecord, ...]] = {}
+    for component_id in component_ids:
+        component = model["components"][component_id]
+        icon_ids = [component["icon"], *component.get("technology_icons", [])]
+        resolved = tuple(icons[icon_id] for icon_id in icon_ids if icon_id in icons)
+        if resolved:
+            component_icons[component_id] = resolved
     for theme_name in ("light", "dark"):
         render_source = dot_for_graph(
             graph_id=graph_id, title=title, description=description,
             component_ids=component_ids, connections=connections, model=model, icons=icons,
             theme_name=theme_name, focus_id=focus_id, state_dependencies=state_dependencies,
             omitted_connection_count=omitted_connection_count, render_icons=False,
+            poster=poster,
         )
         public_source = render_source
         for record in icons.values():
@@ -468,7 +584,7 @@ def render_view(
         graph_id=view_id, title=view["title"], description=view["description"],
         component_ids=list(view["components"]),
         connections=list(index.view_connections[view_id]), model=model, icons=icons,
-        existing_outputs=existing_outputs,
+        existing_outputs=existing_outputs, poster=view.get("poster"),
     )
 
 

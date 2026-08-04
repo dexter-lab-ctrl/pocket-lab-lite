@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
+source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -18,11 +18,13 @@ validation_status: generated
 
 Provides the verified managed photo application under a same-origin Caddy path.
 
+<div class="pl-architecture-component-icons"><span class="pl-architecture-icon pl-architecture-icon--component pl-architecture-icon--brand"><img src="../../../../../assets/diagrams/production/icons/photoprism.svg" alt="" loading="lazy" decoding="async" /><span>PhotoPrism</span></span><span class="pl-architecture-icon pl-architecture-icon--small pl-architecture-icon--brand"><img src="../../../../../assets/diagrams/production/icons/ubuntu.svg" alt="" loading="lazy" decoding="async" /><span>Ubuntu</span></span></div>
+
 <figure class="pl-architecture-diagram pl-architecture-diagram--component">
   <div class="pl-architecture-diagram__viewport">
     <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/photoprism.light.svg" aria-label="Open full-size PhotoPrism mini architecture">
-      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/photoprism.light.svg#only-light" alt="PhotoPrism mini architecture" loading="lazy" decoding="async" />
-      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/photoprism.dark.svg#only-dark" alt="PhotoPrism mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--light" src="../../../../../assets/diagrams/production/components/photoprism.light.svg" alt="PhotoPrism mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--dark" src="../../../../../assets/diagrams/production/components/photoprism.dark.svg" alt="PhotoPrism mini architecture" loading="lazy" decoding="async" />
     </a>
   </div>
   <figcaption>PhotoPrism mini architecture. <a href="../../../../../assets/diagrams/production/components/photoprism.light.svg">View full-size diagram</a></figcaption>
@@ -53,7 +55,13 @@ Provides the verified managed photo application under a same-origin Caddy path.
 | Security boundary | Application-container boundary |
 | Supported platforms | Android/Termux, ARM64 |
 | Verification | verified |
-| Architecture icon | infra-photoprism |
+| Architecture icon | brand-photoprism |
+| Icon class | brand |
+| Icon upstream | PhotoPrism |
+| Icon source revision | logo-black.svg-2021-01-21 |
+| Icon license | PhotoPrism-brand-asset |
+| Icon trademark note | PhotoPrism is a registered trademark; use does not imply endorsement. |
+| Technology markers | brand-ubuntu |
 
 ## Inputs
 

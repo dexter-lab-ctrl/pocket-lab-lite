@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
+source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -17,6 +17,8 @@ validation_status: generated
 # GitHub repository
 
 Hosts source and release workflow definitions; it is not a Lite runtime apply owner.
+
+<div class="pl-architecture-component-icons"><span class="pl-architecture-icon pl-architecture-icon--component pl-architecture-icon--brand"><img src="../../../../../assets/diagrams/production/icons/github.svg" alt="" loading="lazy" decoding="async" /><span>GitHub</span></span><span class="pl-architecture-icon pl-architecture-icon--small pl-architecture-icon--brand"><img src="../../../../../assets/diagrams/production/icons/git.svg" alt="" loading="lazy" decoding="async" /><span>Git</span></span></div>
 
 > This component is represented in domain diagrams; a dedicated mini diagram is intentionally omitted.
 
@@ -45,7 +47,13 @@ Hosts source and release workflow definitions; it is not a Lite runtime apply ow
 | Security boundary | External release boundary |
 | Supported platforms | External service |
 | Verification | verified |
-| Architecture icon | infra-github |
+| Architecture icon | brand-github |
+| Icon class | brand |
+| Icon upstream | GitHub |
+| Icon source revision | simple-icons-16.28.0 |
+| Icon license | Simple-Icons-CC0 |
+| Icon trademark note | GitHub and its logo may be trademarks of GitHub; descriptive use only and no endorsement implied. |
+| Technology markers | brand-git |
 
 ## Inputs
 
@@ -99,6 +107,7 @@ Hosts source and release workflow definitions; it is not a Lite runtime apply ow
 
 ## Related architecture views
 
+- [Complete Pocket Lab Lite system map](../complete-system.md)
 - [Release subprocess and atomic rollback](../release-rollback.md)
 
 [Back to component catalog](../component-catalog.md) · [Architecture overview](../index.md)

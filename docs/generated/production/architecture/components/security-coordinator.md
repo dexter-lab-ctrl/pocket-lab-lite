@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
+source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -18,11 +18,13 @@ validation_status: generated
 
 Validates Quick, Full, and App Check requests, tracks active runs, and exposes compact split-read summaries.
 
+<div class="pl-architecture-component-icons"><span class="pl-architecture-icon pl-architecture-icon--component pl-architecture-icon--semantic"><img src="../../../../../assets/diagrams/production/icons/security.svg" alt="" loading="lazy" decoding="async" /><span>Security</span></span><span class="pl-architecture-icon pl-architecture-icon--small pl-architecture-icon--brand"><img src="../../../../../assets/diagrams/production/icons/python.svg" alt="" loading="lazy" decoding="async" /><span>Python</span></span></div>
+
 <figure class="pl-architecture-diagram pl-architecture-diagram--component">
   <div class="pl-architecture-diagram__viewport">
     <a class="pl-architecture-diagram__link" href="../../../../../assets/diagrams/production/components/security-coordinator.light.svg" aria-label="Open full-size Security scan coordinator mini architecture">
-      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-coordinator.light.svg#only-light" alt="Security scan coordinator mini architecture" loading="lazy" decoding="async" />
-      <img class="pl-architecture-diagram__image" src="../../../../../assets/diagrams/production/components/security-coordinator.dark.svg#only-dark" alt="Security scan coordinator mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--light" src="../../../../../assets/diagrams/production/components/security-coordinator.light.svg" alt="Security scan coordinator mini architecture" loading="lazy" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--dark" src="../../../../../assets/diagrams/production/components/security-coordinator.dark.svg" alt="Security scan coordinator mini architecture" loading="lazy" decoding="async" />
     </a>
   </div>
   <figcaption>Security scan coordinator mini architecture. <a href="../../../../../assets/diagrams/production/components/security-coordinator.light.svg">View full-size diagram</a></figcaption>
@@ -55,7 +57,13 @@ The mini diagram deterministically collapses **1** additional connections.
 | Security boundary | Control API boundary |
 | Supported platforms | Android/Termux, ARM64, Ubuntu, WSL2 development |
 | Verification | verified |
-| Architecture icon | infra-security |
+| Architecture icon | semantic-security |
+| Icon class | semantic |
+| Icon upstream | Pocket Lab Lite |
+| Icon source revision | semantic-family-2 |
+| Icon license | CC0-1.0 |
+| Icon trademark note | No third-party trademark; locally generated semantic symbol. |
+| Technology markers | brand-python |
 
 ## Inputs
 
