@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "16ebd9e9dfd92cef495ccdd01094b100b17d1adcf03ea6a041aec593eb56c269",
+    "aggregate_fingerprint": "f310f3a35243f9c40b5b7032f8bb56f5f8370f25a09bf0b6ff582c90bbf23b36",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -11,7 +11,7 @@
     "source_commit": "uncommitted",
     "source_fingerprints": {
       "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
-      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "unvalidated"
   },

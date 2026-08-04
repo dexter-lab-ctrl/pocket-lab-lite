@@ -1040,21 +1040,199 @@ def release_outputs() -> dict[Path, str]:
     return outputs
 
 
+READINESS_SELF_REFERENTIAL_GATES = frozenset({"docs-strict"})
+READINESS_SOURCE_PATHS = (
+    META_PATH,
+    Path(__file__),
+    ROOT / "scripts/dev/lite/run-gate.sh",
+    ROOT / "scripts/dev/lite/validation_evidence.py",
+)
+
+
+def _stable_readiness_value(value: Any) -> Any:
+    """Return a deterministic, JSON-safe projection of evidence values."""
+    if isinstance(value, dict):
+        return {
+            str(key): _stable_readiness_value(item)
+            for key, item in sorted(
+                value.items(),
+                key=lambda pair: str(pair[0]),
+            )
+        }
+    if isinstance(value, (list, tuple)):
+        return [_stable_readiness_value(item) for item in value]
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+    return str(value)
+
+
+def _semantic_readiness_record(
+    path: Path,
+    data: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Project evidence without volatile timing or raw-file metadata."""
+    gate = str(data.get("gate") or data.get("name") or path.stem)
+    if gate in READINESS_SELF_REFERENTIAL_GATES:
+        return None
+
+    commit = data.get("commit") or data.get("source_commit")
+    if not commit:
+        current: bool | None = True
+    elif SOURCE_COMMIT == "uncommitted":
+        current = None
+    else:
+        current = str(commit) == SOURCE_COMMIT
+
+    record: dict[str, Any] = {
+        "gate": gate,
+        "command": _stable_readiness_value(data.get("command")),
+        "commit": _stable_readiness_value(commit),
+        "platform": _stable_readiness_value(data.get("platform")),
+        "browser": _stable_readiness_value(data.get("browser")),
+        "result": _stable_readiness_value(
+            data.get("result") or data.get("status")
+        ),
+        "artifact": path.relative_to(ROOT).as_posix(),
+        "failure_reason": _stable_readiness_value(
+            data.get("failure_reason")
+        ),
+        "current": current,
+    }
+    record["semantic_checksum"] = sha256_bytes(
+        stable_json(record).encode("utf-8")
+    )
+    return record
+
+
 def validation_outputs() -> dict[Path, str]:
-    validation_root = ROOT / ".pocketlab-dev/validation"
-    records = []
-    if validation_root.exists():
-        for path in sorted(validation_root.rglob("*.json"))[:200]:
-            try:
-                data = read_json(path, {})
-            except Exception:
+    """Generate a stable source-owned validation contract.
+
+    Local gate evidence under .pocketlab-dev is intentionally excluded from
+    tracked documentation. That evidence changes during every validation run
+    and would otherwise make lite:docs:platform:check self-invalidating.
+    """
+    gate_script = ROOT / "scripts/dev/lite/run-gate.sh"
+    gate_records: list[dict[str, Any]] = []
+
+    if gate_script.exists():
+        for raw_line in gate_script.read_text(
+            encoding="utf-8",
+            errors="replace",
+        ).splitlines():
+            line = raw_line.strip()
+
+            if not line.startswith("record "):
                 continue
-            records.append({"gate":data.get("gate") or data.get("name") or path.stem,"command":data.get("command"),"commit":data.get("commit") or data.get("source_commit"),"platform":data.get("platform"),"browser":data.get("browser"),"started_at":data.get("started_at"),"completed_at":data.get("completed_at"),"duration":data.get("duration_seconds"),"result":data.get("result") or data.get("status"),"artifact":path.relative_to(ROOT).as_posix(),"checksum":sha256_bytes(path.read_bytes()),"failure_reason":data.get("failure_reason"),"current":(data.get("commit") or data.get("source_commit")) in {None,"",SOURCE_COMMIT}})
-    payload = {"commit":SOURCE_COMMIT,"gates":records,"status":"recorded evidence" if records else "no recorded local evidence; no PASS claimed"}
-    sources = list(validation_root.rglob("*.json")) if validation_root.exists() else [META_PATH]
-    envelope = json_envelope("lite_readiness", payload, sources, validation_state="recorded" if records else "unvalidated")
-    md = frontmatter("Lite readiness evidence", "Bounded recorded validation evidence; PASS is never synthesized.", sources, status="verified" if records else "unvalidated") + "# Lite readiness evidence\n\n" + (md_table(["Gate","Command","Commit","Platform","Result","Current","Artifact"], ([r["gate"],r["command"],r["commit"],r["platform"],r["result"],r["current"],r["artifact"]] for r in records)) if records else "No recorded validation evidence is present in this repository checkout. No PASS is claimed.\n")
-    return {ROOT / "validation/lite-readiness.json": stable_json(envelope), DEV / "lite-readiness.md": md}
+
+            parts = line.split()
+            if len(parts) < 3:
+                continue
+
+            gate = parts[1]
+
+            # These are execution-time aggregation steps rather than stable
+            # validation capabilities exposed in committed documentation.
+            if gate in {"docs-strict", "allure-results"}:
+                continue
+
+            command = " ".join(parts[2:])
+            gate_records.append(
+                {
+                    "gate": gate,
+                    "command": command,
+                    "result": "not evaluated in generated documentation",
+                    "evidence_location": (
+                        f".pocketlab-dev/validation/commands/{gate}.json"
+                    ),
+                }
+            )
+
+    gate_records.sort(
+        key=lambda record: (
+            str(record["gate"]),
+            str(record["command"]),
+        )
+    )
+
+    payload = {
+        "commit": SOURCE_COMMIT,
+        "status": (
+            "validation contract documented; local PASS is not claimed"
+        ),
+        "evidence_policy": {
+            "tracked_projection": (
+                "source-owned validation contract only"
+            ),
+            "local_evidence": ".pocketlab-dev/validation",
+            "local_evidence_tracked": False,
+            "pass_synthesized": False,
+        },
+        "gates": gate_records,
+    }
+
+    sources = [
+        source
+        for source in (
+            META_PATH,
+            gate_script,
+            ROOT / "scripts/dev/lite/validation_evidence.py",
+            ROOT / "Taskfile.yml",
+        )
+        if source.exists()
+    ]
+
+    envelope = json_envelope(
+        "lite_readiness",
+        payload,
+        sources,
+        validation_state="documented",
+    )
+
+    if gate_records:
+        body = md_table(
+            [
+                "Gate",
+                "Command",
+                "Generated status",
+                "Local evidence",
+            ],
+            (
+                [
+                    record["gate"],
+                    record["command"],
+                    record["result"],
+                    record["evidence_location"],
+                ]
+                for record in gate_records
+            ),
+        )
+    else:
+        body = (
+            "No source-owned validation gates were discovered. "
+            "No PASS is claimed.\n"
+        )
+
+    markdown = (
+        frontmatter(
+            "Lite readiness contract",
+            (
+                "Stable source-owned validation contract. Local runtime "
+                "evidence remains outside tracked generated documentation."
+            ),
+            sources,
+            status="documented",
+        )
+        + "# Lite readiness contract\n\n"
+        + "This page documents the available validation gates. It does not "
+        + "claim that the gates passed in the current checkout. Full local "
+        + "evidence remains under `.pocketlab-dev/validation`.\n\n"
+        + body
+    )
+
+    return {
+        ROOT / "validation/lite-readiness.json": stable_json(envelope),
+        DEV / "lite-readiness.md": markdown,
+    }
 
 
 def redaction_outputs() -> dict[Path, str]:

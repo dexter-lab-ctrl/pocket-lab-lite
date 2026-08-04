@@ -14,6 +14,12 @@ from typing import Any
 
 from architecture_model import ArchitectureIndex, ROOT, derive_mini_graph
 from icon_registry import IconRecord
+from svg_icon_embedder import (
+    EmbeddedIcon,
+    SvgIconEmbedError,
+    resolve_with_fallback,
+    symbol_defs_from_icons,
+)
 
 THEMES = {
     "light": {
@@ -53,7 +59,7 @@ EDGE_STYLES = {
 }
 ABSOLUTE_PATH_PATTERN = re.compile(r"(?:/home/|/mnt/|/tmp/|/data/data/|[A-Za-z]:\\)")
 EXTERNAL_REFERENCE_PATTERN = re.compile(r'(?:href|xlink:href)=["\'](?:https?:)?//', re.I)
-SVG_RENDERER_REVISION = 5
+SVG_RENDERER_REVISION = 6
 
 VERTICAL_VIEW_IDS = {
     "runtime-topology",
@@ -114,30 +120,80 @@ def component_doc_url(component_id: str) -> str:
     return f"../../../../generated/production/architecture/components/{component_id}/"
 
 
+CARD_VARIANTS = {
+    "actor": "actor",
+    "external": "actor",
+    "external-app": "actor",
+    "proxy": "gateway",
+    "network": "gateway",
+    "database": "state",
+    "event": "state",
+    "artifact": "state",
+    "ui": "service",
+    "service": "service",
+    "process": "service",
+    "decision": "service",
+}
+CARD_SHAPES = {
+    "actor": "ellipse",
+    "gateway": "box",
+    "state": "cylinder",
+    "service": "box",
+}
+ICON_ANCHOR_PREFIX = "PLICON__"
+
+
+def _card_variant(component: dict[str, Any]) -> str:
+    presentation = component.get("diagram_presentation") or {}
+    requested = presentation.get("card_variant")
+    if requested in CARD_SHAPES:
+        return requested
+    return CARD_VARIANTS.get(component["category"], "service")
+
+
+def _icon_anchor(component_id: str) -> str:
+    return f"{ICON_ANCHOR_PREFIX}{component_id}"
+
+
 def _node_label(
-    component: dict[str, Any], icon: IconRecord | None, *, render_icons: bool
+    component_id: str,
+    component: dict[str, Any],
+    icon: IconRecord | None,
+    *,
+    focus: bool,
+    poster: bool,
 ) -> str:
-    subtitle = _wrap_label(component["runtime_location"], limit=26, max_lines=2)
-    responsibility = _wrap_label(component["responsibility"], limit=34, max_lines=3)
-    name = _wrap_label(component["name"], limit=22, max_lines=2)
-    cells = []
+    """Build a bounded poster card with a deterministic Graphviz-owned icon anchor."""
+    subtitle = _wrap_label(component["runtime_location"], limit=28, max_lines=2)
+    responsibility = _wrap_label(component["responsibility"], limit=38 if poster else 34, max_lines=2)
+    name = _wrap_label(component["name"], limit=25, max_lines=2)
+    owner = _wrap_label(component.get("runtime_owner") or component.get("owner", ""), limit=24, max_lines=1)
+    metadata = f"{subtitle} · {owner}" if owner and owner not in subtitle else subtitle
+    text_width = 216 if poster else 188
+    icon_cell = ""
     if icon:
-        if render_icons:
-            cells.append(
-                f'<TD FIXEDSIZE="TRUE" WIDTH="52" HEIGHT="48" BGCOLOR="#FFFFFF">'
-                f'<IMG SRC="{_html(str(icon.path))}" SCALE="TRUE"/></TD>'
-            )
-        else:
-            cells.append('<TD FIXEDSIZE="TRUE" WIDTH="52" HEIGHT="48" BGCOLOR="#FFFFFF"> </TD>')
-    cells.append(
-        '<TD ALIGN="LEFT">'
-        f'<FONT POINT-SIZE="12"><B>{_html(name).replace(chr(10), "<BR/>")}</B></FONT><BR/>'
+        anchor = _html(f"#{_icon_anchor(component_id)}")
+        icon_cell = (
+            '<TD FIXEDSIZE="TRUE" WIDTH="58" HEIGHT="64" ALIGN="CENTER" VALIGN="MIDDLE" BORDER="1" BGCOLOR="#FFFFFF" '
+            f'HREF="{anchor}" TITLE="Architecture icon anchor">'
+            '<FONT POINT-SIZE="1">&#160;</FONT></TD>'
+        )
+    eyebrow = (
+        '<FONT POINT-SIZE="7"><B>CURRENT COMPONENT</B></FONT><BR/>'
+        if focus else ""
+    )
+    text_cell = (
+        f'<TD WIDTH="{text_width}" ALIGN="LEFT" BALIGN="LEFT" VALIGN="MIDDLE">'
+        f'{eyebrow}'
+        f'<FONT POINT-SIZE="13"><B>{_html(name).replace(chr(10), "<BR/>")}</B></FONT><BR/>'
         f'<FONT POINT-SIZE="9">{_html(responsibility).replace(chr(10), "<BR/>")}</FONT><BR/>'
-        f'<FONT POINT-SIZE="8"><I>{_html(subtitle).replace(chr(10), "<BR/>")}</I></FONT><BR/>'
-        f'<FONT POINT-SIZE="7.5">{_html(component["category"].replace("-", " ").title())}</FONT>'
+        f'<FONT POINT-SIZE="8"><I>{_html(metadata).replace(chr(10), "<BR/>")}</I></FONT>'
         '</TD>'
     )
-    return '<<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4"><TR>' + "".join(cells) + "</TR></TABLE>>"
+    return (
+        '<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6">'
+        f'<TR>{icon_cell}{text_cell}</TR></TABLE>>'
+    )
 
 
 def _node_attrs(
@@ -148,21 +204,29 @@ def _node_attrs(
     *,
     render_icons: bool,
     focus: bool = False,
+    poster: bool = False,
 ) -> str:
+    del render_icons  # Graphviz establishes anchor geometry; SVG postprocessing owns icon rendering.
     category = component["category"]
     icon = icons.get(component["icon"])
+    variant = _card_variant(component)
     attrs: dict[str, str] = {
-        "label": _node_label(component, icon, render_icons=render_icons),
-        "shape": SHAPES.get(category, "box"),
+        "label": _node_label(
+            component_id, component, icon, focus=focus, poster=poster
+        ),
+        "shape": CARD_SHAPES[variant],
         "style": "rounded,filled,bold" if focus else "rounded,filled",
         "fillcolor": theme.get(category, theme["cluster"]),
         "color": theme["foreground"] if focus else theme["edge"],
         "fontcolor": theme["foreground"],
-        "penwidth": "2.3" if focus else "1.35",
+        "penwidth": "2.5" if focus else "1.25",
         "tooltip": f"{component['name']}. {component['responsibility']}",
         "URL": component_doc_url(component_id),
         "target": "_top",
+        "margin": "0.10,0.08",
     }
+    if variant == "actor":
+        attrs["margin"] = "0.16,0.11"
     rendered = []
     for name, value in attrs.items():
         if name == "label" and value.startswith("<<"):
@@ -170,7 +234,6 @@ def _node_attrs(
         else:
             rendered.append(f"{name}={q(value)}")
     return ", ".join(rendered)
-
 
 def dot_for_graph(
     *,
@@ -246,7 +309,7 @@ def dot_for_graph(
                 for component_id in members:
                     attrs = _node_attrs(
                         component_id, model["components"][component_id], theme, icons,
-                        render_icons=render_icons, focus=component_id == focus_id,
+                        render_icons=render_icons, focus=component_id == focus_id, poster=True,
                     )
                     lines.append(f"      {q(component_id)} [{attrs}];")
                 lines.append("    }")
@@ -356,87 +419,153 @@ def dot_for_graph(
     return source
 
 
-def _inject_icon_references(
-    svg: str, *, component_icons: dict[str, tuple[IconRecord, ...]], public_icon_prefix: str
+def _embedded_icon_use(
+    icon: EmbeddedIcon, *, x: float, y: float, width: float, height: float, css_class: str
 ) -> str:
-    """Inject local icon references into Graphviz node groups across Graphviz versions."""
-    cursor = 0
-    while True:
-        node_match = re.search(
-            r'<g\b(?=[^>]*\bclass=["\']node["\'])[^>]*>',
-            svg[cursor:],
-            flags=re.I,
-        )
-        if node_match is None:
-            break
-        node_start = cursor + node_match.start()
-        next_node = re.search(
-            r'<g\b(?=[^>]*\bclass=["\']node["\'])[^>]*>',
-            svg[node_start + 1:],
-            flags=re.I,
-        )
-        node_end = (
-            node_start + 1 + next_node.start()
-            if next_node is not None
-            else len(svg)
-        )
-        block = svg[node_start:node_end]
-        title_match = re.search(r'<title>(?P<id>[^<]+)</title>', block)
-        if title_match is None:
-            cursor = node_end
-            continue
-        component_id = html.unescape(title_match.group("id"))
-        icon_records = component_icons.get(component_id)
-        if not icon_records or re.search(r'<image\b[^>]*(?:href|xlink:href)=', block, re.I):
-            cursor = node_end
-            continue
-        text_match = re.search(
-            r'<text\b[^>]*\bx="(?P<x>-?[0-9.]+)"[^>]*\by="(?P<y>-?[0-9.]+)"[^>]*>',
-            block,
-            flags=re.I,
-        )
-        if text_match is None:
-            cursor = node_end
-            continue
-        x = float(text_match.group("x")) - 39.0
-        y = float(text_match.group("y")) - 17.0
-        primary = icon_records[0]
-        fragments = [
-            f'<rect x="{x - 3:.2f}" y="{y - 3:.2f}" width="36" height="36" rx="6" '
-            'fill="#ffffff" stroke="#cbd5e1" stroke-width="1" aria-hidden="true"/>\n',
-            f'<image href="{public_icon_prefix}/{primary.path.name}" x="{x:.2f}" y="{y:.2f}" '
-            'width="30" height="30" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n',
-        ]
-        for badge_index, badge in enumerate(icon_records[1:4]):
-            badge_x = x + badge_index * 13.0
-            badge_y = y + 34.0
-            fragments.extend([
-                f'<rect x="{badge_x - 1:.2f}" y="{badge_y - 1:.2f}" width="12" height="12" rx="2" '
-                'fill="#ffffff" stroke="#cbd5e1" stroke-width="0.7" aria-hidden="true"/>\n',
-                f'<image href="{public_icon_prefix}/{badge.path.name}" x="{badge_x:.2f}" y="{badge_y:.2f}" '
-                'width="10" height="10" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>\n',
-            ])
-        image = "".join(fragments)
-        insertion = node_start + block.index('<text ', text_match.start())
-        svg = svg[:insertion] + image + svg[insertion:]
-        cursor = node_end + len(image)
-    return svg
+    return (
+        f'<use class="{css_class}" href="#{icon.symbol_id}" x="{x:.2f}" y="{y:.2f}" '
+        f'width="{width:.2f}" height="{height:.2f}" '
+        'preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>'
+    )
 
+
+def _embed_icon_anchors(
+    svg: str,
+    *,
+    component_icons: dict[str, tuple[IconRecord, ...]],
+    registry: dict[str, IconRecord],
+    theme_name: str,
+) -> str:
+    """Replace exact Graphviz-owned icon-cell anchors with embedded SVG symbols."""
+    cache: dict[str, EmbeddedIcon] = {}
+    resolved_by_component: dict[str, tuple[EmbeddedIcon, ...]] = {}
+    fallback_used: list[str] = []
+    for component_id, records in sorted(component_icons.items()):
+        resolved: list[EmbeddedIcon] = []
+        for record in records[:4]:
+            resolved_record, embedded, used_fallback = resolve_with_fallback(
+                record, registry, cache=cache
+            )
+            if used_fallback:
+                fallback_used.append(f"{component_id}:{record.id}->{resolved_record.id}")
+            if embedded.icon_id not in {item.icon_id for item in resolved}:
+                resolved.append(embedded)
+        if not resolved:
+            raise GraphvizRenderError(f"No embeddable icon remains for component {component_id}")
+        resolved_by_component[component_id] = tuple(resolved)
+
+    anchor_pattern = re.compile(
+        r'<a\b(?P<attrs>[^>]*(?:xlink:href|href)=["\']#PLICON__(?P<component>[^"\']+)["\'][^>]*)>'
+        r'(?P<body>.*?)</a>',
+        flags=re.I | re.S,
+    )
+    seen: dict[str, int] = {}
+
+    def replace_anchor(match: re.Match[str]) -> str:
+        component_id = html.unescape(match.group("component"))
+        seen[component_id] = seen.get(component_id, 0) + 1
+        records = resolved_by_component.get(component_id)
+        if not records:
+            raise GraphvizRenderError(
+                f"Graphviz emitted icon anchor for unknown component {component_id}"
+            )
+        polygon = re.search(r'<polygon\b[^>]*\bpoints=["\'](?P<points>[^"\']+)["\']', match.group("body"), re.I)
+        if polygon is None:
+            raise GraphvizRenderError(f"Icon anchor for {component_id} lacks Graphviz cell geometry")
+        coordinates: list[tuple[float, float]] = []
+        for token in polygon.group("points").split():
+            if "," not in token:
+                continue
+            raw_x, raw_y = token.split(",", 1)
+            try:
+                coordinates.append((float(raw_x), float(raw_y)))
+            except ValueError as exc:
+                raise GraphvizRenderError(
+                    f"Icon anchor for {component_id} has invalid cell coordinates"
+                ) from exc
+        if len(coordinates) < 4:
+            raise GraphvizRenderError(f"Icon anchor for {component_id} has incomplete geometry")
+        min_x = min(item[0] for item in coordinates)
+        max_x = max(item[0] for item in coordinates)
+        min_y = min(item[1] for item in coordinates)
+        max_y = max(item[1] for item in coordinates)
+        cell_width = max_x - min_x
+        cell_height = max_y - min_y
+        if cell_width < 28 or cell_height < 28:
+            raise GraphvizRenderError(
+                f"Icon anchor for {component_id} collapsed to {cell_width:.2f}x{cell_height:.2f}"
+            )
+        tile_size = min(44.0, cell_width - 8.0, cell_height - 8.0)
+        tile_x = min_x + (cell_width - tile_size) / 2
+        tile_y = min_y + (cell_height - tile_size) / 2
+        tile_fill = "#ffffff" if theme_name == "light" else "#f8fafc"
+        tile_stroke = "#cbd5e1" if theme_name == "light" else "#94a3b8"
+        fragments = [
+            f'<g class="pl-node-icon" data-component="{html.escape(component_id, quote=True)}" '
+            f'data-icon-cell="{min_x:.2f},{min_y:.2f},{cell_width:.2f},{cell_height:.2f}" '
+            f'data-icon-tile="{tile_x:.2f},{tile_y:.2f},{tile_size:.2f},{tile_size:.2f}" '
+            'aria-hidden="true">',
+            f'<rect class="pl-node-icon__tile" x="{tile_x:.2f}" y="{tile_y:.2f}" '
+            f'width="{tile_size:.2f}" height="{tile_size:.2f}" rx="8" '
+            f'fill="{tile_fill}" stroke="{tile_stroke}" stroke-width="1.1"/>',
+            _embedded_icon_use(
+                records[0], x=tile_x + 8, y=tile_y + 7, width=tile_size - 16,
+                height=tile_size - 16, css_class="pl-node-icon__primary",
+            ),
+        ]
+        badges = records[1:4]
+        badge_size = 11.0
+        badge_y = tile_y + tile_size - badge_size + 1.5
+        badge_start_x = tile_x + tile_size - badge_size - max(0, len(badges) - 1) * 10.0 - 1.5
+        for badge_index, badge in enumerate(badges):
+            badge_x = badge_start_x + badge_index * 10.0
+            fragments.extend([
+                f'<rect class="pl-node-icon__badge-tile" x="{badge_x - 1:.2f}" '
+                f'y="{badge_y - 1:.2f}" width="{badge_size + 2:.2f}" '
+                f'height="{badge_size + 2:.2f}" rx="3" fill="{tile_fill}" '
+                f'stroke="{tile_stroke}" stroke-width="0.7"/>',
+                _embedded_icon_use(
+                    badge, x=badge_x, y=badge_y, width=badge_size, height=badge_size,
+                    css_class="pl-node-icon__badge",
+                ),
+            ])
+        fragments.append('</g>')
+        return "".join(fragments)
+
+    svg = anchor_pattern.sub(replace_anchor, svg)
+    for component_id in resolved_by_component:
+        count = seen.get(component_id, 0)
+        if count != 1:
+            raise GraphvizRenderError(
+                f"Expected exactly one icon anchor for {component_id}; Graphviz emitted {count}"
+            )
+    if ICON_ANCHOR_PREFIX in svg:
+        raise GraphvizRenderError("Unresolved architecture icon anchor remains after rendering")
+    defs = symbol_defs_from_icons(cache.values())
+    svg = re.sub(r'(<svg\b[^>]*>\n?)', r'\1' + defs, svg, count=1)
+    if fallback_used:
+        marker = html.escape(";".join(sorted(fallback_used)))
+        svg = re.sub(
+            r'(<svg\b[^>]*>\n?)',
+            r'\1<metadata id="pocketlab-icon-fallbacks">' + marker + '</metadata>\n',
+            svg, count=1,
+        )
+    if re.search(r'<image\b[^>]*(?:href|xlink:href)=', svg, re.I):
+        raise GraphvizRenderError("Generated architecture SVG retained an external image reference")
+    return svg
 
 def _normalize_svg(
     svg: str, *, graph_id: str, theme_name: str, title: str, description: str,
-    icon_paths: list[Path], public_icon_prefix: str,
-    component_icons: dict[str, tuple[IconRecord, ...]], source_fingerprint: str,
+    component_icons: dict[str, tuple[IconRecord, ...]], registry: dict[str, IconRecord],
+    source_fingerprint: str,
 ) -> str:
     svg = svg.replace("\r\n", "\n")
     svg = re.sub(r"<!DOCTYPE svg PUBLIC.*?>\n?", "", svg, flags=re.S)
     svg = re.sub(r"<!-- Generated by graphviz version .*? -->\n?", "", svg)
     svg = re.sub(r"<!-- Title: .*? -->\n?", "", svg)
     svg = re.sub(r"<title>.*?</title>\n?", "", svg, count=1, flags=re.S)
-    for icon_path in icon_paths:
-        svg = svg.replace(str(icon_path), f"{public_icon_prefix}/{icon_path.name}")
-    svg = _inject_icon_references(
-        svg, component_icons=component_icons, public_icon_prefix=public_icon_prefix
+    svg = _embed_icon_anchors(
+        svg, component_icons=component_icons, registry=registry, theme_name=theme_name
     )
     safe_id = re.sub(r"[^a-z0-9-]", "-", graph_id.lower())
     svg_id = f"pocketlab-{safe_id}-{theme_name}"
@@ -494,8 +623,7 @@ def render_svg(
         return completed.stderr.strip(), False
     return _normalize_svg(
         completed.stdout, graph_id=graph_id, theme_name=theme_name, title=title,
-        description=description, icon_paths=[record.path for record in icons.values()],
-        public_icon_prefix=public_icon_prefix, component_icons=component_icons,
+        description=description, component_icons=component_icons, registry=icons,
         source_fingerprint=source_fingerprint,
     ), True
 
@@ -515,7 +643,9 @@ def _read_reusable_svg(path: Path, source_fingerprint: str) -> str | None:
         return None
     if "<title id=" not in svg or "<desc id=" not in svg or 'role="img"' not in svg:
         return None
-    if '<image href="../icons/' not in svg:
+    if '<symbol id="pl-icon-' not in svg or '<use class="pl-node-icon__primary"' not in svg:
+        return None
+    if '<image href=' in svg or ICON_ANCHOR_PREFIX in svg:
         return None
     if ABSOLUTE_PATH_PATTERN.search(svg) or EXTERNAL_REFERENCE_PATTERN.search(svg):
         return None

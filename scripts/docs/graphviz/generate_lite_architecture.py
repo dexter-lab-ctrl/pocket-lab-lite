@@ -298,8 +298,12 @@ def validate_outputs(outputs: dict[Path, bytes], details: dict[str, Any]) -> Non
             if path.suffix == ".svg" and "icons" not in path.parts:
                 if "<title id=" not in text or "<desc id=" not in text:
                     errors.append(f"missing SVG accessibility metadata in {path}")
-                if "<image href=\"../icons/" not in text:
-                    errors.append(f"missing local icon reference in {path}")
+                if '<symbol id="pl-icon-' not in text or '<use class="pl-node-icon__primary"' not in text:
+                    errors.append(f"missing embedded icon symbols in {path}")
+                if re.search(r'<image\b[^>]*(?:href|xlink:href)=', text, re.I):
+                    errors.append(f"external nested image reference in {path}")
+                if "PLICON__" in text:
+                    errors.append(f"unresolved icon anchor in {path}")
             if path.suffix == ".md":
                 for target in MARKDOWN_LINK_PATTERN.findall(text):
                     if not _resolve_generated_link(path, target, outputs):

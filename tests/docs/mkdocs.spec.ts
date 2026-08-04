@@ -310,8 +310,23 @@ ${String(error)}`
 
   await liteApiCatalogLink.click();
   await expect(page.getByRole('heading', { name: 'FastAPI /api/lite/*' })).toBeVisible();
-  await expect(page.locator('img[src*="components/lite-api.light.svg"]')).toBeAttached();
+  const liteApiLightDiagram = page.locator('img[src*="components/lite-api.light.svg"]');
+  await expect(liteApiLightDiagram).toBeAttached();
   await expect(page.locator('img[src*="components/lite-api.dark.svg"]')).toBeAttached();
+
+  // Embedded diagrams must be self-contained because browsers do not load
+  // nested external SVG icon assets when the parent SVG is displayed via img.
+  const liteApiDiagramSource = await liteApiLightDiagram.getAttribute('src');
+  expect(liteApiDiagramSource).toBeTruthy();
+  const liteApiDiagramUrl = new URL(liteApiDiagramSource!, page.url()).toString();
+  const liteApiDiagramResponse = await page.request.get(liteApiDiagramUrl);
+  expect(liteApiDiagramResponse.ok()).toBe(true);
+  expect(liteApiDiagramResponse.headers()['content-type']).toContain('image/svg+xml');
+  const liteApiDiagramSvg = await liteApiDiagramResponse.text();
+  expect(liteApiDiagramSvg).toContain('<symbol id="pl-icon-');
+  expect(liteApiDiagramSvg).toContain('<use class="pl-node-icon__primary"');
+  expect(liteApiDiagramSvg).not.toContain('<image href=');
+  expect(liteApiDiagramSvg).not.toContain('PLICON__');
 
   const architectureSearch = page.locator('input[data-md-component="search-query"]');
   if (!(await architectureSearch.isVisible())) {

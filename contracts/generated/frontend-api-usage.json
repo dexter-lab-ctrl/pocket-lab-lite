@@ -2910,7 +2910,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "a86c994bb15b79986ff295b8186f6698a4baef37d8385998293a03b748e06aa8",
+    "aggregate_fingerprint": "02b57d54ce69ee62d1727df76a9bcc5ab4c27f35f779c61fdcb0d6c5831575f8",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2922,7 +2922,7 @@
     "source_fingerprints": {
       "contracts/generated/lite-openapi.json": "6854b6b4a7afd5d579568891473c4a6b6189f0041eddc5c87015ee1e715e4bf3",
       "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
-      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f",
+      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
       "src/lib/liteApi.js": "e9c651772f399dc73fdb418a4531a230e49b02a3f8616223c7fad1f8da0533dd",
       "src/lite/LiteActionProgress.jsx": "a3dfb21a6c90271415b822e6cadc933e97db13681fc2df566278625154ac73a4",
       "src/lite/LiteApp.jsx": "3979db90fbd79f2222c2579c9261808270eba437a8338328f49ca679ec08a832",
@@ -2934,7 +2934,7 @@
       "src/lite/LiteHome.stories.jsx": "ead9e092e4eb37399202682d42ec165f7af473d22d684ea3e75f2c55a1910062",
       "src/lite/LiteIdentity.jsx": "0a2539db595580f9f5422097ec725edf39c469b4fec499d10b25e518bf2ebf11",
       "src/lite/LiteIdentity.stories.jsx": "a5c53468c8e8da6ae2c1f4365803c0eb5a7a30181c28bd7620eb5dbc6e220236",
-      "src/lite/LiteMotion.jsx": "0c7e23e11332584fa5e696cadb12a3cbd6943a4721adc9bf7b64f067233ca33d",
+      "src/lite/LiteMotion.jsx": "8dc0089c7a175701b33e96afac566efbde31c6eda1202ef5ed0f00ff968e72ba",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
       "src/lite/LiteRecovery.jsx": "31bf8c1eb87c597189ea95cd13c17403a504b78cd27173a19892c5d1be90720b",

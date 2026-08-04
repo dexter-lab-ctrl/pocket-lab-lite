@@ -13607,7 +13607,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "f7bcc790fceabdc4dfbb9f24c44ae1c06594ac6be2fbee7697d42b49044968c7",
+    "aggregate_fingerprint": "e179d705b8c0047f9129c0b44e9962d382bafc7fd9ac79ca512313e34d0dc872",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -13818,7 +13818,7 @@
       "scripts/dev/lite/check-contracts.sh": "a62c37cc391390c74010ae4ebbda691e3598a93cb004c66c555d1b9fca9566e3",
       "scripts/dev/lite/run-gate.sh": "43bce72d0da69e2eca2b63df3f7a5d83d7df8aa3345bd1414c75c63d5129b546",
       "scripts/dev/lite/run-playwright-mocked.sh": "0a20feb1edc0cc96d07506d08948669c22256f9427964f739e93dba754fc98c8",
-      "scripts/dev/lite/setup-architecture-icons.sh": "2815fdff0268fb6fec6a0440456a7ada7090d1fe3a0e1d1ddafaf324a2c39e94",
+      "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
       "scripts/dev/lite/setup-check.sh": "ec8e18dd798bccef6094e562cd357cd6447a43f883537b1b7e4dac84d0238485",
       "scripts/dev/lite/setup-documentation-tools.sh": "05cedf7464b691b84bcf4c898e07749db348cfd6da7c60dc171a45bfbd6d2846",
       "scripts/dev/lite/setup-system.sh": "508e775c78b4c328b65b303e9e0989e315b2f1d23f76f53c656252c2ac1942c2",
@@ -13857,7 +13857,7 @@
       "scripts/dev/up.sh": "b51c1a636f904b872d7b9b8e178c6f409c7b61c7d1de55f9052083a451e975f3",
       "scripts/dev/wait-http.sh": "2572f60cf011844a547a35dcee2af15a02476381c21466c3ba848c0516afb9b5",
       "scripts/docs/generate_allure_report.sh": "672bd18a01342d14ae7e14c85b7670bfd704e12100863b8f30ccaeda97d98474",
-      "scripts/docs/lite/generate_platform_catalogs.py": "6480153ac4c8e10e2b928a65ece2e6ae9f5cd9348594bd03c880fee49a3bbd3f"
+      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
     },
     "validation_state": "generated"
   }
