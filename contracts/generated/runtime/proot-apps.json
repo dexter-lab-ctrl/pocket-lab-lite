@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  },
+  "proot_apps": {
+    "applications": [
+      {
+        "container": "unknown",
+        "id": "photoprism",
+        "pm2_owned": true,
+        "presence": "present",
+        "route_present": true,
+        "runtime": "unknown"
+      }
+    ],
+    "classification": "verified",
+    "container": {
+      "execution_owner": "proot-distro",
+      "expected_source_match": "not-evaluated",
+      "id": "proot-ubuntu",
+      "logical_role": "PROot Ubuntu application runtime",
+      "memory_bucket": "not-applicable",
+      "presence": "missing",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "proot",
+      "status": "unavailable"
+    },
+    "routes": [
+      {
+        "https_mode": "explicit-files",
+        "https_owner": "caddy",
+        "id": "photoprism",
+        "peer_reachability": "not-applicable",
+        "presence": "present",
+        "route_kind": "managed-app",
+        "route_order": "api-before-pwa",
+        "upstream_kind": "loopback-app"
+      }
+    ]
+  }
+}

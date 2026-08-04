@@ -1,0 +1,684 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.invalid/schemas/runtime/termux-runtime-baseline.schema.json",
+  "title": "Pocket Lab Lite promoted Termux runtime baseline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_revision",
+    "capture_kind",
+    "sanitized",
+    "source",
+    "host_role",
+    "platform",
+    "services",
+    "listeners",
+    "routes",
+    "runtime_apps",
+    "messaging",
+    "remote_access",
+    "datastores",
+    "runtime_relationships",
+    "verification",
+    "semantic_fingerprint"
+  ],
+  "properties": {
+    "schema_revision": {
+      "const": 1
+    },
+    "capture_kind": {
+      "const": "termux-runtime"
+    },
+    "sanitized": {
+      "const": true
+    },
+    "source": {
+      "const": "allowlisted-read-only-ssh-probe"
+    },
+    "host_role": {
+      "const": "server-phone"
+    },
+    "platform": {
+      "$ref": "#/$defs/platform"
+    },
+    "services": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/service"
+      }
+    },
+    "listeners": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/listener"
+      }
+    },
+    "routes": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/route"
+      }
+    },
+    "runtime_apps": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/runtimeApp"
+      }
+    },
+    "verification": {
+      "$ref": "#/$defs/verification"
+    },
+    "semantic_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "messaging": {
+      "$ref": "#/$defs/messaging"
+    },
+    "remote_access": {
+      "$ref": "#/$defs/remoteAccess"
+    },
+    "datastores": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/datastore"
+      }
+    },
+    "runtime_relationships": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/runtimeRelationship"
+      }
+    }
+  },
+  "$defs": {
+    "presence": {
+      "enum": [
+        "present",
+        "missing",
+        "unknown"
+      ]
+    },
+    "status": {
+      "enum": [
+        "online",
+        "offline",
+        "stopped",
+        "degraded",
+        "healthy",
+        "ready",
+        "missing",
+        "unavailable",
+        "unknown",
+        "invalid",
+        "partial"
+      ]
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "android_release_major",
+        "architecture_family",
+        "abi_family",
+        "termux_prefix_type",
+        "runtime_verification_state"
+      ],
+      "properties": {
+        "platform": {
+          "enum": [
+            "android-termux",
+            "linux",
+            "unknown"
+          ]
+        },
+        "android_release_major": {
+          "type": "string",
+          "pattern": "^(?:unknown|[0-9]{1,3})$"
+        },
+        "architecture_family": {
+          "enum": [
+            "arm64",
+            "x86-64",
+            "other",
+            "unknown"
+          ]
+        },
+        "abi_family": {
+          "enum": [
+            "arm64",
+            "x86-64",
+            "other",
+            "unknown"
+          ]
+        },
+        "termux_prefix_type": {
+          "enum": [
+            "termux",
+            "non-termux",
+            "unknown"
+          ]
+        },
+        "runtime_verification_state": {
+          "enum": [
+            "verified",
+            "partial",
+            "unavailable",
+            "mismatch"
+          ]
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "logical_role",
+        "presence",
+        "status",
+        "runtime_type",
+        "execution_owner",
+        "restart_bucket",
+        "memory_bucket",
+        "expected_source_match"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "logical_role": {
+          "type": "string",
+          "maxLength": 96
+        },
+        "presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "runtime_type": {
+          "enum": [
+            "python",
+            "node",
+            "native",
+            "shell",
+            "proot",
+            "sqlite",
+            "unknown"
+          ]
+        },
+        "execution_owner": {
+          "type": "string",
+          "maxLength": 96
+        },
+        "restart_bucket": {
+          "enum": [
+            "none",
+            "low",
+            "elevated",
+            "high",
+            "unknown",
+            "not-applicable"
+          ]
+        },
+        "memory_bucket": {
+          "enum": [
+            "under-64-mib",
+            "64-191-mib",
+            "192-383-mib",
+            "384-mib-or-more",
+            "unknown",
+            "not-applicable"
+          ]
+        },
+        "expected_source_match": {
+          "enum": [
+            "matched",
+            "mismatched",
+            "not-evaluated"
+          ]
+        }
+      }
+    },
+    "listener": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "service",
+        "presence",
+        "port_kind",
+        "bind_scope"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "service": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "port_kind": {
+          "enum": [
+            "nats-client",
+            "https-proxy",
+            "api-loopback",
+            "unknown"
+          ]
+        },
+        "bind_scope": {
+          "enum": [
+            "loopback",
+            "private-or-all",
+            "missing",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "presence",
+        "route_kind",
+        "https_owner",
+        "https_mode",
+        "route_order",
+        "upstream_kind",
+        "peer_reachability"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "route_kind": {
+          "enum": [
+            "pwa",
+            "api-lite",
+            "managed-app",
+            "remote-access"
+          ]
+        },
+        "https_owner": {
+          "enum": [
+            "caddy",
+            "unavailable",
+            "unknown"
+          ]
+        },
+        "upstream_kind": {
+          "enum": [
+            "static-assets",
+            "loopback-fastapi",
+            "loopback-app",
+            "private-network",
+            "unknown"
+          ]
+        },
+        "https_mode": {
+          "enum": [
+            "explicit-files",
+            "tailscale-integration",
+            "automatic-caddy",
+            "none",
+            "unknown"
+          ]
+        },
+        "route_order": {
+          "enum": [
+            "api-before-pwa",
+            "pwa-before-api",
+            "not-applicable",
+            "unknown"
+          ]
+        },
+        "peer_reachability": {
+          "enum": [
+            "ready",
+            "not-ready",
+            "unknown",
+            "not-applicable"
+          ]
+        }
+      }
+    },
+    "runtimeApp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "presence",
+        "runtime",
+        "container",
+        "pm2_owned",
+        "route_present"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "runtime": {
+          "enum": [
+            "proot-ubuntu",
+            "termux",
+            "unknown"
+          ]
+        },
+        "container": {
+          "enum": [
+            "ubuntu",
+            "none",
+            "unknown"
+          ]
+        },
+        "pm2_owned": {
+          "type": "boolean"
+        },
+        "route_present": {
+          "type": "boolean"
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_verification_state",
+        "forbidden_fields_found",
+        "raw_paths_removed",
+        "network_identity_removed",
+        "secrets_removed",
+        "certificate_material_removed",
+        "private_key_material_removed",
+        "media_paths_removed",
+        "source_expectations_compared",
+        "unresolved_mismatches"
+      ],
+      "properties": {
+        "runtime_verification_state": {
+          "enum": [
+            "verified",
+            "partial",
+            "unavailable",
+            "mismatch"
+          ]
+        },
+        "forbidden_fields_found": {
+          "const": false
+        },
+        "raw_paths_removed": {
+          "const": true
+        },
+        "network_identity_removed": {
+          "const": true
+        },
+        "secrets_removed": {
+          "const": true
+        },
+        "certificate_material_removed": {
+          "const": true
+        },
+        "private_key_material_removed": {
+          "const": true
+        },
+        "media_paths_removed": {
+          "const": true
+        },
+        "source_expectations_compared": {
+          "type": "boolean"
+        },
+        "unresolved_mismatches": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9.-]+: [a-z0-9 -]+$",
+            "maxLength": 160
+          }
+        }
+      }
+    },
+    "messaging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "service_id",
+        "process_owner",
+        "client_listener_presence",
+        "expected_client_port_present",
+        "bind_scope",
+        "jetstream_state"
+      ],
+      "properties": {
+        "service_id": {
+          "const": "nats"
+        },
+        "process_owner": {
+          "enum": [
+            "pm2",
+            "unknown"
+          ]
+        },
+        "client_listener_presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "expected_client_port_present": {
+          "type": "boolean"
+        },
+        "bind_scope": {
+          "enum": [
+            "loopback",
+            "private-or-all",
+            "missing",
+            "unknown"
+          ]
+        },
+        "jetstream_state": {
+          "enum": [
+            "enabled",
+            "disabled",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "remoteAccess": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "service_id",
+        "command_variant",
+        "daemon_running",
+        "ipv4_ready",
+        "private_connectivity_ready",
+        "peer_reachability",
+        "address_redacted",
+        "hostname_redacted"
+      ],
+      "properties": {
+        "service_id": {
+          "const": "tailscaled"
+        },
+        "command_variant": {
+          "enum": [
+            "tailscale-cli",
+            "tailscale",
+            "missing"
+          ]
+        },
+        "daemon_running": {
+          "type": "boolean"
+        },
+        "ipv4_ready": {
+          "type": "boolean"
+        },
+        "private_connectivity_ready": {
+          "type": "boolean"
+        },
+        "peer_reachability": {
+          "enum": [
+            "ready",
+            "not-ready",
+            "unknown"
+          ]
+        },
+        "address_redacted": {
+          "const": true
+        },
+        "hostname_redacted": {
+          "const": true
+        }
+      }
+    },
+    "datastore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "service_id",
+        "role",
+        "presence",
+        "integrity",
+        "journal_mode",
+        "expected_tables_present",
+        "schema_revision"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"
+        },
+        "service_id": {
+          "const": "sqlite"
+        },
+        "role": {
+          "const": "control-plane-state"
+        },
+        "presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "integrity": {
+          "enum": [
+            "ok",
+            "failed",
+            "not-run",
+            "unavailable"
+          ]
+        },
+        "journal_mode": {
+          "enum": [
+            "wal",
+            "delete",
+            "truncate",
+            "persist",
+            "memory",
+            "off",
+            "unknown"
+          ]
+        },
+        "expected_tables_present": {
+          "type": "boolean"
+        },
+        "schema_revision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100000
+        }
+      }
+    },
+    "runtimeRelationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "agent_presence",
+        "supervisor_presence",
+        "joined_supervisor_presence",
+        "worker_command_owner_presence",
+        "nats_connectivity",
+        "recovery_capability",
+        "last_evidence_freshness_bucket",
+        "agent_version_major",
+        "supervisor_version_major",
+        "expected_pm2_ownership"
+      ],
+      "properties": {
+        "id": {
+          "const": "agent-supervisor-command-path"
+        },
+        "agent_presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "supervisor_presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "joined_supervisor_presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "worker_command_owner_presence": {
+          "$ref": "#/$defs/presence"
+        },
+        "nats_connectivity": {
+          "enum": [
+            "ready",
+            "not-ready",
+            "unknown"
+          ]
+        },
+        "recovery_capability": {
+          "enum": [
+            "supervised",
+            "unavailable",
+            "unknown"
+          ]
+        },
+        "last_evidence_freshness_bucket": {
+          "enum": [
+            "fresh",
+            "recent",
+            "stale",
+            "unknown",
+            "not-evaluated"
+          ]
+        },
+        "agent_version_major": {
+          "type": "string",
+          "pattern": "^(?:unknown|[0-9]{1,6})$"
+        },
+        "supervisor_version_major": {
+          "type": "string",
+          "pattern": "^(?:unknown|[0-9]{1,6})$"
+        },
+        "expected_pm2_ownership": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

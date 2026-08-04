@@ -153,6 +153,7 @@ nav:
           - Identity and Rules partial contracts: generated/development/partial-surfaces.md
           - Events: generated/development/events.md
           - Release inventory: generated/development/release-inventory.md
+          - Termux runtime verification: generated/development/runtime-verification.md
   - Production:
       - Overview: generated/production/index.md
       - Pocket Lab Lite Architecture:
@@ -234,8 +235,10 @@ nav:
           - Installation: generated/production/installation.md
           - Upgrade and release verification: generated/production/upgrade.md
           - Android and Termux: generated/production/android-termux.md
+          - Android and Termux runtime verification: generated/production/android-termux-runtime.md
           - Caddy and same-origin access: generated/production/caddy-access.md
           - Remote access: generated/production/remote-access.md
+          - Remote access runtime verification: generated/production/remote-access-runtime.md
       - Use Pocket Lab Lite:
           - Current tabs: generated/production/tabs.md
           - Devices and onboarding: generated/production/devices.md
@@ -249,6 +252,7 @@ nav:
           - Security boundaries: generated/production/security-boundaries.md
           - Bootstrap and install: generated/production/bootstrap.md
           - Services and PM2: generated/production/services-pm2.md
+          - Services and PM2 runtime verification: generated/production/services-pm2-runtime.md
           - Health and diagnostics: generated/production/health-diagnostics.md
           - Incident runbooks: generated/production/incident-runbooks.md
           - Data retention: generated/production/data-retention.md

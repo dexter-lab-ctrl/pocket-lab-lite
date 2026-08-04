@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  },
+  "termux_platform": {
+    "host_role": "server-phone",
+    "platform": {
+      "abi_family": "other",
+      "android_release_major": "16",
+      "architecture_family": "arm64",
+      "platform": "android-termux",
+      "runtime_verification_state": "verified",
+      "termux_prefix_type": "termux"
+    },
+    "verification": {
+      "certificate_material_removed": true,
+      "forbidden_fields_found": false,
+      "media_paths_removed": true,
+      "network_identity_removed": true,
+      "private_key_material_removed": true,
+      "raw_paths_removed": true,
+      "runtime_verification_state": "verified",
+      "secrets_removed": true,
+      "source_expectations_compared": true,
+      "unresolved_mismatches": []
+    }
+  }
+}

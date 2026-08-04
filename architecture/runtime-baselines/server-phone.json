@@ -1,0 +1,257 @@
+{
+  "capture_kind": "termux-runtime",
+  "datastores": [
+    {
+      "expected_tables_present": true,
+      "id": "sqlite-control-plane",
+      "integrity": "ok",
+      "journal_mode": "wal",
+      "presence": "present",
+      "role": "control-plane-state",
+      "schema_revision": 23,
+      "service_id": "sqlite"
+    }
+  ],
+  "host_role": "server-phone",
+  "listeners": [
+    {
+      "bind_scope": "private-or-all",
+      "id": "nats-client",
+      "port_kind": "nats-client",
+      "presence": "present",
+      "service": "nats"
+    }
+  ],
+  "messaging": {
+    "bind_scope": "private-or-all",
+    "client_listener_presence": "present",
+    "expected_client_port_present": true,
+    "jetstream_state": "enabled",
+    "process_owner": "pm2",
+    "service_id": "nats"
+  },
+  "platform": {
+    "abi_family": "other",
+    "android_release_major": "16",
+    "architecture_family": "arm64",
+    "platform": "android-termux",
+    "runtime_verification_state": "verified",
+    "termux_prefix_type": "termux"
+  },
+  "remote_access": {
+    "address_redacted": true,
+    "command_variant": "tailscale-cli",
+    "daemon_running": true,
+    "hostname_redacted": true,
+    "ipv4_ready": true,
+    "peer_reachability": "ready",
+    "private_connectivity_ready": true,
+    "service_id": "tailscaled"
+  },
+  "routes": [
+    {
+      "https_mode": "explicit-files",
+      "https_owner": "caddy",
+      "id": "api-lite",
+      "peer_reachability": "not-applicable",
+      "presence": "present",
+      "route_kind": "api-lite",
+      "route_order": "api-before-pwa",
+      "upstream_kind": "loopback-fastapi"
+    },
+    {
+      "https_mode": "explicit-files",
+      "https_owner": "caddy",
+      "id": "photoprism",
+      "peer_reachability": "not-applicable",
+      "presence": "present",
+      "route_kind": "managed-app",
+      "route_order": "api-before-pwa",
+      "upstream_kind": "loopback-app"
+    },
+    {
+      "https_mode": "explicit-files",
+      "https_owner": "caddy",
+      "id": "pwa",
+      "peer_reachability": "not-applicable",
+      "presence": "present",
+      "route_kind": "pwa",
+      "route_order": "api-before-pwa",
+      "upstream_kind": "static-assets"
+    },
+    {
+      "https_mode": "explicit-files",
+      "https_owner": "caddy",
+      "id": "remote-access",
+      "peer_reachability": "ready",
+      "presence": "present",
+      "route_kind": "remote-access",
+      "route_order": "not-applicable",
+      "upstream_kind": "private-network"
+    }
+  ],
+  "runtime_apps": [
+    {
+      "container": "unknown",
+      "id": "photoprism",
+      "pm2_owned": true,
+      "presence": "present",
+      "route_present": true,
+      "runtime": "unknown"
+    }
+  ],
+  "runtime_relationships": [
+    {
+      "agent_presence": "present",
+      "agent_version_major": "1",
+      "expected_pm2_ownership": true,
+      "id": "agent-supervisor-command-path",
+      "joined_supervisor_presence": "missing",
+      "last_evidence_freshness_bucket": "unknown",
+      "nats_connectivity": "ready",
+      "recovery_capability": "supervised",
+      "supervisor_presence": "present",
+      "supervisor_version_major": "1",
+      "worker_command_owner_presence": "present"
+    }
+  ],
+  "sanitized": true,
+  "schema_revision": 1,
+  "semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+  "services": [
+    {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "caddy",
+      "logical_role": "same-origin proxy",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "native",
+      "status": "healthy"
+    },
+    {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "core-supervisor",
+      "logical_role": "server-host recovery supervisor",
+      "memory_bucket": "under-64-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "python",
+      "status": "online"
+    },
+    {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "lite-api",
+      "logical_role": "FastAPI control API",
+      "memory_bucket": "64-191-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "python",
+      "status": "online"
+    },
+    {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "nats",
+      "logical_role": "NATS/JetStream service",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "native",
+      "status": "ready"
+    },
+    {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "node-agent",
+      "logical_role": "server-host node agent",
+      "memory_bucket": "under-64-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "python",
+      "status": "online"
+    },
+    {
+      "execution_owner": "PM2 / PROot Ubuntu",
+      "expected_source_match": "matched",
+      "id": "photoprism",
+      "logical_role": "managed PhotoPrism application",
+      "memory_bucket": "under-64-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "proot",
+      "status": "online"
+    },
+    {
+      "execution_owner": "Termux runtime",
+      "expected_source_match": "matched",
+      "id": "pm2",
+      "logical_role": "Termux process manager",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "node",
+      "status": "ready"
+    },
+    {
+      "execution_owner": "proot-distro",
+      "expected_source_match": "not-evaluated",
+      "id": "proot-ubuntu",
+      "logical_role": "PROot Ubuntu application runtime",
+      "memory_bucket": "not-applicable",
+      "presence": "missing",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "proot",
+      "status": "unavailable"
+    },
+    {
+      "execution_owner": "FastAPI and workers",
+      "expected_source_match": "matched",
+      "id": "sqlite",
+      "logical_role": "SQLite control-plane store",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "sqlite",
+      "status": "healthy"
+    },
+    {
+      "execution_owner": "startup scripts",
+      "expected_source_match": "matched",
+      "id": "tailscaled",
+      "logical_role": "private remote-access daemon",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "native",
+      "status": "ready"
+    },
+    {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "worker",
+      "logical_role": "worker execution plane",
+      "memory_bucket": "64-191-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "python",
+      "status": "online"
+    }
+  ],
+  "source": "allowlisted-read-only-ssh-probe",
+  "verification": {
+    "certificate_material_removed": true,
+    "forbidden_fields_found": false,
+    "media_paths_removed": true,
+    "network_identity_removed": true,
+    "private_key_material_removed": true,
+    "raw_paths_removed": true,
+    "runtime_verification_state": "verified",
+    "secrets_removed": true,
+    "source_expectations_compared": true,
+    "unresolved_mismatches": []
+  }
+}
