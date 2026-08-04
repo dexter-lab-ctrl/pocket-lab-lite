@@ -21,6 +21,7 @@ import architecture_source_verifier as source_module  # noqa: E402
 import generate_lite_architecture as generator_module  # noqa: E402
 import graphviz_renderer as renderer_module  # noqa: E402
 import icon_registry as icon_module  # noqa: E402
+import svg_icon_embedder as embedder_module  # noqa: E402
 
 
 def _model() -> dict:
@@ -204,7 +205,10 @@ def test_graphviz_light_dark_rendering_is_stable_accessible_and_local_only():
         assert '<title id="' in svg
         assert '<desc id="' in svg
         assert 'role="img"' in svg
-        assert '<image href="../icons/' in svg
+        assert '<symbol id="pl-icon-' in svg
+        assert '<use class="pl-node-icon__primary"' in svg
+        assert '<image href=' not in svg
+        assert 'PLICON__' not in svg
         assert 'preserveAspectRatio="xMidYMid meet"' in svg
         root = re.search(r'<svg[^>]+>', svg)
         assert root is not None
@@ -549,10 +553,77 @@ def test_complete_system_poster_graphviz_contains_zones_legend_primary_flows_and
             assert label in dot
         assert 'penwidth="2.8"' in dot
         assert '1 · uses' in dot
-        for filename in ("fastapi.svg", "nats.svg", "caddy.svg", "sqlite.svg", "evidence.svg"):
-            assert f'<image href="../icons/{filename}"' in svg
+        for icon_id in ("brand-fastapi", "brand-nats", "brand-caddy", "brand-sqlite", "semantic-evidence"):
+            assert f'<symbol id="pl-icon-{icon_id}"' in svg
+        assert svg.count('<use class="pl-node-icon__primary"') >= 20
+        assert '<image href=' not in svg
+        assert "PLICON__" not in svg
         assert '<title id="' in svg and '<desc id="' in svg and 'role="img"' in svg
         assert not re.search(r'(?:href|xlink:href)=["\'](?:https?:)?//', svg, re.I)
+
+
+
+def _parse_geometry(value: str) -> tuple[float, float, float, float]:
+    parts = tuple(float(item) for item in value.split(","))
+    assert len(parts) == 4
+    return parts  # type: ignore[return-value]
+
+
+def test_generated_svgs_embed_namespaced_symbols_and_keep_icons_inside_graphviz_cells():
+    model = _model()
+    index = model_module.build_index(model)
+    icons = icon_module.load_registry()
+    outputs, _ = renderer_module.render_view(model, index, icons, "request-control")
+    for theme in ("light", "dark"):
+        svg = outputs[f"{theme}.svg"]
+        assert '<image href=' not in svg
+        assert 'PLICON__' not in svg
+        symbol_ids = re.findall(r'<symbol id="([^"]+)"', svg)
+        use_ids = re.findall(r'<use[^>]+href="#([^"]+)"', svg)
+        assert symbol_ids
+        assert len(symbol_ids) == len(set(symbol_ids))
+        assert set(use_ids) <= set(symbol_ids)
+        assert all(item.startswith("pl-icon-") for item in symbol_ids)
+        groups = re.findall(
+            r'<g class="pl-node-icon"[^>]+data-icon-cell="([^"]+)"[^>]+'
+            r'data-icon-tile="([^"]+)"[^>]*>',
+            svg,
+        )
+        assert groups
+        for raw_cell, raw_tile in groups:
+            cell_x, cell_y, cell_width, cell_height = _parse_geometry(raw_cell)
+            tile_x, tile_y, tile_width, tile_height = _parse_geometry(raw_tile)
+            assert cell_width >= 28 and cell_height >= 28
+            assert tile_width > 0 and tile_height > 0
+            assert tile_x >= cell_x - 0.01
+            assert tile_y >= cell_y - 0.01
+            assert tile_x + tile_width <= cell_x + cell_width + 0.01
+            assert tile_y + tile_height <= cell_y + cell_height + 0.01
+
+
+def test_icon_embedder_namespaces_internal_ids_and_rejects_fallback_cycles(tmp_path: Path):
+    records = icon_module.load_registry()
+    photoprism = embedder_module.load_embedded_icon(records["brand-photoprism"])
+    assert photoprism.symbol_id == "pl-icon-brand-photoprism"
+    assert 'id="pl-brand-photoprism-' in photoprism.body
+    assert 'class="pl-brand-photoprism-' in photoprism.body
+    assert 'id="f762f87b-' not in photoprism.body
+    broken = replace(records["generic-component"], fallback_icon="generic-component")
+    with pytest.raises(embedder_module.SvgIconEmbedError):
+        embedder_module.resolve_with_fallback(
+            broken, {**records, broken.id: broken}, cache={}, visited=(broken.id,)
+        )
+
+
+def test_renderer_uses_exact_graphviz_icon_cell_anchors_and_poster_card_hierarchy():
+    renderer = (ROOT / "scripts/docs/graphviz/graphviz_renderer.py").read_text(encoding="utf-8")
+    assert 'HREF="{anchor}"' in renderer
+    assert 'data-icon-cell=' in renderer
+    assert 'data-icon-tile=' in renderer
+    assert 'CURRENT COMPONENT' in renderer
+    assert 'runtime_owner' in renderer
+    assert 'first text' not in renderer.lower()
+    assert 'float(text_match.group' not in renderer
 
 
 def test_generated_icon_copies_match_authoritative_vendored_assets():

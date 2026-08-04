@@ -1,6 +1,11 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 
+const LITE_MOTION_TRANSFORM_IDLE = 'translate3d(0, 0, 0) scale(1)';
+const LITE_MOTION_TRANSFORM_ENTER = 'translate3d(0, 6px, 0) scale(0.992)';
+const LITE_MOTION_TRANSFORM_REVEAL = 'translate3d(0, 5px, 0) scale(0.992)';
+const LITE_MOTION_TRANSFORM_LIFT = 'translate3d(0, -1px, 0) scale(1.002)';
+
 export function useLiteReducedMotion() {
   const [reduced, setReduced] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
@@ -81,7 +86,10 @@ export function LitePressableButton({
   const { rippleHandlers, rippleNode } = useLiteRipple({ disabled });
   const [pressed, setPressed] = useState(false);
   const spring = useSpring({
-    transform: !reducedMotion && pressed && !disabled ? 'scale(0.985)' : 'scale(1)',
+    transform: !reducedMotion && pressed && !disabled
+      ? 'translate3d(0, 0, 0) scale(0.985)'
+      : LITE_MOTION_TRANSFORM_IDLE,
+    immediate: reducedMotion,
     config: { tension: 420, friction: 32, clamp: true },
   });
 
@@ -140,9 +148,17 @@ export function LiteElevationSurface({
   const Component = animatedElement(as);
   const reducedMotion = useLiteReducedMotion();
   const spring = useSpring({
-    from: settle && !reducedMotion ? { opacity: 0.01, transform: 'translateY(6px) scale(0.992)' } : undefined,
+    from: settle
+      ? {
+          opacity: reducedMotion ? (disabled ? 0.72 : 1) : 0.01,
+          transform: reducedMotion ? LITE_MOTION_TRANSFORM_IDLE : LITE_MOTION_TRANSFORM_ENTER,
+        }
+      : undefined,
     opacity: disabled ? 0.72 : 1,
-    transform: !reducedMotion && active ? 'translateY(-1px) scale(1.002)' : 'translateY(0px) scale(1)',
+    transform: !reducedMotion && active
+      ? LITE_MOTION_TRANSFORM_LIFT
+      : LITE_MOTION_TRANSFORM_IDLE,
+    immediate: reducedMotion,
     config: { tension: 360, friction: 34, clamp: true },
   });
 
@@ -170,9 +186,13 @@ export function LiteMotionReveal({
   const Component = animatedElement(as);
   const reducedMotion = useLiteReducedMotion();
   const spring = useSpring({
-    from: !reducedMotion ? { opacity: 0, transform: 'translateY(5px) scale(0.992)' } : { opacity: 1, transform: 'none' },
+    from: {
+      opacity: reducedMotion ? (show ? 1 : 0) : 0,
+      transform: reducedMotion ? LITE_MOTION_TRANSFORM_IDLE : LITE_MOTION_TRANSFORM_REVEAL,
+    },
     opacity: show ? 1 : 0,
-    transform: !reducedMotion && show ? 'translateY(0px) scale(1)' : 'translateY(5px) scale(0.992)',
+    transform: show ? LITE_MOTION_TRANSFORM_IDLE : LITE_MOTION_TRANSFORM_REVEAL,
+    immediate: reducedMotion,
     config: { tension: 380, friction: 32, clamp: true },
   });
 
@@ -332,9 +352,13 @@ export function LiteProgressMorphPanel({
 }) {
   const reducedMotion = useLiteReducedMotion();
   const spring = useSpring({
-    from: !reducedMotion ? { opacity: 0, transform: 'translateY(6px) scale(0.992)' } : { opacity: 1, transform: 'none' },
+    from: {
+      opacity: reducedMotion ? 1 : 0,
+      transform: reducedMotion ? LITE_MOTION_TRANSFORM_IDLE : LITE_MOTION_TRANSFORM_ENTER,
+    },
     opacity: 1,
-    transform: !reducedMotion && active ? 'translateY(0px) scale(1)' : 'translateY(0px) scale(1)',
+    transform: LITE_MOTION_TRANSFORM_IDLE,
+    immediate: reducedMotion,
     config: { tension: 420, friction: 36, clamp: true },
   });
 

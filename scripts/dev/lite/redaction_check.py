@@ -16,6 +16,16 @@ PATTERNS = {
 }
 TEXT_SUFFIXES = {".md", ".json", ".txt", ".xml", ".html", ".har", ".js", ".jsx", ".ts", ".tsx", ".yml", ".yaml"}
 
+# SchemaSpy ships pinned third-party frontend resources. They are not generated
+# Pocket Lab content and can contain benign security-related identifiers such
+# as Cookie, token, or password inside framework/library implementation code.
+# Keep this exclusion exact and path-scoped so generated SchemaSpy HTML, JSON,
+# XML, diagrams, and other Pocket Lab-owned outputs remain redaction-scanned.
+VENDORED_SCHEMASPY_PREFIXES = (
+    "docs/generated/schemaspy/bower/",
+    "docs/generated/schemaspy/fonts/",
+)
+
 
 def files_for(path: Path):
     if not path.exists():
@@ -35,6 +45,10 @@ def main() -> int:
     failures = []
     for raw in args.paths:
         for file in files_for(Path(raw)):
+            relative = file.as_posix().lstrip("./")
+            if relative.startswith(VENDORED_SCHEMASPY_PREFIXES):
+                continue
+
             text = file.read_text(encoding="utf-8", errors="ignore")
             for label, pattern in PATTERNS.items():
                 if pattern.search(text):

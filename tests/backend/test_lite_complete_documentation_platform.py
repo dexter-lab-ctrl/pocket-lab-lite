@@ -178,3 +178,125 @@ def test_generated_artifacts_exclude_absolute_paths_and_secret_values():
             text = path.read_text(encoding="utf-8", errors="ignore")
             assert not forbidden_paths.search(text), path
             assert not forbidden_secret.search(text), path
+
+def test_redaction_check_skips_only_pinned_schemaspy_vendor_assets():
+    script = (
+        ROOT / "scripts/dev/lite/redaction_check.py"
+    ).read_text(encoding="utf-8")
+
+    assert "VENDORED_SCHEMASPY_PREFIXES" in script
+    assert '"docs/generated/schemaspy/bower/"' in script
+    assert '"docs/generated/schemaspy/fonts/"' in script
+    assert "relative.startswith(VENDORED_SCHEMASPY_PREFIXES)" in script
+
+    # The broader generated SchemaSpy output must remain in scope.
+    assert '"docs/generated/schemaspy/"' not in script.split(
+        "VENDORED_SCHEMASPY_PREFIXES", 1
+    )[1].split(")", 1)[0]
+
+def test_lite_readiness_projection_is_semantic_and_non_recursive(tmp_path):
+    platform = load_module("platform_readiness_test", PLATFORM_PATH)
+    platform.ROOT = tmp_path
+    platform.SOURCE_COMMIT = "abc123"
+
+    evidence_path = (
+        tmp_path
+        / ".pocketlab-dev/validation/commands/backend-full.json"
+    )
+    evidence_path.parent.mkdir(parents=True)
+
+    stable = {
+        "gate": "backend-full",
+        "command": ["task", "lite:test:backend"],
+        "commit": "abc123",
+        "platform": {
+            "system": "Linux",
+            "machine": "aarch64",
+        },
+        "result": "passed",
+        "failure_reason": None,
+    }
+
+    first = platform._semantic_readiness_record(
+        evidence_path,
+        {
+            **stable,
+            "started_at": "2026-08-04T10:00:00Z",
+            "duration_seconds": 1.25,
+        },
+    )
+    second = platform._semantic_readiness_record(
+        evidence_path,
+        {
+            **stable,
+            "started_at": "2026-08-04T11:00:00Z",
+            "duration_seconds": 99.5,
+        },
+    )
+
+    assert first == second
+    assert first is not None
+    assert "started_at" not in first
+    assert "completed_at" not in first
+    assert "duration" not in first
+    assert "checksum" not in first
+    assert first["current"] is True
+
+    failed = platform._semantic_readiness_record(
+        evidence_path,
+        {
+            **stable,
+            "result": "failed",
+            "failure_reason": "backend tests failed",
+        },
+    )
+    assert failed != first
+    assert failed["result"] == "failed"
+
+    docs_strict_path = (
+        tmp_path
+        / ".pocketlab-dev/validation/commands/docs-strict.json"
+    )
+    assert platform._semantic_readiness_record(
+        docs_strict_path,
+        {
+            "gate": "docs-strict",
+            "result": "failed",
+        },
+    ) is None
+
+
+def test_lite_readiness_outputs_do_not_fingerprint_volatile_evidence():
+    source = PLATFORM_PATH.read_text(encoding="utf-8")
+    block = source.split(
+        "def validation_outputs()",
+        1,
+    )[1].split(
+        "def redaction_outputs()",
+        1,
+    )[0]
+
+    assert "sha256_bytes(path.read_bytes())" not in block
+    assert "started_at" not in block
+    assert "completed_at" not in block
+    assert "duration_seconds" not in block
+    assert "READINESS_SOURCE_PATHS" in source
+    assert "READINESS_SELF_REFERENTIAL_GATES" in source
+    assert 'frozenset({"docs-strict"})' in source
+
+def test_lite_readiness_generation_ignores_local_runtime_evidence():
+    source = PLATFORM_PATH.read_text(encoding="utf-8")
+    block = source.split(
+        "def validation_outputs()",
+        1,
+    )[1].split(
+        "def redaction_outputs()",
+        1,
+    )[0]
+
+    assert '.pocketlab-dev/validation/**/*.json' not in block
+    assert 'validation_root.rglob("*.json")' not in block
+    assert "source-owned validation contract only" in block
+    assert "local_evidence_tracked" in block
+    assert '"docs-strict"' in block
+    assert '"allure-results"' in block

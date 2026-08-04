@@ -8048,3 +8048,19 @@ def test_guarded_recovery_contract_allows_online_stopped_agent_with_fresh_superv
     assert result["restart_agent_assessment"]["allowed"] is True
     assert result["restart_agent_assessment"]["reason_code"] == "allowed"
     assert result["runtime_services"][0]["restart_supported"] is True
+
+
+def test_lite_motion_reduced_motion_uses_compatible_spring_values():
+    repository_root = Path(__file__).resolve().parents[2]
+    motion = (repository_root / "src/lite/LiteMotion.jsx").read_text(
+        encoding="utf-8"
+    )
+
+    assert "LITE_MOTION_TRANSFORM_IDLE" in motion
+    assert "LITE_MOTION_TRANSFORM_ENTER" in motion
+    assert "LITE_MOTION_TRANSFORM_REVEAL" in motion
+    assert "immediate: reducedMotion" in motion
+    assert "transform: 'none'" not in motion
+    assert "translateY(5px) scale(0.992)" not in motion
+    assert "translateY(6px) scale(0.992)" not in motion
+    assert "translateY(0px) scale(1)" not in motion
