@@ -96,6 +96,12 @@ def test_orphan_detection_and_explicit_exemption_behavior():
         edge for edge in orphaned["connections"]
         if edge["source"] != orphan_id and edge["target"] != orphan_id
     ]
+    remaining_connection_ids = {edge["id"] for edge in orphaned["connections"]}
+    for flow in orphaned["views"]["complete-system"]["poster"]["primary_flows"]:
+        flow["connections"] = [
+            connection_id for connection_id in flow["connections"]
+            if connection_id in remaining_connection_ids
+        ]
     with pytest.raises(model_module.ArchitectureModelError, match="orphaned"):
         model_module.validate_model(orphaned)
 
@@ -200,8 +206,12 @@ def test_graphviz_light_dark_rendering_is_stable_accessible_and_local_only():
         assert 'role="img"' in svg
         assert '<image href="../icons/' in svg
         assert 'preserveAspectRatio="xMidYMid meet"' in svg
-        assert 'width="100%"' in svg
-        assert 'height="auto"' in svg
+        root = re.search(r'<svg[^>]+>', svg)
+        assert root is not None
+        assert re.search(r'\bwidth="[0-9]+(?:\.[0-9]+)?"', root.group(0))
+        assert re.search(r'\bheight="[0-9]+(?:\.[0-9]+)?"', root.group(0))
+        assert 'height="auto"' not in root.group(0)
+        assert 'width="100%"' not in root.group(0)
         assert not re.search(r'(?:src|href|xlink:href)=["\'](?:https?:)?//', svg, re.I)
 
 
@@ -343,3 +353,242 @@ def test_broken_generated_link_is_rejected():
     broken[page] = outputs[page] + b"\n[Broken](missing-generated-page.md)\n"
     with pytest.raises(generator_module.ArchitectureGenerationError, match="broken generated link"):
         generator_module.validate_outputs(broken, details)
+
+
+def test_hybrid_icon_taxonomy_provenance_and_active_component_mapping():
+    records = icon_module.load_registry()
+    model = _model()
+    assert {record.icon_class for record in records.values()} == {"brand", "semantic"}
+    assert sum(record.icon_class == "brand" for record in records.values()) >= 15
+    assert sum(record.icon_class == "semantic" for record in records.values()) >= 20
+
+    for record in records.values():
+        icon_module.validate_icon(record)
+        if record.icon_class == "brand":
+            assert "/brands/" in f"/{record.local_path}"
+            assert record.source_type == "remote"
+            assert record.upstream_project.strip()
+            assert record.source_revision.strip()
+            assert record.trademark_note.strip()
+            assert record.allowed_redirect_hosts
+        assert record.dark_mode_suitable
+        assert record.light_mode_suitable
+
+    expected_brands = {
+        "caddy": "brand-caddy",
+        "lite-api": "brand-fastapi",
+        "nats-jetstream": "brand-nats",
+        "sqlite": "brand-sqlite",
+        "pm2": "brand-pm2",
+        "tailscale": "brand-tailscale",
+        "photoprism": "brand-photoprism",
+        "proot-ubuntu": "brand-ubuntu",
+        "github-repository": "brand-github",
+        "github-release": "brand-github",
+        "pwa": "brand-react",
+    }
+    for component_id, icon_id in expected_brands.items():
+        assert model["components"][component_id]["icon"] == icon_id
+        assert records[icon_id].icon_class == "brand"
+
+    internal_components = {
+        "api-guards", "api-domain-surfaces", "command-lifecycle", "completion-evidence",
+        "prepared-state", "device-state", "invite-state", "recovery-state",
+        "security-state", "agent-recovery", "agent-supervisor", "worker",
+    }
+    for component_id in internal_components:
+        icon_id = model["components"][component_id]["icon"]
+        assert records[icon_id].icon_class == "semantic", (component_id, icon_id)
+
+    for component_id, component in model["components"].items():
+        assert component["icon"] in records
+        active_record = records[component["icon"]]
+        expected_folder = "brands" if active_record.icon_class == "brand" else "semantic"
+        assert f"architecture/icons/{expected_folder}/" in active_record.local_path, component_id
+        assert len(component.get("technology_icons", [])) == len(
+            set(component.get("technology_icons", []))
+        )
+        assert set(component.get("technology_icons", [])) <= set(records), component_id
+
+
+def test_icon_registry_rejects_duplicates_and_missing_brand_provenance(tmp_path: Path):
+    registry = json.loads(icon_module.REGISTRY_PATH.read_text(encoding="utf-8"))
+
+    duplicate = copy.deepcopy(registry)
+    duplicate["icons"].append(copy.deepcopy(duplicate["icons"][0]))
+    duplicate_path = tmp_path / "duplicate-icon-sources.json"
+    duplicate_path.write_text(json.dumps(duplicate), encoding="utf-8")
+    with pytest.raises(icon_module.IconRegistryError, match="Duplicate icon id"):
+        icon_module.load_registry(duplicate_path)
+
+    missing_provenance = copy.deepcopy(registry)
+    brand = next(item for item in missing_provenance["icons"] if item["icon_class"] == "brand")
+    brand["trademark_note"] = ""
+    provenance_path = tmp_path / "missing-provenance-icon-sources.json"
+    provenance_path.write_text(json.dumps(missing_provenance), encoding="utf-8")
+    with pytest.raises(icon_module.IconRegistryError, match="empty provenance field trademark_note"):
+        icon_module.load_registry(provenance_path)
+
+
+def test_icon_check_mode_is_idempotent_and_read_only():
+    tracked = [icon_module.REGISTRY_PATH, icon_module.LICENSES_PATH]
+    tracked.extend(record.path for record in icon_module.load_registry().values())
+    before = _file_hashes(tracked)
+    completed = subprocess.run(
+        [sys.executable, str(GRAPHVIZ_DIR / "icon_registry.py"), "--check"],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "PASS" in completed.stdout
+    assert before == _file_hashes(tracked)
+
+
+def test_failed_icon_refresh_preserves_previous_valid_asset(monkeypatch: pytest.MonkeyPatch):
+    source = next(
+        record for record in icon_module.load_registry().values()
+        if record.icon_class == "brand"
+    )
+    test_path = ROOT / "architecture/icons/brands/test-preserve-refresh.svg"
+    test_path.write_bytes(source.path.read_bytes())
+    test_record = replace(
+        source,
+        id="test-preserve-refresh",
+        local_path=test_path.relative_to(ROOT).as_posix(),
+    )
+    before = test_path.read_bytes()
+
+    def fail_download(**_kwargs):
+        raise icon_module.IconRegistryError("simulated download failure")
+
+    monkeypatch.setattr(icon_module, "_download_url", fail_download)
+    try:
+        with pytest.raises(icon_module.IconRegistryError, match="simulated download failure"):
+            icon_module.install_icon(test_record)
+        assert test_path.read_bytes() == before
+    finally:
+        test_path.unlink(missing_ok=True)
+
+
+def test_arbitrary_icon_download_validates_and_stays_inside_icon_root(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    payload = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">'
+        b'<path d="M4 4h40v40H4z"/></svg>\n'
+    )
+    output = "architecture/icons/semantic/test-arbitrary-download.svg"
+    target = ROOT / output
+
+    def write_download(*, destination: Path, **_kwargs):
+        destination.write_bytes(payload)
+
+    monkeypatch.setattr(icon_module, "_download_url", write_download)
+    try:
+        assert icon_module.add_arbitrary_icon(
+            icon_id="test-arbitrary-download",
+            name="Test arbitrary download",
+            url="https://icons.example.invalid/test.svg",
+            output=output,
+            allow_hosts=["icons.example.invalid"],
+            maximum_size_bytes=8192,
+        ) == 0
+        assert target.read_bytes() == payload
+        icon_module.validate_svg_structure(
+            target.read_bytes(), icon_id="test-arbitrary-download", maximum_size_bytes=8192
+        )
+        with pytest.raises(icon_module.IconRegistryError, match="Unsafe icon path"):
+            icon_module._safe_icon_path("../outside.svg")
+    finally:
+        target.unlink(missing_ok=True)
+
+
+def test_complete_system_executive_poster_metadata_is_valid_and_deterministic():
+    model = _model()
+    view = model["views"]["complete-system"]
+    poster = view["poster"]
+    assert poster["layout_mode"] == "executive-poster"
+    assert [zone["label"] for zone in poster["zones"]] == [
+        "Zone A — Experience",
+        "Zone B — Control plane",
+        "Zone C — Event and execution",
+        "Zone D — Durable state",
+        "Zone E — Device runtime",
+        "Zone F — Remote access and apps",
+    ]
+    assigned = [component for zone in poster["zones"] for component in zone["components"]]
+    assert len(assigned) == len(set(assigned))
+    assert set(assigned) == set(view["components"])
+    connection_ids = {item["id"] for item in model["connections"]}
+    assert len(poster["primary_flows"]) == 8
+    for flow in poster["primary_flows"]:
+        assert set(flow["connections"]) <= connection_ids
+    assert set(poster["trust_boundary_bands"]) <= set(model["boundaries"])
+    assert model_module.normalize_model(model) == model_module.normalize_model(copy.deepcopy(model))
+
+
+def test_complete_system_poster_graphviz_contains_zones_legend_primary_flows_and_local_icons():
+    model = _model()
+    index = model_module.build_index(model)
+    icons = icon_module.load_registry()
+    first, _ = renderer_module.render_view(model, index, icons, "complete-system")
+    second, _ = renderer_module.render_view(model, index, icons, "complete-system")
+    assert first == second
+    for theme in ("light", "dark"):
+        dot = first[f"{theme}.dot"]
+        svg = first[f"{theme}.svg"]
+        for label in (
+            "Zone A — Experience", "Zone B — Control plane",
+            "Zone C — Event and execution", "Zone D — Durable state",
+            "Zone E — Device runtime", "Zone F — Remote access and apps",
+            "Legend and flow key",
+        ):
+            assert label in dot
+        assert 'penwidth="2.8"' in dot
+        assert '1 · uses' in dot
+        for filename in ("fastapi.svg", "nats.svg", "caddy.svg", "sqlite.svg", "evidence.svg"):
+            assert f'<image href="../icons/{filename}"' in svg
+        assert '<title id="' in svg and '<desc id="' in svg and 'role="img"' in svg
+        assert not re.search(r'(?:href|xlink:href)=["\'](?:https?:)?//', svg, re.I)
+
+
+def test_generated_icon_copies_match_authoritative_vendored_assets():
+    outputs, _details = generator_module.build_outputs()
+    for record in icon_module.load_registry().values():
+        generated = Path("docs/assets/diagrams/production/icons") / record.path.name
+        assert outputs[generated] == record.path.read_bytes(), record.id
+
+
+def test_generated_poster_pages_include_accessible_text_equivalents_and_brand_assets():
+    outputs, _details = generator_module.build_outputs()
+    page = outputs[Path("docs/generated/production/architecture/complete-system.md")].decode()
+    assert 'pl-architecture-diagram__image--light' in page
+    assert 'pl-architecture-diagram__image--dark' in page
+    assert '#only-light' not in page
+    assert '#only-dark' not in page
+    for marker in (
+        "## Executive summary", "## Six architecture zones", "## Legend and icon key",
+        "## Primary flows", "## Trust boundaries", "## Runtime technology stack",
+        "## Architecture callouts", "Zone A — Experience", "Zone F — Remote access and apps",
+    ):
+        assert marker in page
+    for icon in ("fastapi.svg", "nats.svg", "caddy.svg", "tailscale.svg"):
+        assert f"icons/{icon}" in page
+    assert "http://" not in page and "https://" not in page
+
+
+def test_architecture_poster_does_not_use_inline_size_containment() -> None:
+    css = (ROOT / "docs/stylesheets/components.css").read_text(encoding="utf-8")
+    poster_rule = re.search(
+        r"\.pl-architecture-diagram--poster\s*\{(?P<body>[^}]*)\}",
+        css,
+        flags=re.DOTALL,
+    )
+    assert poster_rule is not None
+    body = poster_rule.group("body")
+    assert "contain: inline-size" not in body
+    assert "inline-size: 100%" in body
+    assert "min-inline-size: 0" in body

@@ -6,7 +6,7 @@ status: verified
 generated: true
 generated_at: uncommitted
 generator: scripts/docs/graphviz/generate_lite_architecture.py
-source_fingerprint: 13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2
+source_fingerprint: 20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee
 source_commit: uncommitted
 schema_revision: 1
 validation_status: generated
@@ -16,16 +16,18 @@ validation_status: generated
 
 # Pocket Lab Lite Architecture
 
+<div class="pl-architecture-summary-grid"><article class="pl-architecture-summary-card"><span class="pl-architecture-icon pl-architecture-icon--summary pl-architecture-icon--brand"><img src="../../../assets/diagrams/production/icons/react.svg" alt="" loading="lazy" decoding="async" /><span>React</span></span><h3>Self-hosted workspace</h3><p>React/Vite PWA with safe saved summaries</p></article><article class="pl-architecture-summary-card"><span class="pl-architecture-icon pl-architecture-icon--summary pl-architecture-icon--brand"><img src="../../../assets/diagrams/production/icons/fastapi.svg" alt="" loading="lazy" decoding="async" /><span>FastAPI</span></span><h3>FastAPI control plane</h3><p>Validated reads, guards, and command admission</p></article><article class="pl-architecture-summary-card"><span class="pl-architecture-icon pl-architecture-icon--summary pl-architecture-icon--brand"><img src="../../../assets/diagrams/production/icons/nats.svg" alt="" loading="lazy" decoding="async" /><span>NATS</span></span><h3>NATS event backbone</h3><p>Durable command, event, and heartbeat transport</p></article><article class="pl-architecture-summary-card"><span class="pl-architecture-icon pl-architecture-icon--summary pl-architecture-icon--semantic"><img src="../../../assets/diagrams/production/icons/evidence.svg" alt="" loading="lazy" decoding="async" /><span>Evidence</span></span><h3>Auditable evidence</h3><p>Sanitized lifecycle evidence and prepared projections</p></article><article class="pl-architecture-summary-card"><span class="pl-architecture-icon pl-architecture-icon--summary pl-architecture-icon--brand"><img src="../../../assets/diagrams/production/icons/android.svg" alt="" loading="lazy" decoding="async" /><span>Android</span></span><h3>Android/Termux edge</h3><p>PM2-managed agents and supervisor recovery</p></article><article class="pl-architecture-summary-card"><span class="pl-architecture-icon pl-architecture-icon--summary pl-architecture-icon--brand"><img src="../../../assets/diagrams/production/icons/tailscale.svg" alt="" loading="lazy" decoding="async" /><span>Tailscale</span></span><h3>Private remote access</h3><p>Tailscale and same-origin Caddy routes</p></article></div>
+
 ## Pocket Lab Lite in one view
 
-<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide">
+<figure class="pl-architecture-diagram pl-architecture-diagram--system pl-architecture-diagram--wide pl-architecture-diagram--poster">
   <div class="pl-architecture-diagram__viewport">
-    <a class="pl-architecture-diagram__link" href="../../../assets/diagrams/production/views/complete-system.light.svg" aria-label="Open full-size Complete Pocket Lab Lite system map">
-      <img class="pl-architecture-diagram__image" src="../../../assets/diagrams/production/views/complete-system.light.svg#only-light" alt="Complete Pocket Lab Lite system map" loading="lazy" decoding="async" />
-      <img class="pl-architecture-diagram__image" src="../../../assets/diagrams/production/views/complete-system.dark.svg#only-dark" alt="Complete Pocket Lab Lite system map" loading="lazy" decoding="async" />
+    <a class="pl-architecture-diagram__link" href="../../../assets/diagrams/production/views/complete-system.light.svg" aria-label="Open full-size Complete Pocket Lab Lite executive architecture poster">
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--light" src="../../../assets/diagrams/production/views/complete-system.light.svg" alt="Complete Pocket Lab Lite executive architecture poster" loading="eager" decoding="async" />
+      <img class="pl-architecture-diagram__image pl-architecture-diagram__image--dark" src="../../../assets/diagrams/production/views/complete-system.dark.svg" alt="Complete Pocket Lab Lite executive architecture poster" loading="eager" decoding="async" />
     </a>
   </div>
-  <figcaption>Complete Pocket Lab Lite system map. <a href="../../../assets/diagrams/production/views/complete-system.light.svg">View full-size diagram</a></figcaption>
+  <figcaption>Complete Pocket Lab Lite executive architecture poster. <a href="../../../assets/diagrams/production/views/complete-system.light.svg">View full-size diagram</a></figcaption>
 </figure>
 
 
@@ -60,9 +62,9 @@ React/Vite PWA
 | Component mini diagrams | 52 |
 | Verified source references | 136 |
 
-**Architecture source fingerprint:** `13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2`
+**Architecture source fingerprint:** `20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee`
 
-**Repository source inventory fingerprint:** `5c814f7819ce86c7ec8ac8ffa0f743a4e5e88e667dcf6cf2a13879245aa029b4`
+**Repository source inventory fingerprint:** `b810eb23eaad10f7491886b72e394725219094178cf96c820d0a32d408b7abd6`
 
 ## Operational guarantees
 

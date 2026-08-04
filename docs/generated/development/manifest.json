@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "62c526bcab11c9b6b994c86c58c10b3205edc38f170b753feb61829852873dd7",
+  "source_fingerprint": "21be19f097c735264b076d534ba9cf9cb0c1f4ee1a38dc978dbafec9357db900",
   "source_fingerprints": {
     ".github/workflows/lite-quality.yml": "188830285106b25ce2aa8970185eac56c6fe3614d33debba007c8bdd0482c269",
     ".github/workflows/release-dist.yml": "9c88d615195b8f3005c9e84c4ead3729885d1ebe6bfc0ffc352f34c9df6b8be4",
@@ -57,7 +57,7 @@
     "scripts/dev/lite/resolve-browser.mjs": "cfce0a19ef05720f3099df781151d32c611b70ffdb0808a17a12038dc3094a2a",
     "scripts/dev/lite/run-gate.sh": "43bce72d0da69e2eca2b63df3f7a5d83d7df8aa3345bd1414c75c63d5129b546",
     "scripts/dev/lite/run-playwright-mocked.sh": "0a20feb1edc0cc96d07506d08948669c22256f9427964f739e93dba754fc98c8",
-    "scripts/dev/lite/setup-architecture-icons.sh": "2815fdff0268fb6fec6a0440456a7ada7090d1fe3a0e1d1ddafaf324a2c39e94",
+    "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
     "scripts/dev/lite/setup-check.sh": "ec8e18dd798bccef6094e562cd357cd6447a43f883537b1b7e4dac84d0238485",
     "scripts/dev/lite/setup-documentation-tools.sh": "05cedf7464b691b84bcf4c898e07749db348cfd6da7c60dc171a45bfbd6d2846",
     "scripts/dev/lite/setup-system.sh": "508e775c78b4c328b65b303e9e0989e315b2f1d23f76f53c656252c2ac1942c2",

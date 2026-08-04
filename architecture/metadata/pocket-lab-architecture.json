@@ -80,7 +80,7 @@
       "health_signals": [
         "command progress"
       ],
-      "icon": "infra-agent",
+      "icon": "semantic-agent",
       "id": "agent-command-executor",
       "inputs": [
         "Validated NATS command"
@@ -123,6 +123,12 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-android",
+        "brand-pm2",
+        "brand-python",
+        "semantic-terminal"
+      ],
       "verification_status": "verified"
     },
     "agent-recovery": {
@@ -145,7 +151,7 @@
         "agent connection",
         "supervisor status"
       ],
-      "icon": "infra-supervisor",
+      "icon": "semantic-recovery",
       "id": "agent-recovery",
       "inputs": [
         "connection state",
@@ -191,6 +197,12 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-android",
+        "brand-pm2",
+        "brand-python",
+        "semantic-terminal"
+      ],
       "verification_status": "verified"
     },
     "agent-signals": {
@@ -212,7 +224,7 @@
       "health_signals": [
         "signal freshness"
       ],
-      "icon": "infra-event",
+      "icon": "semantic-event",
       "id": "agent-signals",
       "inputs": [
         "Local runtime samples"
@@ -254,6 +266,12 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-android",
+        "brand-pm2",
+        "brand-python",
+        "semantic-terminal"
+      ],
       "verification_status": "verified"
     },
     "agent-supervisor": {
@@ -273,7 +291,7 @@
       "health_signals": [
         "supervisor status"
       ],
-      "icon": "infra-supervisor",
+      "icon": "semantic-supervisor",
       "id": "agent-supervisor",
       "inputs": [
         "PM2 agent status",
@@ -317,6 +335,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "api-domain-surfaces": {
@@ -343,7 +364,7 @@
         "domain revisions",
         "projection freshness"
       ],
-      "icon": "infra-fastapi",
+      "icon": "semantic-api-surface",
       "id": "api-domain-surfaces",
       "inputs": [
         "User intent",
@@ -399,6 +420,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "api-guards": {
@@ -422,7 +446,7 @@
       "health_signals": [
         "invite status"
       ],
-      "icon": "infra-decision",
+      "icon": "semantic-api-guard",
       "id": "api-guards",
       "inputs": [
         "Device invite request",
@@ -469,6 +493,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "api-read-surfaces": {
@@ -491,7 +518,7 @@
         "freshness",
         "ETag"
       ],
-      "icon": "infra-fastapi",
+      "icon": "semantic-api-surface",
       "id": "api-read-surfaces",
       "inputs": [
         "Prepared projections",
@@ -541,6 +568,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "app-catalog": {
@@ -564,7 +594,7 @@
         "route_ready",
         "lifecycle status"
       ],
-      "icon": "infra-app",
+      "icon": "semantic-app-catalog",
       "id": "app-catalog",
       "inputs": [
         "App catalog projection"
@@ -610,6 +640,10 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-react",
+        "brand-vite"
+      ],
       "verification_status": "verified"
     },
     "app-lifecycle-worker": {
@@ -632,7 +666,7 @@
         "action progress",
         "route health"
       ],
-      "icon": "infra-worker",
+      "icon": "semantic-worker",
       "id": "app-lifecycle-worker",
       "inputs": [
         "App command"
@@ -680,6 +714,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "app-recovery-update": {
@@ -703,7 +738,7 @@
         "backup verified",
         "rollback ready"
       ],
-      "icon": "infra-backup",
+      "icon": "semantic-recovery",
       "id": "app-recovery-update",
       "inputs": [
         "Confirmed action"
@@ -751,6 +786,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "app-workflow-state": {
@@ -774,7 +810,7 @@
       "health_signals": [
         "state revision"
       ],
-      "icon": "infra-state",
+      "icon": "semantic-durable-state",
       "id": "app-workflow-state",
       "inputs": [
         "app lifecycle and workflow events"
@@ -822,6 +858,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "atomic-promotion": {
@@ -842,7 +879,7 @@
       "health_signals": [
         "active release identity"
       ],
-      "icon": "infra-release",
+      "icon": "semantic-release",
       "id": "atomic-promotion",
       "inputs": [
         "Verified stage"
@@ -878,6 +915,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "backup-engine": {
@@ -900,7 +938,7 @@
         "repository readiness",
         "verification status"
       ],
-      "icon": "infra-backup",
+      "icon": "semantic-backup",
       "id": "backup-engine",
       "inputs": [
         "Backup command"
@@ -947,6 +985,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "bounded-reconciliation": {
@@ -969,7 +1010,7 @@
         "queue capacity",
         "deadline counters"
       ],
-      "icon": "infra-decision",
+      "icon": "semantic-decision",
       "id": "bounded-reconciliation",
       "inputs": [
         "Events",
@@ -1013,6 +1054,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "browser": {
@@ -1028,7 +1070,7 @@
         "page load",
         "service worker readiness"
       ],
-      "icon": "infra-browser",
+      "icon": "semantic-browser",
       "id": "browser",
       "inputs": [
         "HTML, CSS, JavaScript, SVG"
@@ -1065,6 +1107,7 @@
         "Android",
         "Desktop"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "caddy": {
@@ -1083,7 +1126,7 @@
         "Caddy validation",
         "route probes"
       ],
-      "icon": "infra-caddy",
+      "icon": "brand-caddy",
       "id": "caddy",
       "inputs": [
         "HTTPS requests"
@@ -1127,6 +1170,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "checkpoints-retention": {
@@ -1148,7 +1192,7 @@
       "health_signals": [
         "retention status"
       ],
-      "icon": "infra-backup",
+      "icon": "semantic-backup",
       "id": "checkpoints-retention",
       "inputs": [
         "Maintenance command"
@@ -1190,6 +1234,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "semantic-backup"
+      ],
       "verification_status": "verified"
     },
     "command-lifecycle": {
@@ -1212,7 +1259,7 @@
         "queue depth",
         "stale command count"
       ],
-      "icon": "infra-event",
+      "icon": "semantic-workflow",
       "id": "command-lifecycle",
       "inputs": [
         "Accepted command",
@@ -1260,6 +1307,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "completion-evidence": {
@@ -1280,7 +1328,7 @@
       "health_signals": [
         "evidence index consistency"
       ],
-      "icon": "infra-event",
+      "icon": "semantic-evidence",
       "id": "completion-evidence",
       "inputs": [
         "Lifecycle results"
@@ -1323,6 +1371,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "device-state": {
@@ -1347,7 +1396,7 @@
         "last seen",
         "health attention"
       ],
-      "icon": "infra-state",
+      "icon": "semantic-durable-state",
       "id": "device-state",
       "inputs": [
         "invite acceptance",
@@ -1398,6 +1447,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "frontend-state": {
@@ -1419,7 +1469,7 @@
         "query freshness",
         "saved-state metadata"
       ],
-      "icon": "infra-pwa",
+      "icon": "semantic-frontend-state",
       "id": "frontend-state",
       "inputs": [
         "Safe GET responses",
@@ -1475,6 +1525,11 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-tanstack",
+        "brand-xstate",
+        "semantic-snapshot"
+      ],
       "verification_status": "verified"
     },
     "github-release": {
@@ -1491,7 +1546,7 @@
       "health_signals": [
         "asset manifest validation"
       ],
-      "icon": "infra-github",
+      "icon": "brand-github",
       "id": "github-release",
       "inputs": [
         "Annotated Lite tag"
@@ -1535,6 +1590,9 @@
       "supported_platforms": [
         "External service"
       ],
+      "technology_icons": [
+        "brand-git"
+      ],
       "verification_status": "verified"
     },
     "github-repository": {
@@ -1551,7 +1609,7 @@
       "health_signals": [
         "workflow status"
       ],
-      "icon": "infra-github",
+      "icon": "brand-github",
       "id": "github-repository",
       "inputs": [
         "Merged source"
@@ -1584,6 +1642,9 @@
       "supported_platforms": [
         "External service"
       ],
+      "technology_icons": [
+        "brand-git"
+      ],
       "verification_status": "verified"
     },
     "invite-state": {
@@ -1607,7 +1668,7 @@
       "health_signals": [
         "pending invite age"
       ],
-      "icon": "infra-state",
+      "icon": "semantic-durable-state",
       "id": "invite-state",
       "inputs": [
         "invite creation",
@@ -1649,6 +1710,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "lan": {
@@ -1663,7 +1725,7 @@
       "health_signals": [
         "route reachability"
       ],
-      "icon": "infra-network",
+      "icon": "semantic-network",
       "id": "lan",
       "inputs": [
         "Browser traffic"
@@ -1695,6 +1757,7 @@
       "supported_platforms": [
         "Private LAN"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "last-known-good": {
@@ -1716,7 +1779,7 @@
       "health_signals": [
         "last_known_good"
       ],
-      "icon": "infra-release",
+      "icon": "semantic-recovery",
       "id": "last-known-good",
       "inputs": [
         "Rollback trigger"
@@ -1757,6 +1820,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "lite-api": {
@@ -1781,7 +1845,7 @@
         "GET /health",
         "GET /ready"
       ],
-      "icon": "infra-fastapi",
+      "icon": "brand-fastapi",
       "id": "lite-api",
       "inputs": [
         "Same-origin requests"
@@ -1828,6 +1892,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "media-app-health": {
@@ -1845,7 +1912,7 @@
       "health_signals": [
         "operational status"
       ],
-      "icon": "infra-decision",
+      "icon": "semantic-health",
       "id": "media-app-health",
       "inputs": [
         "Route/runtime/storage posture"
@@ -1888,6 +1955,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "nats-jetstream": {
@@ -1910,7 +1978,7 @@
         "NATS monitor",
         "JetStream status"
       ],
-      "icon": "infra-nats",
+      "icon": "brand-nats",
       "id": "nats-jetstream",
       "inputs": [
         "Validated commands",
@@ -1958,6 +2026,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "nats-listeners": {
@@ -1975,7 +2044,7 @@
         "local listener",
         "Tailnet listener reachability"
       ],
-      "icon": "infra-network",
+      "icon": "semantic-network",
       "id": "nats-listeners",
       "inputs": [
         "Generated listener config"
@@ -2012,6 +2081,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-nats"
+      ],
       "verification_status": "verified"
     },
     "node-agent": {
@@ -2035,7 +2107,7 @@
         "fresh heartbeat",
         "connection state"
       ],
-      "icon": "infra-agent",
+      "icon": "semantic-agent",
       "id": "node-agent",
       "inputs": [
         "NATS commands",
@@ -2081,6 +2153,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "photoprism": {
@@ -2098,7 +2173,7 @@
       "health_signals": [
         "base-path status probe"
       ],
-      "icon": "infra-photoprism",
+      "icon": "brand-photoprism",
       "id": "photoprism",
       "inputs": [
         "Same-origin app route",
@@ -2139,6 +2214,9 @@
         "Android/Termux",
         "ARM64"
       ],
+      "technology_icons": [
+        "brand-ubuntu"
+      ],
       "verification_status": "verified"
     },
     "pm2": {
@@ -2157,7 +2235,7 @@
       "health_signals": [
         "pm2 status"
       ],
-      "icon": "infra-pm2",
+      "icon": "brand-pm2",
       "id": "pm2",
       "inputs": [
         "Generated process definitions"
@@ -2199,6 +2277,10 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-nodejs",
+        "brand-npm"
+      ],
       "verification_status": "verified"
     },
     "post-switch-health": {
@@ -2220,7 +2302,7 @@
         "/health",
         "/ready"
       ],
-      "icon": "infra-release",
+      "icon": "semantic-health",
       "id": "post-switch-health",
       "inputs": [
         "Promoted release"
@@ -2264,6 +2346,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "prepared-state": {
@@ -2286,7 +2369,7 @@
         "dirty",
         "committed_generation"
       ],
-      "icon": "infra-sqlite",
+      "icon": "semantic-projection",
       "id": "prepared-state",
       "inputs": [
         "domain revisions",
@@ -2336,6 +2419,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "projection-subprocesses": {
@@ -2359,7 +2443,7 @@
         "generation/committed_generation",
         "queue depth"
       ],
-      "icon": "infra-worker",
+      "icon": "semantic-projection",
       "id": "projection-subprocesses",
       "inputs": [
         "Compact domain events"
@@ -2406,6 +2490,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "proot-ubuntu": {
@@ -2423,7 +2508,7 @@
       "health_signals": [
         "process status"
       ],
-      "icon": "infra-ubuntu",
+      "icon": "brand-ubuntu",
       "id": "proot-ubuntu",
       "inputs": [
         "Generated app environment"
@@ -2461,6 +2546,9 @@
         "Android/Termux",
         "ARM64"
       ],
+      "technology_icons": [
+        "semantic-terminal"
+      ],
       "verification_status": "verified"
     },
     "pwa": {
@@ -2482,7 +2570,7 @@
         "error boundary",
         "frontend lifecycle challenge"
       ],
-      "icon": "infra-pwa",
+      "icon": "brand-react",
       "id": "pwa",
       "inputs": [
         "Prepared API responses"
@@ -2523,6 +2611,10 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-vite",
+        "semantic-pwa"
+      ],
       "verification_status": "verified"
     },
     "recovery-state": {
@@ -2546,7 +2638,7 @@
         "repository readiness",
         "verification state"
       ],
-      "icon": "infra-backup",
+      "icon": "semantic-durable-state",
       "id": "recovery-state",
       "inputs": [
         "backup/verify/preview/restore lifecycle"
@@ -2593,6 +2685,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "release-artifacts": {
@@ -2611,7 +2704,7 @@
       "health_signals": [
         "checksums match"
       ],
-      "icon": "infra-release",
+      "icon": "semantic-artifact",
       "id": "release-artifacts",
       "inputs": [
         "Source commit"
@@ -2655,6 +2748,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-git"
+      ],
       "verification_status": "verified"
     },
     "release-staging": {
@@ -2675,7 +2771,7 @@
       "health_signals": [
         "artifact_verified"
       ],
-      "icon": "infra-release",
+      "icon": "semantic-release",
       "id": "release-staging",
       "inputs": [
         "GitHub release metadata"
@@ -2717,6 +2813,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "release-state": {
@@ -2740,7 +2837,7 @@
         "comparison",
         "artifact verification"
       ],
-      "icon": "infra-state",
+      "icon": "semantic-durable-state",
       "id": "release-state",
       "inputs": [
         "verified release lifecycle"
@@ -2780,6 +2877,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "release-subprocess": {
@@ -2804,7 +2902,7 @@
         "subprocess generation",
         "deadline counters"
       ],
-      "icon": "infra-worker",
+      "icon": "semantic-release",
       "id": "release-subprocess",
       "inputs": [
         "Release check/apply command"
@@ -2847,6 +2945,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "remote-readiness": {
@@ -2863,7 +2964,7 @@
       "health_signals": [
         "readiness reasons"
       ],
-      "icon": "infra-decision",
+      "icon": "semantic-health",
       "id": "remote-readiness",
       "inputs": [
         "Tailscale and NATS posture"
@@ -2904,6 +3005,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "restore-preview": {
@@ -2925,7 +3027,7 @@
       "health_signals": [
         "post-restore API health"
       ],
-      "icon": "infra-backup",
+      "icon": "semantic-recovery",
       "id": "restore-preview",
       "inputs": [
         "Backup selection",
@@ -2973,6 +3075,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "semantic-backup"
+      ],
       "verification_status": "verified"
     },
     "retirement-database-recovery": {
@@ -2997,7 +3102,7 @@
         "dependency assessment",
         "database verification"
       ],
-      "icon": "infra-backup",
+      "icon": "semantic-recovery",
       "id": "retirement-database-recovery",
       "inputs": [
         "Confirmed retirement/restore"
@@ -3049,6 +3154,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "scanner-adapters": {
@@ -3072,7 +3178,7 @@
         "tool status",
         "timeout status"
       ],
-      "icon": "infra-worker",
+      "icon": "semantic-scanner",
       "id": "scanner-adapters",
       "inputs": [
         "Verified scan plan"
@@ -3114,6 +3220,10 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-trivy",
+        "semantic-scanner"
+      ],
       "verification_status": "verified"
     },
     "security-coordinator": {
@@ -3136,7 +3246,7 @@
         "progress",
         "freshness"
       ],
-      "icon": "infra-security",
+      "icon": "semantic-security",
       "id": "security-coordinator",
       "inputs": [
         "Scan request"
@@ -3180,6 +3290,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "security-profiles": {
@@ -3201,7 +3314,7 @@
       "health_signals": [
         "profile freshness"
       ],
-      "icon": "infra-security",
+      "icon": "semantic-security",
       "id": "security-profiles",
       "inputs": [
         "Profile and optional app id"
@@ -3243,6 +3356,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "semantic-scanner"
+      ],
       "verification_status": "verified"
     },
     "security-state": {
@@ -3266,7 +3382,7 @@
         "active key",
         "progress freshness"
       ],
-      "icon": "infra-state",
+      "icon": "semantic-durable-state",
       "id": "security-state",
       "inputs": [
         "scanner results"
@@ -3312,6 +3428,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "sqlite": {
@@ -3335,7 +3452,7 @@
         "PRAGMA quick_check",
         "WAL pressure"
       ],
-      "icon": "infra-sqlite",
+      "icon": "brand-sqlite",
       "id": "sqlite",
       "inputs": [
         "Transactional lifecycle writes"
@@ -3377,6 +3494,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "tailscale": {
@@ -3395,7 +3513,7 @@
         "Tailnet IPv4",
         "peer reachability"
       ],
-      "icon": "infra-tailscale",
+      "icon": "brand-tailscale",
       "id": "tailscale",
       "inputs": [
         "Tailnet identity"
@@ -3437,6 +3555,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "tailscaled": {
@@ -3453,7 +3572,7 @@
       "health_signals": [
         "daemon state"
       ],
-      "icon": "infra-tailscale",
+      "icon": "brand-tailscale",
       "id": "tailscaled",
       "inputs": [
         "Tailscale configuration"
@@ -3489,6 +3608,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "user": {
@@ -3501,7 +3621,7 @@
       "evidence_produced": [],
       "failure_paths": [],
       "health_signals": [],
-      "icon": "infra-user",
+      "icon": "semantic-user",
       "id": "user",
       "inputs": [
         "Pocket Lab Lite status and actions"
@@ -3532,6 +3652,7 @@
       "supported_platforms": [
         "Browser"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     },
     "worker": {
@@ -3556,7 +3677,7 @@
         "worker heartbeat",
         "durable consumer health"
       ],
-      "icon": "infra-worker",
+      "icon": "semantic-worker",
       "id": "worker",
       "inputs": [
         "JetStream commands"
@@ -3600,6 +3721,9 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [
+        "brand-python"
+      ],
       "verification_status": "verified"
     },
     "workflow-execution": {
@@ -3622,7 +3746,7 @@
       "health_signals": [
         "projection subprocess health"
       ],
-      "icon": "infra-worker",
+      "icon": "semantic-workflow",
       "id": "workflow-execution",
       "inputs": [
         "Workflow events"
@@ -3664,6 +3788,7 @@
         "Ubuntu",
         "WSL2 development"
       ],
+      "technology_icons": [],
       "verification_status": "verified"
     }
   },
@@ -4723,25 +4848,324 @@
         "caddy",
         "lite-api",
         "api-domain-surfaces",
+        "api-read-surfaces",
+        "api-guards",
+        "app-catalog",
+        "security-coordinator",
         "nats-jetstream",
         "worker",
-        "sqlite",
-        "prepared-state",
-        "node-agent",
-        "agent-supervisor",
-        "tailscale",
-        "app-catalog",
-        "photoprism",
-        "security-coordinator",
+        "command-lifecycle",
+        "agent-command-executor",
         "backup-engine",
         "release-subprocess",
-        "completion-evidence"
+        "completion-evidence",
+        "sqlite",
+        "prepared-state",
+        "invite-state",
+        "device-state",
+        "recovery-state",
+        "security-state",
+        "release-state",
+        "app-workflow-state",
+        "pm2",
+        "node-agent",
+        "agent-supervisor",
+        "agent-signals",
+        "agent-recovery",
+        "tailscale",
+        "proot-ubuntu",
+        "photoprism",
+        "github-repository",
+        "github-release",
+        "release-artifacts"
       ],
-      "description": "Major deployment zones and the primary request, execution, state, evidence, device, app, remote-access, and release flows.",
+      "description": "Executive poster of the verified experience, control plane, event execution, durable state, device runtime, remote access, apps, and release flow.",
       "id": "complete-system",
       "level": 1,
-      "max_nodes": 20,
+      "max_nodes": 40,
       "page": "complete-system.md",
+      "poster": {
+        "callouts": [
+          {
+            "items": [
+              "Frontend never talks directly to NATS.",
+              "Frontend never executes shell commands.",
+              "FastAPI remains the control API.",
+              "Agents and supervisors own execution and recovery.",
+              "Bootstrap scripts are backend-generated."
+            ],
+            "title": "What Pocket Lab Lite guarantees"
+          },
+          {
+            "items": [
+              "UI presents",
+              "FastAPI validates",
+              "NATS transports",
+              "Workers execute",
+              "Agents act on devices",
+              "Supervisors recover",
+              "SQLite preserves truth"
+            ],
+            "title": "Execution ownership"
+          },
+          {
+            "items": [
+              "Self-hosted",
+              "Edge-first",
+              "ARM64 friendly",
+              "Private by default",
+              "Recovery-aware",
+              "Evidence-backed",
+              "Offline-safe read summaries"
+            ],
+            "title": "Operational highlights"
+          }
+        ],
+        "emphasize_primary_flows": true,
+        "layout_mode": "executive-poster",
+        "legend": [
+          {
+            "key": "brand",
+            "label": "Brand icon \u2014 verified external technology or product"
+          },
+          {
+            "key": "semantic",
+            "label": "Semantic icon \u2014 internal Pocket Lab Lite role or lifecycle"
+          },
+          {
+            "key": "solid",
+            "label": "Solid arrow \u2014 request, command, or primary control"
+          },
+          {
+            "key": "dashed",
+            "label": "Dashed arrow \u2014 health, readiness, or recovery"
+          },
+          {
+            "key": "dotted",
+            "label": "Dotted arrow \u2014 asynchronous evidence or lifecycle"
+          },
+          {
+            "key": "boundary",
+            "label": "Nested band \u2014 verified trust boundary"
+          }
+        ],
+        "primary_flows": [
+          {
+            "connections": [
+              "user-browser",
+              "browser-pwa",
+              "pwa-caddy",
+              "caddy-api",
+              "api-domains",
+              "api-nats",
+              "nats-worker"
+            ],
+            "id": "request",
+            "label": "1. User/API request"
+          },
+          {
+            "connections": [
+              "api-guards-flow",
+              "state-0",
+              "guards-agent",
+              "pm2-agent",
+              "pm2-supervisor"
+            ],
+            "id": "onboarding",
+            "label": "2. Device onboarding"
+          },
+          {
+            "connections": [
+              "api-nats",
+              "nats-worker",
+              "worker-command",
+              "agent-command-flow"
+            ],
+            "id": "command",
+            "label": "3. Command execution"
+          },
+          {
+            "connections": [
+              "agent-signals-flow",
+              "signals-nats",
+              "nats-device-state",
+              "evidence-0",
+              "evidence-index",
+              "state-reads",
+              "reads-pwa"
+            ],
+            "id": "evidence",
+            "label": "4. Evidence and heartbeat return"
+          },
+          {
+            "connections": [
+              "pm2-supervisor",
+              "supervisor-recovery-flow",
+              "recovery-agent"
+            ],
+            "id": "recovery",
+            "label": "5. Supervisor recovery"
+          },
+          {
+            "connections": [
+              "repo-release",
+              "release-assets",
+              "worker-release",
+              "evidence-2"
+            ],
+            "id": "release",
+            "label": "6. Release/update"
+          },
+          {
+            "connections": [
+              "tailscale-caddy",
+              "catalog-pwa",
+              "catalog-photoprism",
+              "proot-photo"
+            ],
+            "id": "app-access",
+            "label": "7. App access"
+          },
+          {
+            "connections": [
+              "pwa-state",
+              "state-reads",
+              "reads-pwa"
+            ],
+            "id": "safe-state",
+            "label": "8. Safe frontend state"
+          }
+        ],
+        "show_callouts": true,
+        "show_legend": true,
+        "show_summary_cards": true,
+        "show_trust_boundary_bands": true,
+        "summary_cards": [
+          {
+            "icon": "brand-react",
+            "title": "Self-hosted workspace",
+            "value": "React/Vite PWA with safe saved summaries"
+          },
+          {
+            "icon": "brand-fastapi",
+            "title": "FastAPI control plane",
+            "value": "Validated reads, guards, and command admission"
+          },
+          {
+            "icon": "brand-nats",
+            "title": "NATS event backbone",
+            "value": "Durable command, event, and heartbeat transport"
+          },
+          {
+            "icon": "semantic-evidence",
+            "title": "Auditable evidence",
+            "value": "Sanitized lifecycle evidence and prepared projections"
+          },
+          {
+            "icon": "brand-android",
+            "title": "Android/Termux edge",
+            "value": "PM2-managed agents and supervisor recovery"
+          },
+          {
+            "icon": "brand-tailscale",
+            "title": "Private remote access",
+            "value": "Tailscale and same-origin Caddy routes"
+          }
+        ],
+        "trust_boundary_bands": [
+          "browser",
+          "server-host",
+          "control-api",
+          "messaging-execution",
+          "durable-state",
+          "managed-device",
+          "tailnet",
+          "application-container",
+          "external-release"
+        ],
+        "zone_layout": "horizontal",
+        "zones": [
+          {
+            "components": [
+              "user",
+              "browser",
+              "pwa",
+              "frontend-state"
+            ],
+            "id": "experience",
+            "label": "Zone A \u2014 Experience",
+            "summary": "User interaction, safe read-state presentation, offline-safe summaries, UI-only coordination, and guided workflow presentation."
+          },
+          {
+            "components": [
+              "caddy",
+              "lite-api",
+              "api-domain-surfaces",
+              "api-read-surfaces",
+              "api-guards",
+              "app-catalog",
+              "security-coordinator"
+            ],
+            "id": "control-plane",
+            "label": "Zone B \u2014 Control plane",
+            "summary": "Caddy and FastAPI validate, guard, route, admit commands, and serve prepared reads."
+          },
+          {
+            "components": [
+              "nats-jetstream",
+              "worker",
+              "command-lifecycle",
+              "agent-command-executor",
+              "backup-engine",
+              "release-subprocess",
+              "completion-evidence"
+            ],
+            "id": "event-execution",
+            "label": "Zone C \u2014 Event and execution",
+            "summary": "NATS/JetStream transports bounded work; workers and executors own lifecycle execution and evidence."
+          },
+          {
+            "components": [
+              "sqlite",
+              "prepared-state",
+              "invite-state",
+              "device-state",
+              "recovery-state",
+              "security-state",
+              "release-state",
+              "app-workflow-state"
+            ],
+            "id": "durable-state",
+            "label": "Zone D \u2014 Durable state",
+            "summary": "SQLite and prepared projections preserve canonical device, invite, workflow, security, recovery, release, and app state."
+          },
+          {
+            "components": [
+              "pm2",
+              "node-agent",
+              "agent-supervisor",
+              "agent-signals",
+              "agent-recovery"
+            ],
+            "id": "device-runtime",
+            "label": "Zone E \u2014 Device runtime",
+            "summary": "PM2, the node agent, supervisor, heartbeats, and recovery watchdog run on low-power Android/Termux or Ubuntu devices."
+          },
+          {
+            "components": [
+              "tailscale",
+              "proot-ubuntu",
+              "photoprism",
+              "github-repository",
+              "github-release",
+              "release-artifacts"
+            ],
+            "id": "remote-apps",
+            "label": "Zone F \u2014 Remote access and apps",
+            "summary": "Tailscale private access, PROot Ubuntu, PhotoPrism, and immutable GitHub release assets."
+          }
+        ]
+      },
       "title": "Complete Pocket Lab Lite system map"
     },
     "data-projections": {

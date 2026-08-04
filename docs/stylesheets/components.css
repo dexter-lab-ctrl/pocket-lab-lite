@@ -214,3 +214,162 @@
 @media (prefers-reduced-motion: reduce) {
   .pl-architecture-diagram__viewport { scroll-behavior: auto; }
 }
+
+/* Executive Production architecture poster and hybrid icon taxonomy. */
+.pl-architecture-summary-grid,
+.pl-architecture-zone-grid,
+.pl-architecture-callout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: clamp(0.7rem, 1.4vw, 1rem);
+  margin-block: 1rem 1.5rem;
+}
+.pl-architecture-summary-card,
+.pl-architecture-zone-card,
+.pl-architecture-callout {
+  min-width: 0;
+  padding: clamp(0.8rem, 1.5vw, 1.1rem);
+  border: 1px solid var(--pl-border);
+  border-radius: var(--pl-radius-md);
+  background: color-mix(in srgb, var(--md-default-bg-color) 94%, var(--md-primary-fg-color));
+  box-shadow: 0 0.35rem 1rem rgb(15 23 42 / 0.08);
+  contain: content;
+}
+.pl-architecture-summary-card h3,
+.pl-architecture-zone-card h3,
+.pl-architecture-callout h3 {
+  margin: 0.55rem 0 0.3rem;
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
+.pl-architecture-summary-card p,
+.pl-architecture-zone-card p,
+.pl-architecture-callout li {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.pl-architecture-zone-card__members { margin-bottom: 0; }
+.pl-architecture-callout ul { margin-bottom: 0; padding-left: 1.1rem; }
+.pl-architecture-icon,
+.pl-architecture-component-icons,
+.pl-architecture-icon-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.pl-architecture-icon {
+  max-width: 100%;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--pl-border);
+  border-radius: 999px;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+.pl-architecture-icon img {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  padding: 0.12rem;
+  border-radius: 0.22rem;
+  background: #fff;
+  object-fit: contain;
+}
+.pl-architecture-icon--summary {
+  padding: 0.35rem 0.6rem;
+  font-weight: 700;
+}
+.pl-architecture-icon--summary img { width: 1.35rem; height: 1.35rem; }
+.pl-architecture-icon--component img { width: 1.5rem; height: 1.5rem; }
+.pl-architecture-icon--brand { border-style: solid; }
+.pl-architecture-icon--semantic { border-style: dashed; }
+.pl-architecture-component-icons,
+.pl-architecture-icon-key { gap: 0.5rem; margin-block: 0.75rem 1rem; }
+.pl-architecture-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.55rem 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+.pl-architecture-legend li { display: flex; align-items: center; gap: 0.55rem; }
+.pl-architecture-legend__mark {
+  flex: 0 0 auto;
+  width: 2.4rem;
+  height: 0.75rem;
+  border: 2px solid var(--md-default-fg-color--light);
+  border-radius: 0.25rem;
+  background: transparent;
+}
+.pl-architecture-legend__mark--brand { border-style: solid; background: #fff; }
+.pl-architecture-legend__mark--semantic { border-style: dashed; }
+.pl-architecture-legend__mark--solid { height: 0; border-width: 0 0 3px; border-radius: 0; }
+.pl-architecture-legend__mark--dashed { height: 0; border-width: 0 0 2px; border-style: dashed; border-radius: 0; }
+.pl-architecture-legend__mark--dotted { height: 0; border-width: 0 0 2px; border-style: dotted; border-radius: 0; }
+.pl-architecture-legend__mark--boundary { border-style: dashed; background: color-mix(in srgb, var(--md-default-bg-color) 90%, var(--md-primary-fg-color)); }
+/* Do not apply inline-size containment to the poster figure. The figure uses
+ * percentage sizing; inline-size containment makes that percentage resolve
+ * against a zero intrinsic inline size, collapsing the content box to zero
+ * while leaving only padding and borders visible. */
+.pl-architecture-diagram--poster {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+.pl-architecture-diagram--poster .pl-architecture-diagram__viewport {
+  border: 1px solid color-mix(in srgb, var(--pl-border) 80%, transparent);
+}
+.pl-architecture-diagram--poster .pl-architecture-diagram__image { max-height: none; }
+
+@media screen and (max-width: 44.9844em) {
+  .pl-architecture-summary-grid,
+  .pl-architecture-zone-grid,
+  .pl-architecture-callout-grid { grid-template-columns: 1fr; }
+  .pl-architecture-diagram--poster .pl-architecture-diagram__link {
+    width: clamp(70rem, 420vw, 118rem);
+  }
+  .pl-architecture-icon-key { align-items: flex-start; }
+  .pl-architecture-icon { white-space: normal; }
+}
+
+@media print {
+  .pl-architecture-summary-card,
+  .pl-architecture-zone-card,
+  .pl-architecture-callout,
+  .pl-architecture-diagram {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  .pl-architecture-diagram--poster .pl-architecture-diagram__viewport { overflow: visible; }
+  .pl-architecture-diagram--poster .pl-architecture-diagram__link { width: 100%; }
+  .pl-architecture-diagram--poster .pl-architecture-diagram__image { max-width: 100%; }
+}
+
+/* Material hides fragment-selected theme images until one of its built-in
+ * palettes reveals them. Pocket Lab uses custom palette names, so use explicit
+ * generated classes and an !important override. Default to the light image
+ * when the palette attribute is absent or temporarily unresolved during page
+ * navigation, then switch deterministically for pocketlab-dark. */
+.pl-architecture-diagram__image--light {
+  display: block !important;
+}
+.pl-architecture-diagram__image--dark {
+  display: none !important;
+}
+[data-md-color-scheme="pocketlab-dark"] .pl-architecture-diagram__image--light {
+  display: none !important;
+}
+[data-md-color-scheme="pocketlab-dark"] .pl-architecture-diagram__image--dark {
+  display: block !important;
+}
+[data-md-color-scheme="pocketlab-light"] .pl-architecture-diagram__image--light {
+  display: block !important;
+}
+[data-md-color-scheme="pocketlab-light"] .pl-architecture-diagram__image--dark {
+  display: none !important;
+}

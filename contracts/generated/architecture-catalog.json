@@ -73,6 +73,7 @@
         "health_signals": [
           "command progress"
         ],
+        "icon": "semantic-agent",
         "id": "agent-command-executor",
         "mini_diagram": true,
         "name": "Device command executor",
@@ -93,6 +94,12 @@
         "runtime_location": "Node agent",
         "runtime_owner": "node agent",
         "security_boundary": "managed-device",
+        "technology_icons": [
+          "brand-android",
+          "brand-pm2",
+          "brand-python",
+          "semantic-terminal"
+        ],
         "verification_status": "verified"
       },
       {
@@ -112,6 +119,7 @@
           "agent connection",
           "supervisor status"
         ],
+        "icon": "semantic-recovery",
         "id": "agent-recovery",
         "mini_diagram": true,
         "name": "Reconnect watchdog and supervisor recovery",
@@ -132,6 +140,12 @@
         "runtime_location": "Joined device",
         "runtime_owner": "agent and supervisor",
         "security_boundary": "managed-device",
+        "technology_icons": [
+          "brand-android",
+          "brand-pm2",
+          "brand-python",
+          "semantic-terminal"
+        ],
         "verification_status": "verified"
       },
       {
@@ -151,6 +165,7 @@
         "health_signals": [
           "signal freshness"
         ],
+        "icon": "semantic-event",
         "id": "agent-signals",
         "mini_diagram": true,
         "name": "Heartbeat, telemetry, and health publishers",
@@ -170,6 +185,12 @@
         "runtime_location": "Node agent",
         "runtime_owner": "node agent",
         "security_boundary": "managed-device",
+        "technology_icons": [
+          "brand-android",
+          "brand-pm2",
+          "brand-python",
+          "semantic-terminal"
+        ],
         "verification_status": "verified"
       },
       {
@@ -187,6 +208,7 @@
         "health_signals": [
           "supervisor status"
         ],
+        "icon": "semantic-supervisor",
         "id": "agent-supervisor",
         "mini_diagram": true,
         "name": "Lite agent supervisor",
@@ -207,6 +229,9 @@
         "runtime_location": "Joined device",
         "runtime_owner": "PM2",
         "security_boundary": "managed-device",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -230,6 +255,7 @@
           "domain revisions",
           "projection freshness"
         ],
+        "icon": "semantic-api-surface",
         "id": "api-domain-surfaces",
         "mini_diagram": true,
         "name": "Fleet, Apps, Security, Recovery, and Release APIs",
@@ -250,6 +276,9 @@
         "runtime_location": "FastAPI process",
         "runtime_owner": "pocket-api",
         "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -270,6 +299,7 @@
         "health_signals": [
           "invite status"
         ],
+        "icon": "semantic-api-guard",
         "id": "api-guards",
         "mini_diagram": true,
         "name": "Identity, authentication, and invite guards",
@@ -289,6 +319,9 @@
         "runtime_location": "FastAPI process",
         "runtime_owner": "pocket-api",
         "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -309,6 +342,7 @@
           "freshness",
           "ETag"
         ],
+        "icon": "semantic-api-surface",
         "id": "api-read-surfaces",
         "mini_diagram": true,
         "name": "Prepared read, health, readiness, diagnostics, and evidence APIs",
@@ -328,6 +362,9 @@
         "runtime_location": "FastAPI process",
         "runtime_owner": "pocket-api",
         "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -348,6 +385,7 @@
           "route_ready",
           "lifecycle status"
         ],
+        "icon": "semantic-app-catalog",
         "id": "app-catalog",
         "mini_diagram": true,
         "name": "App Catalog",
@@ -367,6 +405,10 @@
         "runtime_location": "PWA plus FastAPI prepared reads",
         "runtime_owner": "Lite UI / Lite API",
         "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-react",
+          "brand-vite"
+        ],
         "verification_status": "verified"
       },
       {
@@ -387,6 +429,7 @@
           "action progress",
           "route health"
         ],
+        "icon": "semantic-worker",
         "id": "app-lifecycle-worker",
         "mini_diagram": true,
         "name": "App lifecycle worker",
@@ -408,6 +451,7 @@
         "runtime_location": "pocket-worker",
         "runtime_owner": "PM2",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -429,6 +473,7 @@
           "backup verified",
           "rollback ready"
         ],
+        "icon": "semantic-recovery",
         "id": "app-recovery-update",
         "mini_diagram": true,
         "name": "App backup, restore preview, and update lifecycle",
@@ -449,6 +494,7 @@
         "runtime_location": "Worker / release subprocess",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -469,6 +515,7 @@
         "health_signals": [
           "state revision"
         ],
+        "icon": "semantic-durable-state",
         "id": "app-workflow-state",
         "mini_diagram": true,
         "name": "App, command, and workflow state",
@@ -488,6 +535,7 @@
         "runtime_location": "SQLite",
         "runtime_owner": "workers",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -506,6 +554,7 @@
         "health_signals": [
           "active release identity"
         ],
+        "icon": "semantic-release",
         "id": "atomic-promotion",
         "mini_diagram": true,
         "name": "Atomic PWA promotion",
@@ -525,6 +574,7 @@
         "runtime_location": "Server host",
         "runtime_owner": "release subprocess",
         "security_boundary": "server-host",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -544,6 +594,7 @@
           "repository readiness",
           "verification status"
         ],
+        "icon": "semantic-backup",
         "id": "backup-engine",
         "mini_diagram": true,
         "name": "Backup and verification engine",
@@ -565,6 +616,9 @@
         "runtime_location": "Recovery worker",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -584,6 +638,7 @@
           "queue capacity",
           "deadline counters"
         ],
+        "icon": "semantic-decision",
         "id": "bounded-reconciliation",
         "mini_diagram": true,
         "name": "Bounded queues and reconciliation",
@@ -605,6 +660,7 @@
         "runtime_location": "FastAPI and worker processes",
         "runtime_owner": "pocket-api / pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -620,6 +676,7 @@
           "page load",
           "service worker readiness"
         ],
+        "icon": "semantic-browser",
         "id": "browser",
         "mini_diagram": true,
         "name": "Browser",
@@ -638,6 +695,7 @@
         "runtime_location": "User device",
         "runtime_owner": "Browser",
         "security_boundary": "browser",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -653,6 +711,7 @@
           "Caddy validation",
           "route probes"
         ],
+        "icon": "brand-caddy",
         "id": "caddy",
         "mini_diagram": true,
         "name": "Caddy same-origin proxy",
@@ -673,6 +732,7 @@
         "runtime_location": "Server host",
         "runtime_owner": "PM2",
         "security_boundary": "server-host",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -692,6 +752,7 @@
         "health_signals": [
           "retention status"
         ],
+        "icon": "semantic-backup",
         "id": "checkpoints-retention",
         "mini_diagram": true,
         "name": "Checkpoints and retention policy",
@@ -712,6 +773,9 @@
         "runtime_location": "Recovery worker",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "semantic-backup"
+        ],
         "verification_status": "verified"
       },
       {
@@ -731,6 +795,7 @@
           "queue depth",
           "stale command count"
         ],
+        "icon": "semantic-workflow",
         "id": "command-lifecycle",
         "mini_diagram": true,
         "name": "Command admission and lifecycle",
@@ -751,6 +816,7 @@
         "runtime_location": "FastAPI and worker",
         "runtime_owner": "pocket-api / pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -769,6 +835,7 @@
         "health_signals": [
           "evidence index consistency"
         ],
+        "icon": "semantic-evidence",
         "id": "completion-evidence",
         "mini_diagram": true,
         "name": "Completion and audit evidence",
@@ -790,6 +857,7 @@
         "runtime_location": "Worker and FastAPI",
         "runtime_owner": "worker / FastAPI",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -811,6 +879,7 @@
           "last seen",
           "health attention"
         ],
+        "icon": "semantic-durable-state",
         "id": "device-state",
         "mini_diagram": true,
         "name": "Enrollment and device lifecycle state",
@@ -830,6 +899,7 @@
         "runtime_location": "SQLite",
         "runtime_owner": "lite_control_plane_store",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -848,6 +918,7 @@
           "query freshness",
           "saved-state metadata"
         ],
+        "icon": "semantic-frontend-state",
         "id": "frontend-state",
         "mini_diagram": true,
         "name": "Frontend state ownership",
@@ -868,6 +939,11 @@
         "runtime_location": "Browser / installed PWA",
         "runtime_owner": "Browser",
         "security_boundary": "browser",
+        "technology_icons": [
+          "brand-tanstack",
+          "brand-xstate",
+          "semantic-snapshot"
+        ],
         "verification_status": "verified"
       },
       {
@@ -882,6 +958,7 @@
         "health_signals": [
           "asset manifest validation"
         ],
+        "icon": "brand-github",
         "id": "github-release",
         "mini_diagram": false,
         "name": "GitHub Release",
@@ -898,6 +975,9 @@
         "runtime_location": "GitHub",
         "runtime_owner": "GitHub Actions",
         "security_boundary": "external-release",
+        "technology_icons": [
+          "brand-git"
+        ],
         "verification_status": "verified"
       },
       {
@@ -912,6 +992,7 @@
         "health_signals": [
           "workflow status"
         ],
+        "icon": "brand-github",
         "id": "github-repository",
         "mini_diagram": false,
         "name": "GitHub repository",
@@ -928,6 +1009,9 @@
         "runtime_location": "External source hosting",
         "runtime_owner": "GitHub",
         "security_boundary": "external-release",
+        "technology_icons": [
+          "brand-git"
+        ],
         "verification_status": "verified"
       },
       {
@@ -948,6 +1032,7 @@
         "health_signals": [
           "pending invite age"
         ],
+        "icon": "semantic-durable-state",
         "id": "invite-state",
         "mini_diagram": true,
         "name": "Invite and identity lifecycle",
@@ -967,6 +1052,7 @@
         "runtime_location": "SQLite",
         "runtime_owner": "Lite API",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -981,6 +1067,7 @@
         "health_signals": [
           "route reachability"
         ],
+        "icon": "semantic-network",
         "id": "lan",
         "mini_diagram": false,
         "name": "Local LAN",
@@ -998,6 +1085,7 @@
         "runtime_location": "Private local network",
         "runtime_owner": "Network",
         "security_boundary": "tailnet",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1017,6 +1105,7 @@
         "health_signals": [
           "last_known_good"
         ],
+        "icon": "semantic-recovery",
         "id": "last-known-good",
         "mini_diagram": true,
         "name": "Last-known-good state and rollback",
@@ -1037,6 +1126,7 @@
         "runtime_location": "Server host / release subprocess",
         "runtime_owner": "release subprocess",
         "security_boundary": "server-host",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1058,6 +1148,7 @@
           "GET /health",
           "GET /ready"
         ],
+        "icon": "brand-fastapi",
         "id": "lite-api",
         "mini_diagram": true,
         "name": "FastAPI /api/lite/*",
@@ -1078,6 +1169,9 @@
         "runtime_location": "Server host",
         "runtime_owner": "PM2",
         "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1092,6 +1186,7 @@
         "health_signals": [
           "operational status"
         ],
+        "icon": "semantic-health",
         "id": "media-app-health",
         "mini_diagram": true,
         "name": "Media readiness and app health probes",
@@ -1112,6 +1207,7 @@
         "runtime_location": "FastAPI / worker",
         "runtime_owner": "Lite API / worker",
         "security_boundary": "control-api",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1131,6 +1227,7 @@
           "NATS monitor",
           "JetStream status"
         ],
+        "icon": "brand-nats",
         "id": "nats-jetstream",
         "mini_diagram": true,
         "name": "NATS / JetStream",
@@ -1151,6 +1248,7 @@
         "runtime_location": "Server host",
         "runtime_owner": "PM2",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1166,6 +1264,7 @@
           "local listener",
           "Tailnet listener reachability"
         ],
+        "icon": "semantic-network",
         "id": "nats-listeners",
         "mini_diagram": true,
         "name": "Primary and secondary NATS listeners",
@@ -1185,6 +1284,9 @@
         "runtime_location": "Server host",
         "runtime_owner": "pocket-nats",
         "security_boundary": "server-host",
+        "technology_icons": [
+          "brand-nats"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1204,6 +1306,7 @@
           "fresh heartbeat",
           "connection state"
         ],
+        "icon": "semantic-agent",
         "id": "node-agent",
         "mini_diagram": true,
         "name": "Lite node agent",
@@ -1223,6 +1326,9 @@
         "runtime_location": "Server host or joined device",
         "runtime_owner": "PM2",
         "security_boundary": "managed-device",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1237,6 +1343,7 @@
         "health_signals": [
           "base-path status probe"
         ],
+        "icon": "brand-photoprism",
         "id": "photoprism",
         "mini_diagram": true,
         "name": "PhotoPrism",
@@ -1254,6 +1361,9 @@
         "runtime_location": "PROot Ubuntu on server host",
         "runtime_owner": "PM2 / PROot Ubuntu",
         "security_boundary": "application-container",
+        "technology_icons": [
+          "brand-ubuntu"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1270,6 +1380,7 @@
         "health_signals": [
           "pm2 status"
         ],
+        "icon": "brand-pm2",
         "id": "pm2",
         "mini_diagram": true,
         "name": "PM2 process manager",
@@ -1289,6 +1400,10 @@
         "runtime_location": "Server host and joined devices",
         "runtime_owner": "PM2",
         "security_boundary": "server-host",
+        "technology_icons": [
+          "brand-nodejs",
+          "brand-npm"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1308,6 +1423,7 @@
           "/health",
           "/ready"
         ],
+        "icon": "semantic-health",
         "id": "post-switch-health",
         "mini_diagram": true,
         "name": "Post-switch health validation",
@@ -1327,6 +1443,7 @@
         "runtime_location": "Release subprocess against local services",
         "runtime_owner": "release subprocess",
         "security_boundary": "server-host",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1347,6 +1464,7 @@
           "dirty",
           "committed_generation"
         ],
+        "icon": "semantic-projection",
         "id": "prepared-state",
         "mini_diagram": true,
         "name": "Audit index, projection refresh, prepared projections, and domain revisions",
@@ -1366,6 +1484,7 @@
         "runtime_location": "SQLite",
         "runtime_owner": "scheduler / subprocesses",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1386,6 +1505,7 @@
           "generation/committed_generation",
           "queue depth"
         ],
+        "icon": "semantic-projection",
         "id": "projection-subprocesses",
         "mini_diagram": true,
         "name": "Projection subprocesses",
@@ -1406,6 +1526,7 @@
         "runtime_location": "Dedicated subprocesses / scheduler",
         "runtime_owner": "pocket-api and subprocesses",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1421,6 +1542,7 @@
         "health_signals": [
           "process status"
         ],
+        "icon": "brand-ubuntu",
         "id": "proot-ubuntu",
         "mini_diagram": true,
         "name": "PROot Ubuntu application container",
@@ -1438,6 +1560,9 @@
         "runtime_location": "Android/Termux server host",
         "runtime_owner": "proot-distro",
         "security_boundary": "application-container",
+        "technology_icons": [
+          "semantic-terminal"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1456,6 +1581,7 @@
           "error boundary",
           "frontend lifecycle challenge"
         ],
+        "icon": "brand-react",
         "id": "pwa",
         "mini_diagram": true,
         "name": "React / Vite PWA",
@@ -1475,6 +1601,10 @@
         "runtime_location": "Browser / installed PWA",
         "runtime_owner": "Browser",
         "security_boundary": "browser",
+        "technology_icons": [
+          "brand-vite",
+          "semantic-pwa"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1495,6 +1625,7 @@
           "repository readiness",
           "verification state"
         ],
+        "icon": "semantic-durable-state",
         "id": "recovery-state",
         "mini_diagram": true,
         "name": "Backup, restore, and checkpoint state",
@@ -1515,6 +1646,7 @@
         "runtime_location": "SQLite and repository-owned manifests",
         "runtime_owner": "Recovery worker",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1531,6 +1663,7 @@
         "health_signals": [
           "checksums match"
         ],
+        "icon": "semantic-artifact",
         "id": "release-artifacts",
         "mini_diagram": true,
         "name": "Date-based Lite tag, dist.zip, checksums, and release manifest",
@@ -1552,6 +1685,9 @@
         "runtime_location": "GitHub Release / staging",
         "runtime_owner": "Release workflow",
         "security_boundary": "external-release",
+        "technology_icons": [
+          "brand-git"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1570,6 +1706,7 @@
         "health_signals": [
           "artifact_verified"
         ],
+        "icon": "semantic-release",
         "id": "release-staging",
         "mini_diagram": true,
         "name": "Download staging and release verification",
@@ -1590,6 +1727,7 @@
         "runtime_location": "Release subprocess",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1610,6 +1748,7 @@
           "comparison",
           "artifact verification"
         ],
+        "icon": "semantic-durable-state",
         "id": "release-state",
         "mini_diagram": true,
         "name": "Installed release and runtime state",
@@ -1629,6 +1768,7 @@
         "runtime_location": "SQLite",
         "runtime_owner": "Release subprocess",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1649,6 +1789,7 @@
           "subprocess generation",
           "deadline counters"
         ],
+        "icon": "semantic-release",
         "id": "release-subprocess",
         "mini_diagram": true,
         "name": "Release subprocess",
@@ -1669,6 +1810,9 @@
         "runtime_location": "Dedicated subprocess",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1683,6 +1827,7 @@
         "health_signals": [
           "readiness reasons"
         ],
+        "icon": "semantic-health",
         "id": "remote-readiness",
         "mini_diagram": true,
         "name": "Remote-access readiness checks",
@@ -1702,6 +1847,7 @@
         "runtime_location": "FastAPI read surface",
         "runtime_owner": "pocket-api",
         "security_boundary": "control-api",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1720,6 +1866,7 @@
         "health_signals": [
           "post-restore API health"
         ],
+        "icon": "semantic-recovery",
         "id": "restore-preview",
         "mini_diagram": true,
         "name": "Restore preview and confirmed restore",
@@ -1741,6 +1888,9 @@
         "runtime_location": "Recovery worker",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "semantic-backup"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1762,6 +1912,7 @@
           "dependency assessment",
           "database verification"
         ],
+        "icon": "semantic-recovery",
         "id": "retirement-database-recovery",
         "mini_diagram": true,
         "name": "Explicit retirement and database recovery",
@@ -1783,6 +1934,7 @@
         "runtime_location": "FastAPI / worker",
         "runtime_owner": "pocket-api / pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1803,6 +1955,7 @@
           "tool status",
           "timeout status"
         ],
+        "icon": "semantic-scanner",
         "id": "scanner-adapters",
         "mini_diagram": true,
         "name": "Lynis and Trivy scanner adapters",
@@ -1822,6 +1975,10 @@
         "runtime_location": "Security worker subprocesses",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "brand-trivy",
+          "semantic-scanner"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1841,6 +1998,7 @@
           "progress",
           "freshness"
         ],
+        "icon": "semantic-security",
         "id": "security-coordinator",
         "mini_diagram": true,
         "name": "Security scan coordinator",
@@ -1862,6 +2020,9 @@
         "runtime_location": "FastAPI and worker",
         "runtime_owner": "pocket-api / pocket-worker",
         "security_boundary": "control-api",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1881,6 +2042,7 @@
         "health_signals": [
           "profile freshness"
         ],
+        "icon": "semantic-security",
         "id": "security-profiles",
         "mini_diagram": true,
         "name": "Quick, Full, and App safety checks",
@@ -1901,6 +2063,9 @@
         "runtime_location": "Security worker",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "semantic-scanner"
+        ],
         "verification_status": "verified"
       },
       {
@@ -1921,6 +2086,7 @@
           "active key",
           "progress freshness"
         ],
+        "icon": "semantic-durable-state",
         "id": "security-state",
         "mini_diagram": true,
         "name": "Security findings and run state",
@@ -1941,6 +2107,7 @@
         "runtime_location": "SQLite and compact sanitized files",
         "runtime_owner": "Security worker",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1961,6 +2128,7 @@
           "PRAGMA quick_check",
           "WAL pressure"
         ],
+        "icon": "brand-sqlite",
         "id": "sqlite",
         "mini_diagram": true,
         "name": "SQLite control-plane store",
@@ -1980,6 +2148,7 @@
         "runtime_location": "Server host",
         "runtime_owner": "FastAPI and workers",
         "security_boundary": "durable-state",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -1995,6 +2164,7 @@
           "Tailnet IPv4",
           "peer reachability"
         ],
+        "icon": "brand-tailscale",
         "id": "tailscale",
         "mini_diagram": true,
         "name": "Tailscale remote access",
@@ -2014,6 +2184,7 @@
         "runtime_location": "Server host and joined devices",
         "runtime_owner": "tailscaled",
         "security_boundary": "tailnet",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -2028,6 +2199,7 @@
         "health_signals": [
           "daemon state"
         ],
+        "icon": "brand-tailscale",
         "id": "tailscaled",
         "mini_diagram": true,
         "name": "tailscaled daemon",
@@ -2047,6 +2219,7 @@
         "runtime_location": "Android/Termux server host",
         "runtime_owner": "startup scripts",
         "security_boundary": "server-host",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -2059,6 +2232,7 @@
         "evidence_produced": [],
         "generated_page": "docs/generated/production/architecture/components/user.md",
         "health_signals": [],
+        "icon": "semantic-user",
         "id": "user",
         "mini_diagram": false,
         "name": "User",
@@ -2075,6 +2249,7 @@
         "runtime_location": "Human user device",
         "runtime_owner": "Browser",
         "security_boundary": "browser",
+        "technology_icons": [],
         "verification_status": "verified"
       },
       {
@@ -2096,6 +2271,7 @@
           "worker heartbeat",
           "durable consumer health"
         ],
+        "icon": "semantic-worker",
         "id": "worker",
         "mini_diagram": true,
         "name": "Worker process",
@@ -2116,6 +2292,9 @@
         "runtime_location": "Server host",
         "runtime_owner": "PM2",
         "security_boundary": "messaging-execution",
+        "technology_icons": [
+          "brand-python"
+        ],
         "verification_status": "verified"
       },
       {
@@ -2135,6 +2314,7 @@
         "health_signals": [
           "projection subprocess health"
         ],
+        "icon": "semantic-workflow",
         "id": "workflow-execution",
         "mini_diagram": true,
         "name": "Workflow execution",
@@ -2155,6 +2335,7 @@
         "runtime_location": "Worker / projection subprocess",
         "runtime_owner": "pocket-worker",
         "security_boundary": "messaging-execution",
+        "technology_icons": [],
         "verification_status": "verified"
       }
     ],
@@ -3097,6 +3278,70 @@
       "views": 15
     },
     "description": "Canonical production architecture model generated into diagrams, pages, catalogs, and drift manifests.",
+    "icon_taxonomy": {
+      "brand": [
+        "brand-android",
+        "brand-caddy",
+        "brand-docker",
+        "brand-fastapi",
+        "brand-git",
+        "brand-github",
+        "brand-nats",
+        "brand-nodejs",
+        "brand-npm",
+        "brand-photoprism",
+        "brand-pm2",
+        "brand-python",
+        "brand-react",
+        "brand-sqlite",
+        "brand-tailscale",
+        "brand-tanstack",
+        "brand-trivy",
+        "brand-ubuntu",
+        "brand-vite",
+        "brand-xstate"
+      ],
+      "semantic": [
+        "generic-component",
+        "generic-database",
+        "generic-decision",
+        "generic-event",
+        "generic-external",
+        "generic-network",
+        "generic-process",
+        "generic-service",
+        "generic-ui",
+        "semantic-agent",
+        "semantic-api-guard",
+        "semantic-api-surface",
+        "semantic-app-catalog",
+        "semantic-app-runtime",
+        "semantic-artifact",
+        "semantic-backup",
+        "semantic-browser",
+        "semantic-decision",
+        "semantic-docs",
+        "semantic-durable-state",
+        "semantic-event",
+        "semantic-evidence",
+        "semantic-frontend-state",
+        "semantic-health",
+        "semantic-network",
+        "semantic-projection",
+        "semantic-pwa",
+        "semantic-query-cache",
+        "semantic-recovery",
+        "semantic-release",
+        "semantic-scanner",
+        "semantic-security",
+        "semantic-snapshot",
+        "semantic-supervisor",
+        "semantic-terminal",
+        "semantic-user",
+        "semantic-worker",
+        "semantic-workflow"
+      ]
+    },
     "operational_guarantees": [
       "Frontend never talks directly to NATS.",
       "Frontend never executes shell commands.",
@@ -3201,25 +3446,324 @@
           "caddy",
           "lite-api",
           "api-domain-surfaces",
+          "api-read-surfaces",
+          "api-guards",
+          "app-catalog",
+          "security-coordinator",
           "nats-jetstream",
           "worker",
-          "sqlite",
-          "prepared-state",
-          "node-agent",
-          "agent-supervisor",
-          "tailscale",
-          "app-catalog",
-          "photoprism",
-          "security-coordinator",
+          "command-lifecycle",
+          "agent-command-executor",
           "backup-engine",
           "release-subprocess",
-          "completion-evidence"
+          "completion-evidence",
+          "sqlite",
+          "prepared-state",
+          "invite-state",
+          "device-state",
+          "recovery-state",
+          "security-state",
+          "release-state",
+          "app-workflow-state",
+          "pm2",
+          "node-agent",
+          "agent-supervisor",
+          "agent-signals",
+          "agent-recovery",
+          "tailscale",
+          "proot-ubuntu",
+          "photoprism",
+          "github-repository",
+          "github-release",
+          "release-artifacts"
         ],
-        "description": "Major deployment zones and the primary request, execution, state, evidence, device, app, remote-access, and release flows.",
+        "description": "Executive poster of the verified experience, control plane, event execution, durable state, device runtime, remote access, apps, and release flow.",
         "id": "complete-system",
         "level": 1,
-        "max_nodes": 20,
+        "max_nodes": 40,
         "page": "complete-system.md",
+        "poster": {
+          "callouts": [
+            {
+              "items": [
+                "Frontend never talks directly to NATS.",
+                "Frontend never executes shell commands.",
+                "FastAPI remains the control API.",
+                "Agents and supervisors own execution and recovery.",
+                "Bootstrap scripts are backend-generated."
+              ],
+              "title": "What Pocket Lab Lite guarantees"
+            },
+            {
+              "items": [
+                "UI presents",
+                "FastAPI validates",
+                "NATS transports",
+                "Workers execute",
+                "Agents act on devices",
+                "Supervisors recover",
+                "SQLite preserves truth"
+              ],
+              "title": "Execution ownership"
+            },
+            {
+              "items": [
+                "Self-hosted",
+                "Edge-first",
+                "ARM64 friendly",
+                "Private by default",
+                "Recovery-aware",
+                "Evidence-backed",
+                "Offline-safe read summaries"
+              ],
+              "title": "Operational highlights"
+            }
+          ],
+          "emphasize_primary_flows": true,
+          "layout_mode": "executive-poster",
+          "legend": [
+            {
+              "key": "brand",
+              "label": "Brand icon \u2014 verified external technology or product"
+            },
+            {
+              "key": "semantic",
+              "label": "Semantic icon \u2014 internal Pocket Lab Lite role or lifecycle"
+            },
+            {
+              "key": "solid",
+              "label": "Solid arrow \u2014 request, command, or primary control"
+            },
+            {
+              "key": "dashed",
+              "label": "Dashed arrow \u2014 health, readiness, or recovery"
+            },
+            {
+              "key": "dotted",
+              "label": "Dotted arrow \u2014 asynchronous evidence or lifecycle"
+            },
+            {
+              "key": "boundary",
+              "label": "Nested band \u2014 verified trust boundary"
+            }
+          ],
+          "primary_flows": [
+            {
+              "connections": [
+                "user-browser",
+                "browser-pwa",
+                "pwa-caddy",
+                "caddy-api",
+                "api-domains",
+                "api-nats",
+                "nats-worker"
+              ],
+              "id": "request",
+              "label": "1. User/API request"
+            },
+            {
+              "connections": [
+                "api-guards-flow",
+                "state-0",
+                "guards-agent",
+                "pm2-agent",
+                "pm2-supervisor"
+              ],
+              "id": "onboarding",
+              "label": "2. Device onboarding"
+            },
+            {
+              "connections": [
+                "api-nats",
+                "nats-worker",
+                "worker-command",
+                "agent-command-flow"
+              ],
+              "id": "command",
+              "label": "3. Command execution"
+            },
+            {
+              "connections": [
+                "agent-signals-flow",
+                "signals-nats",
+                "nats-device-state",
+                "evidence-0",
+                "evidence-index",
+                "state-reads",
+                "reads-pwa"
+              ],
+              "id": "evidence",
+              "label": "4. Evidence and heartbeat return"
+            },
+            {
+              "connections": [
+                "pm2-supervisor",
+                "supervisor-recovery-flow",
+                "recovery-agent"
+              ],
+              "id": "recovery",
+              "label": "5. Supervisor recovery"
+            },
+            {
+              "connections": [
+                "repo-release",
+                "release-assets",
+                "worker-release",
+                "evidence-2"
+              ],
+              "id": "release",
+              "label": "6. Release/update"
+            },
+            {
+              "connections": [
+                "tailscale-caddy",
+                "catalog-pwa",
+                "catalog-photoprism",
+                "proot-photo"
+              ],
+              "id": "app-access",
+              "label": "7. App access"
+            },
+            {
+              "connections": [
+                "pwa-state",
+                "state-reads",
+                "reads-pwa"
+              ],
+              "id": "safe-state",
+              "label": "8. Safe frontend state"
+            }
+          ],
+          "show_callouts": true,
+          "show_legend": true,
+          "show_summary_cards": true,
+          "show_trust_boundary_bands": true,
+          "summary_cards": [
+            {
+              "icon": "brand-react",
+              "title": "Self-hosted workspace",
+              "value": "React/Vite PWA with safe saved summaries"
+            },
+            {
+              "icon": "brand-fastapi",
+              "title": "FastAPI control plane",
+              "value": "Validated reads, guards, and command admission"
+            },
+            {
+              "icon": "brand-nats",
+              "title": "NATS event backbone",
+              "value": "Durable command, event, and heartbeat transport"
+            },
+            {
+              "icon": "semantic-evidence",
+              "title": "Auditable evidence",
+              "value": "Sanitized lifecycle evidence and prepared projections"
+            },
+            {
+              "icon": "brand-android",
+              "title": "Android/Termux edge",
+              "value": "PM2-managed agents and supervisor recovery"
+            },
+            {
+              "icon": "brand-tailscale",
+              "title": "Private remote access",
+              "value": "Tailscale and same-origin Caddy routes"
+            }
+          ],
+          "trust_boundary_bands": [
+            "browser",
+            "server-host",
+            "control-api",
+            "messaging-execution",
+            "durable-state",
+            "managed-device",
+            "tailnet",
+            "application-container",
+            "external-release"
+          ],
+          "zone_layout": "horizontal",
+          "zones": [
+            {
+              "components": [
+                "user",
+                "browser",
+                "pwa",
+                "frontend-state"
+              ],
+              "id": "experience",
+              "label": "Zone A \u2014 Experience",
+              "summary": "User interaction, safe read-state presentation, offline-safe summaries, UI-only coordination, and guided workflow presentation."
+            },
+            {
+              "components": [
+                "caddy",
+                "lite-api",
+                "api-domain-surfaces",
+                "api-read-surfaces",
+                "api-guards",
+                "app-catalog",
+                "security-coordinator"
+              ],
+              "id": "control-plane",
+              "label": "Zone B \u2014 Control plane",
+              "summary": "Caddy and FastAPI validate, guard, route, admit commands, and serve prepared reads."
+            },
+            {
+              "components": [
+                "nats-jetstream",
+                "worker",
+                "command-lifecycle",
+                "agent-command-executor",
+                "backup-engine",
+                "release-subprocess",
+                "completion-evidence"
+              ],
+              "id": "event-execution",
+              "label": "Zone C \u2014 Event and execution",
+              "summary": "NATS/JetStream transports bounded work; workers and executors own lifecycle execution and evidence."
+            },
+            {
+              "components": [
+                "sqlite",
+                "prepared-state",
+                "invite-state",
+                "device-state",
+                "recovery-state",
+                "security-state",
+                "release-state",
+                "app-workflow-state"
+              ],
+              "id": "durable-state",
+              "label": "Zone D \u2014 Durable state",
+              "summary": "SQLite and prepared projections preserve canonical device, invite, workflow, security, recovery, release, and app state."
+            },
+            {
+              "components": [
+                "pm2",
+                "node-agent",
+                "agent-supervisor",
+                "agent-signals",
+                "agent-recovery"
+              ],
+              "id": "device-runtime",
+              "label": "Zone E \u2014 Device runtime",
+              "summary": "PM2, the node agent, supervisor, heartbeats, and recovery watchdog run on low-power Android/Termux or Ubuntu devices."
+            },
+            {
+              "components": [
+                "tailscale",
+                "proot-ubuntu",
+                "photoprism",
+                "github-repository",
+                "github-release",
+                "release-artifacts"
+              ],
+              "id": "remote-apps",
+              "label": "Zone F \u2014 Remote access and apps",
+              "summary": "Tailscale private access, PROot Ubuntu, PhotoPrism, and immutable GitHub release assets."
+            }
+          ]
+        },
         "title": "Complete Pocket Lab Lite system map"
       },
       {
@@ -3438,13 +3982,13 @@
     ]
   },
   "metadata": {
-    "architecture_source_fingerprint": "13dae80367ddf3ba183f4f77c57075516b1e463d27336c7aa834c23b5cce75a2",
+    "architecture_source_fingerprint": "20bffc9aa51b0c5cedb30ae9e2be0a9cfb0925972f81f056d9792accd7d4e7ee",
     "generated": true,
     "generated_at": "uncommitted",
     "generator": "scripts/docs/graphviz/generate_lite_architecture.py",
-    "generator_sha256": "7ea7bafe8d93270e45a0041ca3b3a5c2e478a4420ae20f91a4dfab9cb071723a",
-    "generator_version": 1,
-    "repository_source_fingerprint": "5c814f7819ce86c7ec8ac8ffa0f743a4e5e88e667dcf6cf2a13879245aa029b4",
+    "generator_sha256": "08730b12c4032bd4e8e9159f3928f206c207f318d655975aeccafae6425bb778",
+    "generator_version": 2,
+    "repository_source_fingerprint": "b810eb23eaad10f7491886b72e394725219094178cf96c820d0a32d408b7abd6",
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "validation_state": "generated"
