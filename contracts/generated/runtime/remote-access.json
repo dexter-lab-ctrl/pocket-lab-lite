@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  },
+  "remote_access": {
+    "classification": "verified",
+    "daemon": {
+      "execution_owner": "startup scripts",
+      "expected_source_match": "matched",
+      "id": "tailscaled",
+      "logical_role": "private remote-access daemon",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "native",
+      "status": "ready"
+    },
+    "readiness": {
+      "address_redacted": true,
+      "command_variant": "tailscale-cli",
+      "daemon_running": true,
+      "hostname_redacted": true,
+      "ipv4_ready": true,
+      "peer_reachability": "ready",
+      "private_connectivity_ready": true,
+      "service_id": "tailscaled"
+    },
+    "route": {
+      "https_mode": "explicit-files",
+      "https_owner": "caddy",
+      "id": "remote-access",
+      "peer_reachability": "ready",
+      "presence": "present",
+      "route_kind": "remote-access",
+      "route_order": "not-applicable",
+      "upstream_kind": "private-network"
+    }
+  }
+}

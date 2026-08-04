@@ -1,0 +1,65 @@
+{
+  "agent_supervisor": {
+    "agent": {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "node-agent",
+      "logical_role": "server-host node agent",
+      "memory_bucket": "under-64-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "python",
+      "status": "online"
+    },
+    "classification": "verified",
+    "core_supervisor": {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "core-supervisor",
+      "logical_role": "server-host recovery supervisor",
+      "memory_bucket": "under-64-mib",
+      "presence": "present",
+      "restart_bucket": "none",
+      "runtime_type": "python",
+      "status": "online"
+    },
+    "nats": {
+      "execution_owner": "PM2",
+      "expected_source_match": "matched",
+      "id": "nats",
+      "logical_role": "NATS/JetStream service",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "native",
+      "status": "ready"
+    },
+    "relationships": [
+      {
+        "agent_presence": "present",
+        "agent_version_major": "1",
+        "expected_pm2_ownership": true,
+        "id": "agent-supervisor-command-path",
+        "joined_supervisor_presence": "missing",
+        "last_evidence_freshness_bucket": "unknown",
+        "nats_connectivity": "ready",
+        "recovery_capability": "supervised",
+        "supervisor_presence": "present",
+        "supervisor_version_major": "1",
+        "worker_command_owner_presence": "present"
+      }
+    ]
+  },
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  }
+}

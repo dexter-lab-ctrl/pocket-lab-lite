@@ -236,6 +236,134 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_CAPTURE_MAX_BYTES",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh"
+      ],
+      "safe_default": "524288",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_CAPTURE_ROOT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh"
+      ],
+      "safe_default": "$ROOT/.pocketlab-dev/runtime-captures",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_CAPTURE_TIMEOUT_SECONDS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh"
+      ],
+      "safe_default": "120",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_KEEP_RAW",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh"
+      ],
+      "safe_default": "0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_MAX_AGE_DAYS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh"
+      ],
+      "safe_default": "14",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_MAX_CAPTURES",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh",
+        "scripts/docs/runtime/promote_termux_runtime.py"
+      ],
+      "safe_default": "8",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_RUNTIME_PROMOTE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/generate_termux_runtime_docs.py",
+        "scripts/docs/runtime/promote_termux_runtime.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
@@ -1307,7 +1435,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_CADDYFILE",
@@ -1319,7 +1448,8 @@
         "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_app_operations.py",
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog_live.py",
-        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py"
+        "pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py",
+        "scripts/docs/runtime/termux_runtime_probe.sh"
       ],
       "safe_default": "$CADDYFILE",
       "secret_classification": "configuration",
@@ -4469,7 +4599,8 @@
         "scripts/dev/lib/long_gate_json.py",
         "scripts/dev/lib/long_gate_s8.py",
         "scripts/dev/lib/long_gate_sqlite.sh",
-        "scripts/dev/long-gates/security-s8-recovery.sh"
+        "scripts/dev/long-gates/security-s8-recovery.sh",
+        "scripts/docs/runtime/termux_runtime_probe.sh"
       ],
       "safe_default": "$POCKETLAB_STATE_DIR/pocketlab-lite.sqlite3",
       "secret_classification": "configuration",
@@ -8196,7 +8327,8 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
-        "pocket-lab-final-structure"
+        "pocket-lab-final-structure",
+        "scripts"
       ],
       "deprecated_aliases": [],
       "name": "POCKETLAB_NATS_CONFIG",
@@ -8204,7 +8336,8 @@
       "required": false,
       "restart_required": "component-dependent",
       "runtime_readers": [
-        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh"
+        "pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh",
+        "scripts/docs/runtime/termux_runtime_probe.sh"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -10742,6 +10875,24 @@
         "scripts"
       ],
       "deprecated_aliases": [],
+      "name": "POCKETLAB_RUNTIME_SSH_STATE_DIR",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "$ROOT/.pocketlab-dev/runtime-ssh",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
       "name": "POCKETLAB_S6_GATE_PM2",
       "production": true,
       "required": false,
@@ -11977,6 +12128,115 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py"
       ],
       "safe_default": "30",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_TERMUX_HOST_KEY_FINGERPRINT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_TERMUX_SSH_ALIAS",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/capture_termux_runtime.sh",
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "pocketlab-termux",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_TERMUX_SSH_HOST",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_TERMUX_SSH_IDENTITY",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_TERMUX_SSH_PORT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_TERMUX_SSH_USER",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/docs/runtime/setup_termux_ssh.sh"
+      ],
+      "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -13450,6 +13710,7 @@
         "scripts/docs/lite/generate_contracts.py",
         "scripts/docs/lite/generate_docs.py",
         "scripts/docs/lite/generate_platform_catalogs.py",
+        "scripts/docs/runtime/generate_termux_runtime_docs.py",
         "scripts/docs/sqlite/generate_schemaspy.py"
       ],
       "safe_default": "source-defined or empty",
@@ -13509,6 +13770,7 @@
         "scripts/docs/lite/generate_contracts.py",
         "scripts/docs/lite/generate_docs.py",
         "scripts/docs/lite/generate_platform_catalogs.py",
+        "scripts/docs/runtime/generate_termux_runtime_docs.py",
         "scripts/docs/sqlite/generate_schemaspy.py"
       ],
       "safe_default": "source-defined or empty",
@@ -13607,7 +13869,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "e179d705b8c0047f9129c0b44e9962d382bafc7fd9ac79ca512313e34d0dc872",
+    "aggregate_fingerprint": "bb53dd0463f2ad3e8ace8daaf047650340637af268cf8c24354673de673d296f",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -13857,7 +14119,11 @@
       "scripts/dev/up.sh": "b51c1a636f904b872d7b9b8e178c6f409c7b61c7d1de55f9052083a451e975f3",
       "scripts/dev/wait-http.sh": "2572f60cf011844a547a35dcee2af15a02476381c21466c3ba848c0516afb9b5",
       "scripts/docs/generate_allure_report.sh": "672bd18a01342d14ae7e14c85b7670bfd704e12100863b8f30ccaeda97d98474",
-      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0"
+      "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
+      "scripts/docs/runtime/capture_termux_runtime.sh": "24e00f8cd4caa9908760078ace070dbf69bb25efd0864ae26794b68429e4a4f2",
+      "scripts/docs/runtime/check_termux_ssh.sh": "918b13750417e28cea4e9b461ab03a973aca5db4f1edcdefbbc2ca85c4cebdf5",
+      "scripts/docs/runtime/setup_termux_ssh.sh": "d34aaf42957bf4c6c1ec0ecab470c28757984ca8c7f69e4d84b15d68450899bb",
+      "scripts/docs/runtime/termux_runtime_probe.sh": "784f5f7dbfcd5c13cb632c18f78905192c1c917f747bf9549ab1800f984a1e45"
     },
     "validation_state": "generated"
   }

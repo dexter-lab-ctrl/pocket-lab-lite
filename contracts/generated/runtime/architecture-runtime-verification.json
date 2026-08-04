@@ -1,0 +1,414 @@
+{
+  "architecture_runtime_verification": {
+    "baseline": "architecture/runtime-baselines/server-phone.json",
+    "baseline_state": "verified",
+    "canonical_component_count": 56,
+    "components": [
+      {
+        "classification": "source-verified",
+        "component_id": "agent-command-executor",
+        "component_name": "Device command executor",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "agent-recovery",
+        "component_name": "Reconnect watchdog and supervisor recovery",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "agent-signals",
+        "component_name": "Heartbeat, telemetry, and health publishers",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "agent-supervisor",
+        "component_name": "Lite agent supervisor",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.core-supervisor"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "api-domain-surfaces",
+        "component_name": "Fleet, Apps, Security, Recovery, and Release APIs",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "api-guards",
+        "component_name": "Identity, authentication, and invite guards",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "api-read-surfaces",
+        "component_name": "Prepared read, health, readiness, diagnostics, and evidence APIs",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "app-catalog",
+        "component_name": "App Catalog",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "app-lifecycle-worker",
+        "component_name": "App lifecycle worker",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "app-recovery-update",
+        "component_name": "App backup, restore preview, and update lifecycle",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "app-workflow-state",
+        "component_name": "App, command, and workflow state",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "atomic-promotion",
+        "component_name": "Atomic PWA promotion",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "backup-engine",
+        "component_name": "Backup and verification engine",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "bounded-reconciliation",
+        "component_name": "Bounded queues and reconciliation",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "browser",
+        "component_name": "Browser",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "caddy",
+        "component_name": "Caddy same-origin proxy",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.caddy"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "checkpoints-retention",
+        "component_name": "Checkpoints and retention policy",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "command-lifecycle",
+        "component_name": "Command admission and lifecycle",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "completion-evidence",
+        "component_name": "Completion and audit evidence",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "device-state",
+        "component_name": "Enrollment and device lifecycle state",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "frontend-state",
+        "component_name": "Frontend state ownership",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "github-release",
+        "component_name": "GitHub Release",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "github-repository",
+        "component_name": "GitHub repository",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "invite-state",
+        "component_name": "Invite and identity lifecycle",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "lan",
+        "component_name": "Local LAN",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "last-known-good",
+        "component_name": "Last-known-good state and rollback",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "lite-api",
+        "component_name": "FastAPI /api/lite/*",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.lite-api"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "media-app-health",
+        "component_name": "Media readiness and app health probes",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "nats-jetstream",
+        "component_name": "NATS / JetStream",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.nats"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "nats-listeners",
+        "component_name": "Primary and secondary NATS listeners",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "node-agent",
+        "component_name": "Lite node agent",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.node-agent"
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "photoprism",
+        "component_name": "PhotoPrism",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "runtime_apps.photoprism"
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "pm2",
+        "component_name": "PM2 process manager",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.pm2"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "post-switch-health",
+        "component_name": "Post-switch health validation",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "prepared-state",
+        "component_name": "Audit index, projection refresh, prepared projections, and domain revisions",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "projection-subprocesses",
+        "component_name": "Projection subprocesses",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "runtime-unavailable",
+        "component_id": "proot-ubuntu",
+        "component_name": "PROot Ubuntu application container",
+        "runtime_evidence_state": "unavailable",
+        "runtime_selector": "services.proot-ubuntu"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "pwa",
+        "component_name": "React / Vite PWA",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "recovery-state",
+        "component_name": "Backup, restore, and checkpoint state",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "release-artifacts",
+        "component_name": "Date-based Lite tag, dist.zip, checksums, and release manifest",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "release-staging",
+        "component_name": "Download staging and release verification",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "release-state",
+        "component_name": "Installed release and runtime state",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "release-subprocess",
+        "component_name": "Release subprocess",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "remote-readiness",
+        "component_name": "Remote-access readiness checks",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "restore-preview",
+        "component_name": "Restore preview and confirmed restore",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "retirement-database-recovery",
+        "component_name": "Explicit retirement and database recovery",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "scanner-adapters",
+        "component_name": "Lynis and Trivy scanner adapters",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "security-coordinator",
+        "component_name": "Security scan coordinator",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "security-profiles",
+        "component_name": "Quick, Full, and App safety checks",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "security-state",
+        "component_name": "Security findings and run state",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "sqlite",
+        "component_name": "SQLite control-plane store",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.sqlite"
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "tailscale",
+        "component_name": "Tailscale remote access",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "routes.remote-access"
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "tailscaled",
+        "component_name": "tailscaled daemon",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.tailscaled"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "user",
+        "component_name": "User",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      },
+      {
+        "classification": "source-and-runtime-verified",
+        "component_id": "worker",
+        "component_name": "Worker process",
+        "runtime_evidence_state": "verified",
+        "runtime_selector": "services.worker"
+      },
+      {
+        "classification": "source-verified",
+        "component_id": "workflow-execution",
+        "component_name": "Workflow execution",
+        "runtime_evidence_state": "not-selected",
+        "runtime_selector": null
+      }
+    ],
+    "runtime_selected_component_count": 12
+  },
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  }
+}

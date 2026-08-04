@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  },
+  "pm2_topology": {
+    "classification": "verified",
+    "services": [
+      {
+        "execution_owner": "PM2",
+        "expected_source_match": "matched",
+        "id": "caddy",
+        "logical_role": "same-origin proxy",
+        "memory_bucket": "not-applicable",
+        "presence": "present",
+        "restart_bucket": "not-applicable",
+        "runtime_type": "native",
+        "status": "healthy"
+      },
+      {
+        "execution_owner": "PM2",
+        "expected_source_match": "matched",
+        "id": "core-supervisor",
+        "logical_role": "server-host recovery supervisor",
+        "memory_bucket": "under-64-mib",
+        "presence": "present",
+        "restart_bucket": "none",
+        "runtime_type": "python",
+        "status": "online"
+      },
+      {
+        "execution_owner": "PM2",
+        "expected_source_match": "matched",
+        "id": "lite-api",
+        "logical_role": "FastAPI control API",
+        "memory_bucket": "64-191-mib",
+        "presence": "present",
+        "restart_bucket": "none",
+        "runtime_type": "python",
+        "status": "online"
+      },
+      {
+        "execution_owner": "PM2",
+        "expected_source_match": "matched",
+        "id": "nats",
+        "logical_role": "NATS/JetStream service",
+        "memory_bucket": "not-applicable",
+        "presence": "present",
+        "restart_bucket": "not-applicable",
+        "runtime_type": "native",
+        "status": "ready"
+      },
+      {
+        "execution_owner": "PM2",
+        "expected_source_match": "matched",
+        "id": "node-agent",
+        "logical_role": "server-host node agent",
+        "memory_bucket": "under-64-mib",
+        "presence": "present",
+        "restart_bucket": "none",
+        "runtime_type": "python",
+        "status": "online"
+      },
+      {
+        "execution_owner": "PM2 / PROot Ubuntu",
+        "expected_source_match": "matched",
+        "id": "photoprism",
+        "logical_role": "managed PhotoPrism application",
+        "memory_bucket": "under-64-mib",
+        "presence": "present",
+        "restart_bucket": "none",
+        "runtime_type": "proot",
+        "status": "online"
+      },
+      {
+        "execution_owner": "PM2",
+        "expected_source_match": "matched",
+        "id": "worker",
+        "logical_role": "worker execution plane",
+        "memory_bucket": "64-191-mib",
+        "presence": "present",
+        "restart_bucket": "none",
+        "runtime_type": "python",
+        "status": "online"
+      }
+    ]
+  }
+}

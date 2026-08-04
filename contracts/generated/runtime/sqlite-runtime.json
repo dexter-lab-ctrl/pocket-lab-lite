@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "generated": true,
+    "generated_at": "uncommitted",
+    "generator": "scripts/docs/runtime/generate_termux_runtime_docs.py",
+    "generator_version": 1,
+    "promoted_baseline": "architecture/runtime-baselines/server-phone.json",
+    "promoted_baseline_sha256": "1425d020114ed8f7848607636f8c3b025e67f44a155de062e48da0f8bdf34768",
+    "promoted_semantic_fingerprint": "9675e58a89168604b6097a7b1e417426eb7087bb8e233823927cf014baba8125",
+    "schema_revision": 1,
+    "source_commit": "uncommitted",
+    "validation_state": "generated"
+  },
+  "sqlite_runtime": {
+    "classification": "verified",
+    "datastores": [
+      {
+        "expected_tables_present": true,
+        "id": "sqlite-control-plane",
+        "integrity": "ok",
+        "journal_mode": "wal",
+        "presence": "present",
+        "role": "control-plane-state",
+        "schema_revision": 23,
+        "service_id": "sqlite"
+      }
+    ],
+    "service": {
+      "execution_owner": "FastAPI and workers",
+      "expected_source_match": "matched",
+      "id": "sqlite",
+      "logical_role": "SQLite control-plane store",
+      "memory_bucket": "not-applicable",
+      "presence": "present",
+      "restart_bucket": "not-applicable",
+      "runtime_type": "sqlite",
+      "status": "healthy"
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "capture_duration_ms": 1999,
+  "capture_kind": "termux-runtime",
+  "capture_started_at": "2026-08-04T11:45:33Z",
+  "host_role": "server-phone",
+  "probe_revision": 1,
+  "probes": {
+    "agent_supervisor": {
+      "agent_present": true,
+      "agent_version_major": "1",
+      "core_supervisor_present": true,
+      "expected_pm2_ownership": true,
+      "joined_supervisor_present": false,
+      "last_evidence_freshness_bucket": "unknown",
+      "nats_connectivity": "ready",
+      "recovery_capability": "supervised",
+      "state": "ok",
+      "supervisor_version_major": "1",
+      "worker_command_owner_present": true
+    },
+    "caddy": {
+      "command_available": true,
+      "config_present": true,
+      "routes": {
+        "api_lite": true,
+        "api_upstream_kind": "loopback-fastapi",
+        "app_upstream_kind": "loopback-app",
+        "apps": true,
+        "https": true,
+        "https_mode": "explicit-files",
+        "photoprism": true,
+        "pwa": true,
+        "route_order": "api-before-pwa"
+      },
+      "state": "ok",
+      "validation_state": "valid",
+      "version": "v2.10.0 h1:example"
+    },
+    "nats": {
+      "bind_scope": "private-or-all",
+      "command_available": true,
+      "expected_client_port_present": true,
+      "fleet_connectivity_observed": true,
+      "fleet_listener_configured": true,
+      "jetstream_enabled": true,
+      "listener_present": true,
+      "listener_tool_visible": true,
+      "local_listener_reachable": true,
+      "process_owner": "pm2",
+      "state": "ok",
+      "version": "nats-server: v2.10.20"
+    },
+    "platform": {
+      "abi": "arm64-v8a",
+      "android_release": "15.0.1",
+      "architecture": "aarch64",
+      "kernel": "Linux",
+      "state": "ok",
+      "termux_prefix_kind": "termux"
+    },
+    "pm2": {
+      "command_available": true,
+      "processes": [
+        {
+          "memory_bytes": 268435456,
+          "name": "pocketlab-app-photoprism",
+          "process_id": 100,
+          "restarts": 3,
+          "runtime_type": "proot",
+          "status": "online",
+          "version_major": "1"
+        },
+        {
+          "memory_bytes": 31457280,
+          "name": "caddy-proxy",
+          "process_id": 101,
+          "restarts": 0,
+          "runtime_type": "native",
+          "status": "online",
+          "version_major": "1"
+        },
+        {
+          "memory_bytes": 41943040,
+          "name": "pocketlab-core-supervisor",
+          "process_id": 102,
+          "restarts": 0,
+          "runtime_type": "python",
+          "status": "online",
+          "version_major": "1"
+        },
+        {
+          "memory_bytes": 52428800,
+          "name": "pocket-node-agent",
+          "process_id": 103,
+          "restarts": 2,
+          "runtime_type": "python",
+          "status": "online",
+          "version_major": "1"
+        },
+        {
+          "memory_bytes": 50331648,
+          "name": "pocket-nats",
+          "process_id": 104,
+          "restarts": 0,
+          "runtime_type": "native",
+          "status": "online",
+          "version_major": "1"
+        },
+        {
+          "memory_bytes": 125829120,
+          "name": "pocket-worker",
+          "process_id": 105,
+          "restarts": 0,
+          "runtime_type": "python",
+          "status": "online",
+          "version_major": "1"
+        },
+        {
+          "memory_bytes": 120000000,
+          "name": "pocket-api",
+          "process_id": 106,
+          "restarts": 1,
+          "runtime_type": "python",
+          "status": "online",
+          "version_major": "1"
+        }
+      ],
+      "state": "ok"
+    },
+    "proot_apps": {
+      "photoprism_pm2_present": true,
+      "photoprism_present": true,
+      "photoprism_route_present": true,
+      "proot_present": true,
+      "state": "ok",
+      "ubuntu_present": true
+    },
+    "sqlite": {
+      "command_available": true,
+      "database_present": true,
+      "expected_tables_present": true,
+      "integrity": "ok",
+      "journal_mode": "wal",
+      "schema_revision": 22,
+      "state": "ok"
+    },
+    "tailscale": {
+      "address_redacted": true,
+      "command_variant": "tailscale-cli",
+      "daemon_running": true,
+      "hostname_redacted": true,
+      "ipv4_ready": true,
+      "peer_reachability": "ready",
+      "private_connectivity_ready": true,
+      "state": "ok"
+    }
+  },
+  "sanitized": false,
+  "schema_revision": 1,
+  "source": "allowlisted-read-only-ssh-probe"
+}

@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 12b1cd5a2f8732a42027366c3bb68790b0845c8acb3a38f101acea7690ddb60b
+source_fingerprint: 2f83238d507bc32399791118d5de020d666e6c85e69ddcc18cb24fa8b56341bc
 schema_revision: 1
 validation_status: generated
 ---
@@ -64,6 +64,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:recovery`
 - `lite:docs:redaction`
 - `lite:docs:release-evidence`
+- `lite:docs:runtime:check`
+- `lite:docs:runtime:generate`
 - `lite:docs:security`
 - `lite:docs:serve`
 - `lite:docs:services`
@@ -78,6 +80,14 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:playwright:preflight`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
+- `lite:runtime:ssh:check`
+- `lite:runtime:ssh:setup`
+- `lite:runtime:termux:capture`
+- `lite:runtime:termux:clean`
+- `lite:runtime:termux:diff`
+- `lite:runtime:termux:inspect`
+- `lite:runtime:termux:promote`
+- `lite:runtime:termux:validate`
 - `lite:setup`
 - `lite:setup:check`
 - `lite:setup:system`
@@ -117,6 +127,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:diagrams:check`
 - `lite:docs:check` → `lite:docs:platform:check`
 - `lite:docs:check` → `lite:docs:production:check`
+- `lite:docs:check` → `lite:docs:runtime:check`
 - `lite:docs:check` → `lite:docs:tools:check`
 - `lite:docs:generate` → `lite:contracts:generate`
 - `lite:docs:generate` → `lite:docs:architecture:generate`
@@ -124,6 +135,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
 - `lite:docs:generate` → `lite:docs:platform:generate`
 - `lite:docs:generate` → `lite:docs:production:generate`
+- `lite:docs:generate` → `lite:docs:runtime:generate`
 - `lite:docs:generate` → `lite:docs:tools:check`
 - `lite:docs:openapi` → `lite:contracts:generate`
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`

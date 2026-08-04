@@ -1,6 +1,57 @@
 version: '3'
 
 tasks:
+
+  lite:runtime:ssh:setup:
+    desc: Configure the managed WSL-only Termux SSH alias after explicit host-key approval
+    cmds:
+      - bash scripts/docs/runtime/setup_termux_ssh.sh --configure
+
+  lite:runtime:ssh:check:
+    desc: Verify the managed private, key-only, host-key-checked Termux SSH alias
+    cmds:
+      - bash scripts/docs/runtime/check_termux_ssh.sh
+
+  lite:runtime:termux:capture:
+    desc: Run one bounded read-only SSH probe and create a local sanitized projection
+    cmds:
+      - bash scripts/docs/runtime/capture_termux_runtime.sh
+
+  lite:runtime:termux:inspect:
+    desc: Inspect the latest safe local Termux projection without printing identities
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/promote_termux_runtime.py inspect'
+
+  lite:runtime:termux:validate:
+    desc: Validate the latest sanitized projection and candidate baseline
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/promote_termux_runtime.py validate'
+
+  lite:runtime:termux:diff:
+    desc: Show a semantic path-only diff against the promoted runtime baseline
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/promote_termux_runtime.py diff'
+
+  lite:runtime:termux:promote:
+    desc: Explicitly promote the latest safe projection; requires LITE_RUNTIME_PROMOTE=1
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/promote_termux_runtime.py promote'
+
+  lite:runtime:termux:clean:
+    desc: Remove transient raw layers and stale local captures idempotently
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/promote_termux_runtime.py clean'
+
+  lite:docs:runtime:generate:
+    desc: Generate tracked runtime contracts and pages from the promoted baseline only
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/generate_termux_runtime_docs.py generate'
+
+  lite:docs:runtime:check:
+    desc: Check promoted runtime baseline schemas, redaction, determinism, and generated drift
+    cmds:
+      - '{{.PYTHON}} scripts/docs/runtime/generate_termux_runtime_docs.py check'
+      - '{{.PYTHON}} scripts/docs/runtime/runtime_redaction.py --paths architecture/runtime-baselines contracts/generated/runtime docs/generated/development/runtime-verification.md docs/generated/production/android-termux-runtime.md docs/generated/production/services-pm2-runtime.md docs/generated/production/remote-access-runtime.md'
   lite:docs:tools:check:
     desc: Verify pinned development-only documentation tools without changing the host
     cmds:
@@ -177,28 +228,30 @@ tasks:
       - '{{.PYTHON}} scripts/docs/lite/generate_platform_catalogs.py check --section all'
 
   lite:docs:generate:
-    desc: Generate contracts, Development/Production docs, catalogs, SchemaSpy, and diagrams
+    desc: Generate contracts, catalogs, runtime evidence, architecture, Development/Production docs, SchemaSpy, and diagrams
     cmds:
       - task: lite:docs:tools:check
       - task: lite:contracts:generate
+      - task: lite:docs:platform:generate
+      - task: lite:docs:runtime:generate
+      - task: lite:docs:architecture:generate
       - task: lite:docs:development:generate
       - task: lite:docs:production:generate
-      - task: lite:docs:platform:generate
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py generate'
       - task: lite:docs:diagrams:generate
-      - task: lite:docs:architecture:generate
 
   lite:docs:check:
-    desc: Strict combined documentation, schema, diagram, contract, safety, and MkDocs gate
+    desc: Strict combined documentation, schema, runtime, diagram, contract, safety, and MkDocs gate
     cmds:
       - task: lite:docs:tools:check
       - task: lite:contracts:check
+      - task: lite:docs:platform:check
+      - task: lite:docs:runtime:check
+      - task: lite:docs:architecture:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check
-      - task: lite:docs:platform:check
       - '{{.PYTHON}} scripts/docs/sqlite/generate_schemaspy.py check'
       - task: lite:docs:diagrams:check
-      - task: lite:docs:architecture:check
       - '{{.PYTHON}} -m mkdocs build --strict'
 
   lite:test:docs:
