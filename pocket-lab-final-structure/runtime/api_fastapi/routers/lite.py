@@ -1862,7 +1862,11 @@ async def get_lite_security_evidence_summary(run_id: str, request: Request) -> R
 
 
 
-@router.get("/security/events")
+@router.get(
+    "/security/events",
+    response_class=StreamingResponse,
+    responses={200: {"description": "Security progress Server-Sent Events stream.", "content": {"text/event-stream": {"schema": {"type": "string"}}}}},
+)
 def get_lite_security_events(request: Request) -> Response:
     deps.require_auth(request)
     return StreamingResponse(
@@ -2513,7 +2517,11 @@ def get_lite_domain_revisions(request: Request) -> Response:
     return _lite_revisions_response(request, CONTROL_PLANE.revisions())
 
 
-@router.get("/events")
+@router.get(
+    "/events",
+    response_class=StreamingResponse,
+    responses={200: {"description": "Lite revision Server-Sent Events stream.", "content": {"text/event-stream": {"schema": {"type": "string"}}}}},
+)
 def get_lite_revision_events(request: Request) -> Response:
     deps.require_auth(request)
     return StreamingResponse(

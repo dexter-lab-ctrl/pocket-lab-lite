@@ -2,6 +2,7 @@ version: '3'
 
 vars:
   PARITY_TOOLS: '{{default ".pocketlab-dev/tools/parity/bin" .PARITY_TOOLS}}'
+  LITE_PARITY_API_URL: '{{default "http://127.0.0.1:18080" .LITE_PARITY_API_URL}}'
 
 tasks:
   lite:parity:tools:check:
@@ -40,7 +41,7 @@ tasks:
   lite:parity:api:
     desc: Verify Recovery API contracts, pagination, property-test guardrails, and safe GET filters
     cmds:
-      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/parity/test_guardrails.py'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/parity/test_guardrails.py tests/parity/test_api_contract_fences.py'
 
   lite:parity:selectors:
     desc: Verify generated API fixtures through the real Recovery selector
@@ -72,9 +73,22 @@ tasks:
       - bash scripts/test/parity/verify_termux_parity.sh
 
   lite:api:schemathesis:
-    desc: Run bounded read-only Schemathesis checks against safe GET endpoints
+    desc: Run bounded read-only Schemathesis checks against safe Recovery GET endpoints
     cmds:
-      - bash scripts/test/parity/run_schemathesis.sh
+      - >-
+        LITE_API_DIRECT_URL="{{.LITE_PARITY_API_URL}}"
+        LITE_PARITY_OPENAPI_URL="{{.LITE_PARITY_API_URL}}/openapi.json"
+        bash scripts/test/parity/run_schemathesis.sh
+
+  lite:api:read-latency:
+    desc: Capture bounded cold and warm read latency evidence from the configured loopback API
+    cmds:
+      - >-
+        {{.PYTHON}} scripts/test/parity/probe_read_latency.py
+        --base-url "{{.LITE_PARITY_API_URL}}"
+        --output "{{.VALIDATION_DIR}}/parity/read-latency.json"
+        --samples 3
+        --timeout 30
 
   lite:api:breaking-changes:
     desc: Check the current OpenAPI contract against an explicitly promoted baseline
@@ -138,3 +152,11 @@ tasks:
       - task: lite:evidence:parity:generate
       - task: lite:evidence:parity:check
       - task: lite:docs:parity:check
+
+  lite:api:schemathesis:discovery:
+    desc: Record broad read-only API/OpenAPI conformance findings without gating parity
+    cmds:
+      - >-
+        LITE_API_DIRECT_URL="{{.LITE_PARITY_API_URL}}"
+        LITE_PARITY_OPENAPI_URL="{{.LITE_PARITY_API_URL}}/openapi.json"
+        bash scripts/test/parity/run_schemathesis_discovery.sh

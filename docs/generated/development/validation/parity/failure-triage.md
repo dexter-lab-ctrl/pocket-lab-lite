@@ -20,3 +20,7 @@ generator: scripts/docs/parity/generate_parity.py
 - **API/browser match, authority differs:** treat as backend/projection drift; do not patch the UI to hide it.
 - **Storybook passes, page fails:** inspect integrated providers, routing, query invalidation, and overlay state.
 - **offline conflicts with live:** inspect Dexie snapshot revision and TanStack replacement rules.
+- **Schemathesis server error:** reproduce once, inspect sanitized PM2 traceback, and fix the route invariant; never document `500` as an accepted response.
+- **Schemathesis timeout:** classify streams separately, inspect cold/warm read-latency evidence, and adjust bounded endpoint behavior rather than disabling the gate.
+- **Expected `503`:** verify the response is documented, sanitized, retryable, and carries bounded `Retry-After`; focused read-only schemas must never activate maintenance.
+- **Discovery-only finding:** categorize it in the sanitized summary and keep it non-gating until an explicit contract policy is approved.

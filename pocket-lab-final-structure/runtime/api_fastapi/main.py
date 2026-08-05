@@ -13,6 +13,7 @@ os.environ.setdefault("POCKETLAB_PROCESS_ROLE", "api")
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 
 from .services.runtime_diagnostics import RuntimeTimingMiddleware
@@ -20,6 +21,7 @@ from .services.request_limits import LiteRequestSizeLimitMiddleware
 from .services.lite_security_maintenance import LiteMaintenanceModeMiddleware
 from .services.lite_safe_read_headers import LiteSafeReadNonceMiddleware
 from .services.workload_admission import WorkloadAdmissionError
+from .openapi_contracts import harden_openapi_schema
 
 from . import deps
 from .routers import (
@@ -232,6 +234,22 @@ for router in (
     workflows.router,
 ):
     app.include_router(router)
+
+
+def _pocketlab_openapi() -> dict:
+    if app.openapi_schema is not None:
+        return app.openapi_schema
+    generated = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    app.openapi_schema = harden_openapi_schema(generated)
+    return app.openapi_schema
+
+
+app.openapi = _pocketlab_openapi
 
 
 @app.exception_handler(HTTPException)

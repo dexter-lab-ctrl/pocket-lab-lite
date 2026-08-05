@@ -31,7 +31,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "06c0f2cbdb6e38fef3f5ea0b065b8645ed41b766f46703a94c8a0e865a276693",
+  "source_fingerprint": "2bbbafe64ee958254b4e1d9dc2da05a18d5a6c2310f065d9666f22ad2a7569b4",
   "source_fingerprints": {
     ".github/workflows/lite-quality.yml": "048c82b170403201c8f8f5050da38b90365186e185352617d0b4d76aacccd3c4",
     ".github/workflows/release-dist.yml": "9c88d615195b8f3005c9e84c4ead3729885d1ebe6bfc0ffc352f34c9df6b8be4",
@@ -42,7 +42,7 @@
     "package-lock.json": "70773e4a15b2017f6150cedca568659acae7f075e1dc9cf7a9a892eeca864129",
     "package.json": "6c885d1c8d3beffb4fc7ab9886945c9e29b3da5d8af438c3e27bced6cd14afbd",
     "playwright.config.ts": "c7e3490a52715f6671da008ea557c48fbbac80224bac166d5c0182ad92c748bd",
-    "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "79dcdae8da41327babcbe408cfe7912e02ccc2823bd7929419979ac65ae5d73c",
+    "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "6556fa3631d232030c3ed7ea156e4145e634d45c9ee7da5425c01ef7ec28a51d",
     "redocly.yaml": "85718a1b05d38aae5d7ee5f2a0304b6b0773a9f957f04e39ada044fa19e0ec25",
     "requirements-dev.txt": "9c84d0c803837beb5888fb81e2832a12fd731c83388afa5b34f8a2c204104732",
     "requirements-docs.txt": "cab2c67d3ed722efc5e9132c503e14fd1e3671759debfd8935edcd49ea63753c",
@@ -122,7 +122,7 @@
     "src/lite/stories/LiteStoryFrame.jsx": "cff6e567fe860381153734a0cd63614908ad07336499879bdb8fd1cda69a5d69",
     "tasks/Taskfile.docs.yml": "f892725df63c5d92f1fd4fea417ed5c669bac71b035cb598aba723629a6304b1",
     "tasks/Taskfile.lite.yml": "51ce4485df905953b40ea27e45e2984f1b6d9702a62644a7210ff2db6ad951dc",
-    "tasks/Taskfile.parity.yml": "7bf6a34880730c55a35ca497246b86f0bc22f99687ca11848a9d21bfa87220ff",
+    "tasks/Taskfile.parity.yml": "ab1d6c23af5ebb607e42e1bd57611c3de6922a1b9eda1a112fa9b254f31a1e5d",
     "tasks/Taskfile.release.yml": "c027ceca7a9f849cf4eb3f167a6b8d4f4bb52f292277ea3bbda572b14b4fb35e",
     "tasks/Taskfile.ui.yml": "c8b270a8713b1d0f334706f5f0febbefd4e5cfe40c94f5438fd4131e44b980f8",
     "tasks/Taskfile.windows.yml": "76ccbc66408709c1623fa30e7d11df48a2e542e329590625f107781cf7c6ff5d"

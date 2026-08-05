@@ -11,6 +11,6 @@ generator: scripts/docs/parity/generate_parity.py
 # OpenAPI Compatibility Report
 > Status vocabulary: **verified** is source/test confirmed; **partial** is source-derived but incomplete; **planned** is not implemented; **unvalidated** has not been run in the current environment.
 
-`lite:api:breaking-changes` compares a caller-supplied or promoted OpenAPI baseline with the generated current Lite OpenAPI contract. It reports removed paths, required-field additions, enum/nullability changes, and response compatibility. No generated OpenAPI file is manually edited.
+`lite:api:breaking-changes` verifies the promoted baseline hash before comparing it with the generated Lite OpenAPI contract. The wrapper disables external references, writes JSON through an atomic temporary file, rejects malformed reports, and fails on unapproved breaking errors. Baseline replacement requires an explicit promotion manifest containing the previous hash, promoted hash, rationale, validation commands, and secret-safety review. No generated OpenAPI file is manually edited.
 
-**Current result:** unvalidated until `oasdiff` is installed and a baseline is provided or promoted explicitly.
+**Runtime result:** unvalidated until the repository-local `oasdiff` binary is available and the gate is run.

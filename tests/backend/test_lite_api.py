@@ -8064,3 +8064,52 @@ def test_lite_motion_reduced_motion_uses_compatible_spring_values():
     assert "translateY(5px) scale(0.992)" not in motion
     assert "translateY(6px) scale(0.992)" not in motion
     assert "translateY(0px) scale(1)" not in motion
+
+
+def test_legacy_fleet_bootstrap_rejects_invalid_identity_without_durable_write(tmp_path):
+    ensure_runtime_path()
+    from api_fastapi import deps
+
+    state = deps.settings().state_dir
+    before = sorted(path.relative_to(state).as_posix() for path in state.rglob("*") if path.is_file())
+    for params in (
+        {"hostname": "'", "role": "compute"},
+        {"hostname": "ô", "role": "compute"},
+        {"hostname": "---___...", "role": "compute"},
+        {"hostname": "valid-device", "role": "unsupported"},
+        {"hostname": "valid-device", "role": "server_host"},
+    ):
+        response = client().get("/api/fleet/agent/bootstrap", params=params)
+        assert response.status_code in {400, 422}
+        assert response.status_code != 500
+        assert "ValueError" not in response.text
+        assert "token" not in response.text.lower()
+    after = sorted(path.relative_to(state).as_posix() for path in state.rglob("*") if path.is_file())
+    assert after == before
+
+
+def test_legacy_fleet_bootstrap_accepts_valid_joinable_identity(monkeypatch):
+    ensure_runtime_path()
+    from api_fastapi.routers import fleet
+
+    captured = {}
+    monkeypatch.setattr(
+        fleet.fleet_registry,
+        "bootstrap_config",
+        lambda role, hostname: {
+            "node_id": "edge-device-1",
+            "hostname": hostname,
+            "role": role,
+            "agent_token": "protected-runtime-token",
+            "agent_token_hash": "hash-only",
+        },
+    )
+    monkeypatch.setattr(fleet.fleet_registry, "upsert_agent", lambda payload, event_type: captured.update(payload))
+    response = client().get(
+        "/api/fleet/agent/bootstrap",
+        params={"hostname": "Edge Device 1", "role": "compute"},
+    )
+    assert response.status_code == 200
+    assert captured["node_id"] == "edge-device-1"
+    assert captured["role"] == "compute"
+    assert "protected-runtime-token" in response.text

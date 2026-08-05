@@ -6,12 +6,24 @@ from pathlib import Path
 from scripts.test.parity.parity_common import ROOT, load_json, safe_openapi_operations
 
 
-def test_schemathesis_filter_is_get_only_and_destructive_endpoint_free() -> None:
+def test_schemathesis_filter_is_compiled_read_only_and_maintenance_free() -> None:
     script = (ROOT / "scripts" / "test" / "parity" / "run_schemathesis.sh").read_text(encoding="utf-8")
-    assert "--include-method GET" in script
+    compiler = (ROOT / "scripts" / "test" / "parity" / "prepare_schemathesis_schema.py").read_text(encoding="utf-8")
+    assert "--profile focused" in script
+    assert "--mode positive" in script
+    assert "--phases examples,fuzzing" in script
     assert "POCKETLAB_PARITY_ALLOW_WRITES" not in script
-    for value in ("backup", "restore", "check", "restart", "remove", "install", "update", "repair", "invite"):
-        assert value in script
+    assert 'method != "get"' in compiler
+    assert '"/maintenance" not in path' in compiler
+    assert "UNSAFE_GET_PATHS" in compiler
+
+
+def test_schemathesis_discovery_never_enables_coverage_or_write_methods() -> None:
+    source = (ROOT / "scripts" / "test" / "parity" / "run_schemathesis_discovery.sh").read_text(encoding="utf-8")
+    assert "--phases examples,fuzzing" in source
+    assert "coverage" not in source
+    assert "--include-method POST" not in source
+    assert "--mode all" in source
 
 
 def test_openapi_safe_operation_selector_excludes_writes() -> None:

@@ -13,17 +13,19 @@ generator: scripts/docs/parity/generate_parity.py
 
 ## Symptoms
 
-Stale or contradictory recovery status, missing backup history, a verified backup shown as unverified, restore readiness mismatch, or mocked/live divergence.
+Stale or contradictory recovery status, missing backup history, a verified backup shown as unverified, restore readiness mismatch, mocked/live divergence, undocumented `400`/`404`/`503`, property-test timeout, or a bootstrap identity crash.
 
 ## Read-only verification
 
-1. Run parity contract and fixture checks.
-2. Query Recovery summary/details/history through FastAPI.
-3. Inspect prepared-projection freshness and worker/NATS health without mutation.
-4. Inspect safe Dexie metadata in browser DevTools; never treat it as authority.
-5. Capture sanitized evidence.
-6. Refresh projections through established safe backend paths only.
+1. Verify the SSH loopback tunnel or local API without exposing the phone directly.
+2. Compile the focused schema and inspect its selection manifest; it must contain only Recovery GET operations and no maintenance path.
+3. Run parity contract and fixture checks.
+4. Query Recovery summary/details/history through FastAPI.
+5. Inspect prepared-projection freshness and worker/NATS health without mutation.
+6. Capture bounded cold/warm latency evidence for slow reads.
+7. Inspect safe Dexie metadata in browser DevTools; never treat it as authority.
+8. Capture sanitized evidence and categorized Schemathesis summaries.
 
 ## Recovery
 
-Do not edit SQLite or manifests manually. Restore or repair must use explicit backend-owned flows and existing confirmations.
+Do not edit SQLite or manifests manually. Invalid bootstrap identities fail closed before token creation or durable writes. Restore or repair must use explicit backend-owned flows and existing confirmations. Baselines are promoted only after explicit review evidence.
