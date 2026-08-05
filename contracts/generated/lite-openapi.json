@@ -8772,27 +8772,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "maxItems": 2,
-                      "minItems": 2,
-                      "prefixItems": [
-                        {
-                          "additionalProperties": true,
-                          "type": "object"
-                        },
-                        {
-                          "type": "integer"
-                        }
-                      ],
-                      "type": "array"
-                    },
-                    {
-                      "additionalProperties": true,
-                      "type": "object"
-                    }
-                  ],
-                  "title": "Response Ready Ready Get"
+                  "additionalProperties": true,
+                  "title": "Response Ready Ready Get",
+                  "type": "object"
                 }
               }
             },

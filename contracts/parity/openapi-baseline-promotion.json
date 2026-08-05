@@ -1,24 +1,17 @@
 {
-  "approved_changes": [
-    "Document sanitized 400, 404, 409, and 503 response families.",
-    "Declare Lite revision and Security progress streams as text/event-stream.",
-    "Declare the token-gated Lite bootstrap script as text/x-shellscript.",
-    "Constrain opaque cursor syntax and remove query-string null branches.",
-    "Hide internal or side-effectful compatibility GET routes from the public OpenAPI surface where they are not Lite contracts."
+  "approved_change_classes": [
+    "fix /ready OpenAPI 3.1 response schema",
+    "expand safe Schemathesis identifier examples",
+    "classify unavailable runtime resources separately from missing test configuration",
+    "validate full generated OpenAPI 3.1 contract before discovery"
   ],
-  "baseline": "contracts/parity/openapi-baseline.json",
-  "contract": "contracts/generated/lite-openapi.json",
-  "previous_sha256": "6854b6b4a7afd5d579568891473c4a6b6189f0041eddc5c87015ee1e715e4bf3",
-  "promoted_sha256": "e28bfb92b9ea74088a41cf7e15180defca1f8ff6c6d0ec22db5c707b7d134f19",
-  "sanitized": true,
-  "schema_version": "1.0.0",
+  "previous_sha256": "e28bfb92b9ea74088a41cf7e15180defca1f8ff6c6d0ec22db5c707b7d134f19",
+  "promoted_sha256": "d64bf6747d53f117b60837903dd71469d89d99e4a9e06e327c0c4791284f1ffa",
   "security_review": {
     "documents_500": false,
     "raw_secrets_included": false,
     "runtime_routes_removed": false,
     "write_operations_added": false
   },
-  "source_revision": "repository-source",
-  "status": "promoted",
-  "validation_status": "patch-validated"
+  "status": "promoted"
 }

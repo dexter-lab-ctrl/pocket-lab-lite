@@ -32,7 +32,7 @@ def health() -> dict:
 
 
 @router.get("/ready")
-def ready() -> tuple[dict, int] | dict:
+def ready() -> dict:
     engine = deps.core.build_health_engine_snapshot()
     bus = BUS.status()
     ready_state = (

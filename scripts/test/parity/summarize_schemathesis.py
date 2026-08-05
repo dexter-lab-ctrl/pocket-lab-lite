@@ -78,6 +78,19 @@ def main() -> int:
                     "summary": sanitize(text),
                 })
     counts = Counter(item["category"] for item in findings)
+    availability: dict[str, str] = {}
+    manifest_path = args.junit.parent / "selection-manifest.json"
+    if manifest_path.exists():
+        try:
+            manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            raw_availability = manifest_payload.get("example_availability", {})
+            if isinstance(raw_availability, dict):
+                availability = {
+                    str(name)[:80]: str(status)[:80]
+                    for name, status in raw_availability.items()
+                }
+        except (OSError, ValueError, json.JSONDecodeError):
+            availability = {}
     payload = {
         "profile": args.profile,
         "tool_exit_status": args.exit_status,
@@ -86,6 +99,15 @@ def main() -> int:
         "findings": findings[:200],
         "gating": args.profile == "focused",
         "report_error": report_error,
+        "test_data": {
+            "discovered": sorted(name for name, status in availability.items() if status == "discovered"),
+            "no_existing_resource": sorted(
+                name for name, status in availability.items() if status == "no_existing_resource"
+            ),
+            "missing_test_configuration": sorted(
+                name for name, status in availability.items() if status == "missing_test_configuration"
+            ),
+        },
         "sanitized": True,
     }
     atomic_write(args.output, payload)
