@@ -145,6 +145,14 @@ def _harden_operation(path: str, method: str, operation: dict[str, Any]) -> None
     if _has_cursor(operation):
         responses.setdefault("400", _error_response("The supplied opaque cursor is invalid or stale."))
 
+    if path == "/api/lite/security/profiles/{profile}" and method == "get":
+        responses.setdefault(
+            "400",
+            _error_response(
+                "The selected Security profile requires an app identifier or contains invalid parameters."
+            ),
+        )
+
     if path in {"/api/join.sh", "/api/lite/fleet/agent/bootstrap.sh", "/api/fleet/agent/bootstrap"}:
         responses.setdefault("400", _error_response("Bootstrap parameters or invite token are missing or invalid."))
         responses.setdefault("403", _error_response("The invite or bootstrap request is not authorized."))
