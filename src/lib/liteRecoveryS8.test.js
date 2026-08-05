@@ -41,6 +41,27 @@ describe('Pocket Lab Lite Security S8 recovery UI', () => {
     })).toBe(true);
   });
 
+
+  it('preserves stale projection metadata and blocks recovery writes', () => {
+    const view = selectRecoveryScreenView({
+      status: 'healthy',
+      summary: 'Recovery Ready',
+      read_degraded: true,
+      degraded_reason: 'projection_too_old',
+      projection_age_ms: 123456,
+      data_source: 'prepared_sqlite',
+      updated_at: '2026-07-07T11:05:29Z',
+    });
+
+    expect(view.read_degraded).toBe(true);
+    expect(view.degraded_reason).toBe('projection_too_old');
+    expect(view.projection_age_ms).toBe(123456);
+    expect(view.data_source).toBe('prepared_sqlite');
+    expect(recoverySource).toContain('Recovery information is old');
+    expect(recoverySource).toContain('recovery-projection-stale');
+    expect(recoverySource).toContain('recoveryWriteBlocked');
+  });
+
   it('keeps first paint compact and lazy-loads database management', () => {
     expect(recoverySource).toContain("React.lazy(() => import('./recovery/RecoveryDatabaseDetailsLazy.jsx'))");
     expect(manageSource).toContain('Back Up Pocket Lab');

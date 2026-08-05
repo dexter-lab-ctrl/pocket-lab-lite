@@ -38,7 +38,18 @@ export function watchApiFailures(page: Page) {
     if (response.status() >= 400) failures.push(`${response.status()} ${response.url()}`);
   });
   page.on('requestfailed', (request) => {
-    if (request.url().includes('/api/lite/')) failures.push(`FAILED ${request.url()} ${request.failure()?.errorText || ''}`);
+    const url = request.url();
+    const errorText = request.failure()?.errorText || '';
+
+    const expectedEventsAbort =
+      url.includes('/api/lite/events') &&
+      errorText.includes('ERR_ABORTED');
+
+    if (expectedEventsAbort) return;
+
+    if (url.includes('/api/lite/')) {
+      failures.push(`FAILED ${url} ${errorText}`);
+    }
   });
   return failures;
 }
