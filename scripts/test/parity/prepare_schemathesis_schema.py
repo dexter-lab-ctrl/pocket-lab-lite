@@ -27,6 +27,26 @@ STREAM_PATHS = {"/api/lite/events", "/api/lite/security/events"}
 SECRET_KEY = re.compile(r"(?:token|password|secret|authorization|api[_-]?key)", re.I)
 SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$")
 
+# Safe, non-secret examples for path parameters when the runtime has no
+# corresponding resource yet. These values are used only in the compiled
+# property-test schema; they never alter the canonical OpenAPI document.
+SAFE_FALLBACK_EXAMPLES = {
+    "app_id": "photoprism",
+    "backup_id": "missing-backup",
+    "checkpoint_id": "missing-checkpoint",
+    "device_id": "missing-device",
+    "execution_id": "missing-execution",
+    "job_id": "missing-job",
+    "name": "missing-runbook",
+    "node_id": "missing-node",
+    "operation_id": "missing-operation",
+    "preview_id": "missing-preview",
+    "profile": "default",
+    "restore_id": "missing-restore",
+    "run_id": "missing-run",
+    "workflow_id": "missing-workflow",
+}
+
 
 def _require_loopback_url(value: str, label: str) -> None:
     parsed = urlsplit(value)
@@ -76,7 +96,7 @@ def _first_safe(value: Any, keys: tuple[str, ...]) -> str | None:
     return None
 
 
-def discover_examples(base_url: str, timeout: float) -> dict[str, str]:
+def discover_examples(base_url: str, timeout: float) -> tuple[dict[str, str], dict[str, str]]:
     probes = {
         "device_id": ("/api/lite/fleet", ("device_id", "node_id", "id")),
         "node_id": ("/api/lite/fleet", ("node_id", "device_id", "id")),
@@ -86,14 +106,29 @@ def discover_examples(base_url: str, timeout: float) -> dict[str, str]:
         "restore_id": ("/api/lite/recovery/details", ("restore_id",)),
         "preview_id": ("/api/lite/recovery/details", ("preview_id",)),
         "checkpoint_id": ("/api/lite/recovery/details", ("checkpoint_id",)),
+        "job_id": ("/api/operations?limit=1", ("job_id", "id")),
+        "operation_id": ("/api/lite/recovery/operations?limit=1", ("operation_id", "command_id", "id")),
+        "execution_id": ("/api/runbooks/executions?limit=1", ("execution_id", "id")),
+        "workflow_id": ("/api/workflows?limit=1", ("workflow_id", "id")),
+        "name": ("/api/runbooks?limit=1", ("name",)),
+        "profile": ("/api/lite/security", ("profile", "profile_id", "name")),
     }
-    examples: dict[str, str] = {"app_id": "photoprism"}
+    examples: dict[str, str] = {}
+    availability: dict[str, str] = {}
     for name, (path, keys) in probes.items():
         payload = _safe_get(base_url, path, timeout)
         found = _first_safe(payload, keys)
         if found:
             examples[name] = found
-    return examples
+            availability[name] = "discovered"
+            continue
+        fallback = SAFE_FALLBACK_EXAMPLES.get(name)
+        if fallback:
+            examples[name] = fallback
+            availability[name] = "no_existing_resource"
+        else:
+            availability[name] = "missing_test_configuration"
+    return examples, availability
 
 
 def _atomic_json(path: Path, payload: Any) -> None:
@@ -129,7 +164,22 @@ def _inject_examples(operation: dict[str, Any], examples: dict[str, str]) -> Non
             continue
         name = str(parameter.get("name") or "")
         if name in examples and parameter.get("in") == "path":
-            parameter["example"] = examples[name]
+            example = examples[name]
+            parameter["example"] = example
+            schema = parameter.get("schema")
+            if isinstance(schema, dict):
+                # Pin the compiled test schema to one known-safe value. This
+                # eliminates Hypothesis over-filtering from overlapping regex,
+                # format, and length constraints without weakening the public
+                # OpenAPI contract.
+                schema.pop("pattern", None)
+                schema.pop("format", None)
+                schema.pop("anyOf", None)
+                schema.pop("oneOf", None)
+                schema["type"] = "string"
+                schema["enum"] = [example]
+                schema["minLength"] = len(example)
+                schema["maxLength"] = len(example)
         if name == "cursor" and parameter.get("in") == "query":
             # Empty means first page and is always safe. Real next cursors are
             # exercised by endpoint-specific contract tests.
@@ -169,6 +219,19 @@ def compile_schema(source: dict[str, Any], profile: str, examples: dict[str, str
     return output, selected
 
 
+def validate_openapi_document(schema: dict[str, Any]) -> None:
+    try:
+        from openapi_spec_validator import validate_spec
+    except ImportError as exc:
+        raise SystemExit(
+            "ERROR openapi-spec-validator is required; install Development-PC requirements"
+        ) from exc
+    try:
+        validate_spec(schema)
+    except Exception as exc:
+        raise SystemExit(f"ERROR OpenAPI 3.1 validation failed: {exc}") from exc
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", choices=("focused", "discovery"), required=True)
@@ -185,8 +248,10 @@ def main() -> int:
     source = _read_json_url(args.openapi_url, args.timeout)
     if not isinstance(source, dict) or not isinstance(source.get("paths"), dict):
         raise SystemExit("ERROR OpenAPI payload is not a valid object with paths")
-    examples = discover_examples(args.base_url, min(args.timeout, 8.0))
+    validate_openapi_document(source)
+    examples, availability = discover_examples(args.base_url, min(args.timeout, 8.0))
     compiled, operations = compile_schema(source, args.profile, examples)
+    validate_openapi_document(compiled)
     _atomic_json(args.output, compiled)
     fingerprint = hashlib.sha256(args.output.read_bytes()).hexdigest()
     manifest = {
@@ -194,6 +259,13 @@ def main() -> int:
         "operation_count": len(operations),
         "operations": operations,
         "examples": sorted(examples),
+        "example_availability": dict(sorted(availability.items())),
+        "no_existing_resource": sorted(
+            name for name, status in availability.items() if status == "no_existing_resource"
+        ),
+        "missing_test_configuration": sorted(
+            name for name, status in availability.items() if status == "missing_test_configuration"
+        ),
         "schema_sha256": fingerprint,
         "elapsed_ms": round((time.monotonic() - started) * 1000, 2),
         "read_only": True,

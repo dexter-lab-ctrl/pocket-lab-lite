@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 4b8f2f70a513d95a6f24d6a3292cfc51947ef1367fb30b9d68bef857c99e6527
+source_fingerprint: 3700eff09ee8b0fb68599833430f0f0feb4771634e21130236fa0d11220f09a2
 schema_revision: 1
 validation_status: generated
 ---
@@ -2498,4 +2498,4 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 200 | Successful Response | application/json: anyOf(array[`object`], `object`) |
+| 200 | Successful Response | application/json: `object` |

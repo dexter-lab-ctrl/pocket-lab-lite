@@ -35,7 +35,7 @@
   "generator": "scripts/docs/lite/generate_docs.py",
   "schema_revision": 1,
   "source_commit": "uncommitted",
-  "source_fingerprint": "2bbbafe64ee958254b4e1d9dc2da05a18d5a6c2310f065d9666f22ad2a7569b4",
+  "source_fingerprint": "76013955b51b3b6474f0e6773d2336affe52bd34915ca3d98f329e0e3c76a64a",
   "source_fingerprints": {
     ".github/workflows/lite-quality.yml": "048c82b170403201c8f8f5050da38b90365186e185352617d0b4d76aacccd3c4",
     ".github/workflows/release-dist.yml": "9c88d615195b8f3005c9e84c4ead3729885d1ebe6bfc0ffc352f34c9df6b8be4",
@@ -48,7 +48,7 @@
     "playwright.config.ts": "c7e3490a52715f6671da008ea557c48fbbac80224bac166d5c0182ad92c748bd",
     "pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py": "6556fa3631d232030c3ed7ea156e4145e634d45c9ee7da5425c01ef7ec28a51d",
     "redocly.yaml": "85718a1b05d38aae5d7ee5f2a0304b6b0773a9f957f04e39ada044fa19e0ec25",
-    "requirements-dev.txt": "9c84d0c803837beb5888fb81e2832a12fd731c83388afa5b34f8a2c204104732",
+    "requirements-dev.txt": "f4d2bb8bce877ef307ffa010db5b7e7ad6589d6b67b7a7db7767b4371356fc0c",
     "requirements-docs.txt": "cab2c67d3ed722efc5e9132c503e14fd1e3671759debfd8935edcd49ea63753c",
     "scripts/dev/lite/check-contracts.sh": "a62c37cc391390c74010ae4ebbda691e3598a93cb004c66c555d1b9fca9566e3",
     "scripts/dev/lite/har_tool.py": "593c19a5821dd4b8dbec0ecb29e33c4a2d120c6a799a64e7f67e76c76a7ec091",

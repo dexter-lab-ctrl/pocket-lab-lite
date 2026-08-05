@@ -4,7 +4,12 @@ import importlib
 import json
 from pathlib import Path
 
-from scripts.test.parity.prepare_schemathesis_schema import _require_loopback_url, compile_schema
+from scripts.test.parity.prepare_schemathesis_schema import (
+    _require_loopback_url,
+    compile_schema,
+    discover_examples,
+    validate_openapi_document,
+)
 
 
 def _openapi() -> dict:
@@ -12,6 +17,51 @@ def _openapi() -> dict:
     module.app.openapi_schema = None
     return module.app.openapi()
 
+
+
+
+def test_generated_openapi_is_valid_openapi_31() -> None:
+    schema = _openapi()
+    validate_openapi_document(schema)
+    ready_schema = schema["paths"]["/ready"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+    assert ready_schema.get("type") == "object"
+    assert "prefixItems" not in json.dumps(ready_schema)
+
+
+def test_compiled_schema_pins_safe_path_identifiers_without_weakening_public_contract() -> None:
+    source = _openapi()
+    examples = {
+        "job_id": "missing-job",
+        "preview_id": "missing-preview",
+        "restore_id": "missing-restore",
+        "checkpoint_id": "missing-checkpoint",
+        "execution_id": "missing-execution",
+        "workflow_id": "missing-workflow",
+        "name": "missing-runbook",
+    }
+    compiled, _operations = compile_schema(source, "discovery", examples)
+    for path_item in compiled["paths"].values():
+        for operation in path_item.values():
+            if not isinstance(operation, dict):
+                continue
+            for parameter in operation.get("parameters", []):
+                if parameter.get("in") != "path" or parameter.get("name") not in examples:
+                    continue
+                expected = examples[parameter["name"]]
+                assert parameter["schema"]["enum"] == [expected]
+                assert parameter["schema"]["minLength"] == len(expected)
+                assert parameter["schema"]["maxLength"] == len(expected)
+
+
+def test_identifier_discovery_distinguishes_missing_resources_from_configuration(monkeypatch) -> None:
+    from scripts.test.parity import prepare_schemathesis_schema as module
+
+    monkeypatch.setattr(module, "_safe_get", lambda *_args, **_kwargs: None)
+    examples, availability = discover_examples("http://127.0.0.1:18080", 0.1)
+    assert examples["job_id"] == "missing-job"
+    assert availability["job_id"] == "no_existing_resource"
+    assert availability["preview_id"] == "no_existing_resource"
+    assert "missing_test_configuration" not in availability.values()
 
 def test_openapi_hardening_documents_expected_lite_failures_without_normalizing_500() -> None:
     schema = _openapi()
@@ -183,3 +233,43 @@ def test_schemathesis_summary_redacts_loopback_and_sensitive_query_values(tmp_pa
     assert "super-secret-value" not in encoded
     assert "http://loopback" in encoded
     assert payload["categories"]["undocumented_status"] == 1
+
+
+def test_schemathesis_summary_separates_absent_resources_from_missing_configuration(tmp_path) -> None:
+    import subprocess
+
+    junit = tmp_path / "junit.xml"
+    output = tmp_path / "summary.json"
+    manifest = tmp_path / "selection-manifest.json"
+    junit.write_text('<testsuite />', encoding="utf-8")
+    manifest.write_text(
+        json.dumps(
+            {
+                "example_availability": {
+                    "backup_id": "discovered",
+                    "preview_id": "no_existing_resource",
+                    "custom_id": "missing_test_configuration",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    subprocess.run(
+        [
+            "python3",
+            "scripts/test/parity/summarize_schemathesis.py",
+            "--junit",
+            str(junit),
+            "--output",
+            str(output),
+            "--profile",
+            "discovery",
+            "--exit-status",
+            "0",
+        ],
+        check=True,
+    )
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["test_data"]["discovered"] == ["backup_id"]
+    assert payload["test_data"]["no_existing_resource"] == ["preview_id"]
+    assert payload["test_data"]["missing_test_configuration"] == ["custom_id"]
