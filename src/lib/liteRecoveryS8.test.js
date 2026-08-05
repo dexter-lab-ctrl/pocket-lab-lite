@@ -60,6 +60,8 @@ describe('Pocket Lab Lite Security S8 recovery UI', () => {
     expect(recoverySource).toContain('Recovery information is old');
     expect(recoverySource).toContain('recovery-projection-stale');
     expect(recoverySource).toContain('recoveryWriteBlocked');
+    expect(recoverySource).toContain('summaryBackendDegraded');
+    expect(recoverySource).toContain('summaryDegradedReason');
   });
 
   it('keeps first paint compact and lazy-loads database management', () => {
