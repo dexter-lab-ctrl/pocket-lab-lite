@@ -2387,6 +2387,13 @@ export function selectRecoverySummaryView(payload = {}) {
     status: normalizeRecoveryStatus(payload?.status || latestBackup?.status || 'unknown'),
     summary: safeString(payload?.summary || 'Recovery status is available.'),
     updated_at: safeString(payload?.updated_at || payload?.checked_at || ''),
+    read_degraded: payload?.read_degraded === true,
+    degraded_reason: safeString(payload?.degraded_reason || ''),
+    projection_age_ms: Number.isFinite(Number(payload?.projection_age_ms))
+      ? Math.max(0, Number(payload.projection_age_ms))
+      : null,
+    data_source: safeString(payload?.data_source || ''),
+    refresh_pending: payload?.refresh_pending === true,
     repository,
     last_backup: latestBackup,
     latest_backup: latestBackup,

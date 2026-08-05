@@ -127,7 +127,15 @@ export default function RecoveryScreen() {
   const serviceRestart = details?.last_restore?.service_restart || {};
   const healthValidation = details?.last_restore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
+  const projectionStale = data?.read_degraded === true
+    || data?.degraded_reason === 'projection_too_old'
+    || details?.read_degraded === true
+    || details?.degraded_reason === 'projection_too_old';
   const recoveryFlow = useLiteRecoveryFlow({ recovery: data, latestBackup, latestPreview, lastRestore, backendReachable, savedStateOnly });
+  const recoveryWriteBlocked = recoveryFlow.writeBlocked || projectionStale;
+  const recoveryWriteBlockedReason = projectionStale
+    ? 'Recovery information is older than expected. Refresh before making changes.'
+    : recoveryFlow.blockedReason;
 
   const databaseProtection = {
     ...(details?.database_protection || {}),
@@ -144,14 +152,14 @@ export default function RecoveryScreen() {
   const activeDatabaseRestore = databaseProtection?.active_restore || null;
   const databaseBackupVerified = latestDatabaseBackup?.verification_status === 'verified';
   const databasePreviewReady = latestDatabasePreview?.status === 'ready' && latestDatabasePreview?.restore_allowed !== false;
-  const databaseWriteBlocked = recoveryFlow.writeBlocked
+  const databaseWriteBlocked = recoveryWriteBlocked
     || databaseMaintenance?.active === true
     || databaseRestoreGuard?.unresolved === true;
 
   const serverRecoveryLive = hasLiveRecoveryOperation(data);
   const recoveryActions = useLiteRecoveryActions({
-    writeBlocked: recoveryFlow.writeBlocked,
-    blockedReason: recoveryFlow.blockedReason,
+    writeBlocked: recoveryWriteBlocked,
+    blockedReason: recoveryWriteBlockedReason,
     operationBusy: (recoveryFlow.isBusy && recoveryFlow.value !== 'restoreConfirmationRequired') || serverRecoveryLive,
     operationBusyReason: 'Pocket Lab is already completing a Recovery action.',
   });
@@ -236,16 +244,20 @@ export default function RecoveryScreen() {
 
   const recoveryLive = Boolean(busy) || recoveryFlow.isBusy || serverRecoveryLive;
   useLiteServiceWorkerUpdateBlocker('recovery-workflow', Boolean(recoveryLive || restoreConfirmation));
-  const recoveryReady = !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
-  const recoveryStatus = databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
-  const recoveryTitle = databaseWriteBlocked
+  const recoveryReady = !projectionStale && !databaseWriteBlocked && (repository?.ready || latestBackupVerified || databaseBackupVerified);
+  const recoveryStatus = projectionStale || databaseWriteBlocked ? 'review' : recoveryReady ? 'healthy' : backendBadgeStatus(data?.status);
+  const recoveryTitle = projectionStale
+    ? 'Recovery information needs a refresh'
+    : databaseWriteBlocked
     ? 'Backup protection needs attention'
     : latestBackupVerified
       ? 'Backup protection is ready'
       : latestBackup
         ? 'Verify your latest backup'
         : 'Create your first protected backup';
-  const recoverySummary = databaseWriteBlocked
+  const recoverySummary = projectionStale
+    ? 'Saved recovery details are available, but they are older than expected. Refresh before backing up or restoring.'
+    : databaseWriteBlocked
     ? recoveryFlow.blockedReason || 'Backup and restore actions are temporarily protected.'
     : latestBackupVerified
       ? 'Your latest backup is verified. Preview a restore before anything changes.'
@@ -515,7 +527,7 @@ export default function RecoveryScreen() {
 
       <LiteElevationSurface as="section" settle active={recoveryLive} className="lite-recovery-r1-hero lite-recovery-premium-hero" data-recovery-r1-summary="true" data-recovery-native-polish="true">
         <div className="lite-recovery-r1-hero-copy">
-          <div className="lite-home-pill">
+          <div className="lite-home-pill" data-testid="parity-recovery-status">
             <span className="lite-ready-dot" />
             {backendLabel(data?.status, {
               ready: 'Protection ready',
@@ -524,7 +536,7 @@ export default function RecoveryScreen() {
               checking: 'Checking protection',
             })}
           </div>
-          <h2>{recoveryTitle}</h2>
+          <h2 data-testid="parity-recovery-summary">{recoveryTitle}</h2>
           <p>{recoverySummary}</p>
           <div className="lite-recovery-r1-status-strip" aria-label="Recovery status">
             <span className={latestBackupVerified ? 'is-ready' : ''}><ArchiveRestore className="h-4 w-4" />{latestBackupVerified ? 'Backup verified' : latestBackup ? 'Backup saved' : 'Backup needed'}</span>
@@ -532,8 +544,8 @@ export default function RecoveryScreen() {
             <span className={databaseBackupVerified && !databaseWriteBlocked ? 'is-ready' : ''}><Database className="h-4 w-4" />{databaseWriteBlocked ? 'Pocket Lab data protected' : databaseBackupVerified ? 'Pocket Lab data backed up' : 'Data backup recommended'}</span>
           </div>
           <div className="lite-recovery-r1-actions">
-            <LiteButton onClick={backup} disabled={Boolean(busy) || recoveryFlow.writeBlocked} haptic>
-              {busy ? 'Backup protection is working…' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
+            <LiteButton onClick={backup} disabled={Boolean(busy) || recoveryWriteBlocked} haptic>
+              {busy ? 'Backup protection is working…' : projectionStale ? 'Refresh to continue' : recoveryFlow.writeBlocked ? 'Reconnect to continue' : 'Back Up Now'}
             </LiteButton>
             <LiteButton tone="secondary" onClick={() => openRecoveryManage('backup')} ariaLabel="Manage backups and recovery">
               Manage
@@ -544,7 +556,7 @@ export default function RecoveryScreen() {
         <LiteElevationSurface as="div" settle className="lite-recovery-r1-latest-card lite-recovery-premium-latest">
           <div><Database className="h-6 w-6" /><StatusBadge status={recoveryStatus}>{recoveryReady ? 'Protected' : 'Review'}</StatusBadge></div>
           <span>Latest protected backup</span>
-          <strong>{latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'No backup yet'}</strong>
+          <strong data-testid="parity-latest-backup-id" data-backup-id={latestBackup?.backup_id || ''}>{latestBackup?.created_at ? formatLiteTime(latestBackup.created_at) : 'No backup yet'}</strong>
           <small>{latestBackup ? `${latestBackupVerified ? 'Verified' : 'Needs verification'} · ${formatSize(latestBackup.size_bytes)}` : 'Create a safe restore point to get started.'}</small>
         </LiteElevationSurface>
       </LiteElevationSurface>
@@ -562,6 +574,15 @@ export default function RecoveryScreen() {
       ) : null}
 
       {loading ? <LoadingCard label="Loading recovery…" /> : null}
+      {projectionStale ? (
+        <StateSurface
+          tone="degraded"
+          title="Recovery information is old"
+          description={`Saved recovery details were last updated ${data?.updated_at ? formatLiteTime(data.updated_at) : 'earlier than expected'}. Refresh before making changes.`}
+          className="mb-5"
+          data-testid="recovery-projection-stale"
+        />
+      ) : null}
       {error ? <StateSurface tone="degraded" title="Backup information is temporarily unavailable" description={error} className="mb-5" /> : null}
       {actionError ? <StateSurface tone="degraded" title="Backup or restore needs attention" description={actionError} className="mb-5" /> : null}
 

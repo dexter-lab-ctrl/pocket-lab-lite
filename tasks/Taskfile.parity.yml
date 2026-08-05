@@ -65,12 +65,12 @@ tasks:
     desc: Run existing live read-only browser verification against the configured Lite origin
     deps: [lite:playwright:preflight]
     cmds:
-      - 'LITE_E2E_MODE=live npx playwright test tests/e2e/lite-live.spec.ts --project=live-desktop --project=live-mobile'
+      - 'LITE_E2E_LIVE=1 LITE_E2E_MODE=live npx playwright test tests/e2e/lite-live.spec.ts --project=live-desktop --project=live-mobile'
 
   lite:parity:termux:
     desc: Record one bounded read-only WSL2-to-Termux Recovery summary observation
     cmds:
-      - bash scripts/test/parity/verify_termux_parity.sh
+      - '{{.PYTHON}} scripts/test/parity/capture_live_recovery_parity.py'
 
   lite:api:schemathesis:
     desc: Run bounded read-only Schemathesis checks against safe Recovery GET endpoints
