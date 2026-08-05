@@ -40,6 +40,9 @@ includes:
   lite-release:
     taskfile: ./tasks/Taskfile.release.yml
     flatten: true
+  lite-parity:
+    taskfile: ./tasks/Taskfile.parity.yml
+    flatten: true
   lite-windows:
     taskfile: ./tasks/Taskfile.windows.yml
     flatten: true

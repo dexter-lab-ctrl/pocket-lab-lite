@@ -1,0 +1,118 @@
+{
+  "items": [
+    {
+      "id": "component-local",
+      "may_store": [
+        "copied evidence label"
+      ],
+      "must_not_store": [
+        "backend authority"
+      ],
+      "owner": "component",
+      "responsibility": "ephemeral copy feedback and local presentation",
+      "status": "verified"
+    },
+    {
+      "id": "dexie",
+      "may_store": [
+        "recovery summary",
+        "first page recovery history",
+        "snapshot metadata"
+      ],
+      "must_not_store": [
+        "write responses",
+        "credentials",
+        "raw manifests",
+        "raw evidence",
+        "private paths"
+      ],
+      "owner": "frontend-offline-snapshot",
+      "responsibility": "sanitized read-only fallback snapshots",
+      "status": "verified"
+    },
+    {
+      "id": "playwright",
+      "may_store": [
+        "sanitized traces",
+        "failure screenshots",
+        "JUnit/JSON results"
+      ],
+      "must_not_store": [
+        "backend authority",
+        "raw secrets",
+        "phone identity"
+      ],
+      "owner": "browser-quality",
+      "responsibility": "mocked and live browser observation",
+      "status": "verified"
+    },
+    {
+      "id": "storybook-msw",
+      "may_store": [
+        "synthetic sanitized scenarios"
+      ],
+      "must_not_store": [
+        "production truth",
+        "live credentials"
+      ],
+      "owner": "quality-fixtures",
+      "responsibility": "deterministic fixture rendering",
+      "status": "verified"
+    },
+    {
+      "id": "tanstack-query",
+      "may_store": [
+        "sanitized API projections",
+        "ETags",
+        "query timestamps"
+      ],
+      "must_not_store": [
+        "durable business authority",
+        "secrets",
+        "raw SQLite rows",
+        "write success before FastAPI confirmation"
+      ],
+      "owner": "frontend-server-state",
+      "responsibility": "live FastAPI read cache, query invalidation, stale/reconnect behavior",
+      "status": "verified"
+    },
+    {
+      "id": "xstate",
+      "may_store": [
+        "requested/queued/running UI stages",
+        "accepted command reference",
+        "confirmation state"
+      ],
+      "must_not_store": [
+        "durable operation truth",
+        "raw backend payloads",
+        "offline write queue"
+      ],
+      "owner": "frontend-workflow-state",
+      "responsibility": "visible recovery workflow coordination",
+      "status": "verified"
+    },
+    {
+      "id": "zustand",
+      "may_store": [
+        "recovery Manage open state",
+        "selected recovery section",
+        "confirmation sheet state"
+      ],
+      "must_not_store": [
+        "authoritative recovery status",
+        "backup truth",
+        "restore completion truth",
+        "secrets"
+      ],
+      "owner": "frontend-ui-state",
+      "responsibility": "transient overlay, Manage, selection and feedback state",
+      "status": "verified"
+    }
+  ],
+  "kind": "frontend-state-ownership",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

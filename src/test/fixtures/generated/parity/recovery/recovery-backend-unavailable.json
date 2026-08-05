@@ -1,0 +1,51 @@
+{
+  "api": {
+    "snapshot": {
+      "saved": false,
+      "stale": true
+    },
+    "status": "unavailable",
+    "summary": "Recovery is temporarily unavailable."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-backend-unavailable",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "latest_backup": {},
+    "status": "unavailable"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "isolated-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-backend-unavailable",
+    "msw_scenario": "nats-down",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "BackendUnavailable",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/BackendUnavailable",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Recovery",
+      "unavailable"
+    ]
+  }
+}

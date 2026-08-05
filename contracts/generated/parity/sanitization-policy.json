@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "allowlisted_identifier_patterns": [
+        "^[a-z0-9][a-z0-9._:-]{0,119}$",
+        "^[a-f0-9]{8,64}$"
+      ],
+      "forbidden_classes": [
+        "credentials",
+        "bearer tokens",
+        "passwords",
+        "private keys",
+        "certificates",
+        "IPv4",
+        "IPv6",
+        "Tailnet names",
+        "hostnames",
+        "usernames",
+        "Android private paths",
+        "WSL user paths",
+        "SSH key paths",
+        "credential URLs",
+        "media paths",
+        "environment dumps",
+        "raw logs",
+        "raw SQLite rows",
+        "raw manifests",
+        "full PM2 environments",
+        "NATS credentials"
+      ],
+      "generated_paths": [
+        "contracts/generated/parity",
+        "docs/generated/development/validation/parity",
+        "src/test/fixtures/generated/parity"
+      ],
+      "id": "sanitization-policy",
+      "max_evidence_bytes": 262144,
+      "policy_id": "parity-sanitization-v1",
+      "status": "ready"
+    }
+  ],
+  "kind": "sanitization-policy",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "artifact": "Recovery Storybook, Playwright, accessibility, and visual parity linkage",
+      "cadence": "each rendered Recovery state or interaction change",
+      "id": "frontend-quality-owner",
+      "owner": "frontend-quality",
+      "reviewers": [
+        "frontend-platform",
+        "accessibility"
+      ],
+      "status": "ready"
+    },
+    {
+      "artifact": "contracts/parity/parity-model.json",
+      "cadence": "each projection contract change",
+      "id": "parity-model-owner",
+      "owner": "architecture-and-quality",
+      "reviewers": [
+        "backend",
+        "frontend",
+        "security"
+      ],
+      "status": "ready"
+    },
+    {
+      "artifact": "recovery backend mappings",
+      "cadence": "each recovery schema or endpoint change",
+      "id": "recovery-backend-owner",
+      "owner": "backend-platform",
+      "reviewers": [
+        "recovery",
+        "security"
+      ],
+      "status": "ready"
+    },
+    {
+      "artifact": "recovery selector and UI mappings",
+      "cadence": "each selector or UI state change",
+      "id": "recovery-frontend-owner",
+      "owner": "frontend-platform",
+      "reviewers": [
+        "quality",
+        "accessibility"
+      ],
+      "status": "ready"
+    },
+    {
+      "artifact": "live Termux parity",
+      "cadence": "release qualification or explicit runtime verification",
+      "id": "runtime-evidence-owner",
+      "owner": "runtime-operations",
+      "reviewers": [
+        "security"
+      ],
+      "status": "unvalidated"
+    }
+  ],
+  "kind": "ownership-matrix",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

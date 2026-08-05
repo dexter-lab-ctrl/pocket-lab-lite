@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2f83238d507bc32399791118d5de020d666e6c85e69ddcc18cb24fa8b56341bc
+source_fingerprint: 06c0f2cbdb6e38fef3f5ea0b065b8645ed41b766f46703a94c8a0e865a276693
 schema_revision: 1
 validation_status: generated
 ---
@@ -21,8 +21,11 @@ validation_status: generated
 
 The root Taskfile uses included Lite task files and separates quick, full, release, UI, docs, and Windows/WSL2 workflows.
 
+- `lite:a11y:check`
 - `lite:allure`
+- `lite:api:breaking-changes`
 - `lite:api:check`
+- `lite:api:schemathesis`
 - `lite:bootstrap:check`
 - `lite:browser:detect`
 - `lite:check`
@@ -55,6 +58,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
 - `lite:docs:openapi`
+- `lite:docs:parity:check`
+- `lite:docs:parity:generate`
 - `lite:docs:platform:check`
 - `lite:docs:platform:generate`
 - `lite:docs:production:check`
@@ -75,8 +80,25 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:ui`
 - `lite:docs:ui:screenshots`
 - `lite:docs:validation`
+- `lite:evidence:parity:check`
+- `lite:evidence:parity:generate`
 - `lite:har:inspect`
 - `lite:har:sanitize`
+- `lite:parity:api`
+- `lite:parity:backend`
+- `lite:parity:check`
+- `lite:parity:contracts:check`
+- `lite:parity:contracts:generate`
+- `lite:parity:fixtures:check`
+- `lite:parity:fixtures:generate`
+- `lite:parity:playwright:live`
+- `lite:parity:playwright:mocked`
+- `lite:parity:selectors`
+- `lite:parity:storybook`
+- `lite:parity:termux`
+- `lite:parity:tools:check`
+- `lite:performance:edge`
+- `lite:performance:wsl`
 - `lite:playwright:preflight`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
@@ -111,12 +133,14 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:validation:check`
 - `lite:validation:evidence`
 - `lite:validation:record`
+- `lite:visual:check`
 - `lite:windows:host:check`
 - `lite:windows:vscode:check`
 - `lite:windows:wsl:check`
 
 ## Task dependency graph
 
+- `lite:a11y:check` → `lite:test:a11y`
 - `lite:allure` → `lite:validation:evidence`
 - `lite:docs:architecture:check` → `lite:docs:architecture:validate`
 - `lite:docs:architecture:generate` → `lite:docs:architecture:icons:check`
@@ -125,6 +149,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:check` → `lite:docs:architecture:check`
 - `lite:docs:check` → `lite:docs:development:check`
 - `lite:docs:check` → `lite:docs:diagrams:check`
+- `lite:docs:check` → `lite:docs:parity:check`
 - `lite:docs:check` → `lite:docs:platform:check`
 - `lite:docs:check` → `lite:docs:production:check`
 - `lite:docs:check` → `lite:docs:runtime:check`
@@ -133,12 +158,28 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:generate` → `lite:docs:architecture:generate`
 - `lite:docs:generate` → `lite:docs:development:generate`
 - `lite:docs:generate` → `lite:docs:diagrams:generate`
+- `lite:docs:generate` → `lite:docs:parity:generate`
 - `lite:docs:generate` → `lite:docs:platform:generate`
 - `lite:docs:generate` → `lite:docs:production:generate`
 - `lite:docs:generate` → `lite:docs:runtime:generate`
 - `lite:docs:generate` → `lite:docs:tools:check`
 - `lite:docs:openapi` → `lite:contracts:generate`
 - `lite:docs:ui:screenshots` → `lite:playwright:preflight`
+- `lite:parity:check` → `lite:a11y:check`
+- `lite:parity:check` → `lite:docs:parity:check`
+- `lite:parity:check` → `lite:evidence:parity:check`
+- `lite:parity:check` → `lite:evidence:parity:generate`
+- `lite:parity:check` → `lite:parity:api`
+- `lite:parity:check` → `lite:parity:backend`
+- `lite:parity:check` → `lite:parity:contracts:check`
+- `lite:parity:check` → `lite:parity:fixtures:check`
+- `lite:parity:check` → `lite:parity:playwright:mocked`
+- `lite:parity:check` → `lite:parity:selectors`
+- `lite:parity:check` → `lite:parity:storybook`
+- `lite:parity:check` → `lite:parity:tools:check`
+- `lite:parity:check` → `lite:visual:check`
+- `lite:parity:playwright:live` → `lite:playwright:preflight`
+- `lite:parity:playwright:mocked` → `lite:playwright:preflight`
 - `lite:storybook:screenshots` → `lite:playwright:preflight`
 - `lite:test:a11y` → `lite:playwright:preflight`
 - `lite:test:docs` → `lite:playwright:preflight`
@@ -148,6 +189,7 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:test:storybook` → `lite:playwright:preflight`
 - `lite:test:visual` → `lite:playwright:preflight`
 - `lite:test:visual:update` → `lite:playwright:preflight`
+- `lite:visual:check` → `lite:test:visual`
 
 ## Validation tiers
 

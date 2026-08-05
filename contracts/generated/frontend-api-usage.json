@@ -2910,7 +2910,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "02b57d54ce69ee62d1727df76a9bcc5ab4c27f35f779c61fdcb0d6c5831575f8",
+    "aggregate_fingerprint": "a4d4867d39c48abef186e9c6f87cfeaf50645cc5ce5f87747fa66f9674b728f9",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2939,6 +2939,7 @@
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
       "src/lite/LiteRecovery.jsx": "31bf8c1eb87c597189ea95cd13c17403a504b78cd27173a19892c5d1be90720b",
       "src/lite/LiteRecovery.stories.jsx": "0019e8e6110fda92080db12232466d6f633116caaa95efa2a534002b29e5506b",
+      "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",
       "src/lite/LiteRevisionSyncBridge.jsx": "68176390944b13955111b702c03f8e06d399628f88ba6174909eddda99f9398e",
       "src/lite/LiteRules.jsx": "b574e763a01961ff9f936b920fb6dfda7891f3bec2759746c21e18839983cca3",

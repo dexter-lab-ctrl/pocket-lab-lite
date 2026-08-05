@@ -144,7 +144,39 @@ nav:
           - Bootstrap stage catalog: generated/development/bootstrap-stages.md
           - Bootstrap source guide: generated/development/bootstrap.md
           - Reason codes: generated/development/reason-codes.md
-          - Readiness evidence: generated/development/lite-readiness.md
+          - Readiness evidence:
+              - Lite readiness: generated/development/lite-readiness.md
+              - Backend-to-Frontend parity: generated/development/validation/parity/index.md
+              - Projection parity architecture: generated/development/validation/parity/architecture.md
+              - Domain parity catalog: generated/development/validation/parity/domain-catalog.md
+              - Backup & Restore parity: generated/development/validation/parity/backup-restore.md
+              - Backend data ownership: generated/development/validation/parity/backend-data-ownership.md
+              - API projections: generated/development/validation/parity/api-projections.md
+              - Backend-to-API mapping: generated/development/validation/parity/backend-api-field-mapping.md
+              - API-to-frontend mapping: generated/development/validation/parity/api-frontend-field-mapping.md
+              - Frontend state ownership: generated/development/validation/parity/frontend-state-ownership.md
+              - Scenario registry: generated/development/validation/parity/scenario-registry.md
+              - Storybook coverage: generated/development/validation/parity/storybook-coverage.md
+              - Playwright coverage: generated/development/validation/parity/playwright-coverage.md
+              - Live Termux verification: generated/development/validation/parity/live-termux-verification.md
+              - Runtime verification matrix: generated/development/validation/parity/runtime-verification-matrix.md
+              - Test environment matrix: generated/development/validation/parity/test-environment-matrix.md
+              - Fixture governance: generated/development/validation/parity/fixture-governance.md
+              - OpenAPI compatibility: generated/development/validation/parity/openapi-compatibility.md
+              - API property tests: generated/development/validation/parity/api-property-tests.md
+              - Accessibility conformance: generated/development/validation/parity/accessibility.md
+              - Visual regression: generated/development/validation/parity/visual-regression.md
+              - Performance and edge budget: generated/development/validation/parity/performance-edge-budget.md
+              - Validation gates: generated/development/validation/parity/validation-gates.md
+              - CI workflow-to-gate map: generated/development/validation/parity/ci-gate-map.md
+              - Evidence and traceability: generated/development/validation/parity/evidence-traceability.md
+              - Failure triage: generated/development/validation/parity/failure-triage.md
+              - Parity failure runbook: generated/development/validation/parity/parity-failure-runbook.md
+              - Freshness and staleness: generated/development/validation/parity/freshness-staleness.md
+              - Sanitization and exposure: generated/development/validation/parity/sanitization-exposure.md
+              - Release readiness: generated/development/validation/parity/release-readiness.md
+              - Coverage and gaps: generated/development/validation/parity/coverage-gaps.md
+              - Maintenance ownership: generated/development/validation/parity/maintenance-ownership.md
           - Redaction coverage: generated/development/redaction-coverage.md
           - Validation and release: generated/development/validation-release.md
           - CI workflows: generated/development/ci-workflows.md
@@ -259,6 +291,7 @@ nav:
           - Release and dist.zip: generated/production/release.md
           - Rollback: generated/production/rollback.md
           - Troubleshooting: generated/production/troubleshooting.md
+          - Projection parity readiness: generated/production/parity-readiness.md
           - Current limitations: generated/production/limitations.md
   - Reference:
       - Android / Termux: getting-started/android-termux.md

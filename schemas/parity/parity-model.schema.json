@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.invalid/schemas/parity/parity-model.schema.json",
+  "title": "Pocket Lab Lite projection parity model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "model_id", "source_revision", "status_vocabulary", "architecture",
+    "domains", "backend_authorities", "api_projections", "frontend_state_ownership",
+    "field_mappings", "scenarios", "validation_gates", "environments", "ownership",
+    "freshness", "sanitization", "tooling", "performance_profiles", "ci_map"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$", "maxLength": 20},
+    "model_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"},
+    "source_revision": {"type": "string", "minLength": 1, "maxLength": 80},
+    "status_vocabulary": {"type": "array", "minItems": 6, "maxItems": 40, "uniqueItems": true, "items": {"type": "string", "maxLength": 64}},
+    "architecture": {"$ref": "#/$defs/openObject"},
+    "domains": {"$ref": "#/$defs/recordArray"},
+    "backend_authorities": {"$ref": "#/$defs/recordArray"},
+    "api_projections": {"$ref": "#/$defs/recordArray"},
+    "frontend_state_ownership": {"$ref": "#/$defs/recordArray"},
+    "field_mappings": {"$ref": "#/$defs/recordArray"},
+    "scenarios": {"$ref": "#/$defs/recordArray"},
+    "validation_gates": {"$ref": "#/$defs/recordArray"},
+    "environments": {"$ref": "#/$defs/recordArray"},
+    "ownership": {"$ref": "#/$defs/recordArray"},
+    "freshness": {"$ref": "#/$defs/recordArray"},
+    "sanitization": {"$ref": "#/$defs/openObject"},
+    "tooling": {"$ref": "#/$defs/recordArray"},
+    "performance_profiles": {"$ref": "#/$defs/recordArray"},
+    "ci_map": {"$ref": "#/$defs/recordArray"}
+  },
+  "$defs": {
+    "openObject": {"type": "object", "minProperties": 1, "maxProperties": 80},
+    "recordArray": {
+      "type": "array", "maxItems": 500,
+      "items": {
+        "type": "object", "minProperties": 2, "maxProperties": 60,
+        "required": ["id"],
+        "properties": {"id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{1,119}$"}},
+        "additionalProperties": true
+      }
+    }
+  }
+}

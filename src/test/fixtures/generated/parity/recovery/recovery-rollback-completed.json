@@ -1,0 +1,60 @@
+{
+  "api": {
+    "last_restore": {
+      "checkpoint_id": "checkpoint-rollback",
+      "restore_id": "restore-rollback",
+      "status": "rolled_back",
+      "summary": "Rollback completed."
+    },
+    "pre_restore_checkpoint": {
+      "checkpoint_id": "checkpoint-rollback",
+      "status": "created"
+    },
+    "status": "healthy",
+    "summary": "Rollback completed from the pre-restore checkpoint."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-rollback-completed",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "last_restore": {
+      "restore_id": "restore-rollback",
+      "status": "rolled_back"
+    },
+    "status": "healthy"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "isolated-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-rollback-completed",
+    "msw_scenario": "healthy",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "RollbackCompleted",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/RollbackCompleted",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Rollback completed",
+      "Checkpoint"
+    ]
+  }
+}

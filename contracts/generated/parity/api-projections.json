@@ -1,0 +1,197 @@
+{
+  "items": [
+    {
+      "backend_sources": [
+        "app-current-state"
+      ],
+      "degraded_behavior": "saved state",
+      "domain": "apps",
+      "endpoint": "/api/lite/catalog",
+      "freshness": "catalog revision",
+      "frontend_consumers": [
+        "LiteCatalog"
+      ],
+      "id": "catalog",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "catalog-view"
+    },
+    {
+      "backend_sources": [
+        "device-current-state",
+        "device-heartbeats",
+        "device-supervisor-state"
+      ],
+      "degraded_behavior": "saved state marked stale",
+      "domain": "devices",
+      "endpoint": "/api/lite/fleet",
+      "freshness": "heartbeat and projection revision",
+      "frontend_consumers": [
+        "LiteDevices"
+      ],
+      "id": "fleet",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "devices-screen-view"
+    },
+    {
+      "backend_sources": [
+        "backup-manifest"
+      ],
+      "degraded_behavior": "invalid cursor returns sanitized 400",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/backups?limit={limit}&cursor={cursor}",
+      "freshness": "manifest ordering",
+      "frontend_consumers": [
+        "liteApi.recoveryHistory",
+        "selectRecoveryHistorySnapshotView"
+      ],
+      "id": "recovery-backup-history",
+      "method": "GET",
+      "offline_eligibility": "first-page-only",
+      "pagination": "opaque cursor, limit 1..50",
+      "sanitization": "api_manifest allowlist",
+      "status": "verified",
+      "view_model_identity": "recovery-history-snapshot-v2"
+    },
+    {
+      "backend_sources": [
+        "backup-receipt"
+      ],
+      "degraded_behavior": "404 sanitized",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/receipts/{backup_id}",
+      "freshness": "immutable per backup update",
+      "frontend_consumers": [
+        "liteApi.recoveryReceipt"
+      ],
+      "id": "recovery-backup-receipt",
+      "method": "GET",
+      "offline_eligibility": "not-cached-by-default",
+      "pagination": "none",
+      "sanitization": "api_receipt allowlist",
+      "status": "verified",
+      "view_model_identity": "backup-receipt"
+    },
+    {
+      "backend_sources": [
+        "database-backup-table",
+        "database-restore-table"
+      ],
+      "degraded_behavior": "safe summary",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/database",
+      "freshness": "prepared database recovery state",
+      "frontend_consumers": [
+        "liteApi.databaseRecovery",
+        "LiteRecovery"
+      ],
+      "id": "recovery-database",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "separate backup list",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "database-protection"
+    },
+    {
+      "backend_sources": [
+        "backup-manifest",
+        "restore-preview",
+        "restore-checkpoint",
+        "restore-run",
+        "database-backup-table",
+        "database-restore-table"
+      ],
+      "degraded_behavior": "last-good safe details when available",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/details",
+      "freshness": "detail read on Manage intent",
+      "frontend_consumers": [
+        "liteApi.recoveryDetails",
+        "selectRecoveryScreenView",
+        "LiteRecovery"
+      ],
+      "id": "recovery-details",
+      "method": "GET",
+      "offline_eligibility": "safe-details",
+      "pagination": "history excluded from first paint",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "recovery-screen-view"
+    },
+    {
+      "backend_sources": [
+        "recovery-operations"
+      ],
+      "degraded_behavior": "invalid cursor returns sanitized 400",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.recoveryOperations",
+        "liteQueryKeys.recoveryOperations"
+      ],
+      "id": "recovery-operations",
+      "method": "GET",
+      "offline_eligibility": "first-page-only",
+      "pagination": "cursor, limit 1..50",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "recovery-operation-history"
+    },
+    {
+      "backend_sources": [
+        "recovery-current-state",
+        "backup-state-file",
+        "backup-manifest-index"
+      ],
+      "degraded_behavior": "safe saved-state summary",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/summary",
+      "freshness": "summary ETag/revision and last-good semantics",
+      "frontend_consumers": [
+        "liteApi.recoverySummary",
+        "selectRecoverySummaryView",
+        "LiteRecovery"
+      ],
+      "id": "recovery-summary",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "recovery-summary-r3-v1"
+    },
+    {
+      "backend_sources": [
+        "security-compact-state"
+      ],
+      "degraded_behavior": "saved summary",
+      "domain": "security",
+      "endpoint": "/api/lite/security/summary",
+      "freshness": "ETag/revision",
+      "frontend_consumers": [
+        "LiteSecurity"
+      ],
+      "id": "security-summary",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "security-summary"
+    }
+  ],
+  "kind": "api-projections",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}
