@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 3700eff09ee8b0fb68599833430f0f0feb4771634e21130236fa0d11220f09a2
+source_fingerprint: 29f11e8b47428ef753f23cde822263398a11a5fdfef5275c21632126a49cd545
 schema_revision: 1
 validation_status: generated
 ---
@@ -2242,6 +2242,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The selected Security profile requires an app identifier or contains invalid parameters. | application/json: `PocketLabApiError` |
 | 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |

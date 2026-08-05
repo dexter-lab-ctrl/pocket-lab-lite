@@ -1,12 +1,9 @@
 {
   "approved_change_classes": [
-    "fix /ready OpenAPI 3.1 response schema",
-    "expand safe Schemathesis identifier examples",
-    "classify unavailable runtime resources separately from missing test configuration",
-    "validate full generated OpenAPI 3.1 contract before discovery"
+    "document HTTP 400 for the conditional profile=app security-profile request"
   ],
-  "previous_sha256": "e28bfb92b9ea74088a41cf7e15180defca1f8ff6c6d0ec22db5c707b7d134f19",
-  "promoted_sha256": "d64bf6747d53f117b60837903dd71469d89d99e4a9e06e327c0c4791284f1ffa",
+  "previous_sha256": "d64bf6747d53f117b60837903dd71469d89d99e4a9e06e327c0c4791284f1ffa",
+  "promoted_sha256": "674eabf54814b365d439e2a15d37d26a60a42904c03c623749205a942b72d9aa",
   "security_review": {
     "documents_500": false,
     "raw_secrets_included": false,

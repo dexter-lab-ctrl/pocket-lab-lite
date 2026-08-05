@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "f2c687a84f7c0b0aac24f12c6bd81c149af23f0fbd37b661ce8e3c56d7cf0de6",
+    "aggregate_fingerprint": "efd7e296bed5ea0ad32d341e0bed39da612acdd97d4d58d3b2c04d1b57c91a8d",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -19,7 +19,7 @@
       "pocket-lab-final-structure/runtime/api_fastapi/db/runtime.py": "dc2df8204ba55e62d5e4804ad2833c8b275e23923e751ad6c01bf2ef95a869fb",
       "pocket-lab-final-structure/runtime/api_fastapi/deps.py": "64bb052cab52b31d192ebe96dc47832c96a35ff07db1aa02ed2fe429ee881bae",
       "pocket-lab-final-structure/runtime/api_fastapi/main.py": "9374b9edd8fb7051cb7df75de220bf314aeeddc1e27ba29956c55533dabc5cc4",
-      "pocket-lab-final-structure/runtime/api_fastapi/openapi_contracts.py": "c7cc90f1cf80fac27a9b239fa050c69960dc32e606a76dc21443e36a5c9384c6",
+      "pocket-lab-final-structure/runtime/api_fastapi/openapi_contracts.py": "7e3bc3864e5390163d4be35978b49b59390d24141cf5ff5a319628ccbad23593",
       "pocket-lab-final-structure/runtime/api_fastapi/pocket_lab_fastapi_server.py": "b35c9a2bd7b079d3d8630bedf3f78cbd7b13785ed2a3e7114bf4b12bd549f961",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
       "pocket-lab-final-structure/runtime/api_fastapi/routers/catalog.py": "b0cf578f5102bf4d284f4e895945ac3689bce2e324da5a083167d39530035cf5",
