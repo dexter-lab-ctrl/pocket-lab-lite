@@ -1,0 +1,71 @@
+{
+  "api": {
+    "last_backup": {
+      "backup_id": "backup-complete",
+      "status": "succeeded",
+      "verification_status": "verified"
+    },
+    "last_restore": {
+      "checkpoint_id": "checkpoint-complete",
+      "restore_id": "restore-complete",
+      "restored_file_count": 4,
+      "status": "succeeded",
+      "summary": "Restore completed safely."
+    },
+    "latest_restore_preview": {
+      "preview_id": "preview-complete",
+      "restore_allowed": true,
+      "status": "ready"
+    },
+    "pre_restore_checkpoint": {
+      "checkpoint_id": "checkpoint-complete",
+      "status": "created"
+    },
+    "status": "healthy",
+    "summary": "Restore completed safely."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-restore-completed",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "last_restore": {
+      "restore_id": "restore-complete",
+      "status": "succeeded"
+    },
+    "status": "healthy"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "isolated-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-restore-completed",
+    "msw_scenario": "healthy",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "RestoreCompleted",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/RestoreCompleted",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Restore completed safely",
+      "Restored"
+    ]
+  }
+}

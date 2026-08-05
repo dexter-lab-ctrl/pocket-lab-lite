@@ -1,0 +1,99 @@
+{
+  "items": [
+    {
+      "does_not_prove": [
+        "private phone reachability"
+      ],
+      "id": "github-actions",
+      "label": "GitHub Actions",
+      "proves": [
+        "clean checkout determinism",
+        "blocking gates",
+        "artifact retention"
+      ],
+      "status": "verified"
+    },
+    {
+      "does_not_prove": [
+        "production data"
+      ],
+      "id": "isolated-sqlite",
+      "label": "Temporary SQLite and backup root",
+      "proves": [
+        "backend persistence",
+        "projection mapping",
+        "failure attribution"
+      ],
+      "status": "verified"
+    },
+    {
+      "does_not_prove": [
+        "backend persistence"
+      ],
+      "id": "msw-storybook",
+      "label": "MSW + Storybook",
+      "proves": [
+        "deterministic UI state",
+        "component accessibility",
+        "viewport behavior"
+      ],
+      "status": "verified"
+    },
+    {
+      "does_not_prove": [
+        "raw SQLite equality"
+      ],
+      "id": "playwright-live",
+      "label": "External Chrome live",
+      "proves": [
+        "Caddy/FastAPI/browser integration"
+      ],
+      "status": "unvalidated"
+    },
+    {
+      "does_not_prove": [
+        "live backend authority"
+      ],
+      "id": "playwright-mocked",
+      "label": "External Chrome mocked",
+      "proves": [
+        "integrated rendered meaning",
+        "offline/stale/error behavior",
+        "a11y and visual evidence"
+      ],
+      "status": "verified"
+    },
+    {
+      "does_not_prove": [
+        "browser library correctness",
+        "Storybook behavior"
+      ],
+      "id": "termux-arm64",
+      "label": "Android/Termux ARM64",
+      "proves": [
+        "sanitized runtime authority and process topology",
+        "read-only backend verifier"
+      ],
+      "status": "runtime-source-verified"
+    },
+    {
+      "does_not_prove": [
+        "phone runtime state"
+      ],
+      "id": "wsl2-dev",
+      "label": "WSL2 + VS Code",
+      "proves": [
+        "source generation",
+        "Python/Node tests",
+        "external Chrome browser tests",
+        "tool setup"
+      ],
+      "status": "verified"
+    }
+  ],
+  "kind": "environment-matrix",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

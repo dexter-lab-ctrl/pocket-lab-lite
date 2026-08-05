@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "aggregate_fingerprint": "bfed152555899820918d63dd11e3ed9244c2a70d637535a4cf81ac0f26c72a26",
+    "aggregate_fingerprint": "dab24bfc63ca4f6ad42d989d498ca6bc6bd3456b8ccefa0d469f8ab3a54021ba",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -17,6 +17,7 @@
       "src/lite/LiteHome.stories.jsx": "ead9e092e4eb37399202682d42ec165f7af473d22d684ea3e75f2c55a1910062",
       "src/lite/LiteIdentity.stories.jsx": "a5c53468c8e8da6ae2c1f4365803c0eb5a7a30181c28bd7620eb5dbc6e220236",
       "src/lite/LiteRecovery.stories.jsx": "0019e8e6110fda92080db12232466d6f633116caaa95efa2a534002b29e5506b",
+      "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteRules.stories.jsx": "e0c1670434e62a0ef2d323a550e680e0e7fc9fda721679baced5600b811426e1",
       "src/lite/LiteSecurity.stories.jsx": "83adef458f532e8ba0bc26534760a469a2d315badb71fe7f08e82723742bbd57",
       "src/mocks/handlers.js": "42ed1bef2a584e7e32adcd59243e8876c89903b75498d7c86517e877a8bd0173"

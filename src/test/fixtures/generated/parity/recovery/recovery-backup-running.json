@@ -1,0 +1,66 @@
+{
+  "api": {
+    "current_operation": {
+      "action_id": "backup_now",
+      "operation_id": "operation-backup",
+      "percent": 45,
+      "status": "running",
+      "summary": "Backup is running."
+    },
+    "pending_backup": {
+      "backup_id": "backup-running",
+      "status": "running",
+      "summary": "Backup is running."
+    },
+    "status": "working",
+    "summary": "Backup protection is working."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-backup-running",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "action_progress": {
+      "live": true,
+      "status": "running"
+    },
+    "latest_backup": {
+      "backup_id": "backup-running",
+      "status": "running"
+    },
+    "status": "working"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "isolated-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-backup-running",
+    "msw_scenario": "healthy",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "BackupRunning",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/BackupRunning",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Backup protection is working",
+      "Backup or restore activity"
+    ]
+  }
+}

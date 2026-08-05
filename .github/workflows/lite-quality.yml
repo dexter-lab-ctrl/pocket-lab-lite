@@ -35,8 +35,10 @@ jobs:
           python -m venv .venv
           .venv/bin/python -m pip install --upgrade-strategy only-if-needed -r requirements-dev.txt
           npm ci
-      - name: Install pinned documentation tools
-        run: bash scripts/dev/lite/setup-documentation-tools.sh --install-missing
+      - name: Install pinned documentation and parity tools
+        run: |
+          bash scripts/dev/lite/setup-documentation-tools.sh --install-missing
+          bash scripts/dev/lite/setup-parity-tools.sh --install-missing
       - name: Generate and check contracts and docs
         run: |
           task lite:docs:generate
@@ -45,6 +47,12 @@ jobs:
             tests/backend/test_lite_development_documentation_platform.py \
             tests/backend/test_lite_complete_documentation_platform.py \
             tests/backend/test_lite_production_architecture_platform.py
+          task lite:parity:contracts:check
+          task lite:parity:backend
+          task lite:parity:api
+          task lite:parity:selectors
+          task lite:evidence:parity:generate
+          task lite:evidence:parity:check
       - name: Quick Lite gate and Storybook
         run: |
           task lite:check:quick
@@ -52,7 +60,7 @@ jobs:
       - name: Install CI Chromium and run mocked integration
         run: |
           npx playwright install --with-deps chromium
-          VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
+          VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked npx playwright test tests/e2e/lite-mocked.spec.ts tests/e2e/lite-parity.spec.ts tests/e2e/lite-accessibility.spec.ts --project=mocked-desktop --project=mocked-mobile
           task lite:test:docs
       - name: Redaction and evidence
         run: |

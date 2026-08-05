@@ -1,0 +1,95 @@
+{
+  "items": [
+    {
+      "fixture_coverage": "verified",
+      "id": "apps",
+      "known_gaps": [
+        "PhotoPrism is cataloged; full cross-app parity remains planned."
+      ],
+      "label": "Apps",
+      "live_api_coverage": "unvalidated",
+      "live_termux_coverage": "runtime-source-verified",
+      "mocked_playwright_coverage": "verified",
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "vertical_slice": false
+    },
+    {
+      "fixture_coverage": "verified",
+      "id": "devices",
+      "known_gaps": [
+        "Parity mappings are source-derived catalog entries only in this increment."
+      ],
+      "label": "Devices",
+      "live_api_coverage": "unvalidated",
+      "live_termux_coverage": "runtime-source-verified",
+      "mocked_playwright_coverage": "verified",
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "vertical_slice": false
+    },
+    {
+      "fixture_coverage": "verified",
+      "id": "recovery",
+      "known_gaps": [
+        "Live Termux parity is opt-in and read-only.",
+        "Visual parity is semantic and not pixel equality.",
+        "App restore apply remains explicitly unsupported by the repository."
+      ],
+      "label": "Backup & Restore",
+      "live_api_coverage": "unvalidated",
+      "live_termux_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "status": "ready-with-accepted-limitations",
+      "storybook_coverage": "verified",
+      "vertical_slice": true
+    },
+    {
+      "fixture_coverage": "verified",
+      "id": "releases",
+      "known_gaps": [
+        "Release apply is excluded from parity property and live read-only gates."
+      ],
+      "label": "Releases",
+      "live_api_coverage": "unvalidated",
+      "live_termux_coverage": "runtime-source-verified",
+      "mocked_playwright_coverage": "partial",
+      "status": "partial",
+      "storybook_coverage": "partial",
+      "vertical_slice": false
+    },
+    {
+      "fixture_coverage": "partial",
+      "id": "rules",
+      "known_gaps": [
+        "Repository exposes a partial product contract; authoritative mappings are planned."
+      ],
+      "label": "Rules",
+      "live_api_coverage": "unvalidated",
+      "live_termux_coverage": "unvalidated",
+      "mocked_playwright_coverage": "partial",
+      "status": "planned",
+      "storybook_coverage": "partial",
+      "vertical_slice": false
+    },
+    {
+      "fixture_coverage": "verified",
+      "id": "security",
+      "known_gaps": [
+        "Live scanner parity is not part of ordinary documentation generation."
+      ],
+      "label": "Security",
+      "live_api_coverage": "unvalidated",
+      "live_termux_coverage": "runtime-source-verified",
+      "mocked_playwright_coverage": "verified",
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "vertical_slice": false
+    }
+  ],
+  "kind": "coverage-matrix",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

@@ -1,0 +1,60 @@
+{
+  "api": {
+    "last_backup": {
+      "backup_id": "backup-offline",
+      "status": "succeeded",
+      "verification_status": "verified"
+    },
+    "snapshot": {
+      "saved": true,
+      "source": "dexie",
+      "stale": true
+    },
+    "status": "stale",
+    "summary": "Showing saved recovery state."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-offline-snapshot",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "latest_backup": {
+      "backup_id": "backup-offline",
+      "verification_status": "verified"
+    },
+    "status": "stale"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "read-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-offline-snapshot",
+    "msw_scenario": "nats-down",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "OfflineSnapshot",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/OfflineSnapshot",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Showing saved state",
+      "Backup protection is ready"
+    ]
+  }
+}

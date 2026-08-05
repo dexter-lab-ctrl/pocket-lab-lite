@@ -69,9 +69,10 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "Taskfile.yml",
-        "scripts/docs/lite/generate_docs.py"
+        "scripts/docs/lite/generate_docs.py",
+        "scripts/test/parity/run_schemathesis.sh"
       ],
-      "safe_default": "source-defined or empty",
+      "safe_default": "http://127.0.0.1:8000",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -211,6 +212,96 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py"
       ],
       "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_ENVIRONMENT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/parity_evidence.py"
+      ],
+      "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_OPENAPI_BASELINE",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/run_oasdiff.sh"
+      ],
+      "safe_default": "$ROOT/contracts/parity/openapi-baseline.json",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_OPENAPI_CURRENT",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/run_oasdiff.sh"
+      ],
+      "safe_default": "$ROOT/contracts/generated/lite-openapi.json",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_OPENAPI_URL",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/run_schemathesis.sh"
+      ],
+      "safe_default": "$BASE_URL/openapi.json",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "LITE_PARITY_SCHEMATHESIS_EXAMPLES",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/run_schemathesis.sh"
+      ],
+      "safe_default": "20",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -4108,6 +4199,24 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py"
       ],
       "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_K6_VERSION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/setup-parity-tools.sh"
+      ],
+      "safe_default": "2.0.0",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -8962,6 +9071,42 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OASDIFF_BIN",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/run_oasdiff.sh"
+      ],
+      "safe_default": "$ROOT/.pocketlab-dev/tools/parity/bin/oasdiff",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_OASDIFF_VERSION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/setup-parity-tools.sh"
+      ],
+      "safe_default": "1.17.0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
@@ -9009,6 +9154,24 @@
         "pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py"
       ],
       "safe_default": "source-defined or empty",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_PARITY_TOOLS_DIR",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/setup-parity-tools.sh"
+      ],
+      "safe_default": "$ROOT/.pocketlab-dev/tools/parity",
       "secret_classification": "configuration",
       "wsl2": true
     },
@@ -11398,6 +11561,42 @@
       "allowed_values": "source-defined",
       "android_termux": true,
       "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SCHEMATHESIS_BIN",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/test/parity/run_schemathesis.sh"
+      ],
+      "safe_default": "$ROOT/.pocketlab-dev/tools/parity/bin/schemathesis",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
+        "scripts"
+      ],
+      "deprecated_aliases": [],
+      "name": "POCKETLAB_SCHEMATHESIS_VERSION",
+      "production": true,
+      "required": false,
+      "restart_required": "component-dependent",
+      "runtime_readers": [
+        "scripts/dev/lite/setup-parity-tools.sh"
+      ],
+      "safe_default": "4.23.0",
+      "secret_classification": "configuration",
+      "wsl2": true
+    },
+    {
+      "allowed_values": "source-defined",
+      "android_termux": true,
+      "component": [
         "pocket-lab-final-structure"
       ],
       "deprecated_aliases": [],
@@ -12162,7 +12361,8 @@
       "restart_required": "component-dependent",
       "runtime_readers": [
         "scripts/docs/runtime/capture_termux_runtime.sh",
-        "scripts/docs/runtime/setup_termux_ssh.sh"
+        "scripts/docs/runtime/setup_termux_ssh.sh",
+        "scripts/test/parity/verify_termux_parity.sh"
       ],
       "safe_default": "pocketlab-termux",
       "secret_classification": "configuration",
@@ -13711,7 +13911,8 @@
         "scripts/docs/lite/generate_docs.py",
         "scripts/docs/lite/generate_platform_catalogs.py",
         "scripts/docs/runtime/generate_termux_runtime_docs.py",
-        "scripts/docs/sqlite/generate_schemaspy.py"
+        "scripts/docs/sqlite/generate_schemaspy.py",
+        "scripts/test/parity/parity_evidence.py"
       ],
       "safe_default": "source-defined or empty",
       "secret_classification": "configuration",
@@ -13869,7 +14070,7 @@
     }
   ],
   "metadata": {
-    "aggregate_fingerprint": "bb53dd0463f2ad3e8ace8daaf047650340637af268cf8c24354673de673d296f",
+    "aggregate_fingerprint": "c9b17579f3fd17249e274d695367b5a36d2a64dc23815e001cf6b79ece0f2b08",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -14083,6 +14284,7 @@
       "scripts/dev/lite/setup-architecture-icons.sh": "0d81b57af59460b24f9b879c02c1860a97a8ef7db8a8f24c446506efa9fac6bf",
       "scripts/dev/lite/setup-check.sh": "ec8e18dd798bccef6094e562cd357cd6447a43f883537b1b7e4dac84d0238485",
       "scripts/dev/lite/setup-documentation-tools.sh": "05cedf7464b691b84bcf4c898e07749db348cfd6da7c60dc171a45bfbd6d2846",
+      "scripts/dev/lite/setup-parity-tools.sh": "d12489a63a578e8cf6a06ba0cf73b354bf78ff8acec60a4c103eef312ab75ac4",
       "scripts/dev/lite/setup-system.sh": "508e775c78b4c328b65b303e9e0989e315b2f1d23f76f53c656252c2ac1942c2",
       "scripts/dev/lite/setup.sh": "db9a106eb4889bed57b68e0d19e651ef9d55c243b2507518f91abd30115a34a5",
       "scripts/dev/logs.sh": "7d115a63c433ee43df6dc6f034efdf908f40c322ef669a538b5be34c5ac07b42",
@@ -14123,7 +14325,10 @@
       "scripts/docs/runtime/capture_termux_runtime.sh": "24e00f8cd4caa9908760078ace070dbf69bb25efd0864ae26794b68429e4a4f2",
       "scripts/docs/runtime/check_termux_ssh.sh": "918b13750417e28cea4e9b461ab03a973aca5db4f1edcdefbbc2ca85c4cebdf5",
       "scripts/docs/runtime/setup_termux_ssh.sh": "d34aaf42957bf4c6c1ec0ecab470c28757984ca8c7f69e4d84b15d68450899bb",
-      "scripts/docs/runtime/termux_runtime_probe.sh": "784f5f7dbfcd5c13cb632c18f78905192c1c917f747bf9549ab1800f984a1e45"
+      "scripts/docs/runtime/termux_runtime_probe.sh": "784f5f7dbfcd5c13cb632c18f78905192c1c917f747bf9549ab1800f984a1e45",
+      "scripts/test/parity/run_oasdiff.sh": "ca6aeeb929404307767b99aa3b41bd62cad82332bfc8815a2e3b72eb85aa20d3",
+      "scripts/test/parity/run_schemathesis.sh": "dcc1eaf9ca74e9f57423c5550816f6e1b9d518868e2acbbd5df9e5169f0c3a38",
+      "scripts/test/parity/verify_termux_parity.sh": "b59c86d5bcbbd178348ca506f6a4e037527d9e5fdccc1b46ae553acdd30db208"
     },
     "validation_state": "generated"
   }

@@ -1,0 +1,55 @@
+{
+  "api": {
+    "pending_backup": {
+      "backup_id": "backup-failed",
+      "status": "failed",
+      "summary": "Backup failed safely."
+    },
+    "status": "failed",
+    "summary": "Backup needs attention."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-backup-failed",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "latest_backup": {
+      "backup_id": "backup-failed",
+      "status": "failed"
+    },
+    "status": "failed"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "isolated-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-backup-failed",
+    "msw_scenario": "worker-down",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "BackupFailed",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/BackupFailed",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Backup needs attention",
+      "Needs attention"
+    ]
+  }
+}

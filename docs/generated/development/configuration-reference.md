@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 94f3f146ffb010726170593db50823455b324de5d788cc82c3d015ab44ded662
+source_fingerprint: 809246453bff2f34c8e1dde756f9caa91f95f27e9d0e4799eaefe09c18c0e079
 schema_revision: 1
 validation_status: generated
 ---
@@ -27,7 +27,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `CHROME_PATH` | configuration | source-defined or empty | no | component-dependent | scripts/dev/check-lighthouse.sh, scripts/docs/generate_deployment_evidence.py |
 | `EDGE_STYLES` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/graphviz_renderer.py |
 | `LITE_ANDROID_GATE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh |
-| `LITE_API_DIRECT_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py |
+| `LITE_API_DIRECT_URL` | configuration | http://127.0.0.1:8000 | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py, scripts/test/parity/run_schemathesis.sh |
 | `LITE_BASE_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/docs/lite/generate_docs.py |
 | `LITE_DOCS_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, scripts/docs/lite/generate_docs.py |
 | `LITE_E2E_LIVE` | configuration | 0 | yes | component-dependent | scripts/dev/lite/run-gate.sh, scripts/docs/lite/generate_docs.py |
@@ -35,6 +35,11 @@ No current environment values are read or emitted. Secret-like names are classif
 | `LITE_FRONTEND_URL` | configuration | source-defined or empty | yes | component-dependent | Taskfile.yml, playwright.config.ts, scripts/docs/lite/generate_docs.py |
 | `LITE_INVITE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `LITE_MODE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_status.py |
+| `LITE_PARITY_ENVIRONMENT` | configuration | source-defined or empty | yes | component-dependent | scripts/test/parity/parity_evidence.py |
+| `LITE_PARITY_OPENAPI_BASELINE` | configuration | $ROOT/contracts/parity/openapi-baseline.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
+| `LITE_PARITY_OPENAPI_CURRENT` | configuration | $ROOT/contracts/generated/lite-openapi.json | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
+| `LITE_PARITY_OPENAPI_URL` | configuration | $BASE_URL/openapi.json | yes | component-dependent | scripts/test/parity/run_schemathesis.sh |
+| `LITE_PARITY_SCHEMATHESIS_EXAMPLES` | configuration | 20 | yes | component-dependent | scripts/test/parity/run_schemathesis.sh |
 | `LITE_ROLES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_invites.py |
 | `LITE_RUNTIME_CAPTURE_MAX_BYTES` | configuration | 524288 | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh |
 | `LITE_RUNTIME_CAPTURE_ROOT` | configuration | $ROOT/.pocketlab-dev/runtime-captures | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh |
@@ -246,6 +251,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_IS_CONTROL_PLANE` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py |
 | `POCKETLAB_JETSTREAM_MAX_BYTES` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
 | `POCKETLAB_JETSTREAM_MAX_MSGS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/nats_bus.py |
+| `POCKETLAB_K6_VERSION` | configuration | 2.0.0 | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |
 | `POCKETLAB_KEEP_BENCHMARK_STATE` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/benchmark-lite-control-plane-sqlite.py |
 | `POCKETLAB_LIGHTHOUSE_CHROME_FLAGS` | configuration | --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-extensions --remote-debugging-address=127.0. | yes | component-dependent | scripts/dev/check-lighthouse.sh |
 | `POCKETLAB_LIGHTHOUSE_CHROME_PATH` | configuration | $chrome_candidate | yes | component-dependent | scripts/dev/check-lighthouse.sh |
@@ -506,9 +512,12 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_NODE_MAJOR` | configuration | 24 | yes | component-dependent | scripts/dev/check-wsl-ubuntu-dev.sh, scripts/dev/setup-wsl-ubuntu-dev.sh |
 | `POCKETLAB_NODE_NAME` | configuration | $NODE_ID | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
 | `POCKETLAB_NODE_ROLE` | configuration | compute | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-fleet-agent.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/agents/pocketlab_agent_supervisor.py, pocket-lab-final-structure/runtime/agents/pocketlab_node_agent.py, pocket-lab-final-structure/runtime/api_fastapi/routers/fleet.py |
+| `POCKETLAB_OASDIFF_BIN` | configuration | $ROOT/.pocketlab-dev/tools/parity/bin/oasdiff | yes | component-dependent | scripts/test/parity/run_oasdiff.sh |
+| `POCKETLAB_OASDIFF_VERSION` | configuration | 1.17.0 | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |
 | `POCKETLAB_OBSERVABILITY_PROBE_TIMEOUT_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py |
 | `POCKETLAB_OBSERVABILITY_STATUS_CACHE_TTL_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/observability_status.py |
 | `POCKETLAB_OPERATION_DEADLINE_SECONDS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/workload_admission.py |
+| `POCKETLAB_PARITY_TOOLS_DIR` | configuration | $ROOT/.pocketlab-dev/tools/parity | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |
 | `POCKETLAB_PHASE3B_IDLE_SECONDS` | configuration | 60 | yes | component-dependent | scripts/dev/check-lite-phase3b-projections.sh |
 | `POCKETLAB_PHASE3B_QUIESCENCE_ATTEMPTS` | configuration | 30 | yes | component-dependent | scripts/dev/check-lite-phase3b-projections.sh |
 | `POCKETLAB_PHASE3B_QUIESCENCE_SLEEP_SECONDS` | configuration | 2 | yes | component-dependent | scripts/dev/check-lite-phase3b-projections.sh |
@@ -640,6 +649,8 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_S8_GATE_WORKER_PM2_HOME` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lib/long_gate_s8.py |
 | `POCKETLAB_SCHEMASPY_JAR` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/setup-documentation-tools.sh, scripts/docs/sqlite/generate_schemaspy.py |
 | `POCKETLAB_SCHEMASPY_VERSION` | configuration | source-defined or empty | yes | component-dependent | scripts/dev/lite/setup-documentation-tools.sh |
+| `POCKETLAB_SCHEMATHESIS_BIN` | configuration | $ROOT/.pocketlab-dev/tools/parity/bin/schemathesis | yes | component-dependent | scripts/test/parity/run_schemathesis.sh |
+| `POCKETLAB_SCHEMATHESIS_VERSION` | configuration | 4.23.0 | yes | component-dependent | scripts/dev/lite/setup-parity-tools.sh |
 | `POCKETLAB_SECURE_ORIGIN` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lite/install-photoprism-proot.sh, pocket-lab-final-structure/runtime/api_fastapi/services/lite_catalog.py |
 | `POCKETLAB_SECURITY_FAILED_RETENTION_DAYS` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py |
 | `POCKETLAB_SECURITY_PROCESS_MAX_CONCURRENT` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/api_fastapi/services/process_runtime.py |
@@ -679,7 +690,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKETLAB_TELEMETRY_PATH` | configuration | source-defined or empty | yes | component-dependent | pocket-lab-final-structure/runtime/core/control_plane_core.py |
 | `POCKETLAB_TELEMETRY_SAMPLE_SECONDS` | configuration | 30 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/live_status.py |
 | `POCKETLAB_TERMUX_HOST_KEY_FINGERPRINT` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
-| `POCKETLAB_TERMUX_SSH_ALIAS` | configuration | pocketlab-termux | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh, scripts/docs/runtime/setup_termux_ssh.sh |
+| `POCKETLAB_TERMUX_SSH_ALIAS` | configuration | pocketlab-termux | yes | component-dependent | scripts/docs/runtime/capture_termux_runtime.sh, scripts/docs/runtime/setup_termux_ssh.sh, scripts/test/parity/verify_termux_parity.sh |
 | `POCKETLAB_TERMUX_SSH_HOST` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
 | `POCKETLAB_TERMUX_SSH_IDENTITY` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
 | `POCKETLAB_TERMUX_SSH_PORT` | configuration | source-defined or empty | yes | component-dependent | scripts/docs/runtime/setup_termux_ssh.sh |
@@ -761,7 +772,7 @@ No current environment values are read or emitted. Secret-like names are classif
 | `POCKET_LAB_PWA_DIR` | configuration | $POCKET_LAB_BASE_DIR/pwa_dist | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-pwa-ui.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/start-dashboard.sh, pocket-lab-final-structure/runtime/api_fastapi/services/release_runtime.py |
 | `POCKET_LAB_SKIP_TERMUX_UPGRADE` | configuration | 0 | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/install-termux-packages.sh |
 | `POCKET_LAB_VAULT_DIR` | configuration | $POCKET_LAB_BASE_DIR/vault | yes | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-mariadb.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/init-vault.sh, pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/lib/common.sh |
-| `SOURCE_COMMIT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/validation_evidence.py, scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py |
+| `SOURCE_COMMIT` | configuration | source-defined or empty | no | component-dependent | scripts/dev/lite/validation_evidence.py, scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py, scripts/test/parity/parity_evidence.py |
 | `SOURCE_DATE_EPOCH` | configuration | source-defined or empty | no | component-dependent | scripts/docs/validation_evidence_lib.py |
 | `SOURCE_DIR` | configuration | $POCKET_LAB_IAC_DIR | no | component-dependent | pocket-lab-final-structure/pocket-lab-bootstrap-production-scripts-patched/scripts/seed-gitops-repo.sh |
 | `SOURCE_GENERATED_AT` | configuration | source-defined or empty | no | component-dependent | scripts/docs/graphviz/generate_lite_architecture.py, scripts/docs/graphviz/generate_lite_diagrams.py, scripts/docs/lite/generate_contracts.py, scripts/docs/lite/generate_docs.py, scripts/docs/lite/generate_platform_catalogs.py, scripts/docs/runtime/generate_termux_runtime_docs.py, scripts/docs/sqlite/generate_schemaspy.py |

@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "fresh_window_seconds": 45,
+      "id": "recovery-details-freshness",
+      "last_good_allowed": true,
+      "offline_allowed": true,
+      "projection": "recovery-details",
+      "stale_window_seconds": 300,
+      "status": "verified",
+      "ui_label": "Saved recovery details"
+    },
+    {
+      "fresh_window_seconds": 60,
+      "id": "recovery-history-freshness",
+      "last_good_allowed": true,
+      "offline_allowed": true,
+      "projection": "recovery-backup-history",
+      "stale_window_seconds": 900,
+      "status": "verified",
+      "ui_label": "Saved first page only"
+    },
+    {
+      "fresh_window_seconds": 30,
+      "id": "recovery-summary-freshness",
+      "last_good_allowed": true,
+      "offline_allowed": true,
+      "projection": "recovery-summary",
+      "stale_window_seconds": 300,
+      "status": "verified",
+      "ui_label": "Showing saved state"
+    }
+  ],
+  "kind": "freshness-policy",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

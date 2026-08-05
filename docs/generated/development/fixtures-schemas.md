@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2f83238d507bc32399791118d5de020d666e6c85e69ddcc18cb24fa8b56341bc
+source_fingerprint: 06c0f2cbdb6e38fef3f5ea0b065b8645ed41b766f46703a94c8a0e865a276693
 schema_revision: 1
 validation_status: generated
 ---
@@ -61,6 +61,21 @@ validation_status: generated
 - `src/test/fixtures/generated/identity/identity-summary.json`
 - `src/test/fixtures/generated/identity/slow-response.json`
 - `src/test/fixtures/generated/manifest.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-backend-unavailable.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-backup-failed.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-backup-running.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-confirmation-required.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-empty.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-offline-snapshot.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-preview-ready.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-projection-stale.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-restore-completed.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-restore-failed.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-restore-running.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-rollback-completed.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-verification-failed.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-verification-running.json`
+- `src/test/fixtures/generated/parity/recovery/recovery-verified.json`
 - `src/test/fixtures/generated/recovery/offline-saved.json`
 - `src/test/fixtures/generated/recovery/recovery-backup-failed.json`
 - `src/test/fixtures/generated/recovery/recovery-backup-running.json`

@@ -1,0 +1,65 @@
+{
+  "api": {
+    "last_backup": {
+      "backup_id": "backup-preview",
+      "created_at": "2026-01-01T00:00:00Z",
+      "status": "succeeded",
+      "verification_status": "verified"
+    },
+    "latest_restore_preview": {
+      "backup_id": "backup-preview",
+      "change_count": 3,
+      "preview_id": "preview-ready",
+      "restore_allowed": true,
+      "status": "ready",
+      "summary": "Preview ready."
+    },
+    "status": "healthy",
+    "summary": "Restore preview is ready."
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-preview-ready",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "restore_preview": {
+      "preview_id": "preview-ready",
+      "restore_allowed": true,
+      "status": "ready"
+    },
+    "status": "healthy"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "read-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-preview-ready",
+    "msw_scenario": "healthy",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "PreviewReady",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/PreviewReady",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Restore preview ready",
+      "Preview ready"
+    ]
+  }
+}

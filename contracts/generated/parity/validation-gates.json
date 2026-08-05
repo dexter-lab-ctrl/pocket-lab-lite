@@ -1,0 +1,169 @@
+{
+  "items": [
+    {
+      "blocking": true,
+      "environment": "wsl2-ci",
+      "evidence": "parity/oasdiff.json",
+      "id": "api-breaking",
+      "label": "OpenAPI breaking changes",
+      "status": "patch-provided",
+      "suite": "scripts/test/parity/run_oasdiff.sh",
+      "task": "lite:api:breaking-changes"
+    },
+    {
+      "blocking": true,
+      "environment": "isolated-fastapi",
+      "evidence": "parity/schemathesis.xml",
+      "id": "api-schemathesis",
+      "label": "Safe OpenAPI property tests",
+      "status": "patch-provided",
+      "suite": "scripts/test/parity/run_schemathesis.sh",
+      "task": "lite:api:schemathesis"
+    },
+    {
+      "blocking": true,
+      "environment": "wsl2-ci",
+      "evidence": "parity/docs.json",
+      "id": "docs-parity",
+      "label": "Generated parity documentation drift",
+      "status": "verified",
+      "suite": "scripts/docs/parity/generate_parity.py check",
+      "task": "lite:docs:parity:check"
+    },
+    {
+      "blocking": true,
+      "environment": "external-chrome-mocked",
+      "evidence": "playwright-junit.xml",
+      "id": "parity-a11y",
+      "label": "Axe accessibility",
+      "status": "patch-provided",
+      "suite": "tests/e2e/lite-accessibility.spec.ts",
+      "task": "lite:a11y:check"
+    },
+    {
+      "blocking": true,
+      "environment": "isolated-fastapi",
+      "evidence": "parity/api.json",
+      "id": "parity-api",
+      "label": "FastAPI recovery projection",
+      "status": "verified",
+      "suite": "tests/parity/test_backup_recovery_parity.py",
+      "task": "lite:parity:api"
+    },
+    {
+      "blocking": true,
+      "environment": "isolated-sqlite",
+      "evidence": "parity/backend.json",
+      "id": "parity-backend",
+      "label": "Backend authority to API mapping",
+      "status": "verified",
+      "suite": "tests/parity/test_backup_recovery_parity.py",
+      "task": "lite:parity:backend"
+    },
+    {
+      "blocking": true,
+      "environment": "wsl2-ci",
+      "evidence": "parity/contracts.json",
+      "id": "parity-contracts",
+      "label": "Canonical contracts and schema",
+      "status": "verified",
+      "suite": "tests/parity/test_contract_generation.py",
+      "task": "lite:parity:contracts:check"
+    },
+    {
+      "blocking": true,
+      "environment": "wsl2-ci",
+      "evidence": "parity/fixtures.json",
+      "id": "parity-fixtures",
+      "label": "Fixture drift and sanitization",
+      "status": "verified",
+      "suite": "tests/parity/test_contract_generation.py",
+      "task": "lite:parity:fixtures:check"
+    },
+    {
+      "blocking": false,
+      "environment": "external-chrome-live",
+      "evidence": "playwright-results.json",
+      "id": "parity-playwright-live",
+      "label": "Live browser projection",
+      "status": "unvalidated",
+      "suite": "tests/e2e/lite-live.spec.ts",
+      "task": "lite:parity:playwright:live"
+    },
+    {
+      "blocking": true,
+      "environment": "external-chrome-mocked",
+      "evidence": "playwright-results.json",
+      "id": "parity-playwright-mocked",
+      "label": "Selector meaning to rendered UI",
+      "status": "patch-provided",
+      "suite": "tests/e2e/lite-parity.spec.ts",
+      "task": "lite:parity:playwright:mocked"
+    },
+    {
+      "blocking": true,
+      "environment": "vitest-jsdom",
+      "evidence": "parity/selectors.json",
+      "id": "parity-selectors",
+      "label": "API to selector",
+      "status": "verified",
+      "suite": "src/lib/liteRecoveryParity.test.js",
+      "task": "lite:parity:selectors"
+    },
+    {
+      "blocking": true,
+      "environment": "storybook",
+      "evidence": "parity/storybook.json",
+      "id": "parity-storybook",
+      "label": "Storybook registry linkage",
+      "status": "patch-provided",
+      "suite": "src/lite/LiteRecoveryParity.stories.jsx",
+      "task": "lite:parity:storybook"
+    },
+    {
+      "blocking": false,
+      "environment": "wsl2-termux",
+      "evidence": "parity/termux.json",
+      "id": "parity-termux",
+      "label": "Read-only live Termux authority",
+      "status": "unvalidated",
+      "suite": "scripts/test/parity/verify_termux_parity.sh",
+      "task": "lite:parity:termux"
+    },
+    {
+      "blocking": false,
+      "environment": "external-chrome-mocked",
+      "evidence": "playwright-report",
+      "id": "parity-visual",
+      "label": "Visual regression",
+      "status": "patch-provided",
+      "suite": "tests/e2e/lite-visual.spec.ts",
+      "task": "lite:visual:check"
+    },
+    {
+      "blocking": false,
+      "environment": "termux-edge",
+      "evidence": "parity/k6-edge.json",
+      "id": "performance-edge",
+      "label": "Bounded edge reads",
+      "status": "patch-provided",
+      "suite": "performance/parity/edge-readonly.js",
+      "task": "lite:performance:edge"
+    },
+    {
+      "blocking": true,
+      "environment": "wsl2-ci",
+      "evidence": "parity/evidence-manifest.json",
+      "id": "release-readiness",
+      "label": "Parity release readiness",
+      "status": "partial",
+      "suite": "Taskfile aggregate",
+      "task": "lite:parity:check"
+    }
+  ],
+  "kind": "validation-gates",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

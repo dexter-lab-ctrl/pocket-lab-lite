@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketlab.invalid/schemas/parity/parity-evidence.schema.json",
+  "title": "Pocket Lab Lite parity evidence result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "scenario_id", "source_commit", "environment",
+    "backend_result", "api_result", "selector_result", "browser_result",
+    "accessibility_result", "visual_result", "runtime_result", "status", "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "scenario_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,119}$"},
+    "source_commit": {"type": "string", "minLength": 1, "maxLength": 80},
+    "environment": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,79}$"},
+    "generated_at": {"type": "string", "format": "date-time", "maxLength": 40},
+    "backend_result": {"$ref": "#/$defs/result"},
+    "api_result": {"$ref": "#/$defs/result"},
+    "selector_result": {"$ref": "#/$defs/result"},
+    "browser_result": {"$ref": "#/$defs/result"},
+    "accessibility_result": {"$ref": "#/$defs/result"},
+    "visual_result": {"$ref": "#/$defs/result"},
+    "runtime_result": {"$ref": "#/$defs/result"},
+    "status": {"enum": ["ready", "ready-with-accepted-limitations", "failed", "partial", "unvalidated", "runtime-unavailable"]},
+    "artifacts": {"type": "array", "maxItems": 50, "items": {"type": "string", "pattern": "^[a-zA-Z0-9._/-]{1,180}$"}},
+    "notes": {"type": "array", "maxItems": 30, "items": {"type": "string", "maxLength": 300}}
+  },
+  "$defs": {
+    "result": {"enum": ["pass", "fail", "not-run", "unvalidated", "unavailable", "runtime-unavailable"]}
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "api": {
+    "last_backup": {
+      "backup_id": "backup-verified",
+      "created_at": "2026-01-01T00:00:00Z",
+      "manifest_checksum": "abcdef1234567890",
+      "snapshot_id": "snapshot-safe",
+      "status": "succeeded",
+      "summary": "Backup verified.",
+      "verification_status": "verified"
+    },
+    "status": "healthy",
+    "summary": "Recovery Ready"
+  },
+  "authority": {
+    "arrangement": "sanitized deterministic recovery authority fixture",
+    "raw_manifest_included": false,
+    "raw_sqlite_rows_included": false,
+    "sanitized": true
+  },
+  "identity": {
+    "fields": [
+      "backup_id",
+      "preview_id",
+      "restore_id",
+      "operation_id"
+    ]
+  },
+  "scenario_id": "recovery-verified",
+  "schema_version": "1.0.0",
+  "selector_expected": {
+    "latest_backup": {
+      "backup_id": "backup-verified",
+      "verification_status": "verified"
+    },
+    "status": "healthy"
+  },
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "ready",
+  "traceability": {
+    "accessibility_test": "tests/e2e/lite-accessibility.spec.ts#recovery",
+    "api_projection": "recovery-summary",
+    "evidence_result": "unvalidated-runtime",
+    "live_eligibility": "read-only",
+    "mocked_playwright_test": "tests/e2e/lite-parity.spec.ts#recovery-verified",
+    "msw_scenario": "healthy",
+    "selector": "selectRecoveryScreenView",
+    "storybook_export": "Verified",
+    "storybook_story": "Pocket Lab Lite/Recovery Parity/Verified",
+    "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
+  },
+  "ui_expected": {
+    "visible_text": [
+      "Backup protection is ready",
+      "Verified"
+    ]
+  }
+}

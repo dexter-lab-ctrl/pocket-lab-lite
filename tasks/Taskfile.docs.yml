@@ -234,6 +234,7 @@ tasks:
       - task: lite:contracts:generate
       - task: lite:docs:platform:generate
       - task: lite:docs:runtime:generate
+      - task: lite:docs:parity:generate
       - task: lite:docs:architecture:generate
       - task: lite:docs:development:generate
       - task: lite:docs:production:generate
@@ -247,6 +248,7 @@ tasks:
       - task: lite:contracts:check
       - task: lite:docs:platform:check
       - task: lite:docs:runtime:check
+      - task: lite:docs:parity:check
       - task: lite:docs:architecture:check
       - task: lite:docs:development:check
       - task: lite:docs:production:check

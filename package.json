@@ -33,7 +33,9 @@
     "docs:contracts": "python3 scripts/docs/lite/generate_contracts.py generate",
     "docs:generate": "python3 scripts/docs/lite/generate_docs.py generate --audience all",
     "test:visual:update": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-visual.spec.ts --project=mocked-desktop --project=mocked-mobile --update-snapshots",
-    "test:docs": "playwright test --config=playwright.docs.config.ts"
+    "test:docs": "playwright test --config=playwright.docs.config.ts",
+    "test:parity:selectors": "vitest run src/lib/liteRecoveryParity.test.js",
+    "test:e2e:parity": "VITE_POCKETLAB_MOCKS=1 LITE_E2E_MODE=mocked playwright test tests/e2e/lite-parity.spec.ts --project=mocked-desktop --project=mocked-mobile"
   },
   "keywords": [],
   "author": "",

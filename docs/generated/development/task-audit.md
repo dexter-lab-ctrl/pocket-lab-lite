@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 2f83238d507bc32399791118d5de020d666e6c85e69ddcc18cb24fa8b56341bc
+source_fingerprint: 06c0f2cbdb6e38fef3f5ea0b065b8645ed41b766f46703a94c8a0e865a276693
 schema_revision: 1
 validation_status: generated
 ---
@@ -131,8 +131,11 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 
 ## Current Lite task surface
 
+- `lite:a11y:check`
 - `lite:allure`
+- `lite:api:breaking-changes`
 - `lite:api:check`
+- `lite:api:schemathesis`
 - `lite:bootstrap:check`
 - `lite:browser:detect`
 - `lite:check`
@@ -165,6 +168,8 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:frontend-api`
 - `lite:docs:generate`
 - `lite:docs:openapi`
+- `lite:docs:parity:check`
+- `lite:docs:parity:generate`
 - `lite:docs:platform:check`
 - `lite:docs:platform:generate`
 - `lite:docs:production:check`
@@ -185,8 +190,25 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:docs:ui`
 - `lite:docs:ui:screenshots`
 - `lite:docs:validation`
+- `lite:evidence:parity:check`
+- `lite:evidence:parity:generate`
 - `lite:har:inspect`
 - `lite:har:sanitize`
+- `lite:parity:api`
+- `lite:parity:backend`
+- `lite:parity:check`
+- `lite:parity:contracts:check`
+- `lite:parity:contracts:generate`
+- `lite:parity:fixtures:check`
+- `lite:parity:fixtures:generate`
+- `lite:parity:playwright:live`
+- `lite:parity:playwright:mocked`
+- `lite:parity:selectors`
+- `lite:parity:storybook`
+- `lite:parity:termux`
+- `lite:parity:tools:check`
+- `lite:performance:edge`
+- `lite:performance:wsl`
 - `lite:playwright:preflight`
 - `lite:release:artifact-check`
 - `lite:release:dry-run`
@@ -221,6 +243,7 @@ The old root Taskfile exposed full-product tasks that were not a truthful Lite c
 - `lite:validation:check`
 - `lite:validation:evidence`
 - `lite:validation:record`
+- `lite:visual:check`
 - `lite:windows:host:check`
 - `lite:windows:vscode:check`
 - `lite:windows:wsl:check`

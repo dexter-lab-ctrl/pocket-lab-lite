@@ -1,0 +1,159 @@
+{
+  "items": [
+    {
+      "boundary": "api-selector",
+      "component": "LiteRecovery",
+      "domain": "recovery",
+      "id": "api-backup-selector",
+      "query_key": "liteQueryKeys.recoverySummary",
+      "selector": "selectRecoveryLatestBackupView",
+      "sensitivity": "public-summary",
+      "source": "last_backup",
+      "target": "latest_backup",
+      "test_id": "parity-selector-backup",
+      "transformation": "normalizeRecoveryBackup allowlist",
+      "visible_representation": "Latest protected backup"
+    },
+    {
+      "boundary": "api-selector",
+      "component": "LiteRecovery",
+      "domain": "recovery",
+      "id": "api-preview-selector",
+      "query_key": "liteQueryKeys.recoverySummary",
+      "selector": "selectRecoveryRestorePreviewView",
+      "sensitivity": "public-summary",
+      "source": "latest_restore_preview",
+      "target": "restore_preview",
+      "test_id": "parity-selector-preview",
+      "transformation": "normalizeRecoveryPreview allowlist",
+      "visible_representation": "Restore preview ready/needed"
+    },
+    {
+      "boundary": "api-selector",
+      "component": "LiteRecovery",
+      "domain": "recovery",
+      "id": "api-status-selector",
+      "query_key": "liteQueryKeys.recoverySummary",
+      "selector": "selectRecoverySummaryView",
+      "sensitivity": "public-summary",
+      "source": "status",
+      "target": "status",
+      "test_id": "parity-selector-status",
+      "transformation": "normalizeRecoveryStatus",
+      "visible_representation": "StatusBadge and recovery heading"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "checkpoint-id",
+      "sensitivity": "evidence-identifier",
+      "source": "checkpoint.checkpoint_id",
+      "target": "pre_restore_checkpoint.checkpoint_id",
+      "test_id": "parity-checkpoint-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "latest-backup-id",
+      "sensitivity": "evidence-identifier",
+      "source": "manifest.backup_id",
+      "target": "last_backup.backup_id",
+      "test_id": "parity-latest-backup-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "preview-id",
+      "sensitivity": "evidence-identifier",
+      "source": "restore preview.preview_id",
+      "target": "latest_restore_preview.preview_id",
+      "test_id": "parity-preview-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "recovery-status",
+      "sensitivity": "public-summary",
+      "source": "recovery current status",
+      "target": "status",
+      "test_id": "parity-recovery-status",
+      "transformation": "normalize status enum"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "recovery-summary",
+      "sensitivity": "public-summary",
+      "source": "recovery summary",
+      "target": "summary",
+      "test_id": "parity-recovery-summary",
+      "transformation": "allowlisted text"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "restore-allowed",
+      "sensitivity": "public-summary",
+      "source": "restore preview.restore_allowed",
+      "target": "latest_restore_preview.restore_allowed",
+      "test_id": "parity-restore-allowed",
+      "transformation": "derived guard boolean"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "restore-id",
+      "sensitivity": "evidence-identifier",
+      "source": "restore run.restore_id",
+      "target": "last_restore.restore_id",
+      "test_id": "parity-restore-id",
+      "transformation": "direct stable identifier"
+    },
+    {
+      "boundary": "selector-render",
+      "component": "LiteRecovery",
+      "domain": "recovery",
+      "id": "selector-render-preview",
+      "query_key": "liteQueryKeys.recoverySummary",
+      "selector": "selectRecoveryScreenView",
+      "sensitivity": "public-summary",
+      "source": "restore_preview.status",
+      "target": "Recovery status strip",
+      "test_id": "parity-render-preview",
+      "transformation": "ready -> Restore preview ready; otherwise Restore preview needed",
+      "visible_representation": "Restore preview ready/needed"
+    },
+    {
+      "boundary": "selector-render",
+      "component": "LiteRecovery",
+      "domain": "recovery",
+      "id": "selector-render-protection",
+      "query_key": "liteQueryKeys.recoverySummary",
+      "selector": "selectRecoveryScreenView",
+      "sensitivity": "public-summary",
+      "source": "latest_backup.verification_status",
+      "target": "Latest protected backup card",
+      "test_id": "parity-render-backup",
+      "transformation": "verified -> Verified; other -> Needs verification",
+      "visible_representation": "Backup verified or Backup saved"
+    },
+    {
+      "boundary": "backend-api",
+      "domain": "recovery",
+      "id": "verification-status",
+      "sensitivity": "public-summary",
+      "source": "manifest.verification_status",
+      "target": "last_backup.verification_status",
+      "test_id": "parity-verification-status",
+      "transformation": "normalized enum"
+    }
+  ],
+  "kind": "field-mappings",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "source_revision": "repository-source",
+  "status": "generated"
+}
