@@ -4,7 +4,7 @@ import html
 import json
 import os
 import shlex
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 
 from .. import deps
 from ..services.action_queue import submit_domain_command
@@ -492,24 +492,103 @@ async def broadcast_fleet_agent_command(
     }
 
 
-@router.get("/api/fleet/agent/bootstrap")
+def _validated_legacy_bootstrap_identity(role: str, hostname: str) -> tuple[str, str | None]:
+    """Validate the legacy state-changing GET before durable identity creation.
+
+    The durable store intentionally rejects ``unknown-node``. This adapter keeps
+    malformed external input from reaching that invariant and converts it into a
+    sanitized client error instead of an Internal Server Error.
+    """
+    try:
+        normalized_role = lite_invites.normalize_lite_role(role)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "invalid_role",
+                "summary": "Choose a supported Pocket Lab Lite device role.",
+                "sanitized": True,
+            },
+        ) from exc
+    role_meta = lite_invites.role_metadata(normalized_role)
+    if not role_meta.get("joinable", False):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "protected_role",
+                "summary": "The protected Server Host role cannot be enrolled through this endpoint.",
+                "sanitized": True,
+            },
+        )
+
+    raw_hostname = str(hostname or "").strip()
+    if len(raw_hostname) > 120 or any(ord(char) < 32 or ord(char) == 127 for char in raw_hostname):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "invalid_hostname",
+                "summary": "Device name contains unsupported characters or is too long.",
+                "sanitized": True,
+            },
+        )
+    if raw_hostname:
+        normalized_node_id = fleet_registry.normalize_node_id(raw_hostname)
+        if normalized_node_id == "unknown-node":
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "status": "invalid_hostname",
+                    "summary": "Device name must contain at least one ASCII letter or number.",
+                    "sanitized": True,
+                },
+            )
+    return normalized_role, raw_hostname or None
+
+
+@router.get(
+    "/api/fleet/agent/bootstrap",
+    include_in_schema=False,
+    deprecated=True,
+)
 def fleet_agent_bootstrap(
-    role: str = "compute", hostname: str = "", request: Request = None
+    role: str = Query(default="compute", max_length=40),
+    hostname: str = Query(default="", max_length=120),
+    request: Request = None,
 ) -> dict:
     deps.require_auth(request)
-    cfg = fleet_registry.bootstrap_config(role=role, hostname=hostname or None)
-    # Store only the hash so the control plane can correlate agents without retaining a raw enrollment token.
-    fleet_registry.upsert_agent(
-        {
-            "node_id": cfg["node_id"],
-            "hostname": cfg["hostname"],
-            "role": role,
-            "status": "invited",
-            "auth_token_hash": cfg["agent_token_hash"],
-            "capabilities": ["pending-agent"],
-        },
-        event_type="fleet.agent_invited",
-    )
+    normalized_role, validated_hostname = _validated_legacy_bootstrap_identity(role, hostname)
+    cfg = fleet_registry.bootstrap_config(role=normalized_role, hostname=validated_hostname)
+    if cfg.get("node_id") == "unknown-node":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "invalid_hostname",
+                "summary": "A durable device identity could not be derived.",
+                "sanitized": True,
+            },
+        )
+    try:
+        # Store only the hash so the control plane can correlate agents without retaining a raw enrollment token.
+        fleet_registry.upsert_agent(
+            {
+                "node_id": cfg["node_id"],
+                "hostname": cfg["hostname"],
+                "role": normalized_role,
+                "status": "invited",
+                "auth_token_hash": cfg["agent_token_hash"],
+                "capabilities": ["pending-agent"],
+            },
+            event_type="fleet.agent_invited",
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "invalid_identity",
+                "summary": "The requested device identity could not be enrolled.",
+                "sanitized": True,
+            },
+        ) from exc
     return {"status": "created", "agent": cfg}
 
 
@@ -686,7 +765,10 @@ def lite_fleet_agent_bootstrap_env(payload: dict | None = None, request: Request
     return Response(content="\n".join(env_lines) + "\n", media_type="text/plain; charset=utf-8")
 
 
-@router.get("/api/lite/fleet/agent/bootstrap.sh")
+@router.get(
+    "/api/lite/fleet/agent/bootstrap.sh",
+    openapi_extra={"x-pocketlab-side-effectful-read": True, "x-pocketlab-sensitive": True},
+)
 def lite_fleet_agent_bootstrap_script(
     role: str = "compute",
     token: str = "",
@@ -878,7 +960,7 @@ echo "Join accepted. This device should show as Joining, then Online after heart
 
     return Response(content=bash_script, media_type="text/x-shellscript; charset=utf-8")
 
-@router.get("/api/join.sh")
+@router.get("/api/join.sh", include_in_schema=False)
 def join_script(role: str = "compute", token: str = "", request: Request = None):
     """Shell-consumable Lite device invite.
 

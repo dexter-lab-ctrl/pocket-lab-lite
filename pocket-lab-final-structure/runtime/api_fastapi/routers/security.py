@@ -21,7 +21,7 @@ def opa_evaluations(background_tasks: BackgroundTasks, request: Request) -> list
     return evaluations
 
 
-@router.get("/api/opa_interceptor.py")
+@router.get("/api/opa_interceptor.py", include_in_schema=False)
 def opa_interceptor(request: Request):
     deps.require_auth(request)
     return Response(

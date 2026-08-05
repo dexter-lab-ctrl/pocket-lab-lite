@@ -8,7 +8,7 @@ source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_platform_catalogs.py
 generator_version: 1
-source_fingerprint: 53a4dc007743554952fb564b88165f1aab39a8fc2edb55dbfcff3b4cb59b915d
+source_fingerprint: 4b8f2f70a513d95a6f24d6a3292cfc51947ef1367fb30b9d68bef857c99e6527
 schema_revision: 1
 validation_status: generated
 ---
@@ -35,6 +35,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-lifecycle-app-id"></a>
 ## GET `/api/lite/apps/lifecycle/{app_id}`
@@ -55,7 +56,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-photoprism-storage-mappings"></a>
 ## GET `/api/lite/apps/photoprism/storage-mappings`
@@ -70,6 +73,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-apps-photoprism-storage-mappings"></a>
 ## POST `/api/lite/apps/photoprism/storage-mappings`
@@ -90,7 +94,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 201 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="delete-api-lite-apps-photoprism-storage-mappings-mapping-id"></a>
 ## DELETE `/api/lite/apps/photoprism/storage-mappings/{mapping_id}`
@@ -111,7 +117,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-photoprism-storage-preview"></a>
 ## GET `/api/lite/apps/photoprism/storage-preview`
@@ -126,6 +134,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-action-history"></a>
 ## GET `/api/lite/apps/{app_id}/action-history`
@@ -148,7 +157,10 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-actions"></a>
 ## GET `/api/lite/apps/{app_id}/actions`
@@ -169,7 +181,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-apps-app-id-actions-action-id"></a>
 ## POST `/api/lite/apps/{app_id}/actions/{action_id}`
@@ -197,7 +211,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-backup"></a>
 ## GET `/api/lite/apps/{app_id}/backup`
@@ -218,7 +234,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-apps-app-id-backup"></a>
 ## POST `/api/lite/apps/{app_id}/backup`
@@ -245,7 +263,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-apps-app-id-backup-storage-device"></a>
 ## POST `/api/lite/apps/{app_id}/backup/storage-device`
@@ -272,7 +292,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-backups"></a>
 ## GET `/api/lite/apps/{app_id}/backups`
@@ -293,7 +315,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-backups-backup-id-receipt"></a>
 ## GET `/api/lite/apps/{app_id}/backups/{backup_id}/receipt`
@@ -315,7 +339,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-evidence"></a>
 ## GET `/api/lite/apps/{app_id}/evidence`
@@ -336,7 +362,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-apps-app-id-restore-preview"></a>
 ## POST `/api/lite/apps/{app_id}/restore/preview`
@@ -363,7 +391,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-restore-previews-preview-id"></a>
 ## GET `/api/lite/apps/{app_id}/restore/previews/{preview_id}`
@@ -385,7 +415,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-update"></a>
 ## GET `/api/lite/apps/{app_id}/update`
@@ -406,7 +438,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-apps-app-id-update-apply"></a>
 ## POST `/api/lite/apps/{app_id}/update/apply`
@@ -434,6 +468,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | --- | --- | --- |
 | 409 | Successful Response | application/json: `object` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-apps-app-id-update-receipts-operation-id"></a>
 ## GET `/api/lite/apps/{app_id}/update/receipts/{operation_id}`
@@ -455,7 +490,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-catalog"></a>
 ## GET `/api/lite/catalog`
@@ -470,6 +507,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-catalog-install"></a>
 ## POST `/api/lite/catalog/install`
@@ -490,7 +528,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-catalog-remove"></a>
 ## POST `/api/lite/catalog/remove`
@@ -510,8 +550,10 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 501 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-commands-history"></a>
 ## GET `/api/lite/commands/history`
@@ -535,7 +577,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-devices-device-id"></a>
 ## GET `/api/lite/devices/{device_id}`
@@ -556,7 +600,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-devices-device-id-health"></a>
 ## GET `/api/lite/devices/{device_id}/health`
@@ -577,7 +623,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-devices-device-id-health-history"></a>
 ## GET `/api/lite/devices/{device_id}/health/history`
@@ -600,7 +648,10 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-devices-device-id-history"></a>
 ## GET `/api/lite/devices/{device_id}/history`
@@ -623,7 +674,10 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-devices-device-id-removal-assessment"></a>
 ## GET `/api/lite/devices/{device_id}/removal-assessment`
@@ -644,7 +698,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-diagnostics-frontend-lifecycle"></a>
 ## POST `/api/lite/diagnostics/frontend-lifecycle`
@@ -665,7 +721,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-diagnostics-frontend-lifecycle-challenge"></a>
 ## GET `/api/lite/diagnostics/frontend-lifecycle/challenge`
@@ -680,6 +738,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-diagnostics-runtime"></a>
 ## GET `/api/lite/diagnostics/runtime`
@@ -694,6 +753,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-diagnostics-runtime-full"></a>
 ## GET `/api/lite/diagnostics/runtime/full`
@@ -708,6 +768,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-events"></a>
 ## GET `/api/lite/events`
@@ -721,7 +782,8 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 200 | Successful Response | application/json: `object` |
+| 200 | Server-Sent Events stream. | text/event-stream: `string` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-fleet"></a>
 ## GET `/api/lite/fleet`
@@ -736,6 +798,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-fleet-add-device"></a>
 ## POST `/api/lite/fleet/add-device`
@@ -756,7 +819,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-fleet-agent-bootstrap-blocked"></a>
 ## POST `/api/lite/fleet/agent/bootstrap-blocked`
@@ -777,7 +842,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-fleet-agent-bootstrap-env"></a>
 ## POST `/api/lite/fleet/agent/bootstrap.env`
@@ -798,7 +865,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-fleet-agent-bootstrap-sh"></a>
 ## GET `/api/lite/fleet/agent/bootstrap.sh`
@@ -819,8 +888,12 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 200 | Successful Response | application/json: `object` |
+| 200 | Token-gated Pocket Lab Lite bootstrap shell script. | text/x-shellscript: `string` |
+| 400 | Bootstrap parameters or invite token are missing or invalid. | application/json: `PocketLabApiError` |
+| 403 | The invite or bootstrap request is not authorized. | application/json: `PocketLabApiError` |
+| 410 | The invite has expired, was revoked, or was already used. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="put-api-lite-fleet-devices-device-id-display-model"></a>
 ## PUT `/api/lite/fleet/devices/{device_id}/display-model`
@@ -847,7 +920,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-fleet-devices-device-id-recovery-history"></a>
 ## GET `/api/lite/fleet/devices/{device_id}/recovery-history`
@@ -870,7 +945,10 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-fleet-devices-node-id-restart-agent"></a>
 ## POST `/api/lite/fleet/devices/{node_id}/restart-agent`
@@ -897,7 +975,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-fleet-devices-node-id-restart-agent-status"></a>
 ## GET `/api/lite/fleet/devices/{node_id}/restart-agent/status`
@@ -919,7 +999,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-fleet-health-summary"></a>
 ## GET `/api/lite/fleet/health-summary`
@@ -934,6 +1016,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-fleet-invites-latest"></a>
 ## GET `/api/lite/fleet/invites/latest`
@@ -948,6 +1031,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-fleet-invites-invite-id-revoke"></a>
 ## POST `/api/lite/fleet/invites/{invite_id}/revoke`
@@ -974,7 +1058,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-fleet-remove-device"></a>
 ## POST `/api/lite/fleet/remove-device`
@@ -995,7 +1081,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-identity"></a>
 ## GET `/api/lite/identity`
@@ -1010,6 +1098,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-identity-rotate"></a>
 ## POST `/api/lite/identity/rotate`
@@ -1030,7 +1119,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-policy"></a>
 ## GET `/api/lite/policy`
@@ -1045,6 +1136,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-policy-apply"></a>
 ## POST `/api/lite/policy/apply`
@@ -1065,7 +1157,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery"></a>
 ## GET `/api/lite/recovery`
@@ -1080,6 +1174,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-apps"></a>
 ## GET `/api/lite/recovery/apps`
@@ -1094,6 +1189,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-apps-app-id"></a>
 ## GET `/api/lite/recovery/apps/{app_id}`
@@ -1114,7 +1210,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-apps-app-id-backup"></a>
 ## POST `/api/lite/recovery/apps/{app_id}/backup`
@@ -1141,7 +1239,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-apps-app-id-backup-targets"></a>
 ## GET `/api/lite/recovery/apps/{app_id}/backup-targets`
@@ -1162,7 +1262,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-apps-app-id-backup-to-target"></a>
 ## POST `/api/lite/recovery/apps/{app_id}/backup-to-target`
@@ -1189,7 +1291,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-apps-app-id-restore"></a>
 ## POST `/api/lite/recovery/apps/{app_id}/restore`
@@ -1215,8 +1319,10 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
 | 501 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-apps-app-id-restore-preview"></a>
 ## POST `/api/lite/recovery/apps/{app_id}/restore/preview`
@@ -1243,7 +1349,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-backup"></a>
 ## POST `/api/lite/recovery/backup`
@@ -1264,7 +1372,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-backup-targets"></a>
 ## GET `/api/lite/recovery/backup-targets`
@@ -1279,6 +1389,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-backups"></a>
 ## GET `/api/lite/recovery/backups`
@@ -1300,7 +1411,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-backups-backup-id"></a>
 ## GET `/api/lite/recovery/backups/{backup_id}`
@@ -1321,7 +1434,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-backups-backup-id-verify"></a>
 ## POST `/api/lite/recovery/backups/{backup_id}/verify`
@@ -1348,7 +1463,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-database"></a>
 ## GET `/api/lite/recovery/database`
@@ -1363,6 +1480,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-database-backup"></a>
 ## POST `/api/lite/recovery/database/backup`
@@ -1383,7 +1501,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-database-backups"></a>
 ## GET `/api/lite/recovery/database/backups`
@@ -1398,6 +1518,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-database-backups-backup-id"></a>
 ## GET `/api/lite/recovery/database/backups/{backup_id}`
@@ -1418,7 +1539,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-database-backups-backup-id-preview"></a>
 ## POST `/api/lite/recovery/database/backups/{backup_id}/preview`
@@ -1439,7 +1562,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-database-backups-backup-id-restore"></a>
 ## POST `/api/lite/recovery/database/backups/{backup_id}/restore`
@@ -1466,7 +1591,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-database-backups-backup-id-verify"></a>
 ## POST `/api/lite/recovery/database/backups/{backup_id}/verify`
@@ -1487,7 +1614,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-database-restore-previews-preview-id"></a>
 ## GET `/api/lite/recovery/database/restore/previews/{preview_id}`
@@ -1508,7 +1637,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-database-restore-restore-id"></a>
 ## GET `/api/lite/recovery/database/restore/{restore_id}`
@@ -1529,7 +1660,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-details"></a>
 ## GET `/api/lite/recovery/details`
@@ -1544,6 +1677,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-maintenance"></a>
 ## GET `/api/lite/recovery/maintenance`
@@ -1558,6 +1692,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-maintenance-checkpoint"></a>
 ## POST `/api/lite/recovery/maintenance/checkpoint`
@@ -1578,7 +1713,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-maintenance-retention"></a>
 ## POST `/api/lite/recovery/maintenance/retention`
@@ -1599,7 +1736,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-operations"></a>
 ## GET `/api/lite/recovery/operations`
@@ -1621,7 +1760,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-receipts-backup-id"></a>
 ## GET `/api/lite/recovery/receipts/{backup_id}`
@@ -1642,7 +1783,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-restore"></a>
 ## POST `/api/lite/recovery/restore`
@@ -1663,7 +1806,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-restore-checkpoints-checkpoint-id"></a>
 ## GET `/api/lite/recovery/restore/checkpoints/{checkpoint_id}`
@@ -1684,7 +1829,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-recovery-restore-preview"></a>
 ## POST `/api/lite/recovery/restore/preview`
@@ -1705,7 +1852,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-restore-previews-preview-id"></a>
 ## GET `/api/lite/recovery/restore/previews/{preview_id}`
@@ -1726,7 +1875,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-restore-runs-restore-id"></a>
 ## GET `/api/lite/recovery/restore/runs/{restore_id}`
@@ -1747,7 +1898,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-recovery-summary"></a>
 ## GET `/api/lite/recovery/summary`
@@ -1762,6 +1915,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-release"></a>
 ## GET `/api/lite/release`
@@ -1776,6 +1930,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-release-apply"></a>
 ## POST `/api/lite/release/apply`
@@ -1790,6 +1945,8 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-release-check"></a>
 ## POST `/api/lite/release/check`
@@ -1804,6 +1961,8 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-remote-access-readiness"></a>
 ## GET `/api/lite/remote-access/readiness`
@@ -1818,6 +1977,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-revisions"></a>
 ## GET `/api/lite/revisions`
@@ -1832,6 +1992,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security"></a>
 ## GET `/api/lite/security`
@@ -1846,6 +2007,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-apps"></a>
 ## GET `/api/lite/security/apps`
@@ -1860,6 +2022,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-apps-app-id"></a>
 ## GET `/api/lite/security/apps/{app_id}`
@@ -1880,7 +2043,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-security-apps-app-id-check"></a>
 ## POST `/api/lite/security/apps/{app_id}/check`
@@ -1907,7 +2072,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-security-check"></a>
 ## POST `/api/lite/security/check`
@@ -1928,7 +2095,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-details-run-id"></a>
 ## GET `/api/lite/security/details/{run_id}`
@@ -1949,7 +2118,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-events"></a>
 ## GET `/api/lite/security/events`
@@ -1963,7 +2134,8 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 
 | Status | Description | Schema |
 | --- | --- | --- |
-| 200 | Successful Response | application/json: `object` |
+| 200 | Server-Sent Events stream. | text/event-stream: `string` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-evidence-run-id"></a>
 ## GET `/api/lite/security/evidence/{run_id}`
@@ -1984,7 +2156,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-evidence-run-id-summary"></a>
 ## GET `/api/lite/security/evidence/{run_id}/summary`
@@ -2005,7 +2179,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-freshness"></a>
 ## GET `/api/lite/security/freshness`
@@ -2020,6 +2196,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-history"></a>
 ## GET `/api/lite/security/history`
@@ -2034,14 +2211,16 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Name | Location | Required | Schema |
 | --- | --- | --- | --- |
 | limit | query | no | `integer` |
-| cursor | query | no | anyOf(`string`, `null`) |
+| cursor | query | no | `string` |
 
 ### Responses
 
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 400 | The supplied opaque cursor is invalid or stale. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-profiles-profile"></a>
 ## GET `/api/lite/security/profiles/{profile}`
@@ -2056,14 +2235,16 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Name | Location | Required | Schema |
 | --- | --- | --- | --- |
 | profile | path | yes | `string` |
-| app_id | query | no | anyOf(`string`, `null`) |
+| app_id | query | no | `string` |
 
 ### Responses
 
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-progress"></a>
 ## GET `/api/lite/security/progress`
@@ -2078,6 +2259,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-runs-run-id"></a>
 ## GET `/api/lite/security/runs/{run_id}`
@@ -2098,7 +2280,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 404 | The requested resource is not available. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="post-api-lite-security-scan"></a>
 ## POST `/api/lite/security/scan`
@@ -2119,7 +2303,9 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 202 | Successful Response | application/json: `object` |
+| 409 | The requested state transition conflicts with current durable state. | application/json: `PocketLabApiError` |
 | 422 | Validation Error | application/json: `HTTPValidationError` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-security-summary"></a>
 ## GET `/api/lite/security/summary`
@@ -2134,6 +2320,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-status"></a>
 ## GET `/api/lite/status`
@@ -2148,6 +2335,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-activity-summary"></a>
 ## GET `/api/lite/system/activity-summary`
@@ -2162,6 +2350,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-agent"></a>
 ## GET `/api/lite/system/agent`
@@ -2176,6 +2365,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-health"></a>
 ## GET `/api/lite/system/health`
@@ -2190,6 +2380,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-nats-readiness"></a>
 ## GET `/api/lite/system/nats-readiness`
@@ -2204,6 +2395,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-processes"></a>
 ## GET `/api/lite/system/processes`
@@ -2218,6 +2410,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-sqlite-health"></a>
 ## GET `/api/lite/system/sqlite-health`
@@ -2232,6 +2425,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-storage-pressure"></a>
 ## GET `/api/lite/system/storage-pressure`
@@ -2246,6 +2440,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-supervisor"></a>
 ## GET `/api/lite/system/supervisor`
@@ -2260,6 +2455,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-api-lite-system-telemetry-thresholds"></a>
 ## GET `/api/lite/system/telemetry-thresholds`
@@ -2274,6 +2470,7 @@ FastAPI OpenAPI is authoritative. The browser remains a same-origin client and n
 | Status | Description | Schema |
 | --- | --- | --- |
 | 200 | Successful Response | application/json: `object` |
+| 503 | Projection warming, maintenance, workload admission, or a temporarily unavailable local dependency. | application/json: `PocketLabApiError` |
 
 <a id="get-health"></a>
 ## GET `/health`

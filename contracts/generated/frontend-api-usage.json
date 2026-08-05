@@ -2910,7 +2910,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "a4d4867d39c48abef186e9c6f87cfeaf50645cc5ce5f87747fa66f9674b728f9",
+    "aggregate_fingerprint": "723a3ddcbcb1bc459496d94c8ff1c59bdc77f56238ec571c4cc461d40fdab276",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2920,7 +2920,7 @@
     "schema_revision": 1,
     "source_commit": "uncommitted",
     "source_fingerprints": {
-      "contracts/generated/lite-openapi.json": "6854b6b4a7afd5d579568891473c4a6b6189f0041eddc5c87015ee1e715e4bf3",
+      "contracts/generated/lite-openapi.json": "e28bfb92b9ea74088a41cf7e15180defca1f8ff6c6d0ec22db5c707b7d134f19",
       "contracts/metadata/documentation-platform.json": "f22eb83ff32faf5165be030a08a75743c835e7545bd1d5cab493a5acf10df926",
       "scripts/docs/lite/generate_platform_catalogs.py": "63aa1c284909ab8a22adcb39c6f2662505961a4b1fe2d7337c72ae573292eeb0",
       "src/lib/liteApi.js": "e9c651772f399dc73fdb418a4531a230e49b02a3f8616223c7fad1f8da0533dd",

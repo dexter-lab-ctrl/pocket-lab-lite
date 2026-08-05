@@ -14,7 +14,7 @@ def catalog(request: Request) -> list[dict]:
     return deps.core.build_catalog_view()
 
 
-@router.get("/api/catalog/refresh")
+@router.get("/api/catalog/refresh", include_in_schema=False)
 def catalog_refresh_get(request: Request) -> dict:
     deps.require_auth(request)
     from fastapi import HTTPException
