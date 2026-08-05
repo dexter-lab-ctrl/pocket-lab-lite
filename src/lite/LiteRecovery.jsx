@@ -89,6 +89,9 @@ export default function RecoveryScreen() {
     refreshing,
     backendReachable,
     savedStateOnly,
+    backendDegraded: summaryBackendDegraded,
+    degradedReason: summaryDegradedReason,
+    dataSource: summaryDataSource,
   } = useLiteResource(liteApi.recoverySummary, [], {
     pollingMode: 'slow',
     isLive: recoveryPollingIsLive,
@@ -127,7 +130,9 @@ export default function RecoveryScreen() {
   const serviceRestart = details?.last_restore?.service_restart || {};
   const healthValidation = details?.last_restore?.health_validation || {};
   const restoreSucceeded = ['succeeded', 'succeeded_with_warnings'].includes(String(lastRestore?.status || '').toLowerCase());
-  const projectionStale = data?.read_degraded === true
+  const projectionStale = summaryBackendDegraded === true
+    || summaryDegradedReason === 'projection_too_old'
+    || data?.read_degraded === true
     || data?.degraded_reason === 'projection_too_old'
     || details?.read_degraded === true
     || details?.degraded_reason === 'projection_too_old';
@@ -578,7 +583,7 @@ export default function RecoveryScreen() {
         <StateSurface
           tone="degraded"
           title="Recovery information is old"
-          description={`Saved recovery details were last updated ${data?.updated_at ? formatLiteTime(data.updated_at) : 'earlier than expected'}. Refresh before making changes.`}
+          description={`Saved recovery details were last updated ${data?.updated_at ? formatLiteTime(data.updated_at) : 'earlier than expected'}. Refresh before making changes.${summaryDataSource ? ` Source: ${summaryDataSource}.` : ''}`}
           className="mb-5"
           data-testid="recovery-projection-stale"
         />

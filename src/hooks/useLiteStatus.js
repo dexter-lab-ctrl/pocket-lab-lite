@@ -81,5 +81,9 @@ export function useLiteResource(loader, dependencies = [], options = {}) {
     backendReachable: query.backendReachable,
     lastUpdatedLabel: query.lastUpdatedLabel,
     isExpired: query.isExpired,
+    backendDegraded: query.backendDegraded,
+    degradedReason: query.degradedReason,
+    dataSource: query.dataSource,
+    retryAfterMs: query.retryAfterMs,
   };
 }
