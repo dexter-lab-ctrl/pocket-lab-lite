@@ -130,6 +130,10 @@ def load_runtime_baseline() -> dict[str, Any]:
     if baseline.get("schema_version") != "2.0.0":
         raise ValueError("unsupported runtime verification baseline schema")
     validate_json(baseline, ROOT / "schemas" / "parity" / "parity-runtime-baseline.schema.json")
+    for item in domains:
+        summary = item.get("comparison_summary")
+        if isinstance(summary, dict):
+            summary.setdefault("not_applicable", 0)
     expected = {item["id"] for item in load_model()["domains"]}
     observed = {item.get("id") for item in domains}
     if observed != expected:

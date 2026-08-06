@@ -130,3 +130,56 @@ def test_empty_history_remains_non_authorizing(monkeypatch: pytest.MonkeyPatch, 
     assert snapshot["latest_restore_preview"] is None
     assert snapshot["restore_history"]["total"] == 0
     assert module.reconcile_database_restore_projection()["status"] == "no_history"
+
+
+
+def test_control_plane_projection_preserves_reconciled_restore_pointers() -> None:
+    source = Path(
+        "pocket-lab-final-structure/runtime/api_fastapi/"
+        "services/lite_control_plane_store.py"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "latest_preview_id=COALESCE("
+        "excluded.latest_preview_id, "
+        "recovery_current_state.latest_preview_id"
+        ")"
+    ) in source
+
+    assert (
+        "latest_restore_id=COALESCE("
+        "excluded.latest_restore_id, "
+        "recovery_current_state.latest_restore_id"
+        ")"
+    ) in source
+
+    assert (
+        "recovery_current_state.latest_preview_id "
+        "IS NOT COALESCE("
+        "excluded.latest_preview_id, "
+        "recovery_current_state.latest_preview_id"
+        ")"
+    ) in source
+
+    assert (
+        "recovery_current_state.latest_restore_id "
+        "IS NOT COALESCE("
+        "excluded.latest_restore_id, "
+        "recovery_current_state.latest_restore_id"
+        ")"
+    ) in source
+
+
+def test_recovery_ui_reads_authoritative_database_projection() -> None:
+    source = Path(
+        "src/lite/LiteRecovery.jsx"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "useLiteResource(liteApi.databaseRecovery"
+        in source
+    )
+    assert "data: databaseProtectionData" in source
+    assert "...(databaseProtectionData || {})" in source
+    assert "refreshDatabaseProtection()" in source
+    assert "refresh={refreshRecovery}" in source

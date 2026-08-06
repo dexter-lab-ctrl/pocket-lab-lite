@@ -4,7 +4,7 @@
       "api_routes": [
         "/api/lite/policy"
       ],
-      "fingerprint": "c4fd5b04cf14631a289dd9171cd8de0d30bff116f79fdc284f8bd4720f45e97a",
+      "fingerprint": "7a3131e58ad4854b36ece5cc03f3ec27763edac5d5596b8d593856a573dcf410",
       "id": "rules",
       "selectors": [
         "direct-render"

@@ -541,10 +541,10 @@ def test_compare_command_end_to_end_reports_partial_domains_truthfully(tmp_path)
 
     assert (
         domains["recovery"]["implementation_status"]
-        == "partial"
+        == "implemented"
     )
-    assert domains["recovery"]["status"] == "partial"
-    assert domains["recovery"]["runtime_parity"] == "partial"
+    assert domains["recovery"]["status"] == "verified"
+    assert domains["recovery"]["runtime_parity"] == "verified-with-mapped-presentation"
     jsonschema.Draft202012Validator(
         json.loads(CMP_SCHEMA.read_text())
     ).validate(comparison)
@@ -565,7 +565,6 @@ def test_compare_command_end_to_end_reports_partial_domains_truthfully(tmp_path)
     for domain_id in {
         "identity",
         "rules",
-        "recovery",
     }:
         assert domains[domain_id]["runtime_parity"] == "partial"
 
@@ -616,5 +615,11 @@ def test_generated_all_tab_docs_and_contracts_exist():
         assert (ROOT / "contracts" / "generated" / "parity" / f"{name}.json").exists()
     matrix = (ROOT / "docs" / "generated" / "development" / "validation" / "parity" / "runtime-verification-matrix.md").read_text(encoding="utf-8")
     assert all(label in matrix for label in ("Home", "Apps", "Devices", "Security", "Identity", "Rules", "Backup & Restore"))
-    assert "coverage-only" in matrix
+    recovery_row = next(
+        line
+        for line in matrix.splitlines()
+        if line.startswith("| Backup & Restore |")
+    )
+    assert "| verified | verified | verified |" in recovery_row
+    assert "| partial | ready-with-accepted-limitations |" in recovery_row
     subprocess.run(["python3", str(GENERATOR), "check"], cwd=ROOT, check=True)

@@ -6,7 +6,7 @@
         "/api/lite/security/profiles/quick",
         "/api/lite/security/history?limit=20"
       ],
-      "fingerprint": "59b3f238b157bd31866915705a0ac930db8a9479496dc5185f753a7659401e76",
+      "fingerprint": "8263f3803f539baffeff21341a55d01cefaa1f62188923be804a126604bd7c28",
       "id": "security",
       "selectors": [
         "selectSecuritySummaryView",

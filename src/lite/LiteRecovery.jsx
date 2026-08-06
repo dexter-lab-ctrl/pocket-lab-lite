@@ -114,6 +114,35 @@ export default function RecoveryScreen() {
     snapshotSelect: selectRecoveryScreenView,
   });
 
+  const {
+    data: databaseProtectionData,
+    refresh: refreshDatabaseProtection,
+  } = useLiteResource(liteApi.databaseRecovery, [], {
+    pollingMode: 'slow',
+    staleTime: 45_000,
+  });
+
+  const refreshRecovery = useCallback(
+    async () => {
+      const refreshes = [
+        refreshSummary(),
+        refreshDatabaseProtection(),
+      ];
+
+      if (detailsNeeded) {
+        refreshes.push(refreshDetails());
+      }
+
+      await Promise.all(refreshes);
+    },
+    [
+      detailsNeeded,
+      refreshDatabaseProtection,
+      refreshDetails,
+      refreshSummary,
+    ],
+  );
+
   const data = summaryData || {};
   const details = detailsData || {};
   const latestBackup = mergeOptional(
@@ -145,9 +174,32 @@ export default function RecoveryScreen() {
   const databaseProtection = {
     ...(details?.database_protection || {}),
     ...(data?.database_protection || {}),
-    latest_backup: mergeOptional(details?.database_protection?.latest_backup, data?.database_protection?.latest_backup),
-    latest_restore_preview: mergeOptional(details?.database_protection?.latest_restore_preview, data?.database_protection?.latest_restore_preview),
-    last_restore: mergeOptional(details?.database_protection?.last_restore, data?.database_protection?.last_restore),
+    ...(databaseProtectionData || {}),
+    latest_backup: mergeOptional(
+      details?.database_protection?.latest_backup,
+      data?.database_protection?.latest_backup,
+      databaseProtectionData?.latest_backup,
+    ),
+    latest_restore_preview: mergeOptional(
+      details?.database_protection?.latest_restore_preview,
+      data?.database_protection?.latest_restore_preview,
+      databaseProtectionData?.latest_restore_preview,
+    ),
+    last_restore: mergeOptional(
+      details?.database_protection?.last_restore,
+      data?.database_protection?.last_restore,
+      databaseProtectionData?.last_restore,
+    ),
+    restore_history: mergeOptional(
+      details?.database_protection?.restore_history,
+      data?.database_protection?.restore_history,
+      databaseProtectionData?.restore_history,
+    ),
+    projection_reconciliation: mergeOptional(
+      details?.database_protection?.projection_reconciliation,
+      data?.database_protection?.projection_reconciliation,
+      databaseProtectionData?.projection_reconciliation,
+    ),
   };
   const latestDatabaseBackup = databaseProtection?.latest_backup || null;
   const latestDatabasePreview = databaseProtection?.latest_restore_preview || null;
@@ -527,7 +579,7 @@ export default function RecoveryScreen() {
         eyebrow="Recovery"
         title="Backup & Restore"
         description="Keep verified backups ready, review restore safety, and protect Pocket Lab data before anything changes."
-        actions={<LiteRefreshButton scope="recovery" refresh={refreshSummary} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
+        actions={<LiteRefreshButton scope="recovery" refresh={refreshRecovery} cacheStatus={cacheStatus} error={error} refreshing={refreshing} />}
       />
 
       <div className="lite-recovery-native-announcer" role="status" aria-live="polite" aria-atomic="true">

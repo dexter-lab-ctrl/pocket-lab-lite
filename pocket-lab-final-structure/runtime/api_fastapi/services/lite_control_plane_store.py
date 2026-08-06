@@ -5652,8 +5652,8 @@ class ControlPlaneProjectionStore:
                     status=excluded.status,
                     active_operation_id=excluded.active_operation_id,
                     latest_backup_id=excluded.latest_backup_id,
-                    latest_preview_id=excluded.latest_preview_id,
-                    latest_restore_id=excluded.latest_restore_id,
+                    latest_preview_id=COALESCE(excluded.latest_preview_id, recovery_current_state.latest_preview_id),
+                    latest_restore_id=COALESCE(excluded.latest_restore_id, recovery_current_state.latest_restore_id),
                     maintenance_status=excluded.maintenance_status,
                     updated_at=excluded.updated_at,
                     updated_at_epoch_ms=excluded.updated_at_epoch_ms,
@@ -5661,8 +5661,8 @@ class ControlPlaneProjectionStore:
                 WHERE recovery_current_state.status IS NOT excluded.status
                    OR recovery_current_state.active_operation_id IS NOT excluded.active_operation_id
                    OR recovery_current_state.latest_backup_id IS NOT excluded.latest_backup_id
-                   OR recovery_current_state.latest_preview_id IS NOT excluded.latest_preview_id
-                   OR recovery_current_state.latest_restore_id IS NOT excluded.latest_restore_id
+                   OR recovery_current_state.latest_preview_id IS NOT COALESCE(excluded.latest_preview_id, recovery_current_state.latest_preview_id)
+                   OR recovery_current_state.latest_restore_id IS NOT COALESCE(excluded.latest_restore_id, recovery_current_state.latest_restore_id)
                    OR recovery_current_state.maintenance_status IS NOT excluded.maintenance_status
                    OR recovery_current_state.summary IS NOT excluded.summary
                 """,
