@@ -6,7 +6,7 @@
         "/api/lite/apps/photoprism/actions",
         "/api/lite/apps/lifecycle"
       ],
-      "fingerprint": "4f6e1bf8e18554ad79eff14c081b8513c819815f4240d595f8028d59d39fa184",
+      "fingerprint": "ef4409cb63a5a90cb32d45b16f598ec3a6bdde51cb8c72da256a1c40cfe7cee9",
       "id": "apps",
       "selectors": [
         "selectLiteCatalogAppSummary",
@@ -24,7 +24,7 @@
   ],
   "kind": "domain-fingerprint",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "semantic_fingerprint": "44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c",
   "source_revision": "repository-source",
   "status": "generated"
 }

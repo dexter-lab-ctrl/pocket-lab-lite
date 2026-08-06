@@ -197,3 +197,15 @@ tasks:
         LITE_API_DIRECT_URL="{{.LITE_PARITY_API_URL}}"
         LITE_PARITY_OPENAPI_URL="{{.LITE_PARITY_API_URL}}/openapi.json"
         bash scripts/test/parity/run_schemathesis_discovery.sh
+
+  lite:docs:parity:local:
+    desc: Render the latest sanitized local runtime comparison without promoting it
+    cmds:
+      - .venv/bin/python scripts/docs/parity/render_local_runtime_comparison.py generate
+
+  lite:docs:parity:local:check:
+    desc: Check the latest local runtime comparison report against current local evidence
+    cmds:
+      - .venv/bin/python scripts/docs/parity/render_local_runtime_comparison.py check
+      - PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest -q tests/parity/test_local_runtime_report.py
+      - node --test tests/dev/runtime-evidence-sanitizer.test.mjs

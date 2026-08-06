@@ -53,8 +53,9 @@ def test_s8_migration_and_database_package_contract(tmp_path):
     from api_fastapi.db.migrations import apply_migrations, current_schema_version
     from api_fastapi.services import lite_database_recovery
 
-    assert apply_migrations() == [1, 2, 3, 4, 5, 6]
-    assert current_schema_version() == 6
+    applied = apply_migrations()
+    assert applied[:6] == [1, 2, 3, 4, 5, 6]
+    assert current_schema_version() >= 6
     _terminal_run(_repository(), "security-s8-backup-a", completed_at=_iso_days_ago(2))
     result = lite_database_recovery.create_database_backup({"command_id": "db-backup-s8-a"})
 
@@ -530,7 +531,14 @@ def test_s8_architecture_and_ui_contracts_are_preserved():
     router = Path("pocket-lab-final-structure/runtime/api_fastapi/routers/lite.py").read_text(encoding="utf-8")
     worker = Path("pocket-lab-final-structure/runtime/workers/pocketlab_worker.py").read_text(encoding="utf-8")
     supervisor = Path("pocket-lab-final-structure/runtime/supervisors/pocketlab_core_supervisor.py").read_text(encoding="utf-8")
-    recovery_ui = Path("src/lite/LiteRecovery.jsx").read_text(encoding="utf-8")
+    recovery_ui = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            Path("src/lite/LiteRecovery.jsx"),
+            Path("src/lite/recovery/RecoveryManageSheetLazy.jsx"),
+            Path("src/lite/recovery/RecoveryDatabaseDetailsLazy.jsx"),
+        )
+    )
     api = Path("src/lib/liteApi.js").read_text(encoding="utf-8")
     maintenance = Path(
         "pocket-lab-final-structure/runtime/api_fastapi/services/lite_security_maintenance.py"

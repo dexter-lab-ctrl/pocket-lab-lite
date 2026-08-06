@@ -928,7 +928,7 @@ def _record_restore_result(result: dict[str, Any], manifest: dict[str, Any]) -> 
             ),
         )
         conn.commit()
-
+    reconcile_database_restore_projection()
 
 
 
@@ -1593,6 +1593,164 @@ def get_database_restore_run(restore_id: str) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
+def _iso_epoch_ms(value: Any) -> int:
+    text = str(value or "").strip()
+    if not text:
+        return 0
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return 0
+    return max(0, int(parsed.timestamp() * 1000))
+
+
+def _durable_database_restore_history() -> dict[str, Any]:
+    latest: dict[str, Any] | None = None
+    counts = {
+        "total": 0,
+        "completed": 0,
+        "incomplete": 0,
+        "preview_references": 0,
+    }
+    current: dict[str, Any] = {}
+    try:
+        with sqlite3.connect(f"file:{database_path()}?mode=ro", uri=True) as conn:
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(
+                """
+                SELECT
+                    restore_id, backup_id, preview_id, state, requested_at,
+                    completed_at, summary, sanitized
+                FROM security_database_restores
+                WHERE sanitized = 1
+                ORDER BY
+                    COALESCE(completed_at, requested_at) DESC,
+                    restore_id DESC
+                LIMIT 1
+                """
+            ).fetchone()
+            if row is not None:
+                latest = dict(row)
+            aggregate = conn.execute(
+                """
+                SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN state = 'completed' AND completed_at IS NOT NULL THEN 1 ELSE 0 END) AS completed,
+                    SUM(CASE WHEN completed_at IS NULL THEN 1 ELSE 0 END) AS incomplete,
+                    SUM(CASE WHEN preview_id IS NOT NULL AND trim(preview_id) <> '' THEN 1 ELSE 0 END) AS preview_references
+                FROM security_database_restores
+                WHERE sanitized = 1
+                """
+            ).fetchone()
+            if aggregate is not None:
+                counts = {key: int(aggregate[key] or 0) for key in counts}
+            state = conn.execute(
+                """
+                SELECT latest_preview_id, latest_restore_id, source_revision, updated_at
+                FROM recovery_current_state
+                WHERE singleton_id = 1
+                LIMIT 1
+                """
+            ).fetchone()
+            if state is not None:
+                current = dict(state)
+    except sqlite3.Error:
+        return {
+            "last_restore": None,
+            "latest_restore_preview": None,
+            "restore_history": counts,
+            "projection_reconciliation": {
+                "status": "unavailable",
+                "durable_history_newer": False,
+                "sanitized": True,
+            },
+        }
+
+    if latest is None:
+        return {
+            "last_restore": None,
+            "latest_restore_preview": None,
+            "restore_history": counts,
+            "projection_reconciliation": {
+                "status": "current",
+                "durable_history_newer": False,
+                "sanitized": True,
+            },
+        }
+
+    completed_at = str(latest.get("completed_at") or "")
+    requested_at = str(latest.get("requested_at") or "")
+    restore_id = str(latest.get("restore_id") or "")
+    preview_id = str(latest.get("preview_id") or "")
+    durable_timestamp = completed_at or requested_at
+    durable_history_newer = (
+        restore_id != str(current.get("latest_restore_id") or "")
+        or preview_id != str(current.get("latest_preview_id") or "")
+        or _iso_epoch_ms(durable_timestamp) > _iso_epoch_ms(current.get("updated_at"))
+    )
+    state = str(latest.get("state") or "unknown")
+    return {
+        "last_restore": {
+            "restore_id": restore_id,
+            "backup_id": str(latest.get("backup_id") or ""),
+            "preview_id": preview_id,
+            "status": state,
+            "state": state,
+            "requested_at": requested_at,
+            "completed_at": completed_at,
+            "summary": str(latest.get("summary") or "")[:240],
+            "sanitized": True,
+        },
+        "latest_restore_preview": ({
+            "preview_id": preview_id,
+            "backup_id": str(latest.get("backup_id") or ""),
+            "status": "historical",
+            "restore_allowed": False,
+            "requires_confirmation": True,
+            "summary": "A previous restore preview was recorded. Create a fresh preview before another restore.",
+            "sanitized": True,
+        } if preview_id else None),
+        "restore_history": counts,
+        "projection_reconciliation": {
+            "status": "pending" if durable_history_newer else "reconciled",
+            "durable_history_newer": durable_history_newer,
+            "latest_restore_id": restore_id,
+            "latest_preview_id": preview_id,
+            "sanitized": True,
+        },
+    }
+
+
+def reconcile_database_restore_projection() -> dict[str, Any]:
+    snapshot = _durable_database_restore_history()
+    restore = snapshot.get("last_restore") or {}
+    restore_id = str(restore.get("restore_id") or "")
+    if not restore_id:
+        return {"status": "no_history", "changed": False, "sanitized": True}
+    preview_id = str(restore.get("preview_id") or "")
+    updated_at = str(restore.get("completed_at") or restore.get("requested_at") or _utc())
+    with sqlite3.connect(str(database_path())) as conn:
+        row = conn.execute(
+            "SELECT latest_restore_id, latest_preview_id FROM recovery_current_state WHERE singleton_id = 1"
+        ).fetchone()
+        if row is None:
+            return {"status": "missing_projection", "changed": False, "sanitized": True}
+        if str(row[0] or "") == restore_id and str(row[1] or "") == preview_id:
+            return {"status": "reconciled", "changed": False, "sanitized": True}
+        conn.execute(
+            """
+            UPDATE recovery_current_state
+            SET latest_restore_id = ?, latest_preview_id = ?,
+                source_revision = source_revision + 1,
+                updated_at = ?, updated_at_epoch_ms = ?
+            WHERE singleton_id = 1
+            """,
+            (restore_id, preview_id or None, updated_at, _iso_epoch_ms(updated_at)),
+        )
+        conn.commit()
+    return {"status": "reconciled", "changed": True, "sanitized": True}
+
+
 def _latest_database_restore_preview() -> dict[str, Any] | None:
     previews = sorted(
         (database_backup_root() / "restore-previews").glob("*.json"),
@@ -1618,6 +1776,11 @@ def _database_recovery_base(*, backup_limit: int) -> dict[str, Any]:
     backups = list_database_backups(limit=backup_limit)
     latest_preview = _latest_database_restore_preview()
     latest_restore, journals = _latest_database_restore()
+    durable = _durable_database_restore_history()
+    if durable.get("last_restore"):
+        latest_restore = durable["last_restore"]
+    if durable.get("latest_restore_preview"):
+        latest_preview = durable["latest_restore_preview"]
     guard = restore_txn.guard_status()
     maintenance_state = maintenance.maintenance_state()
     if guard.get("rollback_failed"):
@@ -1636,6 +1799,8 @@ def _database_recovery_base(*, backup_limit: int) -> dict[str, Any]:
         "backup_history": backups.get("backups"),
         "latest_restore_preview": latest_preview,
         "last_restore": latest_restore,
+        "restore_history": durable.get("restore_history") or {},
+        "projection_reconciliation": durable.get("projection_reconciliation") or {},
         "active_restore": restore_txn.public_journal_view(journals[0]) if journals and journals[0].get("phase") not in restore_txn.TERMINAL_PHASES else None,
         "restore_guard": guard,
         "maintenance": maintenance_state,
@@ -1675,7 +1840,7 @@ def database_recovery_summary() -> dict[str, Any]:
     ))
     payload["last_restore"] = _compact_database_recovery_item(payload.get("last_restore"), (
         "restore_id", "backup_id", "preview_id", "status", "state", "phase",
-        "terminal_status", "completed_at", "updated_at", "rollback_available",
+        "terminal_status", "requested_at", "completed_at", "updated_at", "rollback_available",
         "rollback_status", "failure_category", "api_worker_restart_allowed", "summary", "sanitized",
     ))
     payload["active_restore"] = _compact_database_recovery_item(payload.get("active_restore"), (

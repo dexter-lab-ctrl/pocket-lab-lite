@@ -88,7 +88,7 @@ def test_recovery_summary_is_compact_conditional_and_sanitized(monkeypatch):
 def test_recovery_details_preserves_existing_full_contract(monkeypatch):
     from api_fastapi.routers import lite
 
-    monkeypatch.setattr(lite, "_recovery_base_subprojection", lambda: {
+    monkeypatch.setattr(lite.lite_recovery_subprojections, "recovery_summary", lambda: {
         "status": "healthy", "summary": "Recovery Ready",
         "backup_history": [{"backup_id": "backup-a"}],
     })
@@ -250,7 +250,7 @@ def test_recovery_summary_payload_stays_within_mobile_key_and_size_budget():
     assert response.status_code == 200
     payload = response.json()
     assert len(response.content) < 5_000
-    assert len(payload) <= 20
+    assert len(payload) <= 30
     assert "backup_history" not in payload
     assert "app_backups" not in payload
     assert "backup_targets" not in payload

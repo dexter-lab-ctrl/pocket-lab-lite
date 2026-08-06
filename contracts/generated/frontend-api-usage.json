@@ -2910,7 +2910,7 @@
     ]
   },
   "metadata": {
-    "aggregate_fingerprint": "cd247934e59198488f69be0cdc66cec991afbbc44eff675aa1844cb4301ee0c9",
+    "aggregate_fingerprint": "ed8e83a14b78f558ae3126c35805a8a8652dec9e7188661c8d1c3a5ea4b04b6d",
     "baseline_identity": null,
     "generated": true,
     "generated_at": "uncommitted",
@@ -2937,7 +2937,7 @@
       "src/lite/LiteMotion.jsx": "8dc0089c7a175701b33e96afac566efbde31c6eda1202ef5ed0f00ff968e72ba",
       "src/lite/LiteNativeInstallSurface.jsx": "27366c82bfe0a8e99ddfc87f62fb9960f72d8a50eb48f5dbb2c89a94a1fcae61",
       "src/lite/LiteOverlay.jsx": "1692ab05c81d6ea6cbecc73c5cb34a9f40e656aea70ebad78894fe3e73a8ec5f",
-      "src/lite/LiteRecovery.jsx": "31bf8c1eb87c597189ea95cd13c17403a504b78cd27173a19892c5d1be90720b",
+      "src/lite/LiteRecovery.jsx": "c6474f7b97a626415a7696ac2cca951c0c586bf498faf6fcfcead1eb63d59e00",
       "src/lite/LiteRecovery.stories.jsx": "0019e8e6110fda92080db12232466d6f633116caaa95efa2a534002b29e5506b",
       "src/lite/LiteRecoveryParity.stories.jsx": "1da2168aaf7ac032380442e6bdd4967506a3a573afb2de3411d3a9e2495f28e1",
       "src/lite/LiteReleaseUpdateCard.jsx": "8c91536d063d7851b62c85874d830d8dacafe586d02857e7f863128b27a63ed4",

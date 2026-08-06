@@ -7,7 +7,7 @@ audience: development
 source_commit: uncommitted
 generated_at: uncommitted
 generator: scripts/docs/lite/generate_docs.py
-source_fingerprint: 76013955b51b3b6474f0e6773d2336affe52bd34915ca3d98f329e0e3c76a64a
+source_fingerprint: 8d0decd2778c55c8a5cf35a3dcf9660b1810178d0e7a5a49442010b0b8c0d9b8
 schema_revision: 1
 validation_status: generated
 ---
@@ -62,6 +62,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:openapi`
 - `lite:docs:parity:check`
 - `lite:docs:parity:generate`
+- `lite:docs:parity:local`
+- `lite:docs:parity:local:check`
 - `lite:docs:platform:check`
 - `lite:docs:platform:generate`
 - `lite:docs:production:check`
@@ -84,6 +86,8 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:docs:validation`
 - `lite:evidence:parity:check`
 - `lite:evidence:parity:generate`
+- `lite:evidence:runtime:check`
+- `lite:evidence:runtime:promote`
 - `lite:har:inspect`
 - `lite:har:sanitize`
 - `lite:parity:api`
@@ -93,8 +97,11 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:parity:contracts:generate`
 - `lite:parity:fixtures:check`
 - `lite:parity:fixtures:generate`
+- `lite:parity:model:check`
 - `lite:parity:playwright:live`
 - `lite:parity:playwright:mocked`
+- `lite:parity:runtime:capture`
+- `lite:parity:runtime:compare`
 - `lite:parity:selectors`
 - `lite:parity:storybook`
 - `lite:parity:termux`
@@ -171,10 +178,12 @@ The root Taskfile uses included Lite task files and separates quick, full, relea
 - `lite:parity:check` → `lite:docs:parity:check`
 - `lite:parity:check` → `lite:evidence:parity:check`
 - `lite:parity:check` → `lite:evidence:parity:generate`
+- `lite:parity:check` → `lite:evidence:runtime:check`
 - `lite:parity:check` → `lite:parity:api`
 - `lite:parity:check` → `lite:parity:backend`
 - `lite:parity:check` → `lite:parity:contracts:check`
 - `lite:parity:check` → `lite:parity:fixtures:check`
+- `lite:parity:check` → `lite:parity:model:check`
 - `lite:parity:check` → `lite:parity:playwright:mocked`
 - `lite:parity:check` → `lite:parity:selectors`
 - `lite:parity:check` → `lite:parity:storybook`

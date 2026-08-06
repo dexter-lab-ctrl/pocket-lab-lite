@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
+semantic_fingerprint: 44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -15,7 +15,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Repository | Fixture | Mock browser | Live API | Live UI | Live Termux | Runtime parity | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified | partial | verified | unvalidated | unvalidated | unvalidated | unvalidated | partial |
+| verified | partial | verified | observed | observed | observed | verified-with-mapped-presentation | verified |
 
 ## 2. Repository-backed flow
 
@@ -71,7 +71,7 @@ FastAPI and repository authorities remain the source of truth. Frontend caches a
 
 ## 9. Live API observation
 
-Status: **unvalidated**
+Status: **observed**
 
 | Observation | Route adapter | Extractor | Path | API ↔ Termux comparator | Severity |
 | --- | --- | --- | --- | --- | --- |
@@ -85,13 +85,13 @@ Status: **unvalidated**
 
 ## 10. Live UI observation
 
-Status: **unvalidated**. Screen: `devices`. Required projects: live-desktop, live-mobile.
+Status: **observed**. Screen: `devices`. Required projects: live-desktop, live-mobile.
 
 Browser capture uses visible semantics, accessible controls, existing stable screen identifiers, bounded text, exact backend-derived identity checks, and privacy redaction.
 
 ## 11. Live Termux observation
 
-Status: **unvalidated**. The Termux lane uses the same allowlisted GET adapters through the managed read-only SSH alias and the phone loopback API, or an explicitly configured safe tunnel. It never reads databases, credentials, or environment secrets and never restarts services.
+Status: **observed**. The Termux lane uses the same allowlisted GET adapters through the managed read-only SSH alias and the phone loopback API, or an explicitly configured safe tunnel. It never reads databases, credentials, or environment secrets and never restarts services.
 
 ## 12. Field-level semantic comparisons
 
@@ -107,7 +107,7 @@ Status: **unvalidated**. The Termux lane uses the same allowlisted GET adapters 
 
 | Mapping | Comparator | Allowlisted presentation |
 | --- | --- | --- |
-| devices-server-state | state-machine-map | {"agent_stopped": ["Agent stopped"], "joining": ["Joining"], "offline": ["Offline"], "online": ["Online"], "repairing": ["Repairing"], "waiting": ["Waiting"]} |
+| devices-server-state | state-machine-map | {"agent_stopped": ["Agent stopped"], "joining": ["Joining"], "offline": ["Offline"], "online": ["Online"], "protected server host": ["Protected server host", "Protected control device"], "repairing": ["Repairing"], "waiting": ["Waiting"]} |
 | devices-remote-access | intentional-presentation-map | {"false": ["Remote access not ready"], "true": ["Remote access ready"]} |
 
 Different user-facing wording or formatting is not drift when an allowlisted deterministic mapping proves equivalent meaning.
@@ -135,6 +135,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
+| backend-devices | 83a2a2dfb393fd08ca1c8c36b76a93b4e4e9c40c92a42fb91fed07144f713721 |
+| browser-devices-live-desktop | 17d9271916dbf4f8a87e189b8c769a2b4604ca01134f9d5c780828327a6923d6 |
+| browser-devices-live-mobile | 1f212cf05015f8fe7071cde0ccde1d2a8f26205a73f388279aaa5ee8247e4e8c |
+| observation-backend | ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59 |
+| observation-live_desktop | f5a477a3814219cf1bdbc1891345c8941c195217be3d755ada73906769ca447f |
+| observation-live_mobile | f5a477a3814219cf1bdbc1891345c8941c195217be3d755ada73906769ca447f |
+| observation-termux | ed02b30cbea674ec99e03d5a9ef6bb3ea7c3786a132ead9d9fcd9dd73dd39c59 |
+| playwright-report | e5db3fbc6a27b2e50d0c8dfb61a66c49d4d3b1ac5fd900e481c30278860c4dc4 |
+| runtime-comparison | c791b467b9c2b8c658ae5960329abd8615c1b62edb5ee3fe82d916a08728e0a6 |
+| termux-devices | 2c0363642acf7d16d9f72171d0922076224d359fe45575afa87d932851080e55 |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -142,7 +152,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 1.0.0 | lite-2026.08.05.2 | 3a81745fbd4c2fdeb17f2308a0d3fdbd5c2f3aa5 | 2026-08-06T07:48:03Z |
+| 2.0.0 | lite-2026.08.06.2 | ae54d3adf6c544d040fb923a1894f66b2a92513c | 2026-08-06T18:14:18Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 
@@ -177,6 +187,6 @@ Missing, failed, stale, or unavailable evidence is classified separately from dr
 
 ## 22. Last promoted runtime result
 
-| Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed |
-| --- | --- | --- | --- | --- | --- | --- |
-| unvalidated | unvalidated | 0 | 0 | 0 | 0 | 0 |
+| Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed | Not applicable |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| verified-with-mapped-presentation | verified | 14 | 4 | 0 | 0 | 0 | 0 |

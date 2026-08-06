@@ -1,65 +1,107 @@
 {
   "items": [
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 14,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
       "id": "apps",
       "label": "Apps",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "verified"
     },
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 14,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
       "id": "devices",
       "label": "Devices",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "verified"
     },
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 12,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
       "id": "home",
       "label": "Home",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "verified"
     },
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 2,
+        "match": 8,
+        "mismatch": 0,
+        "not_observed": 2,
+        "unsupported": 0
+      },
       "id": "identity",
       "label": "Identity",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "partial",
+      "runtime_status": "partial"
     },
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 6,
+        "match": 17,
+        "mismatch": 0,
+        "not_observed": 1,
+        "unsupported": 0
+      },
       "id": "recovery",
       "label": "Backup & Restore",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "partial",
+      "runtime_status": "partial"
     },
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 2,
+        "match": 12,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
       "id": "rules",
       "label": "Rules",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "partial",
+      "runtime_status": "partial"
     },
     {
-      "comparison_summary": {},
+      "comparison_summary": {
+        "mapped": 4,
+        "match": 11,
+        "mismatch": 0,
+        "not_observed": 0,
+        "unsupported": 0
+      },
       "id": "security",
       "label": "Security",
       "mismatches": [],
-      "runtime_parity": "unvalidated",
-      "runtime_status": "unvalidated"
+      "runtime_parity": "verified-with-mapped-presentation",
+      "runtime_status": "verified"
     }
   ],
   "kind": "runtime-drift",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "semantic_fingerprint": "44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c",
   "source_revision": "repository-source",
   "status": "generated"
 }

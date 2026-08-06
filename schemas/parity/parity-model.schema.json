@@ -92,6 +92,14 @@
             "recovery"
           ]
         },
+        "implementation_status": {
+          "enum": [
+            "implemented",
+            "partial",
+            "planned"
+          ],
+          "type": "string"
+        },
         "known_gaps": {
           "$ref": "#/$defs/stringArray"
         },
@@ -348,6 +356,14 @@
         "id": {
           "$ref": "#/$defs/identifier"
         },
+        "implementation_status": {
+          "enum": [
+            "implemented",
+            "partial",
+            "planned"
+          ],
+          "type": "string"
+        },
         "list_path": {
           "maxLength": 180,
           "minLength": 1,
@@ -357,6 +373,9 @@
           "maxLength": 180,
           "minLength": 1,
           "type": "string"
+        },
+        "required": {
+          "type": "boolean"
         },
         "route": {
           "$ref": "#/$defs/identifier"
@@ -687,6 +706,14 @@
         "id": {
           "$ref": "#/$defs/identifier"
         },
+        "implementation_status": {
+          "enum": [
+            "implemented",
+            "partial",
+            "planned"
+          ],
+          "type": "string"
+        },
         "mapping": {
           "additionalProperties": {
             "$ref": "#/$defs/mappingValue"
@@ -704,6 +731,9 @@
         },
         "operator": {
           "$ref": "#/$defs/operator"
+        },
+        "required": {
+          "type": "boolean"
         },
         "severity": {
           "$ref": "#/$defs/severity"

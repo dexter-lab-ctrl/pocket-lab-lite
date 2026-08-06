@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
+semantic_fingerprint: 44a849b588fbdf72c3f81bf6f44ee5beef37bfd3c290bd1247a85d7ba4f0135c
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -15,7 +15,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Repository | Fixture | Mock browser | Live API | Live UI | Live Termux | Runtime parity | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| verified | partial | verified | unvalidated | unvalidated | unvalidated | unvalidated | partial |
+| verified | partial | verified | observed | observed | observed | partial | partial |
 
 ## 2. Repository-backed flow
 
@@ -69,7 +69,7 @@ FastAPI and repository authorities remain the source of truth. Frontend caches a
 
 ## 9. Live API observation
 
-Status: **unvalidated**
+Status: **observed**
 
 | Observation | Route adapter | Extractor | Path | API ↔ Termux comparator | Severity |
 | --- | --- | --- | --- | --- | --- |
@@ -81,13 +81,13 @@ Status: **unvalidated**
 
 ## 10. Live UI observation
 
-Status: **unvalidated**. Screen: `rules`. Required projects: live-desktop, live-mobile.
+Status: **observed**. Screen: `rules`. Required projects: live-desktop, live-mobile.
 
 Browser capture uses visible semantics, accessible controls, existing stable screen identifiers, bounded text, exact backend-derived identity checks, and privacy redaction.
 
 ## 11. Live Termux observation
 
-Status: **unvalidated**. The Termux lane uses the same allowlisted GET adapters through the managed read-only SSH alias and the phone loopback API, or an explicitly configured safe tunnel. It never reads databases, credentials, or environment secrets and never restarts services.
+Status: **observed**. The Termux lane uses the same allowlisted GET adapters through the managed read-only SSH alias and the phone loopback API, or an explicitly configured safe tunnel. It never reads databases, credentials, or environment secrets and never restarts services.
 
 ## 12. Field-level semantic comparisons
 
@@ -129,6 +129,16 @@ No promoted semantic drift is recorded for this domain.
 
 | Evidence | SHA-256 / semantic fingerprint |
 | --- | --- |
+| backend-rules | e7e7c54790d97cf8e7af9b24a4e47111431ae93ba79c8f41097106395e7e9a93 |
+| browser-rules-live-desktop | 5981ca787d43e18c227276e4538922217ba77e7e5ffbaf16d805c55228d94867 |
+| browser-rules-live-mobile | ee33e8019f8a508af2165d41789ed728d69459dd43a833fa52a72c6dca6ce254 |
+| observation-backend | 98c0b2e070d96d05f1f86fcf24a77f4b53d45561f6af6b89adc512d9ef50398e |
+| observation-live_desktop | 7e8f1961a6914e5076d88f28784e0943748ef5f6bb410201db65b2ca8c234363 |
+| observation-live_mobile | 7e8f1961a6914e5076d88f28784e0943748ef5f6bb410201db65b2ca8c234363 |
+| observation-termux | 98c0b2e070d96d05f1f86fcf24a77f4b53d45561f6af6b89adc512d9ef50398e |
+| playwright-report | e5db3fbc6a27b2e50d0c8dfb61a66c49d4d3b1ac5fd900e481c30278860c4dc4 |
+| runtime-comparison | c791b467b9c2b8c658ae5960329abd8615c1b62edb5ee3fe82d916a08728e0a6 |
+| termux-rules | fe4ab3df136115d2a047701e3aa1d63876c0ae6a7a93b408c57cdb3716b3a9ed |
 
 No raw API payload, database row, hostname, username, private address, browser trace, or screenshot is stored in the promoted baseline.
 
@@ -136,7 +146,7 @@ No raw API payload, database row, hostname, username, private address, browser t
 
 | Baseline schema | Release tag | Source commit | Promoted at |
 | --- | --- | --- | --- |
-| 1.0.0 | lite-2026.08.05.2 | 3a81745fbd4c2fdeb17f2308a0d3fdbd5c2f3aa5 | 2026-08-06T07:48:03Z |
+| 2.0.0 | lite-2026.08.06.2 | ae54d3adf6c544d040fb923a1894f66b2a92513c | 2026-08-06T18:14:18Z |
 
 A legacy v1 baseline proves coverage only. It cannot upgrade semantic parity to verified.
 
@@ -171,6 +181,6 @@ Missing, failed, stale, or unavailable evidence is classified separately from dr
 
 ## 22. Last promoted runtime result
 
-| Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed |
-| --- | --- | --- | --- | --- | --- | --- |
-| unvalidated | unvalidated | 0 | 0 | 0 | 0 | 0 |
+| Runtime parity | Runtime status | Match | Mapped | Mismatch | Unsupported | Not observed | Not applicable |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| partial | partial | 12 | 2 | 0 | 0 | 0 | 0 |

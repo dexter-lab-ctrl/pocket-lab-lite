@@ -26,6 +26,14 @@
           "pattern": "^[a-z0-9][a-z0-9._:-]{1,119}$",
           "type": "string"
         },
+        "implementation_status": {
+          "enum": [
+            "implemented",
+            "partial",
+            "planned"
+          ],
+          "type": "string"
+        },
         "operator": {
           "enum": [
             "exact",
@@ -68,8 +76,13 @@
             "mapped",
             "mismatch",
             "unsupported",
-            "not-observed"
+            "not-observed",
+            "not-applicable",
+            "capture-corrupted"
           ]
+        },
+        "required": {
+          "type": "boolean"
         },
         "severity": {
           "enum": [
@@ -90,7 +103,9 @@
         "backend_value",
         "frontend_value",
         "explanation",
-        "project"
+        "project",
+        "required",
+        "implementation_status"
       ],
       "type": "object"
     },
@@ -162,6 +177,14 @@
             "recovery"
           ]
         },
+        "implementation_status": {
+          "enum": [
+            "implemented",
+            "partial",
+            "planned"
+          ],
+          "type": "string"
+        },
         "label": {
           "maxLength": 80,
           "minLength": 1,
@@ -211,7 +234,9 @@
             "runtime-unavailable",
             "unvalidated",
             "unsupported",
-            "accepted-limitation"
+            "accepted-limitation",
+            "capture-corrupted",
+            "contract-gap"
           ]
         },
         "status": {
@@ -227,6 +252,7 @@
       "required": [
         "id",
         "label",
+        "implementation_status",
         "live_api_coverage",
         "live_ui_coverage",
         "live_termux_coverage",
