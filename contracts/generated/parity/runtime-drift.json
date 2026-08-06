@@ -5,6 +5,7 @@
         "mapped": 4,
         "match": 14,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -19,6 +20,7 @@
         "mapped": 4,
         "match": 14,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -33,6 +35,7 @@
         "mapped": 4,
         "match": 12,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -47,6 +50,7 @@
         "mapped": 2,
         "match": 8,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 2,
         "unsupported": 0
       },
@@ -61,6 +65,7 @@
         "mapped": 6,
         "match": 17,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 1,
         "unsupported": 0
       },
@@ -75,6 +80,7 @@
         "mapped": 2,
         "match": 12,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },
@@ -89,6 +95,7 @@
         "mapped": 4,
         "match": 11,
         "mismatch": 0,
+        "not_applicable": 0,
         "not_observed": 0,
         "unsupported": 0
       },

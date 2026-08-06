@@ -148,6 +148,11 @@
               "maximum": 1000,
               "minimum": 0,
               "type": "integer"
+            },
+            "not_applicable": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
             }
           },
           "required": [
