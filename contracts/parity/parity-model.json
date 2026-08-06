@@ -2,72 +2,128 @@
   "api_projections": [
     {
       "backend_sources": [
-        "recovery-current-state",
-        "backup-state-file",
-        "backup-manifest-index"
+        "app-action-lifecycle"
       ],
-      "degraded_behavior": "safe saved-state summary",
-      "domain": "recovery",
-      "endpoint": "/api/lite/recovery/summary",
-      "freshness": "summary ETag/revision and last-good semantics",
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "apps",
+      "endpoint": "/api/lite/apps/{app_id}/actions",
+      "freshness": "prepared projection revision",
       "frontend_consumers": [
-        "liteApi.recoverySummary",
-        "selectRecoverySummaryView",
-        "LiteRecovery"
+        "liteApi.appActions",
+        "selectPhotoPrismActionsView",
+        "LiteCatalog"
       ],
-      "id": "recovery-summary",
+      "id": "app-actions",
       "method": "GET",
       "offline_eligibility": "safe-summary",
       "pagination": "none",
       "sanitization": "allowlist",
       "status": "verified",
-      "view_model_identity": "recovery-summary-r3-v1"
+      "view_model_identity": "app-actions-view"
     },
     {
       "backend_sources": [
-        "backup-manifest",
-        "restore-preview",
-        "restore-checkpoint",
-        "restore-run",
-        "database-backup-table",
-        "database-restore-table"
+        "app-current-state",
+        "app-action-lifecycle"
       ],
-      "degraded_behavior": "last-good safe details when available",
-      "domain": "recovery",
-      "endpoint": "/api/lite/recovery/details",
-      "freshness": "detail read on Manage intent",
-      "frontend_consumers": [
-        "liteApi.recoveryDetails",
-        "selectRecoveryScreenView",
-        "LiteRecovery"
-      ],
-      "id": "recovery-details",
-      "method": "GET",
-      "offline_eligibility": "safe-details",
-      "pagination": "history excluded from first paint",
-      "sanitization": "allowlist",
-      "status": "verified",
-      "view_model_identity": "recovery-screen-view"
-    },
-    {
-      "backend_sources": [
-        "recovery-operations"
-      ],
-      "degraded_behavior": "invalid cursor returns sanitized 400",
-      "domain": "recovery",
-      "endpoint": "/api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "apps",
+      "endpoint": "/api/lite/apps/lifecycle",
       "freshness": "prepared projection revision",
       "frontend_consumers": [
-        "liteApi.recoveryOperations",
-        "liteQueryKeys.recoveryOperations"
+        "liteApi.appLifecycle",
+        "selectPhotoPrismManageView"
       ],
-      "id": "recovery-operations",
+      "id": "app-lifecycle",
       "method": "GET",
-      "offline_eligibility": "first-page-only",
-      "pagination": "cursor, limit 1..50",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
       "sanitization": "allowlist",
       "status": "verified",
-      "view_model_identity": "recovery-operation-history"
+      "view_model_identity": "app-lifecycle-view"
+    },
+    {
+      "backend_sources": [
+        "app-current-state"
+      ],
+      "degraded_behavior": "saved state",
+      "domain": "apps",
+      "endpoint": "/api/lite/catalog",
+      "freshness": "catalog revision",
+      "frontend_consumers": [
+        "LiteCatalog"
+      ],
+      "id": "catalog",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "catalog-view"
+    },
+    {
+      "backend_sources": [
+        "device-current-state",
+        "device-heartbeats",
+        "device-supervisor-state"
+      ],
+      "degraded_behavior": "saved state marked stale",
+      "domain": "devices",
+      "endpoint": "/api/lite/fleet",
+      "freshness": "heartbeat and projection revision",
+      "frontend_consumers": [
+        "LiteDevices"
+      ],
+      "id": "fleet",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "devices-screen-view"
+    },
+    {
+      "backend_sources": [
+        "identity-runtime-projection",
+        "invite-identity-registry"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "identity",
+      "endpoint": "/api/lite/identity",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.identity",
+        "LiteIdentity"
+      ],
+      "id": "identity",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "identity-direct-render"
+    },
+    {
+      "backend_sources": [
+        "lite-status-service",
+        "system-health-projection"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "home",
+      "endpoint": "/api/lite/status",
+      "freshness": "status revision and checked_at",
+      "frontend_consumers": [
+        "liteApi.status",
+        "buildLiteHomeOverview",
+        "LiteHome"
+      ],
+      "id": "lite-status",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "home-overview"
     },
     {
       "backend_sources": [
@@ -131,43 +187,154 @@
     },
     {
       "backend_sources": [
-        "device-current-state",
-        "device-heartbeats",
-        "device-supervisor-state"
+        "backup-manifest",
+        "restore-preview",
+        "restore-checkpoint",
+        "restore-run",
+        "database-backup-table",
+        "database-restore-table"
       ],
-      "degraded_behavior": "saved state marked stale",
-      "domain": "devices",
-      "endpoint": "/api/lite/fleet",
-      "freshness": "heartbeat and projection revision",
+      "degraded_behavior": "last-good safe details when available",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/details",
+      "freshness": "detail read on Manage intent",
       "frontend_consumers": [
-        "LiteDevices"
+        "liteApi.recoveryDetails",
+        "selectRecoveryScreenView",
+        "LiteRecovery"
       ],
-      "id": "fleet",
+      "id": "recovery-details",
       "method": "GET",
-      "offline_eligibility": "safe-summary",
-      "pagination": "none",
+      "offline_eligibility": "safe-details",
+      "pagination": "history excluded from first paint",
       "sanitization": "allowlist",
-      "status": "partial",
-      "view_model_identity": "devices-screen-view"
+      "status": "verified",
+      "view_model_identity": "recovery-screen-view"
     },
     {
       "backend_sources": [
-        "app-current-state"
+        "recovery-operations"
       ],
-      "degraded_behavior": "saved state",
-      "domain": "apps",
-      "endpoint": "/api/lite/catalog",
-      "freshness": "catalog revision",
+      "degraded_behavior": "invalid cursor returns sanitized 400",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/operations?limit={limit}&cursor={cursor}",
+      "freshness": "prepared projection revision",
       "frontend_consumers": [
-        "LiteCatalog"
+        "liteApi.recoveryOperations",
+        "liteQueryKeys.recoveryOperations"
       ],
-      "id": "catalog",
+      "id": "recovery-operations",
+      "method": "GET",
+      "offline_eligibility": "first-page-only",
+      "pagination": "cursor, limit 1..50",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "recovery-operation-history"
+    },
+    {
+      "backend_sources": [
+        "recovery-current-state",
+        "backup-state-file",
+        "backup-manifest-index"
+      ],
+      "degraded_behavior": "safe saved-state summary",
+      "domain": "recovery",
+      "endpoint": "/api/lite/recovery/summary",
+      "freshness": "summary ETag/revision and last-good semantics",
+      "frontend_consumers": [
+        "liteApi.recoverySummary",
+        "selectRecoverySummaryView",
+        "LiteRecovery"
+      ],
+      "id": "recovery-summary",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "recovery-summary-r3-v1"
+    },
+    {
+      "backend_sources": [
+        "installed-release-identity"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "home",
+      "endpoint": "/api/lite/release",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.releaseStatus",
+        "LiteReleaseUpdateCard"
+      ],
+      "id": "release-status",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "release-status"
+    },
+    {
+      "backend_sources": [
+        "workflow-current-state"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "rules",
+      "endpoint": "/api/lite/policy",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.policy",
+        "LiteRules"
+      ],
+      "id": "rules",
       "method": "GET",
       "offline_eligibility": "safe-summary",
       "pagination": "none",
       "sanitization": "allowlist",
       "status": "partial",
-      "view_model_identity": "catalog-view"
+      "view_model_identity": "rules-direct-render"
+    },
+    {
+      "backend_sources": [
+        "security-scan-runs"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "security",
+      "endpoint": "/api/lite/security/history?limit={limit}",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.securityHistory",
+        "selectSecurityHistorySnapshotView"
+      ],
+      "id": "security-history",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "security-history-view"
+    },
+    {
+      "backend_sources": [
+        "security-scan-runs",
+        "security-findings",
+        "security-compact-state"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "security",
+      "endpoint": "/api/lite/security/profiles/{profile}",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.securityProfile",
+        "selectSecurityProfileView"
+      ],
+      "id": "security-profile",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "security-profile-view"
     },
     {
       "backend_sources": [
@@ -234,19 +401,34 @@
   },
   "backend_authorities": [
     {
-      "cache": "FastAPI response cache/ETag where applicable",
-      "domain": "recovery",
-      "frontend_exposure": "allowlisted summary only",
-      "id": "backup-state-file",
-      "kind": "json-state",
-      "location": "state_dir/backup_state.json",
-      "projection": "recovery-summary",
-      "reader": "lite_backup.recovery_status",
-      "recovery": "last-good file read",
-      "retention": "latest pending and operation state",
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "apps",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "app-action-lifecycle",
+      "kind": "sqlite-and-projection",
+      "location": "app action lifecycle state",
+      "projection": "app-actions",
+      "reader": "lite app actions service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
       "status": "verified",
-      "transaction_boundary": "atomic JSON replace",
-      "writer": "lite_backup"
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "app workers"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "apps",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "app-current-state",
+      "kind": "prepared-projection",
+      "location": "app catalog and lifecycle current state",
+      "projection": "catalog",
+      "reader": "lite catalog services",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "app worker and projection writers"
     },
     {
       "cache": "none authoritative",
@@ -264,66 +446,6 @@
       "writer": "lite_backup_manifest.write_manifest"
     },
     {
-      "cache": "none authoritative",
-      "domain": "recovery",
-      "frontend_exposure": "api_receipt allowlist",
-      "id": "backup-receipt",
-      "kind": "json-receipt",
-      "location": "backup_root/receipts/{backup_id}.json",
-      "projection": "recovery-backup-receipt",
-      "reader": "lite_backup_manifest.read_receipt",
-      "recovery": "sanitized evidence reference",
-      "retention": "aligned with manifest",
-      "status": "verified",
-      "transaction_boundary": "temp file + fsync + replace",
-      "writer": "lite_backup_manifest.write_receipt"
-    },
-    {
-      "cache": "read projection",
-      "domain": "recovery",
-      "frontend_exposure": "allowlisted preview",
-      "id": "restore-preview",
-      "kind": "json-preview",
-      "location": "backup_root/restore-previews/{preview_id}.json",
-      "projection": "recovery-details",
-      "reader": "lite_backup.get_restore_preview",
-      "recovery": "recreate preview",
-      "retention": "bounded recovery evidence",
-      "status": "verified",
-      "transaction_boundary": "atomic JSON write",
-      "writer": "lite_backup.create_restore_preview"
-    },
-    {
-      "cache": "read projection",
-      "domain": "recovery",
-      "frontend_exposure": "identifier and status only",
-      "id": "restore-checkpoint",
-      "kind": "checkpoint",
-      "location": "backup_root/restore-checkpoints/{checkpoint_id}.json",
-      "projection": "recovery-details",
-      "reader": "lite_backup.get_restore_checkpoint",
-      "recovery": "rollback source",
-      "retention": "recovery policy",
-      "status": "verified",
-      "transaction_boundary": "created before state mutation",
-      "writer": "lite_backup.apply_restore"
-    },
-    {
-      "cache": "read projection",
-      "domain": "recovery",
-      "frontend_exposure": "sanitized status and counts",
-      "id": "restore-run",
-      "kind": "json-run",
-      "location": "backup_root/restore-runs/{restore_id}.json",
-      "projection": "recovery-details",
-      "reader": "lite_backup.get_restore_run",
-      "recovery": "last-run evidence",
-      "retention": "recovery policy",
-      "status": "verified",
-      "transaction_boundary": "phase updates",
-      "writer": "lite_backup.apply_restore"
-    },
-    {
       "cache": "SQLite read pool",
       "domain": "recovery",
       "frontend_exposure": "prepared projection only",
@@ -339,34 +461,34 @@
       "writer": "control-plane projection writer"
     },
     {
-      "cache": "prepared read",
+      "cache": "none authoritative",
       "domain": "recovery",
-      "frontend_exposure": "sanitized history",
-      "id": "recovery-operations",
-      "kind": "sqlite-table",
-      "location": "recovery_operations",
-      "projection": "recovery-operations",
-      "reader": "CONTROL_PLANE.recovery_operation_history",
-      "recovery": "operation reconciliation",
-      "retention": "cursor-paginated history",
+      "frontend_exposure": "api_receipt allowlist",
+      "id": "backup-receipt",
+      "kind": "json-receipt",
+      "location": "backup_root/receipts/{backup_id}.json",
+      "projection": "recovery-backup-receipt",
+      "reader": "lite_backup_manifest.read_receipt",
+      "recovery": "sanitized evidence reference",
+      "retention": "aligned with manifest",
       "status": "verified",
-      "transaction_boundary": "SQLite transaction",
-      "writer": "recovery operation lifecycle"
+      "transaction_boundary": "temp file + fsync + replace",
+      "writer": "lite_backup_manifest.write_receipt"
     },
     {
-      "cache": "prepared read",
+      "cache": "FastAPI response cache/ETag where applicable",
       "domain": "recovery",
-      "frontend_exposure": "prepared projection only",
-      "id": "recovery-current-state",
-      "kind": "sqlite-table",
-      "location": "recovery_current_state",
-      "projection": "recovery-summary/recovery-details",
-      "reader": "prepared recovery projections",
-      "recovery": "last-good projection",
-      "retention": "current row per recovery entity",
+      "frontend_exposure": "allowlisted summary only",
+      "id": "backup-state-file",
+      "kind": "json-state",
+      "location": "state_dir/backup_state.json",
+      "projection": "recovery-summary",
+      "reader": "lite_backup.recovery_status",
+      "recovery": "last-good file read",
+      "retention": "latest pending and operation state",
       "status": "verified",
-      "transaction_boundary": "SQLite transaction",
-      "writer": "recovery projection writer"
+      "transaction_boundary": "atomic JSON replace",
+      "writer": "lite_backup"
     },
     {
       "cache": "prepared read",
@@ -397,6 +519,261 @@
       "status": "verified",
       "transaction_boundary": "SQLite transaction",
       "writer": "lite_database_recovery"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "devices",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "device-current-state",
+      "kind": "sqlite-and-projection",
+      "location": "durable device registry and prepared fleet projection",
+      "projection": "fleet",
+      "reader": "lite fleet service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "fleet services and reconciliation"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "devices",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "device-heartbeats",
+      "kind": "event-projection",
+      "location": "sanitized heartbeat projection",
+      "projection": "fleet",
+      "reader": "fleet projection reader",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "node agents"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "devices",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "device-supervisor-state",
+      "kind": "event-projection",
+      "location": "sanitized supervisor evidence",
+      "projection": "fleet",
+      "reader": "fleet projection reader",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "agent supervisors"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "identity",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "identity-runtime-projection",
+      "kind": "service-projection",
+      "location": "identity readiness projection",
+      "projection": "identity",
+      "reader": "lite identity service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "partial",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "identity backend services"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "home",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "installed-release-identity",
+      "kind": "release-state",
+      "location": "installed release identity",
+      "projection": "release-status",
+      "reader": "release status service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "release workflow"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "identity",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "invite-identity-registry",
+      "kind": "sqlite-and-state",
+      "location": "device identity and invite lifecycle",
+      "projection": "identity",
+      "reader": "identity and fleet readers",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "fleet invite services"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "home",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "lite-status-service",
+      "kind": "service-projection",
+      "location": "lite_status service composition",
+      "projection": "lite-status",
+      "reader": "lite_status.lite_status",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "worker/agent telemetry and prepared projections"
+    },
+    {
+      "cache": "prepared read",
+      "domain": "recovery",
+      "frontend_exposure": "prepared projection only",
+      "id": "recovery-current-state",
+      "kind": "sqlite-table",
+      "location": "recovery_current_state",
+      "projection": "recovery-summary/recovery-details",
+      "reader": "prepared recovery projections",
+      "recovery": "last-good projection",
+      "retention": "current row per recovery entity",
+      "status": "verified",
+      "transaction_boundary": "SQLite transaction",
+      "writer": "recovery projection writer"
+    },
+    {
+      "cache": "prepared read",
+      "domain": "recovery",
+      "frontend_exposure": "sanitized history",
+      "id": "recovery-operations",
+      "kind": "sqlite-table",
+      "location": "recovery_operations",
+      "projection": "recovery-operations",
+      "reader": "CONTROL_PLANE.recovery_operation_history",
+      "recovery": "operation reconciliation",
+      "retention": "cursor-paginated history",
+      "status": "verified",
+      "transaction_boundary": "SQLite transaction",
+      "writer": "recovery operation lifecycle"
+    },
+    {
+      "cache": "read projection",
+      "domain": "recovery",
+      "frontend_exposure": "identifier and status only",
+      "id": "restore-checkpoint",
+      "kind": "checkpoint",
+      "location": "backup_root/restore-checkpoints/{checkpoint_id}.json",
+      "projection": "recovery-details",
+      "reader": "lite_backup.get_restore_checkpoint",
+      "recovery": "rollback source",
+      "retention": "recovery policy",
+      "status": "verified",
+      "transaction_boundary": "created before state mutation",
+      "writer": "lite_backup.apply_restore"
+    },
+    {
+      "cache": "read projection",
+      "domain": "recovery",
+      "frontend_exposure": "allowlisted preview",
+      "id": "restore-preview",
+      "kind": "json-preview",
+      "location": "backup_root/restore-previews/{preview_id}.json",
+      "projection": "recovery-details",
+      "reader": "lite_backup.get_restore_preview",
+      "recovery": "recreate preview",
+      "retention": "bounded recovery evidence",
+      "status": "verified",
+      "transaction_boundary": "atomic JSON write",
+      "writer": "lite_backup.create_restore_preview"
+    },
+    {
+      "cache": "read projection",
+      "domain": "recovery",
+      "frontend_exposure": "sanitized status and counts",
+      "id": "restore-run",
+      "kind": "json-run",
+      "location": "backup_root/restore-runs/{restore_id}.json",
+      "projection": "recovery-details",
+      "reader": "lite_backup.get_restore_run",
+      "recovery": "last-run evidence",
+      "retention": "recovery policy",
+      "status": "verified",
+      "transaction_boundary": "phase updates",
+      "writer": "lite_backup.apply_restore"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "security",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "security-compact-state",
+      "kind": "compact-projection",
+      "location": "compact security state files",
+      "projection": "security-summary",
+      "reader": "split security read API",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "security state coordinator"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "security",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "security-findings",
+      "kind": "sqlite-and-evidence",
+      "location": "sanitized finding state",
+      "projection": "security-summary",
+      "reader": "lite security service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "security worker"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "security",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "security-scan-runs",
+      "kind": "sqlite-table",
+      "location": "security scan run state",
+      "projection": "security-summary",
+      "reader": "lite security service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "security worker"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "home",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "system-health-projection",
+      "kind": "prepared-projection",
+      "location": "system current-state projections",
+      "projection": "lite-status",
+      "reader": "Lite status composition",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "verified",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "phase3b projection writers"
+    },
+    {
+      "cache": "prepared projection or bounded read cache where implemented",
+      "domain": "rules",
+      "frontend_exposure": "allowlisted sanitized FastAPI projection",
+      "id": "workflow-current-state",
+      "kind": "policy-state",
+      "location": "OPA/policy advisory state",
+      "projection": "rules",
+      "reader": "lite policy service",
+      "recovery": "backend-owned reconciliation and last-good behavior",
+      "retention": "repository-defined current and last-good state",
+      "status": "partial",
+      "transaction_boundary": "backend-owned atomic or SQLite transaction",
+      "writer": "policy backend service"
     }
   ],
   "ci_map": [
@@ -411,13 +788,1328 @@
       "workflow": ".github/workflows/lite-quality.yml"
     }
   ],
+  "comparator_registry": [
+    {
+      "bounded": true,
+      "description": "Exact bounded equality.",
+      "deterministic": true,
+      "id": "exact",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Whitespace and punctuation normalized string equality.",
+      "deterministic": true,
+      "id": "normalized-string",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Case-insensitive string equality.",
+      "deterministic": true,
+      "id": "case-insensitive",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Allowlisted backend enum to frontend presentation mapping.",
+      "deterministic": true,
+      "id": "enum-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Boolean meaning equivalence.",
+      "deterministic": true,
+      "id": "boolean-equivalence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Numeric equality within an explicit tolerance.",
+      "deterministic": true,
+      "id": "numeric-tolerance",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Percentage presentation equivalence.",
+      "deterministic": true,
+      "id": "percentage-format",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Byte/capacity presentation equivalence.",
+      "deterministic": true,
+      "id": "byte-format",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Duration presentation equivalence.",
+      "deterministic": true,
+      "id": "duration-format",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Timestamp equality within a bounded tolerance.",
+      "deterministic": true,
+      "id": "timestamp-equivalence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Freshness timestamps within an explicit window.",
+      "deterministic": true,
+      "id": "freshness-window",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Order-independent set equality.",
+      "deterministic": true,
+      "id": "set-equality",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Order-sensitive list equality.",
+      "deterministic": true,
+      "id": "ordered-list",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Backend values are represented by a frontend subset relation.",
+      "deterministic": true,
+      "id": "subset",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Backend values are represented by a frontend superset relation.",
+      "deterministic": true,
+      "id": "superset",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Canonical identifier equality after safe normalization.",
+      "deterministic": true,
+      "id": "identity-match",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Allowlisted backend state to rendered state mapping.",
+      "deterministic": true,
+      "id": "state-machine-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Allowlisted status-family mapping.",
+      "deterministic": true,
+      "id": "status-family",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Required frontend observation is present.",
+      "deterministic": true,
+      "id": "presence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Prohibited frontend observation is absent.",
+      "deterministic": true,
+      "id": "absence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Observed text contains no prohibited secret/path pattern.",
+      "deterministic": true,
+      "id": "safe-redaction",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Backend capability maps to an available or disabled UI action.",
+      "deterministic": true,
+      "id": "capability-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Different wording preserves the same user-facing meaning.",
+      "deterministic": true,
+      "id": "intentional-presentation-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Frontend text contains a bounded normalized backend value.",
+      "deterministic": true,
+      "id": "text-contains",
+      "status": "verified"
+    }
+  ],
   "domains": [
     {
+      "accepted_limitations": [
+        "CPU, memory, and storage presentation may be rounded or unit-formatted."
+      ],
+      "api_projections": [
+        "lite-status",
+        "release-status"
+      ],
+      "api_routes": [
+        "/api/lite/status",
+        "/api/lite/release"
+      ],
+      "backend_authorities": [
+        "lite-status-service",
+        "system-health-projection",
+        "installed-release-identity"
+      ],
+      "fixture_coverage": "partial",
+      "frontend_screens": [
+        "home"
+      ],
+      "frontend_surface": "src/lite/LiteHome.jsx",
+      "id": "home",
+      "known_gaps": [
+        "Live runtime semantic evidence remains explicit and release-bound."
+      ],
+      "label": "Home",
+      "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "overall_status",
+              "path": "overall",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "presence",
+              "id": "server_identity_expected",
+              "path": "device.name",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "numeric-tolerance",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "cpu_percent",
+              "path": "telemetry.cpu_usage_percent",
+              "route": "primary",
+              "tolerance": 25
+            },
+            {
+              "authority_operator": "numeric-tolerance",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "memory_usage_mb",
+              "path": "telemetry.memory_usage_mb",
+              "route": "primary",
+              "tolerance": 256
+            },
+            {
+              "authority_operator": "numeric-tolerance",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "storage_free_mb",
+              "path": "telemetry.free_space_mb",
+              "route": "primary",
+              "tolerance": 64
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "count",
+              "id": "service_count",
+              "path": "services",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "read_degraded",
+              "path": "read_degraded",
+              "route": "primary"
+            }
+          ],
+          "routes": [
+            {
+              "id": "primary",
+              "path": "/api/lite/status"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "home"
+        }
+      },
+      "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.status",
+        "liteQueryKeys.release"
+      ],
+      "runtime_parity": "unvalidated",
+      "selector": "buildLiteHomeOverview",
+      "selectors": [
+        "buildLiteHomeOverview"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "overall_status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "home-overall-presentation",
+          "mapping": {
+            "degraded": [
+              "review recommended",
+              "need your attention"
+            ],
+            "failed": [
+              "needs attention"
+            ],
+            "healthy": [
+              "workspace ready",
+              "self hosted workspace is ready"
+            ],
+            "unknown": [
+              "checking",
+              "temporarily unavailable"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "server_identity_expected",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "server_identity_visible",
+          "id": "home-server-identity",
+          "operator": "boolean-equivalence",
+          "severity": "high"
+        },
+        {
+          "backend_path": "cpu_percent",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "home_cpu_note",
+          "id": "home-cpu-format",
+          "operator": "percentage-format",
+          "severity": "medium",
+          "tolerance": 0.51
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "home-sanitized-ui",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteHome.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "Home never executes system operations directly."
+      ],
+      "vertical_slice": false
+    },
+    {
+      "accepted_limitations": [
+        "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract."
+      ],
+      "api_projections": [
+        "catalog",
+        "app-actions",
+        "app-lifecycle"
+      ],
+      "api_routes": [
+        "/api/lite/catalog",
+        "/api/lite/apps/photoprism/actions",
+        "/api/lite/apps/lifecycle"
+      ],
+      "backend_authorities": [
+        "app-current-state",
+        "app-action-lifecycle"
+      ],
+      "fixture_coverage": "partial",
+      "frontend_screens": [
+        "catalog"
+      ],
+      "frontend_surface": "src/lite/LiteCatalog.jsx",
+      "id": "apps",
+      "known_gaps": [
+        "Application-owned media indexing is not a Pocket Lab parity authority."
+      ],
+      "label": "Apps",
+      "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "app_id",
+              "list_path": "apps",
+              "route": "catalog",
+              "value_path": "id",
+              "where": {
+                "id": "photoprism"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "app_name",
+              "list_path": "apps",
+              "route": "catalog",
+              "value_path": "name",
+              "where": {
+                "id": "photoprism"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "installed",
+              "list_path": "apps",
+              "route": "catalog",
+              "value_path": "installed",
+              "where": {
+                "id": "photoprism"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "runtime_status",
+              "list_path": "apps",
+              "route": "catalog",
+              "value_path": "status",
+              "where": {
+                "id": "photoprism"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "route_ready",
+              "list_path": "apps",
+              "route": "catalog",
+              "value_path": "access.route_ready",
+              "where": {
+                "id": "photoprism"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "open_enabled",
+              "list_path": "apps",
+              "route": "catalog",
+              "value_path": "actions.open",
+              "where": {
+                "id": "photoprism"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "action_status",
+              "path": "status",
+              "route": "actions"
+            }
+          ],
+          "routes": [
+            {
+              "id": "catalog",
+              "path": "/api/lite/catalog"
+            },
+            {
+              "id": "actions",
+              "path": "/api/lite/apps/photoprism/actions"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "catalog"
+        }
+      },
+      "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.catalog",
+        "liteQueryKeys.appActions",
+        "liteQueryKeys.appLifecycle"
+      ],
+      "runtime_parity": "unvalidated",
+      "selector": "selectPhotoPrismManageView",
+      "selectors": [
+        "selectLiteCatalogAppSummary",
+        "selectPhotoPrismActionsView",
+        "selectPhotoPrismManageView"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "app_name",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "apps-canonical-name",
+          "operator": "text-contains",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "open_enabled",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "button_enabled.Open",
+          "id": "apps-open-capability",
+          "operator": "boolean-equivalence",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "installed",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "button_names",
+          "id": "apps-installed-manage",
+          "mapping": {
+            "false": [
+              "Install"
+            ],
+            "true": [
+              "Manage"
+            ]
+          },
+          "operator": "capability-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "runtime_status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "apps-runtime-presentation",
+          "mapping": {
+            "healthy": [
+              "ready",
+              "running"
+            ],
+            "installed": [
+              "installed"
+            ],
+            "installing": [
+              "installing"
+            ],
+            "not_installed": [
+              "setup needed",
+              "install"
+            ],
+            "ready": [
+              "ready",
+              "running"
+            ],
+            "review": [
+              "attention",
+              "review"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "apps-sanitized-ui",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteCatalog.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "Restore apply and update apply remain unavailable unless separately implemented and validated."
+      ],
+      "vertical_slice": false
+    },
+    {
+      "accepted_limitations": [
+        "Heartbeat freshness can move during capture; comparison records the observed revision."
+      ],
+      "api_projections": [
+        "fleet"
+      ],
+      "api_routes": [
+        "/api/lite/fleet"
+      ],
+      "backend_authorities": [
+        "device-current-state",
+        "device-heartbeats",
+        "device-supervisor-state"
+      ],
+      "fixture_coverage": "partial",
+      "frontend_screens": [
+        "devices"
+      ],
+      "frontend_surface": "src/lite/LiteDevices.jsx",
+      "id": "devices",
+      "known_gaps": [
+        "Per-device profile fields remain partial when the agent has not published them."
+      ],
+      "label": "Devices",
+      "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "count",
+              "id": "device_count",
+              "path": "devices",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "any",
+              "id": "server_identity_expected",
+              "list_path": "devices",
+              "route": "primary",
+              "where": {
+                "protected_server_host": true
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "find",
+              "id": "server_status",
+              "list_path": "devices",
+              "route": "primary",
+              "value_path": "status",
+              "where": {
+                "protected_server_host": true
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "count_where",
+              "id": "online_count",
+              "list_path": "devices",
+              "route": "primary",
+              "where": {
+                "status": "online"
+              }
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "remote_access_ready",
+              "path": "remote_access.ready",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "remote_access_status",
+              "path": "remote_access.status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "presence",
+              "id": "tailscale_ip_present",
+              "path": "remote_access.ip",
+              "route": "primary"
+            }
+          ],
+          "routes": [
+            {
+              "id": "primary",
+              "path": "/api/lite/fleet"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "devices"
+        }
+      },
+      "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.fleet",
+        "liteQueryKeys.fleetHealthSummary"
+      ],
+      "runtime_parity": "unvalidated",
+      "selector": "selectDevicesScreenView",
+      "selectors": [
+        "selectDevicesScreenView",
+        "selectLiteDeviceCard",
+        "selectRemoteAccessHealthView"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "server_identity_expected",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "server_identity_visible",
+          "id": "devices-server-identity",
+          "operator": "boolean-equivalence",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "server_status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "devices-server-state",
+          "mapping": {
+            "agent_stopped": [
+              "Agent stopped"
+            ],
+            "joining": [
+              "Joining"
+            ],
+            "offline": [
+              "Offline"
+            ],
+            "online": [
+              "Online"
+            ],
+            "repairing": [
+              "Repairing"
+            ],
+            "waiting": [
+              "Waiting"
+            ]
+          },
+          "operator": "state-machine-map",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "remote_access_ready",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "devices-remote-access",
+          "mapping": {
+            "false": [
+              "Remote access not ready"
+            ],
+            "true": [
+              "Remote access ready"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "tailscale_ip_present",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "tailscale_ip_visible",
+          "id": "devices-tailscale-exposure",
+          "operator": "boolean-equivalence",
+          "severity": "medium"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "devices-sanitized-ui",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteDevices.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "Healthy online devices are not removed without explicit confirmation."
+      ],
+      "vertical_slice": false
+    },
+    {
+      "accepted_limitations": [
+        "Raw scanner output and sensitive paths are intentionally excluded."
+      ],
+      "api_projections": [
+        "security-summary",
+        "security-profile",
+        "security-history"
+      ],
+      "api_routes": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/quick",
+        "/api/lite/security/history?limit=20"
+      ],
+      "backend_authorities": [
+        "security-scan-runs",
+        "security-findings",
+        "security-compact-state"
+      ],
+      "fixture_coverage": "partial",
+      "frontend_screens": [
+        "security"
+      ],
+      "frontend_surface": "src/lite/LiteSecurity.jsx",
+      "id": "security",
+      "known_gaps": [
+        "A missing scanner is runtime-unavailable, not semantic drift."
+      ],
+      "label": "Security",
+      "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "status",
+              "path": "status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "summary",
+              "path": "summary",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "score",
+              "path": "score",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "active_scan",
+              "path": "active_scan",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "profile",
+              "path": "last_run.profile",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "finding_count",
+              "path": "finding_count",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "read_degraded",
+              "path": "read_degraded",
+              "route": "primary"
+            }
+          ],
+          "routes": [
+            {
+              "id": "primary",
+              "path": "/api/lite/security/summary"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "security"
+        }
+      },
+      "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.security",
+        "liteQueryKeys.securityProfile",
+        "liteQueryKeys.securityHistory"
+      ],
+      "runtime_parity": "unvalidated",
+      "selector": "selectSecurityScreenView",
+      "selectors": [
+        "selectSecuritySummaryView",
+        "selectSecurityScreenView",
+        "selectSecurityProfileView"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "security-summary-presentation",
+          "mapping": {
+            "degraded": [
+              "Needs attention",
+              "Review"
+            ],
+            "failed": [
+              "needs attention"
+            ],
+            "healthy": [
+              "No urgent safety issues",
+              "Safe",
+              "Protected"
+            ],
+            "running": [
+              "Checking safety",
+              "Checking"
+            ],
+            "unknown": [
+              "checking"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "button_names",
+          "id": "security-primary-action",
+          "operator": "presence",
+          "severity": "high"
+        },
+        {
+          "backend_path": "profile",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "security-profile-presentation",
+          "mapping": {
+            "app": [
+              "App Check",
+              "PhotoPrism"
+            ],
+            "full": [
+              "Full Local Check",
+              "Full"
+            ],
+            "quick": [
+              "Quick",
+              "Safety Check"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "medium"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "security-sanitized-ui",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteSecurity.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "The browser never runs Lynis, Trivy, shell, PM2, or NATS commands."
+      ],
+      "vertical_slice": false
+    },
+    {
+      "accepted_limitations": [
+        "Credential values are never observable parity fields."
+      ],
+      "api_projections": [
+        "identity"
+      ],
+      "api_routes": [
+        "/api/lite/identity"
+      ],
+      "backend_authorities": [
+        "identity-runtime-projection",
+        "invite-identity-registry"
+      ],
+      "fixture_coverage": "partial",
+      "frontend_screens": [
+        "identity"
+      ],
+      "frontend_surface": "src/lite/LiteIdentity.jsx",
+      "id": "identity",
+      "known_gaps": [
+        "The current tab is direct-rendered and has no dedicated selector layer."
+      ],
+      "label": "Identity",
+      "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "status",
+              "path": "status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "summary",
+              "path": "summary",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "count",
+              "id": "target_count",
+              "path": "targets",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "identity_guard",
+              "path": "identity_guard.status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "protected_host",
+              "path": "protected_server_host",
+              "route": "primary"
+            }
+          ],
+          "routes": [
+            {
+              "id": "primary",
+              "path": "/api/lite/identity"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "identity"
+        }
+      },
+      "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.resource(/api/lite/identity)"
+      ],
+      "runtime_parity": "unvalidated",
+      "selector": "direct-render",
+      "selectors": [
+        "direct-render"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "identity-status-presentation",
+          "mapping": {
+            "degraded": [
+              "Review"
+            ],
+            "failed": [
+              "Attention"
+            ],
+            "healthy": [
+              "Access readiness",
+              "Ready"
+            ],
+            "mismatch": [
+              "mismatch",
+              "repair",
+              "rejoin"
+            ],
+            "ready": [
+              "Access readiness",
+              "Ready"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "summary",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "identity-summary",
+          "operator": "text-contains",
+          "severity": "medium"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "identity-password-redaction",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteIdentity.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "Identity mismatch repair/rejoin must remain explicit and fail closed."
+      ],
+      "vertical_slice": false
+    },
+    {
+      "accepted_limitations": [
+        "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine."
+      ],
+      "api_projections": [
+        "rules"
+      ],
+      "api_routes": [
+        "/api/lite/policy"
+      ],
+      "backend_authorities": [
+        "workflow-current-state"
+      ],
+      "fixture_coverage": "partial",
+      "frontend_screens": [
+        "rules"
+      ],
+      "frontend_surface": "src/lite/LiteRules.jsx",
+      "id": "rules",
+      "known_gaps": [
+        "Per-rule identity and execution history are planned, not present in the current API."
+      ],
+      "label": "Rules",
+      "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "status",
+              "path": "status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "summary",
+              "path": "summary",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "protection_enabled",
+              "path": "protection_enabled",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "requires_confirmation",
+              "path": "requires_confirmation",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "count",
+              "id": "allowed_action_count",
+              "path": "allowed_actions",
+              "route": "primary"
+            }
+          ],
+          "routes": [
+            {
+              "id": "primary",
+              "path": "/api/lite/policy"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "rules"
+        }
+      },
+      "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
+      "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-mocked.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.resource(/api/lite/policy)"
+      ],
+      "runtime_parity": "unvalidated",
+      "selector": "direct-render",
+      "selectors": [
+        "direct-render"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "protection_enabled",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "protection_toggle_pressed",
+          "id": "rules-protection-state",
+          "operator": "boolean-equivalence",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "protection_enabled",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "rules-protection-presentation",
+          "mapping": {
+            "false": [
+              "Protection is off",
+              "Ready to enable",
+              "Not enabled"
+            ],
+            "true": [
+              "Protection is on",
+              "Protection on",
+              "Enabled"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "summary",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "rules-summary",
+          "operator": "text-contains",
+          "severity": "medium"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "rules-sanitized-ui",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
+      "status": "partial",
+      "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteRules.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "Planned trigger/condition/action automation is not marked verified."
+      ],
+      "vertical_slice": false
+    },
+    {
+      "accepted_limitations": [
+        "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+        "App restore apply remains explicitly unsupported where the repository reports it unavailable."
+      ],
       "api_projections": [
         "recovery-summary",
         "recovery-details",
         "recovery-operations",
         "recovery-backup-history"
+      ],
+      "api_routes": [
+        "/api/lite/recovery/summary",
+        "/api/lite/recovery/details",
+        "/api/lite/recovery/operations",
+        "/api/lite/recovery/backups"
       ],
       "backend_authorities": [
         "backup-state-file",
@@ -433,140 +2125,253 @@
         "database-restore-table"
       ],
       "fixture_coverage": "verified",
+      "frontend_screens": [
+        "recovery"
+      ],
       "frontend_surface": "src/lite/LiteRecovery.jsx",
       "id": "recovery",
       "known_gaps": [
-        "Live Termux parity is opt-in and read-only.",
-        "Visual parity is semantic and not pixel equality.",
-        "App restore apply remains explicitly unsupported by the repository."
+        "Live Termux and live browser semantic capture remain explicit; missing capture is not drift."
       ],
       "label": "Backup & Restore",
       "live_api_coverage": "unvalidated",
+      "live_observation_contract": {
+        "backend": {
+          "fields": [
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "status",
+              "path": "status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "summary",
+              "path": "summary",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "read_degraded",
+              "path": "read_degraded",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "degraded_reason",
+              "path": "degraded_reason",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "numeric-tolerance",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "projection_age_ms",
+              "path": "projection_age_ms",
+              "route": "primary",
+              "tolerance": 15000
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "data_source",
+              "path": "data_source",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "refresh_pending",
+              "path": "refresh_pending",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "latest_backup_id",
+              "path": "latest_backup.backup_id",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "verification_status",
+              "path": "latest_backup.verification_status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "restore_preview_status",
+              "path": "latest_restore_preview.status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "restore_allowed",
+              "path": "latest_restore_preview.restore_allowed",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "last_restore_status",
+              "path": "last_restore.status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "maintenance_state",
+              "path": "maintenance.status",
+              "route": "primary"
+            },
+            {
+              "authority_operator": "exact",
+              "authority_severity": "high",
+              "extract": "path",
+              "id": "database_protection_status",
+              "path": "database_protection.status",
+              "route": "primary"
+            }
+          ],
+          "routes": [
+            {
+              "id": "primary",
+              "path": "/api/lite/recovery/summary"
+            }
+          ]
+        },
+        "frontend": {
+          "project_required": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "screen_id": "recovery"
+        }
+      },
       "live_termux_coverage": "unvalidated",
+      "live_ui_coverage": "unvalidated",
       "mocked_playwright_coverage": "verified",
+      "mocked_scenarios": [
+        "tests/e2e/lite-parity.spec.ts"
+      ],
+      "query_keys": [
+        "liteQueryKeys.recoverySummary",
+        "liteQueryKeys.recoveryDetails",
+        "liteQueryKeys.recoveryHistory"
+      ],
+      "runtime_parity": "unvalidated",
       "selector": "selectRecoveryScreenView",
+      "selectors": [
+        "selectRecoverySummaryView",
+        "selectRecoveryScreenView"
+      ],
+      "semantic_mappings": [
+        {
+          "backend_path": "latest_backup_id",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "latest_backup_id",
+          "id": "recovery-latest-backup-identity",
+          "operator": "identity-match",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "read_degraded",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "stale_warning_visible",
+          "id": "recovery-stale-semantics",
+          "operator": "boolean-equivalence",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "read_degraded",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "backup_action_disabled",
+          "id": "recovery-write-safety",
+          "operator": "boolean-equivalence",
+          "severity": "critical"
+        },
+        {
+          "backend_path": "status",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "status_label",
+          "id": "recovery-status-presentation",
+          "mapping": {
+            "degraded": [
+              "Review",
+              "needs a refresh"
+            ],
+            "failed": [
+              "Attention",
+              "needs attention"
+            ],
+            "healthy": [
+              "Protection ready",
+              "Protected",
+              "Ready"
+            ],
+            "unknown": [
+              "Checking",
+              "Review"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "read_degraded",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "summary_label",
+          "id": "recovery-summary-presentation",
+          "mapping": {
+            "false": [
+              "Recovery Ready",
+              "Recovery is ready",
+              "Backup and restore"
+            ],
+            "true": [
+              "Recovery information needs a refresh"
+            ]
+          },
+          "operator": "intentional-presentation-map",
+          "severity": "high"
+        },
+        {
+          "backend_path": "$",
+          "boundary": "live-api-live-ui",
+          "frontend_path": "screen_text",
+          "id": "recovery-sanitized-ui",
+          "operator": "safe-redaction",
+          "severity": "critical"
+        }
+      ],
       "status": "ready-with-accepted-limitations",
       "storybook_coverage": "verified",
+      "storybook_exports": [
+        "src/lite/LiteRecoveryParity.stories.jsx"
+      ],
+      "unsupported_operations": [
+        "Unsafe writes remain disabled while the recovery projection is stale."
+      ],
       "vertical_slice": true
-    },
-    {
-      "api_projections": [
-        "fleet"
-      ],
-      "backend_authorities": [
-        "device-current-state",
-        "device-heartbeats",
-        "device-supervisor-state"
-      ],
-      "fixture_coverage": "verified",
-      "frontend_surface": "src/lite/LiteDevices.jsx",
-      "id": "devices",
-      "known_gaps": [
-        "Parity mappings are source-derived catalog entries only in this increment."
-      ],
-      "label": "Devices",
-      "live_api_coverage": "unvalidated",
-      "live_termux_coverage": "runtime-source-verified",
-      "mocked_playwright_coverage": "verified",
-      "selector": "selectDevicesScreenView",
-      "status": "partial",
-      "storybook_coverage": "verified",
-      "vertical_slice": false
-    },
-    {
-      "api_projections": [
-        "catalog",
-        "app-actions"
-      ],
-      "backend_authorities": [
-        "app-current-state",
-        "app-action-lifecycle"
-      ],
-      "fixture_coverage": "verified",
-      "frontend_surface": "src/lite/LiteCatalog.jsx",
-      "id": "apps",
-      "known_gaps": [
-        "PhotoPrism is cataloged; full cross-app parity remains planned."
-      ],
-      "label": "Apps",
-      "live_api_coverage": "unvalidated",
-      "live_termux_coverage": "runtime-source-verified",
-      "mocked_playwright_coverage": "verified",
-      "selector": "selectLiteCatalogView",
-      "status": "partial",
-      "storybook_coverage": "verified",
-      "vertical_slice": false
-    },
-    {
-      "api_projections": [
-        "security-summary",
-        "security-profile",
-        "security-history"
-      ],
-      "backend_authorities": [
-        "security-scan-runs",
-        "security-findings",
-        "security-compact-state"
-      ],
-      "fixture_coverage": "verified",
-      "frontend_surface": "src/lite/LiteSecurity.jsx",
-      "id": "security",
-      "known_gaps": [
-        "Live scanner parity is not part of ordinary documentation generation."
-      ],
-      "label": "Security",
-      "live_api_coverage": "unvalidated",
-      "live_termux_coverage": "runtime-source-verified",
-      "mocked_playwright_coverage": "verified",
-      "selector": "selectSecurityScreenView",
-      "status": "partial",
-      "storybook_coverage": "verified",
-      "vertical_slice": false
-    },
-    {
-      "api_projections": [
-        "rules"
-      ],
-      "backend_authorities": [
-        "workflow-current-state"
-      ],
-      "fixture_coverage": "partial",
-      "frontend_surface": "src/lite/LiteRules.jsx",
-      "id": "rules",
-      "known_gaps": [
-        "Repository exposes a partial product contract; authoritative mappings are planned."
-      ],
-      "label": "Rules",
-      "live_api_coverage": "unvalidated",
-      "live_termux_coverage": "unvalidated",
-      "mocked_playwright_coverage": "partial",
-      "selector": "unverified",
-      "status": "planned",
-      "storybook_coverage": "partial",
-      "vertical_slice": false
-    },
-    {
-      "api_projections": [
-        "release-status"
-      ],
-      "backend_authorities": [
-        "installed-release-identity",
-        "release-runtime-projection"
-      ],
-      "fixture_coverage": "verified",
-      "frontend_surface": "src/lite/LiteHome.jsx",
-      "id": "releases",
-      "known_gaps": [
-        "Release apply is excluded from parity property and live read-only gates."
-      ],
-      "label": "Releases",
-      "live_api_coverage": "unvalidated",
-      "live_termux_coverage": "runtime-source-verified",
-      "mocked_playwright_coverage": "partial",
-      "selector": "source-derived",
-      "status": "partial",
-      "storybook_coverage": "partial",
-      "vertical_slice": false
     }
   ],
   "environments": [
@@ -849,7 +2654,7 @@
     {
       "id": "tanstack-query",
       "may_store": [
-        "sanitized API projections",
+        "sanitized Lite API projections",
         "ETags",
         "query timestamps"
       ],
@@ -860,42 +2665,43 @@
         "write success before FastAPI confirmation"
       ],
       "owner": "frontend-server-state",
-      "responsibility": "live FastAPI read cache, query invalidation, stale/reconnect behavior",
+      "responsibility": "live FastAPI read cache, focused invalidation, stale/reconnect behavior across Lite tabs",
       "status": "verified"
     },
     {
       "id": "dexie",
       "may_store": [
-        "recovery summary",
-        "first page recovery history",
-        "snapshot metadata"
+        "allowlisted safe Lite summaries",
+        "bounded snapshot metadata"
       ],
       "must_not_store": [
         "write responses",
         "credentials",
         "raw manifests",
         "raw evidence",
-        "private paths"
+        "private paths",
+        "identity or invite secrets"
       ],
       "owner": "frontend-offline-snapshot",
-      "responsibility": "sanitized read-only fallback snapshots",
+      "responsibility": "sanitized read-only fallback snapshots for explicitly eligible Lite GET projections",
       "status": "verified"
     },
     {
       "id": "zustand",
       "may_store": [
-        "recovery Manage open state",
-        "selected recovery section",
-        "confirmation sheet state"
+        "active tab",
+        "Manage/details open state",
+        "selected UI sections",
+        "toast and refresh feedback"
       ],
       "must_not_store": [
-        "authoritative recovery status",
-        "backup truth",
-        "restore completion truth",
+        "authoritative backend status",
+        "device or app truth",
+        "backup or security completion truth",
         "secrets"
       ],
       "owner": "frontend-ui-state",
-      "responsibility": "transient overlay, Manage, selection and feedback state",
+      "responsibility": "harmless cross-tab overlay, navigation, selection, and feedback state",
       "status": "verified"
     },
     {
@@ -911,19 +2717,22 @@
         "offline write queue"
       ],
       "owner": "frontend-workflow-state",
-      "responsibility": "visible recovery workflow coordination",
+      "responsibility": "visible guided workflow coordination for risky or multi-step Lite actions",
       "status": "verified"
     },
     {
       "id": "component-local",
       "may_store": [
-        "copied evidence label"
+        "ephemeral disclosure state",
+        "copied-label feedback"
       ],
       "must_not_store": [
-        "backend authority"
+        "backend authority",
+        "secrets",
+        "durable operation truth"
       ],
       "owner": "component",
-      "responsibility": "ephemeral copy feedback and local presentation",
+      "responsibility": "small component-local presentation state only",
       "status": "verified"
     },
     {
@@ -942,17 +2751,19 @@
     {
       "id": "playwright",
       "may_store": [
-        "sanitized traces",
-        "failure screenshots",
-        "JUnit/JSON results"
+        "bounded sanitized semantic observations",
+        "failure-only local artifacts"
       ],
       "must_not_store": [
         "backend authority",
         "raw secrets",
-        "phone identity"
+        "phone identity",
+        "hostnames",
+        "usernames",
+        "private addresses"
       ],
       "owner": "browser-quality",
-      "responsibility": "mocked and live browser observation",
+      "responsibility": "mocked and explicit live browser semantic observation",
       "status": "verified"
     }
   ],
@@ -1014,6 +2825,56 @@
       "status": "unvalidated"
     }
   ],
+  "pairwise_dimensions": [
+    {
+      "dimensions": {
+        "action_progress": [
+          "idle",
+          "running"
+        ],
+        "backend_availability": [
+          "available",
+          "unavailable"
+        ],
+        "projection_freshness": [
+          "fresh",
+          "stale"
+        ],
+        "saved_snapshot": [
+          "absent",
+          "present"
+        ],
+        "viewport": [
+          "desktop",
+          "mobile"
+        ]
+      },
+      "domains": [
+        "home",
+        "apps",
+        "devices",
+        "security",
+        "identity",
+        "rules",
+        "recovery"
+      ],
+      "exclusions": [
+        {
+          "action_progress": "running",
+          "backend_availability": "unavailable"
+        },
+        {
+          "action_progress": "running",
+          "backend_availability": "available",
+          "projection_freshness": "fresh",
+          "saved_snapshot": "present"
+        }
+      ],
+      "id": "all-tabs-runtime-pairwise",
+      "max_cases": 24,
+      "status": "verified"
+    }
+  ],
   "performance_profiles": [
     {
       "destructive_endpoints": [],
@@ -1052,6 +2913,204 @@
         "http_req_failed": "rate<0.02"
       },
       "vus": 1
+    }
+  ],
+  "runtime_scenarios": [
+    {
+      "backend_observations": {
+        "overall_status": "healthy"
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "home",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "screen_text": "Your self hosted workspace is ready"
+      },
+      "id": "home-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "home-overall-presentation"
+    },
+    {
+      "backend_observations": {
+        "overall_status": "healthy"
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "home",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "screen_text": "System offline"
+      },
+      "id": "home-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "home-overall-presentation"
+    },
+    {
+      "backend_observations": {
+        "runtime_status": "ready"
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "apps",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "screen_text": "PhotoPrism is running"
+      },
+      "id": "apps-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "apps-runtime-presentation"
+    },
+    {
+      "backend_observations": {
+        "runtime_status": "ready"
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "apps",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "screen_text": "PhotoPrism is stopped"
+      },
+      "id": "apps-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "apps-runtime-presentation"
+    },
+    {
+      "backend_observations": {
+        "remote_access_ready": false
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "devices",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "screen_text": "Remote access not ready"
+      },
+      "id": "devices-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "devices-remote-access"
+    },
+    {
+      "backend_observations": {
+        "remote_access_ready": false
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "devices",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "screen_text": "Remote access ready"
+      },
+      "id": "devices-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "devices-remote-access"
+    },
+    {
+      "backend_observations": {
+        "status": "healthy"
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "security",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "screen_text": "No urgent safety issues"
+      },
+      "id": "security-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "security-summary-presentation"
+    },
+    {
+      "backend_observations": {
+        "status": "healthy"
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "security",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "screen_text": "Critical scanner mismatch"
+      },
+      "id": "security-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "security-summary-presentation"
+    },
+    {
+      "backend_observations": {
+        "status": "ready"
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "identity",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "screen_text": "Access readiness is ready"
+      },
+      "id": "identity-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "identity-status-presentation"
+    },
+    {
+      "backend_observations": {
+        "status": "ready"
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "identity",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "screen_text": "Identity unavailable"
+      },
+      "id": "identity-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "identity-status-presentation"
+    },
+    {
+      "backend_observations": {
+        "protection_enabled": true
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "rules",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "screen_text": "Protection is on"
+      },
+      "id": "rules-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "rules-protection-presentation"
+    },
+    {
+      "backend_observations": {
+        "protection_enabled": true
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "rules",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "screen_text": "Protection is off"
+      },
+      "id": "rules-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "rules-protection-presentation"
+    },
+    {
+      "backend_observations": {
+        "status": "healthy"
+      },
+      "description": "Backend and UI meaning agree through an allowlisted presentation mapping.",
+      "domain": "recovery",
+      "expected_runtime_parity": "verified-with-mapped-presentation",
+      "frontend_observations": {
+        "status_label": "Protection ready"
+      },
+      "id": "recovery-mapped-presentation",
+      "kind": "canonical",
+      "mapping_id": "recovery-status-presentation"
+    },
+    {
+      "backend_observations": {
+        "status": "healthy"
+      },
+      "description": "A bounded fixture deliberately contradicts one critical semantic field.",
+      "domain": "recovery",
+      "expected_runtime_parity": "drift-detected",
+      "frontend_observations": {
+        "status_label": "Recovery failed"
+      },
+      "id": "recovery-deliberate-drift",
+      "kind": "deliberate-drift",
+      "mapping_id": "recovery-status-presentation"
     }
   ],
   "sanitization": {
@@ -1875,21 +3934,25 @@
       "visual_test": "tests/e2e/lite-visual.spec.ts#recovery"
     }
   ],
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "source_revision": "repository-source",
   "status_vocabulary": [
     "verified",
+    "verified-with-mapped-presentation",
+    "drift-detected",
+    "partial",
+    "planned",
+    "unvalidated",
+    "capture-failed",
+    "stale-evidence",
+    "runtime-unavailable",
+    "unsupported",
+    "accepted-limitation",
+    "needs-review",
     "inferred",
     "patch-provided",
     "missing",
-    "planned",
-    "unvalidated",
-    "partial",
-    "blocked",
-    "ready",
-    "ready-with-accepted-limitations",
-    "runtime-unavailable",
-    "runtime-mismatch"
+    "ready-with-accepted-limitations"
   ],
   "tooling": [
     {

@@ -4,11 +4,11 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57
+semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
 generator: scripts/docs/parity/generate_parity.py
 ---
 
 # Visual Regression Report
 > Status vocabulary: **verified** is source/test confirmed; **partial** is source-derived but incomplete; **planned** is not implemented; **unvalidated** has not been run in the current environment.
 
-Existing Playwright screenshots cover the Recovery tab at desktop and mobile viewports with reduced motion. Visual approval is separate from data parity approval. A pixel change can require baseline review even when semantic parity passes, and semantic parity can fail while screenshots remain visually similar.
+Existing Playwright visual checks remain separate from semantic parity. The all-tab live capture records bounded desktop and mobile observations, while visual approval continues to govern screenshot baselines independently. A pixel change can require baseline review even when semantic parity passes, and semantic parity can fail while screenshots remain visually similar.

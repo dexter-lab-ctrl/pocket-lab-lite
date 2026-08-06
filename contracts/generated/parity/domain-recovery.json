@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/recovery/summary",
+        "/api/lite/recovery/details",
+        "/api/lite/recovery/operations",
+        "/api/lite/recovery/backups"
+      ],
+      "fingerprint": "3f7df6ef3d7baec373627033ef64468e7f7b91549962e1f1ce7fc280406f74bd",
+      "id": "recovery",
+      "selectors": [
+        "selectRecoverySummaryView",
+        "selectRecoveryScreenView"
+      ],
+      "semantic_mapping_ids": [
+        "recovery-latest-backup-identity",
+        "recovery-stale-semantics",
+        "recovery-write-safety",
+        "recovery-status-presentation",
+        "recovery-summary-presentation",
+        "recovery-sanitized-ui"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

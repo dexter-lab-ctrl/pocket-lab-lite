@@ -2,6 +2,48 @@
   "items": [
     {
       "backend_sources": [
+        "app-action-lifecycle"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "apps",
+      "endpoint": "/api/lite/apps/{app_id}/actions",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.appActions",
+        "selectPhotoPrismActionsView",
+        "LiteCatalog"
+      ],
+      "id": "app-actions",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "app-actions-view"
+    },
+    {
+      "backend_sources": [
+        "app-current-state",
+        "app-action-lifecycle"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "apps",
+      "endpoint": "/api/lite/apps/lifecycle",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.appLifecycle",
+        "selectPhotoPrismManageView"
+      ],
+      "id": "app-lifecycle",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "app-lifecycle-view"
+    },
+    {
+      "backend_sources": [
         "app-current-state"
       ],
       "degraded_behavior": "saved state",
@@ -39,6 +81,49 @@
       "sanitization": "allowlist",
       "status": "partial",
       "view_model_identity": "devices-screen-view"
+    },
+    {
+      "backend_sources": [
+        "identity-runtime-projection",
+        "invite-identity-registry"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "identity",
+      "endpoint": "/api/lite/identity",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.identity",
+        "LiteIdentity"
+      ],
+      "id": "identity",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "identity-direct-render"
+    },
+    {
+      "backend_sources": [
+        "lite-status-service",
+        "system-health-projection"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "home",
+      "endpoint": "/api/lite/status",
+      "freshness": "status revision and checked_at",
+      "frontend_consumers": [
+        "liteApi.status",
+        "buildLiteHomeOverview",
+        "LiteHome"
+      ],
+      "id": "lite-status",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "home-overview"
     },
     {
       "backend_sources": [
@@ -171,6 +256,88 @@
     },
     {
       "backend_sources": [
+        "installed-release-identity"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "home",
+      "endpoint": "/api/lite/release",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.releaseStatus",
+        "LiteReleaseUpdateCard"
+      ],
+      "id": "release-status",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "release-status"
+    },
+    {
+      "backend_sources": [
+        "workflow-current-state"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "rules",
+      "endpoint": "/api/lite/policy",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.policy",
+        "LiteRules"
+      ],
+      "id": "rules",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "partial",
+      "view_model_identity": "rules-direct-render"
+    },
+    {
+      "backend_sources": [
+        "security-scan-runs"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "security",
+      "endpoint": "/api/lite/security/history?limit={limit}",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.securityHistory",
+        "selectSecurityHistorySnapshotView"
+      ],
+      "id": "security-history",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "security-history-view"
+    },
+    {
+      "backend_sources": [
+        "security-scan-runs",
+        "security-findings",
+        "security-compact-state"
+      ],
+      "degraded_behavior": "safe stale/degraded/unavailable state",
+      "domain": "security",
+      "endpoint": "/api/lite/security/profiles/{profile}",
+      "freshness": "prepared projection revision",
+      "frontend_consumers": [
+        "liteApi.securityProfile",
+        "selectSecurityProfileView"
+      ],
+      "id": "security-profile",
+      "method": "GET",
+      "offline_eligibility": "safe-summary",
+      "pagination": "none",
+      "sanitization": "allowlist",
+      "status": "verified",
+      "view_model_identity": "security-profile-view"
+    },
+    {
+      "backend_sources": [
         "security-compact-state"
       ],
       "degraded_behavior": "saved summary",
@@ -191,7 +358,7 @@
   ],
   "kind": "api-projections",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
   "source_revision": "repository-source",
   "status": "generated"
 }

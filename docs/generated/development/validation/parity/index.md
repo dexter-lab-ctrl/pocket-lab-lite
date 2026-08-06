@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57
+semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -16,11 +16,19 @@ Pocket Lab Lite verifies projection parity at three independent boundaries so a 
 ## Navigation
 
 - [Architecture and Method](architecture.md)
+- [Home](home.md)
+- [Apps](apps.md)
+- [Devices](devices.md)
+- [Security](security.md)
+- [Identity](identity.md)
+- [Rules](rules.md)
 - [Backup & Restore](backup-restore.md)
+- [Runtime drift report](runtime-drift-report.md)
+- [Accepted limitations](accepted-limitations.md)
 - [Domain catalog](domain-catalog.md)
 - [Coverage and gaps](coverage-gaps.md)
 - [Release readiness](release-readiness.md)
 
 ## Current release statement
 
-Backup & Restore is the first complete source-and-test vertical slice. Live WSL2-to-Termux and live browser checks remain optional and **unvalidated** until explicitly run.
+The canonical parity model now covers all seven Lite tabs. Repository contracts and deterministic mocked evidence remain distinct from explicitly promoted semantic runtime evidence. The currently tracked legacy runtime baseline is coverage-only; it must not be interpreted as field-level semantic verification.

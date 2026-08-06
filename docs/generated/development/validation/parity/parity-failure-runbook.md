@@ -4,7 +4,7 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57
+semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
 generator: scripts/docs/parity/generate_parity.py
 ---
 
@@ -13,19 +13,19 @@ generator: scripts/docs/parity/generate_parity.py
 
 ## Symptoms
 
-Stale or contradictory recovery status, missing backup history, a verified backup shown as unverified, restore readiness mismatch, mocked/live divergence, undocumented `400`/`404`/`503`, property-test timeout, or a bootstrap identity crash.
+A backend/API value is rendered with the wrong meaning, desktop and mobile disagree, an API/Termux observation differs, a selector maps the wrong state family, evidence is stale or incomplete, a capture fails, runtime is unavailable, or generated parity artifacts drift from the canonical model.
 
 ## Read-only verification
 
-1. Verify the SSH loopback tunnel or local API without exposing the phone directly.
-2. Compile the focused schema and inspect its selection manifest; it must contain only Recovery GET operations and no maintenance path.
-3. Run parity contract and fixture checks.
-4. Query Recovery summary/details/history through FastAPI.
-5. Inspect prepared-projection freshness and worker/NATS health without mutation.
-6. Capture bounded cold/warm latency evidence for slow reads.
-7. Inspect safe Dexie metadata in browser DevTools; never treat it as authority.
-8. Capture sanitized evidence and categorized Schemathesis summaries.
+1. Verify the local API or bounded SSH loopback tunnel without exposing the phone directly.
+2. Run deterministic model, schema, selector, fixture, and generated-artifact checks.
+3. Capture sanitized read-only API and Termux observations for the affected domains.
+4. Run live desktop and mobile Playwright capture with the release tag and source commit bound.
+5. Run the semantic comparator and inspect failure attribution before interpreting any mismatch.
+6. Treat `drift-detected` as valid evidence; do not rewrite application behavior merely to make documentation pass.
+7. Treat `capture-failed`, `stale-evidence`, and `runtime-unavailable` as capture states, not drift.
+8. Promote only after the allowlisted observations and recomputed comparisons pass release/source/freshness validation.
 
 ## Recovery
 
-Do not edit SQLite or manifests manually. Invalid bootstrap identities fail closed before token creation or durable writes. Restore or repair must use explicit backend-owned flows and existing confirmations. Baselines are promoted only after explicit review evidence.
+Do not edit SQLite, generated baselines, runtime state, or frontend selectors merely to clear a parity report. Repair the owning backend, projection, selector, presentation mapping, capture adapter, or documented accepted limitation according to failure attribution. Destructive or identity-sensitive recovery remains backend-owned and must use existing explicit confirmations.

@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/identity"
+      ],
+      "fingerprint": "1140f9c4c97bf072357c75c6e5ae4b6cc0f029a9c859d78f715aafa652cfc04e",
+      "id": "identity",
+      "selectors": [
+        "direct-render"
+      ],
+      "semantic_mapping_ids": [
+        "identity-status-presentation",
+        "identity-summary",
+        "identity-password-redaction"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

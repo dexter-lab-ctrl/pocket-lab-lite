@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/policy"
+      ],
+      "fingerprint": "8fae456c51d773ca1cb21ee9296fa769a9753a52617cf33ce0c1114f63a4c63d",
+      "id": "rules",
+      "selectors": [
+        "direct-render"
+      ],
+      "semantic_mapping_ids": [
+        "rules-protection-state",
+        "rules-protection-presentation",
+        "rules-summary",
+        "rules-sanitized-ui"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

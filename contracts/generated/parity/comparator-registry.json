@@ -1,0 +1,177 @@
+{
+  "items": [
+    {
+      "bounded": true,
+      "description": "Prohibited frontend observation is absent.",
+      "deterministic": true,
+      "id": "absence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Boolean meaning equivalence.",
+      "deterministic": true,
+      "id": "boolean-equivalence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Byte/capacity presentation equivalence.",
+      "deterministic": true,
+      "id": "byte-format",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Backend capability maps to an available or disabled UI action.",
+      "deterministic": true,
+      "id": "capability-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Case-insensitive string equality.",
+      "deterministic": true,
+      "id": "case-insensitive",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Duration presentation equivalence.",
+      "deterministic": true,
+      "id": "duration-format",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Allowlisted backend enum to frontend presentation mapping.",
+      "deterministic": true,
+      "id": "enum-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Exact bounded equality.",
+      "deterministic": true,
+      "id": "exact",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Freshness timestamps within an explicit window.",
+      "deterministic": true,
+      "id": "freshness-window",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Canonical identifier equality after safe normalization.",
+      "deterministic": true,
+      "id": "identity-match",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Different wording preserves the same user-facing meaning.",
+      "deterministic": true,
+      "id": "intentional-presentation-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Whitespace and punctuation normalized string equality.",
+      "deterministic": true,
+      "id": "normalized-string",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Numeric equality within an explicit tolerance.",
+      "deterministic": true,
+      "id": "numeric-tolerance",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Order-sensitive list equality.",
+      "deterministic": true,
+      "id": "ordered-list",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Percentage presentation equivalence.",
+      "deterministic": true,
+      "id": "percentage-format",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Required frontend observation is present.",
+      "deterministic": true,
+      "id": "presence",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Observed text contains no prohibited secret/path pattern.",
+      "deterministic": true,
+      "id": "safe-redaction",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Order-independent set equality.",
+      "deterministic": true,
+      "id": "set-equality",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Allowlisted backend state to rendered state mapping.",
+      "deterministic": true,
+      "id": "state-machine-map",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Allowlisted status-family mapping.",
+      "deterministic": true,
+      "id": "status-family",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Backend values are represented by a frontend subset relation.",
+      "deterministic": true,
+      "id": "subset",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Backend values are represented by a frontend superset relation.",
+      "deterministic": true,
+      "id": "superset",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Frontend text contains a bounded normalized backend value.",
+      "deterministic": true,
+      "id": "text-contains",
+      "status": "verified"
+    },
+    {
+      "bounded": true,
+      "description": "Timestamp equality within a bounded tolerance.",
+      "deterministic": true,
+      "id": "timestamp-equivalence",
+      "status": "verified"
+    }
+  ],
+  "kind": "comparator-registry",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

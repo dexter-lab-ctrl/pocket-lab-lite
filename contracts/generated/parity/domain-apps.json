@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/catalog",
+        "/api/lite/apps/photoprism/actions",
+        "/api/lite/apps/lifecycle"
+      ],
+      "fingerprint": "4f6e1bf8e18554ad79eff14c081b8513c819815f4240d595f8028d59d39fa184",
+      "id": "apps",
+      "selectors": [
+        "selectLiteCatalogAppSummary",
+        "selectPhotoPrismActionsView",
+        "selectPhotoPrismManageView"
+      ],
+      "semantic_mapping_ids": [
+        "apps-canonical-name",
+        "apps-open-capability",
+        "apps-installed-manage",
+        "apps-runtime-presentation",
+        "apps-sanitized-ui"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

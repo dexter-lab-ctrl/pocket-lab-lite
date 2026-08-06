@@ -149,6 +149,12 @@ nav:
               - Backend-to-Frontend parity: generated/development/validation/parity/index.md
               - Projection parity architecture: generated/development/validation/parity/architecture.md
               - Domain parity catalog: generated/development/validation/parity/domain-catalog.md
+              - Home parity: generated/development/validation/parity/home.md
+              - Apps parity: generated/development/validation/parity/apps.md
+              - Devices parity: generated/development/validation/parity/devices.md
+              - Security parity: generated/development/validation/parity/security.md
+              - Identity parity: generated/development/validation/parity/identity.md
+              - Rules parity: generated/development/validation/parity/rules.md
               - Backup & Restore parity: generated/development/validation/parity/backup-restore.md
               - Backend data ownership: generated/development/validation/parity/backend-data-ownership.md
               - API projections: generated/development/validation/parity/api-projections.md
@@ -160,6 +166,8 @@ nav:
               - Playwright coverage: generated/development/validation/parity/playwright-coverage.md
               - Live Termux verification: generated/development/validation/parity/live-termux-verification.md
               - Runtime verification matrix: generated/development/validation/parity/runtime-verification-matrix.md
+              - Runtime semantic drift: generated/development/validation/parity/runtime-drift-report.md
+              - Accepted limitations: generated/development/validation/parity/accepted-limitations.md
               - Test environment matrix: generated/development/validation/parity/test-environment-matrix.md
               - Fixture governance: generated/development/validation/parity/fixture-governance.md
               - OpenAPI compatibility: generated/development/validation/parity/openapi-compatibility.md
