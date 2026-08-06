@@ -1,0 +1,34 @@
+{
+  "domains": [
+    {
+      "evidence": {
+        "playwright": {
+          "projects": [
+            "live-desktop",
+            "live-mobile"
+          ],
+          "status": "verified",
+          "tests_per_project": 2
+        },
+        "playwright_sha256": "f2e288bd84a2cd8c68ea3c86f41f07b031efb97cb889984ec5d4c5973453c94e",
+        "termux": {
+          "latest_backup_present": true,
+          "read_degraded": true,
+          "recovery_status": "healthy",
+          "status": "verified"
+        },
+        "termux_sha256": "036f332850c51d97362424c1119df92b966431fa3cc624662f1d7b94c628a96c"
+      },
+      "id": "recovery",
+      "live_api_coverage": "verified",
+      "live_termux_coverage": "verified",
+      "status": "verified"
+    }
+  ],
+  "promoted_at": "2026-08-06T07:48:03Z",
+  "release_tag": "lite-2026.08.05.2",
+  "sanitized": true,
+  "schema_version": "1.0.0",
+  "source_commit": "3a81745fbd4c2fdeb17f2308a0d3fdbd5c2f3aa5",
+  "status": "verified"
+}

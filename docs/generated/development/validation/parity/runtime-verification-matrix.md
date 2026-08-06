@@ -11,9 +11,11 @@ generator: scripts/docs/parity/generate_parity.py
 # Runtime Verification Matrix
 > Status vocabulary: **verified** is source/test confirmed; **partial** is source-derived but incomplete; **planned** is not implemented; **unvalidated** has not been run in the current environment.
 
+Promoted runtime baseline: **verified**; release: **lite-2026.08.05.2**. Promotion is explicit, sanitized, hash-bound, and ordinary generation never reads live captures.
+
 | Domain | Source | Fixture | Mock browser | Live API | Live Termux | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| Backup & Restore | verified | verified | verified | unvalidated | unvalidated | ready-with-accepted-limitations |
+| Backup & Restore | verified | verified | verified | verified | verified | verified |
 | Devices | verified | verified | verified | unvalidated | runtime-source-verified | partial |
 | Apps | verified | verified | verified | unvalidated | runtime-source-verified | partial |
 | Security | verified | verified | verified | unvalidated | runtime-source-verified | partial |

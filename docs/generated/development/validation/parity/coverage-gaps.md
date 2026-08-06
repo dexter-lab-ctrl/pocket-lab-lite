@@ -13,7 +13,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Domain | Status | Known gaps |
 | --- | --- | --- |
-| Backup & Restore | ready-with-accepted-limitations | Live Termux parity is opt-in and read-only.; Visual parity is semantic and not pixel equality.; App restore apply remains explicitly unsupported by the repository. |
+| Backup & Restore | verified | Live Termux parity is opt-in and read-only.; Visual parity is semantic and not pixel equality.; App restore apply remains explicitly unsupported by the repository. |
 | Devices | partial | Parity mappings are source-derived catalog entries only in this increment. |
 | Apps | partial | PhotoPrism is cataloged; full cross-app parity remains planned. |
 | Security | partial | Live scanner parity is not part of ordinary documentation generation. |

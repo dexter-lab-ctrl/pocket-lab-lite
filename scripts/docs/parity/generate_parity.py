@@ -12,6 +12,7 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL_PATH = ROOT / "contracts" / "parity" / "parity-model.json"
+RUNTIME_BASELINE_PATH = ROOT / "contracts" / "parity" / "runtime-verification-baseline.json"
 MODEL_SCHEMA = ROOT / "schemas" / "parity" / "parity-model.schema.json"
 CONTRACT_SCHEMA = ROOT / "schemas" / "parity" / "parity-contract.schema.json"
 GENERATED_ROOT = ROOT / "contracts" / "generated" / "parity"
@@ -94,6 +95,48 @@ def fingerprint(model: dict[str, Any]) -> str:
 
 def load_model() -> dict[str, Any]:
     return json.loads(MODEL_PATH.read_text(encoding="utf-8"))
+
+
+def load_runtime_baseline() -> dict[str, Any]:
+    if not RUNTIME_BASELINE_PATH.exists():
+        return {"schema_version": "1.0.0", "status": "unvalidated", "sanitized": True, "domains": []}
+    baseline = json.loads(RUNTIME_BASELINE_PATH.read_text(encoding="utf-8"))
+    if not isinstance(baseline, dict) or baseline.get("sanitized") is not True:
+        raise ValueError("runtime verification baseline must be a sanitized object")
+    domains = baseline.get("domains", [])
+    if not isinstance(domains, list):
+        raise ValueError("runtime verification baseline domains must be an array")
+    allowed = {"verified", "unvalidated"}
+    for item in domains:
+        if item.get("id") != "recovery":
+            raise ValueError("only Recovery runtime evidence may be promoted")
+        if item.get("live_api_coverage") not in allowed or item.get("live_termux_coverage") not in allowed:
+            raise ValueError("runtime verification baseline contains an invalid coverage status")
+    return baseline
+
+
+def apply_runtime_baseline(model: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
+    merged = json.loads(json.dumps(model))
+    merged["_source_fingerprint"] = fingerprint(model)
+    promoted = {item["id"]: item for item in baseline.get("domains", [])}
+    for domain in merged["domains"]:
+        item = promoted.get(domain["id"])
+        if not item:
+            continue
+        domain["live_api_coverage"] = item["live_api_coverage"]
+        domain["live_termux_coverage"] = item["live_termux_coverage"]
+        if (
+            item.get("status") == "verified"
+            and domain.get("fixture_coverage") == "verified"
+            and domain.get("mocked_playwright_coverage") == "verified"
+        ):
+            domain["status"] = "verified"
+    merged["runtime_verification_baseline"] = {
+        "status": baseline.get("status", "unvalidated"),
+        "release_tag": baseline.get("release_tag", ""),
+        "source_commit": baseline.get("source_commit", ""),
+    }
+    return merged
 
 
 def validate_json(instance: Any, schema_path: Path) -> None:
@@ -259,7 +302,12 @@ def render_doc(kind: str, title: str, model: dict[str, Any], digest: str) -> str
     elif kind == "termux":
         body += ["```text\nVS Code WSL2\n→ managed hardened SSH alias\n→ one bounded read-only verifier\n→ sanitized backend projection\n→ live FastAPI query\n→ optional Playwright observation\n→ normalized evidence\n```\n\nThe verifier never copies a database, prints raw rows, reads credentials, writes to the phone, or restarts services. Missing SSH configuration reports **runtime-unavailable**, not PASS.\n"]
     elif kind == "runtime":
-        body += [markdown_table(["Domain", "Source", "Fixture", "Mock browser", "Live API", "Live Termux", "Status"], ((d["label"], "verified" if d["status"] != "planned" else "partial", d["fixture_coverage"], d["mocked_playwright_coverage"], d["live_api_coverage"], d["live_termux_coverage"], d["status"]) for d in model["domains"])), "\n"]
+        baseline = model.get("runtime_verification_baseline", {})
+        release = baseline.get("release_tag") or "none"
+        body += [
+            f"Promoted runtime baseline: **{baseline.get('status', 'unvalidated')}**; release: **{release}**. Promotion is explicit, sanitized, hash-bound, and ordinary generation never reads live captures.\n\n",
+            markdown_table(["Domain", "Source", "Fixture", "Mock browser", "Live API", "Live Termux", "Status"], ((d["label"], "verified" if d["status"] != "planned" else "partial", d["fixture_coverage"], d["mocked_playwright_coverage"], d["live_api_coverage"], d["live_termux_coverage"], d["status"]) for d in model["domains"])), "\n",
+        ]
     elif kind == "environments":
         body += [markdown_table(["Environment", "Proves", "Does not prove", "Status"], ((x["label"], ", ".join(x["proves"]), ", ".join(x["does_not_prove"]), x["status"]) for x in model["environments"])), "\n"]
     elif kind == "fixtures":
@@ -280,7 +328,7 @@ def render_doc(kind: str, title: str, model: dict[str, Any], digest: str) -> str
     elif kind == "ci":
         body += [markdown_table(["Workflow", "Job", "Task", "Suite", "Evidence", "Blocking", "Status"], ((x["workflow"], x["job"], x["task"], x["suite"], x["evidence"], x["blocking"], x["status"]) for x in model["ci_map"])), "\n"]
     elif kind == "evidence":
-        body += ["Evidence traceability is generated from the same scenario and gate registry. Runtime evidence is stored only under `.pocketlab-dev/validation/parity` and is not tracked. Stable relative artifact identifiers replace local absolute paths.\n\n",
+        body += ["Evidence traceability is generated from the same scenario and gate registry. Raw runtime evidence stays under `.pocketlab-dev/validation/parity` and is not tracked. `lite:evidence:runtime:promote` validates successful live Playwright and sanitized Termux evidence, binds their hashes to a release tag and source commit, and writes only the allowlisted promoted baseline under `contracts/parity`. Ordinary documentation generation consumes only that promoted baseline.\n\n",
                  markdown_table(["Scenario", "Backend", "API", "Selector", "UI", "Story", "Browser", "Runtime"], ((x["id"], x["backend_arrangement"], x["api_projection"], x["selector"], ", ".join(x["ui_expected"]["visible_text"]), x["storybook_export"], x["mocked_playwright_test"], x["evidence_result"]) for x in model["scenarios"])), "\n"]
     elif kind == "triage":
         body += ["## Failure attribution\n\n- **backend ≠ API:** inspect manifest/current-state writers, transactions, projection refresh, and allowlist mapping.\n- **API ≠ selector:** inspect query key, selector normalizer, enum mapping, and omitted sensitive fields.\n- **selector ≠ rendered UI:** inspect conditional labels, component state, stale/offline indicators, and test selectors.\n- **mocked passes, live fails:** inspect Caddy origin, API freshness, authentication, runtime projection, and external browser configuration.\n- **API/browser match, authority differs:** treat as backend/projection drift; do not patch the UI to hide it.\n- **Storybook passes, page fails:** inspect integrated providers, routing, query invalidation, and overlay state.\n- **offline conflicts with live:** inspect Dexie snapshot revision and TanStack replacement rules.\n- **Schemathesis server error:** reproduce once, inspect sanitized PM2 traceback, and fix the route invariant; never document `500` as an accepted response.\n- **Schemathesis timeout:** classify streams separately, inspect cold/warm read-latency evidence, and adjust bounded endpoint behavior rather than disabling the gate.\n- **Expected `503`:** verify the response is documented, sanitized, retryable, and carries bounded `Retry-After`; focused read-only schemas must never activate maintenance.\n- **Discovery-only finding:** categorize it in the sanitized summary and keep it non-gating until an explicit contract policy is approved.\n"]
@@ -322,7 +370,7 @@ def registry_module(model: dict[str, Any]) -> str:
 
 
 def all_outputs(model: dict[str, Any]) -> dict[Path, str]:
-    digest = fingerprint(model)
+    digest = str(model.get("_source_fingerprint") or fingerprint(model))
     outputs: dict[Path, str] = {}
     for filename, (kind, key) in CONTRACTS.items():
         contract = make_contract(model, kind, key, digest)
@@ -333,8 +381,11 @@ def all_outputs(model: dict[str, Any]) -> dict[Path, str]:
     outputs[REGISTRY_MODULE] = registry_module(model)
     for filename, title, kind in DOCS:
         outputs[DOC_ROOT / filename] = render_doc(kind, title, model, digest)
-    prod = frontmatter("Projection parity readiness", digest, "ready-with-accepted-limitations").replace("audience: development", "audience: production")
-    prod += "# Projection parity readiness\n\nPocket Lab Lite validates Backup & Restore across backend authority, FastAPI projection, frontend selection, and rendered UI. Ordinary production documentation exposes only the readiness result and safe operator actions; internal test mechanics remain under Development.\n\n- Backup & Restore: ready-with-accepted-limitations after blocking local/CI gates pass.\n- Live Termux and live browser: optional, read-only, and unvalidated until explicitly run.\n- Devices, Apps, Security, Rules, and Releases: source-derived partial/planned catalogs.\n"
+    recovery = next(item for item in model["domains"] if item["id"] == "recovery")
+    production_status = "verified" if recovery["status"] == "verified" else "ready-with-accepted-limitations"
+    prod = frontmatter("Projection parity readiness", digest, production_status).replace("audience: development", "audience: production")
+    live_status = "verified from an explicitly promoted sanitized baseline" if recovery["status"] == "verified" else "optional, read-only, and unvalidated until explicitly promoted"
+    prod += f"# Projection parity readiness\n\nPocket Lab Lite validates Backup & Restore across backend authority, FastAPI projection, frontend selection, and rendered UI. Ordinary production documentation exposes only the readiness result and safe operator actions; internal test mechanics remain under Development.\n\n- Backup & Restore: {recovery['status']}.\n- Live Termux and live browser: {live_status}.\n- Devices, Apps, Security, Rules, and Releases: source-derived partial/planned catalogs.\n"
     outputs[PRODUCTION_DOC] = prod
     return outputs
 
@@ -398,6 +449,7 @@ def main() -> int:
     model = load_model()
     validate_json(model, MODEL_SCHEMA)
     validate_links(model)
+    model = apply_runtime_baseline(model, load_runtime_baseline())
     outputs = all_outputs(model)
     max_bytes = int(model["sanitization"]["max_evidence_bytes"])
     for path, text in outputs.items():

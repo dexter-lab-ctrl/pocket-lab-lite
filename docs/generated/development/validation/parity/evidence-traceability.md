@@ -11,7 +11,7 @@ generator: scripts/docs/parity/generate_parity.py
 # Evidence Manifest and Traceability Report
 > Status vocabulary: **verified** is source/test confirmed; **partial** is source-derived but incomplete; **planned** is not implemented; **unvalidated** has not been run in the current environment.
 
-Evidence traceability is generated from the same scenario and gate registry. Runtime evidence is stored only under `.pocketlab-dev/validation/parity` and is not tracked. Stable relative artifact identifiers replace local absolute paths.
+Evidence traceability is generated from the same scenario and gate registry. Raw runtime evidence stays under `.pocketlab-dev/validation/parity` and is not tracked. `lite:evidence:runtime:promote` validates successful live Playwright and sanitized Termux evidence, binds their hashes to a release tag and source commit, and writes only the allowlisted promoted baseline under `contracts/parity`. Ordinary documentation generation consumes only that promoted baseline.
 
 | Scenario | Backend | API | Selector | UI | Story | Browser | Runtime |
 | --- | --- | --- | --- | --- | --- | --- | --- |

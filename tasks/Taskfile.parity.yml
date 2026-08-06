@@ -136,6 +136,21 @@ tasks:
     cmds:
       - '{{.PYTHON}} scripts/test/parity/parity_evidence.py check'
 
+  lite:evidence:runtime:promote:
+    desc: Explicitly promote sanitized successful Recovery live evidence for a tagged release
+    preconditions:
+      - sh: 'test -n "{{.LITE_PARITY_RELEASE_TAG}}"'
+        msg: Set LITE_PARITY_RELEASE_TAG to the installed Lite release tag before promotion
+    cmds:
+      - '{{.PYTHON}} scripts/test/parity/promote_runtime_verification.py promote --release-tag "{{.LITE_PARITY_RELEASE_TAG}}"'
+      - '{{.PYTHON}} scripts/docs/parity/generate_parity.py generate'
+
+  lite:evidence:runtime:check:
+    desc: Validate the committed sanitized runtime verification baseline
+    cmds:
+      - '{{.PYTHON}} scripts/test/parity/promote_runtime_verification.py check'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/parity/test_runtime_verification_promotion.py'
+
   lite:parity:check:
     desc: Aggregate deterministic Backend-to-Frontend parity readiness gate; live phone checks remain separate
     cmds:
@@ -151,6 +166,7 @@ tasks:
       - task: lite:visual:check
       - task: lite:evidence:parity:generate
       - task: lite:evidence:parity:check
+      - task: lite:evidence:runtime:check
       - task: lite:docs:parity:check
 
   lite:api:schemathesis:discovery:
