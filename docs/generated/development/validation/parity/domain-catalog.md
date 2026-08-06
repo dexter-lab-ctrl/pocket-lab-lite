@@ -13,7 +13,7 @@ generator: scripts/docs/parity/generate_parity.py
 
 | Domain | Status | Backend | API | Selector | Storybook | Mocked browser | Live Termux |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Backup & Restore | ready-with-accepted-limitations | backup-state-file, backup-manifest, backup-receipt | recovery-summary, recovery-details, recovery-operations, recovery-backup-history | selectRecoveryScreenView | verified | verified | unvalidated |
+| Backup & Restore | verified | backup-state-file, backup-manifest, backup-receipt | recovery-summary, recovery-details, recovery-operations, recovery-backup-history | selectRecoveryScreenView | verified | verified | verified |
 | Devices | partial | device-current-state, device-heartbeats, device-supervisor-state | fleet | selectDevicesScreenView | verified | verified | runtime-source-verified |
 | Apps | partial | app-current-state, app-action-lifecycle | catalog, app-actions | selectLiteCatalogView | verified | verified | runtime-source-verified |
 | Security | partial | security-scan-runs, security-findings, security-compact-state | security-summary, security-profile, security-history | selectSecurityScreenView | verified | verified | runtime-source-verified |

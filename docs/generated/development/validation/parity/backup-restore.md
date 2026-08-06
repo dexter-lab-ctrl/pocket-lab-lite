@@ -11,7 +11,7 @@ generator: scripts/docs/parity/generate_parity.py
 # Backup & Restore Parity Specification
 > Status vocabulary: **verified** is source/test confirmed; **partial** is source-derived but incomplete; **planned** is not implemented; **unvalidated** has not been run in the current environment.
 
-**Current status:** ready-with-accepted-limitations
+**Current status:** verified
 
 ## Repository-backed flow
 

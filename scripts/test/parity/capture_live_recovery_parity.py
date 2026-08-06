@@ -37,6 +37,9 @@ def safe_text(value: object, limit: int = 240) -> str:
 
 
 def main() -> int:
+    # A failed capture must never leave previous evidence
+    # available for later promotion.
+    OUTPUT.unlink(missing_ok=True)
     payload = fetch_json(f"{API_URL}/api/lite/recovery/summary")
     latest = payload.get("latest_backup") or payload.get("last_backup") or {}
     if not isinstance(latest, dict):

@@ -37,10 +37,10 @@
         "App restore apply remains explicitly unsupported by the repository."
       ],
       "label": "Backup & Restore",
-      "live_api_coverage": "unvalidated",
-      "live_termux_coverage": "unvalidated",
+      "live_api_coverage": "verified",
+      "live_termux_coverage": "verified",
       "mocked_playwright_coverage": "verified",
-      "status": "ready-with-accepted-limitations",
+      "status": "verified",
       "storybook_coverage": "verified",
       "vertical_slice": true
     },
