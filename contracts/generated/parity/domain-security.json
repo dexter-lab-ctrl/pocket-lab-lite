@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/security/summary",
+        "/api/lite/security/profiles/quick",
+        "/api/lite/security/history?limit=20"
+      ],
+      "fingerprint": "69e7666e425460728b2c947b82c314daaba7984813e58662fd544350e4f1f40e",
+      "id": "security",
+      "selectors": [
+        "selectSecuritySummaryView",
+        "selectSecurityScreenView",
+        "selectSecurityProfileView"
+      ],
+      "semantic_mapping_ids": [
+        "security-summary-presentation",
+        "security-primary-action",
+        "security-profile-presentation",
+        "security-sanitized-ui"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

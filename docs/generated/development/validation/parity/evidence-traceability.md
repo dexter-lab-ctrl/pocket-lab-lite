@@ -4,14 +4,14 @@ generated: true
 audience: development
 status: generated
 source_revision: repository-source
-semantic_fingerprint: 6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57
+semantic_fingerprint: b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2
 generator: scripts/docs/parity/generate_parity.py
 ---
 
 # Evidence Manifest and Traceability Report
 > Status vocabulary: **verified** is source/test confirmed; **partial** is source-derived but incomplete; **planned** is not implemented; **unvalidated** has not been run in the current environment.
 
-Evidence traceability is generated from the same scenario and gate registry. Raw runtime evidence stays under `.pocketlab-dev/validation/parity` and is not tracked. `lite:evidence:runtime:promote` validates successful live Playwright and sanitized Termux evidence, binds their hashes to a release tag and source commit, and writes only the allowlisted promoted baseline under `contracts/parity`. Ordinary documentation generation consumes only that promoted baseline.
+Evidence traceability is generated from the same canonical domain, scenario, comparator, and gate registries. Raw API, browser, and Termux observations stay under `.pocketlab-dev/validation/parity` and are not tracked. The comparison step produces a sanitized normalized semantic result. `lite:evidence:runtime:promote` independently revalidates the raw allowlisted observations, recomputes their comparisons, binds the evidence hashes to a release tag and source commit, and writes only the promoted baseline under `contracts/parity`. Ordinary documentation generation consumes only that promoted baseline. A mismatch remains valid drift evidence; missing, stale, failed, or unavailable capture is classified separately and is not called drift.
 
 | Scenario | Backend | API | Selector | UI | Story | Browser | Runtime |
 | --- | --- | --- | --- | --- | --- | --- | --- |

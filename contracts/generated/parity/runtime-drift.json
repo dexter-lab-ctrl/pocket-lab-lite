@@ -1,0 +1,65 @@
+{
+  "items": [
+    {
+      "comparison_summary": {},
+      "id": "apps",
+      "label": "Apps",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    },
+    {
+      "comparison_summary": {},
+      "id": "devices",
+      "label": "Devices",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    },
+    {
+      "comparison_summary": {},
+      "id": "home",
+      "label": "Home",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    },
+    {
+      "comparison_summary": {},
+      "id": "identity",
+      "label": "Identity",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    },
+    {
+      "comparison_summary": {},
+      "id": "recovery",
+      "label": "Backup & Restore",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    },
+    {
+      "comparison_summary": {},
+      "id": "rules",
+      "label": "Rules",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    },
+    {
+      "comparison_summary": {},
+      "id": "security",
+      "label": "Security",
+      "mismatches": [],
+      "runtime_parity": "unvalidated",
+      "runtime_status": "unvalidated"
+    }
+  ],
+  "kind": "runtime-drift",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

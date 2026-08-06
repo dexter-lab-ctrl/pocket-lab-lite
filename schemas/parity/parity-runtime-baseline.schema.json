@@ -1,0 +1,381 @@
+{
+  "$defs": {
+    "comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_limitation": {
+          "type": "boolean"
+        },
+        "backend_value": {
+          "$ref": "#/$defs/safeValue"
+        },
+        "boundary": {
+          "pattern": "^[a-z0-9][a-z0-9._:-]{1,79}$",
+          "type": "string"
+        },
+        "explanation": {
+          "maxLength": 300,
+          "minLength": 1,
+          "pattern": "^(?!.*(?:/data/data/com\\.termux/files/|/home/[^/\\s]+/|[A-Za-z0-9.-]+\\.ts\\.net|(?:nats|https?)://[^\\s/]+:[^\\s@]+@)).*$",
+          "type": "string"
+        },
+        "frontend_value": {
+          "$ref": "#/$defs/safeValue"
+        },
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9._:-]{1,119}$",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "exact",
+            "normalized-string",
+            "case-insensitive",
+            "enum-map",
+            "boolean-equivalence",
+            "numeric-tolerance",
+            "percentage-format",
+            "byte-format",
+            "duration-format",
+            "timestamp-equivalence",
+            "freshness-window",
+            "set-equality",
+            "ordered-list",
+            "subset",
+            "superset",
+            "identity-match",
+            "state-machine-map",
+            "status-family",
+            "presence",
+            "absence",
+            "safe-redaction",
+            "capability-map",
+            "intentional-presentation-map",
+            "text-contains"
+          ]
+        },
+        "project": {
+          "enum": [
+            "live-desktop",
+            "live-mobile",
+            "cross-viewport",
+            "termux"
+          ]
+        },
+        "result": {
+          "enum": [
+            "match",
+            "mapped",
+            "mismatch",
+            "unsupported",
+            "not-observed"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "informational"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "severity",
+        "operator",
+        "result",
+        "backend_value",
+        "frontend_value",
+        "explanation",
+        "project"
+      ],
+      "type": "object"
+    },
+    "coverage": {
+      "enum": [
+        "observed",
+        "capture-failed",
+        "runtime-unavailable",
+        "stale-evidence",
+        "unvalidated"
+      ]
+    },
+    "domain": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison_summary": {
+          "additionalProperties": false,
+          "properties": {
+            "mapped": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "match": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "mismatch": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "not_observed": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "unsupported": {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "match",
+            "mapped",
+            "mismatch",
+            "unsupported",
+            "not_observed"
+          ],
+          "type": "object"
+        },
+        "comparisons": {
+          "items": {
+            "$ref": "#/$defs/comparison"
+          },
+          "maxItems": 500,
+          "type": "array"
+        },
+        "id": {
+          "enum": [
+            "home",
+            "apps",
+            "devices",
+            "security",
+            "identity",
+            "rules",
+            "recovery"
+          ]
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "live_api_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "live_termux_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "live_ui_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "observation_fingerprints": {
+          "additionalProperties": false,
+          "properties": {
+            "backend": {
+              "$ref": "#/$defs/hash"
+            },
+            "live_desktop": {
+              "$ref": "#/$defs/hash"
+            },
+            "live_mobile": {
+              "$ref": "#/$defs/hash"
+            },
+            "termux": {
+              "$ref": "#/$defs/hash"
+            }
+          },
+          "required": [
+            "backend",
+            "termux",
+            "live_desktop",
+            "live_mobile"
+          ],
+          "type": "object"
+        },
+        "runtime_parity": {
+          "enum": [
+            "verified",
+            "verified-with-mapped-presentation",
+            "drift-detected",
+            "partial",
+            "capture-failed",
+            "stale-evidence",
+            "runtime-unavailable",
+            "unvalidated",
+            "unsupported",
+            "accepted-limitation"
+          ]
+        },
+        "status": {
+          "enum": [
+            "verified",
+            "needs-review",
+            "partial",
+            "planned",
+            "unvalidated"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "live_api_coverage",
+        "live_ui_coverage",
+        "live_termux_coverage",
+        "runtime_parity",
+        "status",
+        "comparison_summary",
+        "comparisons",
+        "observation_fingerprints"
+      ],
+      "type": "object"
+    },
+    "evidenceSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "fingerprint": {
+          "pattern": "^[0-9a-f]{16}$",
+          "type": "string"
+        },
+        "length": {
+          "maximum": 12000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "type": {
+          "maxLength": 40,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "fingerprint"
+      ],
+      "type": "object"
+    },
+    "hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "safeValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "maximum": 1000000000000,
+          "minimum": -1000000000000,
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/evidenceSummary"
+        }
+      ]
+    }
+  },
+  "$id": "https://pocketlab.invalid/schemas/parity/parity-runtime-baseline.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "browser_projects": {
+      "items": {
+        "enum": [
+          "live-desktop",
+          "live-mobile"
+        ]
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "domains": {
+      "items": {
+        "$ref": "#/$defs/domain"
+      },
+      "maxItems": 7,
+      "minItems": 7,
+      "type": "array"
+    },
+    "evidence_hashes": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "maxProperties": 40,
+      "minProperties": 3,
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9._-]{1,79}$"
+      },
+      "type": "object"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "maxLength": 40,
+      "type": "string"
+    },
+    "promoted_at": {
+      "format": "date-time",
+      "maxLength": 40,
+      "type": "string"
+    },
+    "release_tag": {
+      "maxLength": 40,
+      "minLength": 15,
+      "pattern": "^lite-[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]+$",
+      "type": "string"
+    },
+    "sanitized": {
+      "const": true
+    },
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "source_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "verified",
+        "needs-review",
+        "partial"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "sanitized",
+    "generated_at",
+    "source_commit",
+    "release_tag",
+    "status",
+    "browser_projects",
+    "domains",
+    "promoted_at",
+    "evidence_hashes"
+  ],
+  "title": "Pocket Lab Lite promoted runtime semantic baseline",
+  "type": "object"
+}

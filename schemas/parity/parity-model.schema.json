@@ -1,46 +1,920 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pocketlab.invalid/schemas/parity/parity-model.schema.json",
-  "title": "Pocket Lab Lite projection parity model",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema_version", "model_id", "source_revision", "status_vocabulary", "architecture",
-    "domains", "backend_authorities", "api_projections", "frontend_state_ownership",
-    "field_mappings", "scenarios", "validation_gates", "environments", "ownership",
-    "freshness", "sanitization", "tooling", "performance_profiles", "ci_map"
-  ],
-  "properties": {
-    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$", "maxLength": 20},
-    "model_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"},
-    "source_revision": {"type": "string", "minLength": 1, "maxLength": 80},
-    "status_vocabulary": {"type": "array", "minItems": 6, "maxItems": 40, "uniqueItems": true, "items": {"type": "string", "maxLength": 64}},
-    "architecture": {"$ref": "#/$defs/openObject"},
-    "domains": {"$ref": "#/$defs/recordArray"},
-    "backend_authorities": {"$ref": "#/$defs/recordArray"},
-    "api_projections": {"$ref": "#/$defs/recordArray"},
-    "frontend_state_ownership": {"$ref": "#/$defs/recordArray"},
-    "field_mappings": {"$ref": "#/$defs/recordArray"},
-    "scenarios": {"$ref": "#/$defs/recordArray"},
-    "validation_gates": {"$ref": "#/$defs/recordArray"},
-    "environments": {"$ref": "#/$defs/recordArray"},
-    "ownership": {"$ref": "#/$defs/recordArray"},
-    "freshness": {"$ref": "#/$defs/recordArray"},
-    "sanitization": {"$ref": "#/$defs/openObject"},
-    "tooling": {"$ref": "#/$defs/recordArray"},
-    "performance_profiles": {"$ref": "#/$defs/recordArray"},
-    "ci_map": {"$ref": "#/$defs/recordArray"}
-  },
   "$defs": {
-    "openObject": {"type": "object", "minProperties": 1, "maxProperties": 80},
+    "boundedString": {
+      "maxLength": 300,
+      "minLength": 1,
+      "type": "string"
+    },
+    "comparator": {
+      "additionalProperties": false,
+      "properties": {
+        "bounded": {
+          "const": true
+        },
+        "description": {
+          "$ref": "#/$defs/boundedString"
+        },
+        "deterministic": {
+          "const": true
+        },
+        "id": {
+          "$ref": "#/$defs/operator"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "deterministic",
+        "bounded",
+        "status"
+      ],
+      "type": "object"
+    },
+    "coverage": {
+      "enum": [
+        "verified",
+        "partial",
+        "planned",
+        "unvalidated",
+        "capture-failed",
+        "stale-evidence",
+        "runtime-unavailable",
+        "unsupported",
+        "accepted-limitation"
+      ],
+      "type": "string"
+    },
+    "domain": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_limitations": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "api_projections": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "api_routes": {
+          "items": {
+            "maxLength": 240,
+            "pattern": "^/api/lite/[A-Za-z0-9_./{}?=&-]*$",
+            "type": "string"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "backend_authorities": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "fixture_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "frontend_screens": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "frontend_surface": {
+          "maxLength": 240,
+          "pattern": "^(?:src|pocket-lab-final-structure|tests|scripts)/",
+          "type": "string"
+        },
+        "id": {
+          "enum": [
+            "home",
+            "apps",
+            "devices",
+            "security",
+            "identity",
+            "rules",
+            "recovery"
+          ]
+        },
+        "known_gaps": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "live_api_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "live_observation_contract": {
+          "$ref": "#/$defs/liveObservationContract"
+        },
+        "live_termux_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "live_ui_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "mocked_playwright_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "mocked_scenarios": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "query_keys": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "runtime_parity": {
+          "$ref": "#/$defs/status"
+        },
+        "selector": {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        "selectors": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "semantic_mappings": {
+          "items": {
+            "$ref": "#/$defs/semanticMapping"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "storybook_coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "storybook_exports": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "unsupported_operations": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "vertical_slice": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "status",
+        "vertical_slice",
+        "backend_authorities",
+        "api_projections",
+        "api_routes",
+        "selector",
+        "selectors",
+        "query_keys",
+        "frontend_screens",
+        "frontend_surface",
+        "storybook_exports",
+        "mocked_scenarios",
+        "live_observation_contract",
+        "semantic_mappings",
+        "accepted_limitations",
+        "unsupported_operations",
+        "known_gaps",
+        "fixture_coverage",
+        "storybook_coverage",
+        "mocked_playwright_coverage",
+        "live_api_coverage",
+        "live_ui_coverage",
+        "live_termux_coverage",
+        "runtime_parity"
+      ],
+      "type": "object"
+    },
+    "identifier": {
+      "pattern": "^[a-z0-9][a-z0-9._:-]{1,119}$",
+      "type": "string"
+    },
+    "liveObservationContract": {
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "items": {
+                "$ref": "#/$defs/observationField"
+              },
+              "maxItems": 80,
+              "minItems": 1,
+              "type": "array"
+            },
+            "routes": {
+              "items": {
+                "$ref": "#/$defs/observationRoute"
+              },
+              "maxItems": 20,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": [
+            "routes",
+            "fields"
+          ],
+          "type": "object"
+        },
+        "frontend": {
+          "additionalProperties": false,
+          "properties": {
+            "project_required": {
+              "items": {
+                "enum": [
+                  "live-desktop",
+                  "live-mobile"
+                ]
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "screen_id": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "required": [
+            "screen_id",
+            "project_required"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "backend",
+        "frontend"
+      ],
+      "type": "object"
+    },
+    "mappingValue": {
+      "anyOf": [
+        {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "items": {
+            "maxLength": 240,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      ]
+    },
+    "observationField": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "extract": {
+                "enum": [
+                  "path",
+                  "count",
+                  "presence"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "extract": {
+                "const": "find"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "list_path",
+              "where",
+              "value_path"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "extract": {
+                "enum": [
+                  "count_where",
+                  "any"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "list_path",
+              "where"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "authority_operator": {
+          "$ref": "#/$defs/operator"
+        },
+        "authority_severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "extract": {
+          "enum": [
+            "path",
+            "count",
+            "count_where",
+            "presence",
+            "find",
+            "any"
+          ],
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "list_path": {
+          "maxLength": 180,
+          "minLength": 1,
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 180,
+          "minLength": 1,
+          "type": "string"
+        },
+        "route": {
+          "$ref": "#/$defs/identifier"
+        },
+        "tolerance": {
+          "maximum": 1000000000000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "value_path": {
+          "maxLength": 180,
+          "minLength": 1,
+          "type": "string"
+        },
+        "where": {
+          "$ref": "#/$defs/whereObject"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "extract",
+        "authority_operator",
+        "authority_severity"
+      ],
+      "type": "object"
+    },
+    "observationRoute": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "path": {
+          "maxLength": 240,
+          "pattern": "^/api/lite/[A-Za-z0-9_./{}?=&-]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path"
+      ],
+      "type": "object"
+    },
+    "openObject": {
+      "maxProperties": 80,
+      "minProperties": 1,
+      "type": "object"
+    },
+    "operator": {
+      "enum": [
+        "exact",
+        "normalized-string",
+        "case-insensitive",
+        "enum-map",
+        "boolean-equivalence",
+        "numeric-tolerance",
+        "percentage-format",
+        "byte-format",
+        "duration-format",
+        "timestamp-equivalence",
+        "freshness-window",
+        "set-equality",
+        "ordered-list",
+        "subset",
+        "superset",
+        "identity-match",
+        "state-machine-map",
+        "status-family",
+        "presence",
+        "absence",
+        "safe-redaction",
+        "capability-map",
+        "intentional-presentation-map",
+        "text-contains"
+      ],
+      "type": "string"
+    },
+    "pairwiseDimension": {
+      "additionalProperties": false,
+      "properties": {
+        "dimensions": {
+          "additionalProperties": {
+            "items": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 2,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "maxProperties": 10,
+          "minProperties": 2,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{1,63}$"
+          },
+          "type": "object"
+        },
+        "domains": {
+          "items": {
+            "enum": [
+              "home",
+              "apps",
+              "devices",
+              "security",
+              "identity",
+              "rules",
+              "recovery"
+            ]
+          },
+          "maxItems": 7,
+          "minItems": 7,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "exclusions": {
+          "items": {
+            "additionalProperties": {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxProperties": 10,
+            "minProperties": 1,
+            "type": "object"
+          },
+          "maxItems": 40,
+          "type": "array"
+        },
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "max_cases": {
+          "maximum": 24,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        }
+      },
+      "required": [
+        "id",
+        "domains",
+        "dimensions",
+        "exclusions",
+        "max_cases",
+        "status"
+      ],
+      "type": "object"
+    },
     "recordArray": {
-      "type": "array", "maxItems": 500,
       "items": {
-        "type": "object", "minProperties": 2, "maxProperties": 60,
-        "required": ["id"],
-        "properties": {"id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{1,119}$"}},
-        "additionalProperties": true
-      }
+        "additionalProperties": true,
+        "maxProperties": 60,
+        "minProperties": 2,
+        "properties": {
+          "id": {
+            "pattern": "^[a-z0-9][a-z0-9._:-]{1,119}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "maxItems": 500,
+      "type": "array"
+    },
+    "runtimeScenario": {
+      "additionalProperties": false,
+      "properties": {
+        "backend_observations": {
+          "$ref": "#/$defs/safeObservationObject"
+        },
+        "description": {
+          "$ref": "#/$defs/boundedString"
+        },
+        "domain": {
+          "enum": [
+            "home",
+            "apps",
+            "devices",
+            "security",
+            "identity",
+            "rules",
+            "recovery"
+          ]
+        },
+        "expected_runtime_parity": {
+          "enum": [
+            "verified-with-mapped-presentation",
+            "drift-detected"
+          ]
+        },
+        "frontend_observations": {
+          "$ref": "#/$defs/safeObservationObject"
+        },
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "enum": [
+            "canonical",
+            "deliberate-drift"
+          ]
+        },
+        "label": {
+          "maxLength": 120,
+          "minLength": 1,
+          "type": "string"
+        },
+        "mapping_id": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "domain",
+        "kind",
+        "mapping_id",
+        "expected_runtime_parity",
+        "backend_observations",
+        "frontend_observations"
+      ],
+      "type": "object"
+    },
+    "safeObservationObject": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/safeScalar"
+          },
+          {
+            "items": {
+              "$ref": "#/$defs/safeScalar"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          {
+            "additionalProperties": {
+              "$ref": "#/$defs/safeScalar"
+            },
+            "maxProperties": 40,
+            "type": "object"
+          }
+        ]
+      },
+      "maxProperties": 80,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(password|passwd|token|api[_-]?key|secret|credential|raw_payload|raw_response|raw_row|environment)"
+        }
+      },
+      "type": "object"
+    },
+    "safeScalar": {
+      "type": [
+        "string",
+        "number",
+        "integer",
+        "boolean",
+        "null"
+      ]
+    },
+    "semanticMapping": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "enum": [
+                  "enum-map",
+                  "state-machine-map",
+                  "status-family",
+                  "capability-map",
+                  "intentional-presentation-map"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "mapping"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "accepted_limitation": {
+          "type": "boolean"
+        },
+        "backend_path": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^(?:\\$|[A-Za-z0-9_.-]+)$",
+          "type": "string"
+        },
+        "boundary": {
+          "enum": [
+            "backend-api",
+            "api-selector",
+            "selector-rendered-ui",
+            "mocked-live-browser",
+            "live-api-live-ui",
+            "live-api-live-termux",
+            "saved-snapshot-live-api",
+            "desktop-mobile",
+            "expected-mapping-actual-wording",
+            "capability-action",
+            "state-machine-rendered-state"
+          ],
+          "type": "string"
+        },
+        "frontend_path": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^(?:\\$|[A-Za-z0-9_.-]+)$",
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "mapping": {
+          "additionalProperties": {
+            "$ref": "#/$defs/mappingValue"
+          },
+          "maxProperties": 40,
+          "minProperties": 1,
+          "type": "object"
+        },
+        "match": {
+          "enum": [
+            "contains",
+            "exact"
+          ],
+          "type": "string"
+        },
+        "operator": {
+          "$ref": "#/$defs/operator"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "tolerance": {
+          "maximum": 1000000000000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "tolerance_seconds": {
+          "maximum": 31536000,
+          "minimum": 0,
+          "type": "number"
+        },
+        "window_seconds": {
+          "maximum": 31536000,
+          "minimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "backend_path",
+        "frontend_path",
+        "boundary",
+        "operator",
+        "severity"
+      ],
+      "type": "object"
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "informational"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "verified",
+        "verified-with-mapped-presentation",
+        "drift-detected",
+        "partial",
+        "planned",
+        "unvalidated",
+        "capture-failed",
+        "stale-evidence",
+        "runtime-unavailable",
+        "unsupported",
+        "accepted-limitation",
+        "needs-review",
+        "inferred",
+        "patch-provided",
+        "missing",
+        "ready-with-accepted-limitations"
+      ],
+      "type": "string"
+    },
+    "stringArray": {
+      "items": {
+        "maxLength": 300,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "whereObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/safeScalar"
+      },
+      "maxProperties": 12,
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+      },
+      "type": "object"
     }
-  }
+  },
+  "$id": "https://pocketlab.invalid/schemas/parity/parity-model.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "api_projections": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "architecture": {
+      "$ref": "#/$defs/openObject"
+    },
+    "backend_authorities": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "ci_map": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "comparator_registry": {
+      "items": {
+        "$ref": "#/$defs/comparator"
+      },
+      "maxItems": 40,
+      "minItems": 1,
+      "type": "array"
+    },
+    "domains": {
+      "items": {
+        "$ref": "#/$defs/domain"
+      },
+      "maxItems": 7,
+      "minItems": 7,
+      "type": "array"
+    },
+    "environments": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "field_mappings": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "freshness": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "frontend_state_ownership": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "model_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{2,79}$",
+      "type": "string"
+    },
+    "ownership": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "pairwise_dimensions": {
+      "items": {
+        "$ref": "#/$defs/pairwiseDimension"
+      },
+      "maxItems": 10,
+      "minItems": 1,
+      "type": "array"
+    },
+    "performance_profiles": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "runtime_scenarios": {
+      "items": {
+        "$ref": "#/$defs/runtimeScenario"
+      },
+      "maxItems": 100,
+      "minItems": 14,
+      "type": "array"
+    },
+    "sanitization": {
+      "$ref": "#/$defs/openObject"
+    },
+    "scenarios": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "schema_version": {
+      "maxLength": 20,
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "source_revision": {
+      "maxLength": 80,
+      "minLength": 1,
+      "type": "string"
+    },
+    "status_vocabulary": {
+      "items": {
+        "maxLength": 64,
+        "type": "string"
+      },
+      "maxItems": 40,
+      "minItems": 6,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "tooling": {
+      "$ref": "#/$defs/recordArray"
+    },
+    "validation_gates": {
+      "$ref": "#/$defs/recordArray"
+    }
+  },
+  "required": [
+    "schema_version",
+    "model_id",
+    "source_revision",
+    "status_vocabulary",
+    "architecture",
+    "domains",
+    "backend_authorities",
+    "api_projections",
+    "frontend_state_ownership",
+    "field_mappings",
+    "scenarios",
+    "validation_gates",
+    "environments",
+    "ownership",
+    "freshness",
+    "sanitization",
+    "tooling",
+    "performance_profiles",
+    "ci_map",
+    "comparator_registry",
+    "runtime_scenarios",
+    "pairwise_dimensions"
+  ],
+  "title": "Pocket Lab Lite projection parity model",
+  "type": "object"
 }

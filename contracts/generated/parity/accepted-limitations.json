@@ -1,0 +1,101 @@
+{
+  "items": [
+    {
+      "accepted_limitations": [
+        "PhotoPrism is the currently cataloged runtime app; cross-app coverage grows from the same contract."
+      ],
+      "id": "apps",
+      "known_gaps": [
+        "Application-owned media indexing is not a Pocket Lab parity authority."
+      ],
+      "label": "Apps",
+      "unsupported_operations": [
+        "Restore apply and update apply remain unavailable unless separately implemented and validated."
+      ]
+    },
+    {
+      "accepted_limitations": [
+        "Heartbeat freshness can move during capture; comparison records the observed revision."
+      ],
+      "id": "devices",
+      "known_gaps": [
+        "Per-device profile fields remain partial when the agent has not published them."
+      ],
+      "label": "Devices",
+      "unsupported_operations": [
+        "Healthy online devices are not removed without explicit confirmation."
+      ]
+    },
+    {
+      "accepted_limitations": [
+        "CPU, memory, and storage presentation may be rounded or unit-formatted."
+      ],
+      "id": "home",
+      "known_gaps": [
+        "Live runtime semantic evidence remains explicit and release-bound."
+      ],
+      "label": "Home",
+      "unsupported_operations": [
+        "Home never executes system operations directly."
+      ]
+    },
+    {
+      "accepted_limitations": [
+        "Credential values are never observable parity fields."
+      ],
+      "id": "identity",
+      "known_gaps": [
+        "The current tab is direct-rendered and has no dedicated selector layer."
+      ],
+      "label": "Identity",
+      "unsupported_operations": [
+        "Identity mismatch repair/rejoin must remain explicit and fail closed."
+      ]
+    },
+    {
+      "accepted_limitations": [
+        "Status labels intentionally use Lite-friendly wording instead of raw backend enums.",
+        "App restore apply remains explicitly unsupported where the repository reports it unavailable."
+      ],
+      "id": "recovery",
+      "known_gaps": [
+        "Live Termux and live browser semantic capture remain explicit; missing capture is not drift."
+      ],
+      "label": "Backup & Restore",
+      "unsupported_operations": [
+        "Unsafe writes remain disabled while the recovery projection is stale."
+      ]
+    },
+    {
+      "accepted_limitations": [
+        "The current product contract is a protection-mode policy surface, not a general arbitrary rule engine."
+      ],
+      "id": "rules",
+      "known_gaps": [
+        "Per-rule identity and execution history are planned, not present in the current API."
+      ],
+      "label": "Rules",
+      "unsupported_operations": [
+        "Planned trigger/condition/action automation is not marked verified."
+      ]
+    },
+    {
+      "accepted_limitations": [
+        "Raw scanner output and sensitive paths are intentionally excluded."
+      ],
+      "id": "security",
+      "known_gaps": [
+        "A missing scanner is runtime-unavailable, not semantic drift."
+      ],
+      "label": "Security",
+      "unsupported_operations": [
+        "The browser never runs Lynis, Trivy, shell, PM2, or NATS commands."
+      ]
+    }
+  ],
+  "kind": "accepted-limitations",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

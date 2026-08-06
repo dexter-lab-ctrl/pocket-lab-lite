@@ -1,0 +1,186 @@
+{
+  "$defs": {
+    "safeValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "maximum": 1000000000000,
+          "minimum": -1000000000000,
+          "type": "integer"
+        },
+        {
+          "maximum": 1000000000000,
+          "minimum": -1000000000000,
+          "type": "number"
+        },
+        {
+          "maxLength": 12000,
+          "type": "string"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/safeValue"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/safeValue"
+          },
+          "maxProperties": 100,
+          "propertyNames": {
+            "not": {
+              "pattern": "(?i)(password|passwd|token|api[_-]?key|secret|credential|raw_payload|raw_response|raw_row|environment)"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "https://pocketlab.invalid/schemas/parity/parity-runtime-observation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "else": {
+        "not": {
+          "required": [
+            "browser_project"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "evidence_kind": {
+            "const": "frontend"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "browser_project"
+        ]
+      }
+    },
+    {
+      "else": {
+        "properties": {
+          "error_code": {
+            "minLength": 1
+          },
+          "observations": {
+            "maxProperties": 0
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "status": {
+            "const": "observed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "error_code": {
+            "const": ""
+          },
+          "observations": {
+            "minProperties": 1
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "browser_project": {
+      "enum": [
+        "live-desktop",
+        "live-mobile"
+      ]
+    },
+    "captured_at": {
+      "format": "date-time",
+      "maxLength": 40,
+      "type": "string"
+    },
+    "domain": {
+      "enum": [
+        "home",
+        "apps",
+        "devices",
+        "security",
+        "identity",
+        "rules",
+        "recovery"
+      ]
+    },
+    "error_code": {
+      "pattern": "^[A-Za-z0-9_.-]{0,64}$",
+      "type": "string"
+    },
+    "evidence_kind": {
+      "enum": [
+        "backend",
+        "frontend",
+        "termux"
+      ]
+    },
+    "observations": {
+      "additionalProperties": {
+        "$ref": "#/$defs/safeValue"
+      },
+      "maxProperties": 80,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(password|passwd|token|api[_-]?key|secret|credential|raw_payload|raw_response|raw_row|environment)"
+        }
+      },
+      "type": "object"
+    },
+    "release_tag": {
+      "maxLength": 40,
+      "pattern": "^(?:|lite-[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]+)$",
+      "type": "string"
+    },
+    "sanitized": {
+      "const": true
+    },
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "source_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "observed",
+        "capture-failed",
+        "runtime-unavailable",
+        "stale-evidence"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "evidence_kind",
+    "domain",
+    "status",
+    "sanitized",
+    "captured_at",
+    "source_commit",
+    "release_tag",
+    "observations",
+    "error_code"
+  ],
+  "title": "Pocket Lab Lite sanitized runtime parity observation",
+  "type": "object"
+}

@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/status",
+        "/api/lite/release"
+      ],
+      "fingerprint": "796e660d7e5d72e3640f2e9fa115713b0780017e7121fc20a19f39ca7e47ad37",
+      "id": "home",
+      "selectors": [
+        "buildLiteHomeOverview"
+      ],
+      "semantic_mapping_ids": [
+        "home-overall-presentation",
+        "home-server-identity",
+        "home-cpu-format",
+        "home-sanitized-ui"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

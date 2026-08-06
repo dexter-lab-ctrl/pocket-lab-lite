@@ -3,6 +3,8 @@ version: '3'
 vars:
   PARITY_TOOLS: '{{default ".pocketlab-dev/tools/parity/bin" .PARITY_TOOLS}}'
   LITE_PARITY_API_URL: '{{default "http://127.0.0.1:18080" .LITE_PARITY_API_URL}}'
+  LITE_PARITY_TERMUX_API_URL: '{{default "http://127.0.0.1:8080" .LITE_PARITY_TERMUX_API_URL}}'
+  POCKETLAB_TERMUX_SSH_ALIAS: '{{default "pocketlab-termux" .POCKETLAB_TERMUX_SSH_ALIAS}}'
 
 tasks:
   lite:parity:tools:check:
@@ -10,8 +12,14 @@ tasks:
     cmds:
       - bash scripts/dev/lite/setup-parity-tools.sh --check
 
+  lite:parity:model:check:
+    desc: Validate the canonical seven-tab parity model, comparators, runtime scenarios, and bounded pairwise catalog
+    cmds:
+      - '{{.PYTHON}} scripts/docs/parity/generate_parity.py fingerprint'
+      - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/parity/test_intelligent_runtime_parity.py -k model'
+
   lite:parity:contracts:generate:
-    desc: Generate canonical parity contracts from one repository-owned model
+    desc: Generate canonical seven-tab parity contracts from one repository-owned model
     cmds:
       - '{{.PYTHON}} scripts/docs/parity/generate_parity.py generate'
 
@@ -22,15 +30,16 @@ tasks:
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/parity/test_contract_generation.py'
 
   lite:parity:fixtures:generate:
-    desc: Generate deterministic Recovery parity fixtures and registry
+    desc: Preserve deterministic Recovery fixtures and generate the all-tab semantic scenario registries
     cmds:
       - '{{.PYTHON}} scripts/docs/parity/generate_parity.py generate'
 
   lite:parity:fixtures:check:
-    desc: Check generated Recovery fixtures and selector linkage
+    desc: Check generated fixtures plus real all-tab selector/presentation linkage
     cmds:
       - '{{.PYTHON}} scripts/docs/parity/generate_parity.py check'
       - node scripts/test/parity/check_recovery_selector.mjs
+      - node scripts/test/parity/check_domain_selectors.mjs
       - npm run test:parity:selectors
 
   lite:parity:backend:
@@ -44,19 +53,20 @@ tasks:
       - 'PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 {{.PYTHON}} -m pytest -q tests/parity/test_guardrails.py tests/parity/test_api_contract_fences.py'
 
   lite:parity:selectors:
-    desc: Verify generated API fixtures through the real Recovery selector
+    desc: Verify repository-derived all-tab selector and direct-render presentation contracts
     cmds:
       - node scripts/test/parity/check_recovery_selector.mjs
+      - node scripts/test/parity/check_domain_selectors.mjs
       - npm run test:parity:selectors
 
   lite:parity:storybook:
-    desc: Build Storybook and verify generated Recovery parity story linkage
+    desc: Build Storybook and verify repository-linked parity story coverage
     cmds:
       - npm run build-storybook
       - 'test -f storybook-static/index.html'
 
   lite:parity:playwright:mocked:
-    desc: Run deterministic mocked Recovery parity in desktop and mobile Chromium
+    desc: Run deterministic mocked semantic parity in desktop and mobile Chromium
     deps: [lite:playwright:preflight]
     cmds:
       - npm run test:e2e:parity
@@ -67,10 +77,20 @@ tasks:
     cmds:
       - 'LITE_E2E_LIVE=1 LITE_E2E_MODE=live npx playwright test tests/e2e/lite-live.spec.ts --project=live-desktop --project=live-mobile'
 
-  lite:parity:termux:
-    desc: Record one bounded read-only WSL2-to-Termux Recovery summary observation
+  lite:parity:runtime:capture:
+    desc: Capture bounded sanitized backend observations for all seven Lite tabs
     cmds:
-      - '{{.PYTHON}} scripts/test/parity/capture_live_recovery_parity.py'
+      - '{{.PYTHON}} scripts/test/parity/capture_runtime_parity.py --kind backend --base-url "{{.LITE_PARITY_API_URL}}" --release-tag "{{.LITE_PARITY_RELEASE_TAG}}"'
+
+  lite:parity:termux:
+    desc: Capture bounded sanitized all-tab observations through the managed read-only Termux SSH loopback
+    cmds:
+      - '{{.PYTHON}} scripts/test/parity/capture_runtime_parity.py --kind termux --ssh-alias "{{.POCKETLAB_TERMUX_SSH_ALIAS}}" --base-url "{{.LITE_PARITY_TERMUX_API_URL}}" --release-tag "{{.LITE_PARITY_RELEASE_TAG}}"'
+
+  lite:parity:runtime:compare:
+    desc: Compare backend, Termux, live desktop, and live mobile observations semantically without changing app behavior
+    cmds:
+      - '{{.PYTHON}} scripts/test/parity/compare_runtime_parity.py'
 
   lite:api:schemathesis:
     desc: Run bounded read-only Schemathesis checks against safe Recovery GET endpoints
@@ -137,7 +157,7 @@ tasks:
       - '{{.PYTHON}} scripts/test/parity/parity_evidence.py check'
 
   lite:evidence:runtime:promote:
-    desc: Explicitly promote sanitized successful Recovery live evidence for a tagged release
+    desc: Explicitly promote sanitized all-tab semantic evidence, including truthful drift, for a tagged release
     preconditions:
       - sh: 'test -n "{{.LITE_PARITY_RELEASE_TAG}}"'
         msg: Set LITE_PARITY_RELEASE_TAG to the installed Lite release tag before promotion
@@ -155,6 +175,7 @@ tasks:
     desc: Aggregate deterministic Backend-to-Frontend parity readiness gate; live phone checks remain separate
     cmds:
       - task: lite:parity:tools:check
+      - task: lite:parity:model:check
       - task: lite:parity:contracts:check
       - task: lite:parity:fixtures:check
       - task: lite:parity:backend

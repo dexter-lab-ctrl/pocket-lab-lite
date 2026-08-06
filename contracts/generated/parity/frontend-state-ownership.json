@@ -3,47 +3,52 @@
     {
       "id": "component-local",
       "may_store": [
-        "copied evidence label"
+        "ephemeral disclosure state",
+        "copied-label feedback"
       ],
       "must_not_store": [
-        "backend authority"
+        "backend authority",
+        "secrets",
+        "durable operation truth"
       ],
       "owner": "component",
-      "responsibility": "ephemeral copy feedback and local presentation",
+      "responsibility": "small component-local presentation state only",
       "status": "verified"
     },
     {
       "id": "dexie",
       "may_store": [
-        "recovery summary",
-        "first page recovery history",
-        "snapshot metadata"
+        "allowlisted safe Lite summaries",
+        "bounded snapshot metadata"
       ],
       "must_not_store": [
         "write responses",
         "credentials",
         "raw manifests",
         "raw evidence",
-        "private paths"
+        "private paths",
+        "identity or invite secrets"
       ],
       "owner": "frontend-offline-snapshot",
-      "responsibility": "sanitized read-only fallback snapshots",
+      "responsibility": "sanitized read-only fallback snapshots for explicitly eligible Lite GET projections",
       "status": "verified"
     },
     {
       "id": "playwright",
       "may_store": [
-        "sanitized traces",
-        "failure screenshots",
-        "JUnit/JSON results"
+        "bounded sanitized semantic observations",
+        "failure-only local artifacts"
       ],
       "must_not_store": [
         "backend authority",
         "raw secrets",
-        "phone identity"
+        "phone identity",
+        "hostnames",
+        "usernames",
+        "private addresses"
       ],
       "owner": "browser-quality",
-      "responsibility": "mocked and live browser observation",
+      "responsibility": "mocked and explicit live browser semantic observation",
       "status": "verified"
     },
     {
@@ -62,7 +67,7 @@
     {
       "id": "tanstack-query",
       "may_store": [
-        "sanitized API projections",
+        "sanitized Lite API projections",
         "ETags",
         "query timestamps"
       ],
@@ -73,7 +78,7 @@
         "write success before FastAPI confirmation"
       ],
       "owner": "frontend-server-state",
-      "responsibility": "live FastAPI read cache, query invalidation, stale/reconnect behavior",
+      "responsibility": "live FastAPI read cache, focused invalidation, stale/reconnect behavior across Lite tabs",
       "status": "verified"
     },
     {
@@ -89,30 +94,31 @@
         "offline write queue"
       ],
       "owner": "frontend-workflow-state",
-      "responsibility": "visible recovery workflow coordination",
+      "responsibility": "visible guided workflow coordination for risky or multi-step Lite actions",
       "status": "verified"
     },
     {
       "id": "zustand",
       "may_store": [
-        "recovery Manage open state",
-        "selected recovery section",
-        "confirmation sheet state"
+        "active tab",
+        "Manage/details open state",
+        "selected UI sections",
+        "toast and refresh feedback"
       ],
       "must_not_store": [
-        "authoritative recovery status",
-        "backup truth",
-        "restore completion truth",
+        "authoritative backend status",
+        "device or app truth",
+        "backup or security completion truth",
         "secrets"
       ],
       "owner": "frontend-ui-state",
-      "responsibility": "transient overlay, Manage, selection and feedback state",
+      "responsibility": "harmless cross-tab overlay, navigation, selection, and feedback state",
       "status": "verified"
     }
   ],
   "kind": "frontend-state-ownership",
   "schema_version": "1.0.0",
-  "semantic_fingerprint": "6416acf0e1764391a0818d34e899f07cdf587e197b13c5481b87128c5caaad57",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
   "source_revision": "repository-source",
   "status": "generated"
 }

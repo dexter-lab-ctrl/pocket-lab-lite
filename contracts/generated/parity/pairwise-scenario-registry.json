@@ -1,0 +1,75 @@
+{
+  "items": [
+    {
+      "id": "all-tabs-runtime-pairwise-01",
+      "matrix_id": "all-tabs-runtime-pairwise",
+      "values": {
+        "action_progress": "running",
+        "backend_availability": "available",
+        "projection_freshness": "stale",
+        "saved_snapshot": "present",
+        "viewport": "mobile"
+      }
+    },
+    {
+      "id": "all-tabs-runtime-pairwise-02",
+      "matrix_id": "all-tabs-runtime-pairwise",
+      "values": {
+        "action_progress": "idle",
+        "backend_availability": "unavailable",
+        "projection_freshness": "stale",
+        "saved_snapshot": "absent",
+        "viewport": "desktop"
+      }
+    },
+    {
+      "id": "all-tabs-runtime-pairwise-03",
+      "matrix_id": "all-tabs-runtime-pairwise",
+      "values": {
+        "action_progress": "running",
+        "backend_availability": "available",
+        "projection_freshness": "fresh",
+        "saved_snapshot": "absent",
+        "viewport": "desktop"
+      }
+    },
+    {
+      "id": "all-tabs-runtime-pairwise-04",
+      "matrix_id": "all-tabs-runtime-pairwise",
+      "values": {
+        "action_progress": "idle",
+        "backend_availability": "unavailable",
+        "projection_freshness": "fresh",
+        "saved_snapshot": "present",
+        "viewport": "mobile"
+      }
+    },
+    {
+      "id": "all-tabs-runtime-pairwise-05",
+      "matrix_id": "all-tabs-runtime-pairwise",
+      "values": {
+        "action_progress": "idle",
+        "backend_availability": "available",
+        "projection_freshness": "stale",
+        "saved_snapshot": "present",
+        "viewport": "desktop"
+      }
+    },
+    {
+      "id": "all-tabs-runtime-pairwise-06",
+      "matrix_id": "all-tabs-runtime-pairwise",
+      "values": {
+        "action_progress": "running",
+        "backend_availability": "available",
+        "projection_freshness": "stale",
+        "saved_snapshot": "absent",
+        "viewport": "mobile"
+      }
+    }
+  ],
+  "kind": "pairwise-scenario-registry",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}

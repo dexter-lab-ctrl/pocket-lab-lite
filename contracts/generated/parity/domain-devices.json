@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "api_routes": [
+        "/api/lite/fleet"
+      ],
+      "fingerprint": "fd6ab6f91215aeeef175d3c83d6773b3810a32376aaad3e0e8c6560bfe9d0daa",
+      "id": "devices",
+      "selectors": [
+        "selectDevicesScreenView",
+        "selectLiteDeviceCard",
+        "selectRemoteAccessHealthView"
+      ],
+      "semantic_mapping_ids": [
+        "devices-server-identity",
+        "devices-server-state",
+        "devices-remote-access",
+        "devices-tailscale-exposure",
+        "devices-sanitized-ui"
+      ]
+    }
+  ],
+  "kind": "domain-fingerprint",
+  "schema_version": "1.0.0",
+  "semantic_fingerprint": "b7775f31c564307fda5d795c62195d03810206e330182eec14f52fa99bbf13f2",
+  "source_revision": "repository-source",
+  "status": "generated"
+}
